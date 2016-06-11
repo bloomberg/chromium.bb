@@ -5,96 +5,233 @@
 #include "media/base/pipeline_impl.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/demuxer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer.h"
+#include "media/base/renderer_client.h"
+#include "media/base/serial_runner.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 
-using base::TimeDelta;
+static const double kDefaultPlaybackRate = 0.0;
+static const float kDefaultVolume = 1.0f;
 
 namespace media {
+
+class PipelineImpl::RendererWrapper : public DemuxerHost,
+                                      public RendererClient {
+ public:
+  RendererWrapper(base::WeakPtr<PipelineImpl> weak_pipeline,
+                  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+                  scoped_refptr<MediaLog> media_log);
+  ~RendererWrapper() final;
+
+  void Start(Demuxer* demuxer,
+             std::unique_ptr<Renderer> renderer,
+             std::unique_ptr<TextRenderer> text_renderer);
+  void Stop(const base::Closure& stop_cb);
+  void Seek(base::TimeDelta time);
+  void Suspend();
+  void Resume(std::unique_ptr<Renderer> renderer, base::TimeDelta time);
+  void SetPlaybackRate(double playback_rate);
+  void SetVolume(float volume);
+  base::TimeDelta GetMediaTime();
+  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+
+ private:
+  // DemuxerHost implementaion.
+  void OnBufferedTimeRangesChanged(const Ranges<base::TimeDelta>& ranges) final;
+  void SetDuration(base::TimeDelta duration) final;
+  void OnDemuxerError(PipelineStatus error) final;
+  void AddTextStream(DemuxerStream* text_stream,
+                     const TextTrackConfig& config) final;
+  void RemoveTextStream(DemuxerStream* text_stream) final;
+
+  // RendererClient implementation.
+  void OnError(PipelineStatus error) final;
+  void OnEnded() final;
+  void OnStatisticsUpdate(const PipelineStatistics& stats) final;
+  void OnBufferingStateChange(BufferingState state) final;
+  void OnWaitingForDecryptionKey() final;
+  void OnVideoNaturalSizeChange(const gfx::Size& size) final;
+  void OnVideoOpacityChange(bool opaque) final;
+
+  void DoSeek(base::TimeDelta seek_timestamp, const PipelineStatusCB& done_cb);
+  void DoStop(const base::Closure& done_cb);
+  void OnPipelineError(PipelineStatus error);
+  void OnTextRendererEnded();
+  void RunEndedCallbackIfNeeded();
+  void SetState(State next_state);
+  State GetNextState() const;
+  void StateTransitionTask(PipelineStatus status);
+  void OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
+                     CdmContext* cdm_context,
+                     bool success);
+  void AddTextStreamTask(DemuxerStream* text_stream,
+                         const TextTrackConfig& config);
+  void RemoveTextStreamTask(DemuxerStream* text_stream);
+  void InitializeDemuxer(const PipelineStatusCB& done_cb);
+  void InitializeRenderer(const PipelineStatusCB& done_cb);
+  void ReportMetadata();
+
+  base::WeakPtr<PipelineImpl> weak_pipeline_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const scoped_refptr<MediaLog> media_log_;
+
+  Demuxer* demuxer_;
+  std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<TextRenderer> text_renderer_;
+  double playback_rate_;
+  float volume_;
+  CdmContext* cdm_context_;
+
+  // Lock used to serialize members - |renderer_| and |suspend_timestamp_| -
+  // accessed in GetMediaTime(), which is the only member function called on
+  // the main thread.
+  mutable base::Lock media_time_lock_;
+
+  // Current state of the pipeline.
+  State state_;
+
+  // Status of the pipeline.  Initialized to PIPELINE_OK which indicates that
+  // the pipeline is operating correctly. Any other value indicates that the
+  // pipeline is stopped or is stopping.  Clients can call the Stop() method to
+  // reset the pipeline state, and restore this to PIPELINE_OK.
+  PipelineStatus status_;
+
+  // The timestamp to start playback from after starting/seeking/resuming has
+  // completed.
+  base::TimeDelta start_timestamp_;
+
+  // The media timestamp to return while the pipeline is suspended.
+  // Otherwise set to kNoTimestamp().
+  base::TimeDelta suspend_timestamp_;
+
+  // Whether we've received the audio/video/text ended events.
+  bool renderer_ended_;
+  bool text_renderer_ended_;
+
+  // Series of tasks to Start(), Seek(), and Resume().
+  std::unique_ptr<SerialRunner> pending_callbacks_;
+
+  base::WeakPtr<RendererWrapper> weak_this_;
+  base::WeakPtrFactory<RendererWrapper> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(RendererWrapper);
+};
 
 PipelineImpl::PipelineImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     MediaLog* media_log)
-    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      media_task_runner_(media_task_runner),
+    : media_task_runner_(media_task_runner),
       media_log_(media_log),
-      running_(false),
+      client_(nullptr),
+      playback_rate_(kDefaultPlaybackRate),
+      volume_(kDefaultVolume),
       did_loading_progress_(false),
-      volume_(1.0f),
-      playback_rate_(0.0),
-      status_(PIPELINE_OK),
-      state_(kCreated),
-      suspend_timestamp_(kNoTimestamp()),
-      renderer_ended_(false),
-      text_renderer_ended_(false),
-      demuxer_(NULL),
-      cdm_context_(nullptr),
       weak_factory_(this) {
-  weak_this_ = weak_factory_.GetWeakPtr();
-  media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
+  DVLOG(2) << __FUNCTION__;
+  renderer_wrapper_.reset(new RendererWrapper(weak_factory_.GetWeakPtr(),
+                                              media_task_runner_, media_log_));
 }
 
 PipelineImpl::~PipelineImpl() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread())
-      << "Pipeline must be destroyed on same thread that created it";
-  DCHECK(!running_) << "Stop() must complete before destroying object";
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!client_) << "Stop() must complete before destroying object";
   DCHECK(seek_cb_.is_null());
+  DCHECK(suspend_cb_.is_null());
+
+  // Invalidate self weak pointers effectively canceling all pending
+  // notifications in the message queue.
+  // Do this before posting the DeleteSoon task to the media thread to
+  // guarantee that the WeakPtr<PipelineImpl> passed to the RendererWrapper
+  // is not invalidated on the media thread.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // RendererWrapper is deleted on the media thread.
+  media_task_runner_->DeleteSoon(FROM_HERE, renderer_wrapper_.release());
 }
 
 void PipelineImpl::Start(Demuxer* demuxer,
                          std::unique_ptr<Renderer> renderer,
                          Client* client,
                          const PipelineStatusCB& seek_cb) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(demuxer);
+  DCHECK(renderer);
   DCHECK(client);
   DCHECK(!seek_cb.is_null());
 
-  base::AutoLock auto_lock(lock_);
-  CHECK(!running_) << "Media pipeline is already running";
-  running_ = true;
+  DCHECK(!client_);
+  DCHECK(seek_cb_.is_null());
+  client_ = client;
+  seek_cb_ = seek_cb;
 
-  demuxer_ = demuxer;
-  renderer_ = std::move(renderer);
-  client_weak_factory_.reset(new base::WeakPtrFactory<Client>(client));
-  weak_client_ = client_weak_factory_->GetWeakPtr();
-  seek_cb_ = media::BindToCurrentLoop(seek_cb);
+  std::unique_ptr<TextRenderer> text_renderer;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInbandTextTracks)) {
+    text_renderer.reset(new TextRenderer(
+        media_task_runner_,
+        BindToCurrentLoop(base::Bind(&PipelineImpl::OnAddTextTrack,
+                                     weak_factory_.GetWeakPtr()))));
+  }
+
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::StartTask, weak_this_));
+      FROM_HERE,
+      base::Bind(&RendererWrapper::Start,
+                 base::Unretained(renderer_wrapper_.get()), demuxer,
+                 base::Passed(&renderer), base::Passed(&text_renderer)));
 }
 
 void PipelineImpl::Stop() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (media_task_runner_ != main_task_runner_) {
+  if (!IsRunning()) {
+    DVLOG(2) << "Media pipeline isn't running. Ignoring Stop()";
+    return;
+  }
+
+  if (statistics_.video_frames_decoded > 0) {
+    UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
+                         statistics_.video_frames_dropped);
+  }
+
+  if (media_task_runner_->BelongsToCurrentThread()) {
+    // This path is executed by unittests that share media and main threads.
+    base::Closure stop_cb = base::Bind(&base::DoNothing);
+    media_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererWrapper::Stop,
+                   base::Unretained(renderer_wrapper_.get()), stop_cb));
+  } else {
     // This path is executed by production code where the two task runners -
     // main and media - live on different threads.
-    // TODO(alokp): It may be possible to not have to wait for StopTask by
-    // moving the members accessed on media thread into a class/struct and
-    // DeleteSoon the instance on the media thread.
+    //
+    // TODO(alokp): We should not have to wait for the RendererWrapper::Stop.
+    // RendererWrapper holds a raw reference to Demuxer, which in turn holds a
+    // raw reference to DataSource. Both Demuxer and DataSource need to live
+    // until RendererWrapper is stopped. If RendererWrapper owned Demuxer and
+    // Demuxer owned DataSource, we could simply let RendererWrapper get lazily
+    // destroyed on the media thread.
     base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Closure stop_cb =
@@ -102,163 +239,156 @@ void PipelineImpl::Stop() {
     // If posting the task fails or the posted task fails to run,
     // we will wait here forever. So add a CHECK to make sure we do not run
     // into those situations.
-    CHECK(weak_factory_.HasWeakPtrs());
     CHECK(media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PipelineImpl::StopTask, weak_this_, stop_cb)));
+        FROM_HERE,
+        base::Bind(&RendererWrapper::Stop,
+                   base::Unretained(renderer_wrapper_.get()), stop_cb)));
     waiter.Wait();
-  } else {
-    // This path is executed by unittests that share media and main threads.
-    StopTask(base::Bind(&base::DoNothing));
   }
-  // Invalidate client weak pointer effectively canceling all pending client
-  // notifications in the message queue.
-  client_weak_factory_.reset();
+
+  // Once the pipeline is stopped, nothing is reported back to the client.
+  // Reset all callbacks and client handle.
+  seek_cb_.Reset();
+  suspend_cb_.Reset();
+  client_ = nullptr;
 }
 
-void PipelineImpl::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!seek_cb.is_null());
 
   if (!IsRunning()) {
     DLOG(ERROR) << "Media pipeline isn't running. Ignoring Seek().";
     return;
   }
 
+  DCHECK(seek_cb_.is_null());
+  seek_cb_ = seek_cb;
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::SeekTask, weak_this_, time,
-                            media::BindToCurrentLoop(seek_cb)));
+      FROM_HERE, base::Bind(&RendererWrapper::Seek,
+                            base::Unretained(renderer_wrapper_.get()), time));
 }
 
 bool PipelineImpl::IsRunning() const {
-  // TODO(alokp): Add thread DCHECK after removing the internal usage on
-  // media thread.
-  base::AutoLock auto_lock(lock_);
-  return running_;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return !!client_;
 }
 
 double PipelineImpl::GetPlaybackRate() const {
-  // TODO(alokp): Add thread DCHECK after removing the internal usage on
-  // media thread.
-  base::AutoLock auto_lock(lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return playback_rate_;
 }
 
 void PipelineImpl::SetPlaybackRate(double playback_rate) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__ << "(" << playback_rate << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (playback_rate < 0.0)
     return;
 
-  base::AutoLock auto_lock(lock_);
   playback_rate_ = playback_rate;
-  if (running_) {
-    media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PipelineImpl::PlaybackRateChangedTask,
-                              weak_this_, playback_rate));
-  }
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererWrapper::SetPlaybackRate,
+                 base::Unretained(renderer_wrapper_.get()), playback_rate_));
 }
 
 void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(!suspend_cb.is_null());
+
+  DCHECK(IsRunning());
+  DCHECK(suspend_cb_.is_null());
+  suspend_cb_ = suspend_cb;
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::SuspendTask, weak_this_,
-                            media::BindToCurrentLoop(suspend_cb)));
+      FROM_HERE, base::Bind(&RendererWrapper::Suspend,
+                            base::Unretained(renderer_wrapper_.get())));
 }
 
 void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
-                          base::TimeDelta timestamp,
+                          base::TimeDelta time,
                           const PipelineStatusCB& seek_cb) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(renderer);
+  DCHECK(!seek_cb.is_null());
+
+  DCHECK(IsRunning());
+  DCHECK(seek_cb_.is_null());
+  seek_cb_ = seek_cb;
 
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PipelineImpl::ResumeTask, weak_this_, base::Passed(&renderer),
-                 timestamp, media::BindToCurrentLoop(seek_cb)));
+      FROM_HERE, base::Bind(&RendererWrapper::Resume,
+                            base::Unretained(renderer_wrapper_.get()),
+                            base::Passed(&renderer), time));
 }
 
 float PipelineImpl::GetVolume() const {
-  // TODO(alokp): Add thread DCHECK after removing the internal usage on
-  // media thread.
-  base::AutoLock auto_lock(lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return volume_;
 }
 
 void PipelineImpl::SetVolume(float volume) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__ << "(" << volume << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (volume < 0.0f || volume > 1.0f)
     return;
 
-  base::AutoLock auto_lock(lock_);
   volume_ = volume;
-  if (running_) {
-    media_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PipelineImpl::VolumeChangedTask, weak_this_, volume));
-  }
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererWrapper::SetVolume,
+                 base::Unretained(renderer_wrapper_.get()), volume_));
 }
 
-TimeDelta PipelineImpl::GetMediaTime() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
-  if (suspend_timestamp_ != kNoTimestamp())
-    return suspend_timestamp_;
-  return renderer_ ? std::min(renderer_->GetMediaTime(), duration_)
-                   : TimeDelta();
+base::TimeDelta PipelineImpl::GetMediaTime() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return renderer_wrapper_->GetMediaTime();
 }
 
-Ranges<TimeDelta> PipelineImpl::GetBufferedTimeRanges() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
+Ranges<base::TimeDelta> PipelineImpl::GetBufferedTimeRanges() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return buffered_time_ranges_;
 }
 
-TimeDelta PipelineImpl::GetMediaDuration() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
+base::TimeDelta PipelineImpl::GetMediaDuration() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return duration_;
 }
 
 bool PipelineImpl::DidLoadingProgress() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   bool ret = did_loading_progress_;
   did_loading_progress_ = false;
   return ret;
 }
 
 PipelineStatistics PipelineImpl::GetStatistics() const {
-  // TODO(alokp): Add thread DCHECK after removing the internal usage on
-  // media thread.
-  base::AutoLock auto_lock(lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return statistics_;
 }
 
 void PipelineImpl::SetCdm(CdmContext* cdm_context,
                           const CdmAttachedCB& cdm_attached_cb) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(cdm_context);
+  DCHECK(!cdm_attached_cb.is_null());
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::SetCdmTask, weak_this_, cdm_context,
-                            cdm_attached_cb));
+      FROM_HERE,
+      base::Bind(&RendererWrapper::SetCdm,
+                 base::Unretained(renderer_wrapper_.get()), cdm_context,
+                 media::BindToCurrentLoop(cdm_attached_cb)));
 }
 
-void PipelineImpl::SetErrorForTesting(PipelineStatus status) {
-  OnError(status);
-}
-
-bool PipelineImpl::HasWeakPtrsForTesting() const {
+void PipelineImpl::RendererWrapper::SetState(State next_state) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return weak_factory_.HasWeakPtrs();
-}
-
-void PipelineImpl::SetState(State next_state) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << GetStateString(state_) << " -> " << GetStateString(next_state);
+  DVLOG(1) << PipelineImpl::GetStateString(state_) << " -> "
+           << PipelineImpl::GetStateString(next_state);
 
   state_ = next_state;
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(next_state));
@@ -268,6 +398,7 @@ void PipelineImpl::SetState(State next_state) {
   case state:                \
     return #state;
 
+// static
 const char* PipelineImpl::GetStateString(State state) {
   switch (state) {
     RETURN_STRING(kCreated);
@@ -287,9 +418,8 @@ const char* PipelineImpl::GetStateString(State state) {
 
 #undef RETURN_STRING
 
-PipelineImpl::State PipelineImpl::GetNextState() const {
+PipelineImpl::State PipelineImpl::RendererWrapper::GetNextState() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(stop_cb_.is_null()) << "State transitions don't happen when stopping";
   DCHECK_EQ(status_, PIPELINE_OK)
       << "State transitions don't happen when there's an error: " << status_;
 
@@ -322,43 +452,42 @@ PipelineImpl::State PipelineImpl::GetNextState() const {
   return state_;
 }
 
-void PipelineImpl::OnDemuxerError(PipelineStatus error) {
+void PipelineImpl::RendererWrapper::OnDemuxerError(PipelineStatus error) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
   media_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineImpl::ErrorChangedTask, weak_this_, error));
+      base::Bind(&RendererWrapper::OnPipelineError, weak_this_, error));
 }
 
-void PipelineImpl::AddTextStream(DemuxerStream* text_stream,
-                                 const TextTrackConfig& config) {
+void PipelineImpl::RendererWrapper::AddTextStream(
+    DemuxerStream* text_stream,
+    const TextTrackConfig& config) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::AddTextStreamTask, weak_this_,
+      FROM_HERE, base::Bind(&RendererWrapper::AddTextStreamTask, weak_this_,
                             text_stream, config));
 }
 
-void PipelineImpl::RemoveTextStream(DemuxerStream* text_stream) {
+void PipelineImpl::RendererWrapper::RemoveTextStream(
+    DemuxerStream* text_stream) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PipelineImpl::RemoveTextStreamTask, weak_this_, text_stream));
+      FROM_HERE, base::Bind(&RendererWrapper::RemoveTextStreamTask, weak_this_,
+                            text_stream));
 }
 
-void PipelineImpl::OnError(PipelineStatus error) {
+void PipelineImpl::RendererWrapper::OnError(PipelineStatus error) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(IsRunning());
-  DCHECK_NE(PIPELINE_OK, error);
-  VLOG(1) << "Media pipeline error: " << error;
 
   media_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineImpl::ErrorChangedTask, weak_this_, error));
+      base::Bind(&RendererWrapper::OnPipelineError, weak_this_, error));
 }
 
-void PipelineImpl::OnEnded() {
+void PipelineImpl::RendererWrapper::OnEnded() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
 
@@ -367,79 +496,75 @@ void PipelineImpl::OnEnded() {
 
   DCHECK(!renderer_ended_);
   renderer_ended_ = true;
-
   RunEndedCallbackIfNeeded();
 }
 
-void PipelineImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
-  statistics_.audio_bytes_decoded += stats.audio_bytes_decoded;
-  statistics_.video_bytes_decoded += stats.video_bytes_decoded;
-  statistics_.video_frames_decoded += stats.video_frames_decoded;
-  statistics_.video_frames_dropped += stats.video_frames_dropped;
-  statistics_.audio_memory_usage += stats.audio_memory_usage;
-  statistics_.video_memory_usage += stats.video_memory_usage;
-}
-
-void PipelineImpl::OnBufferingStateChange(BufferingState state) {
-  DVLOG(1) << __FUNCTION__ << "(" << state << ") ";
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnBufferingStateChange,
-                            weak_client_, state));
-}
-
-void PipelineImpl::OnWaitingForDecryptionKey() {
+void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
+    const PipelineStatistics& stats) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Pipeline::Client::OnWaitingForDecryptionKey, weak_client_));
+      base::Bind(&PipelineImpl::OnStatisticsUpdate, weak_pipeline_, stats));
 }
 
-void PipelineImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+void PipelineImpl::RendererWrapper::OnBufferingStateChange(
+    BufferingState state) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__ << "(" << state << ") ";
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnBufferingStateChange, weak_pipeline_, state));
+}
+
+void PipelineImpl::RendererWrapper::OnWaitingForDecryptionKey() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnVideoNaturalSizeChange,
-                            weak_client_, size));
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnWaitingForDecryptionKey, weak_pipeline_));
 }
 
-void PipelineImpl::OnVideoOpacityChange(bool opaque) {
+void PipelineImpl::RendererWrapper::OnVideoNaturalSizeChange(
+    const gfx::Size& size) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnVideoOpacityChange,
-                            weak_client_, opaque));
+      FROM_HERE, base::Bind(&PipelineImpl::OnVideoNaturalSizeChange,
+                            weak_pipeline_, size));
 }
 
-void PipelineImpl::SetDuration(TimeDelta duration) {
+void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnVideoOpacityChange, weak_pipeline_, opaque));
+}
+
+void PipelineImpl::RendererWrapper::SetDuration(base::TimeDelta duration) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
-  DCHECK(IsRunning());
   media_log_->AddEvent(media_log_->CreateTimeEvent(MediaLogEvent::DURATION_SET,
                                                    "duration", duration));
   UMA_HISTOGRAM_LONG_TIMES("Media.Duration", duration);
 
-  base::AutoLock auto_lock(lock_);
-  duration_ = duration;
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnDurationChange, weak_client_));
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnDurationChange, weak_pipeline_, duration));
 }
 
-void PipelineImpl::StateTransitionTask(PipelineStatus status) {
+void PipelineImpl::RendererWrapper::StateTransitionTask(PipelineStatus status) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // No-op any state transitions if we're stopping.
-  if (state_ == kStopping || state_ == kStopped)
+  // No-op any state transitions if we're stopping or already encountered error.
+  if (state_ == kStopping || state_ == kStopped || status_ != PIPELINE_OK)
     return;
 
   // Report error from the previous operation.
   if (status != PIPELINE_OK) {
-    ErrorChangedTask(status);
+    OnPipelineError(status);
     return;
   }
 
@@ -451,7 +576,7 @@ void PipelineImpl::StateTransitionTask(PipelineStatus status) {
   pending_callbacks_.reset();
 
   PipelineStatusCB done_cb =
-      base::Bind(&PipelineImpl::StateTransitionTask, weak_this_);
+      base::Bind(&RendererWrapper::StateTransitionTask, weak_this_);
 
   // Switch states, performing any entrance actions for the new state as well.
   SetState(GetNextState());
@@ -474,27 +599,26 @@ void PipelineImpl::StateTransitionTask(PipelineStatus status) {
       DCHECK(start_timestamp_ >= base::TimeDelta());
       renderer_->StartPlayingFrom(start_timestamp_);
       {
-        base::AutoLock auto_lock(lock_);
+        base::AutoLock auto_lock(media_time_lock_);
         suspend_timestamp_ = kNoTimestamp();
       }
 
       if (text_renderer_)
         text_renderer_->StartPlaying();
 
-      base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+      main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_,
+                                start_timestamp_));
 
-      PlaybackRateChangedTask(GetPlaybackRate());
-      VolumeChangedTask(GetVolume());
+      renderer_->SetPlaybackRate(playback_rate_);
+      renderer_->SetVolume(volume_);
       return;
 
     case kSuspended:
       renderer_.reset();
-      {
-        base::AutoLock auto_lock(lock_);
-        statistics_.audio_memory_usage = 0;
-        statistics_.video_memory_usage = 0;
-      }
-      base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
+      main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&PipelineImpl::OnSuspendDone, weak_pipeline_,
+                                suspend_timestamp_));
       return;
 
     case kStopping:
@@ -513,8 +637,8 @@ void PipelineImpl::StateTransitionTask(PipelineStatus status) {
 //
 // That being said, deleting the renderers while keeping |pending_callbacks_|
 // running on the media thread would result in crashes.
-void PipelineImpl::DoSeek(TimeDelta seek_timestamp,
-                          const PipelineStatusCB& done_cb) {
+void PipelineImpl::RendererWrapper::DoSeek(base::TimeDelta seek_timestamp,
+                                           const PipelineStatusCB& done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_callbacks_.get());
   DCHECK_EQ(state_, kSeeking);
@@ -543,7 +667,7 @@ void PipelineImpl::DoSeek(TimeDelta seek_timestamp,
   pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
-void PipelineImpl::DoStop() {
+void PipelineImpl::RendererWrapper::DoStop(const base::Closure& done_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kStopping);
@@ -553,7 +677,7 @@ void PipelineImpl::DoStop() {
   // even for accessing media time http://crbug.com/370634
   std::unique_ptr<Renderer> renderer;
   {
-    base::AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(media_time_lock_);
     renderer.swap(renderer_);
   }
   renderer.reset();
@@ -564,91 +688,69 @@ void PipelineImpl::DoStop() {
     demuxer_ = NULL;
   }
 
-  {
-    base::AutoLock auto_lock(lock_);
-    running_ = false;
-  }
   SetState(kStopped);
 
-  // If we stop during initialization/seeking/suspending we don't want to leave
-  // outstanding callbacks around. The callbacks also do not get run if the
-  // pipeline is stopped before it had a chance to complete outstanding tasks.
-  seek_cb_.Reset();
-  suspend_cb_.Reset();
-
-  if (!stop_cb_.is_null()) {
-    // Invalid all weak pointers so it's safe to destroy |this| on the render
-    // main thread.
-    weak_factory_.InvalidateWeakPtrs();
-
-    // Post the stop callback to enqueue it after the tasks that may have been
-    // Demuxer and Renderer during stopping.
-    media_task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
-  }
+  // Post the stop callback to enqueue it after the tasks that may have been
+  // posted by Demuxer and Renderer during stopping. Note that in theory the
+  // tasks posted by Demuxer/Renderer may post even more tasks that will get
+  // enqueued after |done_cb|. This may be problematic because Demuxer may
+  // get destroyed as soon as |done_cb| is run. In practice this is not a
+  // problem, but ideally Demuxer should be destroyed on the media thread.
+  media_task_runner_->PostTask(FROM_HERE, done_cb);
 }
 
-void PipelineImpl::OnBufferedTimeRangesChanged(
+void PipelineImpl::RendererWrapper::OnBufferedTimeRangesChanged(
     const Ranges<base::TimeDelta>& ranges) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
-  base::AutoLock auto_lock(lock_);
-  buffered_time_ranges_ = ranges;
-  did_loading_progress_ = true;
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PipelineImpl::OnBufferedTimeRangesChange,
+                            weak_pipeline_, ranges));
 }
 
-void PipelineImpl::StartTask() {
+void PipelineImpl::RendererWrapper::Start(
+    Demuxer* demuxer,
+    std::unique_ptr<Renderer> renderer,
+    std::unique_ptr<TextRenderer> text_renderer) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(kCreated, state_) << "Received start in unexpected state: "
+                              << state_;
 
-  CHECK_EQ(kCreated, state_)
-      << "Media pipeline cannot be started more than once";
-
-  text_renderer_ = CreateTextRenderer();
+  DCHECK(!demuxer_);
+  DCHECK(!renderer_);
+  DCHECK(!text_renderer_);
+  DCHECK(!renderer_ended_);
+  DCHECK(!text_renderer_ended_);
+  demuxer_ = demuxer;
+  {
+    base::AutoLock auto_lock(media_time_lock_);
+    renderer_ = std::move(renderer);
+  }
+  text_renderer_ = std::move(text_renderer);
   if (text_renderer_) {
     text_renderer_->Initialize(
-        base::Bind(&PipelineImpl::OnTextRendererEnded, weak_this_));
+        base::Bind(&RendererWrapper::OnTextRendererEnded, weak_this_));
   }
 
   StateTransitionTask(PIPELINE_OK);
 }
 
-void PipelineImpl::StopTask(const base::Closure& stop_cb) {
+void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(stop_cb_.is_null());
-
-  if (state_ == kStopped) {
-    // Invalid all weak pointers so it's safe to destroy |this| on the render
-    // main thread.
-    weak_factory_.InvalidateWeakPtrs();
-
-    // NOTE: pipeline may be deleted at this point in time as a result of
-    // executing |stop_cb|.
-    stop_cb.Run();
-
-    return;
-  }
-
-  stop_cb_ = stop_cb;
-
-  // We may already be stopping due to a runtime error.
-  if (state_ == kStopping)
-    return;
-
-  // Do not report statistics if the pipeline is not fully initialized.
-  if (state_ == kSeeking || state_ == kPlaying || state_ == kSuspending ||
-      state_ == kSuspended || state_ == kResuming) {
-    PipelineStatistics stats = GetStatistics();
-    if (stats.video_frames_decoded > 0) {
-      UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
-                           stats.video_frames_dropped);
-    }
-  }
+  DCHECK(state_ != kStopping && state_ != kStopped);
 
   SetState(kStopping);
+
+  // If we stop during starting/seeking/suspending/resuming we don't want to
+  // leave outstanding callbacks around. The callbacks also do not get run if
+  // the pipeline is stopped before it had a chance to complete outstanding
+  // tasks.
   pending_callbacks_.reset();
-  DoStop();
+
+  DoStop(stop_cb);
 }
 
-void PipelineImpl::ErrorChangedTask(PipelineStatus error) {
+void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
 
@@ -656,110 +758,81 @@ void PipelineImpl::ErrorChangedTask(PipelineStatus error) {
   if (status_ != PIPELINE_OK)
     return;
 
-  // Don't report pipeline error events to the media log here. The embedder will
-  // log this when Client::OnError is called. If the pipeline is already stopped
-  // or stopping we also don't want to log any event. In case we are suspending
-  // or suspended, the error may be recoverable, so don't propagate it now,
-  // instead let the subsequent seek during resume propagate it if it's
-  // unrecoverable.
+  // Don't report pipeline error events to the media log here. The embedder
+  // will log this when Client::OnError is called. If the pipeline is already
+  // stopped or stopping we also don't want to log any event. In case we are
+  // suspending or suspended, the error may be recoverable, so don't propagate
+  // it now, instead let the subsequent seek during resume propagate it if
+  // it's unrecoverable.
   if (state_ == kStopping || state_ == kStopped || state_ == kSuspending ||
       state_ == kSuspended) {
     return;
   }
 
-  // Once we enter |kStopping| state, nothing is reported back to the client.
-  // If we encounter an error during initialization/seeking/suspending,
-  // report the error using the completion callbacks for those tasks.
   status_ = error;
-  bool error_reported = false;
-  if (!seek_cb_.is_null()) {
-    base::ResetAndReturn(&seek_cb_).Run(status_);
-    error_reported = true;
-  }
-  if (!suspend_cb_.is_null()) {
-    base::ResetAndReturn(&suspend_cb_).Run(status_);
-    error_reported = true;
-  }
-  if (!error_reported) {
-    DCHECK_NE(status_, PIPELINE_OK);
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&Pipeline::Client::OnError, weak_client_, status_));
-  }
-
-  SetState(kStopping);
-  pending_callbacks_.reset();
-  DoStop();
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PipelineImpl::OnError, weak_pipeline_, error));
 }
 
-void PipelineImpl::PlaybackRateChangedTask(double playback_rate) {
+void PipelineImpl::RendererWrapper::SetPlaybackRate(double playback_rate) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // Playback rate changes are only carried out while playing.
-  if (state_ != kPlaying)
-    return;
-
-  renderer_->SetPlaybackRate(playback_rate);
+  playback_rate_ = playback_rate;
+  if (state_ == kPlaying)
+    renderer_->SetPlaybackRate(playback_rate_);
 }
 
-void PipelineImpl::VolumeChangedTask(float volume) {
+void PipelineImpl::RendererWrapper::SetVolume(float volume) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // Volume changes are only carried out while playing.
-  if (state_ != kPlaying)
-    return;
-
-  renderer_->SetVolume(volume);
+  volume_ = volume;
+  if (state_ == kPlaying)
+    renderer_->SetVolume(volume_);
 }
 
-void PipelineImpl::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
+void PipelineImpl::RendererWrapper::Seek(base::TimeDelta time) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(stop_cb_.is_null());
 
   // Suppress seeking if we're not fully started.
   if (state_ != kPlaying) {
     DCHECK(state_ == kStopping || state_ == kStopped)
         << "Receive seek in unexpected state: " << state_;
-    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    OnPipelineError(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
-
-  DCHECK(seek_cb_.is_null());
 
   const base::TimeDelta seek_timestamp =
       std::max(time, demuxer_->GetStartTime());
 
   SetState(kSeeking);
-  seek_cb_ = seek_cb;
   renderer_ended_ = false;
   text_renderer_ended_ = false;
   start_timestamp_ = seek_timestamp;
 
   DoSeek(seek_timestamp,
-         base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
+         base::Bind(&RendererWrapper::StateTransitionTask, weak_this_));
 }
 
-void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
+void PipelineImpl::RendererWrapper::Suspend() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // Suppress suspending if we're not playing.
   if (state_ != kPlaying) {
     DCHECK(state_ == kStopping || state_ == kStopped)
         << "Receive suspend in unexpected state: " << state_;
-    suspend_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    OnPipelineError(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
   DCHECK(renderer_);
   DCHECK(!pending_callbacks_.get());
 
   SetState(kSuspending);
-  suspend_cb_ = suspend_cb;
 
   // Freeze playback and record the media time before flushing. (Flushing clears
   // the value.)
   renderer_->SetPlaybackRate(0.0);
   {
-    base::AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(media_time_lock_);
     suspend_timestamp_ = renderer_->GetMediaTime();
     DCHECK(suspend_timestamp_ != kNoTimestamp());
   }
@@ -782,30 +855,32 @@ void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
   }
 
   pending_callbacks_ = SerialRunner::Run(
-      fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
+      fns, base::Bind(&RendererWrapper::StateTransitionTask, weak_this_));
 }
 
-void PipelineImpl::ResumeTask(std::unique_ptr<Renderer> renderer,
-                              base::TimeDelta timestamp,
-                              const PipelineStatusCB& seek_cb) {
+void PipelineImpl::RendererWrapper::Resume(std::unique_ptr<Renderer> renderer,
+                                           base::TimeDelta timestamp) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // Suppress resuming if we're not suspended.
   if (state_ != kSuspended) {
     DCHECK(state_ == kStopping || state_ == kStopped)
         << "Receive resume in unexpected state: " << state_;
-    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    OnPipelineError(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
   DCHECK(!renderer_);
   DCHECK(!pending_callbacks_.get());
 
   SetState(kResuming);
-  renderer_ = std::move(renderer);
+
+  {
+    base::AutoLock auto_lock(media_time_lock_);
+    renderer_ = std::move(renderer);
+  }
 
   // Set up for a seek. (Matches setup in SeekTask().)
   // TODO(sandersd): Share implementation with SeekTask().
-  seek_cb_ = seek_cb;
   renderer_ended_ = false;
   text_renderer_ended_ = false;
   start_timestamp_ = std::max(timestamp, demuxer_->GetStartTime());
@@ -819,15 +894,17 @@ void PipelineImpl::ResumeTask(std::unique_ptr<Renderer> renderer,
   fns.Push(
       base::Bind(&Demuxer::Seek, base::Unretained(demuxer_), start_timestamp_));
 
-  fns.Push(base::Bind(&PipelineImpl::InitializeRenderer, weak_this_));
+  fns.Push(base::Bind(&RendererWrapper::InitializeRenderer, weak_this_));
 
   pending_callbacks_ = SerialRunner::Run(
-      fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
+      fns, base::Bind(&RendererWrapper::StateTransitionTask, weak_this_));
 }
 
-void PipelineImpl::SetCdmTask(CdmContext* cdm_context,
-                              const CdmAttachedCB& cdm_attached_cb) {
-  base::AutoLock auto_lock(lock_);
+void PipelineImpl::RendererWrapper::SetCdm(
+    CdmContext* cdm_context,
+    const CdmAttachedCB& cdm_attached_cb) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
   if (!renderer_) {
     cdm_context_ = cdm_context;
     cdm_attached_cb.Run(true);
@@ -835,20 +912,22 @@ void PipelineImpl::SetCdmTask(CdmContext* cdm_context,
   }
 
   renderer_->SetCdm(cdm_context,
-                    base::Bind(&PipelineImpl::OnCdmAttached, weak_this_,
+                    base::Bind(&RendererWrapper::OnCdmAttached, weak_this_,
                                cdm_attached_cb, cdm_context));
 }
 
-void PipelineImpl::OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
-                                 CdmContext* cdm_context,
-                                 bool success) {
+void PipelineImpl::RendererWrapper::OnCdmAttached(
+    const CdmAttachedCB& cdm_attached_cb,
+    CdmContext* cdm_context,
+    bool success) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+
   if (success)
     cdm_context_ = cdm_context;
   cdm_attached_cb.Run(success);
 }
 
-void PipelineImpl::OnTextRendererEnded() {
+void PipelineImpl::RendererWrapper::OnTextRendererEnded() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::TEXT_ENDED));
 
@@ -861,7 +940,7 @@ void PipelineImpl::OnTextRendererEnded() {
   RunEndedCallbackIfNeeded();
 }
 
-void PipelineImpl::RunEndedCallbackIfNeeded() {
+void PipelineImpl::RendererWrapper::RunEndedCallbackIfNeeded() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (renderer_ && !renderer_ended_)
@@ -872,62 +951,42 @@ void PipelineImpl::RunEndedCallbackIfNeeded() {
 
   DCHECK_EQ(status_, PIPELINE_OK);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnEnded, weak_client_));
+      FROM_HERE, base::Bind(&PipelineImpl::OnEnded, weak_pipeline_));
 }
 
-std::unique_ptr<TextRenderer> PipelineImpl::CreateTextRenderer() {
+void PipelineImpl::RendererWrapper::AddTextStreamTask(
+    DemuxerStream* text_stream,
+    const TextTrackConfig& config) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableInbandTextTracks))
-    return nullptr;
-
-  return base::WrapUnique(new media::TextRenderer(
-      media_task_runner_,
-      base::Bind(&PipelineImpl::OnAddTextTrack, weak_this_)));
-}
-
-void PipelineImpl::AddTextStreamTask(DemuxerStream* text_stream,
-                                     const TextTrackConfig& config) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
   // TODO(matthewjheaney): fix up text_ended_ when text stream
   // is added (http://crbug.com/321446).
   if (text_renderer_)
     text_renderer_->AddTextStream(text_stream, config);
 }
 
-void PipelineImpl::RemoveTextStreamTask(DemuxerStream* text_stream) {
+void PipelineImpl::RendererWrapper::RemoveTextStreamTask(
+    DemuxerStream* text_stream) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (text_renderer_)
     text_renderer_->RemoveTextStream(text_stream);
 }
 
-void PipelineImpl::OnAddTextTrack(const TextTrackConfig& config,
-                                  const AddTextTrackDoneCB& done_cb) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnAddTextTrack, weak_client_,
-                            config, done_cb));
-}
-
-void PipelineImpl::InitializeDemuxer(const PipelineStatusCB& done_cb) {
+void PipelineImpl::RendererWrapper::InitializeDemuxer(
+    const PipelineStatusCB& done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   demuxer_->Initialize(this, done_cb, !!text_renderer_);
 }
 
-void PipelineImpl::InitializeRenderer(const PipelineStatusCB& done_cb) {
+void PipelineImpl::RendererWrapper::InitializeRenderer(
+    const PipelineStatusCB& done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
       !demuxer_->GetStream(DemuxerStream::VIDEO)) {
-    {
-      base::AutoLock auto_lock(lock_);
-      renderer_.reset();
-    }
-    OnError(PIPELINE_ERROR_COULD_NOT_RENDER);
+    done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
 
@@ -937,7 +996,7 @@ void PipelineImpl::InitializeRenderer(const PipelineStatusCB& done_cb) {
   renderer_->Initialize(demuxer_, this, done_cb);
 }
 
-void PipelineImpl::ReportMetadata() {
+void PipelineImpl::RendererWrapper::ReportMetadata() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   PipelineMetadata metadata;
@@ -952,9 +1011,199 @@ void PipelineImpl::ReportMetadata() {
     metadata.has_audio = true;
   }
 
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Pipeline::Client::OnMetadata, weak_client_, metadata));
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::OnMetadata,
+                                                    weak_pipeline_, metadata));
+}
+
+void PipelineImpl::OnError(PipelineStatus error) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
+
+  if (!IsRunning())
+    return;
+
+  // If the error happens during starting/seeking/suspending/resuming,
+  // report the error via the completion callback for those tasks.
+  // Else report error via the client interface.
+  if (!seek_cb_.is_null()) {
+    base::ResetAndReturn(&seek_cb_).Run(error);
+  } else if (!suspend_cb_.is_null()) {
+    base::ResetAndReturn(&suspend_cb_).Run(error);
+  } else {
+    DCHECK(client_);
+    client_->OnError(error);
+  }
+
+  // Any kind of error stops the pipeline.
+  Stop();
+}
+
+void PipelineImpl::OnEnded() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnEnded();
+  }
+}
+
+void PipelineImpl::OnMetadata(PipelineMetadata metadata) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnMetadata(metadata);
+  }
+}
+
+void PipelineImpl::OnBufferingStateChange(BufferingState state) {
+  DVLOG(2) << __FUNCTION__ << "(" << state << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnBufferingStateChange(state);
+  }
+}
+
+void PipelineImpl::OnDurationChange(base::TimeDelta duration) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  duration_ = duration;
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnDurationChange();
+  }
+}
+
+void PipelineImpl::OnAddTextTrack(const TextTrackConfig& config,
+                                  const AddTextTrackDoneCB& done_cb) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnAddTextTrack(config, done_cb);
+  }
+}
+
+void PipelineImpl::OnWaitingForDecryptionKey() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnWaitingForDecryptionKey();
+  }
+}
+
+void PipelineImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnVideoNaturalSizeChange(size);
+  }
+}
+
+void PipelineImpl::OnVideoOpacityChange(bool opaque) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(client_);
+    client_->OnVideoOpacityChange(opaque);
+  }
+}
+
+void PipelineImpl::OnBufferedTimeRangesChange(
+    const Ranges<base::TimeDelta>& ranges) {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  buffered_time_ranges_ = ranges;
+  did_loading_progress_ = true;
+}
+
+void PipelineImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  statistics_.audio_bytes_decoded += stats.audio_bytes_decoded;
+  statistics_.video_bytes_decoded += stats.video_bytes_decoded;
+  statistics_.video_frames_decoded += stats.video_frames_decoded;
+  statistics_.video_frames_dropped += stats.video_frames_dropped;
+  statistics_.audio_memory_usage += stats.audio_memory_usage;
+  statistics_.video_memory_usage += stats.video_memory_usage;
+}
+
+void PipelineImpl::OnSeekDone(base::TimeDelta start_time) {
+  DVLOG(3) << __FUNCTION__ << "(" << start_time.InMicroseconds() << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsRunning()) {
+    DCHECK(!seek_cb_.is_null());
+    base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+  }
+}
+
+void PipelineImpl::OnSuspendDone(base::TimeDelta suspend_time) {
+  DVLOG(3) << __FUNCTION__ << "(" << suspend_time.InMicroseconds() << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Reset audio-video memory usage since renderer has been destroyed.
+  statistics_.audio_memory_usage = 0;
+  statistics_.video_memory_usage = 0;
+
+  if (IsRunning()) {
+    DCHECK(!suspend_cb_.is_null());
+    base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
+  }
+}
+
+PipelineImpl::RendererWrapper::RendererWrapper(
+    base::WeakPtr<PipelineImpl> weak_pipeline,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<MediaLog> media_log)
+    : weak_pipeline_(weak_pipeline),
+      media_task_runner_(std::move(media_task_runner)),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      media_log_(std::move(media_log)),
+      demuxer_(nullptr),
+      playback_rate_(kDefaultPlaybackRate),
+      volume_(kDefaultVolume),
+      cdm_context_(nullptr),
+      state_(kCreated),
+      status_(PIPELINE_OK),
+      suspend_timestamp_(kNoTimestamp()),
+      renderer_ended_(false),
+      text_renderer_ended_(false),
+      weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
+  media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
+}
+
+PipelineImpl::RendererWrapper::~RendererWrapper() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == kCreated || state_ == kStopped);
+}
+
+base::TimeDelta PipelineImpl::RendererWrapper::GetMediaTime() {
+  // This is the only member function that gets called on the main thread.
+  // TODO(alokp): Enforce that Renderer is only called on a single thread,
+  // even for accessing media time http://crbug.com/370634.
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(media_time_lock_);
+  if (suspend_timestamp_ != kNoTimestamp())
+    return suspend_timestamp_;
+  return renderer_ ? renderer_->GetMediaTime() : base::TimeDelta();
 }
 
 }  // namespace media

@@ -53,10 +53,11 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
 }
 
 PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
-  if (!pipeline_->IsRunning())
-    return;
+  if (pipeline_->IsRunning())
+    Stop();
 
-  Stop();
+  pipeline_.reset();
+  message_loop_.RunUntilIdle();
 }
 
 // TODO(xhwang): Method definitions in this file needs to be reordered.

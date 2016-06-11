@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_H_
 #define MEDIA_FILTERS_DECODER_STREAM_H_
 
+#include <deque>
 #include <list>
 
 #include "base/callback.h"

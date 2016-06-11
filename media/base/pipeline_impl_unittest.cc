@@ -55,8 +55,8 @@ ACTION_P(Stop, pipeline) {
   pipeline->Stop();
 }
 
-ACTION_P2(SetError, pipeline, status) {
-  pipeline->SetErrorForTesting(status);
+ACTION_P2(SetError, renderer_client, status) {
+  (*renderer_client)->OnError(status);
 }
 
 ACTION_P2(SetBufferingState, renderer_client, buffering_state) {
@@ -98,6 +98,7 @@ class PipelineImplTest : public ::testing::Test {
       : pipeline_(
             new PipelineImpl(message_loop_.task_runner(), new MediaLog())),
         demuxer_(new StrictMock<MockDemuxer>()),
+        demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),
         renderer_(scoped_renderer_.get()),
         renderer_client_(nullptr) {
@@ -116,28 +117,22 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   virtual ~PipelineImplTest() {
-    if (!pipeline_ || !pipeline_->IsRunning())
-      return;
+    if (pipeline_->IsRunning()) {
+      ExpectDemuxerStop();
 
-    ExpectDemuxerStop();
+      // The mock demuxer doesn't stop the fake text track stream,
+      // so just stop it manually.
+      if (text_stream_)
+        text_stream_->Stop();
 
-    // The mock demuxer doesn't stop the fake text track stream,
-    // so just stop it manually.
-    if (text_stream_) {
-      text_stream_->Stop();
-      message_loop_.RunUntilIdle();
+      pipeline_->Stop();
     }
 
+    pipeline_.reset();
     message_loop_.RunUntilIdle();
-    pipeline_->Stop();
-    DestroyPipeline();
   }
 
-  void OnDemuxerError() {
-    // Cast because OnDemuxerError is private in Pipeline.
-    static_cast<DemuxerHost*>(pipeline_.get())
-        ->OnDemuxerError(PIPELINE_ERROR_ABORT);
-  }
+  void OnDemuxerError() { demuxer_host_->OnDemuxerError(PIPELINE_ERROR_ABORT); }
 
  protected:
   // Sets up expectations to allow the demuxer to initialize.
@@ -146,7 +141,8 @@ class PipelineImplTest : public ::testing::Test {
                               const base::TimeDelta& duration) {
     EXPECT_CALL(callbacks_, OnDurationChange());
     EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-        .WillOnce(DoAll(SetDemuxerProperties(duration),
+        .WillOnce(DoAll(SaveArg<0>(&demuxer_host_),
+                        SetDemuxerProperties(duration),
                         PostCallback<1>(PIPELINE_OK)));
 
     // Configure the demuxer to return the streams.
@@ -181,9 +177,8 @@ class PipelineImplTest : public ::testing::Test {
   void AddTextStream() {
     EXPECT_CALL(callbacks_, OnAddTextTrack(_, _))
         .WillOnce(Invoke(this, &PipelineImplTest::DoOnAddTextTrack));
-    static_cast<DemuxerHost*>(pipeline_.get())
-        ->AddTextStream(text_stream(),
-                        TextTrackConfig(kTextSubtitles, "", "", ""));
+    demuxer_host_->AddTextStream(text_stream(),
+                                 TextTrackConfig(kTextSubtitles, "", "", ""));
     message_loop_.RunUntilIdle();
   }
 
@@ -298,13 +293,6 @@ class PipelineImplTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void DestroyPipeline() {
-    // In real code Pipeline could be destroyed on a different thread. All weak
-    // pointers must have been invalidated before the stop callback returns.
-    DCHECK(!pipeline_->HasWeakPtrsForTesting());
-    pipeline_.reset();
-  }
-
   void ExpectDemuxerStop() {
     if (demuxer_)
       EXPECT_CALL(*demuxer_, Stop());
@@ -319,9 +307,12 @@ class PipelineImplTest : public ::testing::Test {
   void RunBufferedTimeRangesTest(const base::TimeDelta duration) {
     EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
     EXPECT_FALSE(pipeline_->DidLoadingProgress());
+
     Ranges<base::TimeDelta> ranges;
     ranges.Add(base::TimeDelta(), duration);
-    pipeline_->OnBufferedTimeRangesChanged(ranges);
+    demuxer_host_->OnBufferedTimeRangesChanged(ranges);
+    message_loop_.RunUntilIdle();
+
     EXPECT_TRUE(pipeline_->DidLoadingProgress());
     EXPECT_FALSE(pipeline_->DidLoadingProgress());
     EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
@@ -336,6 +327,7 @@ class PipelineImplTest : public ::testing::Test {
   std::unique_ptr<PipelineImpl> pipeline_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
+  DemuxerHost* demuxer_host_;
   std::unique_ptr<StrictMock<MockRenderer>> scoped_renderer_;
   StrictMock<MockRenderer>* renderer_;
   StrictMock<CallbackHelper> text_renderer_callbacks_;
@@ -426,6 +418,7 @@ TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
   EXPECT_CALL(*demuxer_, Stop())
       .WillOnce(InvokeWithoutArgs(this, &PipelineImplTest::OnDemuxerError));
   pipeline_->Stop();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(PipelineImplTest, NoStreams) {
@@ -545,9 +538,7 @@ TEST_F(PipelineImplTest, SeekAfterError) {
 
   EXPECT_CALL(*demuxer_, Stop());
   EXPECT_CALL(callbacks_, OnError(_));
-
-  static_cast<DemuxerHost*>(pipeline_.get())
-      ->OnDemuxerError(PIPELINE_ERROR_ABORT);
+  OnDemuxerError();
   message_loop_.RunUntilIdle();
 
   pipeline_->Seek(
@@ -574,6 +565,8 @@ TEST_F(PipelineImplTest, SuspendResume) {
   stats.audio_memory_usage = 12345;
   stats.video_memory_usage = 67890;
   renderer_client_->OnStatisticsUpdate(stats);
+  message_loop_.RunUntilIdle();
+
   EXPECT_EQ(stats.audio_memory_usage,
             pipeline_->GetStatistics().audio_memory_usage);
   EXPECT_EQ(stats.video_memory_usage,
@@ -582,8 +575,8 @@ TEST_F(PipelineImplTest, SuspendResume) {
   ExpectSuspend();
   DoSuspend();
 
-  EXPECT_EQ(pipeline_->GetStatistics().audio_memory_usage, 0);
-  EXPECT_EQ(pipeline_->GetStatistics().video_memory_usage, 0);
+  EXPECT_EQ(0, pipeline_->GetStatistics().audio_memory_usage);
+  EXPECT_EQ(0, pipeline_->GetStatistics().video_memory_usage);
 
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectResume(expected);
@@ -644,7 +637,8 @@ TEST_F(PipelineImplTest, GetBufferedTimeRanges) {
 
 TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-      .WillOnce(PostCallback<1>(PIPELINE_OK));
+      .WillOnce(
+          DoAll(SaveArg<0>(&demuxer_host_), PostCallback<1>(PIPELINE_OK)));
   EXPECT_CALL(*demuxer_, Stop());
   EXPECT_CALL(callbacks_, OnMetadata(_));
   EXPECT_CALL(callbacks_, OnStart(_));
@@ -653,7 +647,6 @@ TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
 
   pipeline_->Stop();
   RunBufferedTimeRangesTest(base::TimeDelta::FromSeconds(5));
-  DestroyPipeline();
 }
 
 TEST_F(PipelineImplTest, EndedCallback) {
@@ -957,7 +950,7 @@ class PipelineTeardownTest : public PipelineImplTest {
         EXPECT_CALL(*renderer_, Flush(_))
             .WillOnce(DoAll(
                 SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
-                SetError(pipeline_.get(), PIPELINE_ERROR_READ),
+                SetError(&renderer_client_, PIPELINE_ERROR_READ),
                 RunClosure<0>()));
         EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
         EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
@@ -1032,8 +1025,6 @@ class PipelineTeardownTest : public PipelineImplTest {
   }
 
   void DoStopOrError(StopOrError stop_or_error, bool expect_errors) {
-    InSequence s;
-
     switch (stop_or_error) {
       case kStop:
         EXPECT_CALL(*demuxer_, Stop());
@@ -1045,14 +1036,14 @@ class PipelineTeardownTest : public PipelineImplTest {
           EXPECT_CALL(*demuxer_, Stop());
           EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
         }
-        pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
+        renderer_client_->OnError(PIPELINE_ERROR_READ);
         break;
 
       case kErrorAndStop:
         EXPECT_CALL(*demuxer_, Stop());
         if (expect_errors)
           EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
-        pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
+        renderer_client_->OnError(PIPELINE_ERROR_READ);
         message_loop_.RunUntilIdle();
         pipeline_->Stop();
         break;

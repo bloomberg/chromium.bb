@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/demuxer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/stream_parser.h"

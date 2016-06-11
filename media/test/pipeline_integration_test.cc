@@ -1203,17 +1203,16 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
       ReadTestDataFile("bear-640x360.webm");
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
-
   source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
 }
@@ -1230,6 +1229,8 @@ TEST_F(PipelineIntegrationTest, MediaSource_Remove_Updates_BufferedRanges) {
 
   source.RemoveRange(base::TimeDelta::FromMilliseconds(1000),
                      base::TimeDelta::FromMilliseconds(k320WebMFileDurationMs));
+  message_loop_.RunUntilIdle();
+
   buffered_ranges = pipeline_->GetBufferedTimeRanges();
   EXPECT_EQ(1u, buffered_ranges.size());
   EXPECT_EQ(0, buffered_ranges.start(0).InMilliseconds());
@@ -1263,6 +1264,8 @@ TEST_F(PipelineIntegrationTest, MediaSource_FillUp_Buffer) {
     // reached (the data will be evicted from the front of the buffered range).
     source.EvictCodedFrames(media_time, file->data_size());
     source.AppendAtTime(media_time, file->data(), file->data_size());
+    message_loop_.RunUntilIdle();
+
     buffered_ranges = pipeline_->GetBufferedTimeRanges();
   } while (buffered_ranges.size() == 1 &&
            buffered_ranges.start(0) == base::TimeDelta::FromSeconds(0));
@@ -1284,17 +1287,16 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
-
   source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
 }
@@ -1400,14 +1402,13 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
       second_file->data(), second_file->data_size());
   source.EndOfStream();
 
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
+
   EXPECT_EQ(592, source.last_timestamp_offset().InMilliseconds());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(592, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
-
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
 
   // Verify preroll is stripped.
   EXPECT_HASH_EQ("-0.06,0.97,-0.90,-0.70,-0.53,-0.34,", GetAudioHash());
@@ -1532,14 +1533,13 @@ TEST_F(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
                                 second_file->data_size());
   source.EndOfStream();
 
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
+
   EXPECT_EQ(613, source.last_timestamp_offset().InMilliseconds());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(613, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
-
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
 }
 
 TEST_F(PipelineIntegrationTest, MediaSource_MP3_Icecast) {
@@ -1561,17 +1561,16 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
-
   source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
 }
@@ -1588,17 +1587,16 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
-
   source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
 }
@@ -1616,17 +1614,16 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-v_frag-cenc-key_rotation.mp4");
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
-
   source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
 }

@@ -231,25 +231,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
-  client_->setWebLayer(NULL);
-
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  suppress_destruction_errors_ = true;
+  client_->setWebLayer(NULL);
   if (delegate_) {
     delegate_->PlayerGone(delegate_id_);
     delegate_->RemoveObserver(delegate_id_);
   }
-
-  // Abort any pending IO so stopping the pipeline doesn't get blocked.
-  suppress_destruction_errors_ = true;
-  if (data_source_)
-    data_source_->Abort();
-  if (chunk_demuxer_) {
-    chunk_demuxer_->Shutdown();
-    chunk_demuxer_ = nullptr;
-  }
-
-  renderer_factory_.reset();
 
   // Pipeline must be stopped before it is destroyed.
   pipeline_.Stop();
