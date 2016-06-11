@@ -2024,7 +2024,7 @@
     ['use_udev == 1', {
       'dependencies': [
         '../device/udev_linux/udev.gyp:udev_linux',
-        '../media/capture/capture.gyp:capture',
+        '../media/media.gyp:media',
       ],
     }, {
       'sources!': [

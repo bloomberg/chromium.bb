@@ -22,7 +22,7 @@
 
 namespace media {
 
-class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
+class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
   enum class BufferOwnership {
     OWN_BUFFERS,
