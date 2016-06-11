@@ -41,7 +41,7 @@ namespace blink {
 
 String toHexString(const void* p)
 {
-    return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(p)));
+    return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(p)));
 }
 
 void setCallStack(TracedValue* value)
