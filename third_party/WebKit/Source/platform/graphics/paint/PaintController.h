@@ -24,6 +24,8 @@
 #include "wtf/Vector.h"
 #include <utility>
 
+class SkPicture;
+
 namespace blink {
 
 class GraphicsContext;
@@ -139,6 +141,8 @@ public:
     // the last commitNewDisplayItems(). Use with care.
     DisplayItemList& newDisplayItemList() { return m_newDisplayItemList; }
 
+    void appendDebugDrawingAfterCommit(const DisplayItemClient&, PassRefPtr<SkPicture>, const LayoutSize& offsetFromLayoutObject);
+
 #ifndef NDEBUG
     void showDebugData() const;
 #endif
@@ -191,7 +195,6 @@ private:
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
     void checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt);
     void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
-    void checkNoRemainingCachedDisplayItems();
 #endif
 
     void updateCacheGeneration();

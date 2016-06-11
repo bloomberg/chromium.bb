@@ -152,7 +152,6 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
-    void resetTrackedPaintInvalidationRects();
     void setTracksPaintInvalidations(bool);
 
     String debugName(const GraphicsLayer*) const override;

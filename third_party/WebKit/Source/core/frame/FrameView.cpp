@@ -2942,14 +2942,7 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
         "FrameView::setTracksPaintInvalidations", TRACE_EVENT_SCOPE_GLOBAL, "enabled", trackPaintInvalidations);
 
-    resetTrackedPaintInvalidations();
     m_isTrackingPaintInvalidations = trackPaintInvalidations;
-}
-
-void FrameView::resetTrackedPaintInvalidations()
-{
-    if (LayoutViewItem layoutView = this->layoutViewItem())
-        layoutView.compositor()->resetTrackedPaintInvalidationRects();
 }
 
 void FrameView::addResizerArea(LayoutBox& resizerBox)

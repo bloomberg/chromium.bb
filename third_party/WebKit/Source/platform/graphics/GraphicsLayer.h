@@ -210,10 +210,19 @@ public:
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
-    bool isTrackingPaintInvalidations() const { return m_client->isTrackingPaintInvalidations(); }
+    void setTracksPaintInvalidations(bool);
+    bool isTrackingOrCheckingPaintInvalidations() const
+    {
+#if DCHECK_IS_ON()
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+            return true;
+#endif
+        return m_isTrackingPaintInvalidations;
+    }
+
     void resetTrackedPaintInvalidations();
     bool hasTrackedPaintInvalidations() const;
-    void trackPaintInvalidation(const DisplayItemClient&, const FloatRect&, PaintInvalidationReason);
+    void trackPaintInvalidation(const DisplayItemClient&, const IntRect&, PaintInvalidationReason);
 
     void addLinkHighlight(LinkHighlight*);
     void removeLinkHighlight(LinkHighlight*);
@@ -292,6 +301,11 @@ private:
     void clearContentsLayerIfUnregistered();
     WebLayer* contentsLayerIfRegistered();
 
+#if DCHECK_IS_ON()
+    PassRefPtr<SkPicture> capturePicture();
+    void checkPaintUnderInvalidations(const SkPicture&);
+#endif
+
     GraphicsLayerClient* m_client;
 
     // Offset from the owning layoutObject
@@ -324,6 +338,8 @@ private:
     bool m_painted : 1;
     bool m_textPainted : 1;
     bool m_imagePainted : 1;
+
+    bool m_isTrackingPaintInvalidations : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
 

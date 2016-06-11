@@ -1162,6 +1162,21 @@ crbug.com/509025 [ Mac10.10 ] virtual/prefer_compositing_to_lcd_text/compositing
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
+crbug.com/619103 compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
+crbug.com/619103 fast/repaint/align-self-overflow-change.html [ Crash Timeout ]
+crbug.com/619103 fast/repaint/justify-self-overflow-change.html [ Crash Timeout ]
+crbug.com/619103 fast/repaint/mix-blend-mode-separate-stacking-context.html [ Crash Timeout ]
+crbug.com/619103 paint/invalidation/invalidate-descendants-when-receiving-paint-layer.html [ Crash Timeout ]
+crbug.com/619103 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
+crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
+crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
+crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
+crbug.com/619103 fast/table/border-collapsing/cached-change-row-border-color.html [ Failure ]
+crbug.com/619103 fast/table/border-collapsing/cached-change-tbody-border-color.html [ Failure ]
+crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
+crbug.com/619103 svg/repaint/rounded-rect-height-change.html [ Failure ]
+crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
+
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
@@ -1453,6 +1468,10 @@ crbug.com/606302 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-preserve-3
 crbug.com/606302 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 crbug.com/606302 [ Linux Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 crbug.com/613497 [ Linux Release ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+
+crbug.com/619242 [ Linux ] fast/events/message-port-gc-closed-cloned.html [ Failure ]
+crbug.com/619242 [ Linux ] virtual/pointerevent/fast/events/message-port-gc-closed-cloned.html [ Pass Failure ]
+crbug.com/619242 [ Linux ] virtual/trustedeventsdefaultaction/fast/events/message-port-gc-closed-cloned.html [ Pass Failure ]
 
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]

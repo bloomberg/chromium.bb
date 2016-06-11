@@ -8,8 +8,15 @@ window.generateMinimumRepaint = false; // See comments about 'Minimum repaint' b
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-if (window.internals)
+if (window.internals) {
     internals.settings.setUseDefaultImageInterpolationQuality(true);
+    // TODO(wangxianzhu): Some spv2 tests crash with under-invalidation-checking
+    // because the extra display items between Subsequence/EndSubsequence for
+    // under-invalidation checking breaks paint chunks. Should fix this when fixing
+    // crbug.com/596983.
+    if (!internals.runtimeFlags.slimmingPaintV2Enabled)
+        internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
+}
 
 function runRepaintTest()
 {

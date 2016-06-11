@@ -365,11 +365,6 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
             outOfOrderIndexContext.nextItemToIndex = currentIt;
     }
 
-#if DCHECK_IS_ON()
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
-        checkNoRemainingCachedDisplayItems();
-#endif
-
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
     m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
@@ -414,6 +409,14 @@ void PaintController::updateCacheGeneration()
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
+}
+
+void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& displayItemClient, PassRefPtr<SkPicture> picture, const LayoutSize& offsetFromLayoutObject)
+{
+    DCHECK(m_newDisplayItemList.isEmpty());
+    DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::DebugDrawing, picture);
+    displayItem.setSkippedCache();
+    m_currentPaintArtifact.getDisplayItemList().appendVisualRect(visualRectForDisplayItem(displayItem, offsetFromLayoutObject));
 }
 
 #if DCHECK_IS_ON()
@@ -501,17 +504,6 @@ void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefi
 #endif // NDEBUG
 
     NOTREACHED();
-}
-
-void PaintController::checkNoRemainingCachedDisplayItems()
-{
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-
-    for (const auto& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
-        if (!displayItem.hasValidClient() || !displayItem.isCacheable() || !clientCacheIsValid(displayItem.client()))
-            continue;
-        showUnderInvalidationError("", "May be under-invalidation: no new display item", nullptr, &displayItem);
-    }
 }
 
 #endif // DCHECK_IS_ON()

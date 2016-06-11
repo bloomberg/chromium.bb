@@ -894,30 +894,24 @@ GraphicsLayer* PaintLayerCompositor::fixedRootBackgroundLayer() const
     return nullptr;
 }
 
-static void resetTrackedPaintInvalidationRectsRecursive(GraphicsLayer* graphicsLayer)
+static void setTracksPaintInvalidationsRecursive(GraphicsLayer* graphicsLayer, bool tracksPaintInvalidations)
 {
     if (!graphicsLayer)
         return;
 
-    graphicsLayer->resetTrackedPaintInvalidations();
+    graphicsLayer->setTracksPaintInvalidations(tracksPaintInvalidations);
 
     for (size_t i = 0; i < graphicsLayer->children().size(); ++i)
-        resetTrackedPaintInvalidationRectsRecursive(graphicsLayer->children()[i]);
+        setTracksPaintInvalidationsRecursive(graphicsLayer->children()[i], tracksPaintInvalidations);
 
     if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
-        resetTrackedPaintInvalidationRectsRecursive(replicaLayer);
+        setTracksPaintInvalidationsRecursive(replicaLayer, tracksPaintInvalidations);
 
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-        resetTrackedPaintInvalidationRectsRecursive(maskLayer);
+        setTracksPaintInvalidationsRecursive(maskLayer, tracksPaintInvalidations);
 
     if (GraphicsLayer* clippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
-        resetTrackedPaintInvalidationRectsRecursive(clippingMaskLayer);
-}
-
-void PaintLayerCompositor::resetTrackedPaintInvalidationRects()
-{
-    if (GraphicsLayer* rootLayer = rootGraphicsLayer())
-        resetTrackedPaintInvalidationRectsRecursive(rootLayer);
+        setTracksPaintInvalidationsRecursive(clippingMaskLayer, tracksPaintInvalidations);
 }
 
 void PaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidations)
@@ -929,6 +923,8 @@ void PaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidat
 #endif
 
     m_isTrackingPaintInvalidations = tracksPaintInvalidations;
+    if (GraphicsLayer* rootLayer = rootGraphicsLayer())
+        setTracksPaintInvalidationsRecursive(rootLayer, tracksPaintInvalidations);
 }
 
 bool PaintLayerCompositor::isTrackingPaintInvalidations() const

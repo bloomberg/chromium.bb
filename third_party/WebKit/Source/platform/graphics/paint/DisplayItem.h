@@ -64,6 +64,7 @@ public:
         BoxDecorationBackground,
         Caret,
         ColumnRules,
+        DebugDrawing,
         DebugRedFill,
         DocumentBackground,
         DragImage,

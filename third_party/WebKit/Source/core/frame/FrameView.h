@@ -323,7 +323,6 @@ public:
 
     void setTracksPaintInvalidations(bool);
     bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
-    void resetTrackedPaintInvalidations();
 
     using ScrollableAreaSet = HeapHashSet<Member<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);
