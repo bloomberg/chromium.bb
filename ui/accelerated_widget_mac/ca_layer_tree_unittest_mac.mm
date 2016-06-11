@@ -80,8 +80,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   properties.background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
   properties.edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
   properties.opacity = 0.5f;
-  properties.io_surface =
-      gfx::CreateIOSurface(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888);
+  properties.io_surface.reset(
+      gfx::CreateIOSurface(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888));
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
@@ -231,7 +231,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Change the contents and commit.
   {
-    properties.io_surface = nullptr;
+    properties.io_surface.reset();
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
@@ -338,8 +338,9 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Add the clipping and IOSurface contents back.
   {
     properties.is_clipped = true;
-    properties.io_surface =
-        gfx::CreateIOSurface(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888);
+    properties.io_surface.reset(
+        gfx::CreateIOSurface(gfx::Size(256, 256),
+                             gfx::BufferFormat::BGRA_8888));
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
@@ -613,8 +614,8 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
 // Test updating each layer's properties.
 TEST_F(CALayerTreeTest, AVLayer) {
   CALayerProperties properties;
-  properties.io_surface = gfx::CreateIOSurface(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR);
+  properties.io_surface.reset(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
@@ -720,8 +721,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
 // Test fullscreen low power detection.
 TEST_F(CALayerTreeTest, FullscreenLowPower) {
   CALayerProperties properties;
-  properties.io_surface = gfx::CreateIOSurface(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR);
+  properties.io_surface.reset(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
   properties.is_clipped = false;
   CVPixelBufferCreateWithIOSurface(nullptr, properties.io_surface, nullptr,
                                    properties.cv_pixel_buffer.InitializeInto());
