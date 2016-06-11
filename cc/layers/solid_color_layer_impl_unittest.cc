@@ -108,7 +108,6 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;

@@ -1550,8 +1550,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
 
   gfx::Size test_bounds = gfx::Size(501, 508);
 
-  gfx::Rect dirty1 = gfx::Rect(10, 15, 1, 2);
-  gfx::Rect dirty2 = gfx::Rect(20, 25, 3, 4);
+  gfx::Rect dirty_rect = gfx::Rect(10, 15, 1, 2);
   gfx::Rect out_of_bounds_dirty_rect = gfx::Rect(400, 405, 500, 502);
 
   // Before anything, test_layer should not be dirty.
@@ -1591,7 +1590,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(false));
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_UPDATE(0, test_layer->SetNeedsDisplayRect(dirty1));
+  EXPECT_SET_NEEDS_UPDATE(0, test_layer->SetNeedsDisplayRect(dirty_rect));
   EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
 }
 

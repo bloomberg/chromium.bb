@@ -97,8 +97,6 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
       // ends up on integer boundaries for ease of testing.
       ASSERT_EQ(target_rectf, gfx::RectF(target_rect));
     }
-    gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
 
     bool fully_occluded_horizontal = target_rect.x() >= occluded.x() &&
                                      target_rect.right() <= occluded.right();

@@ -538,8 +538,6 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings->tiling_at(i);
-    gfx::Rect content_invalidation =
-        gfx::ScaleToEnclosingRect(layer_invalidation, tiling->contents_scale());
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     for (PictureLayerTiling::CoverageIterator iter(
@@ -1640,7 +1638,6 @@ TEST_F(NoLowResPictureLayerImplTest,
   ASSERT_EQ(1.f, pending_layer()->HighResTiling()->contents_scale());
 
   // Set external viewport for tile priority.
-  gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
   gfx::Transform transform_for_tile_priority;
   host_impl()->SetExternalTilePriorityConstraints(

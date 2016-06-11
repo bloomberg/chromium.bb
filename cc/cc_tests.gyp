@@ -410,7 +410,6 @@
         'tiles/tile_manager_perftest.cc',
         'trees/layer_tree_host_common_perftest.cc',
         'trees/layer_tree_host_perftest.cc',
-        'trees/occlusion_tracker_perftest.cc',
       ],
       'conditions': [
         ['OS == "android"',

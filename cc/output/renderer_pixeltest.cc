@@ -2903,8 +2903,6 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFromRecordingSource(recording.get(), false);
 
-  gfx::Rect content_rect(
-      gfx::ScaleToEnclosingRect(layer_rect, contents_scale));
   gfx::Rect content_union_rect(
       gfx::ToEnclosingRect(gfx::ScaleRect(union_layer_rect, contents_scale)));
 

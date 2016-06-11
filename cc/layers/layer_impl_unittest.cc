@@ -147,14 +147,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
-  gfx::Point3F arbitrary_point_3f = gfx::Point3F(0.125f, 0.25f, 0.f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
   gfx::Point arbitrary_point = gfx::Point(333, 444);
   gfx::Vector2d arbitrary_vector2d = gfx::Vector2d(111, 222);
   gfx::Rect arbitrary_rect = gfx::Rect(arbitrary_point, arbitrary_size);
-  gfx::RectF arbitrary_rect_f =
-      gfx::RectF(arbitrary_point_f, gfx::SizeF(1.234f, 5.678f));
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
@@ -254,12 +251,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
-  gfx::Point arbitrary_point = gfx::Point(333, 444);
   gfx::Vector2d arbitrary_vector2d = gfx::Vector2d(111, 222);
   gfx::Size large_size = gfx::Size(1000, 1000);
-  gfx::Rect arbitrary_rect = gfx::Rect(arbitrary_point, arbitrary_size);
-  gfx::RectF arbitrary_rect_f =
-      gfx::RectF(arbitrary_point_f, gfx::SizeF(1.234f, 5.678f));
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
