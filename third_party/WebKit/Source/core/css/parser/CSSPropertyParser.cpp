@@ -1384,7 +1384,7 @@ static CSSValue* consumeShadow(CSSParserTokenRange& range, CSSParserMode cssPars
     return shadowValueList;
 }
 
-static CSSFunctionValue* consumeFilterFunction(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSFunctionValue* consumeFilterFunction(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     CSSValueID filterType = range.peek().functionId();
     if (filterType < CSSValueInvert || filterType > CSSValueDropShadow)
@@ -1394,11 +1394,13 @@ static CSSFunctionValue* consumeFilterFunction(CSSParserTokenRange& range, CSSPa
     CSSValue* parsedValue = nullptr;
 
     if (filterType == CSSValueDropShadow) {
-        parsedValue = parseSingleShadow(args, cssParserMode, false, false);
+        parsedValue = parseSingleShadow(args, context.mode(), false, false);
     } else {
-        // TODO(timloh): Add UseCounters for empty filter arguments.
-        if (args.atEnd())
+        if (args.atEnd()) {
+            if (context.useCounter())
+                context.useCounter()->count(UseCounter::CSSFilterFunctionNoArguments);
             return filterValue;
+        }
         if (filterType == CSSValueBrightness) {
             // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
             parsedValue = consumePercent(args, ValueRangeAll);
@@ -1430,7 +1432,7 @@ static CSSFunctionValue* consumeFilterFunction(CSSParserTokenRange& range, CSSPa
     return filterValue;
 }
 
-static CSSValue* consumeFilter(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSValue* consumeFilter(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -1443,7 +1445,7 @@ static CSSValue* consumeFilter(CSSParserTokenRange& range, CSSParserMode cssPars
             filterValue = CSSFunctionValue::create(CSSValueUrl);
             filterValue->append(*CSSSVGDocumentValue::create(url));
         } else {
-            filterValue = consumeFilterFunction(range, cssParserMode);
+            filterValue = consumeFilterFunction(range, context);
             if (!filterValue)
                 return nullptr;
         }
@@ -3755,7 +3757,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
         return consumeShadow(m_range, m_context.mode(), property == CSSPropertyBoxShadow);
     case CSSPropertyWebkitFilter:
     case CSSPropertyBackdropFilter:
-        return consumeFilter(m_range, m_context.mode());
+        return consumeFilter(m_range, m_context);
     case CSSPropertyTextDecoration:
         ASSERT(!RuntimeEnabledFeatures::css3TextDecorationsEnabled());
         // fallthrough
