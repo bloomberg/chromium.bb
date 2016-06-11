@@ -21,7 +21,6 @@ namespace ash {
 class AccessibilityDelegate;
 class MruWindowTracker;
 class SessionStateDelegate;
-class Shell;
 class ShellObserver;
 class SystemTrayDelegate;
 class WindowResizer;

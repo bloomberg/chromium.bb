@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
