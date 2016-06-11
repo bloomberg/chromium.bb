@@ -21,10 +21,10 @@ else {
     checkFocusedElementAXAttributes('Year, AXValueDescription: 2012, intValue:2012, range:1-275760');
 
     debug('Empty value');
-    eventSender.keyDown('\b');
+    eventSender.keyDown('Backspace');
     checkFocusedElementAXAttributes('Year, AXValueDescription: blank, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
-    eventSender.keyDown('\b');
+    eventSender.keyDown('Backspace');
     checkFocusedElementAXAttributes('Month, AXValueDescription: blank, intValue:0, range:1-12');
 
     debug('');

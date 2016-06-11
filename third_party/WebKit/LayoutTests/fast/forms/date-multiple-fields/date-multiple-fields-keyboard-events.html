@@ -69,12 +69,12 @@ shouldBeEqualToString('input.value', '0044-02-03');
 
 beginTest('Digit keys and backspace key');
 keyDown('1'); // -> [01]/dd/yyyy
-keyDown("\b"); // -> [mm]/20/2012
+keyDown("Backspace"); // -> [mm]/20/2012
 keyDown('5'); // -> 05/[dd]/yyyy
 keyDown('6'); // -> 05/06/[yyyy]
-keyDown("\b"); // -> 05/06/[yyyy]
+keyDown("Backspace"); // -> 05/06/[yyyy]
 keyDown('7'); // -> 05/06/[0007]
-keyDown("\b"); // -> 05/06/[yyyy]
+keyDown("Backspace"); // -> 05/06/[yyyy]
 keyDown('8'); // -> 05/06/[0008]
 shouldBeEqualToString('input.value', '0008-05-06');
 
@@ -109,46 +109,46 @@ keyDown('3'); // -> 12/[16]/2013
 shouldBeEqualToString('input.value', '2013-12-16');
 
 beginTest('Left/Right keys', '2012-09-29');
-keyDown('rightArrow'); // -> 09/[29]/2012
+keyDown('ArrowRight'); // -> 09/[29]/2012
 keyDown('5'); // -> 09/05/[2012]
-keyDown('leftArrow'); // -> 09/[05]/2012
+keyDown('ArrowLeft'); // -> 09/[05]/2012
 keyDown('6'); // -> 09/06/[2012]
 shouldBeEqualToString('input.value', '2012-09-06');
-keyDown('leftArrow'); // -> 09/[06]/2012
-keyDown('leftArrow'); // -> [09]/06/2012
-keyDown('leftArrow'); // -> [09]/06/2012
+keyDown('ArrowLeft'); // -> 09/[06]/2012
+keyDown('ArrowLeft'); // -> [09]/06/2012
+keyDown('ArrowLeft'); // -> [09]/06/2012
 shouldBeEqualToString('document.activeElement.id', 'input');
 
 beginTest('Up/Down keys', '2012-09-29');
-keyDown('upArrow'); // -> [10]/29/2012
+keyDown('ArrowUp'); // -> [10]/29/2012
 shouldBeEqualToString('input.value', '2012-10-29');
-keyDown('downArrow'); // -> [09]/29/2012
-keyDown('downArrow'); // -> [08]/29/2012
+keyDown('ArrowDown'); // -> [09]/29/2012
+keyDown('ArrowDown'); // -> [08]/29/2012
 shouldBeEqualToString('input.value', '2012-08-29');
 
 beginTest('Up/Down keys on empty value');
-keyDown('downArrow'); //  -> [12]/dd/yyyy
-keyDown('downArrow'); //  -> [11]/dd/yyyy
-keyDown('rightArrow'); // -> 11/[dd]/yyyy
-keyDown('upArrow'); //    -> 11/[01]/yyyy
-keyDown('upArrow'); //    -> 11/[02]/yyyy
-keyDown('downArrow'); //  -> 11/[01]/yyyy
-keyDown('rightArrow'); // -> 11/01/[yyyy]
+keyDown('ArrowDown'); //  -> [12]/dd/yyyy
+keyDown('ArrowDown'); //  -> [11]/dd/yyyy
+keyDown('ArrowRight'); // -> 11/[dd]/yyyy
+keyDown('ArrowUp'); //    -> 11/[01]/yyyy
+keyDown('ArrowUp'); //    -> 11/[02]/yyyy
+keyDown('ArrowDown'); //  -> 11/[01]/yyyy
+keyDown('ArrowRight'); // -> 11/01/[yyyy]
 var currentYear = new Date().getFullYear();
-keyDown('upArrow'); // -> 11/01/[current year]
+keyDown('ArrowUp'); // -> 11/01/[current year]
 shouldBe('input.value', 'currentYear + "-11-01"');
 
 beginTest('Up/Down keys on empty value 2');
-keyDown('upArrow'); //    -> [01]/dd/yyyy
-keyDown('upArrow'); //    -> [02]/dd/yyyy
-keyDown('rightArrow'); // -> 02/[dd]/yyyy
-keyDown('downArrow'); //  -> 02/[31]/yyyy
-keyDown('downArrow'); //  -> 02/[30]/yyyy
-keyDown('downArrow'); //  -> 02/[29]/yyyy
-keyDown('downArrow'); //  -> 02/[28]/yyyy
-keyDown('rightArrow'); // -> 02/28/[yyyy]
+keyDown('ArrowUp'); //    -> [01]/dd/yyyy
+keyDown('ArrowUp'); //    -> [02]/dd/yyyy
+keyDown('ArrowRight'); // -> 02/[dd]/yyyy
+keyDown('ArrowDown'); //  -> 02/[31]/yyyy
+keyDown('ArrowDown'); //  -> 02/[30]/yyyy
+keyDown('ArrowDown'); //  -> 02/[29]/yyyy
+keyDown('ArrowDown'); //  -> 02/[28]/yyyy
+keyDown('ArrowRight'); // -> 02/28/[yyyy]
 currentYear = new Date().getFullYear();
-keyDown('downArrow'); // -> 02/28/[current year]
+keyDown('ArrowDown'); // -> 02/28/[current year]
 shouldBe('input.value', 'currentYear + "-02-28"');
 
 beginTest('Tab key', '2012-09-30');
@@ -172,68 +172,68 @@ keyDown('\t', ['shiftKey']); // -> Focus out.
 shouldBeEqualToString('document.activeElement.id', 'before');
 
 beginTest('Up key on maximum value', '275760-09-13');
-keyDown('upArrow'); // -> [10]/13/275760
+keyDown('ArrowUp'); // -> [10]/13/275760
 keyDown('\t'); //      -> 10/[13]/275760
-keyDown('upArrow'); // -> 10/[14]/275760
+keyDown('ArrowUp'); // -> 10/[14]/275760
 keyDown('\t'); //      -> 10/14/[275760]
-keyDown('upArrow'); // -> 10/14/[0001]
+keyDown('ArrowUp'); // -> 10/14/[0001]
 shouldBeEqualToString('input.value', '0001-10-14');
 beginTest('Up key with a maximum attribute', '1999-12-31', '1000-01-01', '1999-12-31');
-keyDown('upArrow'); // -> [01]/31/1999
+keyDown('ArrowUp'); // -> [01]/31/1999
 keyDown('\t'); //      -> 01/[31]/1999
-keyDown('upArrow'); // -> 01/[01]/1999
+keyDown('ArrowUp'); // -> 01/[01]/1999
 keyDown('\t'); //      -> 01/01/[1999]
-keyDown('upArrow'); // -> 01/01/[1000]
+keyDown('ArrowUp'); // -> 01/01/[1000]
 shouldBeEqualToString('input.value', '1000-01-01');
 
 beginTest('Down key on minimum value', '0001-01-01', 'bad min', 'wrong max');
-keyDown('downArrow'); // -> [12]/01/0001
+keyDown('ArrowDown'); // -> [12]/01/0001
 keyDown('\t'); //        -> 12/[01]/0001
-keyDown('downArrow'); // -> 12/[31]/0001
+keyDown('ArrowDown'); // -> 12/[31]/0001
 keyDown('\t'); //        -> 12/31/[0001]
-keyDown('downArrow'); // -> 12/31/[275760], which is greater than the hard limit.
+keyDown('ArrowDown'); // -> 12/31/[275760], which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 beginTest('Down key with a minimum attribute', '1000-01-01', '1000-01-01');
-keyDown('downArrow'); // -> [12]/01/1000
+keyDown('ArrowDown'); // -> [12]/01/1000
 keyDown('\t'); //        -> 12/[01]/1000
-keyDown('downArrow'); // -> 12/[31]/1000
+keyDown('ArrowDown'); // -> 12/[31]/1000
 keyDown('\t'); //        -> 12/31/[1000]
-keyDown('downArrow'); // -> 12/31/275760, which is greater than the hard limit.
+keyDown('ArrowDown'); // -> 12/31/275760, which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 
 beginTest('Inconsistent min-max attributes', '1999-12-31', '1999-12-31', '1000-01-01');
 keyDown('\t'); // -> 12/[31]/1999
 keyDown('\t'); // -> 12/31/[1999]
-keyDown('upArrow'); // -> 12/31/[1000].  1000 is the swapped minimum year.
+keyDown('ArrowUp'); // -> 12/31/[1000].  1000 is the swapped minimum year.
 shouldBeEqualToString('input.value', '1000-12-31');
-keyDown('downArrow'); // -> 12/31/[1999]
+keyDown('ArrowDown'); // -> 12/31/[1999]
 shouldBeEqualToString('input.value', '1999-12-31');
 
 beginTest('Make an invalid date', '2012-02-01');
 keyDown('\t'); //        -> 02/[01]/2012
-keyDown('downArrow'); // -> 02/[31]/2012
+keyDown('ArrowDown'); // -> 02/[31]/2012
 shouldBeEqualToString('input.value', ''); // 2012-02-31 is not a valid date.
 input.setAttribute('value', '2012-02-01');
 beginTest(undefined, '2012-02-01');
 keyDown('\t'); //        -> 02/[01]/2012
-keyDown('downArrow'); // -> 02/[31]/2012
+keyDown('ArrowDown'); // -> 02/[31]/2012
 shouldBeEqualToString('input.value', ''); // 2012-02-31 is not a valid date.
 input.removeAttribute('value');
 
 beginTest('Backspace key', '2012-09-20');
-keyDown("\b"); // -> [mm]/20/2012
+keyDown("Backspace"); // -> [mm]/20/2012
 shouldBeEqualToString('input.value', '');
 
 beginTest('Delete key', '2012-09-30');
-keyDown("delete"); // -> [mm]/30/2012
+keyDown("Delete"); // -> [mm]/30/2012
 shouldBeEqualToString('input.value', '');
 
 beginTest('Typeahead', '2012-12-31');
-keyDown('rightArrow'); // -> 12/[31]/2012
+keyDown('ArrowRight'); // -> 12/[31]/2012
 keyDown('1'); //          -> 12/[01]/2012
 shouldBeEqualToString('input.value', '2012-12-01');
-keyDown('leftArrow'); //  -> [12]/01/2012
-keyDown('rightArrow'); // -> 12/[01]/2012
+keyDown('ArrowLeft'); //  -> [12]/01/2012
+keyDown('ArrowRight'); // -> 12/[01]/2012
 keyDown('2'); //          -> 12/[02]/2012
 shouldBeEqualToString('input.value', '2012-12-02');
 
@@ -242,8 +242,8 @@ beginTest('RTL focus navigation', '2012-09-28');
 debug('The tests in this block fail on platforms without the lang-attribute-aware-form-control-UI feature.');
 // Both of the logical order and visual order are: dd/MM/yyyy
 // Initial state:            [28]/09/2012
-keyDown('upArrow'); //    -> [29]/09/2012
-keyDown('rightArrow'); // -> [01]/09/2012
+keyDown('ArrowUp'); //    -> [29]/09/2012
+keyDown('ArrowRight'); // -> [01]/09/2012
 keyDown('1'); //          -> [01]/09/2012
 shouldBeEqualToString('input.value', '2012-09-01');
 keyDown('\t'); //         -> 01/[09]/2012
@@ -256,18 +256,18 @@ input.removeAttribute("lang");
 
 beginTest('Disabled/readonly', '2012-10-08');
 input.disabled = true;
-keyDown('upArrow'); // 10/08/2012
+keyDown('ArrowUp'); // 10/08/2012
 shouldBeEqualToString('input.value', '2012-10-08');
 input.disabled = false;
 input.focus();
-keyDown('upArrow'); // [11]/08/2012
+keyDown('ArrowUp'); // [11]/08/2012
 shouldBeEqualToString('input.value', '2012-11-08');
 input.readOnly = true;
-keyDown('upArrow'); // 11/08/2012
+keyDown('ArrowUp'); // 11/08/2012
 shouldBeEqualToString('input.value', '2012-11-08');
 input.readOnly = false;
 input.focus();
-keyDown('upArrow'); // [12]/08/2012
+keyDown('ArrowUp'); // [12]/08/2012
 shouldBeEqualToString('input.value', '2012-12-08');
 
 </script>

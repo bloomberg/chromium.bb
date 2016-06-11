@@ -529,10 +529,7 @@ TEST_F('CvoxEventWatcherUnitTest',
     '<input id="radio1" type="radio" aria-label="green" tabindex=0>' +
     '<input id="radio2" type="radio" aria-label="blue" tabindex=0>');
   function performKeyDown(dir) {
-    var evt = document.createEvent('KeyboardEvent');
-    evt.initKeyboardEvent(
-        'keydown', true, true, window, dir, 0, false, false, false, false);
-
+    var evt = new KeyboardEvent("keydown", {key: dir});
     document.activeElement.dispatchEvent(evt);
   };
 
@@ -542,19 +539,19 @@ TEST_F('CvoxEventWatcherUnitTest',
   // TODO(dtseng): Repeated actual spoken text here; this is most certainly a
   // test framework bug.
   this.waitForCalm(this.assertSpoken, 'green Radio button unselected')
-      .waitForCalm(performKeyDown, 'Right') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowRight') // right arrow
       // Moves to next radiobutton.
       .waitForCalm(this.assertSpoken,
                    'blue Radio button selected blue Radio button selected')
-      .waitForCalm(performKeyDown, 'Right') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowRight') // right arrow
       // Arrowed beyond end. Should be quiet.
       .waitForCalm(this.assertSpoken, '');
 
-  this.waitForCalm(performKeyDown, 'Left') // left arrow
+  this.waitForCalm(performKeyDown, 'ArrowLeft') // left arrow
       // Moves back to first radio.
       .waitForCalm(this.assertSpoken,
                    'green Radio button selected green Radio button selected')
-      .waitForCalm(performKeyDown, 'Left') // left arrow
+      .waitForCalm(performKeyDown, 'ArrowLeft') // left arrow
       // Arrowed beyond beginning. Should be quiet.
       .waitForCalm(this.assertSpoken, '');
 });
@@ -567,17 +564,11 @@ TEST_F('CvoxEventWatcherUnitTest', 'TimeWidget', function() {
     '<label for="timewidget">Set alarm for:</label>' +
     '<input id="timewidget" type="time" value="12:00">');
   var performKeyDown = function(dir) {
-    var evt = document.createEvent('KeyboardEvent');
-    evt.initKeyboardEvent(
-        'keydown', true, true, window, dir, 0, false, false, false, false);
-
+    var evt = new KeyboardEvent("keydown", {key: dir});
     document.activeElement.dispatchEvent(evt);
   };
   var performKeyUp = function(dir) {
-    var evt = document.createEvent('KeyboardEvent');
-    evt.initKeyboardEvent(
-        'keyup', true, true, window, dir, 0, false, false, false, false);
-
+    var evt = new KeyboardEvent("keyup", {key: dir});
     document.activeElement.dispatchEvent(evt);
   };
 
@@ -587,37 +578,37 @@ TEST_F('CvoxEventWatcherUnitTest', 'TimeWidget', function() {
   this.waitForCalm(this.assertSpoken,
       'Set alarm for: 12:00 Set alarm for: 12 hours 00 minutes PM');
 
-  this.waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+  this.waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    '11 hours');
 
-  this.waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+  this.waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    '10 hours');
 
-  this.waitForCalm(performKeyDown, 'Right') // right arrow
-      .waitForCalm(performKeyUp, 'Right') // right arrow
-      .waitForCalm(performKeyDown, 'Up') // right arrow
-      .waitForCalm(performKeyUp, 'Up') // right arrow
+  this.waitForCalm(performKeyDown, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowUp') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowUp') // right arrow
       .waitForCalm(this.assertSpoken,
                    '01 minutes');
 
-  this.waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+  this.waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    '00 minutes');
 
-  this.waitForCalm(performKeyDown, 'Right') // right arrow
-      .waitForCalm(performKeyUp, 'Right') // right arrow
-      .waitForCalm(performKeyDown, 'Up') // right arrow
-      .waitForCalm(performKeyUp, 'Up') // right arrow
+  this.waitForCalm(performKeyDown, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowUp') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowUp') // right arrow
       .waitForCalm(this.assertSpoken,
                    'AM');
 
-  this.waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+  this.waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    'PM');
 });
@@ -630,17 +621,11 @@ TEST_F('CvoxEventWatcherUnitTest', 'DateWidget', function() {
     '<label for="datewidget">Set birthdate:</label>' +
     '<input id="datewidget" type="date" value="1998-09-04"/>');
   var performKeyDown = function(dir) {
-    var evt = document.createEvent('KeyboardEvent');
-    evt.initKeyboardEvent(
-        'keydown', true, true, window, dir, 0, false, false, false, false);
-
+    var evt = new KeyboardEvent("keydown", {key: dir});
     document.activeElement.dispatchEvent(evt);
   };
   var performKeyUp = function(dir) {
-    var evt = document.createEvent('KeyboardEvent');
-    evt.initKeyboardEvent(
-        'keyup', true, true, window, dir, 0, false, false, false, false);
-
+    var evt = new KeyboardEvent("keyup", {key: dir});
     document.activeElement.dispatchEvent(evt);
   };
 
@@ -650,34 +635,34 @@ TEST_F('CvoxEventWatcherUnitTest', 'DateWidget', function() {
   this.waitForCalm(this.assertSpoken,
       'Set birthdate: 1998-09-04 Date control Set birthdate: September 4 1998')
 
-      .waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+      .waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    'August')
 
-      .waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+      .waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken, 'July')
 
-      .waitForCalm(performKeyDown, 'Right') // right arrow
-      .waitForCalm(performKeyUp, 'Right') // right arrow
-      .waitForCalm(performKeyDown, 'Up') // right arrow
-      .waitForCalm(performKeyUp, 'Up') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowUp') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowUp') // right arrow
       .waitForCalm(this.assertSpoken, '5')
 
-      .waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+      .waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken, '4')
 
-      .waitForCalm(performKeyDown, 'Right') // right arrow
-      .waitForCalm(performKeyUp, 'Right') // right arrow
-      .waitForCalm(performKeyDown, 'Up') // right arrow
-      .waitForCalm(performKeyUp, 'Up') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowRight') // right arrow
+      .waitForCalm(performKeyDown, 'ArrowUp') // right arrow
+      .waitForCalm(performKeyUp, 'ArrowUp') // right arrow
       .waitForCalm(this.assertSpoken,
                    '1999')
 
-      .waitForCalm(performKeyDown, 'Down') // down arrow
-      .waitForCalm(performKeyUp, 'Down') // down arrow
+      .waitForCalm(performKeyDown, 'ArrowDown') // down arrow
+      .waitForCalm(performKeyUp, 'ArrowDown') // down arrow
       .waitForCalm(this.assertSpoken,
                    '1998');
 });

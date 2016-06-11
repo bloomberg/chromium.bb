@@ -70,8 +70,8 @@ function test()
 
             function kicked()
             {
-                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009", false, false, true));
-                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009"));
+                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Tab", false, false, true));
+                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
                 InspectorTest.addResult(treeElement.valueElement.textContent);
                 next();
             }
@@ -93,7 +93,7 @@ function test()
             var treeElement = InspectorTest.getElementStylePropertyTreeItem(propertyName);
             treeElement.startEditing(treeElement.valueElement);
             InspectorTest.addResult(treeElement.valueElement.textContent);
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
             next();
         }
     }

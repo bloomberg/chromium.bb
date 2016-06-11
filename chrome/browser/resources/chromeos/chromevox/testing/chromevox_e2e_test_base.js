@@ -91,16 +91,14 @@ ChromeVoxE2ETest.prototype = {
   /**
    * Send a key to the page.
    * @param {number} tabId Of the page.
-   * @param {string} key Name of the key (e.g. Down).
+   * @param {string} key Name of the key (e.g. ArrowDown).
    * @param {string} elementQueryString
    */
   sendKeyToElement: function(tabId, key, elementQueryString) {
     var code = TestUtils.extractHtmlFromCommentEncodedString(function() {/*!
       var target = document.body.querySelector('$1');
       target.focus();
-      var evt = document.createEvent('KeyboardEvent');
-      evt.initKeyboardEvent('keydown', true, true, window, '$0', 0, false,
-          false, false, false);
+      var evt = new KeyboardEvent('keydown', {key: '$0'});
       document.activeElement.dispatchEvent(evt);
     */}, [key, elementQueryString]);
 

@@ -42,19 +42,19 @@ keyDown('\t');
 checkFocusedElementAXAttributes('AM/PM, AXValueDescription: PM, intValue:2, range:1-2');
 
 debug('Empty value');
-keyDown('\b');
+keyDown('Backspace');
 checkFocusedElementAXAttributes('AM/PM, AXValueDescription: blank, intValue:0, range:1-2');
 keyDown('\t', ['shiftKey']);
-keyDown('\b');
+keyDown('Backspace');
 checkFocusedElementAXAttributes('Milliseconds, AXValueDescription: blank, intValue:0, range:0-999');
 keyDown('\t', ['shiftKey']);
-keyDown('\b');
+keyDown('Backspace');
 checkFocusedElementAXAttributes('Seconds, AXValueDescription: blank, intValue:0, range:0-59');
 keyDown('\t', ['shiftKey']);
-keyDown('\b');
+keyDown('Backspace');
 checkFocusedElementAXAttributes('Minutes, AXValueDescription: blank, intValue:0, range:0-59');
 keyDown('\t', ['shiftKey']);
-keyDown('\b');
+keyDown('Backspace');
 checkFocusedElementAXAttributes('Hours, AXValueDescription: blank, intValue:0, range:1-12');
 
 debug('');

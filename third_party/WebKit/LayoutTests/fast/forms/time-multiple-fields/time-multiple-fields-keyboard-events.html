@@ -78,42 +78,42 @@ shouldBeEqualToString('input.value', '14:03');
 
 beginTest('Digit keys and backspace key','01:01');
 keyDown('0'); // -> [00]:-- --
-keyDown('\b'); // -> [--]:-- --
+keyDown('Backspace'); // -> [--]:-- --
 keyDown('5'); // -> 05:[--] --
 keyDown('6'); // -> 05:06 [--]
-keyDown('\b'); // -> 05:06 [--]
+keyDown('Backspace'); // -> 05:06 [--]
 keyDown('P'); // -> 05:06 [PM]
 shouldBeEqualToString('input.value', '17:06');
 
 beginTest('Left/Right keys', '01:24');
-keyDown('rightArrow');
+keyDown('ArrowRight');
 keyDown('5');
-keyDown('leftArrow');
+keyDown('ArrowLeft');
 keyDown('6');
 shouldBeEqualToString('input.value', '06:05');
-keyDown('leftArrow');
-keyDown('leftArrow');
-keyDown('leftArrow');
+keyDown('ArrowLeft');
+keyDown('ArrowLeft');
+keyDown('ArrowLeft');
 shouldBeEqualToString('document.activeElement.id', 'input');
 
 beginTest('Up/Down keys', '04:56');
-keyDown('upArrow');
+keyDown('ArrowUp');
 shouldBeEqualToString('input.value', '05:56');
-keyDown('downArrow');
-keyDown('downArrow');
+keyDown('ArrowDown');
+keyDown('ArrowDown');
 shouldBeEqualToString('input.value', '03:56');
 
 beginTest('Up/Down keys on empty value', '');
 eventsCounter = {};
-keyDown('upArrow');    // -> [01]:-- --
-keyDown('upArrow');    // -> [02]:-- --
-keyDown('rightArrow'); // -> 02:[--] --
-keyDown('downArrow');  // -> 02:[59] --
-keyDown('downArrow');  // -> 02:[58] --
-keyDown('rightArrow'); // -> 02:58 [--]
+keyDown('ArrowUp');    // -> [01]:-- --
+keyDown('ArrowUp');    // -> [02]:-- --
+keyDown('ArrowRight'); // -> 02:[--] --
+keyDown('ArrowDown');  // -> 02:[59] --
+keyDown('ArrowDown');  // -> 02:[58] --
+keyDown('ArrowRight'); // -> 02:58 [--]
 shouldBeUndefined('eventsCounter.input');
 shouldBeUndefined('eventsCounter.change');
-keyDown('downArrow');  // -> 02:58 [PM]
+keyDown('ArrowDown');  // -> 02:58 [PM]
 shouldBeEqualToString('input.value', '14:58');
 shouldBe('eventsCounter.input', '1');
 shouldBe('eventsCounter.change', '1');
@@ -143,14 +143,14 @@ input.readOnly = true;
 keyDown('\t');
 shouldBeEqualToString('document.activeElement.id', 'input');
 shouldBeEqualToString('shadowPseudoIdOfFocusedSubField(input)', '-webkit-datetime-edit-hour-field');
-shouldBeEqualToString('keyDown("upArrow"); input.value', '01:01');
-shouldBeEqualToString('keyDown("downArrow"); input.value', '01:01');
-keyDown('rightArrow');
+shouldBeEqualToString('keyDown("ArrowUp"); input.value', '01:01');
+shouldBeEqualToString('keyDown("ArrowDown"); input.value', '01:01');
+keyDown('ArrowRight');
 shouldBeEqualToString('shadowPseudoIdOfFocusedSubField(input)', '-webkit-datetime-edit-minute-field');
 shouldBeEqualToString('keyDown("3"); input.value', '01:01');
 keyDown('\t');
 shouldBeEqualToString('shadowPseudoIdOfFocusedSubField(input)', '-webkit-datetime-edit-ampm-field');
-keyDown('leftArrow');
+keyDown('ArrowLeft');
 shouldBeEqualToString('shadowPseudoIdOfFocusedSubField(input)', '-webkit-datetime-edit-minute-field');
 keyDown('\t');
 keyDown('\t');
@@ -170,41 +170,41 @@ keyDown('\t', ['shiftKey']);
 shouldBeEqualToString('document.activeElement.id', 'before');
 
 beginTest('Up key on maximum value', '12:59:59.999');
-keyDown('upArrow');
+keyDown('ArrowUp');
 keyDown('\t');
-keyDown('upArrow');
+keyDown('ArrowUp');
 keyDown('\t');
-keyDown('upArrow');
+keyDown('ArrowUp');
 keyDown('\t');
-keyDown('upArrow');
+keyDown('ArrowUp');
 shouldBeEqualToString('input.value', '13:00');
 
 beginTest('Down key on minimum value', '01:00');
 input.step = 0.001;
-keyDown('downArrow');
+keyDown('ArrowDown');
 keyDown('\t');
-keyDown('downArrow');
+keyDown('ArrowDown');
 keyDown('\t');
-keyDown('downArrow');
+keyDown('ArrowDown');
 keyDown('\t');
-keyDown('downArrow');
+keyDown('ArrowDown');
 shouldBeEqualToString('input.value', '00:59:59.999');
 input.step = 60;
 
 beginTest('Backspace key', '12:34');
-keyDown("\b");
+keyDown("Backspace");
 shouldBeEqualToString('input.value', '');
 
 beginTest('Delete key', '12:34');
-keyDown("delete");
+keyDown("Delete");
 shouldBeEqualToString('input.value', '');
 
 beginTest('Typeahead', '12:34:56');
-keyDown('rightArrow');
+keyDown('ArrowRight');
 keyDown('1');
 shouldBeEqualToString('input.value', '12:01:56');
-keyDown('rightArrow');
-keyDown('leftArrow');
+keyDown('ArrowRight');
+keyDown('ArrowLeft');
 keyDown('2');
 shouldBeEqualToString('input.value', '12:02:56');
 

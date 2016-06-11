@@ -19,12 +19,12 @@ function test()
         InspectorTest.addResult("textContent when editing 'href'");
         InspectorTest.addResult(treeElement.title.textContent);
 
-        textElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009"));
+        textElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
         InspectorTest.addResult("textContent after moving to 'id'");
         InspectorTest.addResult(treeElement.title.textContent);
 
         textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[1];
-        textElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
+        textElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
         InspectorTest.addResult("textContent after canceling the edit (equal to the original one)");
         InspectorTest.addResult(treeElement.title.textContent);
 

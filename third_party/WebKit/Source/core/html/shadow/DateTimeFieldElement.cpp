@@ -95,9 +95,9 @@ void DateTimeFieldElement::defaultKeyboardEventHandler(KeyboardEvent* keyboardEv
     if (isDisabled() || isFieldOwnerDisabled())
         return;
 
-    const String& keyIdentifier = keyboardEvent->keyIdentifier();
+    const String& key = keyboardEvent->key();
 
-    if (keyIdentifier == "Left") {
+    if (key == "ArrowLeft") {
         if (!m_fieldOwner)
             return;
         // FIXME: We'd like to use FocusController::advanceFocus(FocusDirectionLeft, ...)
@@ -107,7 +107,7 @@ void DateTimeFieldElement::defaultKeyboardEventHandler(KeyboardEvent* keyboardEv
         return;
     }
 
-    if (keyIdentifier == "Right") {
+    if (key == "ArrowRight") {
         if (!m_fieldOwner)
             return;
         // FIXME: We'd like to use FocusController::advanceFocus(FocusDirectionRight, ...)
@@ -120,7 +120,7 @@ void DateTimeFieldElement::defaultKeyboardEventHandler(KeyboardEvent* keyboardEv
     if (isFieldOwnerReadOnly())
         return;
 
-    if (keyIdentifier == "Down") {
+    if (key == "ArrowDown") {
         if (keyboardEvent->getModifierState("Alt"))
             return;
         keyboardEvent->setDefaultHandled();
@@ -128,13 +128,13 @@ void DateTimeFieldElement::defaultKeyboardEventHandler(KeyboardEvent* keyboardEv
         return;
     }
 
-    if (keyIdentifier == "Up") {
+    if (key == "ArrowUp") {
         keyboardEvent->setDefaultHandled();
         stepUp();
         return;
     }
 
-    if (keyIdentifier == "U+0008" || keyIdentifier == "U+007F") {
+    if (key == "Backspace" || key == "Delete") {
         keyboardEvent->setDefaultHandled();
         setEmptyValue(DispatchEvent);
         return;

@@ -63,7 +63,7 @@ shouldBeEqualToString('input.value', '0300-W02');
 
 beginTest('Digit keys and backspace key');
 keyDown('0'); // -> Week [00], yyyy
-keyDown('\b'); // -> Week [ww], yyyy
+keyDown('Backspace'); // -> Week [ww], yyyy
 keyDown('0'); // -> Week [00], yyyy
 keyDown('0'); // -> Week 01, [yyyy]
 keyDown('0'); // -> Week 01, [0000]
@@ -71,39 +71,39 @@ keyDown('6'); // -> Week 05, [0006]
 shouldBeEqualToString('input.value', '0006-W01');
 
 beginTest('Left/Right keys', '2012-W09');
-keyDown('rightArrow'); // -> Week 09, [2012]
+keyDown('ArrowRight'); // -> Week 09, [2012]
 keyDown('5'); // -> Week 09, [0005]
-keyDown('leftArrow'); // -> Week [09], 0005
+keyDown('ArrowLeft'); // -> Week [09], 0005
 keyDown('6'); // -> Week [06], 0005
 shouldBeEqualToString('input.value', '0005-W06');
-keyDown('leftArrow'); // -> Week 06, [0005]
-keyDown('leftArrow'); // -> Week [06], 0005
-keyDown('leftArrow'); // -> Week [06], 0005
+keyDown('ArrowLeft'); // -> Week 06, [0005]
+keyDown('ArrowLeft'); // -> Week [06], 0005
+keyDown('ArrowLeft'); // -> Week [06], 0005
 shouldBeEqualToString('document.activeElement.id', 'input');
 
 beginTest('Up/Down keys', '2012-W09');
-keyDown('upArrow'); // -> Week [10], 2012
+keyDown('ArrowUp'); // -> Week [10], 2012
 shouldBeEqualToString('input.value', '2012-W10');
-keyDown('downArrow'); // -> Week [09], 2012
-keyDown('downArrow'); // -> Week [08], 2012
+keyDown('ArrowDown'); // -> Week [09], 2012
+keyDown('ArrowDown'); // -> Week [08], 2012
 shouldBeEqualToString('input.value', '2012-W08');
 
 beginTest('Up/Down keys on empty value');
-keyDown('downArrow'); //  -> Week [53], yyyy
-keyDown('downArrow'); //  -> Week [52], yyyy
-keyDown('upArrow'); //    -> Week [53], yyyy
-keyDown('downArrow'); //  -> Week [52], yyyy
-keyDown('rightArrow'); // -> Week 52, [yyyy]
+keyDown('ArrowDown'); //  -> Week [53], yyyy
+keyDown('ArrowDown'); //  -> Week [52], yyyy
+keyDown('ArrowUp'); //    -> Week [53], yyyy
+keyDown('ArrowDown'); //  -> Week [52], yyyy
+keyDown('ArrowRight'); // -> Week 52, [yyyy]
 var currentYear = new Date().getFullYear();
-keyDown('upArrow'); // -> Week 52, [current year]
+keyDown('ArrowUp'); // -> Week 52, [current year]
 shouldBe('input.value', 'currentYear + "-W52"');
 
 beginTest('Up/Down keys on empty value 2');
-keyDown('upArrow'); //    -> Week [01], yyyy
-keyDown('upArrow'); //    -> Week [02], yyyy
-keyDown('rightArrow'); // -> Week 02, [yyyy]
+keyDown('ArrowUp'); //    -> Week [01], yyyy
+keyDown('ArrowUp'); //    -> Week [02], yyyy
+keyDown('ArrowRight'); // -> Week 02, [yyyy]
 currentYear = new Date().getFullYear();
-keyDown('downArrow'); // -> Week 02, [current year]
+keyDown('ArrowDown'); // -> Week 02, [current year]
 shouldBe('input.value', 'currentYear + "-W02"');
 
 beginTest('Tab key', '2012-W09');
@@ -126,70 +126,70 @@ keyDown('\t', ['shiftKey']); // -> Focus out.
 shouldBeEqualToString('document.activeElement.id', 'before');
 
 beginTest('Up key on maximum value', '275760-W09');
-keyDown('upArrow'); // -> Week [10], 275760
+keyDown('ArrowUp'); // -> Week [10], 275760
 keyDown('\t'); //      -> Week 10, [275760]
-keyDown('upArrow'); // -> Week 10, [0001]
+keyDown('ArrowUp'); // -> Week 10, [0001]
 shouldBeEqualToString('input.value', '0001-W10');
 beginTest('Up key with a maximum attribute', '1999-W12', '1000-W01', '1999-W12');
-keyDown('upArrow'); // -> Week [13], 1999
+keyDown('ArrowUp'); // -> Week [13], 1999
 keyDown('\t'); //      -> Week 13, [1999]
-keyDown('upArrow'); // -> Week 13, [1000]
+keyDown('ArrowUp'); // -> Week 13, [1000]
 shouldBeEqualToString('input.value', '1000-W13');
 
 beginTest('Down key on minimum value', '0001-W01', 'bad min', 'wrong max');
-keyDown('downArrow'); // -> Week [53], 0001
+keyDown('ArrowDown'); // -> Week [53], 0001
 keyDown('\t'); //        -> Week 01, [0001]
-keyDown('downArrow'); // -> Week 53, [275760], which is greater than the hard limit.
+keyDown('ArrowDown'); // -> Week 53, [275760], which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 beginTest('Down key with a minimum attribute', '1000-W01', '1000-W01');
-keyDown('downArrow'); // -> Week [53], 1000
+keyDown('ArrowDown'); // -> Week [53], 1000
 keyDown('\t'); //        -> Week 53, [1000]
-keyDown('downArrow'); // -> Week 53, [275760], which is greater than the hard limit.
+keyDown('ArrowDown'); // -> Week 53, [275760], which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 
 beginTest('Inconsistent min-max attributes', '1999-W12', '1999-W12', '1000-W01');
-keyDown('upArrow'); // -> Week [13], 1999.
+keyDown('ArrowUp'); // -> Week [13], 1999.
 keyDown('\t'); // -> Week 13, [1999]
-keyDown('upArrow'); // -> Week 13, [1000].  1000 is the swapped minimum year.
+keyDown('ArrowUp'); // -> Week 13, [1000].  1000 is the swapped minimum year.
 shouldBeEqualToString('input.value', '1000-W13');
-keyDown('downArrow'); // -> Week 01, [1999]
+keyDown('ArrowDown'); // -> Week 01, [1999]
 shouldBeEqualToString('input.value', '1999-W13');
 
 beginTest('Make an invalid date', '2012-W01');
-keyDown('downArrow'); // -> Week [53], 2012
+keyDown('ArrowDown'); // -> Week [53], 2012
 shouldBeEqualToString('input.value', ''); // 2012-W53 is not a valid date.
 
 beginTest('Backspace key', '2012-W09');
-keyDown("\b"); // -> Week [ww], 2012
+keyDown("Backspace"); // -> Week [ww], 2012
 shouldBeEqualToString('input.value', '');
 
 beginTest('Delete key', '2012-W09');
-keyDown("delete"); // -> Week [ww], 2012
+keyDown("Delete"); // -> Week [ww], 2012
 shouldBeEqualToString('input.value', '');
 
 beginTest('Typeahead', '2012-W12');
-keyDown('rightArrow'); // -> Week 12, [2012]
+keyDown('ArrowRight'); // -> Week 12, [2012]
 keyDown('1'); //          -> Week 01, [0001]
 shouldBeEqualToString('input.value', '0001-W12');
-keyDown('leftArrow'); //  -> Week [12], 0001
-keyDown('rightArrow'); // -> Week 12, [0001]
+keyDown('ArrowLeft'); //  -> Week [12], 0001
+keyDown('ArrowRight'); // -> Week 12, [0001]
 keyDown('2'); //          -> Week 12, [0002]
 shouldBeEqualToString('input.value', '0002-W12');
 
 beginTest('Disabled/readonly', '2012-W10');
 input.disabled = true;
-keyDown('upArrow'); // Week 10, 2012
+keyDown('ArrowUp'); // Week 10, 2012
 shouldBeEqualToString('input.value', '2012-W10');
 input.disabled = false;
 input.focus();
-keyDown('upArrow'); // Week [11], 2012
+keyDown('ArrowUp'); // Week [11], 2012
 shouldBeEqualToString('input.value', '2012-W11');
 input.readOnly = true;
-keyDown('upArrow'); // Week [11], 2012
+keyDown('ArrowUp'); // Week [11], 2012
 shouldBeEqualToString('input.value', '2012-W11');
 input.readOnly = false;
 input.focus();
-keyDown('upArrow'); // Week [12], 2012
+keyDown('ArrowUp'); // Week [12], 2012
 shouldBeEqualToString('input.value', '2012-W12');
 
 </script>

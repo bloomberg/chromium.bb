@@ -76,14 +76,14 @@ shouldBeEqualToString('input.value', '0044-02-03T05:06');
 
 beginTest('Digit keys and backspace key');
 keyDown('1'); // -> [01]/dd/yyyy --:-- --
-keyDown("\b"); // -> [mm]/20/2012 --:-- --
+keyDown("Backspace"); // -> [mm]/20/2012 --:-- --
 keyDown('5'); // -> 05/[dd]/yyyy --:-- --
 keyDown('6'); // -> 05/06/[yyyy] --:-- --
-keyDown("\b"); // -> 05/06/[yyyy] --:-- --
+keyDown("Backspace"); // -> 05/06/[yyyy] --:-- --
 keyDown('7'); // -> 05/06/[0007] --:-- --
-keyDown("\b"); // -> 05/06/[yyyy] --:-- --
+keyDown("Backspace"); // -> 05/06/[yyyy] --:-- --
 keyDown('8'); // -> 05/06/[0008] --:-- --
-keyDown('rightArrow'); // -> 05/06/0008 [--]:-- --
+keyDown('ArrowRight'); // -> 05/06/0008 [--]:-- --
 keyDown('9'); // -> 05/06/0008 09:[--] --
 keyDown('1'); // -> 05/06/0008 09:[01] --
 keyDown('0'); // -> 05/06/0008 09:10 [--]
@@ -91,46 +91,46 @@ keyDown('A'); // -> 05/06/0008 09:10 [AM]
 shouldBeEqualToString('input.value', '0008-05-06T09:10');
 
 beginTest('Left/Right keys', '2012-09-29T00:00');
-keyDown('rightArrow'); // -> 09/[29]/2012 12:00 AM
+keyDown('ArrowRight'); // -> 09/[29]/2012 12:00 AM
 keyDown('5'); // -> 09/05/[2012] 12:00 AM
-keyDown('rightArrow'); // -> 09/05/2012 [12]:00 AM
+keyDown('ArrowRight'); // -> 09/05/2012 [12]:00 AM
 keyDown('7'); // -> 09/05/2012 07:[00] AM
-keyDown('rightArrow'); // -> 09/05/2012 07:00 [AM]
+keyDown('ArrowRight'); // -> 09/05/2012 07:00 [AM]
 keyDown('P'); // -> 09/05/2012 07:00 [PM]
-keyDown('leftArrow'); // -> 09/05/2012 07:[00] PM
+keyDown('ArrowLeft'); // -> 09/05/2012 07:[00] PM
 keyDown('5'); // -> 09/05/2012 07:[05] PM
-keyDown('leftArrow'); // -> 09/05/2012 [07]:05 PM
-keyDown('leftArrow'); // -> 09/05/[2012] 07:05 PM
+keyDown('ArrowLeft'); // -> 09/05/2012 [07]:05 PM
+keyDown('ArrowLeft'); // -> 09/05/[2012] 07:05 PM
 keyDown('4'); // -> 09/05/[0004] 07:05 PM
 shouldBeEqualToString('input.value', '0004-09-05T19:05');
-keyDown('leftArrow'); // -> 09/[05]/0004 07:05 PM
-keyDown('leftArrow'); // -> [09]/05/0004 07:05 PM
-keyDown('leftArrow'); // -> [09]/05/0004 07:05 PM
+keyDown('ArrowLeft'); // -> 09/[05]/0004 07:05 PM
+keyDown('ArrowLeft'); // -> [09]/05/0004 07:05 PM
+keyDown('ArrowLeft'); // -> [09]/05/0004 07:05 PM
 shouldBeEqualToString('document.activeElement.id', 'input');
 
 beginTest('Up/Down keys', '2012-09-29T00:00');
-keyDown('upArrow'); // -> [10]/29/2012 12:00 AM
+keyDown('ArrowUp'); // -> [10]/29/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-10-29T00:00');
-keyDown('downArrow'); // -> [09]/29/2012 12:00 AM
-keyDown('downArrow'); // -> [08]/29/2012 12:00 AM
+keyDown('ArrowDown'); // -> [09]/29/2012 12:00 AM
+keyDown('ArrowDown'); // -> [08]/29/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-08-29T00:00');
 
 beginTest('Up/Down keys on empty value');
-keyDown('downArrow'); //  -> [12]/dd/yyyy --:-- --
-keyDown('downArrow'); //  -> [11]/dd/yyyy --:-- --
-keyDown('rightArrow'); // -> 11/[dd]/yyyy --:-- --
-keyDown('upArrow'); //    -> 11/[01]/yyyy --:-- --
-keyDown('upArrow'); //    -> 11/[02]/yyyy --:-- --
-keyDown('downArrow'); //  -> 11/[01]/yyyy --:-- --
-keyDown('rightArrow'); // -> 11/01/[yyyy] --:-- --
+keyDown('ArrowDown'); //  -> [12]/dd/yyyy --:-- --
+keyDown('ArrowDown'); //  -> [11]/dd/yyyy --:-- --
+keyDown('ArrowRight'); // -> 11/[dd]/yyyy --:-- --
+keyDown('ArrowUp'); //    -> 11/[01]/yyyy --:-- --
+keyDown('ArrowUp'); //    -> 11/[02]/yyyy --:-- --
+keyDown('ArrowDown'); //  -> 11/[01]/yyyy --:-- --
+keyDown('ArrowRight'); // -> 11/01/[yyyy] --:-- --
 var currentYear = new Date().getFullYear();
-keyDown('upArrow'); // -> 11/01/[currentYear] --:-- --
-keyDown('rightArrow'); // -> 11/01/currentYear [--]:-- --
-keyDown('upArrow'); //    -> 11/01/currentYear [01]:-- --
-keyDown('rightArrow'); // -> 11/01/currentYear 01:[--] --
-keyDown('downArrow'); //  -> 11/01/currentYear 01:[59] --
-keyDown('rightArrow'); // -> 11/01/currentYear 01:59 [--]
-keyDown('upArrow'); //    -> 11/01/currentYear 01:59 [AM]
+keyDown('ArrowUp'); // -> 11/01/[currentYear] --:-- --
+keyDown('ArrowRight'); // -> 11/01/currentYear [--]:-- --
+keyDown('ArrowUp'); //    -> 11/01/currentYear [01]:-- --
+keyDown('ArrowRight'); // -> 11/01/currentYear 01:[--] --
+keyDown('ArrowDown'); //  -> 11/01/currentYear 01:[59] --
+keyDown('ArrowRight'); // -> 11/01/currentYear 01:59 [--]
+keyDown('ArrowUp'); //    -> 11/01/currentYear 01:59 [AM]
 shouldBe('input.value', 'currentYear + "-11-01T01:59"');
 
 beginTest('Tab key', '2012-09-30T00:00');
@@ -159,62 +159,62 @@ keyDown('\t', ['shiftKey']); // -> Focus out.
 shouldBeEqualToString('document.activeElement.id', 'before');
 
 beginTest('Up key on maximum value', '275760-09-13T00:00');
-keyDown('upArrow'); // -> [10]/13/275760 12:00 AM
+keyDown('ArrowUp'); // -> [10]/13/275760 12:00 AM
 keyDown('\t'); //      -> 10/[13]/275760 12:00 AM
-keyDown('upArrow'); // -> 10/[14]/275760 12:00 AM
+keyDown('ArrowUp'); // -> 10/[14]/275760 12:00 AM
 keyDown('\t'); //      -> 10/14/[275760] 12:00 AM
-keyDown('upArrow'); // -> 10/14/[0001] 12:00 AM
+keyDown('ArrowUp'); // -> 10/14/[0001] 12:00 AM
 shouldBeEqualToString('input.value', '0001-10-14T00:00');
 beginTest('Up key with a maximum attribute', '1999-12-31T00:00', '1000-01-01T00:00', '1999-12-31T23:59');
-keyDown('upArrow'); // -> [01]/31/1999 12:00 AM
+keyDown('ArrowUp'); // -> [01]/31/1999 12:00 AM
 keyDown('\t'); //      -> 01/[31]/1999 12:00 AM
-keyDown('upArrow'); // -> 01/[01]/1999 12:00 AM
+keyDown('ArrowUp'); // -> 01/[01]/1999 12:00 AM
 keyDown('\t'); //      -> 01/01/[1999] 12:00 AM
-keyDown('upArrow'); // -> 01/01/[1000] 12:00 AM
+keyDown('ArrowUp'); // -> 01/01/[1000] 12:00 AM
 shouldBeEqualToString('input.value', '1000-01-01T00:00');
 
 beginTest('Down key on minimum value', '0001-01-01T00:00', 'bad min', 'wrong max');
-keyDown('downArrow'); // -> [12]/01/0001 12:00 AM
+keyDown('ArrowDown'); // -> [12]/01/0001 12:00 AM
 keyDown('\t'); //        -> 12/[01]/0001 12:00 AM
-keyDown('downArrow'); // -> 12/[31]/0001 12:00 AM
+keyDown('ArrowDown'); // -> 12/[31]/0001 12:00 AM
 keyDown('\t'); //        -> 12/31/[0001] 12:00 AM
-keyDown('downArrow'); // -> 12/31/[275760] 12:00 AM, which is greater than the hard limit.
+keyDown('ArrowDown'); // -> 12/31/[275760] 12:00 AM, which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 beginTest('Down key with a minimum attribute', '1000-01-01T00:00', '1000-01-01T00:00');
-keyDown('downArrow'); // -> [12]/01/1000 12:00 AM
+keyDown('ArrowDown'); // -> [12]/01/1000 12:00 AM
 keyDown('\t'); //        -> 12/[01]/1000 12:00 AM
-keyDown('downArrow'); // -> 12/[31]/1000 12:00 AM
+keyDown('ArrowDown'); // -> 12/[31]/1000 12:00 AM
 keyDown('\t'); //        -> 12/31/[1000] 12:00 AM
-keyDown('downArrow'); // -> 12/31/275760, which is greater than the hard limit.
+keyDown('ArrowDown'); // -> 12/31/275760, which is greater than the hard limit.
 shouldBeEqualToString('input.value', '');
 
 beginTest('Inconsistent min-max attributes', '1999-12-31T23:59', '1999-12-31T23:59', '1000-01-01T00:00');
 keyDown('\t'); // -> 12/[31]/1999 11:59 PM
 keyDown('\t'); // -> 12/31/[1999] 11:59 PM
-keyDown('upArrow'); // -> 12/31/[1000] 11:59 PM.  1000 is the swapped minimum year.
+keyDown('ArrowUp'); // -> 12/31/[1000] 11:59 PM.  1000 is the swapped minimum year.
 shouldBeEqualToString('input.value', '1000-12-31T23:59');
-keyDown('downArrow'); // -> 12/31/[1999]
+keyDown('ArrowDown'); // -> 12/31/[1999]
 shouldBeEqualToString('input.value', '1999-12-31T23:59');
 
 beginTest('Make an invalid date', '2012-02-01T00:00');
 keyDown('\t'); //        -> 02/[01]/2012 12:00 AM
-keyDown('downArrow'); // -> 02/[31]/2012 12:00 AM
+keyDown('ArrowDown'); // -> 02/[31]/2012 12:00 AM
 shouldBeEqualToString('input.value', ''); // 2012-02-31 is not a valid date.
 
 beginTest('Backspace key', '2012-09-20T00:00');
-keyDown('\b'); // -> [mm]/20/2012 12:00 AM
+keyDown('Backspace'); // -> [mm]/20/2012 12:00 AM
 shouldBeEqualToString('input.value', '');
 
 beginTest('Delete key', '2012-09-30T00:00');
-keyDown('delete'); // -> [mm]/30/2012 12:00 AM
+keyDown('Delete'); // -> [mm]/30/2012 12:00 AM
 shouldBeEqualToString('input.value', '');
 
 beginTest('Typeahead', '2012-12-31T00:00');
-keyDown('rightArrow'); // -> 12/[31]/2012 12:00 AM
+keyDown('ArrowRight'); // -> 12/[31]/2012 12:00 AM
 keyDown('1'); //          -> 12/[01]/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-12-01T00:00');
-keyDown('leftArrow'); //  -> [12]/01/2012 12:00 AM
-keyDown('rightArrow'); // -> 12/[01]/2012 12:00 AM
+keyDown('ArrowLeft'); //  -> [12]/01/2012 12:00 AM
+keyDown('ArrowRight'); // -> 12/[01]/2012 12:00 AM
 keyDown('2'); //          -> 12/[02]/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-12-02T00:00');
 
@@ -239,18 +239,18 @@ input.removeAttribute('lang');
 
 beginTest('Disabled/readonly', '2012-10-08T00:00');
 input.disabled = true;
-keyDown('upArrow'); // 10/08/2012 12:00 AM
+keyDown('ArrowUp'); // 10/08/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-10-08T00:00');
 input.disabled = false;
 input.focus();
-keyDown('upArrow'); // [11]/08/2012 12:00 AM
+keyDown('ArrowUp'); // [11]/08/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-11-08T00:00');
 input.readOnly = true;
-keyDown('upArrow'); // 11/08/2012 12:00 AM
+keyDown('ArrowUp'); // 11/08/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-11-08T00:00');
 input.readOnly = false;
 input.focus();
-keyDown('upArrow'); // [12]/08/2012 12:00 AM
+keyDown('ArrowUp'); // [12]/08/2012 12:00 AM
 shouldBeEqualToString('input.value', '2012-12-08T00:00');
 
 </script>

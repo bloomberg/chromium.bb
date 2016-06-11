@@ -1987,6 +1987,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace)
         // Press Backspace and verify composition didn't get cancelled. This is to verify the fix
         // for crbug.com/429916.
         WebKeyboardEvent keyEvent;
+        keyEvent.domKey = Platform::current()->domKeyEnumFromString("\b");
         keyEvent.windowsKeyCode = VKEY_BACK;
         keyEvent.setKeyIdentifierFromWindowsKeyCode();
         keyEvent.type = WebInputEvent::RawKeyDown;
@@ -2169,6 +2170,7 @@ static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement
     inputElement->focus();
 
     WebKeyboardEvent keyEvent;
+    keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
     keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
     keyEvent.setKeyIdentifierFromWindowsKeyCode();
@@ -2797,6 +2799,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent)
     EXPECT_EQ(0, client.getUserGestureNotificationsCount());
 
     WebKeyboardEvent keyEvent;
+    keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
     keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
     keyEvent.setKeyIdentifierFromWindowsKeyCode();

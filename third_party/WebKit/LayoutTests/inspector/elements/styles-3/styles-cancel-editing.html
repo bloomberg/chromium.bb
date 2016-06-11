@@ -30,7 +30,7 @@ function test()
 
         function onStyleApplied()
         {
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
             InspectorTest.waitForStyleApplied(onStyleReverted);
         }
 

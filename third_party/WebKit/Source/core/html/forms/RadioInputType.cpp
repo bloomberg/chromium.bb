@@ -88,8 +88,8 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     BaseCheckableInputType::handleKeydownEvent(event);
     if (event->defaultHandled())
         return;
-    const String& key = event->keyIdentifier();
-    if (key != "Up" && key != "Down" && key != "Left" && key != "Right")
+    const String& key = event->key();
+    if (key != "ArrowUp" && key != "ArrowDown" && key != "ArrowLeft" && key != "ArrowRight")
         return;
 
     if (event->ctrlKey() || event->metaKey() || event->altKey())
@@ -104,7 +104,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     Document& document = element().document();
     if (isSpatialNavigationEnabled(document.frame()))
         return;
-    bool forward = computedTextDirection() == RTL ? (key == "Down" || key == "Left") : (key == "Down" || key == "Right");
+    bool forward = computedTextDirection() == RTL ? (key == "ArrowDown" || key == "ArrowLeft") : (key == "ArrowDown" || key == "ArrowRight");
 
     // We can only stay within the form's children if the form hasn't been demoted to a leaf because
     // of malformed HTML.
@@ -128,8 +128,8 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
 
 void RadioInputType::handleKeyupEvent(KeyboardEvent* event)
 {
-    const String& key = event->keyIdentifier();
-    if (key != "U+0020")
+    const String& key = event->key();
+    if (key != " ")
         return;
     // If an unselected radio is tabbed into (because the entire group has nothing
     // checked, or because of some explicit .focus() call), then allow space to check it.

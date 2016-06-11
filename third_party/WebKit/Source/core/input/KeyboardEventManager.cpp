@@ -24,24 +24,17 @@ namespace blink {
 
 namespace {
 
-WebFocusType focusDirectionForKey(const AtomicString& keyIdentifier)
+WebFocusType focusDirectionForKey(const String& key)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, Down, ("Down"));
-    DEFINE_STATIC_LOCAL(AtomicString, Up, ("Up"));
-    DEFINE_STATIC_LOCAL(AtomicString, Left, ("Left"));
-    DEFINE_STATIC_LOCAL(AtomicString, Right, ("Right"));
-
     WebFocusType retVal = WebFocusTypeNone;
-
-    if (keyIdentifier == Down)
+    if (key == "ArrowDown")
         retVal = WebFocusTypeDown;
-    else if (keyIdentifier == Up)
+    else if (key == "ArrowUp")
         retVal = WebFocusTypeUp;
-    else if (keyIdentifier == Left)
+    else if (key == "ArrowLeft")
         retVal = WebFocusTypeLeft;
-    else if (keyIdentifier == Right)
+    else if (key == "ArrowRight")
         retVal = WebFocusTypeRight;
-
     return retVal;
 }
 
@@ -169,14 +162,14 @@ void KeyboardEventManager::defaultKeyboardEventHandler(
         m_frame->editor().handleKeyboardEvent(event);
         if (event->defaultHandled())
             return;
-        if (event->keyIdentifier() == "U+0009") {
+        if (event->key() == "Tab") {
             defaultTabEventHandler(event);
-        } else if (event->keyIdentifier() == "U+0008") {
+        } else if (event->key() == "Backspace") {
             defaultBackspaceEventHandler(event);
-        } else if (event->keyIdentifier() == "U+001B") {
+        } else if (event->key() == "Escape") {
             defaultEscapeEventHandler(event);
         } else {
-            WebFocusType type = focusDirectionForKey(AtomicString(event->keyIdentifier()));
+            WebFocusType type = focusDirectionForKey(event->key());
             if (type != WebFocusTypeNone)
                 defaultArrowEventHandler(type, event);
         }

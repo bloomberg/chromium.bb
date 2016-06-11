@@ -210,10 +210,10 @@ void TextFieldInputType::handleKeydownEventForSpinButton(KeyboardEvent* event)
 {
     if (element().isDisabledOrReadOnly())
         return;
-    const String& key = event->keyIdentifier();
-    if (key == "Up")
+    const String& key = event->key();
+    if (key == "ArrowUp")
         spinButtonStepUp();
-    else if (key == "Down" && !event->altKey())
+    else if (key == "ArrowDown" && !event->altKey())
         spinButtonStepDown();
     else
         return;

@@ -22,8 +22,7 @@ function test(ctrlKey, altKey, shiftKey, metaKey)
     expectedAlt = altKey;
     expectedShift = shiftKey;
     expectedMeta = metaKey;
-    var event = document.createEvent("KeyboardEvents");
-    event.initKeyboardEvent("keydown", true, true, document.defaultView, "Enter", 0, ctrlKey, altKey, shiftKey, metaKey, false);
+    var event = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, view: document.defaultView, key: "Enter", ctrlKey: ctrlKey, altKey: altKey, shiftKey: shiftKey, metaKey: metaKey});
     link.dispatchEvent(event);
 }
 

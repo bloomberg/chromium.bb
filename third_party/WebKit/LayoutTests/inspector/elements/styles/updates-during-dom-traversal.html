@@ -15,7 +15,7 @@ function test()
         InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffUpdate, true);
         var element = InspectorTest.firstElementsTreeOutline().element;
         for (var i = 0; i < keydownCount; ++i)
-            element.dispatchEvent(InspectorTest.createKeyEvent("Up"));
+            element.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
 
         InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
     }

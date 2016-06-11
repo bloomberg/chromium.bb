@@ -26,10 +26,10 @@ else {
     shouldBeEqualToString('focusedFieldValueDescription()', 'Year, AXValueDescription: 2012, 1, 275760');
 
     debug('Empty value');
-    eventSender.keyDown('\b');
+    eventSender.keyDown('Backspace');
     shouldBeEqualToString('focusedFieldValueDescription()', 'Year, AXValueDescription: blank, 1, 275760');
     eventSender.keyDown('\t', ['shiftKey']);
-    eventSender.keyDown('\b');
+    eventSender.keyDown('Backspace');
     shouldBeEqualToString('focusedFieldValueDescription()', 'Week, AXValueDescription: blank, 1, 53');
 
     debug('');

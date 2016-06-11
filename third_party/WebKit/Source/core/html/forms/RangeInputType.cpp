@@ -197,7 +197,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     if (element().isDisabledOrReadOnly())
         return;
 
-    const String& key = event->keyIdentifier();
+    const String& key = event->key();
 
     const Decimal current = parseToNumberOrNaN(element().value());
     ASSERT(current.isFinite());
@@ -219,13 +219,13 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     }
 
     Decimal newValue;
-    if (key == "Up")
+    if (key == "ArrowUp")
         newValue = current + step;
-    else if (key == "Down")
+    else if (key == "ArrowDown")
         newValue = current - step;
-    else if (key == "Left")
+    else if (key == "ArrowLeft")
         newValue = (isVertical || dir == RTL) ? current + step : current - step;
-    else if (key == "Right")
+    else if (key == "ArrowRight")
         newValue = (isVertical || dir == RTL) ? current - step : current + step;
     else if (key == "PageUp")
         newValue = current + bigStep;

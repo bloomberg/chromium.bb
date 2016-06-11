@@ -32,7 +32,7 @@
 
         if (window.testRunner) {
             debug("Send an enter key event which should also trigger focus to move to the fragment.");
-            eventSender.keyDown("\r");
+            eventSender.keyDown("Enter");
             shouldBe("document.activeElement", "document.getElementById('fragment1')");
         }
 

@@ -1286,15 +1286,15 @@ void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
 
 bool HTMLSelectElement::shouldOpenPopupForKeyDownEvent(KeyboardEvent* keyEvent)
 {
-    const String& keyIdentifier = keyEvent->keyIdentifier();
+    const String& key = keyEvent->key();
     LayoutTheme& layoutTheme = LayoutTheme::theme();
 
     if (isSpatialNavigationEnabled(document().frame()))
         return false;
 
-    return ((layoutTheme.popsMenuByArrowKeys() &&  (keyIdentifier == "Down" || keyIdentifier == "Up"))
-        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (keyIdentifier == "Down" || keyIdentifier == "Up") && keyEvent->altKey())
-        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (!keyEvent->altKey() && !keyEvent->ctrlKey() && keyIdentifier == "F4")));
+    return ((layoutTheme.popsMenuByArrowKeys() && (key == "ArrowDown" || key == "ArrowUp"))
+        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (key == "ArrowDown" || key == "ArrowUp") && keyEvent->altKey())
+        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (!keyEvent->altKey() && !keyEvent->ctrlKey() && key == "F4")));
 }
 
 bool HTMLSelectElement::shouldOpenPopupForKeyPressEvent(KeyboardEvent *event)
@@ -1331,23 +1331,23 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         if (LayoutTheme::theme().popsMenuByArrowKeys() && !isSpatialNavigationEnabled(document().frame()))
             return;
 
-        const String& keyIdentifier = keyEvent->keyIdentifier();
+        const String& key = keyEvent->key();
         bool handled = true;
         const ListItems& listItems = this->listItems();
         HTMLOptionElement* option = selectedOption();
         int listIndex = option ? option->listIndex() : -1;
 
-        if (keyIdentifier == "Down" || keyIdentifier == "Right")
+        if (key == "ArrowDown" || key == "ArrowRight")
             option = nextValidOption(listIndex, SkipForwards, 1);
-        else if (keyIdentifier == "Up" || keyIdentifier == "Left")
+        else if (key == "ArrowUp" || key == "ArrowLeft")
             option = nextValidOption(listIndex, SkipBackwards, 1);
-        else if (keyIdentifier == "PageDown")
+        else if (key == "PageDown")
             option = nextValidOption(listIndex, SkipForwards, 3);
-        else if (keyIdentifier == "PageUp")
+        else if (key == "PageUp")
             option = nextValidOption(listIndex, SkipBackwards, 3);
-        else if (keyIdentifier == "Home")
+        else if (key == "Home")
             option = nextValidOption(-1, SkipForwards, 1);
-        else if (keyIdentifier == "End")
+        else if (key == "End")
             option = nextValidOption(listItems.size(), SkipBackwards, 1);
         else
             handled = false;
@@ -1574,54 +1574,54 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
     } else if (event->type() == EventTypeNames::keydown) {
         if (!event->isKeyboardEvent())
             return;
-        const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
+        const String& key = toKeyboardEvent(event)->key();
 
         bool handled = false;
         HTMLOptionElement* endOption = nullptr;
         if (!m_activeSelectionEnd) {
             // Initialize the end index
-            if (keyIdentifier == "Down" || keyIdentifier == "PageDown") {
+            if (key == "ArrowDown" || key == "PageDown") {
                 HTMLOptionElement* startOption = lastSelectedOption();
                 handled = true;
-                if (keyIdentifier == "Down")
+                if (key == "ArrowDown")
                     endOption = nextSelectableOption(startOption);
                 else
                     endOption = nextSelectableOptionPageAway(startOption, SkipForwards);
-            } else if (keyIdentifier == "Up" || keyIdentifier == "PageUp") {
+            } else if (key == "ArrowUp" || key == "PageUp") {
                 HTMLOptionElement* startOption = selectedOption();
                 handled = true;
-                if (keyIdentifier == "Up")
+                if (key == "ArrowUp")
                     endOption = previousSelectableOption(startOption);
                 else
                     endOption = nextSelectableOptionPageAway(startOption, SkipBackwards);
             }
         } else {
             // Set the end index based on the current end index.
-            if (keyIdentifier == "Down") {
+            if (key == "ArrowDown") {
                 endOption = nextSelectableOption(m_activeSelectionEnd.get());
                 handled = true;
-            } else if (keyIdentifier == "Up") {
+            } else if (key == "ArrowUp") {
                 endOption = previousSelectableOption(m_activeSelectionEnd.get());
                 handled = true;
-            } else if (keyIdentifier == "PageDown") {
+            } else if (key == "PageDown") {
                 endOption = nextSelectableOptionPageAway(m_activeSelectionEnd.get(), SkipForwards);
                 handled = true;
-            } else if (keyIdentifier == "PageUp") {
+            } else if (key == "PageUp") {
                 endOption = nextSelectableOptionPageAway(m_activeSelectionEnd.get(), SkipBackwards);
                 handled = true;
             }
         }
-        if (keyIdentifier == "Home") {
+        if (key == "Home") {
             endOption = firstSelectableOption();
             handled = true;
-        } else if (keyIdentifier == "End") {
+        } else if (key == "End") {
             endOption = lastSelectableOption();
             handled = true;
         }
 
         if (isSpatialNavigationEnabled(document().frame())) {
             // Check if the selection moves to the boundary.
-            if (keyIdentifier == "Left" || keyIdentifier == "Right" || ((keyIdentifier == "Down" || keyIdentifier == "Up") && endOption == m_activeSelectionEnd))
+            if (key == "ArrowLeft" || key == "ArrowRight" || ((key == "ArrowDown" || key == "ArrowUp") && endOption == m_activeSelectionEnd))
                 return;
         }
 

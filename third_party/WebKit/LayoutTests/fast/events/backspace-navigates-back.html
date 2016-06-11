@@ -10,7 +10,7 @@ function expect(test, msg) {
 }
 
 function testBackspaceNavigatesBack() {
-    eventSender.keyDown('\u0008');
+    eventSender.keyDown('Backspace');
 
     // We expected to navigate; set a timeout that causes the test
     // to fail quickly if we didn't navigate.
@@ -71,7 +71,7 @@ function doStep(step, location) {
         // it will cancel that navigation and navigate us elsewhere, causing the test
         // to fail.
         document.location = '?test-complete';
-        eventSender.keyDown('\u0008');
+        eventSender.keyDown('Backspace');
 
         break;
     case 7:

@@ -56,9 +56,9 @@ function getRadio(value)
 if (window.eventSender) {
     test(function() {
         getRadio('a').focus();
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
         assert_equals(lastChangeEventValue, 'b');
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
         assert_equals(lastChangeEventValue, 'c');
         assert_false(getRadio('a').checked);
         assert_false(getRadio('b').checked);
@@ -67,8 +67,8 @@ if (window.eventSender) {
 
     test(function() {
         getRadio('d').focus();
-        eventSender.keyDown('downArrow');
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
+        eventSender.keyDown('ArrowDown');
         assert_true(getRadio('d').checked);
         assert_false(getRadio('e').checked);
         assert_false(getRadio('f').checked);
@@ -76,13 +76,13 @@ if (window.eventSender) {
 
     test(function() {
         getRadio('x').focus();
-        eventSender.keyDown('rightArrow');
+        eventSender.keyDown('ArrowRight');
         assert_equals(lastChangeEventValue, 'z');
         assert_false(getRadio('x').checked);
         assert_false(getRadio('y').checked);
         assert_true(getRadio('z').checked);
 
-        eventSender.keyDown('rightArrow');
+        eventSender.keyDown('ArrowRight');
         assert_equals(lastChangeEventValue, 'y');
         assert_false(getRadio('x').checked);
         assert_true(getRadio('y').checked);
@@ -92,7 +92,7 @@ if (window.eventSender) {
     test(function() {
         getRadio('x').focus();
         getRadio('x').checked = true;
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
         assert_equals(lastChangeEventValue, 'y');
         assert_false(getRadio('x').checked);
         assert_true(getRadio('y').checked);

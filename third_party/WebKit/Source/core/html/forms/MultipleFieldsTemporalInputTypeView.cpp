@@ -436,7 +436,7 @@ void MultipleFieldsTemporalInputTypeView::handleKeydownEvent(KeyboardEvent* even
     if (!element().focused())
         return;
     if (m_pickerIndicatorIsVisible
-        && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (LayoutTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
+        && ((event->key() == "ArrowDown" && event->getModifierState("Alt")) || (LayoutTheme::theme().shouldOpenPickerWithF4Key() && event->key() == "F4"))) {
         if (PickerIndicatorElement* element = pickerIndicatorElement())
             element->openPopup();
         event->setDefaultHandled();

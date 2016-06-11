@@ -220,7 +220,7 @@ TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.formsDoc, function() {
     var sendDownToSelect =
-        this.sendKeyToElement.bind(this, undefined, 'Down', '#fruitSelect');
+        this.sendKeyToElement.bind(this, undefined, 'ArrowDown', '#fruitSelect');
     mockFeedback.expectSpeech('apple', 'has pop up', 'Collapsed')
         .expectBraille('apple btn +popup +')
         .call(sendDownToSelect)

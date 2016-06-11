@@ -54,7 +54,8 @@ function test()
         InspectorTest.sendCommand("Input.dispatchKeyEvent", {
             "type": "rawKeyDown",
             "windowsVirtualKeyCode": 9,
-            "keyIdentifier": "U+0009"
+            "keyIdentifier": "U+0009",
+            "key": "Tab",
         });
         InspectorTest.sendCommand("Input.dispatchKeyEvent", {
             "type": "char"
@@ -62,7 +63,8 @@ function test()
         InspectorTest.sendCommand("Input.dispatchKeyEvent", {
             "type": "keyUp",
             "windowsVirtualKeyCode": 9,
-            "keyIdentifier": "U+0009"
+            "keyIdentifier": "U+0009",
+            "key": "Tab",
         });
     }
 }

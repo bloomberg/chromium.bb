@@ -23,29 +23,29 @@ description('Tests after pressing last radio button in the list, on pressing dow
 clickElement(document.getElementById('cherry'));                                  
 shouldBeTrue('document.getElementById("cherry").checked');
                  
-eventSender.keyDown('downArrow');                                                    
+eventSender.keyDown('ArrowDown');                                                    
 shouldBeTrue('document.getElementById("apple").checked');
 
-eventSender.keyDown('upArrow');                                                    
+eventSender.keyDown('ArrowUp');                                                    
 shouldBeTrue('document.getElementById("cherry").checked');
 
 
 clickElement(document.getElementById('cucumber'));
 shouldBeTrue('document.getElementById("cucumber").checked');
 
-eventSender.keyDown('downArrow');
+eventSender.keyDown('ArrowDown');
 shouldBeTrue('document.getElementById("tomato").checked');
 
-eventSender.keyDown('upArrow');
+eventSender.keyDown('ArrowUp');
 shouldBeTrue('document.getElementById("cucumber").checked');
 
 clickElement(document.getElementById('pumpkin'));
 shouldBeTrue('document.getElementById("pumpkin").checked');
 
-eventSender.keyDown('downArrow');
+eventSender.keyDown('ArrowDown');
 shouldBeTrue('document.getElementById("pumpkin").checked');
 
-eventSender.keyDown('upArrow');
+eventSender.keyDown('ArrowUp');
 shouldBeTrue('document.getElementById("pumpkin").checked');
 
 </script>                                                                                                   

@@ -12,7 +12,7 @@ description("Tests to ensure that default action does not occur for untrusted ev
 var node = document.getElementById('radio1');
 node.getBoundingClientRect();
 
-var event = new KeyboardEvent('keydown', { keyIdentifier: 'Down' } );
+var event = new KeyboardEvent('keydown', { key: 'ArrowDown' } );
 node.dispatchEvent(event);
 shouldBeTrue("document.getElementById('radio1').checked");
 shouldBeFalse("document.getElementById('radio2').checked");

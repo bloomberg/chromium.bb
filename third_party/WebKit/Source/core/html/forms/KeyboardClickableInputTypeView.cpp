@@ -40,8 +40,8 @@ using namespace HTMLNames;
 
 void KeyboardClickableInputTypeView::handleKeydownEvent(KeyboardEvent* event)
 {
-    const String& key = event->keyIdentifier();
-    if (key == "U+0020") {
+    const String& key = event->key();
+    if (key == " ") {
         element().setActive(true);
         // No setDefaultHandled(), because IE dispatches a keypress in this case
         // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
@@ -64,8 +64,8 @@ void KeyboardClickableInputTypeView::handleKeypressEvent(KeyboardEvent* event)
 
 void KeyboardClickableInputTypeView::handleKeyupEvent(KeyboardEvent* event)
 {
-    const String& key = event->keyIdentifier();
-    if (key != "U+0020")
+    const String& key = event->key();
+    if (key != " ")
         return;
     // Simulate mouse click for spacebar for button types.
     dispatchSimulatedClickIfActive(event);

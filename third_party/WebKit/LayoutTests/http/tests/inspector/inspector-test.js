@@ -521,11 +521,18 @@ InspectorTest.deprecatedRunAfterPendingDispatches = function(callback)
     barrier.callWhenDone(InspectorTest.safeWrap(callback));
 }
 
-InspectorTest.createKeyEvent = function(keyIdentifier, ctrlKey, altKey, shiftKey, metaKey)
+InspectorTest.createKeyEvent = function(key, ctrlKey, altKey, shiftKey, metaKey)
 {
-    var evt = document.createEvent("KeyboardEvent");
-    evt.initKeyboardEvent("keydown", true /* can bubble */, true /* can cancel */, null /* view */, keyIdentifier, "", ctrlKey, altKey, shiftKey, metaKey);
-    return evt;
+    var keyIdentifier = key;
+    if (key === "Tab")
+        keyIdentifier = "U+0009";
+    else if (key == "Escape")
+        keyIdentifier = "U+001B";
+    else if (key == "ArrowUp")
+        keyIdentifier = "Up";
+    else if (key == "ArrowDown")
+        keyIdentifier = "Down";
+    return new KeyboardEvent("keydown", {key: key, keyIdentifier: keyIdentifier, bubbles: true, cancelable: true, ctrlKey: ctrlKey, altKey: altKey, shiftKey: shiftKey, metaKey: metaKey});
 }
 
 InspectorTest.runTestSuite = function(testSuite)

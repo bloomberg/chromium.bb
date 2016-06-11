@@ -45,7 +45,7 @@ function test()
 
         function cancelEditing(next)
         {
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
             InspectorTest.waitForStyleApplied(next);
         },
 

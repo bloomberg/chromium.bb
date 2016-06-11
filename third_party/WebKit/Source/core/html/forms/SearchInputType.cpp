@@ -94,8 +94,8 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
         return;
     }
 
-    const String& key = event->keyIdentifier();
-    if (key == "U+001B") {
+    const String& key = event->key();
+    if (key == "Escape") {
         element().setValueForUser("");
         element().onSearch();
         event->setDefaultHandled();
