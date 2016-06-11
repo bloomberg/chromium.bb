@@ -109,10 +109,7 @@ source_set("fuzzer_support") {
     ":webcrypto",
     "//crypto",
     "//crypto:platform",
-
-    # The "blink_for_unittests" includes a dependency on Mojo, which otherwise
-    # public:blink lacks and would result in a linker error.
-    "//third_party/WebKit/public:blink_for_unittests",
+    "//third_party/WebKit/public:blink",
 
     # This contains a helper function for initializing Blink (needed for
     # PartitionAlloc initialization).

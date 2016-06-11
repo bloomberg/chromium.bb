@@ -68,7 +68,7 @@ test("cc_blink_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_for_unittests",
+    "//third_party/WebKit/public:blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]

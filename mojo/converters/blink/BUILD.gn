@@ -36,7 +36,6 @@ test("blink_converters_unittests") {
     "//base:message_loop_tests",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",

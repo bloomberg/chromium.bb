@@ -27,7 +27,6 @@ test("media_mojo_unittests") {
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//media/mojo/services",
-    "//mojo/edk/system",
     "//mojo/edk/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",

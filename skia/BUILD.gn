@@ -732,7 +732,6 @@ test("skia_unittests") {
     deps += [
       # TODO: Fix this test to not depend on cc.
       "//cc:test_support",
-      "//mojo/edk/system",
       "//mojo/public/cpp/bindings",
       "//skia/public/interfaces:test_interfaces",
     ]

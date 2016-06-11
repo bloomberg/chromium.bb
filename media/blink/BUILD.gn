@@ -116,7 +116,7 @@ test("media_blink_unittests") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_for_unittests",
+    "//third_party/WebKit/public:blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//url",

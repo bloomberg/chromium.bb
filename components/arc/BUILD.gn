@@ -202,7 +202,6 @@ static_library("arc_standalone") {
     "//base",
     "//ipc:ipc",
     "//ipc/mojo:mojo",
-    "//mojo/edk/system",
   ]
 }
 

@@ -82,7 +82,6 @@ test("mus_common_unittests") {
     "//base/test:test_config",
     "//components/mus/public/interfaces",
     "//ipc:ipc",
-    "//mojo/edk/test:test_support",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/ipc",

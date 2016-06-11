@@ -23,7 +23,6 @@ component("vr") {
   deps = [
     ":mojo_bindings",
     "//base",
-    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx",

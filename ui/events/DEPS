@@ -4,9 +4,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "run_all_unittests\.cc": [
-    "+mojo/edk/embedder/embedder.h",
-  ],
   "latency_info\.h": [
     "+mojo/public",
   ]

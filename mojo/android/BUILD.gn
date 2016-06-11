@@ -45,7 +45,6 @@ source_set("libsystem_java") {
   deps = [
     ":system_java_jni_headers",
     "//base",
-    "//mojo/edk/system",
     "//mojo/message_pump",
   ]
 }

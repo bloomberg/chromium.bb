@@ -25,16 +25,6 @@ group("blink") {
   ]
 }
 
-group("blink_for_unittests") {
-  public_deps = [
-    ":blink",
-
-    # Since public/platform/Platform.h depends on Mojo APIs, unittests depending
-    # on :blink needs to link mojo/edk/system.
-    "//mojo/edk/system",
-  ]
-}
-
 # This target provides a minimal set of Blink APIs such as WebString to use in
 # places that cannot link against the full Blink library.  FIXME: We really
 # shouldn't have this at all and should instead remove all uses of Blink's API

@@ -28,7 +28,6 @@ source_set("safe_json") {
     "//components/strings",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/edk/system",
     "//ui/base",
   ]
 
@@ -42,7 +41,6 @@ source_set("safe_json") {
     deps -= [
       "//components/safe_json/public/interfaces",
       "//content/public/browser",
-      "//mojo/edk/system",
     ]
   }
 }

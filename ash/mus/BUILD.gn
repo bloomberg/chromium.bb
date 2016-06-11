@@ -184,7 +184,6 @@ source_set("unittests") {
     "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/cpp/tests:unittest_support",
     "//components/mus/public/interfaces",
-    "//mojo/edk/system",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp:shell_test_support",
     "//skia",

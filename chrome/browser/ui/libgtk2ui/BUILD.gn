@@ -100,7 +100,6 @@ component("libgtk2ui") {
     "//chrome/app/theme:theme_resources",
     "//components/resources",
     "//content/public/browser",
-    "//mojo/edk/system",
     "//printing",
     "//skia",
     "//ui/aura",

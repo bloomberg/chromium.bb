@@ -31,7 +31,6 @@ if (!is_android) {
       ":mojo_bindings",
       "//base",
       "//base/third_party/dynamic_annotations",
-      "//mojo/edk/system",
       "//mojo/public/cpp/bindings",
     ]
 

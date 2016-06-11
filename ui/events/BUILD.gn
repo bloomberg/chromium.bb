@@ -401,7 +401,6 @@ test("events_unittests") {
     deps += [
       "//cc",
       "//ipc:test_support",
-      "//mojo/edk/system",
       "//mojo/public/cpp/bindings",
       "//third_party/WebKit/public:blink_headers",
       "//ui/events/blink",
