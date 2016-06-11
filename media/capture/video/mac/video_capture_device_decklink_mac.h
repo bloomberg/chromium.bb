@@ -32,7 +32,7 @@ namespace media {
 // Creates a reference counted |decklink_capture_delegate_| that does all the
 // DeckLink SDK configuration and capture work while holding a weak reference to
 // us for sending back frames, logs and error messages.
-class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
+class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
  public:
   // Gets the names of all DeckLink video capture devices connected to this
   // computer, as enumerated by the DeckLink SDK. To allow the user to choose

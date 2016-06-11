@@ -15,7 +15,7 @@ namespace media {
 // devices in the different platforms. VCDFs are created by MediaStreamManager
 // on IO thread and plugged into VideoCaptureManager, who owns and operates them
 // in Device Thread (a.k.a. Audio Thread).
-class MEDIA_EXPORT VideoCaptureDeviceFactory {
+class CAPTURE_EXPORT VideoCaptureDeviceFactory {
  public:
   static std::unique_ptr<VideoCaptureDeviceFactory> CreateFactory(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);

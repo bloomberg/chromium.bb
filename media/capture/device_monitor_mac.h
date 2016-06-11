@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/media_export.h"
+#include "media/capture/capture_export.h"
 
 namespace {
 class DeviceMonitorMacImpl;
@@ -21,7 +21,7 @@ namespace media {
 // Class to track audio/video devices removal or addition via callback to
 // base::SystemMonitor ProcessDevicesChanged(). A single object of this class
 // is created from the browser main process and lives as long as this one.
-class MEDIA_EXPORT DeviceMonitorMac {
+class CAPTURE_EXPORT DeviceMonitorMac {
  public:
   DeviceMonitorMac();
   ~DeviceMonitorMac();

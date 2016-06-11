@@ -38,7 +38,8 @@ class PinEnumerator final : public IEnumPins,
   STDMETHOD(Next)(ULONG count, IPin** pins, ULONG* fetched) override {
     ULONG pins_fetched = 0;
     while (pins_fetched < count && filter_->NoOfPins() > index_) {
-      IPin* pin = filter_->GetPin(index_++);
+      index_++;
+      IPin* pin = filter_->GetPin(static_cast<int>(index_));
       pin->AddRef();
       pins[pins_fetched++] = pin;
     }
