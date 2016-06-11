@@ -20,14 +20,22 @@ except ImportError:
 # since some compile processes will try to read the partially written cache.
 module_path, module_filename = os.path.split(os.path.realpath(__file__))
 templates_dir = module_path
-third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir))
 
-# jinja2 is in chromium's third_party directory.
+# In Blink, jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
 # after path[0] == invoking script dir
+third_party_dir = os.path.normpath(os.path.join(
+    module_path, os.pardir, os.pardir, os.pardir, os.pardir))
+if os.path.isdir(third_party_dir):
+    sys.path.insert(1, third_party_dir)
 
-sys.path.insert(1, third_party_dir)
+# In Node, it is in deps folder
+deps_dir = os.path.normpath(os.path.join(
+    module_path, os.pardir, os.pardir, os.pardir))
+if os.path.isdir(deps_dir):
+    sys.path.insert(1, os.path.join(deps_dir, "jinja2"))
+    sys.path.insert(1, os.path.join(deps_dir, "markupsafe"))
+
 import jinja2
 
 cmdline_parser = optparse.OptionParser()
@@ -78,8 +86,8 @@ def up_to_date():
 
     for domain in parsed_json["domains"]:
         name = domain["domain"]
-        h_path = os.path.join(output_dirname, name + '.h')
-        cpp_path = os.path.join(output_dirname, name + '.cpp')
+        h_path = os.path.join(output_dirname, name + ".h")
+        cpp_path = os.path.join(output_dirname, name + ".cpp")
         if not os.path.exists(h_path) or not os.path.exists(cpp_path):
             return False
         generated_ts = max(os.path.getmtime(h_path), os.path.getmtime(cpp_path))
@@ -97,7 +105,7 @@ def to_title_case(name):
 
 
 def dash_to_camelcase(word):
-    return ''.join(to_title_case(x) or '-' for x in word.split('-'))
+    return "".join(to_title_case(x) or "-" for x in word.split("-"))
 
 
 def initialize_jinja_env(cache_dir):
@@ -110,7 +118,7 @@ def initialize_jinja_env(cache_dir):
         lstrip_blocks=True,  # so can indent control flow tags
         trim_blocks=True)
     jinja_env.filters.update({"to_title_case": to_title_case, "dash_to_camelcase": dash_to_camelcase})
-    jinja_env.add_extension('jinja2.ext.loopcontrols')
+    jinja_env.add_extension("jinja2.ext.loopcontrols")
     return jinja_env
 
 

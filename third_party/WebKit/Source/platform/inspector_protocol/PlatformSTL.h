@@ -270,6 +270,8 @@ unique_ptr<T> move(unique_ptr<T>& ptr)
 
 }
 
+#endif // defined(__APPLE__) && !defined(_LIBCPP_VERSION)
+
 template <typename T>
 std::unique_ptr<T> wrapUnique(T* ptr)
 {
