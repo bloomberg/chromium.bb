@@ -7,12 +7,21 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
+#include <sys/types.h>
+
+#include "base/files/scoped_file.h"
 #include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/file_descriptor_info.h"
+
+namespace base {
+class Pickle;
+}  // namespace base
 
 namespace content {
 
@@ -53,9 +62,6 @@ class CONTENT_EXPORT ZygoteCommunication {
   int GetSandboxStatus();
 
  private:
-  // Whether we should use the namespace sandbox instead of the setuid sandbox.
-  bool ShouldUseNamespaceSandbox();
-
   // Should be called every time a Zygote child is born.
   void ZygoteChildBorn(pid_t process);
 
@@ -70,7 +76,7 @@ class CONTENT_EXPORT ZygoteCommunication {
   // Get the sandbox status from the zygote.
   ssize_t ReadSandboxStatus();
 
-  int control_fd_;  // the socket to the zygote.
+  base::ScopedFD control_fd_;  // the socket to the zygote.
   // A lock protecting all communication with the zygote. This lock must be
   // acquired before sending a command and released after the result has been
   // received.

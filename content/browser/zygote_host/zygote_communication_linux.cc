@@ -16,46 +16,18 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
-#include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/linux/services/namespace_sandbox.h"
-#include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "ui/display/display_switches.h"
-#include "ui/gfx/switches.h"
 
 namespace content {
 
-namespace {
-
-// Receive a fixed message on fd and return the sender's PID.
-// Returns true if the message received matches the expected message.
-bool ReceiveFixedMessage(int fd,
-                         const char* expect_msg,
-                         size_t expect_len,
-                         base::ProcessId* sender_pid) {
-  char buf[expect_len + 1];
-  std::vector<base::ScopedFD> fds_vec;
-
-  const ssize_t len = base::UnixDomainSocket::RecvMsgWithPid(
-      fd, buf, sizeof(buf), &fds_vec, sender_pid);
-  if (static_cast<size_t>(len) != expect_len)
-    return false;
-  if (memcmp(buf, expect_msg, expect_len) != 0)
-    return false;
-  if (!fds_vec.empty())
-    return false;
-  return true;
-}
-
-}  // namespace
-
 ZygoteCommunication::ZygoteCommunication()
-    : control_fd_(-1),
+    : control_fd_(),
       control_lock_(),
       pid_(),
       list_of_running_zygote_children_(),
@@ -68,7 +40,7 @@ ZygoteCommunication::~ZygoteCommunication() {}
 
 bool ZygoteCommunication::SendMessage(const base::Pickle& data,
                                       const std::vector<int>* fds) {
-  DCHECK_NE(-1, control_fd_);
+  DCHECK(control_fd_.is_valid());
   CHECK(data.size() <= kZygoteMaxMessageLength)
       << "Trying to send too-large message to zygote (sending " << data.size()
       << " bytes, max is " << kZygoteMaxMessageLength << ")";
@@ -77,17 +49,18 @@ bool ZygoteCommunication::SendMessage(const base::Pickle& data,
       << "(sending " << fds->size() << ", max is "
       << base::UnixDomainSocket::kMaxFileDescriptors << ")";
 
-  return base::UnixDomainSocket::SendMsg(control_fd_, data.data(), data.size(),
+  return base::UnixDomainSocket::SendMsg(control_fd_.get(), data.data(),
+                                         data.size(),
                                          fds ? *fds : std::vector<int>());
 }
 
 ssize_t ZygoteCommunication::ReadSandboxStatus() {
-  DCHECK_NE(-1, control_fd_);
+  DCHECK(control_fd_.is_valid());
   // At startup we send a kZygoteCommandGetSandboxStatus request to the zygote,
   // but don't wait for the reply. Thus, the first time that we read from the
   // zygote, we get the reply to that request.
   ssize_t bytes_read = HANDLE_EINTR(
-      read(control_fd_, &sandbox_status_, sizeof(sandbox_status_)));
+      read(control_fd_.get(), &sandbox_status_, sizeof(sandbox_status_)));
   if (bytes_read != sizeof(sandbox_status_)) {
     return -1;
   }
@@ -95,7 +68,7 @@ ssize_t ZygoteCommunication::ReadSandboxStatus() {
 }
 
 ssize_t ZygoteCommunication::ReadReply(void* buf, size_t buf_len) {
-  DCHECK_NE(-1, control_fd_);
+  DCHECK(control_fd_.is_valid());
   if (!have_read_sandbox_status_word_) {
     if (ReadSandboxStatus() == -1) {
       return -1;
@@ -104,7 +77,7 @@ ssize_t ZygoteCommunication::ReadReply(void* buf, size_t buf_len) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.SandboxStatus", sandbox_status_);
   }
 
-  return HANDLE_EINTR(read(control_fd_, buf, buf_len));
+  return HANDLE_EINTR(read(control_fd_.get(), buf, buf_len));
 }
 
 pid_t ZygoteCommunication::ForkRequest(
@@ -265,13 +238,6 @@ void ZygoteCommunication::Init() {
 
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);
 
-  int fds[2];
-  CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
-  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(fds[0]));
-  base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
-
-  base::LaunchOptions options;
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kZygoteCmdPrefix)) {
@@ -297,75 +263,7 @@ void ZygoteCommunication::Init() {
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(&cmd_line, -1);
 
-  const bool using_namespace_sandbox =
-      ZygoteHostImpl::GetInstance()->ShouldUseNamespaceSandbox();
-  // A non empty sandbox_cmd means we want a SUID sandbox.
-  const bool using_suid_sandbox =
-      !ZygoteHostImpl::GetInstance()->SandboxCommand().empty() &&
-      !using_namespace_sandbox;
-
-  // Start up the sandbox host process and get the file descriptor for the
-  // renderers to talk to it.
-  const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
-  fds_to_map.push_back(std::make_pair(sfd, GetSandboxFD()));
-
-  base::ScopedFD dummy_fd;
-  if (using_suid_sandbox) {
-    std::unique_ptr<sandbox::SetuidSandboxHost> sandbox_host(
-        sandbox::SetuidSandboxHost::Create());
-    sandbox_host->PrependWrapper(&cmd_line);
-    sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
-    sandbox_host->SetupLaunchEnvironment();
-  }
-
-  options.fds_to_remap = &fds_to_map;
-  base::Process process =
-      using_namespace_sandbox
-          ? sandbox::NamespaceSandbox::LaunchProcess(cmd_line, options)
-          : base::LaunchProcess(cmd_line, options);
-  CHECK(process.IsValid()) << "Failed to launch zygote process";
-
-  dummy_fd.reset();
-
-  if (using_suid_sandbox || using_namespace_sandbox) {
-    // The SUID sandbox will execute the zygote in a new PID namespace, and
-    // the main zygote process will then fork from there.  Watch now our
-    // elaborate dance to find and validate the zygote's PID.
-
-    // First we receive a message from the zygote boot process.
-    base::ProcessId boot_pid;
-    CHECK(ReceiveFixedMessage(fds[0], kZygoteBootMessage,
-                              sizeof(kZygoteBootMessage), &boot_pid));
-
-    // Within the PID namespace, the zygote boot process thinks it's PID 1,
-    // but its real PID can never be 1. This gives us a reliable test that
-    // the kernel is translating the sender's PID to our namespace.
-    CHECK_GT(boot_pid, 1)
-        << "Received invalid process ID for zygote; kernel might be too old? "
-           "See crbug.com/357670 or try using --"
-        << switches::kDisableSetuidSandbox << " to workaround.";
-
-    // Now receive the message that the zygote's ready to go, along with the
-    // main zygote process's ID.
-    CHECK(ReceiveFixedMessage(fds[0], kZygoteHelloMessage,
-                              sizeof(kZygoteHelloMessage), &pid_));
-    CHECK_GT(pid_, 1);
-
-    if (process.Pid() != pid_) {
-      // Reap the sandbox.
-      base::EnsureProcessGetsReaped(process.Pid());
-    }
-  } else {
-    // Not using the SUID sandbox.
-    // Note that ~base::Process() will reset the internal value, but there's no
-    // real "handle" on POSIX so that is safe.
-    pid_ = process.Pid();
-  }
-
-  close(fds[1]);
-  control_fd_ = fds[0];
-
-  ZygoteHostImpl::GetInstance()->AddZygotePid(pid_);
+  pid_ = ZygoteHostImpl::GetInstance()->LaunchZygote(&cmd_line, &control_fd_);
 
   base::Pickle pickle;
   pickle.WriteInt(kZygoteCommandGetSandboxStatus);

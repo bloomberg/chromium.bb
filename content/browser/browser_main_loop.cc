@@ -158,7 +158,6 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
-#include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/zygote_handle_linux.h"
@@ -200,34 +199,10 @@ namespace {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
-  base::FilePath sandbox_binary;
-
-  std::unique_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
-      sandbox::SetuidSandboxHost::Create());
-
-  const bool want_setuid_sandbox =
-      !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
-      !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox) &&
-      !setuid_sandbox_host->IsDisabledViaEnvironment();
-
-  static const char no_suid_error[] =
-      "Running without the SUID sandbox! See "
-      "https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md "
-      "for more information on developing with the sandbox on.";
-  if (want_setuid_sandbox) {
-    sandbox_binary = setuid_sandbox_host->GetSandboxBinaryPath();
-    if (sandbox_binary.empty()) {
-      // This needs to be fatal. Talk to security@chromium.org if you feel
-      // otherwise.
-      LOG(FATAL) << no_suid_error;
-    }
-  } else {
-    LOG(ERROR) << no_suid_error;
-  }
 
   // Tickle the sandbox host and zygote host so they fork now.
   RenderSandboxHostLinux::GetInstance()->Init();
-  ZygoteHostImpl::GetInstance()->Init(sandbox_binary.value());
+  ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
   *GetGenericZygote() = CreateZygote();
   RenderProcessHostImpl::EarlyZygoteLaunch();
 }
