@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
 
@@ -69,6 +70,12 @@ inline MojoResult AllocMessage(size_t num_bytes,
 inline MojoResult GetMessageBuffer(MessageHandle message, void** buffer) {
   DCHECK(message.is_valid());
   return MojoGetMessageBuffer(message.value(), buffer);
+}
+
+inline MojoResult NotifyBadMessage(MessageHandle message,
+                                   const base::StringPiece& error) {
+  DCHECK(message.is_valid());
+  return MojoNotifyBadMessage(message.value(), error.data(), error.size());
 }
 
 }  // namespace mojo

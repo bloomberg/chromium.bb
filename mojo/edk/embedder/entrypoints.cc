@@ -248,6 +248,12 @@ MojoResult MojoUnwrapPlatformSharedBufferHandleImpl(
                                                   num_bytes, flags);
 }
 
+MojoResult MojoNotifyBadMessageImpl(MojoMessageHandle message,
+                                    const char* error,
+                                    size_t error_num_bytes) {
+  return g_core->NotifyBadMessage(message, error, error_num_bytes);
+}
+
 }  // extern "C"
 
 namespace mojo {
@@ -288,7 +294,8 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,
                                     MojoWrapPlatformSharedBufferHandleImpl,
-                                    MojoUnwrapPlatformSharedBufferHandleImpl};
+                                    MojoUnwrapPlatformSharedBufferHandleImpl,
+                                    MojoNotifyBadMessageImpl};
   return system_thunks;
 }
 

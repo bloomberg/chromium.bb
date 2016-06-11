@@ -125,7 +125,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   channel.ChildProcessLaunched();
 
   ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle(),
-                       child_token);
+                       child_token, process_error_callback_);
   CHECK(test_child_.IsValid());
 
   return pipe;

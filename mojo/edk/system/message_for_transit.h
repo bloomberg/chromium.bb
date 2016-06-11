@@ -89,6 +89,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageForTransit {
 
   size_t num_handles() const { return header()->num_dispatchers; }
 
+  const PortsMessage& ports_message() const { return *message_; }
+
   std::unique_ptr<PortsMessage> TakePortsMessage() {
     return std::move(message_);
   }

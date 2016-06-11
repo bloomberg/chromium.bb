@@ -34,7 +34,9 @@ class MojoTestBase : public testing::Test {
 
   class ClientController {
    public:
-    ClientController(const std::string& client_name, MojoTestBase* test);
+    ClientController(const std::string& client_name,
+                     MojoTestBase* test,
+                     const ProcessErrorCallback& process_error_callback_);
     ~ClientController();
 
     MojoHandle pipe() const { return pipe_.get().value(); }
@@ -52,6 +54,13 @@ class MojoTestBase : public testing::Test {
 
     DISALLOW_COPY_AND_ASSIGN(ClientController);
   };
+
+  // Set the callback to handle bad messages received from test client
+  // processes. This can be set to a different callback before starting each
+  // client.
+  void set_process_error_callback(const ProcessErrorCallback& callback) {
+    process_error_callback_ = callback;
+  }
 
   ClientController& StartClient(const std::string& client_name);
 
@@ -143,6 +152,8 @@ class MojoTestBase : public testing::Test {
   friend class ClientController;
 
   std::vector<std::unique_ptr<ClientController>> clients_;
+
+  ProcessErrorCallback process_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestBase);
 };

@@ -74,7 +74,8 @@ class NodeController : public ports::NodeDelegate,
   // Connects this node to a child node. This node will initiate a handshake.
   void ConnectToChild(base::ProcessHandle process_handle,
                       ScopedPlatformHandle platform_handle,
-                      const std::string& child_token);
+                      const std::string& child_token,
+                      const ProcessErrorCallback& process_error_callback);
 
   // Closes all reserved ports which associated with the child process
   // |child_token|.
@@ -121,6 +122,11 @@ class NodeController : public ports::NodeDelegate,
   // transfer.
   void RequestShutdown(const base::Closure& callback);
 
+  // Notifies the NodeController that we received a bad message from the given
+  // node.
+  void NotifyBadMessageFrom(const ports::NodeName& source_node,
+                            const std::string& error);
+
  private:
   friend Core;
 
@@ -133,9 +139,11 @@ class NodeController : public ports::NodeDelegate,
     const std::string child_token;
   };
 
-  void ConnectToChildOnIOThread(base::ProcessHandle process_handle,
-                                ScopedPlatformHandle platform_handle,
-                                ports::NodeName token);
+  void ConnectToChildOnIOThread(
+      base::ProcessHandle process_handle,
+      ScopedPlatformHandle platform_handle,
+      ports::NodeName token,
+      const ProcessErrorCallback& process_error_callback);
   void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
@@ -190,6 +198,9 @@ class NodeController : public ports::NodeDelegate,
                            base::ProcessHandle from_process,
                            const ports::NodeName& destination,
                            Channel::MessagePtr message) override;
+  void OnPortsMessageFromRelay(const ports::NodeName& from_node,
+                               const ports::NodeName& source_node,
+                               Channel::MessagePtr message) override;
 #endif
   void OnChannelError(const ports::NodeName& from_node) override;
 #if defined(OS_MACOSX) && !defined(OS_IOS)

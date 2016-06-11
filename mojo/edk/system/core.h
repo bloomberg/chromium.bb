@@ -54,7 +54,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Called in the parent process any time a new child is launched.
   void AddChild(base::ProcessHandle process_handle,
                 ScopedPlatformHandle platform_handle,
-                const std::string& child_token);
+                const std::string& child_token,
+                const ProcessErrorCallback& process_error_callback);
 
   // Called in the parent process when a child process fails to launch.
   void ChildLaunchFailed(const std::string& child_token);
@@ -200,6 +201,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                             uint32_t* num_handles,
                             MojoReadMessageFlags flags);
   MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
+  MojoResult NotifyBadMessage(MojoMessageHandle message,
+                              const char* error,
+                              size_t error_num_bytes);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/data_pipe.h":

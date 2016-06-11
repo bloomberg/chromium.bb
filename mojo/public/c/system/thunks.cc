@@ -275,6 +275,13 @@ MojoResult MojoUnwrapPlatformSharedBufferHandle(
                                                    num_bytes, flags);
 }
 
+MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
+                                const char* error,
+                                size_t error_num_bytes) {
+  assert(g_thunks.NotifyBadMessage);
+  return g_thunks.NotifyBadMessage(message, error, error_num_bytes);
+}
+
 }  // extern "C"
 
 size_t MojoEmbedderSetSystemThunks(const MojoSystemThunks* system_thunks) {

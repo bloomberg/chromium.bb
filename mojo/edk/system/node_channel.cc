@@ -44,6 +44,9 @@ enum class MessageType : uint32_t {
   RELAY_PORTS_MESSAGE,
 #endif
   BROADCAST,
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+  PORTS_MESSAGE_FROM_RELAY,
+#endif
 };
 
 struct Header {
@@ -112,6 +115,11 @@ struct IntroductionData {
 struct RelayPortsMessageData {
   ports::NodeName destination;
 };
+
+// This struct is followed by the full payload of a relayed message.
+struct PortsMessageFromRelayData {
+  ports::NodeName source;
+};
 #endif
 
 template <typename DataType>
@@ -146,12 +154,14 @@ bool GetMessagePayload(const void* bytes,
 scoped_refptr<NodeChannel> NodeChannel::Create(
     Delegate* delegate,
     ScopedPlatformHandle platform_handle,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::TaskRunner> io_task_runner,
+    const ProcessErrorCallback& process_error_callback) {
 #if defined(OS_NACL)
   LOG(FATAL) << "Multi-process not yet supported on NaCl";
   return nullptr;
 #else
-  return new NodeChannel(delegate, std::move(platform_handle), io_task_runner);
+  return new NodeChannel(delegate, std::move(platform_handle), io_task_runner,
+                         process_error_callback);
 #endif
 }
 
@@ -196,6 +206,11 @@ void NodeChannel::ShutDown() {
     channel_->ShutDown();
     channel_ = nullptr;
   }
+}
+
+void NodeChannel::NotifyBadMessage(const std::string& error) {
+  if (!process_error_callback_.is_null())
+    process_error_callback_.Run("Received bad user message: " + error);
 }
 
 void NodeChannel::SetRemoteProcessHandle(base::ProcessHandle process_handle) {
@@ -380,13 +395,30 @@ void NodeChannel::RelayPortsMessage(const ports::NodeName& destination,
 
   WriteChannelMessage(std::move(relay_message));
 }
+
+void NodeChannel::PortsMessageFromRelay(const ports::NodeName& source,
+                                        Channel::MessagePtr message) {
+  size_t num_bytes = sizeof(PortsMessageFromRelayData) +
+      message->payload_size();
+  PortsMessageFromRelayData* data;
+  Channel::MessagePtr relayed_message = CreateMessage(
+      MessageType::PORTS_MESSAGE_FROM_RELAY, num_bytes, message->num_handles(),
+      &data);
+  data->source = source;
+  if (message->payload_size())
+    memcpy(data + 1, message->payload(), message->payload_size());
+  relayed_message->SetHandles(message->TakeHandles());
+  WriteChannelMessage(std::move(relayed_message));
+}
 #endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 
 NodeChannel::NodeChannel(Delegate* delegate,
                          ScopedPlatformHandle platform_handle,
-                         scoped_refptr<base::TaskRunner> io_task_runner)
+                         scoped_refptr<base::TaskRunner> io_task_runner,
+                         const ProcessErrorCallback& process_error_callback)
     : delegate_(delegate),
-      io_task_runner_(io_task_runner)
+      io_task_runner_(io_task_runner),
+      process_error_callback_(process_error_callback)
 #if !defined(OS_NACL)
       , channel_(
           Channel::Create(this, std::move(platform_handle), io_task_runner_))
@@ -642,6 +674,29 @@ void NodeChannel::OnChannelMessage(const void* payload,
       // we actually begin using the message.
       DVLOG(1) << "Ignoring unhandled BROADCAST message.";
       return;
+
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+    case MessageType::PORTS_MESSAGE_FROM_RELAY:
+      const PortsMessageFromRelayData* data;
+      if (GetMessagePayload(payload, payload_size, &data)) {
+        size_t num_bytes = payload_size - sizeof(*data);
+        if (num_bytes < sizeof(Header))
+          break;
+        num_bytes -= sizeof(Header);
+
+        size_t num_handles = handles ? handles->size() : 0;
+        Channel::MessagePtr message(
+            new Channel::Message(num_bytes, num_handles));
+        message->SetHandles(std::move(handles));
+        if (num_bytes)
+          memcpy(message->mutable_payload(), data + 1, num_bytes);
+        delegate_->OnPortsMessageFromRelay(
+            remote_node_name_, data->source, std::move(message));
+        return;
+      }
+      break;
+
+#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 
     default:
       break;

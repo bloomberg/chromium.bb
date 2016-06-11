@@ -313,6 +313,27 @@ MOJO_SYSTEM_EXPORT MojoResult MojoFreeMessage(MojoMessageHandle message);
 MOJO_SYSTEM_EXPORT MojoResult MojoGetMessageBuffer(MojoMessageHandle message,
                                                    void** buffer);  // Out
 
+// Notifies the system that a bad message was received on a message pipe,
+// according to whatever criteria the caller chooses. This ultimately tries to
+// notify the embedder about the bad message, and the embedder may enforce some
+// policy for dealing with the source of the message (e.g. close the pipe,
+// terminate, a process, etc.) The embedder may not be notified if the calling
+// process has lost its connection to the source process.
+//
+// |message|: The message to report as bad. This must have come from a call to
+//     |MojoReadMessageNew()|.
+// |error|: An error string which may provide the embedder with context when
+//     notified of this error.
+// |error_num_bytes|: The length of |error| in bytes.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if successful.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoNotifyBadMessage(MojoMessageHandle message,
+                     const char* error,
+                     size_t error_num_bytes);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

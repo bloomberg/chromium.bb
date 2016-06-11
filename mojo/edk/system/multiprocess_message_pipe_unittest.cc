@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -1278,6 +1279,71 @@ TEST_F(MultiprocessMessagePipeTest, BootstrapMessagePipeAsync) {
     // Ensure that we can read and write on the new pipe.
     VerifyEcho(pipe.get().value(), "goodbye");
   END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient, MultiprocessMessagePipeTest,
+                                  parent) {
+  MojoHandle pipe;
+  EXPECT_EQ("hi", ReadMessageWithHandles(parent, &pipe, 1));
+  WriteMessage(pipe, "derp");
+  EXPECT_EQ("bye", ReadMessage(parent));
+}
+
+void OnProcessError(std::string* out_error, const std::string& error) {
+  *out_error = error;
+}
+
+TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
+  const std::string kFirstErrorMessage = "everything is terrible!";
+  const std::string kSecondErrorMessage = "not the bits you're looking for";
+
+  std::string first_process_error;
+  std::string second_process_error;
+
+  set_process_error_callback(base::Bind(&OnProcessError, &first_process_error));
+  RUN_CHILD_ON_PIPE(BadMessageClient, child1)
+    set_process_error_callback(base::Bind(&OnProcessError,
+                                          &second_process_error));
+    RUN_CHILD_ON_PIPE(BadMessageClient, child2)
+      MojoHandle a, b, c, d;
+      CreateMessagePipe(&a, &b);
+      CreateMessagePipe(&c, &d);
+      WriteMessageWithHandles(child1, "hi", &b, 1);
+      WriteMessageWithHandles(child2, "hi", &d, 1);
+
+      // Read a message from the pipe we sent to child1 and flag it as bad.
+      ASSERT_EQ(MOJO_RESULT_OK, MojoWait(a, MOJO_HANDLE_SIGNAL_READABLE,
+                                         MOJO_DEADLINE_INDEFINITE, nullptr));
+      uint32_t num_bytes = 0;
+      MojoMessageHandle message;
+      ASSERT_EQ(MOJO_RESULT_OK,
+                MojoReadMessageNew(a, &message, &num_bytes, nullptr, 0,
+                                   MOJO_READ_MESSAGE_FLAG_NONE));
+      EXPECT_EQ(MOJO_RESULT_OK,
+                MojoNotifyBadMessage(message, kFirstErrorMessage.data(),
+                                     kFirstErrorMessage.size()));
+      EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+
+      // Read a message from the pipe we sent to child2 and flag it as bad.
+      ASSERT_EQ(MOJO_RESULT_OK, MojoWait(c, MOJO_HANDLE_SIGNAL_READABLE,
+                                         MOJO_DEADLINE_INDEFINITE, nullptr));
+      ASSERT_EQ(MOJO_RESULT_OK,
+                MojoReadMessageNew(c, &message, &num_bytes, nullptr, 0,
+                                   MOJO_READ_MESSAGE_FLAG_NONE));
+      EXPECT_EQ(MOJO_RESULT_OK,
+                MojoNotifyBadMessage(message, kSecondErrorMessage.data(),
+                                     kSecondErrorMessage.size()));
+      EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+
+      WriteMessage(child2, "bye");
+    END_CHILD();
+
+    WriteMessage(child1, "bye");
+  END_CHILD()
+
+  // The error messages should match the processes which triggered them.
+  EXPECT_NE(std::string::npos, first_process_error.find(kFirstErrorMessage));
+  EXPECT_NE(std::string::npos, second_process_error.find(kSecondErrorMessage));
 }
 
 }  // namespace

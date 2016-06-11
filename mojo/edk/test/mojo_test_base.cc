@@ -43,12 +43,15 @@ MojoTestBase::~MojoTestBase() {}
 
 MojoTestBase::ClientController& MojoTestBase::StartClient(
     const std::string& client_name) {
-  clients_.push_back(base::WrapUnique(new ClientController(client_name, this)));
+  clients_.push_back(base::MakeUnique<ClientController>(
+      client_name, this, process_error_callback_));
   return *clients_.back();
 }
 
-MojoTestBase::ClientController::ClientController(const std::string& client_name,
-                                                 MojoTestBase* test) {
+MojoTestBase::ClientController::ClientController(
+    const std::string& client_name,
+    MojoTestBase* test,
+    const ProcessErrorCallback& process_error_callback) {
 #if !defined(OS_IOS)
 #if defined(OS_MACOSX)
   // This lock needs to be held while launching the child because the Mach port
@@ -59,6 +62,7 @@ MojoTestBase::ClientController::ClientController(const std::string& client_name,
   // launch and child pid registration.
   base::AutoLock lock(g_mach_broker->GetLock());
 #endif
+  helper_.set_process_error_callback(process_error_callback);
   pipe_ = helper_.StartChild(client_name);
 #if defined(OS_MACOSX)
   g_mach_broker->AddPlaceholderForPid(helper_.test_child().Handle());

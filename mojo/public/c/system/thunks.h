@@ -153,6 +153,9 @@ struct MojoSystemThunks {
       struct MojoPlatformHandle* platform_handle,
       size_t* num_bytes,
       MojoPlatformSharedBufferHandleFlags* flags);
+  MojoResult (*NotifyBadMessage)(MojoMessageHandle message,
+                                 const char* error,
+                                 size_t error_num_bytes);
 };
 #pragma pack(pop)
 

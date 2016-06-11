@@ -45,9 +45,17 @@ void SetMaxMessageSize(size_t bytes) {
 void ChildProcessLaunched(base::ProcessHandle child_process,
                           ScopedPlatformHandle server_pipe,
                           const std::string& child_token) {
+  ChildProcessLaunched(child_process, std::move(server_pipe),
+                       child_token, ProcessErrorCallback());
+}
+
+void ChildProcessLaunched(base::ProcessHandle child_process,
+                          ScopedPlatformHandle server_pipe,
+                          const std::string& child_token,
+                          const ProcessErrorCallback& process_error_callback) {
   CHECK(internal::g_core);
   internal::g_core->AddChild(child_process, std::move(server_pipe),
-                             child_token);
+                             child_token, process_error_callback);
 }
 
 void ChildProcessLaunchFailed(const std::string& child_token) {

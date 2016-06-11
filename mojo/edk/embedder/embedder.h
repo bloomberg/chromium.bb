@@ -29,6 +29,8 @@ namespace edk {
 
 class ProcessDelegate;
 
+using ProcessErrorCallback = base::Callback<void(const std::string& error)>;
+
 // Basic configuration/initialization ------------------------------------------
 
 // |Init()| sets up the basic Mojo system environment, making the |Mojo...()|
@@ -43,6 +45,16 @@ MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
     base::ProcessHandle child_process,
     ScopedPlatformHandle server_pipe,
     const std::string& child_token);
+
+// Called in the parent process for each child process that is launched.
+// |process_error_callback| is called if the system becomes aware of some
+// internal error related to this process, e.g., if the system is notified of a
+// bad message from this process via the |MojoNotifyBadMessage()| API.
+MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
+    base::ProcessHandle child_process,
+    ScopedPlatformHandle server_pipe,
+    const std::string& child_token,
+    const ProcessErrorCallback& error_callback);
 
 // Called in the parent process when a child process fails to launch.
 // Exactly one of ChildProcessLaunched() or ChildProcessLaunchFailed() must be

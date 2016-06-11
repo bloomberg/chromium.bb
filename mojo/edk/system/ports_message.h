@@ -11,6 +11,7 @@
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/message.h"
+#include "mojo/edk/system/ports/name.h"
 
 namespace mojo {
 namespace edk {
@@ -40,6 +41,9 @@ class PortsMessage : public ports::Message {
     return std::move(channel_message_);
   }
 
+  void set_source_node(const ports::NodeName& name) { source_node_ = name; }
+  const ports::NodeName& source_node() const { return source_node_; }
+
  private:
   friend class NodeController;
 
@@ -54,6 +58,9 @@ class PortsMessage : public ports::Message {
                Channel::MessagePtr channel_message);
 
   Channel::MessagePtr channel_message_;
+
+  // The node name from which this message was received, if known.
+  ports::NodeName source_node_ = ports::kInvalidNodeName;
 };
 
 }  // namespace edk
