@@ -101,6 +101,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // |background_layer_| of RenderWidgetHostViewCocoa) leads to unpredictable
   // behavior.
   base::scoped_nsobject<CALayer> flipped_layer_;
+  base::scoped_nsobject<CALayer> fslp_flipped_layer_;
 
   // A CALayer with content provided by the output surface.
   base::scoped_nsobject<CALayer> content_layer_;

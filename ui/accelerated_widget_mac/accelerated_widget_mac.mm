@@ -48,6 +48,12 @@ AcceleratedWidgetMac::AcceleratedWidgetMac() : view_(nullptr) {
   [flipped_layer_
       setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
 
+  fslp_flipped_layer_.reset([[CALayer alloc] init]);
+  [fslp_flipped_layer_ setGeometryFlipped:YES];
+  [fslp_flipped_layer_ setAnchorPoint:CGPointMake(0, 0)];
+  [fslp_flipped_layer_
+      setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
+
   // Use a sequence number as the accelerated widget handle that we can use
   // to look up the internals structure.
   static intptr_t last_sequence_number = 0;
@@ -74,6 +80,7 @@ void AcceleratedWidgetMac::SetNSView(AcceleratedWidgetMacNSView* view) {
   CALayer* background_layer = [view_->AcceleratedWidgetGetNSView() layer];
   DCHECK(background_layer);
   [flipped_layer_ setBounds:[background_layer bounds]];
+  [fslp_flipped_layer_ setBounds:[background_layer bounds]];
   [background_layer addSublayer:flipped_layer_];
 }
 
@@ -112,7 +119,7 @@ void AcceleratedWidgetMac::ResetFullscreenLowPowerCoordinator() {
 }
 
 CALayer* AcceleratedWidgetMac::GetFullscreenLowPowerLayer() const {
-  return fullscreen_low_power_layer_;
+  return fslp_flipped_layer_;
 }
 
 bool AcceleratedWidgetMac::MightBeInFullscreenLowPowerMode() const {
@@ -158,6 +165,8 @@ void AcceleratedWidgetMac::GotCALayerFrame(
   }
   ScopedCAActionDisabler disabler;
   last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
+  if (fullscreen_low_power_layer_valid)
+    [fslp_flipped_layer_ setFrame:gfx::Rect(last_swap_size_dip_).ToCGRect()];
 
   // Ensure that the content is in the CALayer hierarchy, and update fullscreen
   // low power state.
@@ -171,6 +180,8 @@ void AcceleratedWidgetMac::GotCALayerFrame(
       fslp_coordinator_->WillLoseAcceleratedWidget();
       DCHECK(!fslp_coordinator_);
     }
+    [fslp_flipped_layer_ addSublayer:fullscreen_low_power_layer];
+    [fullscreen_low_power_layer_ removeFromSuperlayer];
     fullscreen_low_power_layer_ = fullscreen_low_power_layer;
   }
   if (fslp_coordinator_)
