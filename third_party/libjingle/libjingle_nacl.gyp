@@ -113,6 +113,8 @@
         '<(webrtc_base)/ipaddress.cc',
         '<(webrtc_base)/ipaddress.h',
         '<(webrtc_base)/linked_ptr.h',
+        '<(webrtc_base)/location.cc',
+        '<(webrtc_base)/location.h',
         '<(webrtc_base)/logging.cc',
         '<(webrtc_base)/logging.h',
         '<(webrtc_base)/maccocoathreadhelper.h',

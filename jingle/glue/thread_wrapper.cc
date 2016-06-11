@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/webrtc/base/nullsocketserver.h"
 
 namespace jingle_glue {
@@ -92,18 +93,20 @@ void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
   delete this;
 }
 
-void JingleThreadWrapper::Post(rtc::MessageHandler* handler,
+void JingleThreadWrapper::Post(const rtc::Location& posted_from,
+                               rtc::MessageHandler* handler,
                                uint32_t message_id,
                                rtc::MessageData* data,
                                bool time_sensitive) {
-  PostTaskInternal(0, handler, message_id, data);
+  PostTaskInternal(posted_from, 0, handler, message_id, data);
 }
 
-void JingleThreadWrapper::PostDelayed(int delay_ms,
+void JingleThreadWrapper::PostDelayed(const rtc::Location& posted_from,
+                                      int delay_ms,
                                       rtc::MessageHandler* handler,
                                       uint32_t message_id,
                                       rtc::MessageData* data) {
-  PostTaskInternal(delay_ms, handler, message_id, data);
+  PostTaskInternal(posted_from, delay_ms, handler, message_id, data);
 }
 
 void JingleThreadWrapper::Clear(rtc::MessageHandler* handler,
@@ -147,7 +150,15 @@ void JingleThreadWrapper::Clear(rtc::MessageHandler* handler,
   }
 }
 
-void JingleThreadWrapper::Send(rtc::MessageHandler* handler,
+void JingleThreadWrapper::Dispatch(rtc::Message* message) {
+  TRACE_EVENT2("webrtc", "JingleThreadWrapper::Dispatch", "src_file_and_line",
+               message->posted_from.file_and_line(), "src_func",
+               message->posted_from.function_name());
+  message->phandler->OnMessage(message);
+}
+
+void JingleThreadWrapper::Send(const rtc::Location& posted_from,
+                               rtc::MessageHandler* handler,
                                uint32_t id,
                                rtc::MessageData* data) {
   if (fStop_)
@@ -158,12 +169,13 @@ void JingleThreadWrapper::Send(rtc::MessageHandler* handler,
       "thread that has JingleThreadWrapper.";
 
   rtc::Message message;
+  message.posted_from = posted_from;
   message.phandler = handler;
   message.message_id = id;
   message.pdata = data;
 
   if (current_thread == this) {
-    handler->OnMessage(&message);
+    Dispatch(&message);
     return;
   }
 
@@ -214,18 +226,20 @@ void JingleThreadWrapper::ProcessPendingSends() {
       }
     }
     if (pending_send) {
-      pending_send->message.phandler->OnMessage(&pending_send->message);
+      Dispatch(&pending_send->message);
       pending_send->done_event.Signal();
     }
   }
 }
 
-void JingleThreadWrapper::PostTaskInternal(int delay_ms,
+void JingleThreadWrapper::PostTaskInternal(const rtc::Location& posted_from,
+                                           int delay_ms,
                                            rtc::MessageHandler* handler,
                                            uint32_t message_id,
                                            rtc::MessageData* data) {
   int task_id;
   rtc::Message message;
+  message.posted_from = posted_from;
   message.phandler = handler;
   message.message_id = message_id;
   message.pdata = data;
@@ -265,7 +279,7 @@ void JingleThreadWrapper::RunTask(int task_id) {
       DCHECK(message.phandler == nullptr);
       delete message.pdata;
     } else {
-      message.phandler->OnMessage(&message);
+      Dispatch(&message);
     }
   }
 }
@@ -295,14 +309,11 @@ bool JingleThreadWrapper::Peek(rtc::Message*, int) {
   return false;
 }
 
-void JingleThreadWrapper::PostAt(uint32_t,
+void JingleThreadWrapper::PostAt(const rtc::Location& posted_from,
+                                 uint32_t,
                                  rtc::MessageHandler*,
                                  uint32_t,
                                  rtc::MessageData*) {
-  NOTREACHED();
-}
-
-void JingleThreadWrapper::Dispatch(rtc::Message* message) {
   NOTREACHED();
 }
 

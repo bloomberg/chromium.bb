@@ -61,18 +61,22 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   void WillDestroyCurrentMessageLoop() override;
 
   // rtc::MessageQueue overrides.
-  void Post(rtc::MessageHandler* phandler,
+  void Post(const rtc::Location& posted_from,
+            rtc::MessageHandler* phandler,
             uint32_t id,
             rtc::MessageData* pdata,
             bool time_sensitive) override;
-  void PostDelayed(int delay_ms,
+  void PostDelayed(const rtc::Location& posted_from,
+                   int delay_ms,
                    rtc::MessageHandler* handler,
                    uint32_t id,
                    rtc::MessageData* data) override;
   void Clear(rtc::MessageHandler* handler,
              uint32_t id,
              rtc::MessageList* removed) override;
-  void Send(rtc::MessageHandler* handler,
+  void Dispatch(rtc::Message* message) override;
+  void Send(const rtc::Location& posted_from,
+            rtc::MessageHandler* handler,
             uint32_t id,
             rtc::MessageData* data) override;
 
@@ -85,11 +89,11 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   void Restart() override;
   bool Get(rtc::Message* message, int delay_ms, bool process_io) override;
   bool Peek(rtc::Message* message, int delay_ms) override;
-  void PostAt(uint32_t timestamp,
+  void PostAt(const rtc::Location& posted_from,
+              uint32_t timestamp,
               rtc::MessageHandler* handler,
               uint32_t id,
               rtc::MessageData* data) override;
-  void Dispatch(rtc::Message* message) override;
   void ReceiveSends() override;
   int GetDelay() override;
 
@@ -104,7 +108,8 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   explicit JingleThreadWrapper(
      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void PostTaskInternal(int delay_ms,
+  void PostTaskInternal(const rtc::Location& posted_from,
+                        int delay_ms,
                         rtc::MessageHandler* handler,
                         uint32_t message_id,
                         rtc::MessageData* data);
