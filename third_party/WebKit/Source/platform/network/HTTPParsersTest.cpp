@@ -275,6 +275,8 @@ TEST(HTTPParsersTest, SuboriginParseInvalidPolicy)
     expectParsePolicyFail("One policy, missing last quote", "foobar 'unsafe-postmessage-send");
     expectParsePolicyFail("One policy, invalid character at end", "foobar 'unsafe-postmessage-send';");
     expectParsePolicyFail("Multiple policies, extra character between options", "foobar 'unsafe-postmessage-send' ; 'unsafe-postmessage-send'");
+    expectParsePolicyFail("Policy that is a single quote", "foobar '");
+    expectParsePolicyFail("Valid policy and then policy that is a single quote", "foobar 'unsafe-postmessage-send' '");
 }
 
 } // namespace blink
