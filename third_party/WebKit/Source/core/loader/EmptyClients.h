@@ -84,7 +84,7 @@ public:
     void takeFocus(WebFocusType) override {}
 
     void focusedNodeChanged(Node*, Node*) override {}
-    Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSetOpener) override { return nullptr; }
+    Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy) override { return nullptr; }
     void show(NavigationPolicy) override {}
 
     void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) override {}

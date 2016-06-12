@@ -2063,9 +2063,7 @@ void WebContentsImpl::CreateNewWindow(
           params.user_gesture, &was_blocked);
     }
     if (!was_blocked) {
-      OpenURLParams open_params(params.target_url,
-                                Referrer(),
-                                CURRENT_TAB,
+      OpenURLParams open_params(params.target_url, params.referrer, CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 true /* is_renderer_initiated */);
       open_params.user_gesture = params.user_gesture;

@@ -67,7 +67,7 @@ public:
     void startDragging(LocalFrame*, const WebDragData&, WebDragOperationsMask, const WebImage& dragImage, const WebPoint& dragImageOffset) override;
     bool acceptsLoadDrops() const override;
     Page* createWindow(
-        LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSetOpener) override;
+        LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy) override;
     void show(NavigationPolicy) override;
     void didOverscroll(
         const FloatSize& overscrollDelta,
