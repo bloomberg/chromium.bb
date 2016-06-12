@@ -68,7 +68,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
 
   display_compositor::GLHelper gl_helper_;
-  OzoneGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  std::unique_ptr<OzoneGpuMemoryBufferManager> ozone_gpu_memory_buffer_manager_;
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 

@@ -60,6 +60,12 @@ SurfacesContextProvider::SurfacesContextProvider(
         service->gpu_channel_local(), widget, gfx::Size(),
         shared_command_buffer, stream_id, stream_priority, attributes,
         active_url, gpu_preference, task_runner);
+    command_buffer_proxy_impl_->SetSwapBuffersCompletionCallback(
+        base::Bind(&SurfacesContextProvider::OnGpuSwapBuffersCompleted,
+                   base::Unretained(this)));
+    command_buffer_proxy_impl_->SetUpdateVSyncParametersCallback(
+        base::Bind(&SurfacesContextProvider::OnUpdateVSyncParameters,
+                   base::Unretained(this)));
   }
 }
 
@@ -167,6 +173,24 @@ void SurfacesContextProvider::UpdateVSyncParameters(int64_t timebase,
 void SurfacesContextProvider::GpuCompletedSwapBuffers(gfx::SwapResult result) {
   if (!swap_buffers_completion_callback_.is_null()) {
     swap_buffers_completion_callback_.Run(result);
+  }
+}
+
+void SurfacesContextProvider::OnGpuSwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  if (!swap_buffers_completion_callback_.is_null()) {
+    swap_buffers_completion_callback_.Run(result);
+  }
+}
+
+void SurfacesContextProvider::OnUpdateVSyncParameters(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  if (delegate_) {
+    delegate_->OnVSyncParametersUpdated(timebase.ToInternalValue(),
+                                        interval.ToInternalValue());
   }
 }
 

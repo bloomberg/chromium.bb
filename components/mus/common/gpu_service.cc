@@ -14,20 +14,6 @@
 
 namespace mus {
 
-namespace {
-
-void GpuChannelEstablishCallback(int* client_id_out,
-                                 IPC::ChannelHandle* channel_handle_out,
-                                 gpu::GPUInfo* gpu_info_out,
-                                 int client_id,
-                                 mus::mojom::ChannelHandlePtr channel_handle,
-                                 mus::mojom::GpuInfoPtr gpu_info) {
-  *client_id_out = client_id;
-  *channel_handle_out = channel_handle.To<IPC::ChannelHandle>();
-  // TODO(penghuang): Get the gpu info.
-}
-}
-
 GpuService::GpuService()
     : main_message_loop_(base::MessageLoop::current()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -68,18 +54,19 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannel(
   connector->ConnectToInterface("mojo:mus", &gpu_service);
 
   int client_id = 0;
-  IPC::ChannelHandle channel_handle;
-  gpu::GPUInfo gpu_info;
-  gpu_service->EstablishGpuChannel(base::Bind(
-      &GpuChannelEstablishCallback, &client_id, &channel_handle, &gpu_info));
-  if (!gpu_service.WaitForIncomingResponse()) {
+  mojom::ChannelHandlePtr channel_handle;
+  mojom::GpuInfoPtr gpu_info;
+  if (!gpu_service->EstablishGpuChannel(&client_id, &channel_handle,
+                                        &gpu_info)) {
     DLOG(WARNING)
         << "Channel encountered error while establishing gpu channel.";
     return nullptr;
   }
-  gpu_channel_ = gpu::GpuChannelHost::Create(this, client_id, gpu_info,
-                                             channel_handle, &shutdown_event_,
-                                             gpu_memory_buffer_manager_.get());
+
+  // TODO(penghuang): Get the real gpu info from mus.
+  gpu_channel_ = gpu::GpuChannelHost::Create(
+      this, client_id, gpu::GPUInfo(), channel_handle.To<IPC::ChannelHandle>(),
+      &shutdown_event_, gpu_memory_buffer_manager_.get());
   return gpu_channel_;
 }
 

@@ -8,7 +8,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
+#include "build/build_config.h"
+#include "components/mus/gpu/mus_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -28,6 +29,10 @@
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace mus {
 namespace {
@@ -184,7 +189,8 @@ void GpuServiceMus::Initialize() {
                             base::Unretained(this), &channel_handle, &event));
   event.Wait();
 
-  gpu_memory_buffer_manager_local_.reset(new MojoGpuMemoryBufferManager);
+  gpu_memory_buffer_manager_local_.reset(
+      new MusGpuMemoryBufferManager(this, kLocalGpuChannelClientId));
   gpu_channel_local_ = gpu::GpuChannelHost::Create(
       this, kLocalGpuChannelClientId, gpu_info_, channel_handle,
       &shutdown_event_, gpu_memory_buffer_manager_local_.get());
@@ -198,6 +204,10 @@ void GpuServiceMus::InitializeOnGpuThread(IPC::ChannelHandle* channel_handle,
       media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences_);
   gpu_info_.jpeg_decode_accelerator_supported =
       media::GpuJpegDecodeAccelerator::IsSupported();
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForGPU();
+#endif
 
   if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER) {
     gpu_memory_buffer_factory_ =

@@ -42,7 +42,7 @@ class MediaService;
 
 namespace mus {
 
-class MojoGpuMemoryBufferManager;
+class MusGpuMemoryBufferManager;
 
 // TODO(fsamuel): GpuServiceMus is intended to be the Gpu thread within Mus.
 // Similar to GpuChildThread, it is a GpuChannelManagerDelegate and will have a
@@ -74,6 +74,14 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const gpu::SyncToken& sync_token);
+
+  gpu::GpuChannelManager* gpu_channel_manager() const {
+    return gpu_channel_manager_.get();
+  }
+
+  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
+    return gpu_memory_buffer_factory_.get();
+  }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_local() const {
     return gpu_channel_local_;
@@ -147,7 +155,7 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   // A GPU memory buffer manager used locally.
-  std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_local_;
+  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_local_;
 
   // A GPU channel used locally.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_local_;

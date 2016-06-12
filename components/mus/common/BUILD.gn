@@ -10,6 +10,8 @@ component("mus_common") {
   sources = [
     "event_matcher_util.cc",
     "event_matcher_util.h",
+    "generic_shared_memory_id_generator.cc",
+    "generic_shared_memory_id_generator.h",
     "gpu_memory_buffer_impl.cc",
     "gpu_memory_buffer_impl.h",
     "gpu_service.cc",

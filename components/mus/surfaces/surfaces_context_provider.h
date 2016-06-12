@@ -19,6 +19,7 @@
 namespace gpu {
 
 class CommandBufferProxyImpl;
+struct GpuProcessHostedCALayerTreeParamsMac;
 class TransferBuffer;
 
 namespace gles2 {
@@ -27,6 +28,10 @@ class GLES2Implementation;
 }
 
 }  // namespace gpu
+
+namespace ui {
+class LatencyInfo;
+}
 
 namespace mus {
 
@@ -70,6 +75,14 @@ class SurfacesContextProvider : public cc::ContextProvider,
   void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
   void GpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
+  // Callbacks for CommandBufferProxyImpl:
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
+
   bool use_chrome_gpu_command_buffer_;
 
   // From GLES2Context:
@@ -85,7 +98,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   gfx::AcceleratedWidget widget_;
   CommandBufferLocal* command_buffer_local_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
-
   gl::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
