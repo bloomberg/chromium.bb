@@ -88,6 +88,20 @@ void LayoutSVGModelObject::willBeDestroyed()
     LayoutObject::willBeDestroyed();
 }
 
+PaintInvalidationReason LayoutSVGModelObject::getPaintInvalidationReason(const PaintInvalidationState& paintInvalidationState,
+    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
+{
+    PaintInvalidationReason invalidationReason = LayoutObject::getPaintInvalidationReason(paintInvalidationState, oldBounds, oldLocation, newBounds, newLocation);
+
+    // Disable incremental invalidation for SVG objects to prevent under-
+    // invalidation. Unlike boxes, it is non-trivial (and rare) for SVG objects
+    // to be able to be incrementally invalidated (e.g., on height changes).
+    if (invalidationReason == PaintInvalidationIncremental)
+        return PaintInvalidationFull;
+
+    return invalidationReason;
+}
+
 void LayoutSVGModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
 {
     // Using just the rect for the SVGRoot is good enough for now.
