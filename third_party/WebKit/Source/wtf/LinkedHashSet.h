@@ -350,9 +350,9 @@ struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Valu
     // Whether we need to trace and do weak processing depends on the traits of
     // the type inside the node.
     template<typename U = void>
-    struct NeedsTracingLazily {
-        STATIC_ONLY(NeedsTracingLazily);
-        static const bool value = ValueTraits::template NeedsTracingLazily<>::value;
+    struct IsTraceableInCollection {
+        STATIC_ONLY(IsTraceableInCollection);
+        static const bool value = ValueTraits::template IsTraceableInCollection<>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = ValueTraits::weakHandlingFlag;
 };

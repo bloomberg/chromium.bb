@@ -1019,8 +1019,8 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     // polymorphic.
     static_assert(!Traits::emptyValueIsZero || !std::is_polymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
     static_assert(Allocator::isGarbageCollected
-        || ((!AllowsOnlyPlacementNew<KeyType>::value || !NeedsTracing<KeyType>::value)
-        && (!AllowsOnlyPlacementNew<ValueType>::value || !NeedsTracing<ValueType>::value))
+        || ((!AllowsOnlyPlacementNew<KeyType>::value || !IsTraceable<KeyType>::value)
+        && (!AllowsOnlyPlacementNew<ValueType>::value || !IsTraceable<ValueType>::value))
         , "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap HashTable");
 
     if (Traits::emptyValueIsZero) {
@@ -1406,7 +1406,7 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
         // cases). However, it shouldn't cause any issue.
         Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
     }
-    if (!NeedsTracingTrait<Traits>::value)
+    if (!IsTraceableInCollectionTrait<Traits>::value)
         return;
     if (Traits::weakHandlingFlag == WeakHandlingInCollections) {
         // If we have both strong and weak pointers in the collection then

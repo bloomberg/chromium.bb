@@ -84,7 +84,7 @@ private:
     IntWrapper();
     int m_x;
 };
-static_assert(WTF::NeedsTracing<IntWrapper>::value, "NeedsTracing macro failed to recognize trace method.");
+static_assert(WTF::IsTraceable<IntWrapper>::value, "IsTraceable<> template failed to recognize trace method.");
 
 struct SameSizeAsPersistent {
     void* m_pointer[4];
@@ -178,7 +178,7 @@ template<typename T> struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<
     // can perhaps only be allocated inside collections, never as independent
     // objects.  Explicitly mark this as needing tracing and it will be traced
     // in collections using the traceInCollection method, which it must have.
-    template<typename U = void> struct NeedsTracingLazily {
+    template<typename U = void> struct IsTraceableInCollection {
         static const bool value = true;
     };
     // The traceInCollection method traces differently depending on whether we
@@ -234,8 +234,8 @@ template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingH
 };
 
 template<>
-struct NeedsTracing<blink::PairWithWeakHandling> {
-    static const bool value = NeedsTracing<blink::StrongWeakPair>::value;
+struct IsTraceable<blink::PairWithWeakHandling> {
+    static const bool value = IsTraceable<blink::StrongWeakPair>::value;
 };
 
 } // namespace WTF
@@ -4216,8 +4216,8 @@ TEST(HeapTest, CollectionNesting)
     typedef HeapDeque<Member<IntWrapper>> IntDeque;
     HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
     HeapHashMap<void*, IntDeque>* map2 = new HeapHashMap<void*, IntDeque>();
-    static_assert(WTF::NeedsTracing<IntVector>::value, "Failed to recognize HeapVector as NeedsTracing");
-    static_assert(WTF::NeedsTracing<IntDeque>::value, "Failed to recognize HeapDeque as NeedsTracing");
+    static_assert(WTF::IsTraceable<IntVector>::value, "Failed to recognize HeapVector as traceable");
+    static_assert(WTF::IsTraceable<IntDeque>::value, "Failed to recognize HeapDeque as traceable");
 
     map->add(key, IntVector());
     map2->add(key, IntDeque());

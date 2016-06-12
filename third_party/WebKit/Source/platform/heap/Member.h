@@ -311,14 +311,20 @@ struct DefaultHash<blink::UntracedMember<T>> {
 };
 
 template<typename T>
-struct NeedsTracing<blink::Member<T>> {
-    STATIC_ONLY(NeedsTracing);
+struct IsTraceable<blink::Member<T>> {
+    STATIC_ONLY(IsTraceable);
     static const bool value = true;
 };
 
 template<typename T>
 struct IsWeak<blink::WeakMember<T>> {
     STATIC_ONLY(IsWeak);
+    static const bool value = true;
+};
+
+template<typename T>
+struct IsTraceable<blink::WeakMember<T>> {
+    STATIC_ONLY(IsTraceable);
     static const bool value = true;
 };
 

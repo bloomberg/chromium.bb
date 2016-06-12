@@ -113,7 +113,7 @@ public:
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
 
     static_assert(!std::is_polymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
-    static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Deque");
+    static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !IsTraceable<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Deque");
     static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into a Deque. Use HeapDeque<Member<T>> instead.");
 
 private:
@@ -596,7 +596,7 @@ void Deque<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
     ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
     const T* bufferBegin = m_buffer.buffer();
     const T* end = bufferBegin + m_end;
-    if (NeedsTracingTrait<VectorTraits<T>>::value) {
+    if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
         if (m_start <= m_end) {
             for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != end; bufferEntry++)
                 Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));

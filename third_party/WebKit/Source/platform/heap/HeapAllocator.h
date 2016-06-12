@@ -149,7 +149,7 @@ public:
     template<typename VisitorDispatcher, typename T, typename Traits>
     static void trace(VisitorDispatcher visitor, T& t)
     {
-        TraceCollectionIfEnabled<WTF::NeedsTracingTrait<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
+        TraceCollectionIfEnabled<WTF::IsTraceableInCollectionTrait<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
     }
 
     template<typename VisitorDispatcher>
@@ -207,7 +207,7 @@ static void traceListHashSetValue(VisitorDispatcher visitor, Value& value)
     // (there's an assert elsewhere), but we have to specify some value for the
     // strongify template argument, so we specify WTF::WeakPointersActWeak,
     // arbitrarily.
-    TraceCollectionIfEnabled<WTF::NeedsTracingTrait<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
+    TraceCollectionIfEnabled<WTF::IsTraceableInCollectionTrait<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap
@@ -314,7 +314,7 @@ template<
     typename MappedTraitsArg = HashTraits<MappedArg>>
 class HeapHashMap : public HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
-    static_assert(WTF::IsWeak<KeyArg>::value || WTF::IsWeak<MappedArg>::value || WTF::NeedsTracing<KeyArg>::value || WTF::NeedsTracing<MappedArg>::value, "For hash maps without traceable elements, use HashMap<> instead of HeapHashMap<>");
+    static_assert(WTF::IsTraceable<KeyArg>::value || WTF::IsTraceable<MappedArg>::value, "For hash maps without traceable elements, use HashMap<> instead of HeapHashMap<>");
 };
 
 template<
@@ -323,7 +323,7 @@ template<
     typename TraitsArg = HashTraits<ValueArg>>
 class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
-    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For hash sets without traceable elements, use HashSet<> instead of HeapHashSet<>");
+    static_assert(WTF::IsTraceable<ValueArg>::value, "For hash sets without traceable elements, use HashSet<> instead of HeapHashSet<>");
 };
 
 template<
@@ -332,7 +332,7 @@ template<
     typename TraitsArg = HashTraits<ValueArg>>
 class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
-    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For sets without traceable elements, use LinkedHashSet<> instead of HeapLinkedHashSet<>");
+    static_assert(WTF::IsTraceable<ValueArg>::value, "For sets without traceable elements, use LinkedHashSet<> instead of HeapLinkedHashSet<>");
 };
 
 template<
@@ -341,7 +341,7 @@ template<
     typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class HeapListHashSet : public ListHashSet<ValueArg, inlineCapacity, HashArg, HeapListHashSetAllocator<ValueArg, inlineCapacity>> {
     IS_GARBAGE_COLLECTED_TYPE();
-    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For sets without traceable elements, use ListHashSet<> instead of HeapListHashSet<>");
+    static_assert(WTF::IsTraceable<ValueArg>::value, "For sets without traceable elements, use ListHashSet<> instead of HeapListHashSet<>");
 };
 
 template<
@@ -350,7 +350,7 @@ template<
     typename Traits = HashTraits<Value>>
 class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
-    static_assert(WTF::IsWeak<Value>::value || WTF::NeedsTracing<Value>::value, "For counted sets without traceable elements, use HashCountedSet<> instead of HeapHashCountedSet<>");
+    static_assert(WTF::IsTraceable<Value>::value, "For counted sets without traceable elements, use HashCountedSet<> instead of HeapHashCountedSet<>");
 };
 
 template<typename T, size_t inlineCapacity = 0>
@@ -359,7 +359,7 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 public:
     HeapVector()
     {
-        static_assert(WTF::NeedsTracing<T>::value, "For vectors without traceable elements, use Vector<> instead of HeapVector<>");
+        static_assert(WTF::IsTraceable<T>::value, "For vectors without traceable elements, use Vector<> instead of HeapVector<>");
     }
 
     explicit HeapVector(size_t size) : Vector<T, inlineCapacity, HeapAllocator>(size)
@@ -383,7 +383,7 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
 public:
     HeapDeque()
     {
-        static_assert(WTF::NeedsTracing<T>::value, "For vectors without traceable elements, use Deque<> instead of HeapDeque<>");
+        static_assert(WTF::IsTraceable<T>::value, "For vectors without traceable elements, use Deque<> instead of HeapDeque<>");
     }
 
     explicit HeapDeque(size_t size) : Deque<T, inlineCapacity, HeapAllocator>(size)
@@ -561,8 +561,8 @@ template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHa
 };
 
 template<typename T, size_t inlineCapacity>
-struct NeedsTracing<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>> *> {
-    STATIC_ONLY(NeedsTracing);
+struct IsTraceable<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>> *> {
+    STATIC_ONLY(IsTraceable);
     static_assert(sizeof(T), "T must be fully defined");
     // All heap allocated node pointers need visiting to keep the nodes alive,
     // regardless of whether they contain pointers to other heap allocated

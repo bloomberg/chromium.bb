@@ -48,8 +48,8 @@ struct VectorTraitsBase {
     static const bool canFillWithMemset = IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
     static const bool canCompareWithMemcmp = std::is_scalar<T>::value; // Types without padding.
     template <typename U = void>
-    struct NeedsTracingLazily {
-        static const bool value = NeedsTracing<T>::value;
+    struct IsTraceableInCollection {
+        static const bool value = IsTraceable<T>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
 };
@@ -99,8 +99,8 @@ struct VectorTraits<std::pair<First, Second>> {
     static const bool canCompareWithMemcmp = FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
     static const bool canClearUnusedSlotsWithMemset = FirstTraits::canClearUnusedSlotsWithMemset && SecondTraits::canClearUnusedSlotsWithMemset;
     template <typename U = void>
-        struct NeedsTracingLazily {
-        static const bool value = NeedsTracingTrait<FirstTraits>::value || NeedsTracingTrait<SecondTraits>::value;
+    struct IsTraceableInCollection {
+        static const bool value = IsTraceableInCollectionTrait<FirstTraits>::value || IsTraceableInCollectionTrait<SecondTraits>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
 };

@@ -61,9 +61,13 @@ template <typename T> struct GenericHashTraitsBase<false, T> {
     static const unsigned minimumTableSize = 8;
 #endif
 
+    // When a hash table backing store is traced, its elements will be
+    // traced if their class type has a trace method. However, weak-referenced
+    // elements should not be traced then, but handled by the weak processing
+    // phase that follows.
     template <typename U = void>
-    struct NeedsTracingLazily {
-        static const bool value = NeedsTracing<T>::value;
+    struct IsTraceableInCollection {
+        static const bool value = IsTraceable<T>::value && !IsWeak<T>::value;
     };
 
     // The NeedsToForbidGCOnMove flag is used to make the hash table move
@@ -302,8 +306,8 @@ struct KeyValuePairHashTraits : GenericHashTraits<KeyValuePair<typename KeyTrait
     static EmptyValueType emptyValue() { return KeyValuePair<typename KeyTraits::EmptyValueType, typename ValueTraits::EmptyValueType>(KeyTraits::emptyValue(), ValueTraits::emptyValue()); }
 
     template <typename U = void>
-    struct NeedsTracingLazily {
-        static const bool value = NeedsTracingTrait<KeyTraits>::value || NeedsTracingTrait<ValueTraits>::value;
+    struct IsTraceableInCollection {
+        static const bool value = IsTraceableInCollectionTrait<KeyTraits>::value || IsTraceableInCollectionTrait<ValueTraits>::value;
     };
 
     template <typename U = void>
