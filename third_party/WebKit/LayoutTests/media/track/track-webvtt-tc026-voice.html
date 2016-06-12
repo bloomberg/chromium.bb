@@ -1,97 +1,54 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cues with voice markup &lt;v&gt;.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc026-voice.vtt", function(track) {
+    assert_equals(track.cues.length, 3);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var children = [
+        { type: "span", style: { className: "blue", title: "Speaker" },
+            value: [ { type: "text", value: "Bear is Coming!!!!!" } ] },
+        { type: "text", value: "\nText span with a class and an annotation." }
+    ];
+    assert_cue_fragment(track.cues[0], children);
 
-            var numberOfTrackTests = 2;
+    children = [
+        { type: "span", style: { title: "Doe Hunter" },
+            value: [ { type: "text", value: "I said Bear is coming!!!!" } ] }
+    ];
+    assert_cue_fragment(track.cues[1], children);
 
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrackError(1);
-                }
-            }
+    children = [
+        { type: "text", value: "I said " },
+        { type: "span", style: { className: "blue", title: "Speaker" },
+            value: [ { type: "text", value: "Bear is coming now" } ] },
+        { type: "text", value: "!!!!" }
+    ];
+    assert_cue_fragment(track.cues[2], children);
+});
 
-            function testTrack(i)
-            {
-                findMediaElement();
-                testExpected("video.textTracks[" + i + "].cues.length", "3");
+check_cues_from_track("captions-webvtt/tc026-voice-bad.vtt", function(track) {
+    assert_equals(track.cues.length, 3);
 
-                var fragment = document.createDocumentFragment();
-                var cspan = document.createElement("span");
-                cspan.className = "blue";
-                cspan.title = "Speaker";
-                cspan.appendChild(document.createTextNode("Bear is Coming!!!!!"));
-                fragment.appendChild(cspan);
-                fragment.appendChild(document.createTextNode("\nText span with a class and an annotation."));
+    var children = [
+        { type: "text", value: "Bear is Coming!!!!!" },
+        { type: "text", value: "\nThis is two annotations for an empty tag." }
+    ];
+    assert_cue_fragment(track.cues[0], children);
 
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[0].getCueAsHTML()), true);
+    children = [
+        { type: "text", value: "I said Bear is coming!!!!" },
+        { type: "text", value: "\nThis does not parse as a voice tag." }
+    ];
+    assert_cue_fragment(track.cues[1], children);
 
-                fragment = document.createDocumentFragment();
-                cspan = document.createElement("span");
-                cspan.title = "Doe Hunter";
-                cspan.appendChild(document.createTextNode("I said Bear is coming!!!!"));
-                fragment.appendChild(cspan);
-
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[1].getCueAsHTML()), true);
-
-
-                fragment = document.createDocumentFragment();
-                fragment.appendChild(document.createTextNode("I said "));
-                cspan = document.createElement("span");
-                cspan.className = "blue";
-                cspan.title = "Speaker";
-                cspan.appendChild(document.createTextNode("Bear is coming now"));
-                fragment.appendChild(cspan);
-                fragment.appendChild(document.createTextNode("!!!!"));
-
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[2].getCueAsHTML()), true);
-
-                allTestsEnded();
-            }
-
-            function testTrackError(i)
-            {
-                findMediaElement();
-                testExpected("video.textTracks[" + i + "].cues.length", "3");
-
-                var fragment = document.createDocumentFragment();
-                fragment.appendChild(document.createTextNode("Bear is Coming!!!!!"));
-                fragment.appendChild(document.createTextNode("\nThis is two annotations for an empty tag."));
-
-
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[0].getCueAsHTML()), true);
-
-                fragment = document.createDocumentFragment();
-                fragment.appendChild(document.createTextNode("I said Bear is coming!!!!"));
-                fragment.appendChild(document.createTextNode("\nThis does not parse as a voice tag."));
-
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[1].getCueAsHTML()), true);
-
-                fragment = document.createDocumentFragment();
-                fragment.appendChild(document.createTextNode("I said "));
-                fragment.appendChild(document.createTextNode("Bear is coming now"));
-                fragment.appendChild(document.createTextNode("!!!!\nThis does not parse as a voice tag."));
-
-                testExpected(fragment.isEqualNode(video.textTracks[i].cues[2].getCueAsHTML()), true);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests cues with voice markup &lt;v&gt;.</p>
-        <video>
-            <track src="captions-webvtt/tc026-voice.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc026-voice-bad.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    children = [
+        { type: "text", value: "I said " },
+        { type: "text", value: "Bear is coming now" },
+        { type: "text", value: "!!!!\nThis does not parse as a voice tag." }
+    ];
+    assert_cue_fragment(track.cues[2], children);
+});
+</script>
