@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x478
+  LayoutBlockFlow {html} at (0,0) size 800x478
+    LayoutBlockFlow {body} at (8,16) size 784x454
+      LayoutBlockFlow {p} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 738x35
+          text run at (0,0) width 738: "The svg area contained in the div element (red box), should fill out the whole area (two blue rectangles, first: (0,0)-"
+          text run at (0,18) width 686: "(50%,50%), second: (50%,50%)-(100%,100%)), especially after resizing the content box to a different size"
+      LayoutBlockFlow {div} at (0,52) size 102x402 [border: (1px solid #FF0000)]
+        LayoutSVGRoot {svg} at (9,69) size 100x400
+          LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+            LayoutSVGRect {rect} at (9,269) size 50x200 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=200.00] [width=50.00] [height=200.00]
+            LayoutSVGRect {rect} at (9,69) size 50x200 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=50.00] [height=200.00]
+            LayoutSVGContainer {use} at (9,69) size 50x200
+              LayoutSVGRect {rect} at (9,69) size 50x200 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=50.00] [height=200.00]
+          LayoutSVGContainer {use} at (59,269) size 50x200 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
+            LayoutSVGRect {rect} at (59,269) size 50x200 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=200.00] [width=50.00] [height=200.00]
+          LayoutSVGContainer {use} at (9,69) size 50x200
+            LayoutSVGContainer {g} at (9,69) size 50x200
+              LayoutSVGRect {rect} at (9,69) size 50x200 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=50.00] [height=200.00]
+        LayoutText {#text} at (0,0) size 0x0

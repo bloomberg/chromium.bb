@@ -9,6 +9,11 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 42, 784, 170],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [16, 42, 784, 170],
           "reason": "bounds change"
         },
         {
@@ -30,11 +35,6 @@
           "object": "LayoutSVGText text",
           "rect": [16, 42, 784, 170],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer g id='content'",
-          "rect": [334, 42, 466, 170],
-          "reason": "incremental"
         },
         {
           "object": "LayoutSVGInlineText #text",

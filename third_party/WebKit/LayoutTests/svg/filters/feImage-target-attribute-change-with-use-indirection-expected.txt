@@ -12,6 +12,11 @@
           "reason": "full"
         },
         {
+          "object": "LayoutSVGContainer use id='use'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [0, 0, 100, 100],
           "reason": "full"
@@ -20,11 +25,6 @@
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [0, 0, 100, 100],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer use id='use'",
-          "rect": [1, 0, 99, 100],
-          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",

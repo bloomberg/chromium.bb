@@ -28,13 +28,13 @@
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [50, 150, 100, 100],
-          "reason": "bounds change"
+          "rect": [150, 50, 100, 100],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [150, 100, 100, 50],
-          "reason": "incremental"
+          "rect": [50, 150, 100, 100],
+          "reason": "bounds change"
         }
       ]
     }

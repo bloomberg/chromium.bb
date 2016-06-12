@@ -28,38 +28,38 @@
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [59, 269, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 269, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='targetUse'",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer use id='targetUse'",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 69, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 69, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer use",

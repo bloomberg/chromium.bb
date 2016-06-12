@@ -13,8 +13,8 @@
         },
         {
           "object": "LayoutSVGImage image",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
+          "rect": [9, 69, 400, 400],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",

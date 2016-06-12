@@ -23,13 +23,8 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 2, 10, 8],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [2, 0, 8, 10],
-          "reason": "incremental"
+          "rect": [0, 0, 10, 10],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGResourceMarker marker id='markerStart'",

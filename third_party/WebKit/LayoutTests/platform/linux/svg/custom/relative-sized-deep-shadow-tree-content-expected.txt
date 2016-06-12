@@ -43,8 +43,8 @@
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [59, 173, 150, 200],
-          "reason": "incremental"
+          "rect": [9, 173, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='targetUse'",

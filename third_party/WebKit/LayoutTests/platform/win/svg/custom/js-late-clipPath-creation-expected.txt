@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [16, 40, 784, 168],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [16, 40, 784, 168],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='content'",
-          "rect": [334, 40, 466, 168],
-          "reason": "incremental"
         },
         {
           "object": "LayoutSVGInlineText #text",
