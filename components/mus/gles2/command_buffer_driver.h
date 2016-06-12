@@ -60,7 +60,8 @@ class CommandBufferDriver : base::NonThreadSafe {
    public:
     virtual ~Client();
     virtual void DidLoseContext(uint32_t reason) = 0;
-    virtual void UpdateVSyncParameters(int64_t timebase, int64_t interval) = 0;
+    virtual void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                                       const base::TimeDelta& interval) = 0;
     virtual void OnGpuCompletedSwapBuffers(gfx::SwapResult result) = 0;
   };
   CommandBufferDriver(gpu::CommandBufferNamespace command_buffer_namespace,

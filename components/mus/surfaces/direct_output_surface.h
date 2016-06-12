@@ -29,7 +29,8 @@ class DirectOutputSurface : public cc::OutputSurface,
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // SurfacesContextProviderDelegate implementation
-  void OnVSyncParametersUpdated(int64_t timebase, int64_t interval) override;
+  void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
+                                const base::TimeDelta& interval) override;
 
  private:
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;

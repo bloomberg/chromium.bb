@@ -104,7 +104,8 @@ class CommandBufferLocal : public gpu::CommandBuffer,
  private:
   // CommandBufferDriver::Client implementation. All called on GPU thread.
   void DidLoseContext(uint32_t reason) override;
-  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+  void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                             const base::TimeDelta& interval) override;
   void OnGpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
   ~CommandBufferLocal() override;
@@ -142,7 +143,8 @@ class CommandBufferLocal : public gpu::CommandBuffer,
 
   // Helper functions are called in the client thread.
   void DidLoseContextOnClientThread(uint32_t reason);
-  void UpdateVSyncParametersOnClientThread(int64_t timebase, int64_t interval);
+  void UpdateVSyncParametersOnClientThread(const base::TimeTicks& timebase,
+                                           const base::TimeDelta& interval);
   void OnGpuCompletedSwapBuffersOnClientThread(gfx::SwapResult result);
 
   gfx::AcceleratedWidget widget_;

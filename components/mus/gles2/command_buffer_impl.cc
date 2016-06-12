@@ -48,8 +48,9 @@ void CommandBufferImpl::DidLoseContext(uint32_t reason) {
   client_->Destroyed(reason, gpu::error::kLostContext);
 }
 
-void CommandBufferImpl::UpdateVSyncParameters(int64_t timebase,
-                                              int64_t interval) {}
+void CommandBufferImpl::UpdateVSyncParameters(const base::TimeTicks& timebase,
+                                              const base::TimeDelta& interval) {
+}
 
 void CommandBufferImpl::OnGpuCompletedSwapBuffers(gfx::SwapResult result) {}
 

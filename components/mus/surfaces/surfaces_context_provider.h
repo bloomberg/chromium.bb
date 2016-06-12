@@ -72,7 +72,8 @@ class SurfacesContextProvider : public cc::ContextProvider,
 
  private:
   // CommandBufferLocalClient:
-  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+  void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                             const base::TimeDelta& interval) override;
   void GpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
   // Callbacks for CommandBufferProxyImpl:

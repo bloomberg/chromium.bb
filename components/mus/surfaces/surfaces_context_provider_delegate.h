@@ -7,11 +7,17 @@
 
 #include <stdint.h>
 
+namespace base {
+class TimeDelta;
+class TimeTicks;
+}
+
 namespace mus {
 
 class SurfacesContextProviderDelegate {
  public:
-  virtual void OnVSyncParametersUpdated(int64_t timebase, int64_t interval) = 0;
+  virtual void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
+                                        const base::TimeDelta& interval) = 0;
 
  protected:
   virtual ~SurfacesContextProviderDelegate() {}

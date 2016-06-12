@@ -38,7 +38,8 @@ class CommandBufferImpl : public mojom::CommandBuffer,
 
   // CommandBufferDriver::Client. All called on the GPU thread.
   void DidLoseContext(uint32_t reason) override;
-  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+  void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                             const base::TimeDelta& interval) override;
   void OnGpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
   // mojom::CommandBuffer:

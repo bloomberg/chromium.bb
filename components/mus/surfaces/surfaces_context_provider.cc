@@ -164,8 +164,9 @@ SurfacesContextProvider::~SurfacesContextProvider() {
   }
 }
 
-void SurfacesContextProvider::UpdateVSyncParameters(int64_t timebase,
-                                                    int64_t interval) {
+void SurfacesContextProvider::UpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
   if (delegate_)
     delegate_->OnVSyncParametersUpdated(timebase, interval);
 }
@@ -188,10 +189,8 @@ void SurfacesContextProvider::OnGpuSwapBuffersCompleted(
 void SurfacesContextProvider::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (delegate_) {
-    delegate_->OnVSyncParametersUpdated(timebase.ToInternalValue(),
-                                        interval.ToInternalValue());
-  }
+  if (delegate_)
+    delegate_->OnVSyncParametersUpdated(timebase, interval);
 }
 
 void SurfacesContextProvider::SetSwapBuffersCompletionCallback(

@@ -405,8 +405,9 @@ void CommandBufferLocal::DidLoseContext(uint32_t reason) {
   }
 }
 
-void CommandBufferLocal::UpdateVSyncParameters(int64_t timebase,
-                                               int64_t interval) {
+void CommandBufferLocal::UpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
   if (client_) {
     client_thread_task_runner_->PostTask(
         FROM_HERE,
@@ -570,8 +571,9 @@ void CommandBufferLocal::DidLoseContextOnClientThread(uint32_t reason) {
   lost_context_ = true;
 }
 
-void CommandBufferLocal::UpdateVSyncParametersOnClientThread(int64_t timebase,
-                                                             int64_t interval) {
+void CommandBufferLocal::UpdateVSyncParametersOnClientThread(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
   if (client_)
     client_->UpdateVSyncParameters(timebase, interval);
 }

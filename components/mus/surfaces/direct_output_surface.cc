@@ -41,18 +41,13 @@ bool DirectOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   return true;
 }
 
-void DirectOutputSurface::OnVSyncParametersUpdated(int64_t timebase,
-                                                   int64_t interval) {
-  auto timebase_time_ticks = base::TimeTicks::FromInternalValue(timebase);
-  auto interval_time_delta = base::TimeDelta::FromInternalValue(interval);
-
-  if (interval_time_delta.is_zero()) {
-    // TODO(brianderson): We should not be receiving 0 intervals.
-    interval_time_delta = cc::BeginFrameArgs::DefaultInterval();
-  }
-
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase_time_ticks,
-                                                         interval_time_delta);
+void DirectOutputSurface::OnVSyncParametersUpdated(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  // TODO(brianderson): We should not be receiving 0 intervals.
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
+      timebase,
+      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
 }
 
 void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {

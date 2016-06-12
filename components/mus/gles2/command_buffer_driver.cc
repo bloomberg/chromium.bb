@@ -483,10 +483,8 @@ void CommandBufferDriver::OnUpdateVSyncParameters(
     const base::TimeTicks timebase,
     const base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
-  if (client_) {
-    client_->UpdateVSyncParameters(timebase.ToInternalValue(),
-                                   interval.ToInternalValue());
-  }
+  if (client_)
+    client_->UpdateVSyncParameters(timebase, interval);
 }
 
 void CommandBufferDriver::OnFenceSyncRelease(uint64_t release) {
