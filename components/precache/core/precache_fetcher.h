@@ -124,6 +124,9 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   std::unique_ptr<PrecacheUnfinishedWork> CancelPrecaching();
 
  private:
+  friend class PrecacheFetcherTest;
+  FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest, FetcherPoolMaxLimitReached);
+
   // Notifies the precache delete that precaching is done, and report
   // completion statistics.
   void NotifyDone(size_t remaining_manifest_urls_to_fetch,

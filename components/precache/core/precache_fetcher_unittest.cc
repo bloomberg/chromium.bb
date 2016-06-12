@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/precache/core/precache_switches.h"
@@ -66,6 +67,8 @@ const char kGoodResourceURLD[] = "http://good-resource.com/d";
 const char kForcedStartingURLManifestURL[] =
     "http://manifest-url-prefix.com/forced-starting-url.com";
 const uint32_t kExperimentID = 123;
+
+}  // namespace
 
 class TestURLFetcherCallback {
  public:
@@ -334,7 +337,8 @@ class PrecacheFetcherTest : public testing::Test {
         factory_(NULL,
                  base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                             base::Unretained(&url_callback_))),
-        expected_total_response_bytes_(0) {}
+        expected_total_response_bytes_(0),
+        parallel_fetches_beyond_capacity_(false) {}
 
  protected:
   void SetDefaultFlags() {
@@ -344,12 +348,36 @@ class PrecacheFetcherTest : public testing::Test {
         switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
   }
 
+  // Posts a task to check if more parallel fetches of precache manifest and
+  // resource URLs were attempted beyond the fetcher pool maximum defined
+  // capacity. The task will be posted repeatedly until such condition is met.
+  void CheckUntilParallelFetchesBeyondCapacity(
+      const PrecacheFetcher* precache_fetcher) {
+    if (!precache_fetcher->pool_.IsAvailable() &&
+        !precache_fetcher->resource_urls_to_fetch_.empty() &&
+        !precache_fetcher->manifest_urls_to_fetch_.empty()) {
+      parallel_fetches_beyond_capacity_ = true;
+      return;
+    }
+
+    // Check again after allowing the message loop to process some messages.
+    loop_.PostTask(
+        FROM_HERE,
+        base::Bind(
+            &PrecacheFetcherTest::CheckUntilParallelFetchesBeyondCapacity,
+            base::Unretained(this), precache_fetcher));
+  }
+
   base::MessageLoopForUI loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
   TestPrecacheDelegate precache_delegate_;
   int expected_total_response_bytes_;
+
+  // True if more parallel fetches were attempted beyond the fetcher pool
+  // maximum capacity.
+  bool parallel_fetches_beyond_capacity_;
 };
 
 TEST_F(PrecacheFetcherTest, FullPrecache) {
@@ -981,6 +1009,71 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
-}  // namespace
+// Tests the parallel fetch behaviour when more precache resource and manifest
+// requests are available than the maximum capacity of fetcher pool.
+TEST_F(PrecacheFetcherTest, FetcherPoolMaxLimitReached) {
+  SetDefaultFlags();
+
+  const size_t kNumTopHosts = 5;
+  const size_t kNumResources = 15;
+
+  PrecacheConfigurationSettings config;
+  PrecacheManifest top_host_manifest[kNumTopHosts];
+  std::multiset<GURL> expected_requested_urls;
+
+  config.set_top_sites_count(kNumTopHosts);
+  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  expected_requested_urls.insert(GURL(kConfigURL));
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+
+  for (size_t i = 0; i < kNumTopHosts; ++i) {
+    const std::string top_host_url = base::StringPrintf("top-host-%zu.com", i);
+    unfinished_work->add_top_host()->set_hostname(top_host_url);
+
+    for (size_t j = 0; j < kNumResources; ++j) {
+      const std::string resource_url =
+          base::StringPrintf("http://top-host-%zu.com/resource-%zu", i, j);
+      top_host_manifest[i].add_resource()->set_url(resource_url);
+      factory_.SetFakeResponse(GURL(resource_url), "good", net::HTTP_OK,
+                               net::URLRequestStatus::SUCCESS);
+      expected_requested_urls.insert(GURL(resource_url));
+    }
+    factory_.SetFakeResponse(GURL(kManifestURLPrefix + top_host_url),
+                             top_host_manifest[i].SerializeAsString(),
+                             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    expected_requested_urls.insert(GURL(kManifestURLPrefix + top_host_url));
+  }
+
+  base::HistogramTester histogram;
+
+  {
+    PrecacheFetcher precache_fetcher(request_context_.get(), GURL(),
+                                     std::string(), std::move(unfinished_work),
+                                     kExperimentID, &precache_delegate_);
+    precache_fetcher.Start();
+
+    EXPECT_GT(kNumResources, precache_fetcher.pool_.max_size());
+    CheckUntilParallelFetchesBeyondCapacity(&precache_fetcher);
+
+    loop_.RunUntilIdle();
+
+    // Destroy the PrecacheFetcher after it has finished, to record metrics.
+  }
+
+  EXPECT_TRUE(parallel_fetches_beyond_capacity_);
+
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 100, 1);
+  histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes.Total",
+                               url_callback_.total_response_bytes(), 1);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+}
 
 }  // namespace precache

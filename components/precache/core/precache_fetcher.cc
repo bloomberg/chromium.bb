@@ -416,14 +416,11 @@ void PrecacheFetcher::StartNextResourceFetch() {
 }
 
 void PrecacheFetcher::StartNextManifestFetch() {
-  if (manifest_urls_to_fetch_.empty())
+  if (manifest_urls_to_fetch_.empty() || !pool_.IsAvailable())
     return;
 
   // We only fetch one manifest at a time to keep the size of
   // resource_urls_to_fetch_ as small as possible.
-  DCHECK(pool_.IsAvailable())
-      << "There are no available parallel requests to fetch the next manifest. "
-         "Did you forget to call Delete?";
   VLOG(3) << "Fetching " << manifest_urls_to_fetch_.front();
   pool_.Add(base::WrapUnique(new Fetcher(
       request_context_.get(), manifest_urls_to_fetch_.front(),
