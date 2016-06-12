@@ -1196,10 +1196,10 @@ willPositionSheet:(NSWindow*)sheet
     return nil;
 
   NSWindow* lowPowerWindow = nil;
-  static const bool fullscreen_low_power_enabled_at_command_line =
+  static const bool fullscreen_low_power_disabled_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFullscreenLowPowerMode);
-  if (fullscreen_low_power_enabled_at_command_line) {
+          switches::kDisableFullscreenLowPowerMode);
+  if (!fullscreen_low_power_disabled_at_command_line) {
     WebContents* webContents = [self webContents];
     if (webContents && webContents->GetRenderWidgetHostView()) {
       fullscreenLowPowerCoordinator_.reset(
