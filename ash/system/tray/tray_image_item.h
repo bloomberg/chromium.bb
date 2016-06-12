@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_IMAGE_ITEM_H_
 #define ASH_SYSTEM_TRAY_TRAY_IMAGE_ITEM_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
@@ -15,7 +16,7 @@ class ImageView;
 namespace ash {
 class TrayItemView;
 
-class TrayImageItem : public SystemTrayItem {
+class ASH_EXPORT TrayImageItem : public SystemTrayItem {
  public:
   TrayImageItem(SystemTray* system_tray, int resource_id);
   ~TrayImageItem() override;

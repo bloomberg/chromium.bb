@@ -966,6 +966,7 @@
       'system/tray/media_security/multi_profile_media_tray_item_unittest.cc',
       'system/tray/system_tray_unittest.cc',
       'system/tray/tray_details_view_unittest.cc',
+      'system/tray_update_unittest.cc',
       'system/user/tray_user_unittest.cc',
       'system/web_notification/ash_popup_alignment_delegate_unittest.cc',
       'system/web_notification/web_notification_tray_unittest.cc',

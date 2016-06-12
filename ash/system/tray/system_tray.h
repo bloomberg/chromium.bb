@@ -27,6 +27,7 @@ class SystemTrayDelegate;
 class SystemTrayItem;
 class TrayAccessibility;
 class TrayDate;
+class TrayUpdate;
 class TrayUser;
 
 // There are different methods for creating bubble views.
@@ -151,11 +152,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Get the tray item view (or NULL) for a given |tray_item| in a unit test.
   views::View* GetTrayItemViewForTest(SystemTrayItem* tray_item);
 
-  // Gets tray_cast_ for browser tests.
   TrayCast* GetTrayCastForTesting() const;
-
-  // Gets tray_date_ for browser tests.
   TrayDate* GetTrayDateForTesting() const;
+  TrayUpdate* GetTrayUpdateForTesting() const;
 
  private:
   // Creates the default set of items for the sytem tray.
@@ -242,6 +241,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayAccessibility* tray_accessibility_;  // not owned
   TrayCast* tray_cast_;
   TrayDate* tray_date_;
+  TrayUpdate* tray_update_;
 
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_;  // not owned

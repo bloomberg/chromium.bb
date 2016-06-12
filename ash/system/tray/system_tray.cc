@@ -142,6 +142,7 @@ SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
       tray_accessibility_(nullptr),
       tray_cast_(nullptr),
       tray_date_(nullptr),
+      tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
   SetContentsBackground();
@@ -181,6 +182,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
   tray_accessibility_ = new TrayAccessibility(this);
   tray_date_ = new TrayDate(this);
+  tray_update_ = new TrayUpdate(this);
 
 #if defined(OS_CHROMEOS)
   AddTrayItem(new TraySessionLengthLimit(this));
@@ -207,13 +209,13 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayCapsLock(this));
   AddTrayItem(new TrayRotationLock(this));
   AddTrayItem(new TraySettings(this));
-  AddTrayItem(new TrayUpdate(this));
+  AddTrayItem(tray_update_);
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
   if (media::CoreAudioUtil::IsSupported())
     AddTrayItem(new TrayAudioWin(this));
-  AddTrayItem(new TrayUpdate(this));
+  AddTrayItem(tray_update_);
   AddTrayItem(tray_date_);
 #endif
 
@@ -708,6 +710,10 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
 TrayCast* SystemTray::GetTrayCastForTesting() const { return tray_cast_; }
 
 TrayDate* SystemTray::GetTrayDateForTesting() const { return tray_date_; }
+
+TrayUpdate* SystemTray::GetTrayUpdateForTesting() const {
+  return tray_update_;
+}
 
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it

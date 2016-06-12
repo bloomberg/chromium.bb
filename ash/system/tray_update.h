@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_UPDATE_H_
 #define ASH_SYSTEM_TRAY_UPDATE_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/system/update/update_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
@@ -15,8 +16,8 @@ class View;
 
 namespace ash {
 
-class TrayUpdate : public TrayImageItem,
-                   public UpdateObserver {
+// The system update tray item. Exported for test.
+class ASH_EXPORT TrayUpdate : public TrayImageItem, public UpdateObserver {
  public:
   explicit TrayUpdate(SystemTray* system_tray);
   ~TrayUpdate() override;

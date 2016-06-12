@@ -17,6 +17,7 @@ namespace test {
 
 namespace {
 
+bool g_system_update_required = false;
 LoginStatus g_initial_status = LoginStatus::USER;
 
 }  // namespace
@@ -33,6 +34,11 @@ TestSystemTrayDelegate::~TestSystemTrayDelegate() {
 // static
 void TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus login_status) {
   g_initial_status = login_status;
+}
+
+// static
+void TestSystemTrayDelegate::SetSystemUpdateRequired(bool required) {
+  g_system_update_required = required;
 }
 
 void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
@@ -71,6 +77,13 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
 bool TestSystemTrayDelegate::IsUserSupervised() const {
   return login_status_ == LoginStatus::SUPERVISED;
+}
+
+void TestSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
+  DCHECK(info);
+  info->severity = UpdateInfo::UPDATE_NORMAL;
+  info->update_required = g_system_update_required;
+  info->factory_reset_required = false;
 }
 
 bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {

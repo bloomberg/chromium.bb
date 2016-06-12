@@ -30,6 +30,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
@@ -1943,7 +1944,13 @@ TEST_F(ShelfViewTest,
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
-  ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
+  ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {
+    // TODO(jamescook): This test fails unless the system update icon is
+    // showing, which used to be the default. However, it only fails on the
+    // trybots, and only in the case where the overflow button is showing.
+    // See http://crbug.com/619344
+    TestSystemTrayDelegate::SetSystemUpdateRequired(true);
+  }
 
   void CheckAllItemsAreInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();

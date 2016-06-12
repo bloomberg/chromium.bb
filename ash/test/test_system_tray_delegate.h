@@ -17,6 +17,11 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   TestSystemTrayDelegate();
   ~TestSystemTrayDelegate() override;
 
+  // Sets whether a system update is required. Defaults to false. Static so
+  // tests can set the value before the system tray is constructed. Reset in
+  // AshTestHelper::TearDown.
+  static void SetSystemUpdateRequired(bool required);
+
   // Changes the login status when initially the delegate is created. This will
   // be called before AshTestBase::SetUp() to test the case when chrome is
   // restarted right after the login (such like a flag is set).
@@ -45,6 +50,7 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // Overridden from SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
   bool IsUserSupervised() const override;
+  void GetSystemUpdateInfo(UpdateInfo* info) const override;
   bool ShouldShowDisplayNotification() override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;

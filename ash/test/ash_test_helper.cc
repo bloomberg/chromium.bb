@@ -176,6 +176,7 @@ void AshTestHelper::TearDown() {
 
   // Need to reset the initial login status.
   TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus::USER);
+  TestSystemTrayDelegate::SetSystemUpdateRequired(false);
 
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
