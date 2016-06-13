@@ -2256,7 +2256,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   bool use_zero_copy = settings_.use_zero_copy;
   // TODO(reveman): Remove this when mojo supports worker contexts.
   // crbug.com/522440
-  if (!worker_context_provider) {
+  if (!use_zero_copy && !worker_context_provider) {
     LOG(ERROR)
         << "Forcing zero-copy tile initialization as worker context is missing";
     use_zero_copy = true;
