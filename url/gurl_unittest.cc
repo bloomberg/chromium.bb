@@ -401,13 +401,23 @@ TEST(GURLTest, Replacements) {
     const char* ref;
     const char* expected;
   } replace_cases[] = {
-    {"http://www.google.com/foo/bar.html?foo#bar", NULL, NULL, NULL, NULL, NULL, "/", "", "", "http://www.google.com/"},
-    {"http://www.google.com/foo/bar.html?foo#bar", "javascript", "", "", "", "", "window.open('foo');", "", "", "javascript:window.open('foo');"},
-    {"file:///C:/foo/bar.txt", "http", NULL, NULL, "www.google.com", "99", "/foo", "search", "ref", "http://www.google.com:99/foo?search#ref"},
+      {"http://www.google.com/foo/bar.html?foo#bar", NULL, NULL, NULL, NULL,
+       NULL, "/", "", "", "http://www.google.com/"},
+      {"http://www.google.com/foo/bar.html?foo#bar", "javascript", "", "", "",
+       "", "window.open('foo');", "", "", "javascript:window.open('foo');"},
+      {"file:///C:/foo/bar.txt", "http", NULL, NULL, "www.google.com", "99",
+       "/foo", "search", "ref", "http://www.google.com:99/foo?search#ref"},
 #ifdef WIN32
-    {"http://www.google.com/foo/bar.html?foo#bar", "file", "", "", "", "", "c:\\", "", "", "file:///C:/"},
+      {"http://www.google.com/foo/bar.html?foo#bar", "file", "", "", "", "",
+       "c:\\", "", "", "file:///C:/"},
 #endif
-    {"filesystem:http://www.google.com/foo/bar.html?foo#bar", NULL, NULL, NULL, NULL, NULL, "/", "", "", "filesystem:http://www.google.com/foo/"},
+      {"filesystem:http://www.google.com/foo/bar.html?foo#bar", NULL, NULL,
+       NULL, NULL, NULL, "/", "", "", "filesystem:http://www.google.com/foo/"},
+      // Lengthen the URL instead of shortening it, to test creation of
+      // inner_url.
+      {"filesystem:http://www.google.com/foo/", NULL, NULL, NULL, NULL, NULL,
+       "bar.html", "foo", "bar",
+       "filesystem:http://www.google.com/foo/bar.html?foo#bar"},
   };
 
   for (size_t i = 0; i < arraysize(replace_cases); i++) {
@@ -425,7 +435,14 @@ TEST(GURLTest, Replacements) {
     GURL output = url.ReplaceComponents(repl);
 
     EXPECT_EQ(replace_cases[i].expected, output.spec());
+
     EXPECT_EQ(output.SchemeIsFileSystem(), output.inner_url() != NULL);
+    if (output.SchemeIsFileSystem()) {
+      // TODO(mmenke): inner_url()->spec() is currently the same as the spec()
+      // for the GURL itself.  This should be fixed.
+      // See https://crbug.com/619596
+      EXPECT_EQ(replace_cases[i].expected, output.inner_url()->spec());
+    }
   }
 }
 
