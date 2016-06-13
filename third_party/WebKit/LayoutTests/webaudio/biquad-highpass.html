@@ -34,7 +34,10 @@ function runTest() {
                             {cutoff : 0.25, q : 1, gain : 1 },
                            ];
 
-    createTestAndRun(context, "highpass", filterParameters);
+    createTestAndRun(context, "highpass", {
+      threshold: 1.5487e-8,
+      filterParameters: filterParameters
+    });
 }
 
 runTest();

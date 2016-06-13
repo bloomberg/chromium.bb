@@ -40,7 +40,7 @@ function createImpulseBuffer(context, length) {
 }
 
 
-function createTestAndRun(context, filterType, filterParameters) {
+function createTestAndRun(context, filterType, testParameters) {
     // To test the filters, we apply a signal (an impulse) to each of
     // the specified filters, with each signal starting at a different
     // time.  The output of the filters is summed together at the
@@ -49,7 +49,8 @@ function createTestAndRun(context, filterType, filterParameters) {
     // must be large enough for the output of each filter to have
     // decayed to zero with timeStep seconds.  That way the filter
     // outputs don't interfere with each other.
-    
+
+    var filterParameters = testParameters.filterParameters;
     nFilters = Math.min(filterParameters.length, maxFilters);
 
     signal = new Array(nFilters);
@@ -75,7 +76,7 @@ function createTestAndRun(context, filterType, filterParameters) {
         signal[k].start(timeStep * k);
     }
 
-    context.oncomplete = checkFilterResponse(filterType, filterParameters);
+    context.oncomplete = checkFilterResponse(filterType, testParameters);
     context.startRendering();
 }
 
@@ -115,8 +116,10 @@ function generateReference(filterType, filterParameters) {
     return result;
 }
 
-function checkFilterResponse(filterType, filterParameters) {
+function checkFilterResponse(filterType, testParameters) {
     return function(event) {
+        var filterParameters = testParameters.filterParameters;
+        var maxAllowedError = testParameters.threshold;
         renderedBuffer = event.renderedBuffer;
         renderedData = renderedBuffer.getChannelData(0);
 

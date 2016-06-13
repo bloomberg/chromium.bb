@@ -34,7 +34,10 @@ function runTest() {
                             {cutoff : 0.25, q : 10, gain : 10 },
                            ];
 
-    createTestAndRun(context, "highshelf", filterParameters);
+    createTestAndRun(context, "highshelf", {
+      threshold: 5.6633e-8,
+      filterParameters: filterParameters
+    });
 }
 
 runTest();

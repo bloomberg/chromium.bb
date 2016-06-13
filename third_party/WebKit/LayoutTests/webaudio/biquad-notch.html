@@ -34,7 +34,10 @@ function runTest() {
                             {cutoff : 0.25, q : 10, gain : 1 },
                            ];
 
-    createTestAndRun(context, "notch", filterParameters);
+    createTestAndRun(context, "notch", {
+      threshold: 1.9669e-8,
+      filterParameters: filterParameters
+    });
 }
 
 runTest();

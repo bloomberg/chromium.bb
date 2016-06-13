@@ -238,13 +238,13 @@
       // Thresholds here are experimentally determined.
       var biquadTestConfigs = [{
         filterType: "lowpass",
-        snrThreshold: 91.222,
+        snrThreshold: 91.221,
         errorThreshold: {
-          relativeThreshold: 4.15e-5
+          relativeThreshold: 4.9834e-5
         }
       }, {
         filterType: "highpass",
-        snrThreshold: 107.246,
+        snrThreshold: 105.4590,
         errorThreshold: {
           absoluteThreshold: 2.9e-6,
           relativeThreshold: 3e-5
@@ -552,13 +552,13 @@
               })
             .beCloseToArray(expected, {
               // Thresholds experimentally determined.
-              absoluteThreshold: 8.4e-8,
-              relativeThreshold: 5e-7,
+              absoluteThreshold: 1.59e-7,
+              relativeThreshold: 2.11e-5,
             });
 
           var snr = 10*Math.log10(computeSNR(actual, expected));
           Should("SNR of 4-th order IIRFilter (biquad ref)", snr)
-            .beGreaterThanOrEqualTo(110.684);
+            .beGreaterThanOrEqualTo(108.947);
         }).then(done);
       });
 

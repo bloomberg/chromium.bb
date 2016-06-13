@@ -10,6 +10,7 @@ function createLowpassFilter(freq, q, gain) {
     var b0;
     var b1;
     var b2;
+    var a0;
     var a1;
     var a2;
 
@@ -19,31 +20,31 @@ function createLowpassFilter(freq, q, gain) {
         b0 = 1;
         b1 = 0;
         b2 = 0;
+        a0 = 1;
         a1 = 0;
         a2 = 0;
     } else {
-        var g = Math.pow(10, q / 20);
-        var d = Math.sqrt((4 - Math.sqrt(16 - 16 / (g * g))) / 2);
         var theta = Math.PI * freq;
-        var sn = d * Math.sin(theta) / 2;
-        var beta = 0.5 * (1 - sn) / (1 + sn);
-        var gamma = (0.5 + beta) * Math.cos(theta);
-        var alpha = 0.25 * (0.5 + beta - gamma);
+        var alpha = Math.sin(theta) / (2 * Math.pow(10, q / 20));
+        var cosw = Math.cos(theta);
+        var beta = (1 - cosw) / 2;
 
-        b0 = 2 * alpha;
-        b1 = 4 * alpha;
-        b2 = 2 * alpha;
-        a1 = 2 * (-gamma);
-        a2 = 2 * beta;
+        b0 = beta;
+        b1 = 2 * beta;
+        b2 = beta;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw;
+        a2 = 1 - alpha;
     }
 
-    return {b0 : b0, b1 : b1, b2 : b2, a1 : a1, a2 : a2};
+    return normalizeFilterCoefficients(b0, b1, b2, a0, a1, a2);
 }
 
 function createHighpassFilter(freq, q, gain) {
     var b0;
     var b1;
     var b2;
+    var a0;
     var a1;
     var a2;
 
@@ -52,6 +53,7 @@ function createHighpassFilter(freq, q, gain) {
         b0 = 0;
         b1 = 0;
         b2 = 0;
+        a0 = 1;
         a1 = 0;
         a2 = 0;
     } else if (freq == 0) {
@@ -61,25 +63,24 @@ function createHighpassFilter(freq, q, gain) {
         b0 = 1;
         b1 = 0;
         b2 = 0;
+        a0 = 1;
         a1 = 0;
         a2 = 0;
     } else {
-        var g = Math.pow(10, q / 20);
-        var d = Math.sqrt((4 - Math.sqrt(16 - 16 / (g * g))) / 2);
         var theta = Math.PI * freq;
-        var sn = d * Math.sin(theta) / 2;
-        var beta = 0.5 * (1 - sn) / (1 + sn);
-        var gamma = (0.5 + beta) * Math.cos(theta);
-        var alpha = 0.25 * (0.5 + beta + gamma);
+        var alpha = Math.sin(theta) / (2 * Math.pow(10, q / 20));
+        var cosw = Math.cos(theta);
+        var beta = (1 + cosw) / 2;
 
-        b0 = 2 * alpha;
-        b1 = -4 * alpha;
-        b2 = 2 * alpha;
-        a1 = 2 * (-gamma);
-        a2 = 2 * beta;
+        b0 = beta;
+        b1 = -2 * beta;
+        b2 = beta;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw;
+        a2 = 1 - alpha;
     }
 
-    return {b0 : b0, b1 : b1, b2 : b2, a1 : a1, a2 : a2};
+    return normalizeFilterCoefficients(b0, b1, b2, a0, a1, a2);
 }
 
 function normalizeFilterCoefficients(b0, b1, b2, a0, a1, a2) {
