@@ -287,6 +287,7 @@ const char kAddressProperty[] = "Address";
 const char kNameProperty[] = "Name";
 const char kIconProperty[] = "Icon";
 const char kClassProperty[] = "Class";
+const char kTypeProperty[] = "Type";
 const char kAppearanceProperty[] = "Appearance";
 const char kUUIDsProperty[] = "UUIDs";
 const char kPairedProperty[] = "Paired";
