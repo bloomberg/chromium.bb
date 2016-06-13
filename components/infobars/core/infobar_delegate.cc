@@ -46,7 +46,7 @@ gfx::Image InfoBarDelegate::GetIcon() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::VectorIconId vector_id = GetVectorIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
-      return gfx::Image(gfx::CreateVectorIcon(vector_id, 18,
+      return gfx::Image(gfx::CreateVectorIcon(vector_id, 16,
                                               GetInfoBarType() == WARNING_TYPE
                                                   ? SkColorSetRGB(0xFF, 0x67, 0)
                                                   : gfx::kGoogleBlue500));
