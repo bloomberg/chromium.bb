@@ -5,10 +5,20 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
@@ -34,37 +44,46 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
  */
 public class DeferredStartupHandler {
-    private static DeferredStartupHandler sDeferredStartupHandler;
+    /** Prevents race conditions when deleting snapshot database. */
+    private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
+    private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
+    private static final String SNAPSHOT_DATABASE_NAME = "snapshots.db";
+
+    private static class Holder {
+        private static final DeferredStartupHandler INSTANCE = new DeferredStartupHandler();
+    }
+
     private boolean mDeferredStartupComplete;
+    private final Context mAppContext;
 
     /**
      * This class is an application specific object that handles the deferred startup.
      * @return The singleton instance of {@link DeferredStartupHandler}.
      */
     public static DeferredStartupHandler getInstance() {
-        if (sDeferredStartupHandler == null) {
-            sDeferredStartupHandler = new DeferredStartupHandler();
-        }
-        return sDeferredStartupHandler;
+        return Holder.INSTANCE;
     }
 
-    private DeferredStartupHandler() { }
+    private DeferredStartupHandler() {
+        mAppContext = ContextUtils.getApplicationContext();
+    }
 
     /**
      * Handle application level deferred startup tasks that can be lazily done after all
      * the necessary initialization has been completed. Any calls requiring network access should
      * probably go here.
-     * @param application The application object to use for context.
-     * @param crashDumpUploadingCommandLineDisabled Whether crash dump uploading should be disabled.
      */
-    public void onDeferredStartup(final ChromeApplication application,
-            final boolean crashDumpUploadingCommandLineDisabled) {
+    @UiThread
+    public void onDeferredStartupForApp() {
         if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();
 
@@ -80,33 +99,45 @@ public class DeferredStartupHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
-                    if (!crashDumpUploadingCommandLineDisabled) {
+                    long asyncTaskStartTime = SystemClock.uptimeMillis();
+                    boolean crashDumpDisabled = CommandLine.getInstance().hasSwitch(
+                            ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
+                    if (!crashDumpDisabled) {
                         RecordHistogram.recordLongTimesHistogram(
                                 "UMA.Debug.EnableCrashUpload.Uptime2",
-                                SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+                                asyncTaskStartTime - UmaUtils.getMainEntryPointTime(),
                                 TimeUnit.MILLISECONDS);
-                        PrivacyPreferencesManager.getInstance(application)
+                        PrivacyPreferencesManager.getInstance(mAppContext)
                                 .enablePotentialCrashUploading();
-                        MinidumpUploadService.tryUploadAllCrashDumps(application);
+                        MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
                     }
                     CrashFileManager crashFileManager =
-                            new CrashFileManager(application.getCacheDir());
+                            new CrashFileManager(mAppContext.getCacheDir());
                     crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
                     MinidumpUploadService.storeBreakpadUploadStatsInUma(
-                            ChromePreferenceManager.getInstance(application));
+                            ChromePreferenceManager.getInstance(mAppContext));
 
                     // Force a widget refresh in order to wake up any possible zombie widgets.
                     // This is needed to ensure the right behavior when the process is suddenly
                     // killed.
-                    BookmarkWidgetProvider.refreshAllWidgets(application);
+                    BookmarkWidgetProvider.refreshAllWidgets(mAppContext);
 
                     // Initialize whether or not precaching is enabled.
-                    PrecacheLauncher.updatePrecachingEnabled(application);
+                    PrecacheLauncher.updatePrecachingEnabled(mAppContext);
 
                     if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
                         WebApkVersionManager.updateWebApksIfNeeded();
                     }
+
+                    removeSnapshotDatabase();
+
+                    cacheIsChromeDefaultBrowser();
+
+                    RecordHistogram.recordLongTimesHistogram(
+                            "UMA.Debug.EnableCrashUpload.DeferredStartUpDurationAsync",
+                            SystemClock.uptimeMillis() - asyncTaskStartTime,
+                            TimeUnit.MILLISECONDS);
 
                     return null;
                 } finally {
@@ -120,37 +151,40 @@ public class DeferredStartupHandler {
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
             @Override
             public void run() {
-                String homepageUrl = HomepageManager.getHomepageUri(application);
+                String homepageUrl = HomepageManager.getHomepageUri(mAppContext);
                 LaunchMetrics.recordHomePageLaunchMetrics(
-                        HomepageManager.isHomepageEnabled(application),
+                        HomepageManager.isHomepageEnabled(mAppContext),
                         NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
             }
         });
 
         // TODO(aruslan): http://b/6397072 This will be moved elsewhere
-        PartnerBookmarksShim.kickOffReading(application);
+        PartnerBookmarksShim.kickOffReading(mAppContext);
 
-        PowerMonitor.create(application);
+        PowerMonitor.create(mAppContext);
 
+        ShareHelper.clearSharedImages(mAppContext);
+
+        // Clear any media notifications that existed when Chrome was last killed.
+        MediaCaptureNotificationService.clearMediaNotifications(mAppContext);
+
+        startModerateBindingManagementIfNeeded();
+
+        String customTabsTrialGroupName = FieldTrialList.findFullName("CustomTabs");
+        if (customTabsTrialGroupName.equals("Disabled")) {
+            ChromePreferenceManager.getInstance(mAppContext).setCustomTabsEnabled(false);
+        } else if (customTabsTrialGroupName.equals("Enabled")
+                || customTabsTrialGroupName.equals("DisablePrerender")) {
+            ChromePreferenceManager.getInstance(mAppContext).setCustomTabsEnabled(true);
+        }
+
+        recordKeyboardLocaleUma();
+
+        ChromeApplication application = (ChromeApplication) mAppContext;
         // Starts syncing with GSA.
         application.createGsaHelper().startSync();
 
         application.initializeSharedClasses();
-
-        ShareHelper.clearSharedImages(application);
-
-        // Clear any media notifications that existed when Chrome was last killed.
-        MediaCaptureNotificationService.clearMediaNotifications(application);
-
-        startModerateBindingManagementIfNeeded(application);
-
-        String customTabsTrialGroupName = FieldTrialList.findFullName("CustomTabs");
-        if (customTabsTrialGroupName.equals("Disabled")) {
-            ChromePreferenceManager.getInstance(application).setCustomTabsEnabled(false);
-        } else if (customTabsTrialGroupName.equals("Enabled")
-                || customTabsTrialGroupName.equals("DisablePrerender")) {
-            ChromePreferenceManager.getInstance(application).setCustomTabsEnabled(true);
-        }
 
         // Start or stop Physical Web
         PhysicalWeb.onChromeStart(application);
@@ -163,7 +197,7 @@ public class DeferredStartupHandler {
                 TimeUnit.MILLISECONDS);
     }
 
-    private static void startModerateBindingManagementIfNeeded(Context context) {
+    private void startModerateBindingManagementIfNeeded() {
         // Moderate binding doesn't apply to low end devices.
         if (SysUtils.isLowEndDevice()) return;
 
@@ -171,7 +205,65 @@ public class DeferredStartupHandler {
                 FieldTrialList.findFullName("ModerateBindingOnBackgroundTabCreation")
                         .equals("Enabled");
         ChildProcessLauncher.startModerateBindingManagement(
-                context, moderateBindingTillBackgrounded);
+                mAppContext, moderateBindingTillBackgrounded);
+    }
+
+    /**
+     * Caches whether Chrome is set as a default browser on the device.
+     */
+    @WorkerThread
+    private void cacheIsChromeDefaultBrowser() {
+        // Retrieve whether Chrome is default in background to avoid strict mode checks.
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.madeupdomainforcheck123.com/"));
+        ResolveInfo info = mAppContext.getPackageManager().resolveActivity(intent, 0);
+        boolean isDefault = (info != null && info.match != 0
+                && mAppContext.getPackageName().equals(info.activityInfo.packageName));
+        ChromePreferenceManager.getInstance(mAppContext).setCachedChromeDefaultBrowser(isDefault);
+    }
+
+    /**
+     * Deletes the snapshot database which is no longer used because the feature has been removed
+     * in Chrome M41.
+     */
+    @WorkerThread
+    private void removeSnapshotDatabase() {
+        synchronized (SNAPSHOT_DATABASE_LOCK) {
+            SharedPreferences prefs =
+                    ContextUtils.getAppSharedPreferences();
+            if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
+                mAppContext.deleteDatabase(SNAPSHOT_DATABASE_NAME);
+                prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
+            }
+        }
+    }
+
+    private void recordKeyboardLocaleUma() {
+        InputMethodManager imm =
+                (InputMethodManager) mAppContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
+        ArrayList<String> uniqueLanguages = new ArrayList<String>();
+        for (InputMethodInfo method : ims) {
+            List<InputMethodSubtype> submethods =
+                    imm.getEnabledInputMethodSubtypeList(method, true);
+            for (InputMethodSubtype submethod : submethods) {
+                if (submethod.getMode().equals("keyboard")) {
+                    String language = submethod.getLocale().split("_")[0];
+                    if (!uniqueLanguages.contains(language)) {
+                        uniqueLanguages.add(language);
+                    }
+                }
+            }
+        }
+        RecordHistogram.recordCountHistogram("InputMethod.ActiveCount", uniqueLanguages.size());
+
+        InputMethodSubtype currentSubtype = imm.getCurrentInputMethodSubtype();
+        Locale systemLocale = Locale.getDefault();
+        if (currentSubtype != null && currentSubtype.getLocale() != null && systemLocale != null) {
+            String keyboardLanguage = currentSubtype.getLocale().split("_")[0];
+            boolean match = systemLocale.getLanguage().equalsIgnoreCase(keyboardLanguage);
+            RecordHistogram.recordBooleanHistogram("InputMethod.MatchesSystemLanguage", match);
+        }
     }
 
     /**

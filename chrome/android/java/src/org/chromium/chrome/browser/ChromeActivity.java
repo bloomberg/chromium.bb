@@ -11,8 +11,6 @@ import android.app.SearchManager;
 import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -20,7 +18,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -39,16 +36,12 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
-import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -140,7 +133,6 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -165,11 +157,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * No control container to inflate during initialization.
      */
     static final int NO_CONTROL_CONTAINER = -1;
-
-    /** Prevents race conditions when deleting snapshot database. */
-    private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
-    private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
-    private static final String SNAPSHOT_DATABASE_NAME = "snapshots.db";
 
     /** Delay in ms after first page load finishes before we initiate deferred startup actions. */
     private static final int DEFERRED_STARTUP_DELAY_MS = 1000;
@@ -704,11 +691,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     protected void onDeferredStartup() {
         super.onDeferredStartup();
-        boolean crashDumpUploadingDisabled =
-                CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
-        DeferredStartupHandler.getInstance()
-                .onDeferredStartup(getChromeApplication(), crashDumpUploadingDisabled);
+        DeferredStartupHandler.getInstance().onDeferredStartupForApp();
+        onDeferredStartupForActivity();
+    }
 
+    /**
+     * All deferred startup tasks that require the activity rather than the app should go here.
+     */
+    private void onDeferredStartupForActivity() {
         BeamController.registerForBeam(this, new BeamProvider() {
             @Override
             public String getTabUrlForBeam() {
@@ -720,40 +710,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(this);
 
-        removeSnapshotDatabase();
         if (mToolbarManager != null) {
             String simpleName = getClass().getSimpleName();
             RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarInflationTime." + simpleName,
                     mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
             mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
         }
-        recordKeyboardLocaleUma();
 
         if (MultiWindowUtils.getInstance().isInMultiWindowMode(this)) {
             onDeferredStartupForMultiWindowMode();
         }
-
-        cacheIsChromeDefaultBrowser();
-    }
-
-    /**
-     * Caches whether Chrome is set as a default browser on the device.
-     */
-    private void cacheIsChromeDefaultBrowser() {
-        // Retrieve whether Chrome is default in background to avoid strict mode checks.
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                Intent intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://www.madeupdomainforcheck123.com/"));
-                ResolveInfo info = getPackageManager().resolveActivity(intent, 0);
-                boolean isDefault = info != null && info.match != 0 && getPackageName().equals(
-                        info.activityInfo.packageName);
-                ChromePreferenceManager.getInstance(ChromeActivity.this)
-                        .setCachedChromeDefaultBrowser(isDefault);
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -1695,55 +1661,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public boolean isOverlayVisible() {
         return false;
-    }
-
-    /**
-     * Deletes the snapshot database which is no longer used because the feature has been removed
-     * in Chrome M41.
-     */
-    private void removeSnapshotDatabase() {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                synchronized (SNAPSHOT_DATABASE_LOCK) {
-                    SharedPreferences prefs =
-                            ContextUtils.getAppSharedPreferences();
-                    if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
-                        deleteDatabase(SNAPSHOT_DATABASE_NAME);
-                        prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
-                    }
-                }
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    private void recordKeyboardLocaleUma() {
-        InputMethodManager imm =
-                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
-        ArrayList<String> uniqueLanguages = new ArrayList<String>();
-        for (InputMethodInfo method : ims) {
-            List<InputMethodSubtype> submethods =
-                    imm.getEnabledInputMethodSubtypeList(method, true);
-            for (InputMethodSubtype submethod : submethods) {
-                if (submethod.getMode().equals("keyboard")) {
-                    String language = submethod.getLocale().split("_")[0];
-                    if (!uniqueLanguages.contains(language)) {
-                        uniqueLanguages.add(language);
-                    }
-                }
-            }
-        }
-        RecordHistogram.recordCountHistogram("InputMethod.ActiveCount", uniqueLanguages.size());
-
-        InputMethodSubtype currentSubtype = imm.getCurrentInputMethodSubtype();
-        Locale systemLocale = Locale.getDefault();
-        if (currentSubtype != null && currentSubtype.getLocale() != null && systemLocale != null) {
-            String keyboardLanguage = currentSubtype.getLocale().split("_")[0];
-            boolean match = systemLocale.getLanguage().equalsIgnoreCase(keyboardLanguage);
-            RecordHistogram.recordBooleanHistogram("InputMethod.MatchesSystemLanguage", match);
-        }
     }
 
     @Override
