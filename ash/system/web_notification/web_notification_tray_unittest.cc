@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -20,7 +21,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"

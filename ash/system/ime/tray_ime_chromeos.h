@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/system/ime/ime_observer.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray_accessibility.h"
 #include "base/macros.h"
 

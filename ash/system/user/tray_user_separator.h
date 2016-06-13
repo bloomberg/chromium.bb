@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_USER_TRAY_USER_SEPARATOR_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
 namespace ash {

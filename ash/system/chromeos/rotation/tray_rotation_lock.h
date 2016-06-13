@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_CHROMEOS_ROTATION_TRAY_ROTATION_LOCK_H_
 
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/tray/tray_image_item.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 
 namespace ash {

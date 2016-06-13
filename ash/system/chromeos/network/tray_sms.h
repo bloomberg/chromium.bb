@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "ash/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/network_sms_handler.h"

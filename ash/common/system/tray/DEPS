@@ -1,0 +1,6 @@
+# NOTE: Files are migrating to this directory as part of the mus ash refactor.
+# Talk to jamescook@ before adding deps. See http://crbug.com/619636
+include_rules = [
+  # TODO(jamescook): Remove this.
+  "+ash/system/tray/system_tray.h",
+]

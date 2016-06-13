@@ -9,8 +9,8 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/tray/tray_image_item.h"
 #include "ash/system/tray/tray_details_view.h"
-#include "ash/system/tray/tray_image_item.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"

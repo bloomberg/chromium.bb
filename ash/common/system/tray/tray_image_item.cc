@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_image_item.h"
+#include "ash/common/system/tray/tray_image_item.h"
 
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/shelf/shelf_util.h"
+#include "ash/common/system/tray/tray_item_view.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_item_view.h"
-#include "ash/system/tray/tray_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"

@@ -5,10 +5,10 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SCREEN_TRAY_ITEM_H_
 #define ASH_SYSTEM_CHROMEOS_SCREEN_TRAY_ITEM_H_
 
+#include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/tray_item_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "base/macros.h"

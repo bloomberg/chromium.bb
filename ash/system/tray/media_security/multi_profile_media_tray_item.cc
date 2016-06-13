@@ -6,11 +6,11 @@
 
 #include "ash/ash_view_ids.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/tray_item_view.h"
 #include "ash/media_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/media_security/media_capture_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_item_view.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"

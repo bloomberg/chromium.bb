@@ -7,7 +7,7 @@
 
 #include "ash/cast_config_delegate.h"
 #include "ash/common/shell_observer.h"
-#include "ash/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
 namespace ash {

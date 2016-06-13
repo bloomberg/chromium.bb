@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#include "ash/common/system/tray/tray_image_item.h"
 #include "ash/system/audio/audio_observer.h"
-#include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 

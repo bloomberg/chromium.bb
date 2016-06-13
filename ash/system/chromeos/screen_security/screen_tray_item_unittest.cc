@@ -4,10 +4,10 @@
 
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/common/system/tray/tray_item_view.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
-#include "ash/system/tray/tray_item_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"

@@ -6,7 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"

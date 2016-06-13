@@ -5,13 +5,13 @@
 #include "ash/system/date/tray_date.h"
 
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/tray/tray_item_view.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_item_view.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/system_clock_observer.h"

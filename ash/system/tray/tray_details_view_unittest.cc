@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_details_view.h"
 
+#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -11,7 +12,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/special_popup_row.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
