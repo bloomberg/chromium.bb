@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 
@@ -18,6 +19,7 @@
 #include "tools/gn/commands.h"
 #include "tools/gn/config.h"
 #include "tools/gn/config_values_extractors.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/label_pattern.h"
 #include "tools/gn/parse_tree.h"
@@ -163,6 +165,46 @@ base::StringPiece FindParentDir(const std::string* path) {
   return base::StringPiece();
 }
 
+bool FilterTargets(const BuildSettings* build_settings,
+                   Builder* builder,
+                   const std::string& dir_filters,
+                   std::vector<const Target*>* targets,
+                   Err* err) {
+  if (dir_filters.empty()) {
+    *targets = builder->GetAllResolvedTargets();
+    return true;
+  }
+
+  std::vector<LabelPattern> filters;
+  if (!commands::FilterPatternsFromString(build_settings, dir_filters, &filters,
+                                          err))
+    return false;
+
+  commands::FilterTargetsByPatterns(builder->GetAllResolvedTargets(), filters,
+                                    targets);
+
+  std::set<Label> labels;
+  std::queue<const Target*> to_process;
+  for (const Target* target : *targets) {
+    labels.insert(target->label());
+    to_process.push(target);
+  }
+
+  while (!to_process.empty()) {
+    const Target* target = to_process.front();
+    to_process.pop();
+    for (const auto& pair : target->GetDeps(Target::DEPS_ALL)) {
+      if (labels.find(pair.label) == labels.end()) {
+        targets->push_back(pair.ptr);
+        to_process.push(pair.ptr);
+        labels.insert(pair.label);
+      }
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 VisualStudioWriter::SolutionEntry::SolutionEntry(const std::string& _name,
@@ -233,18 +275,8 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           const std::string& dir_filters,
                                           Err* err) {
   std::vector<const Target*> targets;
-  if (dir_filters.empty()) {
-    targets = builder->GetAllResolvedTargets();
-  } else {
-    std::vector<LabelPattern> filters;
-    if (!commands::FilterPatternsFromString(build_settings, dir_filters,
-                                            &filters, err)) {
-      return false;
-    }
-
-    commands::FilterTargetsByPatterns(builder->GetAllResolvedTargets(), filters,
-                                      &targets);
-  }
+  if (!FilterTargets(build_settings, builder, dir_filters, &targets, err))
+    return false;
 
   const char* config_platform = "Win32";
 

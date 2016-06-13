@@ -697,8 +697,8 @@
   --filters=<path_prefixes>
       Semicolon-separated list of label patterns used to limit the set
       of generated projects (see "gn help label_pattern"). Only
-      matching targets will be included to the solution. Only used for
-      Visual Studio and Xcode.
+      matching targets and their dependencies will be included in the
+      solution. Only used for Visual Studio and Xcode.
 
 ```
 
@@ -864,8 +864,8 @@
 ```
   Finds paths of dependencies between two targets. Each unique path
   will be printed in one group, and groups will be separate by newlines.
-  The two targets can appear in either order: paths will be found going
-  in either direction.
+  The two targets can appear in either order (paths will be found going
+  in either direction).
 
   By default, a single path will be printed. If there is a path with
   only public dependencies, the shortest public path will be printed.
@@ -876,13 +876,23 @@
 
 ```
 
+### **Interesting paths**
+
+```
+  In a large project, there can be 100's of millions of unique paths
+  between a very high level and a common low-level target. To make the
+  output more useful (and terminate in a reasonable time), GN will not
+  revisit sub-paths previously known to lead to the target.
+
+```
+
 ### **Options**
 
 ```
   --all
-     Prints all paths found rather than just the first one. Public paths
-     will be printed first in order of increasing length, followed by
-     non-public paths in order of increasing length.
+     Prints all "interesting" paths found rather than just the first
+     one. Public paths will be printed first in order of increasing
+     length, followed by non-public paths in order of increasing length.
 
   --public
      Considers only public paths. Can't be used with --with-data.
@@ -3611,13 +3621,13 @@
 ```
   This value should be used to indicate the desired architecture for
   the primary objects of the build. It will match the cpu architecture
-  of the default toolchain.
+  of the default toolchain, but not necessarily the current toolchain.
 
   In many cases, this is the same as "host_cpu", but in the case
-  of cross-compiles, this can be set to something different. This 
-  value is different from "current_cpu" in that it can be referenced
-  from inside any toolchain. This value can also be ignored if it is
-  not needed or meaningful for a project.
+  of cross-compiles, this can be set to something different. This
+  value is different from "current_cpu" in that it does not change
+  based on the current toolchain. When writing rules, "current_cpu"
+  should be used rather than "target_cpu" most of the time.
 
   This value is not used internally by GN for any purpose, so it
   may be set to whatever value is needed for the build.
@@ -5949,8 +5959,8 @@
   When a tool produces more than one output, only the first output
   is considered. For example, a shared library target may produce a
   .dll and a .lib file on Windows. Only the .dll file will be considered
-  a runtime dependency. This applies only to linker tools, scripts and
-  copy steps with multiple outputs will also get all outputs listed.
+  a runtime dependency. This applies only to linker tools. Scripts and
+  copy steps with multiple outputs will get all outputs listed.
 
 
 ```
