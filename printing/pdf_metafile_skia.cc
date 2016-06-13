@@ -67,16 +67,31 @@ sk_sp<SkDocument> MakePdfDocument(SkWStream* wStream) {
 
 namespace printing {
 
+struct Page {
+  Page(SkSize s, sk_sp<SkPicture> c) : size_(s), content_(std::move(c)) {}
+  Page(Page&& that) : size_(that.size_), content_(std::move(that.content_)) {}
+  Page(const Page&) = default;
+  Page& operator=(const Page&) = default;
+  Page& operator=(Page&& that) {
+    size_ = that.size_;
+    content_ = std::move(that.content_);
+    return *this;
+  }
+  SkSize size_;
+  sk_sp<SkPicture> content_;
+};
+
 struct PdfMetafileSkiaData {
   SkPictureRecorder recorder_;  // Current recording
 
-  std::vector<sk_sp<SkPicture>> pages_;
+  std::vector<Page> pages_;
   std::unique_ptr<SkStreamAsset> pdf_data_;
 
   // The scale factor is used because Blink occasionally calls
   // SkCanvas::getTotalMatrix() even though the total matrix is not as
   // meaningful for a vector canvas as for a raster canvas.
   float scale_factor_;
+  SkSize size_;
 
 #if defined(OS_MACOSX)
   PdfMetafileCg pdf_cg_;
@@ -119,6 +134,7 @@ void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
     canvas->scale(scale_factor, scale_factor);
   }
 
+  data_->size_ = gfx::SizeFToSkSize(gfx::SizeF(page_size));
   data_->scale_factor_ = scale_factor;
   // We scale the recording canvas's size so that
   // canvas->getTotalMatrix() returns a value that ignores the scale
@@ -141,19 +157,14 @@ bool PdfMetafileSkia::FinishPage() {
 
   sk_sp<SkPicture> pic = data_->recorder_.finishRecordingAsPicture();
   if (data_->scale_factor_ != 1.0f) {
-    SkRect rect = pic->cullRect();
-    DCHECK_EQ(rect.x(), 0);
-    DCHECK_EQ(rect.y(), 0);
-    DCHECK_GT(rect.right(), 0);
-    DCHECK_GT(rect.bottom(), 0);
     SkCanvas* canvas =
-        data_->recorder_.beginRecording(data_->scale_factor_ * rect.right(),
-                                        data_->scale_factor_ * rect.bottom());
+        data_->recorder_.beginRecording(data_->size_.width(),
+                                        data_->size_.height());
     canvas->scale(data_->scale_factor_, data_->scale_factor_);
     canvas->drawPicture(pic);
     pic = data_->recorder_.finishRecordingAsPicture();
   }
-  data_->pages_.push_back(std::move(pic));
+  data_->pages_.emplace_back(data_->size_, std::move(pic));
   return true;
 }
 
@@ -170,14 +181,9 @@ bool PdfMetafileSkia::FinishDocument() {
   // lists).
   sk_sp<SkDocument> doc = MakePdfDocument(&stream);
 
-  for (const sk_sp<SkPicture>& page : data_->pages_) {
-    SkRect rect = page->cullRect();
-    DCHECK_EQ(rect.x(), 0);
-    DCHECK_EQ(rect.y(), 0);
-    DCHECK_GT(rect.right(), 0);
-    DCHECK_GT(rect.bottom(), 0);
-    SkCanvas* canvas = doc->beginPage(rect.right(), rect.bottom());
-    canvas->drawPicture(page);
+  for (const Page& page : data_->pages_) {
+    SkCanvas* canvas = doc->beginPage(page.size_.width(), page.size_.height());
+    canvas->drawPicture(page.content_);
     doc->endPage();
   }
   if (!doc->close())
@@ -203,14 +209,9 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
 
 gfx::Rect PdfMetafileSkia::GetPageBounds(unsigned int page_number) const {
   if (page_number < data_->pages_.size()) {
-    const sk_sp<SkPicture>& page = data_->pages_[page_number];
-    SkRect rect = page->cullRect();
-    DCHECK_EQ(rect.x(), 0);
-    DCHECK_EQ(rect.y(), 0);
-    DCHECK_GT(rect.right(), 0);
-    DCHECK_GT(rect.bottom(), 0);
-    return gfx::Rect(gfx::ToRoundedInt(rect.right()),
-                     gfx::ToRoundedInt(rect.bottom()));
+    SkSize size = data_->pages_[page_number].size_;
+    return gfx::Rect(gfx::ToRoundedInt(size.width()),
+                     gfx::ToRoundedInt(size.height()));
   }
   return gfx::Rect();
 }
