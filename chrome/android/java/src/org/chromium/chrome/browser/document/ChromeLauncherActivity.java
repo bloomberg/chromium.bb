@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.AppLinkHandler;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.UrlConstants;
@@ -434,11 +433,8 @@ public class ChromeLauncherActivity extends Activity
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(getIntent());
-        String className = ChromeTabbedActivity.class.getName();
-        if (newIntent.hasExtra(IntentHandler.EXTRA_WINDOW_ID)
-                && IntentUtils.safeGetIntExtra(newIntent, IntentHandler.EXTRA_WINDOW_ID, 0) == 2) {
-            className = ChromeTabbedActivity2.class.getName();
-        }
+        String className = MultiWindowUtils.getInstance().getTabbedActivityForIntent(
+                newIntent, this).getName();
         newIntent.setClassName(getApplicationContext().getPackageName(), className);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

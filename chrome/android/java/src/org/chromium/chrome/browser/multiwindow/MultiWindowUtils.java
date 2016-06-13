@@ -6,18 +6,29 @@ package org.chromium.chrome.browser.multiwindow;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.AppTask;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.text.TextUtils;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.util.IntentUtils;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -25,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * Thread-safe: This class may be accessed from any thread.
  */
-public class MultiWindowUtils {
+public class MultiWindowUtils implements ActivityStateListener {
 
     // TODO(twellington): replace this with Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT once we're building
     //                    against N.
@@ -33,6 +44,11 @@ public class MultiWindowUtils {
 
     private static AtomicReference<MultiWindowUtils> sInstance =
             new AtomicReference<MultiWindowUtils>();
+
+    // Used to keep track of whether ChromeTabbedActivity2 is running. A tri-state Boolean is
+    // used in case both activities die in the background and MultiWindowUtils is recreated.
+    private Boolean mTabbedActivity2TaskRunning;
+    private WeakReference<ChromeTabbedActivity> mLastResumedTabbedActivity;
 
     /**
      * Returns the singleton instance of MultiWindowUtils, creating it if needed.
@@ -86,13 +102,143 @@ public class MultiWindowUtils {
      * Returns null if the current activity doesn't support opening/moving tabs to another activity.
      */
     public Class<? extends Activity> getOpenInOtherWindowActivity(Activity current) {
+
         if (current instanceof ChromeTabbedActivity2) {
+            // If a second ChromeTabbedActivity is created, MultiWindowUtils needs to listen for
+            // activity state changes to facilitate determining which ChromeTabbedActivity should
+            // be used for intents.
+            ApplicationStatus.registerStateListenerForAllActivities(sInstance.get());
             return ChromeTabbedActivity.class;
         } else if (current instanceof ChromeTabbedActivity) {
+            mTabbedActivity2TaskRunning = true;
+            ApplicationStatus.registerStateListenerForAllActivities(sInstance.get());
             return ChromeTabbedActivity2.class;
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void onActivityStateChange(Activity activity, int newState) {
+        if (newState == ActivityState.RESUMED && activity instanceof ChromeTabbedActivity) {
+            mLastResumedTabbedActivity =
+                    new WeakReference<ChromeTabbedActivity>((ChromeTabbedActivity) activity);
+        }
+    }
+
+    /**
+     * Determines the correct ChromeTabbedActivity class to use for an incoming intent.
+     * @param intent The incoming intent that is starting ChromeTabbedActivity.
+     * @param context The current Context, used to retrieve the ActivityManager system service.
+     * @return The ChromeTabbedActivity to use for the incoming intent.
+     */
+    public Class<? extends ChromeTabbedActivity> getTabbedActivityForIntent(Intent intent,
+            Context context) {
+        // 1. Exit early if the build version doesn't support Android N+ multi-window mode or
+        // ChromeTabbedActivity2 isn't running.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+                || (mTabbedActivity2TaskRunning != null && !mTabbedActivity2TaskRunning)) {
+            return ChromeTabbedActivity.class;
+        }
+
+        // 2. If the intent has a window id set, use that.
+        if (intent.hasExtra(IntentHandler.EXTRA_WINDOW_ID)) {
+            int windowId = IntentUtils.safeGetIntExtra(intent, IntentHandler.EXTRA_WINDOW_ID, 0);
+            if (windowId == 1) return ChromeTabbedActivity.class;
+            if (windowId == 2) return ChromeTabbedActivity2.class;
+        }
+
+        // 3. If only one ChromeTabbedActivity is currently in Android recents, use it.
+        boolean tabbed2TaskRunning = isActivityTaskInRecents(
+                ChromeTabbedActivity2.class.getName(), context);
+
+        // Exit early if ChromeTabbedActivity2 isn't running.
+        if (!tabbed2TaskRunning) {
+            mTabbedActivity2TaskRunning = false;
+            return ChromeTabbedActivity.class;
+        }
+
+        boolean tabbedTaskRunning = isActivityTaskInRecents(
+                ChromeTabbedActivity.class.getName(), context);
+        if (!tabbedTaskRunning) {
+            return ChromeTabbedActivity2.class;
+        }
+
+        // 4. If only one of the ChromeTabbedActivity's is currently visible use it.
+        // e.g. ChromeTabbedActivity is docked to the top of the screen and another app is docked
+        // to the bottom.
+
+        // Find the activities.
+        Activity tabbedActivity = null;
+        Activity tabbedActivity2 = null;
+        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
+            Activity activity = reference.get();
+            if (activity == null) continue;
+            if (activity.getClass().equals(ChromeTabbedActivity.class)) {
+                tabbedActivity = activity;
+            } else if (activity.getClass().equals(ChromeTabbedActivity2.class)) {
+                tabbedActivity2 = activity;
+            }
+        }
+
+        // Determine if only one is visible.
+        boolean tabbedActivityVisible = isActivityVisible(tabbedActivity);
+        boolean tabbedActivity2Visible = isActivityVisible(tabbedActivity2);
+        if (tabbedActivityVisible ^ tabbedActivity2Visible) {
+            if (tabbedActivityVisible) return ChromeTabbedActivity.class;
+            return ChromeTabbedActivity2.class;
+        }
+
+        // 5. Use the ChromeTabbedActivity that was resumed most recently if it's still running.
+        if (mLastResumedTabbedActivity != null) {
+            ChromeTabbedActivity lastResumedActivity = mLastResumedTabbedActivity.get();
+            if (lastResumedActivity != null) {
+                Class<?> lastResumedClassName = lastResumedActivity.getClass();
+                if (tabbedTaskRunning
+                        && lastResumedClassName.equals(ChromeTabbedActivity.class)) {
+                    return ChromeTabbedActivity.class;
+                }
+                if (tabbed2TaskRunning
+                        && lastResumedClassName.equals(ChromeTabbedActivity2.class)) {
+                    return ChromeTabbedActivity2.class;
+                }
+            }
+        }
+
+        // 6. Default to regular ChromeTabbedActivity.
+        return ChromeTabbedActivity.class;
+    }
+
+    /**
+     * @param className The class name of the Activity to look for in Android recents
+     * @param context The current Context, used to retrieve the ActivityManager system service.
+     * @return True if the Activity still has a task in Android recents, regardless of whether
+     *         the Activity has been destroyed.
+     */
+    private boolean isActivityTaskInRecents(String className, Context context) {
+        ActivityManager activityManager = (ActivityManager)
+                context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<AppTask> appTasks = activityManager.getAppTasks();
+        for (AppTask task : appTasks) {
+            if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) continue;
+            String baseActivity = task.getTaskInfo().baseActivity.getClassName();
+            if (TextUtils.equals(baseActivity, className)) return true;
+        }
+        return false;
+    }
+
+    private boolean isActivityVisible(Activity activity) {
+        if (activity == null) return false;
+        int activityState = ApplicationStatus.getStateForActivity(activity);
+        // In Android N multi-window mode, only one activity is resumed at a time. The other
+        // activity visible on the screen will be in the paused state. Activities not visible on
+        // the screen will be stopped or destroyed.
+        return activityState == ActivityState.RESUMED || activityState == ActivityState.PAUSED;
+    }
+
+    @VisibleForTesting
+    public Boolean getTabbedActivity2TaskRunning() {
+        return mTabbedActivity2TaskRunning;
     }
 
     /**
