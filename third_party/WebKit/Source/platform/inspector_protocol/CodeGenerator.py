@@ -31,7 +31,7 @@ if os.path.isdir(third_party_dir):
 
 # In Node, it is in deps folder
 deps_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir))
+    module_path, os.pardir, os.pardir, "deps"))
 if os.path.isdir(deps_dir):
     sys.path.insert(1, os.path.join(deps_dir, "jinja2"))
     sys.path.insert(1, os.path.join(deps_dir, "markupsafe"))

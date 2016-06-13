@@ -57,8 +57,8 @@
           ['debug_devtools=="node"', {
               # Node build
               'jinja_module_files': [
-                '../../../jinja2/jinja2/__init__.py',
-                '../../../markupsafe/markupsafe/__init__.py',  # jinja2 dep
+                '../../deps/jinja2/jinja2/__init__.py',
+                '../../deps/markupsafe/markupsafe/__init__.py',  # jinja2 dep
               ],
             }, {
               'jinja_module_files': [
