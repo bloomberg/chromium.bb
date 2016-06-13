@@ -420,8 +420,17 @@ void ClearKeyCdm::RemoveSession(uint32_t promise_id,
 void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
                                        const uint8_t* server_certificate_data,
                                        uint32_t server_certificate_data_size) {
-  // ClearKey doesn't use a server certificate.
-  host_->OnResolvePromise(promise_id);
+  std::unique_ptr<media::SimpleCdmPromise> promise(
+      new media::CdmCallbackPromise<>(
+          base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                     promise_id),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                     promise_id)));
+  decryptor_->SetServerCertificate(
+      std::vector<uint8_t>(
+          server_certificate_data,
+          server_certificate_data + server_certificate_data_size),
+      std::move(promise));
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
