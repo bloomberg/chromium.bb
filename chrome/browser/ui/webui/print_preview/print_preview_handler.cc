@@ -81,8 +81,6 @@
 #include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
-#include "printing/metafile.h"
-#include "printing/pdf_metafile_skia.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
@@ -296,11 +294,10 @@ void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  printing::PdfMetafileSkia metafile;
-  metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  metafile.SaveTo(&file);
+  file.WriteAtCurrentPos((const char*)data->front(),
+                         base::checked_cast<int>(data->size()));
   if (!pdf_file_saved_closure.is_null())
     pdf_file_saved_closure.Run();
 }
