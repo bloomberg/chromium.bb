@@ -77,8 +77,6 @@ namespace content {
 
 namespace {
 
-const GURL kBlockedURL("data:,");
-
 // Helper function to send a postMessage and wait for a reply message.  The
 // |post_message_script| is executed on the |sender_ftn| frame, and the sender
 // frame is expected to post |reply_status| from the DOMAutomationController
@@ -6166,10 +6164,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* mixed_child = root->child_at(0)->child_at(0);
   ASSERT_TRUE(mixed_child);
-  // The child iframe attempted to create a mixed iframe; this will commit
-  // a load to 'data:,' (so that it ends up in a unique origin).
-  EXPECT_TRUE(mixed_child->has_committed_real_load());
-  EXPECT_EQ(kBlockedURL, mixed_child->current_url());
+  // The child iframe attempted to create a mixed iframe; this should
+  // have been blocked, so the mixed iframe should not have committed a
+  // load.
+  EXPECT_FALSE(mixed_child->has_committed_real_load());
 }
 
 // Test that subresources with certificate errors that are redundant
@@ -6378,14 +6376,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     load_observer.Wait();
   }
 
-  // The blocked frame should commit to |kBlockedURL|
-  EXPECT_EQ(kBlockedURL, root->child_at(0)->current_url());
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
 
+  // The blocked frame should keep the old title.
   std::string frame_title;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       root->child_at(0), "domAutomationController.send(document.title)",
       &frame_title));
-  EXPECT_EQ("", frame_title);
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
 
   // Navigate to a URL without CSP.
   EXPECT_TRUE(NavigateToURL(
@@ -6452,14 +6451,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     load_observer2.Wait();
   }
 
-  // The blocked frame should commit to |kBlockedURL|
-  EXPECT_EQ(kBlockedURL, root->child_at(0)->current_url());
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
 
+  // The blocked frame should keep the old title.
   std::string frame_title;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       root->child_at(0), "domAutomationController.send(document.title)",
       &frame_title));
-  EXPECT_EQ("", frame_title);
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
 }
 
 // Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
@@ -6520,14 +6520,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     load_observer2.Wait();
   }
 
-  // The blocked frame should commit to |kBlockedURL|
-  EXPECT_EQ(kBlockedURL, navigating_frame->current_url());
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, navigating_frame->current_url());
 
+  // The blocked frame should keep the old title.
   std::string frame_title;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       navigating_frame, "domAutomationController.send(document.title)",
       &frame_title));
-  EXPECT_EQ("", frame_title);
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
 
   // Navigate the subframe to a URL without CSP.
   NavigateFrameToURL(srcdoc_frame,

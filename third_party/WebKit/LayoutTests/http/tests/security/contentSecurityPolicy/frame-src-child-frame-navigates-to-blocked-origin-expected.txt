@@ -5,4 +5,4 @@ The test verifies that Content-Security-Policy from the main frame restricts chi
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-
+Frame that navigates itself to an origin other than https://localhost:8443. Automatically clicked link.

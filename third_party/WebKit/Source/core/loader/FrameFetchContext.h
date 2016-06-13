@@ -123,7 +123,6 @@ private:
     LocalFrame* frame() const; // Can be null
     void printAccessDeniedMessage(const KURL&) const;
     ResourceRequestBlockedReason canRequestInternal(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction, ResourceRequest::RedirectStatus) const;
-    bool contentSecurityPolicyBlocksRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, ResourceRequest::RedirectStatus) const;
 
     void prepareRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse&);
 
