@@ -101,10 +101,6 @@ class CC_EXPORT BspTree {
     }
   }
 
-  // Returns whether or not nodeA is on one or the other side of nodeB,
-  // coplanar, or whether it crosses nodeB's plane and needs to be split
-  static BspCompareResult GetNodePositionRelative(const DrawPolygon& node_a,
-                                                  const DrawPolygon& node_b);
   // Returns whether or not our viewer is in front of or behind the plane
   // defined by this polygon/node
   static BspCompareResult GetCameraPositionRelative(const DrawPolygon& node);
