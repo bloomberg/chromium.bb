@@ -43,6 +43,7 @@ class WebrtcVideoRendererAdapter
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
+  void HandleFrameOnMainThread(std::unique_ptr<cricket::VideoFrame> frame);
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
