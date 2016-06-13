@@ -580,6 +580,18 @@ TEST_F(SigninCreateProfileHandlerTest, NotAllowedToCreateSupervisedUser) {
   list_args.AppendString(custodian()->GetPath().value());
   handler()->CreateProfile(&list_args);
 
-  // Expect nothing to happen.
-  EXPECT_EQ(0U, web_ui()->call_data().size());
+  // Expect a JS callbacks containing an error message.
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  EXPECT_EQ(kTestWebUIResponse, web_ui()->call_data()[0]->function_name());
+
+  std::string callback_name;
+  ASSERT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_name));
+  EXPECT_EQ("create-profile-error", callback_name);
+
+  base::string16 expected_error_message = l10n_util::GetStringUTF16(
+      IDS_PROFILES_CREATE_SUPERVISED_NOT_ALLOWED_BY_POLICY);
+  base::string16 error_message;
+  ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsString(&error_message));
+  EXPECT_EQ(expected_error_message, error_message);
 }

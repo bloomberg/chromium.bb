@@ -573,11 +573,14 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
         return;
       }
 
-      // TODO(mahmadi): return proper error message if policy-controlled prefs
-      // prohibit adding supervised users (also disable the controls in the UI).
       PrefService* prefs = custodian_profile->GetPrefs();
-      if (!prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed))
+      if (!prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed)) {
+        ShowProfileCreationError(
+            nullptr,
+            l10n_util::GetStringUTF16(
+                IDS_PROFILES_CREATE_SUPERVISED_NOT_ALLOWED_BY_POLICY));
         return;
+      }
 
       if (!supervised_user_id.empty()) {
         profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;

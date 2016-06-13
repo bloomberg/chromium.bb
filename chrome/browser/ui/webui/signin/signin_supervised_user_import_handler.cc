@@ -170,7 +170,6 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
   // This method gets called once before with Profile::CREATE_STATUS_CREATED.
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
-      // TODO(mahmadi): see if a better error message is required here.
       RejectCallback(GetLocalErrorMessage());
       break;
     }

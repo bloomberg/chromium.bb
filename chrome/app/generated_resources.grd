@@ -12968,6 +12968,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR" desc="Message shown when the custodian is signed in, but their sign-in information is invalid.">
           Your account details are out of date. <ph name="BEGIN_LINK">&lt;a is="action-link" id="reauth" data-user-email="$1"&gt;</ph>Sign in again<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
+        <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_ALLOWED_BY_POLICY" desc="Error message shown when the policy-controlled preference prohibits creating supervised users.">
+          Your administrator doesn’t allow you to create supervised users.
+        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN" desc="Warning message shown in the create-profile dialog when the custodian signed in recently, sync has not yet finished initializing, and so the creation process is likely to take extra time.">
           Creating your supervised user. This may take a few moments.
         </message>
