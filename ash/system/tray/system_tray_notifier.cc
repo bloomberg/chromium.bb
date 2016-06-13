@@ -62,14 +62,6 @@ void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
   tracing_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
-  update_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
-  update_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
   user_observers_.AddObserver(observer);
 }
@@ -278,11 +270,6 @@ void SystemTrayNotifier::NotifyLocaleChanged(
       LocaleObserver,
       locale_observers_,
       OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
-}
-
-void SystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
-  FOR_EACH_OBSERVER(
-      UpdateObserver, update_observers_, OnUpdateRecommended(info));
 }
 
 void SystemTrayNotifier::NotifyUserUpdate() {

@@ -7,10 +7,9 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
@@ -89,11 +88,11 @@ namespace ash {
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE) {
-  Shell::GetInstance()->system_tray_notifier()->AddUpdateObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddUpdateObserver(this);
 }
 
 TrayUpdate::~TrayUpdate() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveUpdateObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveUpdateObserver(this);
 }
 
 bool TrayUpdate::GetInitialVisibility() {

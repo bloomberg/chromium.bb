@@ -26,6 +26,7 @@ class SystemTrayDelegate;
 class WindowResizer;
 class WmActivationObserver;
 class WmDisplayObserver;
+class WmSystemTrayNotifier;
 class WmWindow;
 
 namespace wm {
@@ -43,6 +44,10 @@ class ASH_EXPORT WmShell {
   static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
+
+  WmSystemTrayNotifier* system_tray_notifier() {
+    return system_tray_notifier_.get();
+  }
 
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
@@ -132,6 +137,7 @@ class ASH_EXPORT WmShell {
 
   static WmShell* instance_;
 
+  std::unique_ptr<WmSystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
 };
 

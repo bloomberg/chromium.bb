@@ -103,6 +103,8 @@
       'common/system/tray/system_tray_delegate.h',
       'common/system/tray/tray_constants.cc',
       'common/system/tray/tray_constants.h',
+      'common/system/tray/wm_system_tray_notifier.cc',
+      'common/system/tray/wm_system_tray_notifier.h',
       'common/system/update/update_observer.h',
       'common/system/volume_control_delegate.h',
       'common/wm/always_on_top_controller.cc',

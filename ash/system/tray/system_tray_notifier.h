@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/update/update_observer.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
@@ -39,8 +38,6 @@
 
 namespace ash {
 
-struct UpdateInfo;
-
 #if defined(OS_CHROMEOS)
 class NetworkStateNotifier;
 #endif
@@ -67,9 +64,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddTracingObserver(TracingObserver* observer);
   void RemoveTracingObserver(TracingObserver* observer);
-
-  void AddUpdateObserver(UpdateObserver* observer);
-  void RemoveUpdateObserver(UpdateObserver* observer);
 
   void AddUserObserver(UserObserver* observer);
   void RemoveUserObserver(UserObserver* observer);
@@ -129,7 +123,6 @@ class ASH_EXPORT SystemTrayNotifier {
                            const std::string& cur_locale,
                            const std::string& from_locale,
                            const std::string& to_locale);
-  void NotifyUpdateRecommended(const UpdateInfo& info);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
@@ -160,7 +153,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LocaleObserver> locale_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
-  base::ObserverList<UpdateObserver> update_observers_;
   base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
   base::ObserverList<BluetoothObserver> bluetooth_observers_;

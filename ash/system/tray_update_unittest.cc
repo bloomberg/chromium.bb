@@ -4,10 +4,10 @@
 
 #include "ash/system/tray_update.h"
 
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/macros.h"
@@ -34,7 +34,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
   // Simulate an update.
   UpdateInfo info;
   info.update_required = true;
-  Shell::GetInstance()->system_tray_notifier()->NotifyUpdateRecommended(info);
+  WmShell::Get()->system_tray_notifier()->NotifyUpdateRecommended(info);
 
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());

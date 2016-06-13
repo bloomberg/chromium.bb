@@ -44,6 +44,7 @@
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
 namespace ash {
+class WmSystemTrayNotifier;
 class VPNDelegate;
 }
 
@@ -165,10 +166,11 @@ class SystemTrayDelegateChromeOS
   void OnSystemClockChanged(system::SystemClock*) override;
 
  private:
-
   ash::SystemTray* GetPrimarySystemTray();
 
   ash::SystemTrayNotifier* GetSystemTrayNotifier();
+
+  ash::WmSystemTrayNotifier* GetWmSystemTrayNotifier();
 
   void SetProfile(Profile* profile);
 

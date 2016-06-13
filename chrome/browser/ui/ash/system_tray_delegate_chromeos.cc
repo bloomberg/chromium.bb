@@ -17,8 +17,10 @@
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/volume_control_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
@@ -885,6 +887,11 @@ ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
   return ash::Shell::GetInstance()->system_tray_notifier();
 }
 
+ash::WmSystemTrayNotifier*
+SystemTrayDelegateChromeOS::GetWmSystemTrayNotifier() {
+  return ash::WmShell::Get()->system_tray_notifier();
+}
+
 void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   // Stop observing the AppWindowRegistry of the current |user_profile_|.
   StopObservingAppWindowRegistry();
@@ -1076,7 +1083,7 @@ void SystemTrayDelegateChromeOS::Observe(
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
       ash::UpdateInfo info;
       GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
-      GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
+      GetWmSystemTrayNotifier()->NotifyUpdateRecommended(info);
       break;
     }
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
