@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
+<translation id="1683360892415596327">Partecipa al nostro sondaggio</translation>
 <translation id="1723752762323179280">Uscita dalla sessione</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3a parte<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6062360702481658777">Verrai disconnesso automaticamente tra <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Aiutaci a migliorare i Chromebook</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6203030746557259519">Display virtuale</translation>
@@ -213,6 +215,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7823564328645135659">La lingua è stata modificata da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="785750925697875037">Visualizza account per cellulari</translation>
 <translation id="7864539943188674973">Disattiva Bluetooth</translation>
+<translation id="7869829692393275047">Sondaggio HaTS per Chrome OS, digita qui. Sondaggio HaTS per Chrome OS, digita qui. Sondaggio HaTS per Chrome OS, digita qui. Sondaggio HaTS per Chrome OS, digita qui.</translation>
 <translation id="7893838033650689677">Attiva Wi-Fi</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7957227661277029961">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso. Utilizza un caricabatterie originale.</translation>

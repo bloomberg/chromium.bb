@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
 <translation id="102492767056134033">設定螢幕小鍵盤在登入畫面中的預設狀態</translation>
+<translation id="1040446814317236570">啟用 PAC 網址分解功能 (適用於 https://)</translation>
 <translation id="1044878202534415707">回報硬體統計資料，例如 CPU/RAM 使用量。
 
       如果將這項政策設為 False，系統將不會回報統計資料。
@@ -849,6 +850,26 @@
 <translation id="3967075520570946456">允許在作業系統升級後首次啟動瀏覽器時顯示歡迎網頁。</translation>
 <translation id="3973371701361892765">永不自動隱藏檔案櫃</translation>
 <translation id="3984028218719007910">決定登出後 <ph name="PRODUCT_OS_NAME" /> 是否要保留本機帳戶資料。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 不會保留任何永久帳戶，並且在登出後會刪除使用者工作階段的所有資料。如果這項政策設為 False 或未設定，裝置會保留 (加密) 本機使用者資料。</translation>
+<translation id="3994569321696536679">啟用 <ph name="PRODUCT_NAME" /> 的
+      Google Apps 受限登入功能，並且禁止使用者
+      變更這項設定。
+
+      定義這項設定後，使用者只能使用指定網域中的帳戶
+      存取 Google Apps 服務 (例如 Gmail)。
+
+      這項設定「不會」禁止使用者在需要通過
+      Google 驗證程序的受管理裝置上登入帳戶。使用者仍可
+      登入其他網域中的帳戶，但使用這類帳戶
+      存取 Google Apps 時會收到錯誤訊息。
+
+      如果將這項設定留空 (即不予設定)，使用者就可以
+      使用任何帳戶存取 Google Apps。
+
+      套用這項政策後，傳送給所有 google.com 網域的 HTTP 和 HTTPS 要求
+      都會加上 X-GoogApps-&lt;允許的網域&gt; 標頭，詳情請參閱以下說明文章：
+      https://support.google.com/a/answer/1668854.
+
+      使用者無法變更或覆寫這項設定。</translation>
 <translation id="3997519162482760140">可在 SAML 登入網頁取得錄影裝置存取權的網址</translation>
 <translation id="4001275826058808087">企業裝置的 IT 管理員可使用這個標記來控制是否允許使用者透過註冊 Chrome 作業系統來兌換優惠。
 
@@ -1038,6 +1059,7 @@
           如果這項政策設為「True」或未設定，系統將啟用螢幕喚醒鎖，以強化電源管理效能。
 
           如果這項政策設為「False」，則螢幕喚醒鎖要求會受到忽略。</translation>
+<translation id="4882546920824859909">定義允許存取 Google Apps 的網域</translation>
 <translation id="4890209226533226410">設定啟用的螢幕放大鏡類型。
 
           如果您設定這項政策，該政策即會指定啟用的螢幕放大鏡類型。將政策設為「None」則會停用螢幕放大鏡。

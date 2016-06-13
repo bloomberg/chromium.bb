@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Zařízení Chrome</translation>
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Vyplňte náš dotazník</translation>
 <translation id="1723752762323179280">Ukončení relace</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID" />* <ph name="BEGIN_LINK" />třetí strany<ph name="END_LINK" />. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
@@ -159,6 +160,7 @@
 <translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT" /> budete automaticky odhlášeni.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
+<translation id="6144938890088808325">Pomozte nám Chromebooky zlepšit</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6203030746557259519">Virtuální displej</translation>
@@ -210,6 +212,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Zobrazit mobilní účet</translation>
 <translation id="7864539943188674973">Vypnout Bluetooth</translation>
+<translation id="7869829692393275047">Zde bude text průzkumu spokojenosti se systémem Chrome. Zde bude text průzkumu spokojenosti se systémem Chrome..</translation>
 <translation id="7893838033650689677">Zapnout Wi-Fi</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="7957227661277029961">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet. Doporučujeme použít oficiální nabíječku.</translation>

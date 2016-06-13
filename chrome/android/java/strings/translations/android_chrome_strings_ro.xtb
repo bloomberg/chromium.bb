@@ -232,6 +232,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informații juridice</translation>
 <translation id="4089831646916293264">Această funcție poate afecta accesul la serviciile de date premium oferite de operator.</translation>
+<translation id="4099423833822562131">Selectează o adresă de expediere pentru a vedea care sunt metodele de expediere.</translation>
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
 <translation id="410351446219883937">Redare automată</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
@@ -279,6 +280,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4690286298542128877">Filele vor fi mutate într-un comutator de file din Chrome.</translation>
 <translation id="4698413471314543145">Lipsește o funcție esențială pentru a rula Chrome; fie instalarea Chrome este incompletă, fie nu este compatibilă cu această versiune de Android.</translation>
 <translation id="4699172675775169585">Imaginile și fișierele memorate în cache</translation>
+<translation id="4710672574193412565">Adaugă un Cont Google din pagina Conturi din aplicația Setări a dispozitivului.</translation>
 <translation id="4720023427747327413">Deschide în <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4738836084190194332">Ultima sincronizare: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5040262127954254034">Confidențialitate</translation>
 <translation id="5056549851600133418">Articole pentru tine</translation>
 <translation id="5063480226653192405">Utilizare</translation>
+<translation id="5087580092889165836">Adaugă un card</translation>
 <translation id="5100237604440890931">Afișare restrânsă – dă clic pentru a extinde.</translation>
 <translation id="5107381076085091558">Descărcare întreruptă.</translation>
 <translation id="5118713593561876160">Interese</translation>
@@ -376,7 +379,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="585027516397408832">Economizorul de date este activat</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
-<translation id="588563574323093535">Întreabă înainte de a permite site-urilor să inițieze modul ecran complet (recomandat)</translation>
 <translation id="5899349522111170522">Creează un fișier</translation>
 <translation id="5902828464777634901">Toate datele stocate de site, inclusiv cookie-urile vor fi șterse.</translation>
 <translation id="5911030830365207728">Google Traducere</translation>
@@ -408,7 +410,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 De exemplu, unele site-uri pot răspunde la această solicitare afișând anunțuri care nu se bazează pe alte site-uri accesate de tine. Numeroase site-uri vor culege și vor utiliza în continuare datele de navigare. De exemplu, pentru a îmbunătăți securitatea, pentru a oferi conținut, anunțuri și recomandări și pentru a genera statistici de raportare.</translation>
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="6295158916970320988">Toate site-urile</translation>
-<translation id="6317634962183824346">Sincronizare de sistem Android dezactivată. Reactiveaz-o și încearcă din nou.</translation>
 <translation id="6324360525379265737">Stabilește automat codificarea caracterelor</translation>
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Criptare</translation>
@@ -603,7 +604,6 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8730621377337864115">Terminat</translation>
-<translation id="8793430725658173476">Copiază adresa URL</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8812942424849541387">Controlează cum funcționează din <ph name="BEGIN_LINK1" />Setări<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcaje</translation>

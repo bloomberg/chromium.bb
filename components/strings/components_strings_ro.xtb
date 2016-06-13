@@ -77,6 +77,7 @@
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualizează expresia de acces pentru sincronizare.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Tip fișier necunos.</translation>
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2455981314101692989">Această pagină web a dezactivat completarea automată a formularului.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />să rulezi Diagnostice rețea<ph name="END_LINK" />;</translation>
 <translation id="2479410451996844060">Adresă URL de căutare nevalidă.</translation>
 <translation id="2491120439723279231">Certificatul serverului conține erori.</translation>
 <translation id="2495083838625180221">Analizor JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Solicită permisiunea</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />să rulezi Diagnostice conectivitate<ph name="END_LINK" />;</translation>
 <translation id="2742870351467570537">Elimină elementele selectate</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
 <translation id="2778107779445548489">Ai primit acest mesaj deoarece părintele tău a blocat acest site.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="3109728660330352905">Nu ești autorizat(ă) să vezi această pagină.</translation>
 <translation id="3118046075435288765">Serverul a închis conexiunea în mod neașteptat.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Rulează Diagnostice conectivitate<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Răspunsul nu a putut fi decodificat</translation>
 <translation id="3147485256806412701">Acest site folosește un nou domeniu generic de nivel superior.</translation>
 <translation id="3150653042067488994">Eroare temporară de server</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ascunde detaliile</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Clientul și serverul nu acceptă o versiune a protocolului SSL sau o suită de codificare obișnuită. Eroarea apare probabil când serverul necesită compatibilitatea cu RC4, care nu mai este considerat sigur.</translation>
 <translation id="3609138628363401169">Serverul nu acceptă extensia de renegociere TLS.</translation>
+<translation id="36224234498066874">Ștergeți datele de navigare...</translation>
 <translation id="362276910939193118">Afișează întregul istoric</translation>
 <translation id="3623476034248543066">Afișați valoarea</translation>
 <translation id="3630155396527302611">Dacă este deja inclus ca program căruia i se permite să acceseze rețeaua, încearcă
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Blocări</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="425582637250725228">Este posibil ca modificările să nu se salveze.</translation>
 <translation id="4258748452823770588">Semnătură greșită</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651">Adresa <ph name="URL" /> a fost blocată</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Conexiunea a fost întreruptă</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />să rulezi Diagnostice rețea Windows<ph name="END_LINK" />;</translation>
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="4744603770635761495">Cale executabilă</translation>
@@ -569,6 +575,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
 <translation id="7445762425076701745">Identitatea serverului la care te-ai conectat nu poate fi validată complet. Ești conectat(ă) la un server folosind un nume valid numai în rețeaua ta, pentru care o autoritate de certificare externă nu are nici o modalitate de a-l valida. Deoarece unele autorități de certificare vor emite certificate pentru aceste nume oricum, nu există nicio modalitate de a te asigura că ești conectat(ă) la site-ul corect și nu la un atacator.</translation>
 <translation id="7450732239874446337">I/O de rețea suspendat.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />să afli mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="7514365320538308">Descarcă</translation>
@@ -709,6 +716,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="9039213469156557790">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba comportamentul paginii.</translation>
 <translation id="9049981332609050619">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid.</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>
+<translation id="9065203028668620118">Editează</translation>
 <translation id="9092364396508701805">Pagina de pe <ph name="HOST_NAME" /> nu funcționează</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9125941078353557812">Introdu codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositiu Chrome</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Feu la nostra enquesta</translation>
 <translation id="1723752762323179280">S'està tancant la sessió</translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tercers<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">S'està carregant: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Contribuïu a millorar els dispositius Chromebook</translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6203030746557259519">Pantalla virtual</translation>
@@ -213,6 +215,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7823564328645135659">L'idioma ha canviat de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" després de sincronitzar la vostra configuració.</translation>
 <translation id="785750925697875037">Mostra el compte mòbil</translation>
 <translation id="7864539943188674973">Desactiva el Bluetooth</translation>
+<translation id="7869829692393275047">El text de l'enquesta HaTS de Chrome OS s'insereix aquí. El text de l'enquesta HaTS de Chrome OS s'insereix aquí. El text de l'enquesta HaTS de Chrome OS s'insereix aquí. El text de l'enquesta HaTS de Chrome OS s'insereix aquí.</translation>
 <translation id="7893838033650689677">Activa la Wi-Fi</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7957227661277029961">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès. Us recomanem que utilitzeu el carregador oficial.</translation>

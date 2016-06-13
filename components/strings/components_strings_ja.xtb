@@ -77,6 +77,7 @@
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1753706481035618306">ページ番号</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">同期パスフレーズを更新してください。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">不明な形式です。</translation>
 <translation id="2413528052993050574">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は取り消されている可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2455981314101692989">このウェブページでは、フォームへの自動入力が無効になっています。</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">検索 URL が無効です。</translation>
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">権限をリクエスト</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2728127805433021124">サーバーの証明書は脆弱な署名アルゴリズムを使用して署名されています。</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />接続診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">選択したアイテムを削除</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
 <translation id="2778107779445548489">このサイトは保護者によってブロックされています。</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
 <translation id="3118046075435288765">サーバーが途中で接続を切断しました。</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />接続診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3147485256806412701">このサイトは新しいジェネリック トップレベル ドメインを使用しています。</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">詳細を非表示</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />、<ph name="DOMAIN" />、<ph name="TIME" /></translation>
-<translation id="3608308818141211642">クライアントとサーバーで、共通の SSL プロトコル バージョンまたは暗号化スイートがサポートされていません。原因として、サーバーで RC4 が要求されている可能性があります。RC4 は安全とみなされなくなりました。</translation>
 <translation id="3609138628363401169">このサーバーでは TLS の再交渉拡張がサポートされていません。</translation>
+<translation id="36224234498066874">閲覧履歴を消去...</translation>
 <translation id="362276910939193118">全履歴を表示</translation>
 <translation id="3623476034248543066">値を表示</translation>
 <translation id="3630155396527302611">ネットワークへのアクセスを許可されたプログラムとして既に表示されている場合は、
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">クラッシュ</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="425582637250725228">行った変更が保存されない可能性があります。</translation>
 <translation id="4258748452823770588">署名が不適切です</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> はブロックされました</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">接続が中断されました</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
@@ -569,6 +575,7 @@
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7445762425076701745">接続してるサーバーの身元について、十分な検証ができません。接続しているサーバーは、そのネットワーク内でのみ有効な名前を使用しており、外部認証局がその所有権を検証する方法はありません。こうした名前で証明書を発行する認証局もあるので、接続先が意図したウェブサイトか、悪意のあるユーザーのサイトかは確認できません。</translation>
 <translation id="7450732239874446337">ネットワークの入出力が中断されました。</translation>
+<translation id="7451311239929941790">この問題について<ph name="BEGIN_LINK" />詳細を確認<ph name="END_LINK" />する</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
@@ -710,6 +717,7 @@
 <translation id="9039213469156557790">加えて、このページには安全でない他のリソースが含まれています。このリソースは送信中に他のユーザーから見られる可能性があります。また、悪意のあるユーザーによって改変されページの動作が変わる可能性もあります。</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
+<translation id="9065203028668620118">編集</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> ページは機能していません</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9125941078353557812">カードの裏面に記載されている 3 桁の CVC を入力します</translation>

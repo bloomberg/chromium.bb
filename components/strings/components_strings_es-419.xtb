@@ -76,6 +76,7 @@
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
@@ -136,6 +137,7 @@
 <translation id="2400837204278978822">Tipo de archivo desconocido</translation>
 <translation id="2413528052993050574">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" /> y se podría revocar el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="2455981314101692989">Esta página web ha inhabilitado la función de rellenado automático para este formulario.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de red<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL de búsqueda no válida</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
 <translation id="2495083838625180221">Analizador de JSON</translation>
@@ -162,6 +164,7 @@
 <translation id="2712173769900027643">Solicitar permiso</translation>
 <translation id="2721148159707890343">Solicitud correcta</translation>
 <translation id="2728127805433021124">El certificado del servidor está firmado con un algoritmo de firma no seguro.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de conectividad<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Eliminar elementos seleccionados</translation>
 <translation id="277499241957683684">Falta un registro de dispositivo.</translation>
 <translation id="2778107779445548489">Estás viendo este mensaje porque tus padres bloquearon este sitio.</translation>
@@ -198,6 +201,7 @@
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
 <translation id="3118046075435288765">El servidor ha cerrado la conexión de forma inesperada.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de conectividad<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Se produjo un error al decodificar respuesta.</translation>
 <translation id="3147485256806412701">El sitio está usando un nuevo dominio genérico de nivel superior.</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ocultar detalles</translation>
 <translation id="3587482841069643663">Todos</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">El cliente y el servidor no admiten un conjunto de cifrado o una versión de protocolo SSL en común. Es probable que esto suceda porque el servidor necesita el sistema RC4 y este ya no se considera seguro.</translation>
 <translation id="3609138628363401169">El servidor no admite la extensión de negociación TLS.</translation>
+<translation id="36224234498066874">Eliminar datos de navegación...</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3630155396527302611">Si ya está incluido como un programa con permiso para acceder a la red, intenta
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar las configuraciones de firewall y antivirus<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Fallos</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">Es posible que los cambios que implementaste no se puedan guardar.</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651">Se bloqueó <ph name="URL" />.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se interrumpió la conexión</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de red de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Ruta ejecutable</translation>
@@ -567,6 +573,7 @@
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar en su totalidad. Estás conectado a un servidor utilizando un nombre que sólo es válido dentro de tu red y cuya propiedad no puede validar una entidad externa de certificación. Debido a que algunas entidades emiten certificados aún para estos nombres, no hay manera de asegurar que estás conectado al sitio web que pretendías o a un atacante.</translation>
 <translation id="7450732239874446337">Entrada/salida de red suspendida</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -707,6 +714,7 @@
 <translation id="9039213469156557790">Además, esta página incluye otros recursos que no son seguros. Otras personas pueden ver estos recursos mientras se encuentran en tránsito, y un atacante puede modificarlos para cambiar el funcionamiento de la página.</translation>
 <translation id="9049981332609050619">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor presentó un certificado no válido.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
+<translation id="9065203028668620118">Editar</translation>
 <translation id="9092364396508701805">La página <ph name="HOST_NAME" /> no está funcionando</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="9125941078353557812">Ingresa el CVC de 3 dígitos que figura en el dorso de la tarjeta.</translation>

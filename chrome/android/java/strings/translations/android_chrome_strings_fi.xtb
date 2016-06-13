@@ -232,6 +232,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4056223980640387499">Seepia</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="4089831646916293264">Tämä ominaisuus voi häiritä operaattorisi tarjoamien premium-tietopalveluiden käyttöä.</translation>
+<translation id="4099423833822562131">Näet toimitusvaihtoehdot valitsemalla toimitusosoitteen.</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
@@ -279,6 +280,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4690286298542128877">Välilehdet muuttavat Chromen sisäiseen välilehtien vaihtajaan.</translation>
 <translation id="4698413471314543145">Chromen suorittamiseen tarvittava kriittinen toiminto puuttuu. Joko Chromea ei ole asennettu loppuun tai selain ei sovi yhteen tämän Android-version kanssa.</translation>
 <translation id="4699172675775169585">Välimuistissa olevat kuvat ja tiedostot</translation>
+<translation id="4710672574193412565">Lisää Google-tili sovelluksen Asetukset-sovelluksen Tilit-sivulla.</translation>
 <translation id="4720023427747327413">Avaa kohteessa <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Päivitä</translation>
 <translation id="4738836084190194332">Viimeisin synkronointi: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5040262127954254034">Tietosuoja</translation>
 <translation id="5056549851600133418">Sinulle valitut artikkelit</translation>
 <translation id="5063480226653192405">Käyttö</translation>
+<translation id="5087580092889165836">Lisää kortti</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5107381076085091558">Lataus keskeytetty</translation>
 <translation id="5118713593561876160">Kiinnostuksen kohteet</translation>
@@ -376,7 +379,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="585027516397408832">Data Saver käytössä</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
-<translation id="588563574323093535">Pyydä lupaa, kun sivustot yrittävät siirtyä koko näytön tilaan (suositus).</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
 <translation id="5911030830365207728">Google Kääntäjä</translation>
@@ -408,7 +410,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämällä sinulle mainoksia, jotka eivät perustu muihin vierailemiisi verkkosivustoihin. Monet sivustot keräävät ja käyttävät silti edelleen selaustietojasi – esimerkiksi turvallisuuden parantamiseen, sisällön, mainosten ja suositusten tarjoamiseen sekä raportointitilastojen luomiseen.</translation>
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
-<translation id="6317634962183824346">Android-järj. synkr. pois käytöstä. Ota uudelleen käyttöön ja yritä uudelleen.</translation>
 <translation id="6324360525379265737">Tunnista merkistökoodaus automaattisesti.</translation>
 <translation id="6333140779060797560">Jaa sovelluksella <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Salaus</translation>
@@ -603,7 +604,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8719023831149562936">Nykyistä välilehteä ei voi jakaa</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8730621377337864115">Valmis</translation>
-<translation id="8793430725658173476">Kopioi URL-osoite</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8812942424849541387">Säädä tämän toimintaa <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>

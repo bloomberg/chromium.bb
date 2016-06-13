@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
 <translation id="102492767056134033">Giriş ekranında ekran klavyesinin varsayılan durumunu ayarla</translation>
+<translation id="1040446814317236570">PAC URL ayırmayı etkinleştir (https:// için)</translation>
 <translation id="1044878202534415707">CPU/RAM kullanımı gibi donanım istatistiklerini bildirin.
 
       Politika yanlış seçeneğine ayarlanırsa istatistikler bildirilmez.
@@ -903,6 +904,26 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="3967075520570946456">OS yeni sürüme geçirildikten sonra, tarayıcı ilk başlatıldığında karşılama sayfasının gösterilmesini etkinleştir.</translation>
 <translation id="3973371701361892765">Rafı hiçbir zaman otomatik olarak gizleme</translation>
 <translation id="3984028218719007910">Çıkış yapıldıktan sonra yerel hesap verilerinin <ph name="PRODUCT_OS_NAME" /> tarafından korunup korunmayacağını belirler. True değerine ayarlanırsa, kalıcı hesaplar <ph name="PRODUCT_OS_NAME" /> tarafından korunmaz ve çıkış yapıldıktan sonra kullanıcı oturumuna ilişkin tüm veriler kaybedilir. Bu politika false değerine ayarlanırsa veya hiçbir şekilde ayarlanmazsa, cihaz (şifreli) yerel kullanıcı verilerini koruyabilir.</translation>
+<translation id="3994569321696536679">Google Apps'te <ph name="PRODUCT_NAME" />
+      ürününün kısıtlanmış giriş yapma özelliğini etkinleştirir ve kullanıcıların
+      bu ayarı değiştirmesini engeller.
+
+      Bu ayarı tanımlarsanız kullanıcı, Google Apps'e (Gmail gibi) yalnızca belirtilen
+      alan adlarındaki hesapları kullanarak erişebilir.
+
+      Bu ayar, kullanıcının Google kimlik doğrulaması gerektiren yönetilen bir
+      cihazdan giriş yapmasını ENGELLEMEZ. Kullanıcıların diğer alanlardan
+      hesaplarda oturum açmaya devam etmesine izin verilir ancak bu hesaplarla
+      Google Apps'i kullanmaya çalıştıklarında bir hata alırlar.
+
+      Bu ayarı boş/yapılandırılmamış durumda bırakmanız halinde kullanıcı herhangi bir hesapla
+      Google Apps'e erişebilir.
+
+      Bu politika, tüm google.com alan adlarına yapılan tüm HTTP ve HTTPS
+      isteklerine X-GoogApps-Allowed-Domains üst bilgisinin eklenmesine neden
+      olur. Ayrıntılı bilgi için https://support.google.com/a/answer/1668854 adresine bakın.
+
+      Kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="3997519162482760140">SAML oturum açma sayfalarında video yakalama cihazlarına erişimin verileceği URL'ler</translation>
 <translation id="4001275826058808087">Kurumsal cihazların BT yöneticileri, kullanıcıların Chrome OS Kaydı'nı kullanarak tekliflerden yararlanıp yararlanamayacağını belirlemek için bu bayrağı kullanabilirler.
 
@@ -1119,6 +1140,7 @@ politikayı geçersiz kılamaz.
           Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için ekran uyandırma kilitleri kullanılır.
 
           Bu politika yanlış seçeneğine ayarlanırsa, ekran uyandırma kilitleri için yapılan istekler dikkate alınmaz.</translation>
+<translation id="4882546920824859909">Google Apps'e erişmesine izin verilen alan adlarını tanımlayın</translation>
 <translation id="4890209226533226410">Etkinleştirilmiş olan ekran büyütecinin türünü ayarla.
 
           Bu politika ayarlanırsa, etkinleştirilmiş olan ekran büyütecinin türünü ayarlar. Politikayı "Yok" olarak ayarlamak, ekran büyütecini devre dışı bırakır.
@@ -1963,11 +1985,11 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7719251660743813569">Kullanım ölçümlerinin Google'a bildirilip bildirilmeyeceğini denetler. True olarak ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> kullanım ölçümlerini rapor eder. Hiç ayarlanmazsa veya false değerine ayarlanırsa, ölçüm raporlama devre dışı olur.</translation>
 <translation id="7723433108978650103">Listelenen URL'lere erişimi engeller.
 
-      Bu politika, kullanıcının kara listeye alınan URL'lerdeki web sayfalarını yüklemesini önler. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL desenlerinin listesini içerir.
+      Bu politika, kullanıcının kara listeye alınan URL'lerdeki web sayfalarını yüklemesini önler. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL kalıplarının listesini içerir.
 
-      https://www.chromium.org/administrators/url-blacklist-filter-format adresindeki talimatlara uygun şekilde bir URL deseninin biçimlendirilmesi gerekir.
+      https://www.chromium.org/administrators/url-blacklist-filter-format adresindeki talimatlara uygun şekilde bir URL kalıbının biçimlendirilmesi gerekir.
 
-      URL beyaz liste politikasında istisnalar tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır, ondan sonraki girişler yoksayılır.
+      URL beyaz liste politikasında istisnalar tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır. Bundan sonra gelen girişler yoksayılır.
 
       Dahili "chrome://*" URL'lerinin engellenmesinin önerilmediğini unutmayın, aksi halde beklenmedik hatalar ortaya çıkabilir.
 
@@ -2043,7 +2065,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
       SystemTimezone politikası ayarlanırsa bu politika geçersiz kılınır. Bu durumda, otomatik saat dilimi algılama tamamen devre dışı bırakılır.</translation>
 <translation id="787125417158068494">SyncDisabled seçeneğine ayarlanırsa veya hiç yapılandırılmazsa, ARC uygulamaları için <ph name="PRODUCT_OS_NAME" /> sertifikaları kullanılamaz.
 
-      CopyCaCerts seçeneğine ayarlanırsa, ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
+      CopyCaCerts seçeneğine ayarlanırsa ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Sudjelujte u anketi</translation>
 <translation id="1723752762323179280">Napuštanje sesije</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />treća strana<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6062360702481658777">Automatski ćete se odjaviti za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Vaše računalo mogu otkriti Bluetooth uređaji u blizini i prikazivat će se kao "<ph name="NAME" />" s adresom <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Puni se putem: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Pomozite nam poboljšati Chromebook</translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6203030746557259519">Virtualni prikaz</translation>
@@ -213,6 +215,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="7823564328645135659">Jezik je promijenjen iz: "<ph name="FROM_LOCALE" />" u: "<ph name="TO_LOCALE" />" nakon sinkronizacije vaših postavki.</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>
 <translation id="7864539943188674973">Onemogući Bluetooth</translation>
+<translation id="7869829692393275047">Ovdje dolazi tekst ankete za praćenje zadovoljstva proizvodom OS Chrome.</translation>
 <translation id="7893838033650689677">Uključite Wi-Fi</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7957227661277029961">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen. Preporučujemo vam upotrebu službenog punjača.</translation>

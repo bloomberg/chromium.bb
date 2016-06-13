@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Kifaa cha Chrome</translation>
 <translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Shiriki katika utafiti wetu</translation>
 <translation id="1723752762323179280">Inaondoka kwenye Kipindi</translation>
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1812696562331527143">Mbinu yako ingizo imebadilika hadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />mhusika mwingine<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6062360702481658777">Utaondolewa kwenye akaunti kiotomatiki baada ya <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Kompyuta yako inaweza kutambuliwa na vifaa vyenye Bluetooth vilivyo karibu na itaonekana kama  "<ph name="NAME" />" ikiwa na anwani ya <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Inachaji <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Tusaidie kuboresha Chromebook</translation>
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6203030746557259519">Onyesho Pepe</translation>
@@ -212,6 +214,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="7823564328645135659">Lugha imebadilika kutoka "<ph name="FROM_LOCALE" /> "na kuwa" <ph name="TO_LOCALE" />" baada ya kulinganisha mipangilio yako.</translation>
 <translation id="785750925697875037">Ona akaunti ya simu ya mkononi</translation>
 <translation id="7864539943188674973">Lemaza Bluetooth</translation>
+<translation id="7869829692393275047">Andika maandishi ya utafiti wa Chrome OS HaTS hapa. Andika maandishi ya utafiti wa Chrome OS HaTS hapa. Andika maandishi ya utafiti wa Chrome OS HaTS hapa. Andika maandishi ya utafiti wa Chrome OS HaTS hapa.</translation>
 <translation id="7893838033650689677">Washa Wi-Fi</translation>
 <translation id="7904094684485781019">Msimamizi wa akaunti hii ameondoa uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="7957227661277029961">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa. Jaribu kutumia chaja rasmi.</translation>

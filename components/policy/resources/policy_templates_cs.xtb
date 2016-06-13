@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Nastavit adresář uživatelských dat</translation>
 <translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
 <translation id="102492767056134033">Nastavuje výchozí stav softwarové klávesnice na přihlašovací obrazovce.</translation>
+<translation id="1040446814317236570">Před odesláním skriptu PAC z adres se schématem https:// odstraňovat citlivá data</translation>
 <translation id="1044878202534415707">Nahlášení statistik hardwaru, například využití CPU/RAM.
 
 Pokud je tato zásada nastavena na hodnotu false, statistiky nebudou hlášeny.
@@ -870,6 +871,17 @@ Není-li tato zásada nastavena, výchozí frekvence jsou tři minuty. Minimáln
 <translation id="3967075520570946456">Aktivovat při prvním spuštění prohlížeče po přechodu na vyšší verzi OS zobrazení uvítací stránky</translation>
 <translation id="3973371701361892765">Nikdy poličku automaticky neskrývat</translation>
 <translation id="3984028218719007910">Určuje, zda systém <ph name="PRODUCT_OS_NAME" /> po odhlášení zachová místní data účtu. Pokud je tato zásada nastavena na hodnotu True, nebude systém <ph name="PRODUCT_OS_NAME" /> uchovávat žádné účty trvale a všechna data relace uživatele budou po odhlášení smazána. Pokud je tato zásada nastavena na hodnotu False, nebo není nastavena, může zařízení uchovat (šifrovaná) místní uživatelská data.</translation>
+<translation id="3994569321696536679">Aktivuje ve službě Google Apps funkci omezeného přihlašování prohlížeče <ph name="PRODUCT_NAME" /> a znemožní uživatelům toto nastavení změnit.
+
+Pokud toto nastavení definujete, uživatel bude moci služby Google Apps (například Gmail) používat pouze pomocí účtů ze zadaných domén.
+
+      Toto nastavení uživateli NEZABRÁNÍ v přihlášení na spravovaném zařízení, které vyžaduje ověření Google. Uživatel se i nadále bude moci přihlašovat k účtům v jiných doménách, ale při pokusu o použití služby Google Apps s těmito účty se mu zobrazí chyba.
+
+      Pokud toto nastavení ponecháte prázdné nebo nenakonfigurované, uživatel služby Google Apps bude moci používat pomocí libovolného účtu.
+
+      Tato zásada způsobí, že bude k požadavkům HTTP a HTTPS odesílaným do domén Google přidáno záhlaví X-GoogApps-Allowed-Domains popsané na stránce https://support.google.com/a/answer/1668854.
+
+      Uživatelé toto nastavení nemohou změnit ani přepsat.</translation>
 <translation id="3997519162482760140">Adresy URL, kterým bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa</translation>
 <translation id="4001275826058808087">Administrátoři IT spravující podniková zařízení mohou pomocí tohoto příznaku uživatelům povolit nebo zakázat uplatnění zvláštních nabídek při registraci systému Chrome OS.
 
@@ -1084,6 +1096,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
           Pokud má tato zásada má hodnotu true nebo není nastavena, bude se správa napájení řídit nastavením uzamčení obrazovky při probuzení.
 
           Pokud má tato zásada hodnotu false, budou požadavky na uzamčení obrazovky při probuzení ignorovány.</translation>
+<translation id="4882546920824859909">Definování domén, kterým je povolen přístup ke službám Google Apps</translation>
 <translation id="4890209226533226410">Nastavuje typ lupy, který je aktivován.
 
 Pokud je tato zásada nastavena, ovládá typ lupy, který je aktivní. Nastavíte-li zásadu na hodnotu Žádné, lupa se deaktivuje. 

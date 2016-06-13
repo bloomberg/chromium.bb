@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
-<translation id="1073391069195728457">Chrome - 通知</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="123620459398936149">Chrome操作系统无法同步您的数据。请更新您的同步密码。</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="4147555960264124640">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome。</translation>
-<translation id="4167057906098955729">您可以在此处查看来自 Chrome 应用、扩展程序和网站的所有通知。</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="4251615635259297716">是否将您的 Chrome 数据与此帐户相关联？</translation>
 <translation id="4309555186815777032">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chrome）</translation>
@@ -115,6 +113,7 @@
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="4631713731678262610">在 Chrome 菜单中隐藏</translation>
 <translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
+<translation id="4664415150087723341">系统刚刚为 Google Chrome 应用了一项特殊的安全更新；您应立即重新启动，以使此更新生效（我们会恢复您的标签页）。</translation>
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
@@ -136,6 +135,7 @@
 <translation id="5204098752394657250">Google Chrome　<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">访客使用Chrome不会留下任何痕迹。</translation>
 <translation id="5253588388888612165">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐户添加到Chrome，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 将在 1 秒后重新启动。}other{Google Chrome 将在 # 秒后重新启动。}}</translation>
 <translation id="5328989068199000832">Google Chrome 二进制文件</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="5386244825306882791">它还能够控制您启动Chrome后或通过多功能框进行搜索时系统显示的页面。</translation>
@@ -192,7 +192,6 @@
 <translation id="7191567847629796517">Google Chrome操作系统不支持启动外部应用来处理<ph name="SCHEME" />链接。请求的链接是<ph name="PROTOLINK" />。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="7242029209006116544">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - 通知（<ph name="QUANTITY" />条未读）</translation>
 <translation id="729375352412857283">此计算机很快就不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 将不再受支持。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐户再次登录。</translation>
@@ -228,7 +227,6 @@
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
-<translation id="8460191995881063249">Chrome 通知中心</translation>
 <translation id="853189717709780425">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
@@ -240,6 +238,7 @@
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
+<translation id="8796108026289707191">您应立即重新启动 Google Chrome。</translation>
 <translation id="8823341990149967727">Chrome版本太旧</translation>
 <translation id="884296878221830158">它还能够控制您启动Chrome或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="8851136666856101339">主体内容</translation>

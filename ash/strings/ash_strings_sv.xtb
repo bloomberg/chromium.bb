@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
+<translation id="1683360892415596327">Delta i undersökningen</translation>
 <translation id="1723752762323179280">Sessionen avslutas</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="1812696562331527143">Inmatningsmetoden har ändrats till <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredje part<ph name="END_LINK" />).
@@ -161,6 +162,7 @@
 <translation id="6062360702481658777">Du loggas ut automatiskt om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME" /> med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Laddar <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Hjälp oss att göra Chromebook bättre</translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6203030746557259519">Virtuell skärm</translation>
@@ -211,6 +213,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="7823564328645135659">Chromes språk har ändrats från <ph name="FROM_LOCALE" /> till <ph name="TO_LOCALE" /> efter synkronisering av dina inställningar.</translation>
 <translation id="785750925697875037">Visa mobilkonto</translation>
 <translation id="7864539943188674973">Inaktivera Bluetooth</translation>
+<translation id="7869829692393275047">Text i undersökning om Chrome OS HaTS. Text i undersökning om Chrome OS HaTS. Text i undersökning om Chrome OS HaTS.</translation>
 <translation id="7893838033650689677">Aktivera Wi-Fi</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="7957227661277029961">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på. Vi rekommenderar att du använder originalladdaren.</translation>

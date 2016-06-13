@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">conectează-te la Chrome</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
-<translation id="1073391069195728457">Chrome – Notificări</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="123620459398936149">Sistemul de operare Chrome nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
@@ -101,7 +100,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descarcă din nou Google Chrome.</translation>
-<translation id="4167057906098955729">Aici puteți vedea toate notificările de la aplicațiile, extensiile și site-urile web Chrome.</translation>
 <translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chrome)</translation>
@@ -114,6 +112,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="4631713731678262610">Ascunde în meniul Chrome</translation>
 <translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
+<translation id="4664415150087723341">Tocmai a fost aplicată o actualizare de securitate specială pentru Google Chrome; pentru ca aceasta să intre în vigoare, îți recomandăm să repornești acum (filele vor fi restabilite).</translation>
 <translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
 <translation id="4743926867934016338">Acceptă și caută</translation>
@@ -135,6 +134,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termeni și condiții<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">Invitații pot folosi Chrome fără a lăsa nicio urmă.</translation>
 <translation id="5253588388888612165">Dacă folosești acest computer în comun cu <ph name="PROFILE_NAME" />, adaugă-te în Chrome pentru a naviga separat. În caz contrar, deconectează Contul Google al celuilalt utilizator.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome va reporni într-o secundă.}few{Google Chrome va reporni în # secunde.}other{Google Chrome va reporni în # de secunde.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="5386244825306882791">Stabilește și ce pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
@@ -191,7 +191,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7191567847629796517">Sistemul de operare Google Chrome nu acceptă lansarea unei aplicații externe pentru gestionarea linkurilor <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome – Notificări (<ph name="QUANTITY" /> necitite)</translation>
 <translation id="729375352412857283">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu vor mai fi acceptate.</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
@@ -227,7 +226,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8286862437124483331">Google Chrome încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="8290100596633877290">Hopa! Google Chrome s-a blocat. Repornești acum?</translation>
 <translation id="8406086379114794905">Contribuie la îmbunătățirea Chrome</translation>
-<translation id="8460191995881063249">Centrul de notificări Chrome</translation>
 <translation id="853189717709780425">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele dvs. Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Lansatorul de aplicații Chrome Canary</translation>
@@ -239,6 +237,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Stabilește și ce pagină se afișează când porniți Chrome.</translation>
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Îți recomandăm să repornești Google Chrome acum.</translation>
 <translation id="8823341990149967727">Chrome nu este actualizat</translation>
 <translation id="884296878221830158">Stabilește și ce pagină se afișează când porniți Chrome sau când dați clic pe butonul Pagină de pornire.</translation>
 <translation id="8851136666856101339">principal</translation>

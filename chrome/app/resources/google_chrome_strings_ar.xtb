@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
-<translation id="1073391069195728457">‏Chrome - الإشعارات</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
@@ -103,7 +102,6 @@
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
-<translation id="4167057906098955729">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chrome والإضافات ومواقع الويب هنا.</translation>
 <translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chrome مطلوبة)</translation>
@@ -116,6 +114,7 @@
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>
 <translation id="4633000520311261472">‏لجعل Chrome أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
+<translation id="4664415150087723341">‏تم الآن تطبيق تحديث أمان خاص لـ Google Chrome؛ تجب إعادة التشغيل الآن لتسري التغييرات التي أجريتها (ستتم استعادة علامات التبويب).</translation>
 <translation id="4700157086864140907">‏يمكن أن يقدم Google Chrome تدقيقًا إملائيًا أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى خوادم Google، مما يتيح لك استخدام تقنية التدقيق الإملائي ذاتها المستخدمة في بحث Google.</translation>
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
@@ -139,6 +138,7 @@
 <translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">‏يمكن للضيف استخدام Chrome بدون أن يترك أي أثر وراءه.</translation>
 <translation id="5253588388888612165">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME" />، فأضف نفسك إلى Chrome للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{‏ستتم إعادة تشغيل Google Chrome خلال ثانية واحدة (1).}zero{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}two{‏ستتم إعادة تشغيل Google Chrome خلال ثانيتين (#).}few{‏ستتم إعادة تشغيل Google Chrome خلال # ثوانٍ.}many{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}other{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}}</translation>
 <translation id="5328989068199000832">‏ثنائيات Google Chrome</translation>
 <translation id="5334545119300433702">‏هذه الوحدة معروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="5386244825306882791">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
@@ -195,7 +195,6 @@
 <translation id="7191567847629796517">‏لا يدعم نظام تشغيل Google Chrome إطلاق تطبيق خارجي للتعامل مع روابط <ph name="SCHEME" />. الرابط المطلوب هو <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">‏Chrome - الإشعارات (<ph name="QUANTITY" /> غير مقروءة)</translation>
 <translation id="729375352412857283">‏سيتوقف هذا الكمبيوتر قريبًا عن استلام تحديثات Google Chrome لأن أنظمة Windows XP وWindows Vista لن تصبح مدعومة بعد الآن.</translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
@@ -231,7 +230,6 @@
 <translation id="8286862437124483331">‏يحاول Google Chrome عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="8290100596633877290">‏للأسف! تعطل Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
-<translation id="8460191995881063249">‏مركز إشعارات Chrome</translation>
 <translation id="853189717709780425">‏أنت تسجل الدخول بحساب يخضع لإدارة شخص آخر وتمنح مشرفه إمكانية التحكم في ملفك الشخصي في Google Chrome. سيتم ربط بياناتك في Chrome دائمًا بالحساب <ph name="USER_NAME" /> مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
@@ -243,6 +241,7 @@
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="8679801911857917785">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
+<translation id="8796108026289707191">‏يجب عليك إعادة تشغيل Google Chrome الآن.</translation>
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>
 <translation id="8851136666856101339">main</translation>

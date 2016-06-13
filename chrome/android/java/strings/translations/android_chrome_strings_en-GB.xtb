@@ -232,6 +232,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Legal information</translation>
 <translation id="4089831646916293264">This feature may interfere with access to premium data services provided by your operator.</translation>
+<translation id="4099423833822562131">Select a delivery address to check delivery methods.</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="410351446219883937">Auto-play</translation>
 <translation id="411254640334432676">Download failed.</translation>
@@ -279,6 +280,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4690286298542128877">Tabs will move to a tab switcher inside Chrome.</translation>
 <translation id="4698413471314543145">Critical functionality required to run Chrome is missing; either your Chrome installation is incomplete or not compatible with this version of Android.</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
+<translation id="4710672574193412565">Add a Google account from the accounts page in your device's Settings app.</translation>
 <translation id="4720023427747327413">Open in <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5056549851600133418">Articles for you</translation>
 <translation id="5063480226653192405">Usage</translation>
+<translation id="5087580092889165836">Add card</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5107381076085091558">Download paused.</translation>
 <translation id="5118713593561876160">Interests</translation>
@@ -376,7 +379,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
-<translation id="588563574323093535">Ask first before allowing sites to enter full screen (recommended)</translation>
 <translation id="5899349522111170522">Create new file</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -408,7 +410,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
-<translation id="6317634962183824346">Android system sync disabled. Please re-enable and try again.</translation>
 <translation id="6324360525379265737">Automatically determine character encoding</translation>
 <translation id="6333140779060797560">Share via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encryption</translation>
@@ -601,7 +602,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Finished</translation>
-<translation id="8793430725658173476">Copy url</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmarks</translation>

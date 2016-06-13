@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Συσκευή Chrome</translation>
 <translation id="1677472565718498478">Απομένουν <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Λάβετε μέρος στην έρευνά μας</translation>
 <translation id="1723752762323179280">Έξοδος από περίοδο σύνδεσης</translation>
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
 <translation id="1812696562331527143">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />τρίτου μέρους<ph name="END_LINK" />).
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">Θα αποσυνδεθείτε αυτόματα σε <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως "<ph name="NAME" />" με διεύθυνση <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Φόρτιση <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Βοηθήστε μας να βελτιώσουμε τα Chromebook</translation>
 <translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6203030746557259519">Εικονική οθόνη</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">Η γλώσσα του άλλαξε από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="785750925697875037">Προβολή λογαριασμού κινητής τηλεφωνίας</translation>
 <translation id="7864539943188674973">Απενεργοποίηση Bluetooth</translation>
+<translation id="7869829692393275047">Εδώ εμφανίζεται το κείμενο της έρευνας ικανοποίησης (HaTS) του Chrome OS. Εδώ εμφανίζεται το κείμενο της έρευνας ικανοποίησης (HaTS) του Chrome OS. Εδώ εμφανίζεται το κείμενο της έρευνας ικανοποίησης (HaTS) του Chrome OS. Εδώ εμφανίζεται το κείμενο της έρευνας ικανοποίησης (HaTS) του Chrome OS.</translation>
 <translation id="7893838033650689677">Ενεργοποίηση Wi-Fi</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="7957227661277029961">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη. Χρησιμοποιήστε τον επίσημο φορτιστή.</translation>

@@ -74,6 +74,7 @@
 <translation id="17513872634828108">Schede aperte</translation>
 <translation id="1753706481035618306">Numero di pagina</translation>
 <translation id="1763864636252898013">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del dispositivo. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
@@ -134,6 +135,7 @@
 <translation id="2400837204278978822">Tipo di file sconosciuto.</translation>
 <translation id="2413528052993050574">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere revocato. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="2455981314101692989">La pagina web ha disattivato la compilazione automatica per questo modulo.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL ricerca non valido.</translation>
 <translation id="2491120439723279231">Il certificato del server contiene degli errori.</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -160,6 +162,7 @@
 <translation id="2712173769900027643">Chiedi autorizzazione</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Rimuovi gli elementi selezionati</translation>
 <translation id="277499241957683684">Record del dispositivo mancante</translation>
 <translation id="2778107779445548489">Visualizzi questo messaggio perché il tuo genitore ha bloccato questo sito.</translation>
@@ -196,6 +199,7 @@
 <translation id="3105172416063519923">ID asset:</translation>
 <translation id="3109728660330352905">Non sei autorizzato a visualizzare questa pagina.</translation>
 <translation id="3118046075435288765">Il server ha inaspettatamente chiuso la connessione.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Decodifica della risposta non riuscita</translation>
 <translation id="3147485256806412701">Questo sito ha un nuovo dominio di primo livello generico.</translation>
 <translation id="3150653042067488994">Errore temporaneo del server</translation>
@@ -245,8 +249,8 @@
 <translation id="3586931643579894722">Nascondi dettagli</translation>
 <translation id="3587482841069643663">Tutti</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Client e server non supportano un pacchetto di crittografia o una versione comune del protocollo SSL. Probabilmente il problema si verifica quando il server ha bisogno di RC4, che non è più considerato sicuro.</translation>
 <translation id="3609138628363401169">Il server non supporta l'estensione di rinegoziazione TLS.</translation>
+<translation id="36224234498066874">Cancella dati di navigazione...</translation>
 <translation id="362276910939193118">Mostra cronologia completa</translation>
 <translation id="3623476034248543066">Mostra valore</translation>
 <translation id="3630155396527302611">Se è già elencato come programma autorizzato ad accedere alla rete, prova a
@@ -303,6 +307,7 @@
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Arresti anomali</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">Le modifiche apportate potrebbero non essere salvate.</translation>
 <translation id="4258748452823770588">Firma errata</translation>
@@ -341,6 +346,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> è stato bloccato</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">La connessione è stata interrotta</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Ricarica norme</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
 <translation id="4744603770635761495">Percorso eseguibile</translation>
@@ -560,6 +566,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7445762425076701745">Impossibile convalidare completamente l'identità del server a cui sei collegato. Sei collegato a un server con un nome valido soltanto nella tua rete, di cui un'autorità di certificazione esterna non può convalidare in alcun modo la proprietà. Poiché alcune autorità di certificazione emettono comunque certificati per questi nomi, non è in alcun modo possibile garantire che tu sia collegato al sito web desiderato anziché a un sito dannoso.</translation>
 <translation id="7450732239874446337">Operazioni di I/O di rete sospese.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Leggere ulteriori informazioni<ph name="END_LINK" /> sul problema.</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
 <translation id="7514365320538308">Scarica</translation>
@@ -700,6 +707,7 @@ Puoi comunque utilizzare lo strumento di diagnostica presentato qui per risolver
 <translation id="9039213469156557790">Inoltre, questa pagina include altre risorse che non sono sicure. Tali risorse possono essere visualizzate da altri durante il transito dei dati e possono essere modificate da un utente malintenzionato al fine di modificare il comportamento della pagina.</translation>
 <translation id="9049981332609050619">Hai tentato di connetterti a <ph name="DOMAIN" />, ma il server ha presentato un certificato scaduto.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="9065203028668620118">Modifica</translation>
 <translation id="9092364396508701805">La pagina <ph name="HOST_NAME" /> non funziona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="9125941078353557812">Inserisci il codice CVC di tre cifre indicato sul retro della carta</translation>

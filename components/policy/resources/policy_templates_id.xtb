@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Menyetel direktori data pengguna</translation>
 <translation id="1022361784792428773">ID ekstensi yang tidak diizinkan dipasang pengguna (atau * untuk semua)</translation>
 <translation id="102492767056134033">Menyetel status default keyboard di layar di layar masuk</translation>
+<translation id="1040446814317236570">Aktifkan penyembunyian URL PAC (untuk https://)</translation>
 <translation id="1044878202534415707">Melaporkan statistik perangkat keras, seperti penggunaan CPU/RAM.
 
       Jika kebijakan ini disetel ke False, statistik tidak akan dilaporkan.
@@ -853,6 +854,26 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3967075520570946456">Mengaktifkan menampilkan laman selamat datang saat peluncuran browser pertama setelah peningkatan versi OS.</translation>
 <translation id="3973371701361892765">Jangan sembunyikan rak secara otomatis</translation>
 <translation id="3984028218719007910">Menentukan apakah <ph name="PRODUCT_OS_NAME" /> menyimpan data akun lokal setelah keluar. Jika disetel ke true, maka tidak ada akun yang terus menerus disimpan oleh <ph name="PRODUCT_OS_NAME" /> dan semua data dari sesi pengguna akan dihapus setelah keluar. Jika kebijakan ini disetel ke false atau tidak dikonfigurasi, perangkat dapat menyimpan data pengguna lokal (yang dienkripsi).</translation>
+<translation id="3994569321696536679">Mengaktifkan fitur masuk <ph name="PRODUCT_NAME" />
+      terbatas di Google Apps dan mencegah pengguna
+      mengubah setelan ini.
+
+      Jika Anda menetapkan setelan ini, pengguna hanya dapat mengakses
+      Google Apps (misalnya, Gmail) menggunakan akun dari domain yang ditentukan.
+
+      Setelan ini TIDAK mencegah pengguna masuk di perangkat terkelola
+      yang memerlukan autentikasi Google. Pengguna tetap dapat masuk
+      ke akun dari domain lain, namun mereka akan menerima pesan kesalahan
+      saat mencoba menggunakan Google Apps dengan akun tersebut.
+
+      Jika setelan ini dibiarkan kosong/tidak dikonfigurasi, pengguna dapat
+      mengakses Google Apps dengan akun apa pun.
+
+      Kebijakan ini menyebabkan header X-GoogApps-Allowed-Domains ditambahkan ke
+      semua permintaan HTTP dan HTTPS ke semua domain google.com,
+      sebagaimana yang dijelaskan dalam https://support.google.com/a/answer/1668854.
+
+      Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="3997519162482760140">URL yang akan diberi akses ke perangkat perekam video di laman masuk SAML</translation>
 <translation id="4001275826058808087">Admin TI untuk perangkat perusahaan dapat menggunakan tanda ini untuk mengontrol apakah mengizinkan pengguna menukarkan penawaran melalui Pendaftaran Chrome OS atau tidak.
 
@@ -1042,6 +1063,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat bangun akan diterima demi pengelolaan daya.
 
           Jika kebijakan ini disetel ke false, permintaan penguncian layar saat bangun akan diabaikan.</translation>
+<translation id="4882546920824859909">Menetapkan domain yang diizinkan untuk mengakses Google Apps</translation>
 <translation id="4890209226533226410">Menyetel jenis lup yang diaktifkan.
 
           Jika kebijakan ini disetel, kebijakan ini mengontrol jenis lup layar yang diaktifkan. Menyetel kebijakan ke "None" akan menonaktifkan lup.
@@ -1812,7 +1834,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7719251660743813569">Mengontrol apakah metrik penggunaan dilaporkan kembali ke Google. Jika disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau disetel ke false, pelaporan metrik akan dinonaktifkan.</translation>
 <translation id="7723433108978650103">Memblokir akses ke URL yang ada di daftar.
 
-      Kebijakan ini mencegah pengguna memuat laman web dari URL yang masuk daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL yang akan masuk daftar hitam.
+      Kebijakan ini mencegah pengguna memuat laman web dari URL yang masuk daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL mana saja yang akan masuk daftar hitam.
 
       Pola URL harus diberi format sesuai dengan https://www.chromium.org/administrators/url-blacklist-filter-format.
 

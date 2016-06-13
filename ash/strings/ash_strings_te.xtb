@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome పరికరం</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
+<translation id="1683360892415596327">మా సర్వేలో పాల్గొనండి</translation>
 <translation id="1723752762323179280">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3వ పక్షం<ph name="END_LINK" />)కు మార్చబడింది.
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">మీరు <ph name="LOGOUT_TIME_LEFT" />లో స్వయంచాలకంగా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="607652042414456612">మీ కంప్యూటర్ సమీప బ్లూటూత్ పరికరాల్లో కనుగొనబడుతుంది మరియు చిరునామా <ph name="ADDRESS" />తో "<ph name="NAME" />" వలె కనిపిస్తుంది</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" />ని ఛార్జ్ చేస్తోంది</translation>
+<translation id="6144938890088808325">Chromebookలను మెరుగుపరచడంలో మాకు సహాయపడండి</translation>
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6203030746557259519">వర్చువల్ డిస్‌ప్లే</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి మార్చబడింది.</translation>
 <translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
 <translation id="7864539943188674973">Bluetoothని నిలిపివేయి</translation>
+<translation id="7869829692393275047">Chrome OS HaTS సర్వే వచనం ఇక్కడ ఉంది. Chrome OS HaTS సర్వే వచనం ఇక్కడ ఉంది. Chrome OS HaTS సర్వే వచనం ఇక్కడ ఉంది. Chrome OS HaTS సర్వే వచనం ఇక్కడ ఉంది.</translation>
 <translation id="7893838033650689677">Wi-Fiని ఆన్ చేయి</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="7957227661277029961">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించి ప్రయత్నించండి.</translation>

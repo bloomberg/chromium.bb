@@ -42,13 +42,13 @@
 <translation id="2372704305038231957">‏ممکن است Chromium ‏۳۲ بیتی عملکرد درستی نداشته باشد زیرا دیگر در این سیستم Linux پشتیبانی نمی‌شود. لطفاً به Chromium ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Chromium خارج شوید؟}one{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Chromium خارج شوید؟}other{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری‌ها را لغو کنید و از Chromium خارج شوید؟}}</translation>
 <translation id="2396765026452590966">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
+<translation id="2483889755041906834">‏در Chromium</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="2486653164587200256">‏Chromium ممکن است درست کار نکند زیرا دیگر در Windows XP یا Windows Vista پشتیبانی نمی‌شود.</translation>
 <translation id="2535480412977113886">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
 <translation id="2558641060352364164">‏این سایت از افزایه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده و به مرورگر جدیدی ارتقا دهید.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2595977381794111014">‏برای ادامه دسترسی به برنامه‌هایتان از میان‌بر <ph name="APPS_ICON_IMAGE" /> در نوار نشانک‌های Chromium استفاده کنید.</translation>
-<translation id="2602806952220118310">‏Chromium - اعلان‌ها</translation>
 <translation id="2636877269779209383">‏Chromium نیاز به مجوز دسترسی به دوربین دارد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="2648074677641340862">‏یک خطای سیستم عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
 <translation id="2673087257647337101">‏تقریباً به روز است! برای پایان به‌روزرسانی، Chromium را راه‌اندازی مجدد کنید.</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">‏Chromium درحال استفاده از میکروفون شما است.</translation>
 <translation id="313551035350905294">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست اجازه کنترل نمایه Chromium خود را می‌دهید. داده‌های Chromium، مانند برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما برای همیشه به <ph name="USER_NAME" /> مرتبط می‌شود. شما می‌توانید این داده‌ها را از طریق داشبورد حساب Google خود حذف کنید، اما نمی‌توانید این داده‌ها را با حساب دیگری مربوط کنید.</translation>
 <translation id="3190315855212034486">‏اوه! Chromium خراب شده است. دوباره راه‌اندازی شود؟</translation>
-<translation id="3244477511402911926">‏مرکز اعلان Chromium</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
 <translation id="3258596308407688501">‏Chromium نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد:
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -97,6 +96,7 @@
 <translation id="4222580632002216401">‏اکنون وارد Chromium شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
 <translation id="4224199872375172890">‏Chromium به‌روز است.</translation>
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{‏Chromium بعد از ۱ ثانیه راه‌اندازی مجدد می‌شود.}one{‏Chromium بعد از # ثانیه راه‌اندازی مجدد می‌شود.}other{‏Chromium بعد از # ثانیه راه‌اندازی مجدد می‌شود.}}</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4330585738697551178">‏این مدول با Chromium تداخل دارد.</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
@@ -139,6 +139,7 @@
 <translation id="6309712487085796862">‏Chromium درحال استفاده از دوربین شما است.</translation>
 <translation id="6334986366598267305">‏اکنون استفاده از Chromium با حساب Google شما و در رایانه‌های مشترک آسان‌تر شده است.</translation>
 <translation id="6373523479360886564">‏آیا مطمئن هستید که می‌خواهید Chromium را حذف نصب کنید؟</translation>
+<translation id="6394232988457703198">‏هم‌اکنون باید Chromium را راه‌اندازی مجدد کنید.</translation>
 <translation id="6403826409255603130">‏Chromium یک مرورگر وب است که صفحات وب و برنامه‌ها را با سرعت بسیار زیاد اجرا می‌کند. این مرورگر خیلی سریع، پایدار و دارای کاربرد آسان است. با محافظت در مقابل بدافزار و فیشینگ طراحی شده در داخل Chromium، با امنیت بیشتری وب را مرور کنید.</translation>
 <translation id="6475912303565314141">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="6485906693002546646">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chromium خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chromium بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
@@ -187,11 +188,11 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 برای دستورالعمل‌های بیشتر، لطفاً رایانامه‌تان (<ph name="ACCOUNT_EMAIL" />) را بررسی کنید.</translation>
 <translation id="7419987137528340081">‏اگر ترجیح می‌دهید داده‌های Chromium خود را جدا نگهدارید، می‌توانید برای <ph name="USER_NAME" />، کاربر Chromium جدیدی ایجاد کنید.</translation>
 <translation id="7421823331379285070">‏Chromium به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
-<translation id="7463979740390522693">‏Chromium - اعلان‌ها (<ph name="QUANTITY" /> خوانده نشده)</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="750717762378961310">‏این فایل مخرب است و Chromium آن را مسدود کرده است.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
+<translation id="7577193603922410712">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه برای Chromium اعمال شد؛ برای فعال شدن آن باید هم‌اکنون راه‌اندازی مجدد کنید (برگه‌هایتان را بازیابی خواهیم کرد).</translation>
 <translation id="761356813943268536">‏Chromium درحال استفاده از دوربین و میکروفون شما است.</translation>
 <translation id="7617377681829253106">‏Chromium اکنون بهتر شده است</translation>
 <translation id="7641113255207688324">‏Chromium مرورگر پیش‌فرض شما نیست.</translation>
@@ -204,7 +205,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7979877361127045932">‏پنهان در منوی Chromium</translation>
 <translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">‏Chromium نیاز به مجوزهای دسترسی دارد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
-<translation id="805745970029938373">‏می‌توانید همه اعلان‌هایتان از برنامه‌های Chromium، افزودنی‌ها و وب‌سایت‌ها را در اینجا مشاهده کنید.</translation>
 <translation id="8134284582177628525">‏اگر این رایانه را با <ph name="PROFILE_NAME" /> به اشتراک می‌گذارید، خودتان را به Chromium اضافه کنید تا جداگانه مرور کنید. در غیر این صورت اتصال حساب Google این شخص را قطع کنید.</translation>
 <translation id="8269379391216269538">‏به بهبود Chromium کمک کنید</translation>
 <translation id="8453117565092476964">‏بایگانی نصب‌کننده خراب یا نامعتبر است. لطفاً Chromium را دوباره را بارگیری کنید.</translation>

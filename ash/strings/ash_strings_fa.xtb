@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
+<translation id="1683360892415596327">در نظرسنجی ما شرکت کنید</translation>
 <translation id="1723752762323179280">خروج از جلسه</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
@@ -160,6 +161,7 @@
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT" /> از سیستم خارج می‌شوید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
 <translation id="6106745654298855237">در حال شارژ کردن <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">‏در بهبود بخشیدن دستگاه‌های Chromebook به ما کمک کنید</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6203030746557259519">نمایشگر مجازی</translation>
@@ -211,6 +213,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» تغییر کرد.</translation>
 <translation id="785750925697875037">مشاهده حساب تلفن همراه</translation>
 <translation id="7864539943188674973">غیرفعال کردن بلوتوث</translation>
+<translation id="7869829692393275047">‏متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست.</translation>
 <translation id="7893838033650689677">‏روشن کردن Wi-Fi</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7957227661277029961">ممکن است وقتی <ph name="DEVICE_TYPE" /> خاموش است، شارژ نشود. از یک شارژ موردتأیید استفاده کنید.</translation>

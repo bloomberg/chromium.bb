@@ -232,6 +232,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="4089831646916293264">Fitur ini dapat mengganggu akses ke layanan data premium yang disediakan oleh operator Anda.</translation>
+<translation id="4099423833822562131">Pilih alamat pengiriman untuk memeriksa metode pengiriman.</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="410351446219883937">Putar otomatis</translation>
 <translation id="411254640334432676">Unduhan gagal.</translation>
@@ -279,6 +280,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4690286298542128877">Tab akan dipindahkan ke pengalih tab di dalam Chrome.</translation>
 <translation id="4698413471314543145">Fungsi penting yang diperlukan untuk menjalankan Chrome tidak ada; bisa jadi karena pemasangan Chrome Anda tidak lengkap, atau tidak kompatibel dengan versi Android ini.</translation>
 <translation id="4699172675775169585">File dan gambar yang disimpan dalam cache</translation>
+<translation id="4710672574193412565">Tambahkan Akun Google dari laman Akun di aplikasi Setelan perangkat.</translation>
 <translation id="4720023427747327413">Buka di <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
 <translation id="4738836084190194332">Terakhir disinkronkan: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5056549851600133418">Artikel untuk Anda</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
+<translation id="5087580092889165836">Tambahkan kartu</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5107381076085091558">Unduhan dijeda.</translation>
 <translation id="5118713593561876160">Minat</translation>
@@ -376,7 +379,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="585027516397408832">Penghemat Data diaktifkan</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5869522115854928033">Sandi yang disimpan</translation>
-<translation id="588563574323093535">Tanya terlebih dahulu sebelum mengizinkan situs memasuki mode layar penuh (disarankan)</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
@@ -408,7 +410,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangkan iklan yang tidak berdasarkan pada situs web lainnya yang Anda kunjungi. Banyak situs web yang masih akan mengumpulkan dan menggunakan data penjelajahan Anda — misalnya, untuk meningkatkan keamanan, menyediakan konten, iklan, dan saran, serta untuk membuat statistik pelaporan.</translation>
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="6295158916970320988">Semua situs</translation>
-<translation id="6317634962183824346">Sinkronisasi sistem Android dinonaktifkan. Aktifkan ulang dan coba lagi.</translation>
 <translation id="6324360525379265737">Tentukan enkode karakter secara otomatis</translation>
 <translation id="6333140779060797560">Bagikan melalui <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Enkripsi</translation>
@@ -603,7 +604,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8719023831149562936">Tidak dapat memancarkan tab ini</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
-<translation id="8793430725658173476">Salin URL</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8812942424849541387">Kontrol cara kerjanya di <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmark</translation>

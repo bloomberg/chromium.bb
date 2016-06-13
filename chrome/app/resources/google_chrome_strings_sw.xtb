@@ -9,7 +9,6 @@
 <translation id="1065672644894730302">Mapendeleo yako hayawezi kusomwa.
 
 Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahifadhiwa.</translation>
-<translation id="1073391069195728457">Chrome - Arifa</translation>
 <translation id="1104959162601287462">Kuhusu &amp;Chrome OS</translation>
 <translation id="110877069173485804">Hii ndiyo Chrome yako</translation>
 <translation id="123620459398936149">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia Kusawazisha.</translation>
@@ -105,7 +104,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="4053720452172726777">Dhibiti  na ugeuze Google Chrome ikufae</translation>
 <translation id="4147555960264124640">Unaingia katika akaunti ukitumia akaunti inayodhibitiwa na kumpa msimamizi wa akaunti hiyo udhibiti wa wasifu wako kwenye Google Chrome. Data yako ya Chrome, kama vile programu zako, alamisho, historia, manenosiri, na mipangilio mingine itahusishwa na <ph name="USER_NAME" /> daima . Utaweza kufuta data hii kupitia Dashibodi ya Akaunti za Google, lakini hutaweza kuhusisha data hii na akaunti nyingine. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Kisanidi kimeshindwa kufungua saraka. Tafadhali pakua Google Chrome tena.</translation>
-<translation id="4167057906098955729">Unaweza kuona arifa zako zote kutoka programu za Chrome, viendelezi, na tovuti hapa.</translation>
 <translation id="423410644998903704">Chrome inahitaji idhini ya kufikia ruhusa ili izishiriki na tovuti hii.</translation>
 <translation id="4251615635259297716">Ungependa kuunganisha data yako ya Chrome kwenye akaunti hii?</translation>
 <translation id="4309555186815777032">(inahitaji uanzishaji upya wa <ph name="BEGIN_BUTTON" />Chrome<ph name="END_BUTTON" />)</translation>
@@ -118,6 +116,7 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS" />. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="4631713731678262610">Ficha katika menyu ya Chrome</translation>
 <translation id="4633000520311261472">Ili kufanya Chrome salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
+<translation id="4664415150087723341">Sasisho maalum la usalama wa Google Chrome limewekwa; unapaswa kuzima na kuwasha Chrome sasa ili lifanye kazi (tutarejesha vichupo vyako).</translation>
 <translation id="4700157086864140907">Google Chrome inaweza kutoa ukaguzi bora wa tahajia kwa kutuma unachocharaza katika kivinjari hadi kwenye seva ya Google, ikikuruhusu utumie teknolojia ya kukagua tahajia inayotumiwa na huduma ya Tafuta na Google.</translation>
 <translation id="4728575227883772061">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Ikiwa Google Chrome haitumiki kwa sasa, tafadhali ifunge na ujaribu tena.</translation>
 <translation id="4743926867934016338">Kubali na Utafute</translation>
@@ -141,6 +140,7 @@ Huenda baadhi ya vipengele visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="5204098752394657250">Sheria na Masharti za <ph name="TERMS_OF_SERVICE_LINK" />Google Chrome<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Walioalikwa wanaweza kutumia Chrome bila kuacha chochote nyuma.</translation>
 <translation id="5253588388888612165">Ukishiriki kompyuta hii na <ph name="PROFILE_NAME" />, jiongeze kwenye Chrome ili uvinjari tofauti. Vinginevyo ondoa Akaunti yake ya Google.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome itazimika na kuwaka tena baada ya sekunde 1.}other{Google Chrome itazimika na kuwaka tena baada ya sekunde #.}}</translation>
 <translation id="5328989068199000832">Jozi za Google Chrome</translation>
 <translation id="5334545119300433702">Kijenzi hiki kinajulikana kwa kuwa na ukinzani na Google Chrome.</translation>
 <translation id="5386244825306882791">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chrome au unapotafuta kutoka Sanduku Kuu.</translation>
@@ -199,7 +199,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7191567847629796517">Google Chrome OS haitumii kufungua programu ya nje ili kushughulikia viungo vya <ph name="SCHEME" />. Kiungo kilichoombwa ni <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Ni kwa kwa nini ninaona hii?</translation>
 <translation id="7242029209006116544">Unaingia katika akaunti ykitumia akaunti inayodhibitiwa na kumpa msimamizi wa akaunti hiyo udhibiti wa wasifu wako kwenye Google Chrome. Data yako ya Chrome, kama vile programu zako, alamisho, historia, manenosiri, na mipangilio mingine itahishwa na <ph name="USER_NAME" /> daima. Utaweza kufuta data hii kupitia Dashibodi ya Akaunti za Google, lakini hutaweza kuhusisha data hii na akaunti nyingine. Unaweza kuunda kwa hiari wasifu mpya ili kuweka data yako ya Chrome iliyo kando. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - Arifa (<ph name="QUANTITY" /> hazijasomwa)</translation>
 <translation id="729375352412857283">Kompyuta hii itaacha kupokea sasisho za Google Chrome hivi karibuni kwa sababu Windows XP na Windows Vista hazitatumika tena.</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
 <translation id="7398801000654795464">Uliingia kwenye Chrome kama <ph name="USER_EMAIL_ADDRESS" />. Tafadhali tumia akaunti sawa ili kuingia tena.</translation>
@@ -235,7 +234,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8286862437124483331">Google Chrome inajaribu kuonyesha manenosiri. Chapa nenosiri lako la Windows ili uruhusu hili.</translation>
 <translation id="8290100596633877290">Ho! Google Chrome imezimika. Ianzishe tena sasa?</translation>
 <translation id="8406086379114794905">Saidia kuboresha Chrome</translation>
-<translation id="8460191995881063249">Kituo cha Chrome cha Taarifa</translation>
 <translation id="853189717709780425">Unaingia kwa kutumia akaunti inayodhibitiwa na kutoa ruhusa msimamizi wake adhibiti wasifu wako kwenye Chrome. Data yako kwenye Chrome, kama vile programu, alamisho, historia, manenosiri yako, na mipangilio mingine itasalia kabisa kwenye <ph name="USER_NAME" />. Utaweza kufuta data hii kupitia Dashibodi ya Akaunti ya Google, lakini hutaweza kuhusisha data hii na akaunti nyingine.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Canary ya Kizinduzi cha Programu ya Chrome</translation>
@@ -247,6 +245,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8669527147644353129">Msaidizi wa Google Chrome</translation>
 <translation id="8679801911857917785">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chrome.</translation>
 <translation id="870251953148363156">Sasisha &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Unapaswa kuzima na kuwasha Google Chrome sasa.</translation>
 <translation id="8823341990149967727">Toleo hili la Chrome Limepitwa na Wakati</translation>
 <translation id="884296878221830158">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chrome au unapobofya kitufe cha Mwanzo.</translation>
 <translation id="8851136666856101339">kuu</translation>

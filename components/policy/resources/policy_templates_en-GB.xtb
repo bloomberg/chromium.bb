@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
 <translation id="102492767056134033">Set default state of the on-screen keyboard on the login screen</translation>
+<translation id="1040446814317236570">Enable PAC URL stripping (for https://)</translation>
 <translation id="1044878202534415707">Report hardware statistics such as CPU/RAM usage.
 
       If the policy is set to false, the statistics will not be reported.
@@ -913,6 +914,26 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="3967075520570946456">Enable showing the welcome page on the first browser launch following OS upgrade.</translation>
 <translation id="3973371701361892765">Never auto-hide the shelf</translation>
 <translation id="3984028218719007910">Determines whether <ph name="PRODUCT_OS_NAME" /> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME" /> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.</translation>
+<translation id="3994569321696536679">Enables <ph name="PRODUCT_NAME" />'s
+      restricted log in feature in Google Apps and prevents users from
+      changing this setting.
+
+      If you define this setting, the user will only be able to access
+      Google Apps (such as Gmail) using accounts from the specified domains.
+
+      This setting will NOT prevent the user from loging in on a managed device
+      that requires Google authentication. The user will still be allowed to
+      sign in to accounts from other domains, but they will receive an error
+      when trying to use Google Apps with those accounts.
+
+      If you leave this setting empty/not-configured, the user will be able to
+      access Google Apps with any account.
+
+      This policy causes the X-GoogApps-Allowed-Domains header to be appended to
+      all HTTP and HTTPS requests to all google.com domains, as described in
+      https://support.google.com/a/answer/1668854.
+
+      Users cannot change or override this setting.</translation>
 <translation id="3997519162482760140">URLs that will be granted access to video capture devices on SAML login pages</translation>
 <translation id="4001275826058808087">IT admins for enterprise devices can use this flag to control whether to allow users to redeem offers through Chrome OS Registration.
 
@@ -1128,6 +1149,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to true or left not set, screen wake locks will be honoured for power management.
 
           If this policy is set to false, screen wake lock requests will be ignored.</translation>
+<translation id="4882546920824859909">Define domains allowed to access Google Apps</translation>
 <translation id="4890209226533226410">Set the type of screen magnifier that is enabled.
 
           If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.

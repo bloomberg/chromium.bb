@@ -9,7 +9,6 @@
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
-<translation id="1073391069195728457">Chrome – meddelanden</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Det här är Chrome</translation>
 <translation id="123620459398936149">Det gick inte att synkronisera data med Chrome OS. Uppdatera lösenfrasen för synkronisering.</translation>
@@ -105,7 +104,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
-<translation id="4167057906098955729">Alla dina meddelanden från Chrome-appar, tillägg och webbplatser visas här.</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
@@ -118,6 +116,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="4631713731678262610">Dölj i Chrome-menyn</translation>
 <translation id="4633000520311261472">Vi har gjort Chrome säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
+<translation id="4664415150087723341">En särskild säkerhetsuppdatering för Google Chrome installerades precis. Tillämpa uppdateringen genom att starta om (vi återställer flikarna).</translation>
 <translation id="4700157086864140907">Google Chrome kan ge smartare stavningskontroll genom att skicka det som du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="4743926867934016338">Acceptera och sök</translation>
@@ -141,6 +140,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Gäster kan använda Chrome utan att lämna spår.</translation>
 <translation id="5253588388888612165">Om du delar den här datorn med <ph name="PROFILE_NAME" /> lägger du till dig själv i Chrome så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome startas om om en sekund.}other{Google Chrome startas om om # sekunder.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Den här modulen har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="5386244825306882791">Det styr också vilken sida som visas när du startar Chrome eller söker i adressfältet.</translation>
@@ -199,7 +199,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7191567847629796517">Google Chrome OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome – meddelanden (<ph name="QUANTITY" /> olästa)</translation>
 <translation id="729375352412857283">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Windows XP och Windows Vista kommer att upphöra.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
@@ -235,7 +234,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8286862437124483331">Skriv ditt Windows-lösenord om du vill tillåta att lösenord visas i Google Chrome.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>
 <translation id="8406086379114794905">Hjälp till att göra Chrome bättre</translation>
-<translation id="8460191995881063249">Chromes meddelandecenter</translation>
 <translation id="853189717709780425">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din profil i Google Chrome. Dina uppgifter i Chrome, till exempel appar, bokmärken, historik, lösenord och andra inställningar, kopplas permanent till <ph name="USER_NAME" />. Du kan ta bort dessa uppgifter i översikten för ditt Google-konto, men du kan inte koppla dem till något annat konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Startprogrammet för appar i Chrome Canary</translation>
@@ -247,6 +245,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Starta om Google Chrome nu.</translation>
 <translation id="8823341990149967727">Den här versionen av Chrome är inaktuell</translation>
 <translation id="884296878221830158">Det styr också vilken sida som visas när du startar Chrome eller klickar på knappen Startsida.</translation>
 <translation id="8851136666856101339">huvud</translation>

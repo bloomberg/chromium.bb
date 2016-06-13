@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
 <translation id="102492767056134033">Impostazione stato predefinito della tastiera sullo schermo nella schermata di accesso</translation>
+<translation id="1040446814317236570">Attiva la rimozione per gli URL PAC (https://)</translation>
 <translation id="1044878202534415707">Consente di segnalare statistiche relative all'hardware, ad esempio l'utilizzo di CPU/RAM.
 
       Se la norma viene impostata su false, le statistiche non vengono segnalate.
@@ -822,6 +823,18 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="3967075520570946456">Attiva la visualizzazione della pagina di benvenuto al primo avvio del browser successivo all'upgrade del sistema operativo.</translation>
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
 <translation id="3984028218719007910">Consente di stabilire se tenere o meno memorizzati in <ph name="PRODUCT_OS_NAME" /> i dati degli account locali dopo l'uscita. Se la norma viene impostata su true, in <ph name="PRODUCT_OS_NAME" /> non verranno conservati gli account persistenti e tutti i dati della sessione utente verranno eliminati dopo l'uscita. Se la norma viene impostata su false o non viene configurata, il dispositivo potrebbe conservare i dati utente locali (crittografati).</translation>
+<translation id="3994569321696536679">Consente di attivare la funzione
+      di accesso limitato di <ph name="PRODUCT_NAME" /> su Google Apps e di impedire agli utenti di modificare questa impostazione.
+
+      Se l'impostazione viene definita, l'utente potrà accedere a Google Apps (ad esempio Gmail) soltanto tramite account dei domini specificati.
+
+      L'impostazione NON impedirà all'utente di accedere su un dispositivo gestito che richiede l'autenticazione di Google. L'utente potrà comunque accedere ad account di altri domini, ma nel caso provi a utilizzare Google Apps con tali account verrà visualizzato un messaggio di errore.
+
+      Se l'impostazione viene lasciata vuota/non configurata, l'utente potrà accedere a Google Apps con qualsiasi account.
+
+      Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com, come descritto alla pagina https://support.google.com/a/answer/1668854.
+
+      L'utente non può modificare o ignorare questa impostazione.</translation>
 <translation id="3997519162482760140">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video su pagine di accesso SAML</translation>
 <translation id="4001275826058808087">Gli amministratori IT di dispositivi aziendali possono utilizzare questo flag per stabilire se consentire agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS.
 
@@ -1005,6 +1018,7 @@ Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente pot
           Se questa norma è impostata su True o non è impostata, verranno rispettati i Wakelock dello schermo nella gestione dell'alimentazione.
 
           Se questa norma è impostata su False, le richieste di Wakelock dello schermo verranno ignorate.</translation>
+<translation id="4882546920824859909">Definisci i domini autorizzati ad accedere a Google Apps</translation>
 <translation id="4890209226533226410">Consente di impostare il tipo di ingrandimento dello schermo da attivare.
 
 Se questa norma viene impostata, consente di stabilire il tipo di ingrandimento dello schermo da attivare. Se la norma viene impostata su "None" l'ingrandimento dello schermo viene disattivato.

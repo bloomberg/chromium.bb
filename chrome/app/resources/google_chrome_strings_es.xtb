@@ -9,7 +9,6 @@
 <translation id="1065672644894730302">No se pueden leer tus preferencias.
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
-<translation id="1073391069195728457">Chrome - Notificaciones</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="123620459398936149">Chrome OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
@@ -105,7 +104,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4147555960264124640">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
-<translation id="4167057906098955729">Aquí puedes ver todas las notificaciones de sitios web, extensiones y aplicaciones de Chrome.</translation>
 <translation id="423410644998903704">Chrome necesita acceder a los permisos para compartirlos con este sitio web.</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Chrome a esta cuenta?</translation>
 <translation id="4309555186815777032">(se debe <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome)</translation>
@@ -118,6 +116,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
 <translation id="4633000520311261472">Para aumentar la seguridad de Chrome, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que podrían haberse añadido sin tu conocimiento.</translation>
+<translation id="4664415150087723341">Se acaba de instalar una actualización de seguridad especial para Google Chrome. Reinicia ahora para que se apliquen los cambios. No te preocupes, restauraremos tus pestañas.</translation>
 <translation id="4700157086864140907">Para que el corrector ortográfico sea más útil, Google Chrome envía lo que escribes en el navegador a los servidores de Google con el fin de poder usar la tecnología de corrección ortográfica de la búsqueda de Google.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
@@ -141,6 +140,7 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada atrás.</translation>
 <translation id="5253588388888612165">Si compartes este ordenador con <ph name="PROFILE_NAME" />, añádete a Chrome como usuario para utilizar una sesión de navegación independiente. Si no, desvincula la cuenta de Google del otro usuario.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome se reiniciará en 1 segundo.}other{Google Chrome se reiniciará en # segundos.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Se ha detectado que este módulo provoca un conflicto con Google Chrome.</translation>
 <translation id="5386244825306882791">También controla qué página se muestra al iniciar Chrome o al hacer búsquedas desde el omnibox.</translation>
@@ -199,7 +199,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7191567847629796517">Google Chrome OS no puede ejecutar una aplicación externa para procesar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - Notificaciones (<ph name="QUANTITY" /> sin leer)</translation>
 <translation id="729375352412857283">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista dejarán de ser compatibles.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7398801000654795464">Habías iniciado sesión en Chrome como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
@@ -235,7 +234,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un fallo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8406086379114794905">Ayuda a mejorar Chrome</translation>
-<translation id="8460191995881063249">Centro de notificaciones de Chrome</translation>
 <translation id="853189717709780425">Estas iniciando sesión con una cuenta administrada, por lo que concedes a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Chrome, como aplicaciones, marcadores, historial, contraseñas y otras opciones quedarán vinculados de forma permanente a <ph name="USER_NAME" />. Podrás eliminar estos datos mediante el panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
@@ -247,6 +245,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8669527147644353129">Ayudante de Google Chrome</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Debes reiniciar Google Chrome ahora.</translation>
 <translation id="8823341990149967727">Chrome no está actualizado</translation>
 <translation id="884296878221830158">También controla qué página se muestra al iniciar Chrome o hacer clic en el botón Página de inicio.</translation>
 <translation id="8851136666856101339">principal</translation>

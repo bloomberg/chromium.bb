@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Thiết lập thư mục dữ liệu người dùng</translation>
 <translation id="1022361784792428773">Các ID tiện ích mà bạn nên ngăn người dùng cài đặt (hoặc * cho tất cả)</translation>
 <translation id="102492767056134033">Đặt trạng thái mặc định của bàn phím ảo trên màn hình đăng nhập</translation>
+<translation id="1040446814317236570">Bật tách URL PAC (cho https://)</translation>
 <translation id="1044878202534415707">Báo cáo thống kê phần cứng chẳng hạn như mức sử dụng CPU/RAM.
 
       Nếu chính sách này được đặt thành false thì thống kê sẽ không được báo cáo.
@@ -901,6 +902,26 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3967075520570946456">Bật hiển thị trang chào mừng vào lần khởi chạy trình duyệt đầu tiên sau khi nâng cấp hệ điều hành.</translation>
 <translation id="3973371701361892765">Không bao giờ tự động ẩn giá</translation>
 <translation id="3984028218719007910">Xác định liệu <ph name="PRODUCT_OS_NAME" /> có lưu dữ liệu tài khoản trên máy sau khi đăng xuất hay không. Nếu được đặt thành đúng, không có tài khoản lâu dài nào được <ph name="PRODUCT_OS_NAME" /> lưu và tất cả các dữ liệu từ phiên của người dùng sẽ bị hủy bỏ sau khi đăng xuất. Nếu chính sách này được đặt thành sai hoặc không được định cấu hình, thiết bị có thể lưu lại dữ liệu người dùng trên máy (được mã hóa).</translation>
+<translation id="3994569321696536679">Bật tính năng
+      đăng nhập bị hạn chế của <ph name="PRODUCT_NAME" /> trong Google Apps và ngăn người
+      dùng thay đổi cài đặt này.
+
+      Nếu bạn xác định cài đặt này, người dùng sẽ chỉ có thể truy cập
+      Google Apps (chẳng hạn như Gmail) bằng tài khoản từ miền cụ thể.
+
+      Cài đặt này sẽ KHÔNG ngăn người dùng đăng nhập trên thiết bị được quản lý
+      yêu cầu xác thực của Google. Người dùng sẽ vẫn được phép
+      đăng nhập vào tài khoản từ các miền khác nhưng họ sẽ gặp lỗi
+      khi cố sử dụng Google Apps bằng những tài khoản đó.
+
+      Nếu bạn để trống/không định cấu hình cài đặt này, người dùng
+      có thể truy cập Google Apps bằng bất kỳ tài khoản nào.
+
+      Chính sách này làm cho tiêu đề X-GoogApps-Allowed-Domains sẽ được thêm vào
+      tất cả các yêu cầu HTTP và HTTPS đối với tất cả các miền google.com như được mô tả trong
+      https://support.google.com/a/answer/1668854.
+
+      Người dùng không thể thay đổi hoặc ghi đè cài đặt này.</translation>
 <translation id="3997519162482760140">URL sẽ được cấp quyền truy cập thiết bị quay video trên các trang đăng nhập SAML</translation>
 <translation id="4001275826058808087">Quản trị viên CNTT của thiết bị doanh nghiệp có thể sử dụng cờ này để kiểm soát xem có cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS hay không.
 
@@ -1114,6 +1135,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này được đặt thành true hoặc không được đặt, khóa chế độ thức màn hình sẽ được đặt để quản lý công suất.
 
           Nếu chính sách này được đặt thành false, yêu cầu khóa chế độ thức màn hình sẽ bị bỏ qua.</translation>
+<translation id="4882546920824859909">Xác định miền được phép truy cập Google Apps</translation>
 <translation id="4890209226533226410">Đặt loại kính lúp màn hình được bật.
 
           Nếu đặt chính sách này, chính sách sẽ kiểm soát loại kính lúp màn hình được bật. Đặt chính sách này thành ''None'' sẽ tắt kính lúp màn hình.

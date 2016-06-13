@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Verzeichnis für Nutzerdaten festlegen</translation>
 <translation id="1022361784792428773">Erweiterungs-IDs, die der Nutzer nicht installieren darf ("*" für alle)</translation>
 <translation id="102492767056134033">Standardstatus für die Bildschirmtastatur auf der Anmeldeseite festlegen</translation>
+<translation id="1040446814317236570">Stripping von PAC-URLs für https:// aktivieren</translation>
 <translation id="1044878202534415707">Mit dieser Richtlinie können Hardwarestatistiken wie CPU/RAM-Auslastung abgerufen werden.
 
       Wenn die Richtlinie auf "false" eingestellt ist, werden keine Statistiken ausgegeben.
@@ -472,6 +473,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="2682225790874070339">Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktivieren</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
+<translation id="2731627323327011390">Verwendung von <ph name="PRODUCT_OS_NAME" />-Zertifikaten für ARC-Apps deaktivieren</translation>
 <translation id="2742843273354638707">Hiermit werden die Chrome Web Store App und der zugehörige Fußzeilenlink auf der "Neuer Tab"-Seite und im App Launcher von <ph name="PRODUCT_OS_NAME" /> ausgeblendet.
 
       Ist diese Richtlinie auf "true" gesetzt, werden die Symbole ausgeblendet.
@@ -847,6 +849,27 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 <translation id="3967075520570946456">Einblendung der Begrüßungsseite beim ersten Start des Browsers nach einer Aktualisierung des Betriebssystems aktivieren</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
+<translation id="3994569321696536679">Aktiviert
+      die eingeschränkte Anmeldefunktion von <ph name="PRODUCT_NAME" /> in Google Apps und
+      verhindert, dass Nutzer diese Einstellung ändern.
+
+      Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der
+      angegebenen Domains auf Google Apps wie Gmail zugreifen.
+
+      Diese Einstellung verhindert NICHT, dass Nutzer sich über ein verwaltetes
+      Gerät anmelden, für das eine Google-Authentifizierung erforderlich ist. Nutzer
+      dürfen sich weiterhin über andere Domains in Konten anmelden. Sie erhalten
+      jedoch Fehlermeldungen, wenn sie versuchen, Google Apps mit diesen
+      Konten zu verwenden.
+
+      Wenn Sie diese Einstellung leer bzw. nicht konfiguriert belassen, können
+      Nutzer über beliebige Konten auf Google Apps zugreifen.
+
+      Durch diese Richtlinie wird der Header "X-GoogApps-Allowed-Domains" – wie
+      in https://support.google.com/a/answer/1668854 beschrieben – an alle HTTP-
+      und HTTPS-Anforderungen an alle google.com-Domains angefügt.
+
+      Nutzer können diese Einstellung nicht ändern oder überschreiben.</translation>
 <translation id="3997519162482760140">URLs, denen auf SAML-Log-in-Seiten Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="4001275826058808087">IT-Administratoren von Unternehmensgeräten können hiermit festlegen, ob Nutzer Angebote über die Chrome OS-Registrierung einlösen können.
 
@@ -1036,6 +1059,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung zugelassen.
 
 Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-Wakelocks ignoriert.</translation>
+<translation id="4882546920824859909">Domains definieren, die auf Google Apps zugreifen dürfen</translation>
 <translation id="4890209226533226410">Hiermit wird der aktivierte Lupentyp festgelegt.
 
           Wenn diese Richtlinie konfiguriert wird, wird damit festgelegt, welcher Lupentyp aktiviert werden soll. Bei Festlegung auf "None" wird die Lupe deaktiviert.
@@ -1685,6 +1709,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
           Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie vorübergehend außer Kraft setzen, indem sie die Lupe aktivieren bzw. deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite erneut angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
 
           Falls diese Richtlinie nicht konfiguriert wird, ist die Lupe deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können die Lupe jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
+<translation id="7249828445670652637"><ph name="PRODUCT_OS_NAME" />-CA-Zertifikate für ARC-Apps aktivieren</translation>
 <translation id="7258823566580374486">Zugangsbeschränkung für Remote-Zugriff-Hosts aktivieren</translation>
 <translation id="7260277299188117560">P2P für automatische Updates aktivieren</translation>
 <translation id="7267809745244694722">Medientasten standardmäßig als Funktionstasten verwenden</translation>
@@ -1796,6 +1821,17 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="7715711044277116530">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung im Präsentationsmodus</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Legt fest, ob Nutzungsdaten an Google gesendet werden. Bei Einstellung auf "true" werden Nutzungsdatenberichte von <ph name="PRODUCT_OS_NAME" /> gesendet. Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, ist das Senden von Datenberichten deaktiviert.</translation>
+<translation id="7723433108978650103">Blockiert den Zugriff auf aufgelistete URLs.
+
+      Diese Richtlinie verhindert, dass Nutzer Webseiten von URLs laden, die auf der schwarzen Liste stehen. Die schwarze Liste enthält URL-Muster, die angeben, welche URLs auf die schwarze Liste kommen.
+
+      Ein URL-Muster muss den unter https://www.chromium.org/administrators/url-blacklist-filter-format beschriebenen Formaten entsprechen.
+
+      Ausnahmen können in Richtlinien für die Whitelist der URLs definiert werden. Diese Richtlinien sind auf 1.000 Einträge begrenzt. Darüber hinausgehende Einträge werden ignoriert.
+
+      Es wird nicht empfohlen, interne "chrome://*"-URLs zu blockieren, da dies zu unerwarteten Fehlern führen kann.
+
+      Wird diese Richtlinie nicht konfiguriert, dann werden im Browser keine URLs zur schwarzen Liste hinzugefügt.</translation>
 <translation id="7749402620209366169">Aktiviert die Zwei-Faktor-Authentifizierung für Remote-Zugriff-Hosts anstelle einer vom Nutzer angegebenen PIN.
 
           Wenn diese Einstellung aktiviert ist, müssen Nutzer einen gültigen Zwei-Faktor-Code angeben, wenn sie auf einen Host zugreifen möchten.
@@ -1862,6 +1898,9 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn diese Richtlinie konfiguriert ist, verhält sie sich so, als wäre "TimezoneAutomaticDetectionUsersDecide" aktiviert.
 
       Ist die Richtlinie "SystemTimezone" aktiviert, wird diese Richtlinie überschrieben. In diesem Fall ist die automatische Erkennung der Zeitzone komplett deaktiviert.</translation>
+<translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
+
+      Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
@@ -1877,6 +1916,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf "True" gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf "False" gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
+<translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
 <translation id="7936098023732125869">Ermöglicht die Verwendung einer Standardsuchmaschine
 
           Ist diese Einstellung aktiviert, wird eine Standardsuche durchgeführt, wenn der Nutzer Text in die Omnibox eingibt, der keine URL ist.

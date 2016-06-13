@@ -232,6 +232,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4089831646916293264">Esta funcionalidade pode interferir com o acesso a serviços de dados premium fornecidos pelo seu operador.</translation>
+<translation id="4099423833822562131">Selecione uma morada para envio para verificar os métodos de envio.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
@@ -279,6 +280,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4690286298542128877">Os separadores são movidos para um comutador de separadores no Chrome.</translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e ficheiros em cache</translation>
+<translation id="4710672574193412565">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronização: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5063480226653192405">Utilização</translation>
+<translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="5107381076085091558">Transferência interrompida.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -376,7 +379,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="585027516397408832">Poupança de dados ativada</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
-<translation id="588563574323093535">Perguntar antes de permitir que os sites entrem no modo de ecrã inteiro (recomendado)</translation>
 <translation id="5899349522111170522">Criar novo ficheiro</translation>
 <translation id="5902828464777634901">Todos os dados armazenados por este Website, incluindo cookies, são eliminados.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
@@ -408,7 +410,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Websites que tenha visitado. Ainda assim, muitos Websites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
-<translation id="6317634962183824346">Sincronização do sistema Android desativada. Reative e tente novamente.</translation>
 <translation id="6324360525379265737">Determinar a codificação de carateres automaticamente</translation>
 <translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encriptação</translation>
@@ -603,7 +604,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
-<translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8812942424849541387">Controle esta funcionalidade nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcadores</translation>

@@ -44,13 +44,13 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2372704305038231957">32-bit Chromium may not function correctly because it is no longer supported on this Linux system. Please upgrade to 64-bit Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{A download is currently in progress. Do you want to cancel the download and exit Chromium?}other{# downloads are currently in progress. Do you want to cancel the downloads and exit Chromium?}}</translation>
 <translation id="2396765026452590966">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chromium.</translation>
+<translation id="2483889755041906834">In Chromium</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2486653164587200256">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2595977381794111014">Use the <ph name="APPS_ICON_IMAGE" /> shortcut in the Chromium bookmarks bar to continue accessing your apps.</translation>
-<translation id="2602806952220118310">Chromium - Notifications</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="2673087257647337101">Nearly up to date! Relaunch Chromium to finish updating.</translation>
@@ -70,7 +70,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>
 <translation id="313551035350905294">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
-<translation id="3244477511402911926">Chromium Notification Center</translation>
 <translation id="3256316712990552818">Copied to Chromium</translation>
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
 
@@ -100,6 +99,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4222580632002216401">You're now signed in to Chromium! Sync is disabled by your administrator.</translation>
 <translation id="4224199872375172890">Chromium is up to date.</translation>
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium will restart in 1 second.}other{Chromium will restart in # seconds.}}</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
@@ -142,6 +142,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6309712487085796862">Chromium is using your camera.</translation>
 <translation id="6334986366598267305">Now it's easier to use Chromium with your Google Account and on shared computers.</translation>
 <translation id="6373523479360886564">Are you sure you want to uninstall Chromium?</translation>
+<translation id="6394232988457703198">You should restart Chromium now.</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
 <translation id="6475912303565314141">It also controls what page is shown when you start Chromium.</translation>
 <translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL" /> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK" />.</translation>
@@ -191,11 +192,11 @@ To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure
 Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
 <translation id="7419987137528340081">If you prefer to keep your existing Chromium data separate, you can create a new Chromium user for <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium requires Windows XP or later. Some features may not work.</translation>
-<translation id="7463979740390522693">Chromium - Notifications (<ph name="QUANTITY" /> unread)</translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
 <translation id="750717762378961310">This file is malicious and Chromium has blocked it.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
+<translation id="7577193603922410712">A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
@@ -208,7 +209,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
-<translation id="805745970029938373">You can see all your notifications from Chromium apps, extensions and websites here.</translation>
 <translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
+<translation id="1683360892415596327">Ta undersøkelsen vår</translation>
 <translation id="1723752762323179280">Avslutter økten</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1812696562331527143">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
@@ -163,6 +164,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6062360702481658777">Du logges automatisk av om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Lader <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Hjelp oss med å forbedre Chromebook</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6203030746557259519">Virtuell skjerm</translation>
@@ -213,6 +215,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="7823564328645135659">Språket er endret fra <ph name="FROM_LOCALE" /> til <ph name="TO_LOCALE" /> etter synkronisering av innstillingene dine.</translation>
 <translation id="785750925697875037">Se mobilkontoen</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
+<translation id="7869829692393275047">Teksten for tilfredshetsundersøkelsen for Chrome OS plasseres her. Teksten for tilfredshetsundersøkelsen for Chrome OS plasseres her. Teksten for tilfredshetsundersøkelsen for Chrome OS plasseres her. Teksten for tilfredshetsundersøkelsen for Chrome OS plasseres her.</translation>
 <translation id="7893838033650689677">Slå på Wi-Fi</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7957227661277029961">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på. Du bør vurdere å bruke den offisielle laderen.</translation>

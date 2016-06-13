@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Participă la sondajul nostru</translation>
 <translation id="1723752762323179280">Se iese din sesiune</translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="1812696562331527143">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terță parte<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6062360702481658777">Veți fi deconectat(ă) automat peste <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Computerul poate fi detectat de dispozitivele Bluetooth din apropiere și va apărea ca „<ph name="NAME" />” cu adresa <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Se încarcă <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Ajută-ne să îmbunătățim Chromebookurile</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6203030746557259519">Afișare virtuală</translation>
@@ -213,6 +215,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="7823564328645135659">După sincronizarea setărilor, limba a fost modificată de la „<ph name="FROM_LOCALE" />” la „<ph name="TO_LOCALE" />”.</translation>
 <translation id="785750925697875037">Afișați contul mobil</translation>
 <translation id="7864539943188674973">Dezactivați Bluetooth</translation>
+<translation id="7869829692393275047">Textul pentru sondajul HaTS privind sistemul de operare Chrome apare aici. Textul pentru sondajul HaTS privind sistemul de operare Chrome apare aici. Textul pentru sondajul HaTS privind sistemul de operare Chrome apare aici. Textul pentru sondajul HaTS privind sistemul de operare Chrome apare aici.</translation>
 <translation id="7893838033650689677">Activează Wi-Fi</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7957227661277029961">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit. Îți recomandăm să folosești încărcătorul oficial.</translation>

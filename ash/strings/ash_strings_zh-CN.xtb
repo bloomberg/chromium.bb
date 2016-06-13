@@ -26,7 +26,8 @@
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
 <translation id="164969095109328410">Chrome设备</translation>
-<translation id="1677472565718498478">电池电量将于 <ph name="TIME" /> 后耗尽</translation>
+<translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
+<translation id="1683360892415596327">参与我们的调查</translation>
 <translation id="1723752762323179280">退出会话</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID" />”*（<ph name="BEGIN_LINK" />第三方<ph name="END_LINK" />）。
@@ -117,7 +118,7 @@
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。</translation>
-<translation id="453661520163887813">还需 <ph name="TIME" /> 才能将电池充满电</translation>
+<translation id="453661520163887813"><ph name="TIME" /> 后充满</translation>
 <translation id="4544944664594876241">用于锁定屏幕的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">您将在<ph name="LOGOUT_TIME_LEFT" />后自动退出。</translation>
 <translation id="607652042414456612">附近的蓝牙设备可检测到您的计算机（名称将显示为“<ph name="NAME" />”，地址为<ph name="ADDRESS" />）</translation>
 <translation id="6106745654298855237">正在为“<ph name="POWER_SOURCE" />”充电</translation>
+<translation id="6144938890088808325">帮助我们改进 Chromebook</translation>
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6203030746557259519">虚拟显示器</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE" />”更改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="785750925697875037">查看移动帐户</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
+<translation id="7869829692393275047">Chrome 操作系统 HaTS 调查文本会显示在此处。Chrome 操作系统 HaTS 调查文本会显示在此处。Chrome 操作系统 HaTS 调查文本会显示在此处。Chrome 操作系统 HaTS 调查文本会显示在此处。</translation>
 <translation id="7893838033650689677">开启 Wi-Fi</translation>
 <translation id="7904094684485781019">此帐户的管理员已停用多帐户登录。</translation>
 <translation id="7957227661277029961">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。建议您使用原装充电器。</translation>

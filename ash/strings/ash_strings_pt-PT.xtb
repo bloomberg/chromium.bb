@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
+<translation id="1683360892415596327">Participar no nosso questionário</translation>
 <translation id="1723752762323179280">A sair da sessão</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1812696562331527143">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6062360702481658777">A sessão será terminada automaticamente dentro de <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Ajude-nos a melhorar os Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6203030746557259519">Ecrã virtual</translation>
@@ -213,6 +215,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="7823564328645135659">O idioma foi alterado de <ph name="FROM_LOCALE" /> para <ph name="TO_LOCALE" /> depois de sincronizar as suas definições.</translation>
 <translation id="785750925697875037">Ver conta do telemóvel</translation>
 <translation id="7864539943188674973">Desativar Bluetooth</translation>
+<translation id="7869829692393275047">Texto do inquérito HaTS sobre o SO Chrome aqui. Texto do inquérito HaTS sobre o SO Chrome aqui. Texto do inquérito HaTS sobre o SO Chrome aqui. Texto do inquérito HaTS sobre o SO Chrome aqui.</translation>
 <translation id="7893838033650689677">Ligar Wi-Fi</translation>
 <translation id="7904094684485781019">O administrador desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7957227661277029961">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado. Considere utilizar o carregador oficial.</translation>

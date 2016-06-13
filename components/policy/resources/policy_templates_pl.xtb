@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
 <translation id="102492767056134033">Ustaw domyślny stan klawiatury ekranowej na ekranie logowania</translation>
+<translation id="1040446814317236570">Włącz wycinanie adresów URL PAC (na potrzeby https://)</translation>
 <translation id="1044878202534415707">Raportuj statystki sprzętu, np. użycie procesora i pamięci RAM.
 
       Jeśli ta zasada jest wyłączona, statystyki nie będą raportowane.
@@ -850,6 +851,26 @@
 <translation id="3967075520570946456">Włącz wyświetlanie strony powitalnej przy pierwszym uruchomieniu przeglądarki po uaktualnieniu systemu operacyjnego.</translation>
 <translation id="3973371701361892765">Nigdy nie autoukrywaj półki</translation>
 <translation id="3984028218719007910">Określa, czy <ph name="PRODUCT_OS_NAME" /> przechowuje po wylogowaniu dane konta lokalnego. W przypadku włączenia trwałe konta nie są przechowywane przez <ph name="PRODUCT_OS_NAME" /> i po wylogowaniu wszystkie dane z sesji użytkownika są usuwane. Jeśli ta zasada będzie wyłączona lub nieskonfigurowana, urządzenie może przechowywać zaszyfrowane lokalne dane użytkownika.</translation>
+<translation id="3994569321696536679">Włącza w <ph name="PRODUCT_NAME" />
+      funkcję ograniczonego logowania w Google Apps for Work i nie pozwala 
+      użytkownikom zmieniać tego ustawienia.
+
+      Jeśli skonfigurujesz to ustawienie, użytkownik będzie mógł uzyskiwać dostęp do
+      Google Apps for Work (np. do Gmaila) tylko za pomocą kont z określonych domen.
+
+      To ustawienie NIE uniemożliwia użytkownikowi logowania się na urządzeniu 
+      zarządzanym wymagającym uwierzytelniania Google. Użytkownik nadal będzie
+      mógł logować się na konta z innych domen, ale jeśli spróbuje na tych
+      kontach skorzystać z Google Apps for Work, napotka błąd.
+
+      Jeśli pozostawisz to ustawienie puste/nieskonfigurowane, użytkownik będzie
+      mógł uzyskiwać dostęp do Google Apps for Work z dowolnego konta.
+
+      Ta zasada powoduje, że do wszystkich żądań HTTP i HTTPS dotyczących wszystkich
+      domen google.com jest dodawany nagłówek X-GoogApps-Allowed-Domains,
+      zgodnie z opisem na https://support.google.com/a/answer/1668854
+
+      Użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.</translation>
 <translation id="3997519162482760140">Adresy URL, które będą mieć dostęp do urządzeń rejestrujących wideo na stronach logowania SAML</translation>
 <translation id="4001275826058808087">Administratorzy IT urządzeń firmowych mogą przy użyciu tej flagi określić, czy użytkownicy mogą korzystać z ofert w procesie rejestracji systemu operacyjnego Chrome.
 
@@ -1041,6 +1062,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada wybudzania ekranu będzie respektowana w celu zarządzania energią.
 
           Jeśli ma ona ustawienie Fałsz, blokada wybudzania ekranu będzie ignorowana.</translation>
+<translation id="4882546920824859909">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do Google Apps for Work</translation>
 <translation id="4890209226533226410">Ustawia włączony typ lupy.
 
           Jeśli ta zasada jest ustawiona, określa typ lupy, który jest włączony. Ustawienie zasady jako „Brak” wyłącza lupę.
@@ -1809,7 +1831,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Nie zalecamy blokowania dostępu do wewnętrznych adresów „chrome://*”, bo może to prowadzić do wystąpienia nieoczekiwanych błędów.
 
-      Jeśli nie ustawisz tej zasady, żadne adresy URL nie będą blokowane w przeglądarce.</translation>
+      Jeśli nie ustawisz tej zasady, w przeglądarce nie będą blokowane żadne adresy URL.</translation>
 <translation id="7749402620209366169">Pozwala włączyć uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu zamiast stosowania PIN-u określanego przez użytkownika.
 
           Jeśli to ustawienie jest włączone, podczas uzyskiwania dostępu do hosta użytkownicy muszą podać prawidłowy kod dwuskładnikowy.

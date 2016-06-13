@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1021451612696613363">Đăng nhập để xem thông báo</translation>
 <translation id="111910763555783249">Cài đặt thông báo</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ngày trước}other{# ngày trước}}</translation>
 <translation id="1167268268675672572">Di chuyển tới đầu dòng và sửa đổi lựa chọn</translation>
@@ -10,6 +11,7 @@
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1413622004203049571">Tắt thông báo từ <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
+<translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1781701194097416995">Di chuyển sang bên trái từ</translation>
@@ -119,13 +121,11 @@
 <translation id="7814458197256864873">Sao &amp;chép</translation>
 <translation id="7850320739366109486">Không làm phiền</translation>
 <translation id="7907591526440419938">Mở Tệp</translation>
-<translation id="7960078400008666149">Không làm phiền trong một giờ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 giờ trước}other{# giờ trước}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="815598010540052116">Cuộn Xuống</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Trang Dưới</translation>
-<translation id="8226233771743600312">Không làm phiền trong một ngày</translation>
 <translation id="8328145009876646418">Cạnh Bên trái</translation>
 <translation id="8331626408530291785">Cuộn Lên</translation>
 <translation id="8371695176452482769">Nói ngay bây giờ</translation>

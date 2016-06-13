@@ -232,6 +232,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="4089831646916293264">Det kan hända att den här funktionen förhindrar åtkomst till premiumdatatjänster från operatören.</translation>
+<translation id="4099423833822562131">Välj en leveransadress om du vill visa leveranssätt.</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="410351446219883937">Automatisk uppspelning</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
@@ -279,6 +280,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4690286298542128877">Flikar flyttas till en funktion för flikbyte i Chrome.</translation>
 <translation id="4698413471314543145">Det saknas viktiga funktioner i din version som krävs för att Chrome ska kunna köras. Antingen har installationen av Chrome inte slutförts eller så är Chrome och den här versionen av Android inte kompatibla.</translation>
 <translation id="4699172675775169585">Cachade bilder och filer</translation>
+<translation id="4710672574193412565">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="4720023427747327413">Öppna i <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4738836084190194332">Synkroniserades senast: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5040262127954254034">Sekretess</translation>
 <translation id="5056549851600133418">Artiklar för dig</translation>
 <translation id="5063480226653192405">Användning</translation>
+<translation id="5087580092889165836">Lägg till kort</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="5107381076085091558">Nedladdning pausad.</translation>
 <translation id="5118713593561876160">Intressen</translation>
@@ -376,7 +379,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="585027516397408832">Databesparing har aktiverats</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
-<translation id="588563574323093535">Fråga innan webbplatser tillåts att använda helskärmsläge (rekommenderas)</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
@@ -408,7 +410,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
-<translation id="6317634962183824346">Synkronisering av Android-systemet har inaktiverats. Aktivera och försök igen.</translation>
 <translation id="6324360525379265737">Identifiera automatiskt vilken teckenkodning som används</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Kryptering</translation>
@@ -603,7 +604,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
-<translation id="8793430725658173476">Kopiera webbadress</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8812942424849541387">Styr hur det fungerar i <ph name="BEGIN_LINK1" />Inställningar<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bokmärken</translation>

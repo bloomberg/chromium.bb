@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1021451612696613363">Logga in om du vill visa aviseringarna</translation>
 <translation id="111910763555783249">Aviseringsinställningar</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1167268268675672572">Flytta till radens början och ändra markeringen</translation>
@@ -10,6 +11,7 @@
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1413622004203049571">Inaktivera aviseringar från <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
+<translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}other{# minuter}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1781701194097416995">Flytta ett ord åt vänster</translation>
@@ -119,13 +121,11 @@
 <translation id="7814458197256864873">&amp;Kopiera</translation>
 <translation id="7850320739366109486">Stör inte</translation>
 <translation id="7907591526440419938">Öppna fil</translation>
-<translation id="7960078400008666149">Stör inte i en timme</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{för 1 timme sedan}other{för # timmar sedan}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek kvar}other{# sek kvar}}</translation>
 <translation id="815598010540052116">Rulla nedåt</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
-<translation id="8226233771743600312">Stör inte i en dag</translation>
 <translation id="8328145009876646418">Vänsterkant</translation>
 <translation id="8331626408530291785">Rulla uppåt</translation>
 <translation id="8371695176452482769">Prata nu</translation>

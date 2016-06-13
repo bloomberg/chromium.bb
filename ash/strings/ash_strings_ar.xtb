@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏جهاز Chrome</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
+<translation id="1683360892415596327">شارك معنا في الاستبيان</translation>
 <translation id="1723752762323179280">جارٍ الخروج من الجلسة</translation>
 <translation id="1747827819627189109">تم تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="1812696562331527143">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />جهة خارجية<ph name="END_LINK" />).
@@ -161,6 +162,7 @@
 <translation id="6062360702481658777">سيتم تسجيل خروجك تلقائيًا في غضون <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ "<ph name="NAME" />" بالعنوان <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">جارٍ شحن <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">‏ساعدنا في تحسين أجهزة Chromebook</translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6203030746557259519">العرض الظاهري</translation>
@@ -210,6 +212,7 @@
 <translation id="7823564328645135659">تم تغيير اللغة من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة إعداداتك.</translation>
 <translation id="785750925697875037">عرض حساب الجوال</translation>
 <translation id="7864539943188674973">تعطيل البلوتوث</translation>
+<translation id="7869829692393275047">‏نص استبيان Chrome OS HaTS هنا. نص استبيانChrome OS HaTS هنا. نص استبيان Chrome OS HaTS هنا. نص استبيانChrome OS HaTS هنا.</translation>
 <translation id="7893838033650689677">‏تشغيل شبكة Wi-Fi</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7957227661277029961">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل. ضع في اعتبارك استخدام الشاحن الأساسي.</translation>

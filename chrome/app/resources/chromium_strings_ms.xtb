@@ -42,13 +42,13 @@
 <translation id="2372704305038231957">Chromium 32 bit mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi. Sila tingkatkan kepada Chromium 64 bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}}</translation>
 <translation id="2396765026452590966">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
+<translation id="2483889755041906834">Dalam Chromium</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2486653164587200256">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista.</translation>
 <translation id="2535480412977113886">OS Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2595977381794111014">Gunakan pintasan <ph name="APPS_ICON_IMAGE" /> dalam bar penanda halaman Chromium untuk terus mengakses apl anda.</translation>
-<translation id="2602806952220118310">Chromium - Pemberitahuan</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk mengongsinya dengan tapak ini.</translation>
 <translation id="2648074677641340862">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Chromium semula.</translation>
 <translation id="2673087257647337101">Hampir terkini! Lancarkan semula Chromium untuk selesai mengemas kini.</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">Chromium menggunakan mikrofon anda.</translation>
 <translation id="313551035350905294">Anda log masuk menggunakan akaun terurus dan memberikan kawalan atas profil Chromium anda kepada pentadbirnya. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain.</translation>
 <translation id="3190315855212034486">Alamak! Chromium mengalami ranap sistem. Lancarkan semula sekarang?</translation>
-<translation id="3244477511402911926">Pusat Pemberitahuan Chromium</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="3258596308407688501">Chromium tidak dapat membaca atau menulis pada direktori datanya:
 
@@ -98,6 +97,7 @@
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4224199872375172890">Chromium telah dikemas kini</translation>
 <translation id="4230135487732243613">Paut data Chromium anda ke akaun ini?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium akan dimulakan semula dalam 1 saat.}other{Chromium akan dimulakan semula dalam # saat.}}</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
@@ -140,6 +140,7 @@
 <translation id="6309712487085796862">Chromium menggunakan kamera anda.</translation>
 <translation id="6334986366598267305">Kini lebih mudah menggunakan Chromium dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
+<translation id="6394232988457703198">Anda perlu memulakan semula Chromium sekarang.</translation>
 <translation id="6403826409255603130">Chromium merupakan penyemak imbas yang mengendalikan laman web dan aplikasi dengan kelajuan sepantas kilat. Chromium cepat, stabil dan mudah digunakan. Semak imbas web lebih selamat dengan perlindungan perisian hasad dan pancingan data terbina dalam Chromium.</translation>
 <translation id="6475912303565314141">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
@@ -189,11 +190,11 @@ Untuk menghalang <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, p
 Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</translation>
 <translation id="7419987137528340081">Jika anda memilih untuk menyimpan data Chromium yang sedia ada secara berasingan, anda boleh membuat pengguna Chromium baharu untuk <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
-<translation id="7463979740390522693">Chromium - Pemberitahuan (<ph name="QUANTITY" /> belum dibaca)</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
 <translation id="750717762378961310">Fail ini bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="7549178288319965365">Mengenai Chromium OS</translation>
+<translation id="7577193603922410712">Kemas kini keselamatan khas untuk Chromium baru sahaja dilakukan; anda perlu memulakan semula peranti ini sekarang supaya kemas kini ini berkesan (kami akan memulihkan tab anda).</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon anda.</translation>
 <translation id="7617377681829253106">Chromium kini lebih baik</translation>
 <translation id="7641113255207688324">Chromium bukan penyemak imbas lalai anda.</translation>
@@ -206,7 +207,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7979877361127045932">Sembunyikan dalam menu Chromium</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium memerlukan akses kebenaran untuk mengongsinya dengan tapak ini.</translation>
-<translation id="805745970029938373">Anda boleh melihat semua pemberitahuan anda dari apl, sambungan dan tapak web Chromium di sini.</translation>
 <translation id="8134284582177628525">Jika anda berkongsi komputer ini dengan <ph name="PROFILE_NAME" /> , tambahkan diri anda pada Chromium menyemak imbas secara berasingan. Jika tidak, putuskan sambungan Akaun Googlenya.</translation>
 <translation id="8269379391216269538">Bantu menjadikan Chromium lebih baik</translation>
 <translation id="8453117565092476964">Arkib pemasang rosak atau tidak sah. Sila muat turun Chromium sekali lagi.</translation>

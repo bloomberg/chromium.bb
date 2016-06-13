@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Setează directorul pentru datele utilizatorului</translation>
 <translation id="1022361784792428773">ID-urile extensiilor pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
 <translation id="102492767056134033">Setați starea prestabilită a tastaturii pe ecran din ecranul de conectare</translation>
+<translation id="1040446814317236570">Activează eliminarea unor părți din adresele URL pentru PAC (pentru https://)</translation>
 <translation id="1044878202534415707">Raportează statisticile privind hardware-ul cum ar fi utilizarea CPU/RAM.
 
       Dacă politica este dezactivată, statisticile nu vor fi raportate.
@@ -866,6 +867,26 @@
 <translation id="3967075520570946456">Activează afișarea paginii de întâmpinare la prima lansare a browserului după upgrade-ul sistemului de operare.</translation>
 <translation id="3973371701361892765">Nu ascundeți niciodată automat raftul</translation>
 <translation id="3984028218719007910">Această politică stabilește dacă <ph name="PRODUCT_OS_NAME" /> păstrează datele contului local după deconectare. Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va păstra conturi persistente, iar toate datele din sesiunea utilizatorului vor fi eliminate după deconectare. Dacă această politică nu este activată sau nu este configurată, dispozitivul poate păstra (criptate) datele locale ale utilizatorului.</translation>
+<translation id="3994569321696536679">Activează funcția de conectare restricționată
+      la Google Apps for Work din <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să
+      modifice această setare.
+
+      Dacă definești această setare, utilizatorul va putea accesa 
+      Google Apps for Work (cum ar fi Gmail) numai folosind conturi din domeniile specificate.
+
+      Această setare NU va împiedica utilizatorul să se conecteze pe un dispozitiv gestionat de un administrator,
+      care necesită autentificarea cu un cont Google. Utilizatorul va avea în continuare permisiunea
+      să se conecteze la conturi din alte domenii, dar i se va afișa o eroare
+      când încearcă să folosească Google Apps for Work cu acele conturi.
+
+      Dacă lași această setare necompletată/neconfigurată, utilizatorul va putea să
+      acceseze Google Apps for Work cu orice cont.
+
+      Această politică determină anexarea antetului X-GoogApps-Allowed-Domains la
+      toate solicitările HTTP și HTTPS pentru toate domeniile google.com, așa cum se descrie la
+      https://support.google.com/a/answer/1668854.
+
+      Utilizatorii nu pot modifica sau anula această setare.</translation>
 <translation id="3997519162482760140">Adresele URL cărora li se va acorda acces la dispozitivele de capturare a conținutului video pe paginile de conectare SAML</translation>
 <translation id="4001275826058808087">Administratorii IT pentru dispozitivele companiei pot utiliza acest marcaj pentru a controla dacă utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
@@ -1055,6 +1076,7 @@
           Dacă această politică este activată sau nu este configurată, se va bloca activarea ecranului pentru gestionarea consumului de energie.
 
           Dacă această politică este dezactivată, solicitările de blocare a activării ecranului vor fi ignorate.</translation>
+<translation id="4882546920824859909">Definește domeniile care au permisiunea să acceseze Google Apps for Work</translation>
 <translation id="4890209226533226410">Setați tipul lupei pentru ecran activate.
 
           Dacă această politică este configurată, ea controlează tipul lupei pentru ecran activate. Setarea politicii la „Fără” dezactivează lupa pentru ecran.
@@ -1832,7 +1854,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Politica împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
 
-      Un șablon de adrese URL trebuie fie formatat conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format.
+      Un șablon de adrese URL trebuie să fie formatat conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format.
 
       Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate
 

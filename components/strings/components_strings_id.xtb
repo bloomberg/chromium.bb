@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1753706481035618306">Nomor laman</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">File Tak Dikenal</translation>
 <translation id="2413528052993050574">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2455981314101692989">Laman web ini telah menonaktifkan pengisian otomatis untuk formulir ini.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Jalankan Diagnostik Jaringan<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL penelusuran tidak valid.</translation>
 <translation id="2491120439723279231">Sertifikat server mengandung kesalahan.</translation>
 <translation id="2495083838625180221">Pengurai JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Minta izin</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Konektivitas<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Hapus item yang dipilih</translation>
 <translation id="277499241957683684">Catatan perangkat hilang</translation>
 <translation id="2778107779445548489">Anda melihat pesan ini karena orang tua memblokir situs ini.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat laman ini.</translation>
 <translation id="3118046075435288765">Server tiba-tiba memutuskan sambungan.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Konektivitas<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Gagal mendekodekan tanggapan</translation>
 <translation id="3147485256806412701">Situs ini menggunakan domain tingkat atas generik baru.</translation>
 <translation id="3150653042067488994">Kesalahan server sementara</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Sembunyikan detail</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Klien dan server tidak mendukung versi protokol SSL umum atau cipher suite. Hal ini mungkin terjadi ketika server memerlukan RC4, yang sudah dianggap tidak aman.</translation>
 <translation id="3609138628363401169">Server tidak mendukung ekstensi negosiasi ulang TLS.</translation>
+<translation id="36224234498066874">Hapus Data Perambanan...</translation>
 <translation id="362276910939193118">Tampilkan Riwayat Lengkap</translation>
 <translation id="3623476034248543066">Tampilkan nilai</translation>
 <translation id="3630155396527302611">Jika sudah tercantum sebagai program yang diizinkan untuk mengakses jaringan,
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Periksa konfigurasi antivirus dan firewall<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kerusakan</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="425582637250725228">Perubahan yang Anda lakukan mungkin tidak disimpan.</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> dicekal</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Sambungan Anda terganggu</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Jalankan Diagnostik Jaringan Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
@@ -569,6 +575,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="7445762425076701745">Identitas server yang Anda sambungkan tidak dapat divalidasi sepenuhnya. Anda terhubung ke server menggunakan nama yang hanya valid dalam jaringan Anda, yang mana otoritas sertifikat eksternal sama sekali tidak dapat memvalidasi kepemilikannya. Karena sejumlah otoritas sertifikat akan tetap menerbitkan sertifikat untuk nama tersebut, tidak dapat dipastikan apakah Anda akan tersambung ke situs web yang dimaksudkan dan bahwa tidak akan ada penyerang.</translation>
 <translation id="7450732239874446337">IO jaringan ditangguhkan.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7481312909269577407">Maju</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="7514365320538308">Unduh</translation>
@@ -709,6 +716,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="9039213469156557790">Selain itu, laman ini berisi sumber daya lainnya yang tidak aman. Sumber daya ini dapat dilihat oleh orang lain saat transit dan dapat dimodifikasi oleh penyerang untuk mengubah perilaku laman.</translation>
 <translation id="9049981332609050619">Anda berupaya menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang tidak valid.</translation>
 <translation id="9050666287014529139">Frasa sandi</translation>
+<translation id="9065203028668620118">Edit</translation>
 <translation id="9092364396508701805">Laman <ph name="HOST_NAME" /> tidak bekerja</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9125941078353557812">Masukkan 3 digit CVC di belakang kartu Anda</translation>

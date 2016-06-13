@@ -43,13 +43,13 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2372704305038231957">Chromium 32 bits risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur ce système Linux. Veuillez passer à Chromium 64 bits.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Chromium ?}}</translation>
 <translation id="2396765026452590966">L'extension <ph name="EXTENSION_NAME" /> a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
+<translation id="2483889755041906834">Dans Chromium</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2486653164587200256">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="2535480412977113886">Impossible de synchroniser vos données dans Chromium OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="2558641060352364164">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2595977381794111014">Utilisez le raccourci <ph name="APPS_ICON_IMAGE" /> dans la barre de favoris Chromium pour continuer d'accéder à vos applications.</translation>
-<translation id="2602806952220118310">Notifications – Chromium</translation>
 <translation id="2636877269779209383">Chromium doit accéder à la caméra pour la partager avec ce site.</translation>
 <translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite pendant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="2673087257647337101">Mise à jour presque terminée. Relancez Chromium pour terminer la mise à jour.</translation>
@@ -69,7 +69,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3130323860337406239">Votre micro est en cours d'utilisation dans Chromium.</translation>
 <translation id="313551035350905294">Vous vous connectez à un compte géré et donnez le contrôle de votre profil Chromium à son administrateur. Vos données Chromium (applications, favoris, historique, mots de passe et d'autres paramètres) seront définitivement liées à <ph name="USER_NAME" />. Vous pourrez supprimer ces données via le tableau de bord Comptes Google, mais vous ne pourrez pas les associer à un autre compte.</translation>
 <translation id="3190315855212034486">Chromium est bloqué. Voulez-vous le relancer maintenant ?</translation>
-<translation id="3244477511402911926">Centre de notifications Chromium</translation>
 <translation id="3256316712990552818">Copié dans Chromium</translation>
 <translation id="3258596308407688501">Chromium ne peut ni lire, ni écrire dans son répertoire de données :
 
@@ -99,6 +98,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4222580632002216401">Vous êtes maintenant connecté à Chromium. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="4224199872375172890">Chromium est à jour.</translation>
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium va redémarrer dans 1 seconde}one{Chromium va redémarrer dans # seconde}other{Chromium va redémarrer dans # secondes}}</translation>
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="4330585738697551178">Ce module n'est pas compatible avec Chromium.</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
@@ -141,6 +141,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6309712487085796862">Votre webcam est en cours d'utilisation dans Chromium.</translation>
 <translation id="6334986366598267305">Il est désormais plus facile d'utiliser Chromium avec votre compte Google et sur des ordinateurs partagés.</translation>
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
+<translation id="6394232988457703198">Redémarrez Chromium maintenant</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
 <translation id="6475912303565314141">Elle contrôle également la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
@@ -190,11 +191,11 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
 <translation id="7419987137528340081">Si vous préférez conserver vos données Chromium à part, vous pouvez créer un utilisateur Chromium pour <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
-<translation id="7463979740390522693">Notifications – Chromium (<ph name="QUANTITY" /> non lues)</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="750717762378961310">Ce fichier est malveillant. Il a donc été bloqué dans Chromium.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
+<translation id="7577193603922410712">Une mise à jour spéciale de sécurité pour Chromium vient d'être installée. Redémarrez maintenant pour qu'elle soit prise en compte (vos onglets seront restaurés).</translation>
 <translation id="761356813943268536">Votre webcam et votre micro sont en cours d'utilisation dans Chromium.</translation>
 <translation id="7617377681829253106">Chromium s'est amélioré</translation>
 <translation id="7641113255207688324">Chromium n'est pas votre navigateur par défaut.</translation>
@@ -207,7 +208,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8033665941300843262">Chromium doit accéder aux autorisations pour les partager avec ce site.</translation>
-<translation id="805745970029938373">Vous pouvez consulter ici toutes les notifications associées aux applications, aux extensions et aux sites Web Chromium.</translation>
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME" />, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="8269379391216269538">Aidez-nous à améliorer Chromium</translation>
 <translation id="8453117565092476964">L'archive du programme d'installation est corrompue ou n'est pas valide. Veuillez télécharger Chromium à nouveau.</translation>

@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnósticos de red de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Archivo desconocido</translation>
 <translation id="2413528052993050574">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" /> y se podría rechazar su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="2455981314101692989">Esta página ha inhabilitado la opción de autocompletar para este formulario.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">La URL de búsqueda no es válida.</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
 <translation id="2495083838625180221">Analizador de archivos JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Solicitar permiso</translation>
 <translation id="2721148159707890343">Solicitud correcta</translation>
 <translation id="2728127805433021124">El certificado del servidor está firmado con un algoritmo de firma no seguro.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Ejecutar Diagnóstico de conectividad<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Eliminar elementos seleccionados</translation>
 <translation id="277499241957683684">Falta un registro de dispositivo.</translation>
 <translation id="2778107779445548489">Este mensaje aparece porque uno de tus padres ha bloqueado este sitio web.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
 <translation id="3118046075435288765">El servidor ha cerrado la conexión de forma inesperada.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnóstico de conectividad<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Error al decodificar respuesta</translation>
 <translation id="3147485256806412701">Este sitio utiliza un nuevo dominio genérico de nivel superior.</translation>
 <translation id="3150653042067488994">Error de servidor temporal</translation>
@@ -244,15 +248,15 @@
 <translation id="3528171143076753409">El certificado de servidor no es de confianza.</translation>
 <translation id="3539171420378717834">Guardar una copia de la tarjeta en este dispositivo</translation>
 <translation id="3542684924769048008">Utilizar contraseña para:</translation>
-<translation id="3549644494707163724">Encriptar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
+<translation id="3549644494707163724">Cifrar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> más...</translation>
 <translation id="3566021033012934673">La conexión no es privada</translation>
 <translation id="3583757800736429874">&amp;Rehacer movimiento</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
 <translation id="3587482841069643663">Todo</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">El cliente y el servidor no utilizan la misma versión del protocolo SSL o de conjunto de cifrado. Normalmente esto sucede cuando el servidor necesita RC4, que ha dejado de considerarse seguro.</translation>
 <translation id="3609138628363401169">El servidor no admite la modificación de renegociación de seguridad de la capa de transporte.</translation>
+<translation id="36224234498066874">Eliminar datos de navegación...</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3630155396527302611">Si ya está incluido como programa autorizado para acceder a la red,
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">La página no responde o se cierra</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnósticos de red<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">Es posible que los cambios no se guarden.</translation>
 <translation id="4258748452823770588">Firma errónea</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651">Se ha bloqueado la página <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se ha interrumpido la conexión</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Ruta del ejecutable</translation>
@@ -382,7 +388,7 @@
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5122371513570456792">Se han encontrado <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para "<ph name="SEARCH_STRING" />".</translation>
-<translation id="5141240743006678641">Encriptar contraseñas sincronizadas con tus credenciales de Google</translation>
+<translation id="5141240743006678641">Cifrar contraseñas sincronizadas con tus credenciales de Google</translation>
 <translation id="5145883236150621069">Código de error presente en respuesta de la política</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5172758083709347301">Equipo</translation>
@@ -493,7 +499,7 @@
 <translation id="6529602333819889595">&amp;Rehacer eliminación</translation>
 <translation id="6533019874004191247">URL no compatible</translation>
 <translation id="6550675742724504774">Configuración</translation>
-<translation id="6596325263575161958">Opciones de encriptación</translation>
+<translation id="6596325263575161958">Opciones de cifrado</translation>
 <translation id="6610562986279010327">Chrome no puede abrir esta URL</translation>
 <translation id="662080504995468778">Seguir aquí</translation>
 <translation id="6626108645084335023">Esperando investigación de DNS.</translation>
@@ -569,6 +575,7 @@
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar por completo. Estás conectado a un servidor con un nombre que solo es válido en tu red y cuya propiedad no puede validar en modo alguno una entidad emisora de certificados externa. A pesar de ello, algunas entidades emisoras emiten certificados para esos nombres, por lo que no es posible garantizar que estés conectado al sitio web deseado, en lugar de a un atacante.</translation>
 <translation id="7450732239874446337">Se ha suspendido el envío y la recepción de datos a través de la red.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Consultar más información<ph name="END_LINK" /> sobre este problema</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7485870689360869515">No se han encontrado datos.</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -709,6 +716,7 @@
 <translation id="9039213469156557790">Además, esta página incluye otros recursos que no son seguros. Otros usuarios pueden acceder a estos recursos mientras están en circulación y un atacante puede modificarlos para cambiar el comportamiento de la página.</translation>
 <translation id="9049981332609050619">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado no válido.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
+<translation id="9065203028668620118">Editar</translation>
 <translation id="9092364396508701805">La página <ph name="HOST_NAME" /> no funciona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9125941078353557812">Introduce el código CVC de tres dígitos que aparece en el reverso de tu tarjeta</translation>

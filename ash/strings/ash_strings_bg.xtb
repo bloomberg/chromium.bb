@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Устройство с Chrome</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Участвайте в проучването ни</translation>
 <translation id="1723752762323179280">Излизане от сесията</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трета страна<ph name="END_LINK" />).
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Зарежда се <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Помогнете ни да подобрим Chromebook</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6203030746557259519">Виртуален дисплей</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ след синхронизирането на настройките ви.</translation>
 <translation id="785750925697875037">Преглед на мобилния профил</translation>
 <translation id="7864539943188674973">Деактивиране на Bluetooth</translation>
+<translation id="7869829692393275047">Текст на проучването за проследяване на удовлетвореността от Chrome OS.</translation>
 <translation id="7893838033650689677">Включване на Wi-Fi</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7957227661277029961">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен. Добре е да използвате оригиналното зарядно устройство.</translation>

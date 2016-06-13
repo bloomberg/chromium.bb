@@ -44,13 +44,13 @@
 <translation id="2372704305038231957">32-битни Chromium неће исправно функционисати зато што више није подржан на овом Linux систему. Надоградите Chromium на 64-битну верзију.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Преузимање је у току. Желите ли да откажете преузимање и да изађете из Chromium-а?}one{# преузимање је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}few{# преузимања су у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}other{# преузимања је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}}</translation>
 <translation id="2396765026452590966">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chromium.</translation>
+<translation id="2483889755041906834">У Chromium-у</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2486653164587200256">Chromium можда неће исправно функционисати зато што више није подржан на Windows XP-у или Windows Vista-и.</translation>
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>
 <translation id="2595977381794111014">Користите пречицу за <ph name="APPS_ICON_IMAGE" /> у Chromium траци са обележивачима да бисте наставили да приступате апликацијама.</translation>
-<translation id="2602806952220118310">Chromium – Обавештења</translation>
 <translation id="2636877269779209383">Chromium захтева приступ камери да би је делио са овим сајтом.</translation>
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
 <translation id="2673087257647337101">Скоро ажурирано! Покрените поново Chromium да бисте довршили ажурирање.</translation>
@@ -70,7 +70,6 @@
 <translation id="3130323860337406239">Chromium користи микрофон.</translation>
 <translation id="313551035350905294">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са корисником <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом.</translation>
 <translation id="3190315855212034486">Опа! Chromium је отказао. Желите ли да га одмах поново покренете?</translation>
-<translation id="3244477511402911926">Chromium центар за обавештења</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чита податке из директоријума са подацима нити да их уписује у њега:
 
@@ -100,6 +99,7 @@
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium ће се поново покренути за 1 секунду.}one{Chromium ће се поново покренути за # секунду.}few{Chromium ће се поново покренути за # секунде.}other{Chromium ће се поново покренути за # секунди.}}</translation>
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
@@ -142,6 +142,7 @@
 <translation id="6309712487085796862">Chromium користи камеру.</translation>
 <translation id="6334986366598267305">Сада можете лакше да користите Chromium са Google налогом и на дељеним рачунарима.</translation>
 <translation id="6373523479360886564">Јесте ли сигурни да желите да деинсталирате Chromium?</translation>
+<translation id="6394232988457703198">Сада треба поново да покренете Chromium.</translation>
 <translation id="6403826409255603130">Chromium је веб прегледач који покреће веб-странице и апликације муњевитом брзином. Брз је, стабилан и једноставан за коришћење. Прегледајте Веб безбедније са заштитом од малвера и „пецања“ која је уграђена у Chromium.</translation>
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
@@ -183,7 +184,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="734373864078049451">Веб, обележивачи и други Chromium садржај се овде уживо приказују.</translation>
-<translation id="7344413941077984497">Да бисте подесили које веб-сајтове може да прегледа <ph name="NEW_PROFILE_NAME" />, можете да конфигуришете ограничења и подешавања ако посетите <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ако не промените подразумевана подешавања, <ph name="NEW_PROFILE_NAME" /> може да прегледа све сајтове на вебу.
+<translation id="7344413941077984497">Да бисте подесили које веб-сајтове <ph name="NEW_PROFILE_NAME" /> може да прегледа, можете да конфигуришете ограничења и подешавања ако посетите <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ако не промените подразумевана подешавања, <ph name="NEW_PROFILE_NAME" /> може да прегледа све сајтове на вебу.
 
 Да бисте спречили да <ph name="NEW_PROFILE_NAME" /> приступа вашем налогу, обавезно закључајте профил када не користите Chromium. Да бисте то урадили, кликните на име профила у горњем десном углу прегледача и изаберите „Изађи и закључај за децу“.
 <ph name="BEGIN_LINK_2" />Сазнајте више<ph name="END_LINK_2" />
@@ -191,11 +192,11 @@ Chromium не може да врати подешавања.</translation>
 Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ако желите да постојећи Chromium подаци буду раздвојени, можете да направите новог Chromium корисника за <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
-<translation id="7463979740390522693">Chromium – Обавештења (непрочитаних: <ph name="QUANTITY" />)</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
 <translation id="750717762378961310">Ова датотека је злонамерна, па ју је Chromium блокирао.</translation>
 <translation id="7549178288319965365">О Chromium ОС-у</translation>
+<translation id="7577193603922410712">Посебно безбедносно ажурирање за Chromium је управо примењено. Сада треба поново да покренете Chromium да би ажурирање ступило на снагу (вратићемо картице).</translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>
 <translation id="7617377681829253106">Управо смо побољшали Chromium</translation>
 <translation id="7641113255207688324">Chromium није подразумевани прегледач.</translation>
@@ -208,7 +209,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7979877361127045932">Сакриј у Chromium менију</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium захтева приступ дозволама да би их делио са овим сајтом.</translation>
-<translation id="805745970029938373">Овде можете да видите сва обавештења из Chromium апликација, додатака и веб-сајтова.</translation>
 <translation id="8134284582177628525">Ако делите овај рачунар са корисником <ph name="PROFILE_NAME" />, додајте себе у Chromium да бисте прегледали одвојено. У супротном, прекините везу са Google налогом овог корисника.</translation>
 <translation id="8269379391216269538">Помозите нам да побољшамо Chromium</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
+<translation id="1683360892415596327">アンケートに答える</translation>
 <translation id="1723752762323179280">セッションを終了</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID" />*（<ph name="BEGIN_LINK" />サードパーティ<ph name="END_LINK" />）に変更しました。
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">あと <ph name="LOGOUT_TIME_LEFT" />で自動的にログアウトします。</translation>
 <translation id="607652042414456612">お使いのパソコンは近くの Bluetooth デバイスで検出可能です。名前「<ph name="NAME" />」、アドレス「<ph name="ADDRESS" />」のデバイスとして表示されます</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
+<translation id="6144938890088808325">Chromebooks の改善にご協力ください</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6203030746557259519">仮想ディスプレイ</translation>
@@ -213,6 +215,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
+<translation id="7869829692393275047">Chrome OS HaTS のアンケート本文をここに記入。Chrome OS HaTS のアンケート本文をここに記入。Chrome OS HaTS のアンケート本文をここに記入。Chrome OS HaTS のアンケート本文をここに記入。</translation>
 <translation id="7893838033650689677">Wi-Fi をオンにする</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。正規の充電器のご利用をおすすめします。</translation>

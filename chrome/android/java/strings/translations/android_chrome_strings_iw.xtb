@@ -232,6 +232,7 @@
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
+<translation id="4099423833822562131">בחר כתובת למשלוח כדי לבדוק את שיטות המשלוח.</translation>
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
@@ -279,6 +280,7 @@
 <translation id="4690286298542128877">‏כרטיסיות יועברו למחליף כרטיסיות בתוך Chrome.</translation>
 <translation id="4698413471314543145">‏חסרה פונקציונליות קריטית הנדרשת להפעלת Chrome. התקנת Chrome אינה מלאה, או שאינה תואמת לגרסה הזו של Android.</translation>
 <translation id="4699172675775169585">תמונות וקבצים בזכרון השמור</translation>
+<translation id="4710672574193412565">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר שלך.</translation>
 <translation id="4720023427747327413">פתח ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="4738836084190194332">סונכרן לאחרונה: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5056549851600133418">מאמרים שעשויים לעניין אותך</translation>
 <translation id="5063480226653192405">שימוש</translation>
+<translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="5107381076085091558">ההורדה הושהתה.</translation>
 <translation id="5118713593561876160">תחומי עניין</translation>
@@ -376,7 +379,6 @@
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
-<translation id="588563574323093535">שאל לפני שתאפשר לאתרים לעבור למסך מלא (מומלץ)</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -408,7 +410,6 @@
 לדוגמה, ייתכן שבתגובה לבקשה, אתרים מסוימים יציגו מודעות שאינן מבוססות על אתרים אחרים שבהם ביקרת. אתרים רבים ימשיכו לאסוף את נתוני הגלישה שלך ולהשתמש בהם, למשל כדי לשפר את האבטחה, כדי לספק תוכן, מודעות והמלצות וכדי ליצור נתונים סטטיסטיים לדיווח.</translation>
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>
 <translation id="6295158916970320988">כל האתרים</translation>
-<translation id="6317634962183824346">‏סנכרון מערכת Android מושבת. הפעל מחדש את הסנכרון ונסה שוב.</translation>
 <translation id="6324360525379265737">קביעה אוטומטית של קידוד תווים</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">הצפנה</translation>
@@ -601,7 +602,6 @@
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
-<translation id="8793430725658173476">העתק כתובת אתר</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8812942424849541387">קבע ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /> כיצד זה פועל</translation>
 <translation id="8820817407110198400">סימניות</translation>

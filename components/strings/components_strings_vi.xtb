@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1753706481035618306">Số trang</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng của Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Vui lòng cập nhật cụm mật khẩu đồng bộ hóa của bạn.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Loại tệp không xác định.</translation>
 <translation id="2413528052993050574">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị thu hồi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2455981314101692989">Trang web này đã vô hiệu hóa tính năng tự động điền cho biểu mẫu này.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
 <translation id="2491120439723279231">Chứng chỉ của máy chủ có lỗi.</translation>
 <translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Xin phép</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Chạy Chẩn đoán kết nối<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Xóa các mục đã chọn</translation>
 <translation id="277499241957683684">Thiếu hồ sơ thiết bị</translation>
 <translation id="2778107779445548489">Bạn thấy thông báo này vì cha mẹ bạn đã chặn trang web này.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">ID phần tử:</translation>
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
 <translation id="3118046075435288765">Máy chủ đã bất ngờ đóng kết nối.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán kết nối<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Không thể giải mã phản hồi</translation>
 <translation id="3147485256806412701">Trang web này đang sử dụng miền chung mới cấp cao nhất.</translation>
 <translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ẩn chi tiết</translation>
 <translation id="3587482841069643663">Tất cả</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường. Vấn đề này có thể xảy ra khi máy chủ cần RC4. Chuẩn này không còn được coi là an toàn nữa.</translation>
 <translation id="3609138628363401169">Máy chủ không hỗ trợ tiện ích đàm phán lại TLS.</translation>
+<translation id="36224234498066874">Xóa Dữ liệu Duyệt web...</translation>
 <translation id="362276910939193118">Hiển thị Toàn bộ Lịch sử</translation>
 <translation id="3623476034248543066">Hiển thị giá trị</translation>
 <translation id="3630155396527302611">Nếu chương trình đã được liệt kê là chương trình được phép truy cập mạng, hãy thử
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Sự cố</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="425582637250725228">Các thay đổi bạn đã thực hiện có thể không được lưu.</translation>
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> đã bị chặn</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kết nối của bạn bị gián đoạn</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng của Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4744603770635761495">Đường dẫn thực thi</translation>
@@ -569,6 +575,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7445762425076701745">Không thể xác thực đầy đủ nhận dạng của máy chủ bạn đã kết nối. Bạn đã kết nối vào máy chủ bằng một tên chỉ hợp lệ trong mạng của bạn và đó là tên mà các tổ chức phát hành chứng chỉ bên ngoài không thể xác thực được. Vì một số tổ chức phát hành chứng chỉ sẽ cấp chứng chỉ cho các tên này thay thế, nên không có cách nào đảm bảo bạn được kết nối tới trang web đã chỉ định và không phải là kẻ tấn công.</translation>
 <translation id="7450732239874446337">IO mạng bị treo.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7514365320538308">Tải xuống</translation>
@@ -709,6 +716,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="9039213469156557790">Ngoài ra, trang này bao gồm các tài nguyên khác không an toàn. Những tài nguyên này có thể bị người khác xem khi đang gửi và có thể bị kẻ tấn công sửa đổi nhằm thay đổi hành vi của trang.</translation>
 <translation id="9049981332609050619">Bạn đã cố truy cập vào <ph name="DOMAIN" />, nhưng máy chủ cho biết chứng chỉ không hợp lệ.</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
+<translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9092364396508701805">Trang <ph name="HOST_NAME" /> hiện không hoạt động</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9125941078353557812">Nhập CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>

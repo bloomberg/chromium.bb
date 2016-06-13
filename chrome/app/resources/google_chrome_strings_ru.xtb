@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">войдите в Chrome</translation>
 <translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
-<translation id="1073391069195728457">Chrome - Оповещения</translation>
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ваш персональный Chrome</translation>
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Не удалось извлечь файлы из архива. Скачайте Google Chrome заново.</translation>
-<translation id="4167057906098955729">Здесь можно просмотреть все оповещения от приложений, расширений и сайтов Chrome.</translation>
 <translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="4309555186815777032">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chrome)</translation>
@@ -114,6 +112,7 @@
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4631713731678262610">Не показывать в меню Google Chrome</translation>
 <translation id="4633000520311261472">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chrome были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
+<translation id="4664415150087723341">Установлено специальное обновление системы безопасности. Перезапустите Google Chrome (все вкладки будут восстановлены).</translation>
 <translation id="4700157086864140907">В браузере Chrome для проверки правописания вводимый вами текст передается на серверы Google. Та же технология используется в Google Поиске.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
 <translation id="4743926867934016338">Принимаю</translation>
@@ -135,6 +134,7 @@
 <translation id="5204098752394657250"> <ph name="TERMS_OF_SERVICE_LINK" />Условия использования<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">Используйте Chrome в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>
 <translation id="5253588388888612165">Если вы работаете за одним компьютером с пользователем <ph name="PROFILE_NAME" />, добавьте свой аккаунт в Chrome для персонального использования браузера. В противном случае выйдите из чужого аккаунта Google.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome перезапустится через 1 секунду}one{Google Chrome перезапустится через # секунду}few{Google Chrome перезапустится через # секунды}many{Google Chrome перезапустится через # секунд}other{Google Chrome перезапустится через # секунды}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Этот модуль конфликтует с Google Chrome.</translation>
 <translation id="5386244825306882791">Кроме того, расширение изменило стартовую страницу Chrome и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
@@ -191,7 +191,6 @@
 <translation id="7191567847629796517">Google Chrome OS не поддерживает внешних приложений для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Что это?</translation>
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - Оповещения (новых: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Google Chrome скоро перестанет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista будет прекращена.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
@@ -227,7 +226,6 @@
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
 <translation id="8406086379114794905">Помогите сделать Chrome безопаснее</translation>
-<translation id="8460191995881063249">Центр оповещений Chrome</translation>
 <translation id="853189717709780425">Вы входите в управляемый аккаунт, администратор которого сможет контролировать ваш профиль Google Chrome. Ваши приложения, закладки, история, пароли, настройки и прочие данные Chrome будут связаны с аккаунтом <ph name="USER_NAME" />. Вы можете удалить эти данные в Личном кабинете Google Аккаунтов, но не можете связать их с другим аккаунтом.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
@@ -239,6 +237,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Кроме того, расширение изменило стартовую страницу Chrome.</translation>
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Перезапустите Google Chrome</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="884296878221830158">Кроме того, расширение изменило стартовую страницу Chrome и страницу, отображаемую при нажатии кнопки "Главная страница".</translation>
 <translation id="8851136666856101339">main</translation>

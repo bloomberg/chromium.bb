@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">„Chrome“ įrenginys</translation>
 <translation id="1677472565718498478">Liko <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Dalyvauti apklausoje</translation>
 <translation id="1723752762323179280">Išeinama iš sesijos</translation>
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
 <translation id="1812696562331527143">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />trečioji šalis<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6062360702481658777">Būsite automatiškai atjungti po <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Jūsų kompiuterį galima aptikti netoliese esančiais „Bluetooth“ įrenginiais ir jis rodomas kaip „<ph name="NAME" />“ su adresu <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Padėkite mums tobulinti „Chromebook“ kompiuterius</translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6203030746557259519">Virtualusis ekranas</translation>
@@ -213,6 +215,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE" /> į <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Žiūrėti paskyrą mobiliesiems</translation>
 <translation id="7864539943188674973">Neleisti „Bluetooth“</translation>
+<translation id="7869829692393275047">Čia turėtų būti pateiktas „Chrome“ OS pasitenkinimo stebėjimo apklausos tekstas.</translation>
 <translation id="7893838033650689677">Įjungti „Wi-Fi“</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7957227661277029961">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas. Turėtumėte naudoti oficialų kroviklį.</translation>

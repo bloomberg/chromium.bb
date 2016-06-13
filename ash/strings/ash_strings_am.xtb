@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">ባትሪ ባዶ እስኪሆን ድረስ የቀረው ጊዜ፣ <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">የChrome መሣሪያ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
+<translation id="1683360892415596327">በዳሰሳ ጥናታችን ላይ ይካፈሉ</translation>
 <translation id="1723752762323179280">ከክፍለ ጊዜ በመውጣት ላይ</translation>
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1812696562331527143">የግብዓት ስልትዎ ወደ <ph name="INPUT_METHOD_ID" /> ተቀይሯል*(<ph name="BEGIN_LINK" />3ኛ ወገን<ph name="END_LINK" />)።
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">በ<ph name="LOGOUT_TIME_LEFT" /> ውስጥ በራስ-ሰር ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="607652042414456612">ኮምፒውተርዎ አቅራቢያ ባሉ የብሉቱዝ መሣሪያዎች ሊገኝ የሚችል ነው፣ እና በ<ph name="ADDRESS" /> አድራሻ እንደ «<ph name="NAME" />» ሆኖ ይታያል</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" />ን በመሙላት ላይ</translation>
+<translation id="6144938890088808325">Chromebooksን እንድናሻሽል ያግዙን</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="6203030746557259519">ምናባዊ ማሳያ</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">ቅንብሮችዎ ከተመሳሰሉ በኋላ ቋንቋው ከ«<ph name="FROM_LOCALE" /> ወደ «<ph name="TO_LOCALE" />» ተቀይሯል።</translation>
 <translation id="785750925697875037">የተንቀሳቃሽ መለያ ይመልከቱ</translation>
 <translation id="7864539943188674973">ብሉቱዝን ያሰናክሉ</translation>
+<translation id="7869829692393275047">የChrome OS HaTS ዳሰሳ ጥናት ጽሑፍ እዚህ ላይ። የChrome OS HaTS ዳሰሳ ጥናት ጽሑፍ እዚህ ላይ። የChrome OS HaTS ዳሰሳ ጥናት ጽሑፍ እዚህ ላይ። የChrome OS HaTS ዳሰሳ ጥናት ጽሑፍ እዚህ ላይ።</translation>
 <translation id="7893838033650689677">Wi-Fi አብራ</translation>
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
 <translation id="7957227661277029961">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል። ይፋዊ ኃይል መሙያ መጠቀምን ከግምት ውስጥ ያስገቡ።</translation>

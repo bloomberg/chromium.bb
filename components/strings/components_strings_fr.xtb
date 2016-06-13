@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics réseau de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Mettre à jour votre phrase secrète de synchronisation</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Type fich. inconnu.</translation>
 <translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2455981314101692989">Cette page Web a désactivé la saisie automatique dans ce formulaire.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Exécuter les diagnostics du réseau<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
 <translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
 <translation id="2495083838625180221">Analyse de fichiers JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Demander l'autorisation</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Exécuter les diagnostics de connectivité<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Supprimer les éléments sélectionnés</translation>
 <translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
 <translation id="2778107779445548489">Ce message s'affiche, car ton papa/ta maman a bloqué ce site.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">ID d'élément :</translation>
 <translation id="3109728660330352905">Vous n'êtes pas autorisé à consulter cette page.</translation>
 <translation id="3118046075435288765">Le serveur a mis fin à la connexion de manière inattendue.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics de connectivité<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Échec du décodage de la réponse.</translation>
 <translation id="3147485256806412701">Ce site utilise un nouveau domaine générique de premier niveau.</translation>
 <translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Masquer les détails</translation>
 <translation id="3587482841069643663">Tous</translation>
 <translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL courante. Le problème se produit généralement lorsque le serveur nécessite un chiffrement RC4, qui n'est plus considéré comme sécurisé.</translation>
 <translation id="3609138628363401169">Le serveur ne prend pas en charge l'extension de renégociation TLS.</translation>
+<translation id="36224234498066874">Effacer les données de navigation...</translation>
 <translation id="362276910939193118">Afficher l'historique complet</translation>
 <translation id="3623476034248543066">Afficher la valeur</translation>
 <translation id="3630155396527302611">S'il est déjà répertorié en tant que programme autorisé à accéder au réseau,
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Vérifier les configurations du pare-feu et de l'antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Plantages</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics réseau<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="425582637250725228">Les modifications que vous avez apportées ne seront peut-être pas enregistrées.</translation>
 <translation id="4258748452823770588">Signature incorrecte.</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651">L'adresse <ph name="URL" /> a été bloquée</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Votre connexion a été interrompue</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Exécuter les diagnostics réseau de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
 <translation id="4728558894243024398">Plate-forme</translation>
 <translation id="4744603770635761495">Chemin d'accès exécutable</translation>
@@ -569,6 +575,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
 <translation id="7445762425076701745">Impossible de valider entièrement l'identité du serveur auquel vous êtes connecté. Le nom utilisé pour cette connexion n'est valide que sur votre réseau et aucune autorité de certification externe ne peut en vérifier la propriété. Certaines autorités de certification délivrent tout de même des certificats pour ces types de nom, par conséquent nous ne sommes pas en mesure de vérifier que vous êtes connecté au site voulu et non à un site malveillant.</translation>
 <translation id="7450732239874446337">E/S réseau interrompue</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -709,6 +716,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="9039213469156557790">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer le comportement de cette page.</translation>
 <translation id="9049981332609050619">Vous avez tenté de contacter <ph name="DOMAIN" />, mais le certificat présenté par le serveur est incorrect.</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>
+<translation id="9065203028668620118">Modifier</translation>
 <translation id="9092364396508701805">La page <ph name="HOST_NAME" /> ne fonctionne pas</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>

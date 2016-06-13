@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="1753706481035618306">Nambari ya ukurasa</translation>
 <translation id="1763864636252898013">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kifaa chako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Mtandao wa Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Tafadhali sasisha kaulisiri yako iliyolandanishwa.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ombi au vigezo vya ombi batili</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Aina ya Faili Isiyojulikana.</translation>
 <translation id="2413528052993050574">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; huenda cheti chake cha usalama kimebatilishwa. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="2455981314101692989">Ukurasa wavuti huu umelemaza mjazo otomatiki kwa fomu hii.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Inaendesha Zana ya Kuchunguza Mtandao<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL batili ya utafutaji.</translation>
 <translation id="2491120439723279231">Cheti cha seva kina hitilafu.</translation>
 <translation id="2495083838625180221">Kichanganuzi cha JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Omba ruhusa</translation>
 <translation id="2721148159707890343">Ombi limefanikiwa</translation>
 <translation id="2728127805433021124">Cheti cha seva kimetiwa sahihi kwa kutumia algoriti dhaifu ya sahihi.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Inaendesha Zana ya Kuchunguza Muunganisho<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Ondoa vipengee vilivyochaguliwa</translation>
 <translation id="277499241957683684">Rekodi ya kifaa inayokosekana</translation>
 <translation id="2778107779445548489">Unaona ujumbe huu kwa sababu mzazi wako amezuia tovuti hii.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Kitambulisho cha Kipengee:</translation>
 <translation id="3109728660330352905">Huna idhini ya kuona ukurasa huu.</translation>
 <translation id="3118046075435288765">Seva iliufunga muunganisho bila kutarajia.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Muunganisho<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Imeshindwa kusimbua jibu</translation>
 <translation id="3147485256806412701">Tovuti hii inatumia kikoa kipya cha ngazi ya juu.</translation>
 <translation id="3150653042067488994">Hitilfau ya muda ya seva</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ficha maelezo</translation>
 <translation id="3587482841069643663">Zote</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Seva teja na seva hazitumii toleo la kawaida la itifaki ya SSL au mipangilio ya kriptografia. Hili linaweza kutokea seva inapohitaji RC4, ambayo haichukuliwi kuwa salama tena.</translation>
 <translation id="3609138628363401169">Seva haihimili kiendelezi cha TLS cha utambuaji.</translation>
+<translation id="36224234498066874">Futa Data ya Kuvinjari...</translation>
 <translation id="362276910939193118">Onyesha Historia Kamili</translation>
 <translation id="3623476034248543066">Onyesha thamani</translation>
 <translation id="3630155396527302611">Ikiwa tayari imeorodheshwa kuwa programu inayoruhusiwa kufikia mtandao, jaribu
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">Rudia hatua</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga-mtandao na kinga-virusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Mivurugo</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Mtandao<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="425582637250725228">Huenda mabadiliko uliyofanya yasihifadhiwe.</translation>
 <translation id="4258748452823770588">Sahihi mbaya</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> ilizuiwa</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Muunganisho wako umekatizwa</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Inaendesha Zana ya Kuchunguza Mtandao wa Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Pakia sera upya</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
 <translation id="4744603770635761495">Njia Tekelezi</translation>
@@ -568,6 +574,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7445762425076701745">Utambulisho wa seva ambayo umejiunga kwayo hauwezi kuhalalishwa kikamilifu. Umeunganishwa kwenye seva kwa kutumia jina ambalo ni halali tu katika mtandao wako, ambalo mamlaka ya cheti cha nje hayana njia ya kuhalalisha umiliki wake. Kama baadhi ya mamlaka ya cheti yatatoa vyeti vya majina haya bila kujali, hakuna njia ya kuhakikisha umeunganishwa kwenye tovuti inayohitajika na sio mshambulizi.</translation>
 <translation id="7450732239874446337">Mtandao wa IO umesitishwa.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /> kuhusu hitilafu hii.</translation>
 <translation id="7481312909269577407">Mbele</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="7514365320538308">Pakua</translation>
@@ -708,6 +715,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="9039213469156557790">Mbali na hayo, ukurasa huu una rasilimali nyingine zisizo salama. Rasilimali hizi zinaweza kuangaliwa na watu wengine wanaosafiri, na zinaweza kurekebishwa na mvamizi kubadilisha tabia ya ukurasa.</translation>
 <translation id="9049981332609050619">Ulijaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti batili.</translation>
 <translation id="9050666287014529139">Kaulisiri</translation>
+<translation id="9065203028668620118">Badilisha</translation>
 <translation id="9092364396508701805">Ukurasa wa <ph name="HOST_NAME" /> haufanyi kazi</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9125941078353557812">Weka CVC yenye tarakimu 3 kutoka nyuma ya kadi yako</translation>

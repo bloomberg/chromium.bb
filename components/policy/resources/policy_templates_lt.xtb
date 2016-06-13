@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
 <translation id="102492767056134033">Nustatyti numatytąją ekrano klaviatūros būseną prisijungimo ekrane</translation>
+<translation id="1040446814317236570">PAC URL perdavimo įgalinimas (skirta https://)</translation>
 <translation id="1044878202534415707">Teikiamos aparatinės įrangos statistikos, pvz., centrinio procesoriaus / laisvosios prieigos atminties naudojimo, ataskaitos.
 
       Jei ši politika nustatyta į „false“, nebus teikiamos statistikos ataskaitos.
@@ -913,6 +914,26 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3967075520570946456">Įgalinkite darbo pradžios puslapio rodymą pirmą kartą paleidus naršyklę po OS naujovinimo.</translation>
 <translation id="3973371701361892765">Niekada automatiškai neslėpti lentynos</translation>
 <translation id="3984028218719007910">Nustatoma, ar „<ph name="PRODUCT_OS_NAME" />“ paliekami vietiniai paskyros duomenys atsijungus. Jei nustatyta į „true“ (tiesa), jokios nuolatinės paskyros nelaikomos „<ph name="PRODUCT_OS_NAME" />“ ir visi duomenys iš naudotojo sesijos atmetami atsijungus. Jei ši politika nustatyta į „false“ (netiesa) arba nesukonfigūruota, įrenginyje gali būti laikomi (šifruoti) vietiniai naudotojo duomenys.</translation>
+<translation id="3994569321696536679">Įgalinama „<ph name="PRODUCT_NAME" />“
+      apribota prisijungimo funkcija „Google Apps“ ir naudotojams neleidžiama
+      keisti šio nustatymo.
+
+      Jei apibrėšite šį nustatymą, naudotojas galės pasiekti
+      „Google Apps“ (pvz., „Gmail“) tik naudodamas nurodytus domenus.
+
+      Šis nustatymas NEUŽDRAUS naudotojui prisijungti tvarkomame įrenginyje,
+      kuriame reikia atlikti „Google“ autentifikavimo procesą. Naudotojui vis tiek bus
+      leidžiama prisijungti prie paskyrų iš kitų domenų, bet bus rodoma klaida,
+      kai jie bandys naudoti „Google Apps“ su tomis paskyromis.
+
+      Jei paliksite šį nustatymą tuščią / nesukonfigūruotą, naudotojas galės
+      pasiekti „Google Apps“ naudodamas bet kurią paskyrą.
+
+      Pagal šią politiką antraštė „X-GoogApps-Allowed-Domains“ pridedama prie
+      visų HTTP ir HTTPS užklausų į visus google.com domenus, kaip aprašyta
+      https://support.google.com/a/answer/1668854.
+
+      Naudotojai negali keisti ar nepaisyti šio nustatymo.</translation>
 <translation id="3997519162482760140">URL, kuriems bus suteikta prieiga prie vaizdo įrašus fiksuojančių įrenginių SAML prisijungimo puslapiuose</translation>
 <translation id="4001275826058808087">Įmonės įrenginių IT administratoriai gali naudoti šią žymą, kad valdytų, ar leisti naudotojams išpirkti pasiūlymus vykdant „Chrome“ OS registraciją.
 
@@ -1127,6 +1148,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, ekrano pažadinimo užraktams leidžiama tvarkyti energiją.
 
           Jei ši politika nustatyta kaip „Netiesa“, ekrano pažadinimo užraktų užklausų nepaisoma.</translation>
+<translation id="4882546920824859909">Nurodyti domenus, kuriems leidžiama pasiekti „Google Apps“</translation>
 <translation id="4890209226533226410">Nustatyti įgalinto ekrano didinimo tipą.
 
           Jei ši politika nustatyta, pagal ją nustatomas įgalintas ekrano didinimas. Nustačius politiką į „Joks“, ekrano didinimas išjungiamas.

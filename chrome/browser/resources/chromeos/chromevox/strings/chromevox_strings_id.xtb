@@ -245,6 +245,7 @@
         "vi": "Vietnam",
         "zh": "China",
         "zh_TW": "China (Han Tradisional)"}</translation>
+<translation id="335581015389089642">Ucapan</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{tambah}other{# tanda tambah}}</translation>
 <translation id="338583716107319301">Pemisah</translation>
@@ -661,7 +662,7 @@
 <translation id="8033827949643255796">dipilih</translation>
 <translation id="8035962149453661158">max:<ph name="X" /></translation>
 <translation id="8042761080832772327">Mengedit teks, entri penelusuran</translation>
-<translation id="8049189770492311300">Pewaktu</translation>
+<translation id="8049189770492311300">Timer</translation>
 <translation id="8065607967589909823">Pemilihannya adalah</translation>
 <translation id="8066678206530322333">Spanduk</translation>
 <translation id="8110647606445335195">Tidak ada bangunan terkenal ARIA.</translation>

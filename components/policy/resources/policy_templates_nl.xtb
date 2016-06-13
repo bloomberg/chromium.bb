@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
 <translation id="102492767056134033">De standaardstatus van het schermtoetsenbord op het inlogscherm instellen</translation>
+<translation id="1040446814317236570">Verwijderen van gegevens uit PAC-URL's toestaan (voor https://)</translation>
 <translation id="1044878202534415707">Hardwarestatistieken melden, zoals CPU-/RAM-gebruik.
 
       Als het beleid is ingesteld op 'onwaar', worden de statistieken niet gemeld.
@@ -896,6 +897,25 @@
 <translation id="3967075520570946456">Inschakelen dat de welkomstpagina wordt weergegeven bij de eerste keer opstarten van de browser na een upgrade van het besturingssysteem.</translation>
 <translation id="3973371701361892765">Archief nooit automatisch verbergen</translation>
 <translation id="3984028218719007910">Bepaalt of <ph name="PRODUCT_OS_NAME" /> na het afmelden lokale accountgegevens bewaart. Als dit is ingesteld op 'true', bewaart <ph name="PRODUCT_OS_NAME" /> geen bestaande accounts en worden alle gegevens over de gebruikerssessie na het afmelden gewist. Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, bewaart het apparaat mogelijk (gecodeerde) lokale gebruikersgegevens.</translation>
+<translation id="3994569321696536679">Hiermee wordt de
+      beperkte inlogfunctie van <ph name="PRODUCT_NAME" /> in Google Apps for Work ingeschakeld en wordt
+      voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling activeert, kan de gebruiker Google Apps for Work (zoals
+      Gmail) alleen openen via accounts van de opgegeven domeinen.
+
+      Met deze instelling wordt NIET voorkomen dat de gebruiker kan inloggen
+      op een beheerd apparaat waarvoor Google-verificatie is vereist. De gebruiker
+      kan nog steeds inloggen op accounts van andere domeinen, maar krijgt een
+      foutmelding wanneer Google Apps for Works worden geopend met deze accounts.
+
+      Als je deze instelling leeg laat of niet instelt, kan de gebruiker Google Apps for Work via elk account openen.
+
+      Door dit beleid wordt de kop 'X-GoogApps-Allowed-Domains' toegevoegd aan
+      alle HTTP- en HTTPS-verzoeken voor alle google.com-domeinen, zoals
+      beschreven in https://support.google.com/a/answer/1668854.
+
+      Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="3997519162482760140">URL's die toegang krijgen tot apparaten voor het vastleggen van video op SAML-inlogpagina's</translation>
 <translation id="4001275826058808087">IT-beheerders voor zakelijke apparaten kunnen deze markering gebruiken om te bepalen of gebruikers aanbiedingen kunnen inwisselen via registratie van Chrome OS.
 
@@ -1107,6 +1127,7 @@
           Als dit beleid is ingesteld als 'true' of als het niet is ingesteld, wordt schermactiveringsvergrendeling ingesteld voor stroombeheer.
 
           Als dit beleid is ingesteld als 'false', worden verzoeken voor schermactiveringsvergrendeling genegeerd.</translation>
+<translation id="4882546920824859909">Domeinen definiëren voor toegang tot Google-apps</translation>
 <translation id="4890209226533226410">Het type vergrootglas instellen dat is ingeschakeld.
 
           Als dit beleid is ingesteld, bepaalt dit het type vergrootglas dat is ingeschakeld. Als je het beleid op 'Geen' instelt, wordt het vergrootglas uitgeschakeld.
@@ -2033,7 +2054,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid SystemTimezone is ingesteld, overschrijft het dit beleid. In dat geval is automatische tijdzonedetectie volledig uitgeschakeld.</translation>
 <translation id="787125417158068494">Als dit is ingesteld op SyncDisabled of niet is geconfigureerd, zijn certificaten van <ph name="PRODUCT_OS_NAME" /> niet beschikbaar voor ARC-apps.
 
-      Als dit is ingesteld op CopyCaCerts, worden alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
+      Als dit is ingesteld op CopyCaCerts, zijn alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
 <translation id="7882585827992171421">Dit beleid is alleen actief in de commerciële modus.
 
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>

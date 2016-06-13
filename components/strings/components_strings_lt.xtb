@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1753706481035618306">Puslapio numeris</translation>
 <translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Pabandykite paleisti „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Nežin. failo tipas.</translation>
 <translation id="2413528052993050574">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti atšauktas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="2455981314101692989">Šiame tinklalapyje neleidžiamas automatinis šios formos pildymas.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Paleistas įrankis „Windows Network Diagnostics“<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Netinkamas paieškos URL.</translation>
 <translation id="2491120439723279231">Serverio sertifikate yra klaidų.</translation>
 <translation id="2495083838625180221">JSON analizavimo įrankis</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Prašyti leidimo</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Paleistas ryšio diagnostikos įrankis<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Pašalinti pasirinktus elementus</translation>
 <translation id="277499241957683684">Trūksta įrenginio įrašo</translation>
 <translation id="2778107779445548489">Matote šį pranešimą, nes vienas iš tėvų užblokavo šią svetainę.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Ištekliaus ID:</translation>
 <translation id="3109728660330352905">Neturite prieigos teisės žiūrėti šį puslapį.</translation>
 <translation id="3118046075435288765">Serveris netikėtai nutraukė ryšį.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Pabandykite paleisti ryšio diagnostikos įrankį<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Iššifruojant atsakymą įvyko klaida</translation>
 <translation id="3147485256806412701">Ši svetainė naudoja naują bendrą aukščiausio lygio domeną.</translation>
 <translation id="3150653042067488994">Laikina serverio klaida</translation>
@@ -252,8 +256,8 @@
 <translation id="3586931643579894722">Slėpti išsamią informaciją</translation>
 <translation id="3587482841069643663">Visi</translation>
 <translation id="3600246354004376029">„<ph name="TITLE" />“, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Programa ir serveris nepalaiko bendrojo SSL protokolo versijos arba šifruotojo programų komplekto. Taip gali nutikti, kai serveriui reikia RC4, kuris nebėra saugus.</translation>
 <translation id="3609138628363401169">Serveris nepalaiko TLS pakartotinių derybų plėtinio.</translation>
+<translation id="36224234498066874">Išvalyti naršymo duomenis...</translation>
 <translation id="362276910939193118">Rodyti visą istoriją</translation>
 <translation id="3623476034248543066">Rodyti vertę</translation>
 <translation id="3630155396527302611">Jei ji nurodyta kaip programa, kuriai leidžiama pasiekti tinklą, pabandykite
@@ -310,6 +314,7 @@
 <translation id="4196861286325780578">&amp;Perkelti dar kartą</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Patikrinti užkardos ir antivirusinės sistemos konfigūracijas<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Gedimai</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Pabandykite paleisti „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="425582637250725228">Atlikti pakeitimai gali nebūti išsaugoti.</translation>
 <translation id="4258748452823770588">Netinkamas parašas</translation>
@@ -348,6 +353,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> užblokuotas</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ryšys nutrauktas</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Paleistas įrankis „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Vykdomasis kelias</translation>
@@ -570,6 +576,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7445762425076701745">Nepavyksta visiškai patvirtinti serverio, prie kurio esate prisijungę, tapatybės. Prie serverio esate prisijungę naudodami tik tinklui galiojantį vardą, kurio nuosavybės teisių išorinė sertifikatą išduodanti institucija negali patvirtinti. Nors kai kurios sertifikatus išduodančios institucijos vis tiek išduos sertifikatus pagal šiuos vardus, niekaip nebus galima užtikrinti, kad būsite prisijungę prie numatytos svetainės, o ne prie užpuolėjo.</translation>
 <translation id="7450732239874446337">Tinklo IO sustabdytas.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
@@ -710,6 +717,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="9039213469156557790">Be to, šiame puslapyje yra kitų nesaugių išteklių. Perduodant duomenis šiuos išteklius gali peržiūrėti kiti asmenys ir keisti atakuojanti programa, siekianti pakeisti puslapio veikimą.</translation>
 <translation id="9049981332609050619">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė neteisingą sertifikatą.</translation>
 <translation id="9050666287014529139">Slaptafrazė</translation>
+<translation id="9065203028668620118">Redaguoti</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> puslapis neveikia</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9125941078353557812">Įveskite 3 skaitmenų kortelės saugos kodą (CVC), nurodytą kitoje kortelės pusėje</translation>

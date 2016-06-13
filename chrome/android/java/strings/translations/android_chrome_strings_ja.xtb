@@ -232,6 +232,7 @@
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4062305924942672200">法的情報</translation>
 <translation id="4089831646916293264">この機能により、携帯通信会社が提供するプレミアム データサービスの利用に問題が発生する可能性があります。</translation>
+<translation id="4099423833822562131">配送方法を確認するには配送先住所を選択します。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="411254640334432676">ダウンロードできませんでした。</translation>
@@ -279,6 +280,7 @@
 <translation id="4690286298542128877">タブは Chrome 内のタブ切り替えに表示されます。</translation>
 <translation id="4698413471314543145">Chrome の実行に必須の機能が見つかりません。Chrome のインストールが完了していないか、Chrome がこのバージョンの Android と互換性がないことが原因です。</translation>
 <translation id="4699172675775169585">キャッシュされた画像とファイル</translation>
+<translation id="4710672574193412565">端末の設定アプリのアカウント ページで Google アカウントを追加してください。</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> で開く</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5063480226653192405">使用状況</translation>
+<translation id="5087580092889165836">カードを追加</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
 <translation id="5107381076085091558">ダウンロードを一時停止しました。</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
@@ -376,7 +379,6 @@
 <translation id="585027516397408832">データセーバーが有効です</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
-<translation id="588563574323093535">サイトに全画面表示を許可する前に確認する（推奨）</translation>
 <translation id="5899349522111170522">新しいファイルを作成</translation>
 <translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
 <translation id="5911030830365207728">Google 翻訳</translation>
@@ -408,7 +410,6 @@
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
-<translation id="6317634962183824346">Android システムの同期が無効です。再有効化してもう一度お試しください。</translation>
 <translation id="6324360525379265737">文字エンコードを自動判定します</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> で共有します</translation>
 <translation id="6337234675334993532">暗号化</translation>
@@ -603,7 +604,6 @@
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
-<translation id="8793430725658173476">URLをコピー</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8812942424849541387">[<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] でこの動作を管理</translation>
 <translation id="8820817407110198400">ブックマーク</translation>

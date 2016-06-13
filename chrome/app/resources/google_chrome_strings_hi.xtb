@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">Chrome में प्रवेश करें</translation>
 <translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="1065672644894730302">आपकी प्राथमिकताओं को पढ़ा नहीं जा सकता| \\n\\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तनों को सहेजा नहीं जाएगा.</translation>
-<translation id="1073391069195728457">Chrome - सूचनाएं</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="110877069173485804">यह आपका Chrome है</translation>
 <translation id="123620459398936149">Chrome OS आपका डेटा समन्वयित नहीं कर सका. कृपया अपना समन्वयन पासफ़्रेज़ अपडेट करें.</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
 <translation id="4147555960264124640">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">इंस्टॉलर, संग्रह को विस्तारित करने में विफल हुआ. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
-<translation id="4167057906098955729">आप Chrome ऐप्स , एक्सटेंशन, और वेबसाइटों की अपनी सभी सूचनाएं यहां देख सकते हैं.</translation>
 <translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
@@ -114,6 +112,7 @@
 <translation id="4567424176335768812">आपने <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया हुआ है. अब आप अपने सभी प्रवेश किए हुए डिवाइस पर अपने बुकमार्क, इतिहास, और अन्य सेटिंग की एक्सेस कर सकेंगे.</translation>
 <translation id="4631713731678262610">Chrome मेनू में छिपाएं</translation>
 <translation id="4633000520311261472">Chrome को अधिक सुरक्षित बनाने के लिए, हमने ऐसे कुछ एक्सटेंशन अक्षम कर दिए हैं जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं हैं और आपकी जानकारी के बिना जोड़े गए हो सकते हैं.</translation>
+<translation id="4664415150087723341">Google Chrome के लिए एक विशेष सुरक्षा अपडेट अभी-अभी लागू किया गया था; उसके प्रभावी होने के लिए आपको अभी पुन: प्रारंभ करना चाहिए (हम आपके टैब पुनर्स्‍थापित कर देंगे).</translation>
 <translation id="4700157086864140907">Google Chrome आपके द्वारा ब्राउज़र में लिखे गए टेक्स्ट को Google सर्वर को भेजकर शानदार वर्तनी-जांच प्रदान करता है, जो आपको Google खोज द्वारा उपयोग की जाने वाली वर्तनी-जांच के समान वर्तनी जांच तकनीक का उपयोग करने की अनुमति देता है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
 <translation id="4743926867934016338">स्‍वीकार करें और खोजें</translation>
@@ -137,6 +136,7 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तों<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">अतिथि कोई पदचिह्न छोड़े बिना Chrome का उपयोग कर सकते हैं.</translation>
 <translation id="5253588388888612165">यदि आप इस कंप्यूटर को <ph name="PROFILE_NAME" /> से साझा करते हैं, तो स्वयं को Chrome में अलग से जोड़ें. अन्यथा उनके Google खाते को डिस्कनेक्ट करें.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 1 सेकंड में पुन: प्रारंभ हो जाएगा.}one{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}other{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}}</translation>
 <translation id="5328989068199000832">Google Chrome बाइनरी</translation>
 <translation id="5334545119300433702">यह मॉड्यूल Google Chrome से विरोध के लिए जाना जाता है.</translation>
 <translation id="5386244825306882791">इससे यह भी नियंत्रित होता है कि जब आप Chrome को प्रारंभ करते हैं या ऑम्निबॉक्स से खोजते हैं तब कौन सा पृष्ठ दिखाया जाए.</translation>
@@ -193,7 +193,6 @@
 <translation id="7191567847629796517">Google Chrome OS <ph name="SCHEME" /> लिंक प्रबंधित करने के लिए बाहरी ऐप्‍लिकेशन लॉन्‍च करने का समर्थन नहीं करता. अनुरोधित लिंक <ph name="PROTOLINK" /> है.</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - सूचनाएं (<ph name="QUANTITY" /> अपठित)</translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7398801000654795464">आप Chrome में <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश थे. पुन: प्रवेश करने के लिए कृपया उसी खाते का उपयोग करें.</translation>
@@ -229,7 +228,6 @@
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>
 <translation id="8406086379114794905">Chrome को बेहतर बनाने में सहायता करें</translation>
-<translation id="8460191995881063249">Chrome सूचना केंद्र</translation>
 <translation id="853189717709780425">आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपने Google Chrome प्रोफ़ाइल पर उसके व्यवस्थापक नियंत्रण दे रहे हैं. आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग जैसा Chrome डेटा <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएगा. आप इस डेटा को Google खाते डैशबोर्ड के माध्यम से हटा सकेंगे, लेकिन आप इस डेटा को किसी अन्य खाते से संबद्ध नहीं कर सकेंगे.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome ऐप्स  लॉन्चर Canary</translation>
@@ -241,6 +239,7 @@
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
 <translation id="8679801911857917785">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्ठ दिखाया जाए.</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
+<translation id="8796108026289707191">आपको Google Chrome को अभी पुन: प्रारंभ करना चाहिए.</translation>
 <translation id="8823341990149967727">Chrome पुराना हो गया है</translation>
 <translation id="884296878221830158">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं या होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="8851136666856101339">मुख्य</translation>

@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1753706481035618306">Numer strony</translation>
 <translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Zaktualizuj swoje hasło synchronizacji.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Nieznany typ pliku.</translation>
 <translation id="2413528052993050574">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać odwołany. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="2455981314101692989">Automatyczne wypełnianie tego formularza zostało wyłączone przez stronę internetową.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Uruchomienie diagnostyki sieci<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Nieprawidłowy URL wyszukiwania</translation>
 <translation id="2491120439723279231">Certyfikat serwera zawiera błędy.</translation>
 <translation id="2495083838625180221">Parser JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Poproś o pozwolenie</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="2728127805433021124">Certyfikat serwera został podpisany przy użyciu słabego algorytmu podpisu.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Uruchomienie diagnostyki połączeń<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Usuń wybrane elementy</translation>
 <translation id="277499241957683684">Brak rekordu urządzenia</translation>
 <translation id="2778107779445548489">Ten komunikat pojawia się, ponieważ Twój rodzic zablokował tę stronę.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Identyfikator zasobu:</translation>
 <translation id="3109728660330352905">Nie masz autoryzacji do wyświetlania tej strony.</translation>
 <translation id="3118046075435288765">Serwer nieoczekiwanie zakończył połączenie.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Uruchom diagnostykę połączeń<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Dekodowanie odpowiedzi nie powiodło się</translation>
 <translation id="3147485256806412701">Witryna korzysta z nowej domeny funkcjonalnej najwyższego poziomu.</translation>
 <translation id="3150653042067488994">Tymczasowy błąd serwera</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ukryj szczegóły</translation>
 <translation id="3587482841069643663">Wszystkie</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Klient i serwer nie obsługują tej samej wersji protokołu SSL lub mechanizmu szyfrowania. Zdarza się to zazwyczaj wtedy, gdy serwer wymaga szyfru RC4, który nie jest już uważany za bezpieczny.</translation>
 <translation id="3609138628363401169">Serwer nie obsługuje rozszerzenia ponownej negocjacji protokołu TLS.</translation>
+<translation id="36224234498066874">Wyczyść dane przeglądarki...</translation>
 <translation id="362276910939193118">Wyświetl całą historię</translation>
 <translation id="3623476034248543066">Pokaż wartość</translation>
 <translation id="3630155396527302611">Jeśli ten program jest już na liście programów mogących korzystać z sieci,
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sprawdź konfigurację zapory sieciowej i oprogramowania antywirusowego<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Awarie</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Uruchom diagnostykę sieci<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="425582637250725228">Wprowadzone zmiany mogą nie zostać zapisane.</translation>
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> został zablokowany</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Połączenie zostało przerwane</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Uruchomienie Diagnostyki sieci systemu Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Ścieżka pliku wykonywalnego</translation>
@@ -569,6 +575,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7445762425076701745">Nie można w pełni zweryfikować tożsamości serwera, z którym nawiązano połączenie. Nawiązano połączenie z serwerem przy użyciu nazwy obowiązującej jedynie w Twojej sieci i której własności zewnętrzny urząd certyfikacji nie jest w stanie zweryfikować. Niektóre urzędy certyfikacji wydają certyfikaty dla takich nazw bez względu na to, że nie można upewnić się, iż nawiązano połączenie z witryną, z którą zamierzano, a nie z intruzem.</translation>
 <translation id="7450732239874446337">Sieciowe funkcje we/wy zostały zawieszone.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o tym problemie.</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -709,6 +716,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="9039213469156557790">Ta strona zawiera także niezabezpieczone zasoby. Podczas przesyłania mogą je wyświetlić inni użytkownicy, a osoby atakujące mogą je zmodyfikować, by zmienić sposób działania strony.</translation>
 <translation id="9049981332609050619">Podjęto próbę nawiązania połączenia z witryną <ph name="DOMAIN" />, jednak serwer przedstawił nieprawidłowy certyfikat.</translation>
 <translation id="9050666287014529139">Hasło</translation>
+<translation id="9065203028668620118">Edycja</translation>
 <translation id="9092364396508701805">Strona <ph name="HOST_NAME" /> nie działa</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9125941078353557812">Wpisz trzycyfrowy kod CVC widoczny na odwrocie karty</translation>

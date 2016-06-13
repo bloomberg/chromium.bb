@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1021451612696613363">அறிவிப்புகளைப் பார்க்க, உள்நுழையவும்</translation>
 <translation id="111910763555783249">அறிவிப்பு அமைப்புகள்</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 நாள் முன்பு}other{# நாட்கள் உள்ளன}}</translation>
 <translation id="1167268268675672572">வரியின் துவக்கத்திற்கு நகர்ந்து தேர்வை மாற்று</translation>
@@ -10,6 +11,7 @@
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> இடமிருந்து வரும் அறிவிப்புகளை முடக்கு</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 நிமிடம், }other{# நிமிடங்கள், }}</translation>
+<translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 நிமிடம்}other{# நிமிடங்கள்}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> பை</translation>
 <translation id="1781701194097416995">வார்த்தையின் இடதுபுறம் நகர்த்து</translation>
@@ -119,17 +121,15 @@
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
 <translation id="7850320739366109486">தொந்தரவு செய்ய வேண்டாம்</translation>
 <translation id="7907591526440419938">கோப்பைத் திற</translation>
-<translation id="7960078400008666149">ஒரு மணிநேரத்திற்குத் தொந்தரவு செய்ய வேண்டாம்</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>
 <translation id="815598010540052116">கீழே உருட்டு</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">பக்கத்தின் கீழே</translation>
-<translation id="8226233771743600312">ஒரு நாள் தொந்தரவு செய்ய வேண்டாம்</translation>
 <translation id="8328145009876646418">இடதுபுற முனை</translation>
 <translation id="8331626408530291785">மேலே உருட்டு</translation>
 <translation id="8371695176452482769">இப்போது பேசுக</translation>
-<translation id="8392688371657486010">அறிவிப்புகள் எதுவுமில்லை.</translation>
+<translation id="8392688371657486010">அறிவிப்புகள் எதுவுமில்லை</translation>
 <translation id="8394908167088220973">ஊடகத்தை இயக்கு/இடைநிறுத்து</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>

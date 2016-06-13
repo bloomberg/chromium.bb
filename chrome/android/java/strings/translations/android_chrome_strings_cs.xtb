@@ -232,6 +232,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4056223980640387499">Sépie</translation>
 <translation id="4062305924942672200">Právní informace</translation>
 <translation id="4089831646916293264">Tato funkce může být v konfliktu s prémiovými datovými službami poskytovanými vaším operátorem.</translation>
+<translation id="4099423833822562131">Chcete-li zobrazit způsoby dopravy, vyberte dodací adresu.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="411254640334432676">Stahování se nezdařilo.</translation>
@@ -279,6 +280,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4690286298542128877">Karty se přesunou do přepínače karet v Chromu.</translation>
 <translation id="4698413471314543145">Chybí nezbytná funkce pro spuštění aplikace Chrome. Instalace aplikace Chrome buď nebyla dokončena, nebo aplikace není kompatibilní s touto verzí platformy Android.</translation>
 <translation id="4699172675775169585">Obrázky a soubory v mezipaměti</translation>
+<translation id="4710672574193412565">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="4720023427747327413">Otevřít v aplikaci <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4738836084190194332">Poslední synchronizace: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5040262127954254034">Ochrana soukromí</translation>
 <translation id="5056549851600133418">Články pro vás</translation>
 <translation id="5063480226653192405">Použití</translation>
+<translation id="5087580092889165836">Přidat kartu</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="5107381076085091558">Stahování bylo pozastaveno.</translation>
 <translation id="5118713593561876160">Zájmy</translation>
@@ -376,7 +379,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="585027516397408832">Spořič dat je aktivní</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
-<translation id="588563574323093535">Pokud web bude chtít přejít do režimu celé obrazovky, zobrazit dotaz (doporučeno)</translation>
 <translation id="5899349522111170522">Vytvořit nový soubor</translation>
 <translation id="5902828464777634901">Všechna místní data uložená tímto webem, včetně souborů cookie, budou smazána.</translation>
 <translation id="5911030830365207728">Překladač Google</translation>
@@ -408,7 +410,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 Některé weby mohou například na tento požadavek reagovat tak, že vám zobrazí reklamy, které nejsou založeny na ostatních navštívených webových stránkách. Řada webů bude i nadále shromažďovat vaše údaje o prohlížení a používat je například ke zlepšení zabezpečení, poskytování obsahu, reklam a doporučení a ke generování statistik pro přehledy.</translation>
 <translation id="6277522088822131679">Při tištění stránky došlo k problému. Zkuste to prosím znovu.</translation>
 <translation id="6295158916970320988">Všechny weby</translation>
-<translation id="6317634962183824346">Synchronizace systému Android vypnuta. Zapněte ji prosím a zkuste to znovu.</translation>
 <translation id="6324360525379265737">Automaticky určovat kódování znaků</translation>
 <translation id="6333140779060797560">Sdílet prostřednictvím aplikace <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Šifrování</translation>
@@ -603,7 +604,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
-<translation id="8793430725658173476">Kopírovat adresu URL</translation>
 <translation id="8798099450830957504">Výchozí</translation>
 <translation id="8812942424849541387">Tuto funkci můžete ovládat v <ph name="BEGIN_LINK1" />Nastavení<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Záložky</translation>

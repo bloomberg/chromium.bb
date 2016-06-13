@@ -232,6 +232,7 @@
 <translation id="4056223980640387499">ซีเปีย</translation>
 <translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
 <translation id="4089831646916293264">คุณลักษณะนี้อาจรบกวนการเข้าถึงบริการข้อมูลพรีเมียมที่ผู้ให้บริการของคุณจัดหาให้</translation>
+<translation id="4099423833822562131">เลือกที่อยู่สำหรับจัดส่งเพื่อตรวจสอบวิธีการจัดส่ง</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="411254640334432676">การดาวน์โหลดล้มเหลว</translation>
@@ -279,6 +280,7 @@
 <translation id="4690286298542128877">แท็บจะย้ายไปยังตัวเปิดปิดแท็บใน Chrome</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="4699172675775169585">รูปภาพและไฟล์ในแคช</translation>
+<translation id="4710672574193412565">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="4720023427747327413">เปิดใน <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">การอัปเดต</translation>
 <translation id="4738836084190194332">ซิงค์ครั้งล่าสุด: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5056549851600133418">บทความสำหรับคุณ</translation>
 <translation id="5063480226653192405">การใช้</translation>
+<translation id="5087580092889165836">เพิ่มบัตร</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="5107381076085091558">การดาวน์โหลดหยุดชั่วคราว</translation>
 <translation id="5118713593561876160">ความสนใจ</translation>
@@ -376,7 +379,6 @@
 <translation id="585027516397408832">เปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
-<translation id="588563574323093535">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์เข้าสู่โหมดเต็มหน้าจอ (แนะนำ)</translation>
 <translation id="5899349522111170522">สร้างไฟล์ใหม่</translation>
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
@@ -408,7 +410,6 @@
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">ไซต์ทั้งหมด</translation>
-<translation id="6317634962183824346">ปิดการซิงค์ระบบ Android อยู่ โปรดเปิดใหม่แล้วลองอีกครั้ง</translation>
 <translation id="6324360525379265737">ระบุการเข้ารหัสอักขระโดยอัตโนมัติ</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
@@ -603,7 +604,6 @@
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
-<translation id="8793430725658173476">คัดลอก URL</translation>
 <translation id="8798099450830957504">ค่าเริ่มต้น</translation>
 <translation id="8812942424849541387">ควบคุมการทำงานใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>

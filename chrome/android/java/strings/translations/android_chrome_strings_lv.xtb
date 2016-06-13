@@ -232,6 +232,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4056223980640387499">Sēpija</translation>
 <translation id="4062305924942672200">Juridiskā informācija</translation>
 <translation id="4089831646916293264">Šī funkcija var ietekmēt piekļuvi paaugstinātas maksas datu pakalpojumiem, kurus nodrošina jūsu mobilo sakaru operators.</translation>
+<translation id="4099423833822562131">Atlasiet piegādes adresi, lai skatītu piegādes veidus.</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="411254640334432676">Lejupielāde neizdevās.</translation>
@@ -279,6 +280,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4690286298542128877">Cilnes tiks pārvietotas uz ciļņu pārslēdzēju pārlūkā Chrome.</translation>
 <translation id="4698413471314543145">Trūkst būtiskas funkcionalitātes, kas nepieciešama pārlūka Chrome palaišanai. Vai nu jūsu pārlūka Chrome instalācija ir nepilnīga, vai arī pārlūks nav saderīgs ar Android versiju.</translation>
 <translation id="4699172675775169585">Kešatmiņā ievietotie attēli un faili</translation>
+<translation id="4710672574193412565">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="4720023427747327413">Atvērt, izmantojot <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4738836084190194332">Pēdējoreiz sinhronizēts: <ph name="WHEN" /></translation>
@@ -298,9 +300,10 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Atļaut</translation>
-<translation id="5040262127954254034">Privātums</translation>
+<translation id="5040262127954254034">Konfidencialitāte</translation>
 <translation id="5056549851600133418">Jums piemeklēti raksti</translation>
 <translation id="5063480226653192405">Lietojums</translation>
+<translation id="5087580092889165836">Pievienot karti</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5107381076085091558">Lejupielāde apturēta.</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -376,7 +379,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="585027516397408832">Datu lietojuma samazinātājs ir iespējots.</translation>
 <translation id="5860033963881614850">Izsl.</translation>
 <translation id="5869522115854928033">Saglabātās paroles</translation>
-<translation id="588563574323093535">Jautāt, pirms atļaut vietnēm pāriet pilnekrāna režīmā (ieteicams)</translation>
 <translation id="5899349522111170522">Izveidot jaunu failu</translation>
 <translation id="5902828464777634901">Visi šīs vietnes saglabātie lokālie dati, tostarp sīkfaili, tiks dzēsti.</translation>
 <translation id="5911030830365207728">Google tulkotājs</translation>
@@ -408,7 +410,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu saturu, reklāmas un ieteikumus un ģenerētu pārskatu statistiku.</translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
-<translation id="6317634962183824346">Android sistēmas sinhronizēšana ir atspējota. Iespējojiet to atkārtoti un mēģiniet vēlreiz.</translation>
 <translation id="6324360525379265737">Automātiski noteikt rakstzīmju kodējumu</translation>
 <translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Šifrēšana</translation>
@@ -603,7 +604,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="8719023831149562936">Nevar kopīgot šo cilni, izmantojot Beam.</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8730621377337864115">Gatavs</translation>
-<translation id="8793430725658173476">Kopēt URL</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8812942424849541387">Kontrolējiet darbību lapā <ph name="BEGIN_LINK1" />Iestatījumi<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>

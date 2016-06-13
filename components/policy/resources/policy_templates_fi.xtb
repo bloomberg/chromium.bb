@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
 <translation id="102492767056134033">Määritä kirjautumisruudun ruutunäppäimistön oletustila.</translation>
+<translation id="1040446814317236570">Ota PAC-URL-osoitteiden karsinta käyttöön (https://)</translation>
 <translation id="1044878202534415707">Raportoi laitteistotietoja, kuten suorittimen ja RAM-muistin käyttötietoja.
 
       Jos käytännön arvo on Epätosi, tietoja ei raportoida.
@@ -848,6 +849,26 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="3967075520570946456">Määritä tervetulosivun näyttäminen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.</translation>
 <translation id="3973371701361892765">Älä koskaan piilota hyllyä automaattisesti</translation>
 <translation id="3984028218719007910">Määrittää, säilyttääkö <ph name="PRODUCT_OS_NAME" /> paikalliset käyttäjätilitiedot uloskirjautumisen jälkeen. Jos asetus on tosi, <ph name="PRODUCT_OS_NAME" /> ei säilytä tilitietoja pysyvästi ja käyttökerran tiedot poistetaan uloskirjautumisen jälkeen. Jos käytännön asetus on epätosi tai sitä ei määritetä, paikalliset käyttäjätiedot voidaan tallentaa laitteelle salattuina.</translation>
+<translation id="3994569321696536679">Sallii sovelluksen <ph name="PRODUCT_NAME" />
+      rajoitetun Google Apps -kirjautumistoiminnon ja estää käyttäjiä
+      muuttamasta tätä asetusta.
+
+      Jos määrität tämän asetuksen, käyttäjä pääsee Google Apps -sovelluksiin
+      (esim. Gmailiin) vain määrättyjen verkkotunnusten tileiltä.
+
+      Asetus ei estä käyttäjää kirjautumasta sisään hallinnoidulla laitteella,
+      joka edellyttää Google-todennusta. Käyttäjä voi silti kirjautua
+      muiden verkkotunnusten tileille, mutta Google Appsiin siirtyminen
+      johtaa virheilmoitukseen.
+
+      Jos tätä asetusta ei määritetä, käyttäjät voivat 
+      käyttää Google Appsia millä tahansa tilillä.
+
+      Tämän käytännön seurauksena X-GoogApps-Allowed-Domains-otsikko 
+      lisätään kaikkiin google-verkkotunnuksiin tehtäviin HTTP- ja HTTPS-pyyntöihin.
+      Lisätietoja on artikkelissa https://support.google.com/a/answer/1668854.
+
+      Käyttäjät eivät voi muuttaa tai ohittaa tätä asetusta.</translation>
 <translation id="3997519162482760140">URL-osoitteet, joille sallitaan videon kaappauslaitteiden käyttö SAML-kirjautumissivuilla</translation>
 <translation id="4001275826058808087">Yrityslaitteiden järjestelmänvalvojat voivat hallita tämän käytännön avulla, sallitaanko käyttäjien lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
@@ -1040,6 +1061,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Jos käytännön asetus on tosi tai arvoa ei ole asetettu, virranhallinta noudattaa näytön herätyksen lukitusta.
 
           Jos käytännön asetus on epätosi, näytön herätyksen lukituspyynnöt ohitetaan.</translation>
+<translation id="4882546920824859909">Määritä verkkotunnukset, joille sallitaan Google Apps -käyttö</translation>
 <translation id="4890209226533226410">Määritä käytettävä näytön suurentajan tyyppi.
 
           Jos tämä käytäntö on määritetty, se määrittää käytettävän näytön suurentajan tyypin. Jos käytännön arvoksi määritetään Ei mitään, näytön suurentaja poistetaan käytöstä.

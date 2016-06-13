@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏מכשיר Chrome</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
+<translation id="1683360892415596327">השתתף בסקר שלנו</translation>
 <translation id="1723752762323179280">יוצא מההפעלה</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="1812696562331527143">‏שיטת הקלט שלך השתנתה ל-‏<ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />צד שלישי<ph name="END_LINK" />)‎.
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">טעינה של <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">‏עזור לנו לשפר את מחשבי Chromebook</translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6203030746557259519">תצוגה וירטואלית</translation>
@@ -212,6 +214,7 @@
 <translation id="7823564328645135659">‏שפת Chrome השתנתה מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" לאחר סנכרון ההגדרות.</translation>
 <translation id="785750925697875037">הצג את חשבון הנייד</translation>
 <translation id="7864539943188674973">‏השבת Bluetooth</translation>
+<translation id="7869829692393275047">Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here.</translation>
 <translation id="7893838033650689677">‏הפעל Wi-Fi</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7957227661277029961">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל. שקול להשתמש במטען הרשמי.</translation>

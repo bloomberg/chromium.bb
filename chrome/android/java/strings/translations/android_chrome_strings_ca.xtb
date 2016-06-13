@@ -232,6 +232,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4056223980640387499">Sèpia</translation>
 <translation id="4062305924942672200">Informació legal</translation>
 <translation id="4089831646916293264">És possible que aquesta funció interfereixi en l'accés als serveis de dades premium que us proporciona l'operador de telefonia mòbil.</translation>
+<translation id="4099423833822562131">Seleccioneu una adreça d'enviament per veure els mètodes d'enviament.</translation>
 <translation id="4099578267706723511">Ajudeu a millorar Chrome mitjançant l'enviament d'estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="410351446219883937">Reproducció automàtica</translation>
 <translation id="411254640334432676">S'ha produït un error durant la baixada.</translation>
@@ -279,6 +280,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4690286298542128877">Les pestanyes es mouran a un selector de pestanyes a Chrome.</translation>
 <translation id="4698413471314543145">Falta una funcionalitat crítica necessària per executar Chrome; la vostra instal·lació de Chrome no està completa o bé no és compatible amb aquesta versió d'Android.</translation>
 <translation id="4699172675775169585">Imatges i fitxers emmagatzemats a la memòria cau</translation>
+<translation id="4710672574193412565">Afegiu un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="4720023427747327413">Obre a <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="4738836084190194332">Última sincronització: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5040262127954254034">Privadesa</translation>
 <translation id="5056549851600133418">Articles que us poden interessar</translation>
 <translation id="5063480226653192405">Ús</translation>
+<translation id="5087580092889165836">Afegiu una targeta</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5107381076085091558">S'ha aturat la baixada.</translation>
 <translation id="5118713593561876160">Interessos</translation>
@@ -376,7 +379,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="585027516397408832">Economitzador de dades està activat</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5869522115854928033">Contrasenyes desades</translation>
-<translation id="588563574323093535">Pregunta abans de permetre que els llocs s'obrin en pantalla completa (opció recomanada)</translation>
 <translation id="5899349522111170522">Crea un fitxer nou</translation>
 <translation id="5902828464777634901">Se suprimiran totes les dades que aquest lloc web hagi emmagatzemat, incloses les galetes.</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
@@ -408,7 +410,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-vos anuncis que no estiguin basats en altres llocs web que hàgiu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació (per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions i per generar estadístiques).</translation>
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
 <translation id="6295158916970320988">Tots els llocs</translation>
-<translation id="6317634962183824346">La sincronització del sistema Android està desactivada. Torneu-la a activar i proveu-ho de nou.</translation>
 <translation id="6324360525379265737">Detecta automàticament la codificació de caràcters</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION" />.</translation>
 <translation id="6337234675334993532">Encriptació</translation>
@@ -603,7 +604,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
-<translation id="8793430725658173476">Copia l'URL</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8812942424849541387">Controleu-ne el funcionament a <ph name="BEGIN_LINK1" />Configuració<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>

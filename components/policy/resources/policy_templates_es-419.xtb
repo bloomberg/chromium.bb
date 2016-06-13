@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
 <translation id="102492767056134033">Establecer el estado predeterminado del teclado en pantalla en la pantalla de acceso</translation>
+<translation id="1040446814317236570">Activar el recorte de URL de PAC (para https://)</translation>
 <translation id="1044878202534415707">Informar estadísticas de hardware, como el uso de CPU/RAM
 
       Si esta política se establece en false, las estadísticas no se informarán.
@@ -840,6 +841,26 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3967075520570946456">Habilitar la aparición de la página de bienvenida al iniciar el navegador por primera vez después de la actualización del SO</translation>
 <translation id="3973371701361892765">Nunca ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Determina si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
+<translation id="3994569321696536679">Habilita la función
+      de acceso restringido de <ph name="PRODUCT_NAME" /> en Google Apps e impide que los usuarios
+      cambien esta configuración.
+
+      Si defines esta configuración, el usuario solamente podrá acceder a
+      Google Apps (como Gmail) a través de cuentas de los dominios especificados.
+
+      Esta configuración NO impedirá que el usuario acceda en un dispositivo administrado
+      que requiera autenticación de Google. De todos modos, el usuario podrá
+      acceder a cuentas desde otros dominios, pero recibirá un mensaje de error
+      cuando intente usar Google Apps con esas cuentas.
+
+      Si dejas esta configuración vacía o sin establecer, el usuario podrá
+      acceder a Google Apps con cualquier cuenta.
+
+      Esta política causa que el encabezado X-GoogApps-Allowed-Domains se agregue a
+      todas las solicitudes HTTP y HTTPS para todos los dominios google.com, como se describe en
+      https://support.google.com/a/answer/1668854.
+
+      Los usuarios no pueden cambiar ni anular esta configuración.</translation>
 <translation id="3997519162482760140">URL a las que se les concede acceso a los dispositivos de captura de video en las páginas de acceso de SAML</translation>
 <translation id="4001275826058808087">Los administradores TI de dispositivos empresariales pueden usar esta marca para controlar si permiten a los usuarios canjear ofertas a través del registro del Sistema operativo de Chrome.
 
@@ -1029,6 +1050,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si esta política se establece en Verdadero o si no se establece ninguna opción, los bloqueos de activación de pantalla serán válidos para la administración de energía.
 
           Si esta política se establece en Falso, las solicitudes de bloqueo de activación de pantalla se ignorarán.</translation>
+<translation id="4882546920824859909">Definir los dominios con permiso para acceder a Google Apps</translation>
 <translation id="4890209226533226410">Establece el tipo de lupa habilitado.
 
           Si se establece esta política, controla el tipo de lupa habilitado. Si la política se establece como "ninguna", la lupa se inhabilitará.

@@ -232,6 +232,7 @@
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
+<translation id="4099423833822562131">请选择一个送货地址，以便查看送货方式。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="411254640334432676">下载失败。</translation>
@@ -279,6 +280,7 @@
 <translation id="4690286298542128877">标签页将移到 Chrome 内的标签页切换器中。</translation>
 <translation id="4698413471314543145">缺少运行 Chrome 所需的关键功能；您可能未完成 Chrome 安装过程，或者 Chrome 与此版本的 Android 不兼容。</translation>
 <translation id="4699172675775169585">缓存的图片和文件</translation>
+<translation id="4710672574193412565">在您设备的“设置”应用中，通过“帐户”页面添加 Google 帐户。</translation>
 <translation id="4720023427747327413">在<ph name="PRODUCT_NAME" />中打开</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5063480226653192405">使用情况</translation>
+<translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5107381076085091558">已暂停下载。</translation>
 <translation id="5118713593561876160">兴趣</translation>
@@ -376,7 +379,6 @@
 <translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
-<translation id="588563574323093535">在允许网站进入全屏前先询问（推荐）</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
@@ -408,7 +410,6 @@
 例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
-<translation id="6317634962183824346">Android 系统同步功能已停用。请重新启用该功能，然后重试。</translation>
 <translation id="6324360525379265737">自动判断字符编码</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
 <translation id="6337234675334993532">加密</translation>
@@ -603,7 +604,6 @@
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="8793430725658173476">复制网址</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8812942424849541387">您可以转到<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />控制该功能的运行方式</translation>
 <translation id="8820817407110198400">书签</translation>

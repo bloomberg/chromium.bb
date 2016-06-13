@@ -232,6 +232,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="4062305924942672200">Yasal bilgiler</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
+<translation id="4099423833822562131">Gönderim yöntemlerini kontrol etmek için bir gönderim adresi seçin.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
@@ -279,6 +280,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4690286298542128877">Sekmeler Chrome'un içindeki bir sekme değiştiriciye taşınacak.</translation>
 <translation id="4698413471314543145">Chrome'un çalışması için gereken çok önemli bir işlev eksik; Chrome yüklemeniz eksik olabilir ya da Android'in bu sürümü ile uyumlu olmayabilir.</translation>
 <translation id="4699172675775169585">Önbelleğe alınan resimler ve dosyalar</translation>
+<translation id="4710672574193412565">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> uygulamasında aç</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4738836084190194332">Son senkronizasyon: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5040262127954254034">Gizlilik</translation>
 <translation id="5056549851600133418">Size uygun makaleler</translation>
 <translation id="5063480226653192405">Kullanım</translation>
+<translation id="5087580092889165836">Kart ekle</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
 <translation id="5107381076085091558">İndirme işlemi duraklatıldı.</translation>
 <translation id="5118713593561876160">İlgi alanları</translation>
@@ -376,7 +379,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="585027516397408832">Veri Tasarrufu etkinleştirildi</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
-<translation id="588563574323093535">Sitelerin, tam ekrana geçmesine izin verilmeden önce size sorulsun (önerilir)</translation>
 <translation id="5899349522111170522">Yeni dosya oluştur</translation>
 <translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
 <translation id="5911030830365207728">Google Çeviri</translation>
@@ -408,7 +410,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 Örneğin bazı web siteleri bu isteği size daha önce gezdiğiniz web sitelerine dayalı olmayan reklamları göstererek yanıtlayabilir. Birçok web sitesi (örneğin güvenliği iyileştirmek; içerik, reklam, öneri sağlamak ve raporlama istatistikleri oluşturmak gibi amaçlarla) göz atma verilerinizi toplayıp kullanmayı sürdürecektir.</translation>
 <translation id="6277522088822131679">Sayfa yazdırılırken bir sorun oluştu. Lütfen tekrar deneyin.</translation>
 <translation id="6295158916970320988">Tüm siteler</translation>
-<translation id="6317634962183824346">Android sistem senkronizasyonu devre dışı. Lütfen yeniden etkinleştirin ve tekrar deneyin.</translation>
 <translation id="6324360525379265737">Karakter kodlamasını otomatik olarak belirle</translation>
 <translation id="6333140779060797560">Paylaşım yöntemi: <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Şifreleme</translation>
@@ -603,7 +604,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8730621377337864115">Bitti</translation>
-<translation id="8793430725658173476">URL'yi kopyala</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8812942424849541387">Bunun nasıl çalışacağını <ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" />'dan kontrol edin</translation>
 <translation id="8820817407110198400">Favoriler</translation>

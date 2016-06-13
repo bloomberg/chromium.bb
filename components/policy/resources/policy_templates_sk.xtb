@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Nastaviť adresár používateľských údajov</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
 <translation id="102492767056134033">Nastavuje na prihlasovacej obrazovke predvolený stav klávesnice na obrazovke</translation>
+<translation id="1040446814317236570">Aktivovať odstraňovanie častí z webových adries pred odoslaním do skriptov PAC (pre adresy https://)</translation>
 <translation id="1044878202534415707">Nahlasovanie štatistík hardvéru, napríklad využitia CPU/RAM.
       Ak je pravidlo nastavené na možnosť False, štatistiky nebudú hlásené.
       Ak je nastavené na možnosť True alebo nie je nastavené, štatistiky budú hlásené.</translation>
@@ -899,6 +900,26 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="3967075520570946456">Aktivovať zobrazenie uvítacej stránky pri prvom spustení prehliadača po prechode na vyššiu verziu OS</translation>
 <translation id="3973371701361892765">Poličku nikdy neskrývať automaticky</translation>
 <translation id="3984028218719007910">Určuje, či má systém <ph name="PRODUCT_OS_NAME" /> po odhlásení zachovať miestne údaje o účte. Ak je toto pravidlo nastavené na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> nebude uchovávať žiadne trvalé účty a všetky údaje z relácií používateľov budú po odhlásení odstránené. Ak je toto pravidlo nastavené na hodnotu false, alebo nie je nakonfigurované, zariadenie môže uchovávať (zašifrované) miestne údaje používateľa.</translation>
+<translation id="3994569321696536679">Povolí obmedzený denník prehliadača <ph name="PRODUCT_NAME" />
+      vo funkcii v službe Google Apps a zabráni používateľom
+      toto nastavenie meniť.
+
+      Ak toto nastavenie definujete, používateľ bude môcť k službe
+      Google Apps (napríklad do Gmailu) pristupovať iba pomocou účtov v určených doménach.
+
+      Toto nastavenie NEZABRÁNI používateľom prihlasovať sa na spravovaných
+      zariadeniach, ktoré vyžadujú overenie totožnosti Google. Používateľ sa bude môcť naďalej
+      prihlasovať do účtov z iných domén, ale ak sa v nich pokúsi použiť
+      službu Google Apps, zobrazí sa chybové hlásenie.
+
+      Ak toto nastavenie ponecháte prázdne alebo ho nenakonfigurujete, používateľ bude môcť
+      do služby Google Apps pristupovať pomocou akéhokoľvek účtu.
+
+      Toto pravidlo spôsobí, že hlavička X-GoogApps-Allowed-Domains bude pripojená
+      k všetkých žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese
+      https://support.google.com/a/answer/1668854.
+
+      Používatelia nemôžu toto nastavenie zmeniť ani prepísať.</translation>
 <translation id="3997519162482760140">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa na prihlasovacích stránkach SAML</translation>
 <translation id="4001275826058808087">Správcovia IT spravujúci podnikové zariadenia môžu pomocou tohto pravidla povoliť alebo zakázať používateľom uplatniť ponuky pri registrácii OS Chrome.
 
@@ -1113,6 +1134,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto pravidlo nastavené na hodnotu True alebo nie je nastavené vôbec, uzamknutia obrazovky v aktívnom režime budú pre správu napájania povolené.
 
           Ak je toto pravidlo nastavené na hodnotu False, budú sa žiadosti o uzamknutie obrazovky v aktívnom režime ignorovať.</translation>
+<translation id="4882546920824859909">Definovať domény s povoleným prístupom do služby Google Apps</translation>
 <translation id="4890209226533226410">Nastaví typ lupy obrazovky, ktorý je povolený.
 
 

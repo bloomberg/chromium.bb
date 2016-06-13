@@ -33,7 +33,7 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> વિક્રેતા તરફથી <ph name="PRODUCT_NAME" /></translation>
 <translation id="6143635259298204954">એક્સ્ટેંશન અનપૅક કરી શકાતું નથી. એક્સ્ટેંશનને સુરક્ષિત રીતે અનપૅક કરવા માટે, તમારી પ્રોફાઇલ નિર્દેશિકાનો પાથ હોવો જોઈએ જે સિમલિંક ધરાવતો ન હોય. આવો કોઈ પાથ તમારી પ્રોફાઇલ માટે અસ્તિત્વમાં નથી.</translation>
-<translation id="616804573177634438">{0,select, single{એપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}multiple{એપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}other{UNUSED}}</translation>
+<translation id="616804573177634438">{0,select, single{ઍપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}multiple{ઍપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}other{UNUSED}}</translation>
 <translation id="641087317769093025">એક્સ્ટેન્શન અનઝિપ કરી શકાયું નથી</translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT" />' લોડ કરી શકાઈ નથી.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> નું <ph name="PRODUCT_NAME" /> (સીરિયલ નંબર <ph name="SERIAL_NUMBER" />)</translation>

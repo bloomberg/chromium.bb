@@ -42,13 +42,13 @@
 <translation id="2372704305038231957">32-bit Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i dette Linux-system. Opgrader til 64-bit Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Der er et download i gang i øjeblikket. Vil du at annullere dit download og lukke Chromium?}one{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}other{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}}</translation>
 <translation id="2396765026452590966">Udvidelsen "<ph name="EXTENSION_NAME" />" har ændret din startside i Chromium.</translation>
+<translation id="2483889755041906834">I Chromium</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
 <translation id="2486653164587200256">Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i Windows XP og Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="2558641060352364164">Dette website anvender Chromium Frame-pluginnet, som snart ikke understøttes længere. Afinstaller det, og opgrader til en moderne browser.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2595977381794111014">Fortsæt med at bruge dine apps via genvejen for <ph name="APPS_ICON_IMAGE" /> på bogmærkelinjen i Chromium.</translation>
-<translation id="2602806952220118310">Chromium – Underretninger</translation>
 <translation id="2636877269779209383">Chromium skal have adgang til dit kamera, før det kan deles med dette website.</translation>
 <translation id="2648074677641340862">Der opstod en fejl i operativsystemet under installationen. Download Chromium igen.</translation>
 <translation id="2673087257647337101">Næsten opdateret! Genstart Chromium for at afslutte opdateringen</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">Chromium bruger din mikrofon.</translation>
 <translation id="313551035350905294">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din Chromium-profil. Dine Chromium-data, som f.eks. dine apps, bogmærker, historik, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via Betjeningspanelet for Google Konti, men du kan ikke knytte disse data sammen med en anden konto.</translation>
 <translation id="3190315855212034486">Hov! Chromium er gået ned. Vil du genstarte nu?</translation>
-<translation id="3244477511402911926">Chromium Underretningscenter</translation>
 <translation id="3256316712990552818">Kopieret til Chromium</translation>
 <translation id="3258596308407688501">Chromium kan ikke læse og skrive til sin datamappe:
 
@@ -98,6 +97,7 @@
 <translation id="4222580632002216401">Du er nu logget ind på Chromium. Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="4224199872375172890">Chromium er opdateret.</translation>
 <translation id="4230135487732243613">Vil du linke dine Chromium-data til denne konto?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium genstarter om 1 sekund.}one{Chromium genstarter om # sekund.}other{Chromium genstarter om # sekunder.}}</translation>
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
 <translation id="4330585738697551178">Dette modul modstrider Chromium.</translation>
 <translation id="4423735387467980091">Tilpas og kontrollér Chromium</translation>
@@ -140,6 +140,7 @@
 <translation id="6309712487085796862">Chromium bruger dit kamera.</translation>
 <translation id="6334986366598267305">Det er nu blevet nemmere at bruge Chromium med din Google-konto og på delte computere.</translation>
 <translation id="6373523479360886564">Er du sikker på, at du vil afinstallere Chromium?</translation>
+<translation id="6394232988457703198">Du bør genstarte Chromium nu.</translation>
 <translation id="6403826409255603130">Chromium er en webbrowser, der kører websider og applikationer med lynets hast. Den er hurtig, stabil og brugervenlig. Beskyttelse mod malware og phishing er indbygget i Chromium, så du kan søge mere sikkert på internettet.</translation>
 <translation id="6475912303565314141">Den styrer også, hvilken side der vises, når du åbner Chromium.</translation>
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
@@ -189,11 +190,11 @@ Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ve
 Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
 <translation id="7419987137528340081">Hvis du foretrækker at holde dine eksisterende Chromium-data adskilt, kan du oprette en ny Chromium-bruger for <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium kræver Windows XP eller nyere. Nogle funktioner virker muligvis ikke.</translation>
-<translation id="7463979740390522693">Chromium – Underretninger (<ph name="QUANTITY" /> ulæste)</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="750717762378961310">Denne fil er skadelig, og Chromium har blokeret den.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
+<translation id="7577193603922410712">En særlig sikkerhedsopdatering til Chromium blev netop anvendt. Du bør genstarte nu, så den kan træde i kraft (dine faner gendannes).</translation>
 <translation id="761356813943268536">Chromium bruger dit kamera og din mikrofon.</translation>
 <translation id="7617377681829253106">Chromium er blevet bedre</translation>
 <translation id="7641113255207688324">Chromium er ikke din standardbrowser.</translation>
@@ -206,7 +207,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7979877361127045932">Skjul i Chromium-menuen</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium skal have adgang til dine tilladelser, før de kan deles med dette website.</translation>
-<translation id="805745970029938373">Her kan du se alle dine underretninger fra apps, udvidelser og websites i Chromium.</translation>
 <translation id="8134284582177628525">Hvis du deler denne computer med <ph name="PROFILE_NAME" />, kan du tilføje dig selv i Chromium for at browse individuelt. Alternativt kan du afbryde vedkommendes Google-konto.</translation>
 <translation id="8269379391216269538">Hjælp med at gøre Chromium bedre</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>

@@ -232,6 +232,7 @@
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به خدمات داده‌های برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
+<translation id="4099423833822562131">برای بررسی روش‌های ارسال کالا، آدرس تحویل کالا را انتخاب کنید.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
@@ -279,6 +280,7 @@
 <translation id="4690286298542128877">‏برگه‌ها به جابه‌جا‌کننده برگه در Chrome منتقل می‌شوند.</translation>
 <translation id="4698413471314543145">‏یکی از قابلیت‌های مهم برای اجرای Chrome موجود نیست؛ ممکن است نصب Chrome شما به‌ صورت ناقص انجام شده باشد یا اینکه با این نسخه از Android سازگار نباشد.</translation>
 <translation id="4699172675775169585">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
+<translation id="4710672574193412565">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="4720023427747327413">بازکردن در <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738836084190194332">آخرین همگام‌سازی: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5056549851600133418">مقالاتی برای شما</translation>
 <translation id="5063480226653192405">کاربر </translation>
+<translation id="5087580092889165836">افزودن کارت</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="5107381076085091558">بارگیری موقتاً متوقف شد.</translation>
 <translation id="5118713593561876160">علایق</translation>
@@ -375,7 +378,6 @@
 <translation id="585027516397408832">صرفه‌جویی داده فعال است</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
-<translation id="588563574323093535">قبل از اجازه به سایت‌ها برای ورود به حالت تمام‌صفحه، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="5899349522111170522">ایجاد فایل جدید</translation>
 <translation id="5902828464777634901">تمام داده‌های محلی ذخیره شده مرتبط با این وب‌سایت، از جمله کوکی‌ها، حذف می‌شوند.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -407,7 +409,6 @@
 مثلاً ممکن است برخی از وب‌سایت‌ها در پاسخ به این درخواست، آگهی‌هایی نشان دهند که بر اساس سایر وب‌سایت‌هایی که دیدن کرده‌اید نیستند. بسیاری از وب‌سایت‌ها همچنان داده‌های محصول مرور شما را جمع‌آوری و استفاده می‌کنند — مثلاً برای بهبود امنیت، ارائه محتوا، آگهی‌ها و توصیه‌ها و برای ایجاد آمارهای گزارش‌دهی.</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
-<translation id="6317634962183824346">‏همگام‌سازی سیستم Android غیرفعال شد. لطفاً آن را دوباره فعال کرده، مجدداً امتحان کنید.</translation>
 <translation id="6324360525379265737">تعیین کدبندی نویسه به‌صورت خودکار</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
@@ -602,7 +603,6 @@
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
-<translation id="8793430725658173476">کپی نشانی وب</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8812942424849541387">کنترل نحوه عملکرد آن در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>

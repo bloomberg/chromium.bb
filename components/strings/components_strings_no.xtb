@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1753706481035618306">Sidenummer</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prøv å kjøre Windows Nettverksdiagnose<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Oppdater passordfrasen for synkronisering.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Ukjent filtype.</translation>
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2455981314101692989">Denne nettsiden har deaktivert automatisk utfylling for dette skjemaet.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Kjør Nettverksdiagnose<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ugyldig nettadresse for søk.</translation>
 <translation id="2491120439723279231">Tjenerens sertifikat inneholder feil.</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Be om tillatelse</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kjør Tilkoblingsdiagnostikk<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
 <translation id="2778107779445548489">Du ser denne meldingen fordi foreldrene dine har blokkert dette nettstedet.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
 <translation id="3118046075435288765">Tjeneren avsluttet tilkoblingen uventet.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Prøv å kjøre Tilkoblingsdiagnostikk<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Kunne ikke avkode responsen</translation>
 <translation id="3147485256806412701">Dette nettstedet bruker et nytt generisk toppdomene.</translation>
 <translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Skjul detaljer</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Klienten og tjeneren støtter ingen felles SSL-protokollversjon eller -chifferserie. Dette skyldes sannsynligvis at tjeneren trenger RC4, noe som ikke lenger anses som sikkert.</translation>
 <translation id="3609138628363401169">Tjeneren håndterer ikke TLS-utvidelsen for reforhandling.</translation>
+<translation id="36224234498066874">Fjern nettlesingsdata</translation>
 <translation id="362276910939193118">Vis fullstendig logg</translation>
 <translation id="3623476034248543066">Vis verdien</translation>
 <translation id="3630155396527302611">Hvis programmet allerede har fått tillatelse til å bruke nettverket, kan du prøve
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kræsj</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prøv å kjøre Nettverksdiagnose<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="425582637250725228">Det kan hende endringene dine ikke er lagret.</translation>
 <translation id="4258748452823770588">Dårlig signatur</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> ble blokkert</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Tilkoblingen ble avbrutt</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kjør Windows Nettverksdiagnose<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Kjørbar sti</translation>
@@ -569,6 +575,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
 <translation id="7445762425076701745">Identiteten til tjernen du er tilkoblet kan ikke valideres. Du er tilkoblet en tjener som bruker et navn som kun er gyldig i ditt nettverk, som en ekstern sertifiseringsinstans ikke har noen mulighet til å validere eierskap for. Siden enkelte sertifiseringsinstanser likevel utsteder sertifikater for disse navnene, er det umulig å sikre at du er tilkoblet ønsket nettsted og ikke en angriper.</translation>
 <translation id="7450732239874446337">Nettverks-IO er sperret.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om dette problemet.</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7514365320538308">Last ned</translation>
@@ -711,6 +718,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="9039213469156557790">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på atferden til siden.</translation>
 <translation id="9049981332609050619">Du forsøkte å nå <ph name="DOMAIN" />, men tjeneren oppga et ugyldig sertifikat.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
+<translation id="9065203028668620118">Rediger</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" />-siden fungerer ikke</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>

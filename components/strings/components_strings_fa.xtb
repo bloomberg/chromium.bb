@@ -22,7 +22,7 @@
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
 <translation id="113770840981343808">‏کد راستی‌آزمایی چهار رقمی CVC را از روی کارتتان وارد کنید</translation>
 <translation id="1146673768181266552">شناسه خرابی <ph name="CRASH_ID" />‏ (<ph name="CRASH_LOCAL_ID" />)</translation>
-<translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK" />نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK" /> از <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> به‌طور غیرمنتظره‌ای اتصال را قطع کرد.</translation>
 <translation id="1161325031994447685">‏اتصال مجدد به Wi-Fi</translation>
@@ -76,7 +76,8 @@
 <translation id="1734878702283171397">با سرپرست سیستم تماس بگیرید.</translation>
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1753706481035618306">شماره صفحه</translation>
-<translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />Windows Network Diagnostics را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">لطفاً «رمز عبارتی همگام‌سازی» خود را به‌روزرسانی کنید.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">نوع فایل ناشناخته است.</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />در حال اجرای عیب‌یابی شبکه<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
 <translation id="2491120439723279231">گواهی سرور دارای چندین خطاست.</translation>
 <translation id="2495083838625180221">‏تجزیه‌کننده JSON</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">درخواست اجازه</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />در حال اجرای عیب‌یابی اتصال<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">حذف آیتم های انتخاب شده</translation>
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
 <translation id="2778107779445548489">این پیام را به این دلیل می‌بینید که والدینتان این سایت را مسدود کرده‌اند.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">شناسه دارایی:</translation>
 <translation id="3109728660330352905">شما اجازه مشاهده این صفحه را ندارید.</translation>
 <translation id="3118046075435288765">سرور به طول غیرمنتظره‌ای اتصال را قطع کرد.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />عیب‌یابی اتصال را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">رمزگشایی پاسخ انجام نشد</translation>
 <translation id="3147485256806412701">این سایت از یک دامنه سطح بالای عمومی جدید استفاده می‌کند.</translation>
 <translation id="3150653042067488994">خطای موقت سرور</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
 <translation id="3587482841069643663">همه</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />، <ph name="DOMAIN" />، <ph name="TIME" /></translation>
-<translation id="3608308818141211642">‏کلاینت و سرور از نسخه پروتکل SSL یا مجموعه رمز متداولی پشتیبانی نمی‌کنند. احتمالاً علت آن این است که سرور به RC4 نیاز دارد که دیگر ایمن محسوب نمی‌شود.</translation>
 <translation id="3609138628363401169">‏سرور از برنامه اضافی گفتگوی مجدد TLS پشتیبانی نمی‌کند.</translation>
+<translation id="36224234498066874">پاک کردن داده‌های مرور...</translation>
 <translation id="362276910939193118">نمایش کل سابقه</translation>
 <translation id="3623476034248543066">نشان دادن مقدار</translation>
 <translation id="3630155396527302611">اگر درحال حاضر به‌عنوان برنامه‌ای برای دسترسی به شبکه در فهرست قرار دارد،
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />بررسی پیکربندی آنتی‌ویروس و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">خرابی ها</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />عیب‌یابی شبکه را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">نه</translation>
 <translation id="425582637250725228">تغییراتی که انجام داده‌اید ممکن است ذخیره نشده باشند.</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
@@ -324,7 +329,7 @@
 <translation id="4395129973926795186"><ph name="START_DATE" /> تا <ph name="END_DATE" /></translation>
 <translation id="4405141258442788789">مهت عملیات تمام شد.</translation>
 <translation id="4406896451731180161">نتایج جستجو</translation>
-<translation id="4424024547088906515">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد Chrome نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="4424024547088906515">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد Chrome نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">‏این پیام را به این دلیل می‌بینید که Google SafeSites فعال است.</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> مسدود شد</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
+<translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />در حال اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4744603770635761495">مسیر قابل اجرا</translation>
@@ -378,7 +384,7 @@
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />بررسی آدرس پروکسی<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5089810972385038852">ایالت</translation>
-<translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورد اعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
+<translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورداعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="5095208057601539847">استان</translation>
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
 <translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> برای «<ph name="SEARCH_STRING" />» پیدا شد.</translation>
@@ -531,7 +537,7 @@
 <translation id="6989763994942163495">نمایش تنظیمات پیشرفته ...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
-<translation id="7050187094878475250">تلاش کردید به دامنه <ph name="DOMAIN" /> بروید اما گواهینامه‌ای که سرور ارائه کرد، دارای یک تاریخ اعتبار بسیار طولانی است و مورد اعتماد نیست.</translation>
+<translation id="7050187094878475250">تلاش کردید به دامنه <ph name="DOMAIN" /> بروید اما گواهینامه‌ای که سرور ارائه کرد، دارای یک تاریخ اعتبار بسیار طولانی است و مورداعتماد نیست.</translation>
 <translation id="7052500709156631672">دروازه یا سرور پراکسی یک پاسخ نامعتبر از سرور بالایی دریافت کرده است.</translation>
 <translation id="7087282848513945231">شهرستان</translation>
 <translation id="7088615885725309056">قدیمی تر</translation>
@@ -569,6 +575,7 @@
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7445762425076701745">هویت سروری که به آن متصل شده‌اید به‌طور کامل راستی‌آزمایی نمی‌شود. با استفاده از نامی به سرور متصل شده‌اید که فقط در شبکه شما معتبر است و ارائه دهنده مجوز خارجی قادر به راستی‌آزمایی مالکیت آن نیست. به دلیل آنکه برخی از ارائه دهندگان مجوز بدون توجه به هر موردی، مجوزهایی را برای این نام‌ها ارائه می‌کنند، روشی برای اطمینان از این امر وجود ندارد که آیا شما به سایت مورد نظر خود متصل شده‌اید یا یک سایت مضر.</translation>
 <translation id="7450732239874446337">‏IO شبکه در حالت تعلیق است.</translation>
+<translation id="7451311239929941790">درباره این مشکل <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7514365320538308">دانلود</translation>
@@ -709,6 +716,7 @@
 <translation id="9039213469156557790">علاوه بر این، این صفحه دارای منابع دیگری است که امن نیستند. دیگران می‌توانند در حین انتقال، این منابع را ببینند و این منابع می‌توانند برای تغییر رفتار صفحه، توسط یک مهاجم تغییر داده شوند.</translation>
 <translation id="9049981332609050619">شما سعی کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور یک گواهی نامعتبر را نشان داد.</translation>
 <translation id="9050666287014529139">عبارت عبور</translation>
+<translation id="9065203028668620118">ویرایش</translation>
 <translation id="9092364396508701805">صفحه <ph name="HOST_NAME" /> کار نمی‌کند</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="9125941078353557812">‏کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>

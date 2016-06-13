@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome cihaz</translation>
 <translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Anketimize katılın.</translation>
 <translation id="1723752762323179280">Oturumdan Çıkış Yapılıyor</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1812696562331527143">Giriş yönteminiz <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3. taraf<ph name="END_LINK" />) olarak değiştirildi.
@@ -163,6 +164,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="607652042414456612">Bilgisayarınız yakındaki Bluetooth cihazlar tarafından keşfedilebilir durumdadır. Ayrıca,
 <ph name="ADDRESS" /> adresine sahip "<ph name="NAME" />" olarak görünecek</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> şarj ediyor</translation>
+<translation id="6144938890088808325">Chromebook'ları iyileştirmemize yardımcı olun</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6203030746557259519">Sanal Görüntü</translation>
@@ -214,6 +216,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan dil "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
 <translation id="785750925697875037">Mobil hesabı görüntüle</translation>
 <translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
+<translation id="7869829692393275047">Chrome OS HaTS anket metni buraya eklenecek. Chrome OS HaTS anket metni buraya eklenecek. Chrome OS HaTS anket metni buraya eklenecek. Chrome OS HaTS anket metni buraya eklenecek.</translation>
 <translation id="7893838033650689677">Kablosuz'u aç</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir. Onaylı bir şarj cihazı kullanmayı düşünün.</translation>

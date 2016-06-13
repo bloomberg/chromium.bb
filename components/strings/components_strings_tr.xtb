@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1753706481035618306">Sayfa numarası</translation>
 <translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Lütfen senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Bilinmeyen Dosya Türü.</translation>
 <translation id="2413528052993050574">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası iptal edilmiş olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="2455981314101692989">Bu web sayfası bu form için otomatik doldurmayı devre dışı bıraktı.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Geçersiz arama URL'si.</translation>
 <translation id="2491120439723279231">Sunucu sertifikası hatalar içeriyor.</translation>
 <translation id="2495083838625180221">JSON Ayrıştırıcı</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">İzin iste</translation>
 <translation id="2721148159707890343">İstek başarılı oldu</translation>
 <translation id="2728127805433021124">Sunucunun sertifikası, zayıf bir imza algoritması kullanılarak imzalanmış.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Bağlantı Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Seçilen öğeleri kaldır</translation>
 <translation id="277499241957683684">Eksik cihaz kaydı</translation>
 <translation id="2778107779445548489">Ebeveyniniz bu siteyi engellediği için bu iletiyi görüyorsunuz.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Öğe Kimliği:</translation>
 <translation id="3109728660330352905">Bu sayfayı görüntüleme yetkiniz yok.</translation>
 <translation id="3118046075435288765">Sunucu, bağlantıyı beklenmedik bir şekilde kapattı.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Bağlantı Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Yanıtın kodu çözülemedi</translation>
 <translation id="3147485256806412701">Bu site, yeni bir genel üst düzey alan adı kullanıyor.</translation>
 <translation id="3150653042067488994">Geçici sunucu hatası</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Ayrıntıları gizle</translation>
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">İstemci ve sunucu, ortak bir SSL protokolü sürümünü veya şifre paketini desteklemiyor. Buna, muhtemelen sunucunun artık güvenli olarak kabul edilmeyen RC4'ü gerektirmesi neden olmuş olabilir.</translation>
 <translation id="3609138628363401169">Sunucu TLS yeniden anlaşma uzantısını desteklemiyor.</translation>
+<translation id="36224234498066874">Göz Atma Verilerini Temizle...</translation>
 <translation id="362276910939193118">Tam Geçmişi Göster</translation>
 <translation id="3623476034248543066">Değeri göster</translation>
 <translation id="3630155396527302611">Ağa erişmesine izin verilmiş bir program olarak zaten listeleniyorsa,
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Güvenlik duvarı ve virüsten korunma yapılandırmalarını kontrol etme<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kilitlenmeler</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Ağ Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="425582637250725228">Yaptığınız değişiklikler kaydedilmemiş olabilir.</translation>
 <translation id="4258748452823770588">İmza yanlış</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> engellendi</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Bağlantınız kesildi</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Politikaları yeniden yükle</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Çalıştırılabilir Yol</translation>
@@ -569,6 +575,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7445762425076701745">Bağlı olduğunuz sunucunun kimliği tam olarak doğrulanamıyor. Sunucuya yalnızca ağınızın içinde geçerli olan ve dış sertifika yetkilisi tarafından hiçbir şekilde sahipliği doğrulanamayacak bir ad kullanarak bağlandınız. Bazı sertifika yetkilileri bu adlar için sertifikalar yayınlasa da, bir saldırgana değil, hedeflenen web sitesine bağlandığınızdan emin olmanın herhangi bir yolu yoktur.</translation>
 <translation id="7450732239874446337">Ağ G/Ç askıya alındı.</translation>
+<translation id="7451311239929941790">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinme.</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
 <translation id="7514365320538308">İndir</translation>
@@ -709,6 +716,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="9039213469156557790">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın davranışını değiştirmek üzere kullanılabilir.</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> alan adına erişmeye çalıştınız, ancak sunucu geçersiz bir sertifika sağladı.</translation>
 <translation id="9050666287014529139">Parola</translation>
+<translation id="9065203028668620118">Düzenle</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> sayfası çalışmıyor</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9125941078353557812">Kartınızın arkasındaki 3 basamaklı CVC'yi girin</translation>

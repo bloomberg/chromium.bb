@@ -202,7 +202,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="3518985090088779359">Aceptar y continuar</translation>
 <translation id="3522247891732774234">Actualización disponible. Más opciones</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3549644494707163724">Encriptar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
+<translation id="3549644494707163724">Cifrar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="360480449234699036">Obtén información sobre los temas que aparecen en los sitios web sin salir de la página. La función Tocar para buscar permite enviar una palabra y su contexto a la Búsqueda de Google para ver definiciones, imágenes, resultados de búsqueda y otra información.
 
 Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para restringir la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
@@ -232,6 +232,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos premium ofrecidos por el operador.</translation>
+<translation id="4099423833822562131">Selecciona una dirección de envío para consultar los métodos de envío.</translation>
 <translation id="4099578267706723511">Ayuda a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="411254640334432676">Error de descarga.</translation>
@@ -279,6 +280,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4690286298542128877">Las pestañas se moverán a un menú de pestañas en Chrome.</translation>
 <translation id="4698413471314543145">Falta una función esencial obligatoria para ejecutar Chrome. Es posible que tu instalación de Chrome no esté completa o que no sea compatible con esta versión de Android.</translation>
 <translation id="4699172675775169585">Archivos e imágenes almacenados en caché</translation>
+<translation id="4710672574193412565">Añade una cuenta de Google desde la página para administrar cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="5087580092889165836">Añadir tarjeta</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="5107381076085091558">Se ha pausado la descarga.</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -376,7 +379,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="585027516397408832">Economizador de datos habilitado</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
-<translation id="588563574323093535">Preguntar antes de permitir que los sitios web activen el modo de pantalla completa (recomendado)</translation>
 <translation id="5899349522111170522">Crear archivo nuevo</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos locales almacenados por este sitio web, incluidas las cookies.</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
@@ -408,7 +410,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones o para generar estadísticas de informes).</translation>
 <translation id="6277522088822131679">Se ha producido un problema al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
-<translation id="6317634962183824346">Sincronización del sistema Android inhabilitada. Vuelve a habilitarla e inténtalo de nuevo.</translation>
 <translation id="6324360525379265737">Determinar codificación de caracteres automáticamente</translation>
 <translation id="6333140779060797560">Compartir a través de <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Cifrado</translation>
@@ -603,7 +604,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8719023831149562936">No se puede compartir la pestaña actual.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8730621377337864115">Listo</translation>
-<translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8812942424849541387">Controla cómo funciona en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcadores</translation>

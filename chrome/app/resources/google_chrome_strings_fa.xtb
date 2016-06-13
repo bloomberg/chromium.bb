@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">‏ورود به سیستم Chrome</translation>
 <translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
-<translation id="1073391069195728457">‏Chrome - اعلان‌ها</translation>
 <translation id="1104959162601287462">‏درباره سیستم عامل &amp;Chrome</translation>
 <translation id="110877069173485804">‏این Chrome شماست</translation>
 <translation id="123620459398936149">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
 <translation id="4147555960264124640">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
-<translation id="4167057906098955729">‏می‌توانید همه اعلان‌هایتان از برنامه‌های Chrome، افزودنی‌ها و وب‌سایت‌ها را در اینجا مشاهده کنید.</translation>
 <translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="4251615635259297716">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
 <translation id="4309555186815777032">‏(Chrome باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
@@ -115,6 +113,7 @@
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
 <translation id="4633000520311261472">‏برای ایمن‌تر کردن Chrome، برخی از افزونه‌هایی را که در<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
+<translation id="4664415150087723341">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه برای Google Chrome اعمال شد؛ برای فعال شدن آن باید هم‌اکنون راه‌اندازی مجدد کنید (برگه‌هایتان را بازیابی خواهیم کرد).</translation>
 <translation id="4700157086864140907">‏Google chrome می‌تواند با ارسال آنچه در مرورگر تایپ می‌کنید به سرورهای Google، غلط‌گیر املایی هوشمندانه‌تری ارائه دهد که به شما امکان دهد از همان فناوری غلط‌گیر املایی استفاده‌شده در جستجوی Google استفاده کنید.</translation>
 <translation id="4728575227883772061">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4743926867934016338">پذیرش و جستجو</translation>
@@ -136,6 +135,7 @@
 <translation id="5204098752394657250">‏Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />شرایط خدمات<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">‏مهمان‌‌ها می‌توانند از Chrome استفاده کنند بدون اینکه اثری از خود به جا بگذارند.</translation>
 <translation id="5253588388888612165">‏اگر این رایانه را با <ph name="PROFILE_NAME" /> به‌ اشتراک می‌گذارید، خودتان را به Chrome اضافه کنید تا جداگانه مرور کنید. در غیر این صورت اتصال حساب Google این شخص را قطع کنید.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{‏Google Chrome بعد از ۱ ثانیه راه‌اندازی مجدد می‌شود.}one{‏Google Chrome بعد از # ثانیه راه‌اندازی مجدد می‌شود.}other{‏Google Chrome بعد از # ثانیه راه‌اندازی مجدد می‌شود.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">‏این مدول با Google Chrome تداخل دارد.</translation>
 <translation id="5386244825306882791">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
@@ -192,7 +192,6 @@
 <translation id="7191567847629796517">‏Google Chrome OS از راه‌اندازی برنامه خارجی برای کار با پیوندهای <ph name="SCHEME" /> پشتیبانی نمی‌کند. پیوند درخواستی <ph name="PROTOLINK" /> است.</translation>
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="7242029209006116544">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. در صورت تمایل برای ذخیره داده‌های Chrome موجود به صورت جداگانه می‌توانید نمایه جدیدی ایجاد کنید. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">‏Chrome -اعلان‌ها (<ph name="QUANTITY" /> خوانده نشده)</translation>
 <translation id="729375352412857283">‏دریافت به‌روزرسانی‌های Google Chrome به‌زودی در این رایانه متوقف می‌شود، زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
 <translation id="7398801000654795464">‏شما بعنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم Chrome شدید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
@@ -228,7 +227,6 @@
 <translation id="8286862437124483331">‏Google Chrome در حال تلاش برای نشان دادن گذرواژه‌هاست. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="8290100596633877290">‏اوه! Google Chrome با اشکال مواجه شده است. دوباره راه‌اندازی شود؟</translation>
 <translation id="8406086379114794905">‏به بهبود Chrome کمک کنید</translation>
-<translation id="8460191995881063249">‏مرکز اعلان Chrome</translation>
 <translation id="853189717709780425">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست اجازه کنترل نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما مانند برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما برای همیشه به <ph name="USER_NAME" /> مرتبط می‌شوند. شما می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google خود حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط کنید.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
@@ -240,6 +238,7 @@
 <translation id="8669527147644353129">‏راهنمای Google Chrome</translation>
 <translation id="8679801911857917785">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="870251953148363156">‏به‌روزرسانی Goo&amp;gle Chrome</translation>
+<translation id="8796108026289707191">‏هم‌اکنون باید Google Chrome را راه‌اندازی مجدد کنید.</translation>
 <translation id="8823341990149967727">‏نسخه Chrome قدیمی است</translation>
 <translation id="884296878221830158">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome یا کلیک کردن روی دکمه صفحه اصلی نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8851136666856101339">اصلی</translation>

@@ -232,6 +232,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4089831646916293264">Este elemento pode interferir no acesso a serviços de dados Premium fornecidos pela sua operadora.</translation>
+<translation id="4099423833822562131">Selecione um endereço de envio para verificar os métodos de entrega.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="411254640334432676">Falha no download.</translation>
@@ -279,6 +280,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4690286298542128877">As guias serão movidas para um alternador de guias dentro do Google Chrome.</translation>
 <translation id="4698413471314543145">Um recurso importante e necessário para a execução do Google Chrome está ausente. Isso acontece porque a instalação do Google Chrome não foi concluída ou porque ele não é compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e arquivos armazenados em cache</translation>
+<translation id="4710672574193412565">Adicione uma Conta do Google na página de Contas do app Config. do seu dispositivo.</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4738836084190194332">Última sincronização: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5056549851600133418">Artigos para você</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
 <translation id="5107381076085091558">Download pausado.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -375,7 +378,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="585027516397408832">Economia de dados ativada</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5869522115854928033">Senhas salvas</translation>
-<translation id="588563574323093535">Perguntar antes de permitir que sites entrem no modo de tela cheia (recomendado)</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
 <translation id="5902828464777634901">Os dados locais armazenados por este site serão excluídos, inclusive os cookies.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
@@ -407,7 +409,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 Por exemplo, alguns websites podem responder a esta solicitação mostrando anúncios que não tenham como base outros websites que você visitou. Muitos websites continuarão coletando seus dados de navegação, por exemplo, para melhorar a segurança, fornecer conteúdo, anúncios e recomendações e para gerar relatórios estatísticos.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
-<translation id="6317634962183824346">A sincronização do sistema Android está desativada. Ative-a e tente novamente.</translation>
 <translation id="6324360525379265737">Determinar automaticamente a codificação de caracteres</translation>
 <translation id="6333140779060797560">Compartilhar via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Criptografia</translation>
@@ -601,7 +602,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
-<translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8812942424849541387">Controlar como esse recurso funciona nas <ph name="BEGIN_LINK1" />Configurações<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Favoritos</translation>

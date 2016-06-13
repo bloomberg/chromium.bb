@@ -78,6 +78,7 @@
 <translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="1753706481035618306">Seitenzahl</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Versuchen Sie, die Windows-Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Synchronisierungs-Passphrase aktualisieren</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
@@ -138,6 +139,7 @@
 <translation id="2400837204278978822">Unbekannter Dateityp</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ungültige Such-URL</translation>
 <translation id="2491120439723279231">Das Serverzertifikat enthält Fehler.</translation>
 <translation id="2495083838625180221">JSON-Parser</translation>
@@ -164,6 +166,7 @@
 <translation id="2712173769900027643">Berechtigung anfordern</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Verbindungsdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Ausgewählte Einträge entfernen</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
 <translation id="2778107779445548489">Diese Nachricht wird dir angezeigt, weil dein Elternteil diese Website blockiert hat.</translation>
@@ -200,6 +203,7 @@
 <translation id="3105172416063519923">Geräte-ID:</translation>
 <translation id="3109728660330352905">Sie sind nicht zum Aufrufen dieser Seite autorisiert.</translation>
 <translation id="3118046075435288765">Server hat die Verbindung unerwartet geschlossen.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Versuchen Sie, die Verbindungsdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="3145945101586104090">Fehler beim Dekodieren der Antwort</translation>
 <translation id="3147485256806412701">Diese Website verwendet eine neue allgemeine Top-Level-Domain.</translation>
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
@@ -252,8 +256,8 @@
 <translation id="3586931643579894722">Details ausblenden</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Der Client und der Server unterstützen keine gemeinsame SSL-Protokollversion oder Verschlüsselungssammlung. Dieses Problem tritt häufig auf, wenn der Server die RC4-Verschlüsselung erfordert, die nicht mehr als sicher gilt.</translation>
 <translation id="3609138628363401169">Der Server unterstützt die TLS-Renegotiation-Erweiterung nicht.</translation>
+<translation id="36224234498066874">Browserdaten löschen...</translation>
 <translation id="362276910939193118">Gesamtverlauf anzeigen</translation>
 <translation id="3623476034248543066">Wert zeigen</translation>
 <translation id="3630155396527302611">Falls das Programm schon in der Liste mit erlaubtem Netzwerkzugriff eingetragen ist, entfernen Sie es aus der Liste und fügen Sie es noch einmal hinzu.</translation>
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Abstürze</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Versuchen Sie, die Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="425582637250725228">Die von Ihnen vorgenommenen Änderungen werden möglicherweise nicht gespeichert.</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> wurde blockiert.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
@@ -569,6 +575,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
 <translation id="7445762425076701745">Die Identität des Servers, mit dem Sie verbunden sind, kann nicht vollständig überprüft werden. Sie sind mit einem Server verbunden, dessen Name nur innerhalb Ihres Netzwerks gültig ist und dessen Inhaberschaft von einer externen Zertifizierungsstelle nicht überprüft werden kann. Da einige Zertifizierungsstellen ungeachtet dessen dennoch Zertifikate für diese Namen ausstellen, gibt es keine Möglichkeit, sicherzustellen, dass Sie mit der gewünschten Website und nicht mit einem Angreifer verbunden sind.</translation>
 <translation id="7450732239874446337">Netzwerk-E/A unterbrochen</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
 <translation id="7514365320538308">Herunterladen</translation>
@@ -710,6 +717,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="9039213469156557790">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Verhalten der Seite verändern.</translation>
 <translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="9065203028668620118">Bearbeiten</translation>
 <translation id="9092364396508701805">Die Seite <ph name="HOST_NAME" /> funktioniert nicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9125941078353557812">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>

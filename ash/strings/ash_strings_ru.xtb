@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Устройство Chrome</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Участвовать в опросе</translation>
 <translation id="1723752762323179280">Завершение сеанса</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1812696562331527143">Способ ввода изменен на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />независимый разработчик<ph name="END_LINK" />).
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">Выход из системы будет выполнен автоматически через <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Расположенные поблизости устройства Bluetooth видят ваш компьютер под именем <ph name="NAME" /> с адресом <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> заряжается</translation>
+<translation id="6144938890088808325">Помогите нам улучшить Chromebook</translation>
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6203030746557259519">Виртуальный дисплей</translation>
@@ -212,6 +214,7 @@
 <translation id="7823564328645135659">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="785750925697875037">Просмотр мобильного аккаунта</translation>
 <translation id="7864539943188674973">Отключить Bluetooth</translation>
+<translation id="7869829692393275047">Текст опроса о Chrome OS. Текст опроса о Chrome OS. Текст опроса о Chrome OS. Текст опроса о Chrome OS. Текст опроса о Chrome OS.</translation>
 <translation id="7893838033650689677">Включить Wi-Fi</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7957227661277029961">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено. Рекомендуем использовать оригинальное зарядное устройство.</translation>

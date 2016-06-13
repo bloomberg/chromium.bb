@@ -232,6 +232,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
 <translation id="4089831646916293264">Tính năng này có thể ảnh hưởng đến quyền truy cập vào các dịch vụ dữ liệu cao cấp được nhà cung cấp dịch vụ của bạn cung cấp.</translation>
+<translation id="4099423833822562131">Chọn một địa chỉ giao hàng để xem phương thức giao hàng.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="411254640334432676">Tải xuống không thành công.</translation>
@@ -279,6 +280,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4690286298542128877">Tab sẽ chuyển sang trình chuyển đổi tab bên trong Chrome.</translation>
 <translation id="4698413471314543145">Chức năng quan trọng cần có để chạy Chrome bị thiếu; quá trình cài đặt Chrome của bạn chưa hoàn tất hoặc không tương thích với phiên bản Android này.</translation>
 <translation id="4699172675775169585">Tệp và hình ảnh được lưu trong bộ nhớ cache</translation>
+<translation id="4710672574193412565">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="4720023427747327413">Mở trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4738836084190194332">Đồng bộ hóa lần cuối: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5040262127954254034">Bảo mật</translation>
 <translation id="5056549851600133418">Bài viết dành cho bạn</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
+<translation id="5087580092889165836">Thêm thẻ</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="5107381076085091558">Đã tạm dừng tải xuống.</translation>
 <translation id="5118713593561876160">Sở thích</translation>
@@ -376,7 +379,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
-<translation id="588563574323093535">Hỏi trước trước khi cho phép các trang web truy cập chế độ toàn màn hình (được đề xuất)</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
 <translation id="5902828464777634901">Tất cả dữ liệu cục bộ được trang web này lưu, bao gồm cookie, sẽ bị xóa.</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -408,7 +410,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cách hiển thị cho bạn các quảng cáo không dựa trên các trang web khác mà bạn đã truy cập. Nhiều trang web sẽ vẫn thu thập và sử dụng dữ liệu duyệt web của bạn — ví dụ: để tăng cường bảo mật, cung cấp nội dung, quảng cáo và đề xuất, đồng thời tạo số liệu thống kê báo cáo.</translation>
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="6295158916970320988">Tất cả các trang web</translation>
-<translation id="6317634962183824346">Đồng bộ hóa hệ thống Android đã bị tắt. Vui lòng bật lại và thử lại.</translation>
 <translation id="6324360525379265737">Tự động xác định mã hóa ký tự</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Mã hóa</translation>
@@ -603,7 +604,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
-<translation id="8793430725658173476">Sao chép url</translation>
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8812942424849541387">Kiểm soát cách hoạt động của ứng dụng này trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Dấu trang</translation>

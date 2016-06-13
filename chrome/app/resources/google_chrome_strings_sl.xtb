@@ -9,7 +9,6 @@
 <translation id="1065672644894730302">Nastavitev ni mogoče prebrati.
 
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
-<translation id="1073391069195728457">Chrome – Obvestila</translation>
 <translation id="1104959162601287462">O &amp;sistemu Chrome OS</translation>
 <translation id="110877069173485804">To je vaš Chrome</translation>
 <translation id="123620459398936149">Chrome OS ne more sinhronizirati vaših podatkov. Posodobite geslo za Google Sync.</translation>
@@ -105,7 +104,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="4053720452172726777">Prilagajanje in nadziranje Google Chroma</translation>
 <translation id="4147555960264124640">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Namestitvenemu programu ni uspelo razširiti arhiva. Ponovno prenesite program Google Chrome.</translation>
-<translation id="4167057906098955729">Vsa obvestila aplikacij za Chrome, razširitev in spletnih mest lahko vidite tukaj.</translation>
 <translation id="423410644998903704">Chrome potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="4251615635259297716">Želite svoje podatke v Chromu povezati s tem računom?</translation>
 <translation id="4309555186815777032">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chroma)</translation>
@@ -118,6 +116,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="4631713731678262610">Skrij v meniju Chroma</translation>
 <translation id="4633000520311261472">Zaradi večje varnosti smo v Chromu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
+<translation id="4664415150087723341">Pravkar je bila nameščena posebna varnostna posodobitev za Google Chrome. Zdaj znova zaženite računalnik, da bo uveljavljena (vaše zavihke bomo obnovili).</translation>
 <translation id="4700157086864140907">Google Chrome lahko zagotovi pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in vam omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="4743926867934016338">Sprejem in iskanje</translation>
@@ -141,6 +140,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome</translation>
 <translation id="5251420635869119124">Gostje lahko uporabljajo Chrome, ne da bi za seboj pustili kar koli.</translation>
 <translation id="5253588388888612165">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chrome, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome se bo znova zagnal čez 1 sekundo.}one{Google Chrome se bo znova zagnal čez # sekundo.}two{Google Chrome se bo znova zagnal čez # sekundi.}few{Google Chrome se bo znova zagnal čez # sekunde.}other{Google Chrome se bo znova zagnal čez # sekund.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Za ta modul je znano, da je v sporu z Google Chromom.</translation>
 <translation id="5386244825306882791">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali iščete v naslovni vrstici.</translation>
@@ -199,7 +199,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7191567847629796517">Google Chrome OS ne podpira zagona zunanje aplikacije za obravnavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="7242029209006116544">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromu ostali ločeni. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome – Obvestila (št. neprebranih: <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista ne bosta več podprta.</translation>
 <translation id="7339898014177206373">Novo okno</translation>
 <translation id="7398801000654795464">V Chrome ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS" />. Pri vnovični prijavi uporabite isti račun.</translation>
@@ -235,7 +234,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8286862437124483331">Google Chrome poskuša prikazati gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome se je zrušil. Ga želite znova zagnati?</translation>
 <translation id="8406086379114794905">Pomagajte izboljšati Chrome</translation>
-<translation id="8460191995881063249">Chromovo središče za obvestila</translation>
 <translation id="853189717709780425">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadziranje vašega profila v Google Chromu. Vaši podatki v Chromu, na primer aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Delovna različica Chromovega zaganjalnika aplikacij</translation>
@@ -247,6 +245,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="8679801911857917785">Določa tudi, katera stran je prikazana, ko zaženete Chrome.</translation>
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>
+<translation id="8796108026289707191">Google Chrome zdaj znova zaženite.</translation>
 <translation id="8823341990149967727">Chrome je zastarel</translation>
 <translation id="884296878221830158">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali kliknete gumb za domačo stran.</translation>
 <translation id="8851136666856101339">glavn</translation>

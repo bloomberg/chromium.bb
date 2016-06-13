@@ -74,6 +74,7 @@
 <translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1753706481035618306">Paginanummer</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Voer Windows Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
@@ -134,6 +135,7 @@
 <translation id="2400837204278978822">Onbekend bestandstype.</translation>
 <translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2455981314101692989">Deze webpagina heeft Automatisch aanvullen uitgeschakeld voor dit formulier.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ongeldige zoek-URL.</translation>
 <translation id="2491120439723279231">Het servercertificaat bevat fouten.</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -160,6 +162,7 @@
 <translation id="2712173769900027643">Toestemming vragen</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Verbindingsdiagnose uitvoeren<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Geselecteerde items verwijderen</translation>
 <translation id="277499241957683684">Apparaatrecord ontbreekt</translation>
 <translation id="2778107779445548489">Dit bericht wordt weergegeven omdat je vader of moeder deze site heeft geblokkeerd.</translation>
@@ -196,6 +199,7 @@
 <translation id="3105172416063519923">Item-ID:</translation>
 <translation id="3109728660330352905">Je hebt geen toestemming om deze pagina te bekijken.</translation>
 <translation id="3118046075435288765">De server heeft de verbinding onverwacht verbroken.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Voer Verbindingsdiagnose uit<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Kan reactie niet decoderen</translation>
 <translation id="3147485256806412701">Deze site gebruikt een nieuw algemeen hoofddomein.</translation>
 <translation id="3150653042067488994">Tijdelijke serverfout</translation>
@@ -245,8 +249,8 @@
 <translation id="3586931643579894722">Details verbergen</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">De client en server bieden geen ondersteuning voor een algemene SSL-protocolversie of een coderingspakket. Dit treedt mogelijk op wanneer de server RC4 nodig heeft, wat niet langer als veilig wordt beschouwd.</translation>
 <translation id="3609138628363401169">De server ondersteunt de extensie voor TLS-onderhandeling niet.</translation>
+<translation id="36224234498066874">Wis browsegegevens...</translation>
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>
 <translation id="3623476034248543066">Waarde weergeven</translation>
 <translation id="3630155396527302611">Als dit programma al wordt vermeld als een programma dat toegang heeft tot het netwerk, kun je proberen het uit de lijst te verwijderen en het opnieuw toe te voegen.</translation>
@@ -302,6 +306,7 @@
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Voer Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="425582637250725228">Wijzigingen die je hebt aangebracht, worden mogelijk niet opgeslagen.</translation>
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
@@ -340,6 +345,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> wordt geblokkeerd</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Uitvoerbaar pad</translation>
@@ -559,6 +565,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7445762425076701745">De identiteit van de server waarmee je verbinding maakt, kan niet volledig worden geverifieerd. Je hebt verbinding gemaakt met een server die een naam gebruikt die alleen binnen je netwerk geldig is. Een externe certificeringsinstantie kan hiervoor nooit het eigendom verifiëren. Aangezien sommige certificeringsinstanties toch certificaten voor deze namen verlenen, kun je nooit zeker weten of je verbinding hebt met de bedoelde website en niet met een aanvaller.</translation>
 <translation id="7450732239874446337">Netwerk-I/O opgeschort.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7514365320538308">Downloaden</translation>
@@ -698,6 +705,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="9039213469156557790">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het gedrag van de pagina aan te passen.</translation>
 <translation id="9049981332609050619">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een ongeldig certificaat geretourneerd.</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>
+<translation id="9065203028668620118">Bewerken</translation>
 <translation id="9092364396508701805">De pagina op <ph name="HOST_NAME" /> werkt niet</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9125941078353557812">Geef de driecijferige CVC-code op die op de achterkant van je kaart staat</translation>

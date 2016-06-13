@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
 <translation id="1022361784792428773">Vitambuslisho vya Kiendelezi ambacho mtumiaji anahitaji kuzuiwa kusakinisha (au * kwa zote)</translation>
 <translation id="102492767056134033">Weka hali chaguo-msingi ya kibodi ya skrini kwenye skrini ya kuingia katika akaunti</translation>
+<translation id="1040446814317236570">Washa kipengee cha kuondoa URL ya PAC (kwa https://)</translation>
 <translation id="1044878202534415707">Ripoti takwimu za maunzi kama vile matumizi ya CPU/RAM.
 
      Sera ikiwekwa kuwa sivyo, takwimu hazitaripotiwa.
@@ -893,6 +894,23 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3967075520570946456">Washa kipengee cha kuonyesha ukurasa wa kukaribisha unapofungua kivinjari kwa mara ya kwanza baada ya kupata toleo jipya la Mfumo wa Uendeshaji.</translation>
 <translation id="3973371701361892765">Usiwahi kuficha rafu kiotomatiki</translation>
 <translation id="3984028218719007910">Inathibitisha iwapo <ph name="PRODUCT_OS_NAME" /> inaweka data ya akaunti ya karibu baada ya kuondoka. Ikiwa imewekwa kwenye ndivyo, hakuna akaunti za kudumu zinazowekwa kwa <ph name="PRODUCT_OS_NAME" /> na data yote kutoka kwenye kipindi cha mtumiaji itatupwa baada ya kuondoka. Ikiwa sera hii imewekwa kuwa sivyo au haijasanidiwa, kifaa kinaweza kuweka data ya mtumiaji wa karibu (iliyosimbwa fiche).</translation>
+<translation id="3994569321696536679">Huwasha kumbukumbu iliyozuiwa ya <ph name="PRODUCT_NAME" /> ya kuingia katika kipengele ndani ya Programu za Google na kuzuia watumiaji kubadilisha mipangilio hii.
+
+     Ukibainisha mipangilio hii, watumiaji wataweza kufikia
+      Programu za Google tu (kama vile Gmail) kwa kutekeleza akaunti za vikoa vilivyobainishwa.
+
+      Mipangilio hii HAITAZUIA watumiaji kuingia katika akaunti kwenye kifaa kinadhibitiwa
+     kinachohitaji uthibitishaji wa Google. Mtumiaji bado ataruhusiwa
+     kuingia katika akaunti kutoka kwenye vikoa vingine, lakini atapokea ujumbe wa hitilafu akijaribu kutumia Google Apps kwenye akaunti hizo.
+
+      Ukiacha mipangilio hii wazi/usipoisanidi, mtumiaji ataweza
+      kufikia Programu za Google akitumia akaunti yoyote.
+
+      Sera hii hufanya vichwa vya X-GoogApps-Allowed-Domains kuwekwa
+      kwenye maombi yote ya HTTP na HTTPS kwenye vikoa vyote vya google.com domains, kama ilivyoelezwa katika
+      https://support.google.com/a/answer/1668854.
+
+      Watumiaji hawawezi kubadilisha au kubatilisha mipangilio hii.</translation>
 <translation id="3997519162482760140">URL zitakazopewa idhini ya kufikia vifaa vya kurekodi video kwenye kurasa za kuingia katika SAML</translation>
 <translation id="4001275826058808087">Usimamizi wa IT kwa vifaa vya biashara unaweza kutumia alama hii kudhibiti iwapo itaruhusu watumiaji kukomboa matoleo kupitia Usajili wa Chrome OS.
 
@@ -1104,6 +1122,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
           Iwapo sera hii itawekwa kwenye kweli au kuachwa kama haijawekwa, makufuli ya kuwasha skrini yataheshimiwa kwa usimamizi wa nishati.
 
           Iwapo sera hii itawekwa kwenye usiruhusu, kufuli la kuwasha skrini litapuuzwa.</translation>
+<translation id="4882546920824859909">Bainisha vikoa vinavyoruhusiwa kufikia Google Apps</translation>
 <translation id="4890209226533226410">Weka aina ya kikuza skrini ambacho kimewashwa.
           Iwapo sera hii imeweka, inadhibiti aina ya kikuza skrini amabacho  kimewashwa. Kuweka sera kuwa "Hakuna" huzima kikuza skrini. 
 

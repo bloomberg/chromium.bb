@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">acceder a Chrome</translation>
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
-<translation id="1073391069195728457">Chrome: notificaciones</translation>
 <translation id="1104959162601287462">Acerca del &amp;sistema operativo de Chrome</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="123620459398936149">El Sistema operativo Chrome no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
@@ -101,7 +100,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4147555960264124640">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">El instalador no pudo descomprimir el archivo. Descargue Google Chrome nuevamente.</translation>
-<translation id="4167057906098955729">Aquí puedes ver las notificaciones de aplicaciones, extensiones y sitios web de Chrome.</translation>
 <translation id="423410644998903704">Chrome necesita acceso a los permisos para compartirlos con este sitio.</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Google Chrome con esta cuenta?</translation>
 <translation id="4309555186815777032">(Es necesario <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome).</translation>
@@ -114,6 +112,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="4567424176335768812">Accediste como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes ir a los marcadores, al historial y a otras opciones en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
 <translation id="4633000520311261472">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
+<translation id="4664415150087723341">Se acaba de instalar una actualización de seguridad especial para Google Chrome. Reinícialo para que se apliquen los cambios (se restaurarán tus pestañas).</translation>
 <translation id="4700157086864140907">Google Chrome puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite utilizar la misma tecnología de corrección ortográfica que usa la búsqueda de Google.</translation>
 <translation id="4728575227883772061">No se pudo completar la instalación debido a un error no identificado. Si Google Chrome se está ejecutando en este momento, ciérrelo e intente nuevamente.</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
@@ -135,6 +134,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada detrás.</translation>
 <translation id="5253588388888612165">Si compartes esta computadora con <ph name="PROFILE_NAME" />, agrégate a Chrome para navegar de manera independiente. De lo contrario, desconecta la cuenta de Google del otro usuario.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome se reiniciará en 1 segundo.}other{Google Chrome se reiniciará en # segundos.}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">Se sabe que este módulo es conflictivo con Google Chrome.</translation>
 <translation id="5386244825306882791">También controla qué página se muestra al iniciar Chrome o al realizar búsquedas desde el cuadro multifunción.</translation>
@@ -191,7 +191,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7191567847629796517">El Sistema operativo Google Chrome no puede iniciar una aplicación externa para procesar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
 <translation id="7242029209006116544">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. También puedes crear un perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome: notificaciones (<ph name="QUANTITY" /> sin leer)</translation>
 <translation id="729375352412857283">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque Windows XP y Windows Vista ya no se admitirán.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7398801000654795464">Accediste a Google Chrome con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
@@ -227,7 +226,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8406086379114794905">Ayudar a mejorar Chrome</translation>
-<translation id="8460191995881063249">Centro de notificaciones de Chrome</translation>
 <translation id="853189717709780425">Accediste con una cuenta administrada y le diste a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás relacionarlos con otra cuenta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Selector de aplicaciones de Google Chrome Canary</translation>
@@ -239,6 +237,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Debes reiniciar Google Chrome ahora.</translation>
 <translation id="8823341990149967727">Chrome no actualizado</translation>
 <translation id="884296878221830158">También controla qué página se muestra al iniciar Chrome o al hacer clic en el botón de página principal.</translation>
 <translation id="8851136666856101339">ppal</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome device</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
+<translation id="1683360892415596327">Sagutan ang aming survey</translation>
 <translation id="1723752762323179280">Lumalabas sa Session</translation>
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1812696562331527143">Naging <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />) ang iyong pamamaraan ng pag-input.
@@ -162,6 +163,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6062360702481658777">Awtomatiko kang masa-sign out sa loob ng <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ang iyong computer ay katuklas-tuklas sa mga kalapit na Bluetooth device at lalabas bilang "<ph name="NAME" />" na may address na <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">China-charge ang <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Tulungan kaming pahusayin ang Mga Chromebook</translation>
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6203030746557259519">Virtual na Display</translation>
@@ -213,6 +215,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="7823564328645135659">Nagbago ang wika mula "<ph name="FROM_LOCALE" />" patungong "<ph name="TO_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="785750925697875037">Tingnan ang account sa mobile</translation>
 <translation id="7864539943188674973">Huwag Paganahin ang Bluetooth</translation>
+<translation id="7869829692393275047">Dito ang text ng survey ng Chrome OS HaTS. Dito ang text ng survey ng Chrome OS HaTS. Dito ang text ng survey ng Chrome OS HaTS. Dito ang text ng survey ng Chrome OS HaTS.</translation>
 <translation id="7893838033650689677">I-on ang Wi-Fi</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7957227661277029961">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito. Pag-isipang gamitin ang opisyal na charger.</translation>

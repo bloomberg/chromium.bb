@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Avoimet välilehdet</translation>
 <translation id="1753706481035618306">Sivunumero</translation>
 <translation id="1763864636252898013">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Kokeile Windowsin verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Tuntem. tied.tyyppi</translation>
 <translation id="2413528052993050574">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne ei välttämättä ole voimassa. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="2455981314101692989">Tämä verkkosivu on poistanut tämän lomakkeen automaattisen täytön käytöstä.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Virheellinen hakukoneen URL-osoite.</translation>
 <translation id="2491120439723279231">Palvelimen varmenteessa on virheitä.</translation>
 <translation id="2495083838625180221">JSON-jäsentäjä</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Pyydä käyttölupaa</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />yhteysdiagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Poista valitut kohteet</translation>
 <translation id="277499241957683684">Laitetallenne puuttuu</translation>
 <translation id="2778107779445548489">Tämä viesti näytetään, koska vanhempasi esti tämän sivuston.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Laitteen tunnus:</translation>
 <translation id="3109728660330352905">Sinulla ei ole oikeutta tarkastella tätä sivua.</translation>
 <translation id="3118046075435288765">Palvelin katkaisi yhteyden.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Kokeile yhteysdiagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="3145945101586104090">Vastauksen purkaminen epäonnistui</translation>
 <translation id="3147485256806412701">Tämä sivusto käyttää uutta yleistä ylätason verkkotunnusta.</translation>
 <translation id="3150653042067488994">Tilapäinen palvelinvirhe</translation>
@@ -252,8 +256,8 @@
 <translation id="3586931643579894722">Piilota lisätiedot</translation>
 <translation id="3587482841069643663">Kaikki</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Asiakas ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa. Palvelin edellyttää luultavasti RC4:ää, jota ei enää pidetä turvallisena.</translation>
 <translation id="3609138628363401169">Palvelin ei tue TLS-edelleensiirto-laajennusta</translation>
+<translation id="36224234498066874">Poista selaustiedot...</translation>
 <translation id="362276910939193118">Näytä koko selaushistoria</translation>
 <translation id="3623476034248543066">Näytä arvo</translation>
 <translation id="3630155396527302611">Jos sillä on jo verkon käyttöoikeus, kokeile sen poistamista
@@ -310,6 +314,7 @@
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tarkista palomuurin ja virustorjuntaohjelmiston määritykset.<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kaatuu</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Kokeile verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="425582637250725228">Tekemiäsi muutoksia ei välttämättä tallenneta.</translation>
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
@@ -348,6 +353,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> estettiin</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Yhteys keskeytyi</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windowsin verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
@@ -570,6 +576,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7445762425076701745">Palvelimen, johon olet muodostanut yhteyden, identiteettiä ei voi täysin todentaa. Tietokoneesi on yhdistetty palvelimeen sellaisen nimen avulla, joka on kelvollinen vain verkkosi sisällä ja jonka omistajaa ulkopuolinen varmenteen myöntäjä ei pysty todentamaan. Koska jotkin varmenteen myöntäjät kuitenkin myöntävät varmenteita tällaisille nimille, et voi varmistaa, että olet muodostanut yhteyden haluamaasi verkkosivustoon etkä hakkeriin.</translation>
 <translation id="7450732239874446337">Verkon IO jäädytetty.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />tiedonhakua<ph name="END_LINK" /> ongelmaan liittyen</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="7514365320538308">Lataa</translation>
@@ -710,6 +717,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="9039213469156557790">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun käyttäytymistä muokkaamalla näitä osia.</translation>
 <translation id="9049981332609050619">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti virheellisen varmenteen.</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>
+<translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" />-sivu ei toimi</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9125941078353557812">Anna kolminumeroinen CVC luottokortin takapuolelta.</translation>

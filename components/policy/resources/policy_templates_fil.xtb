@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
 <translation id="102492767056134033">Itakda ang default na estado ng on-screen na keyboard sa screen sa pag-login</translation>
+<translation id="1040446814317236570">I-enable ang pag-strip ng PAC URL (para sa https://)</translation>
 <translation id="1044878202534415707">Mag-ulat ng mga istatistika ng hardware gaya ng paggamit ng CPU/RAM.
 
       Kung itatakda ang patakaran sa false, hindi iuulat ang mga istatistika.
@@ -904,6 +905,26 @@
 <translation id="3967075520570946456">I-enable ang pagpapakita ng welcome page sa unang paglulunsad ng browser kasunod ng pag-upgrade ng OS.</translation>
 <translation id="3973371701361892765">Huwag kailanman awtomatikong itago ang shelf</translation>
 <translation id="3984028218719007910">Tinutukoy kung pinapanatili ng <ph name="PRODUCT_OS_NAME" /> ang lokal na data ng account pagkatapos ng pag-logout. Kung nakatakda sa true, walang mga umiiral nang account ang pananatilihin ng <ph name="PRODUCT_OS_NAME" /> at idi-discard ang lahat ng data mula sa session ng user pagkatapos ng pag-logout. Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring magpanatili ng (na-encrypt na) lokal na data ng user ang device.</translation>
+<translation id="3994569321696536679">Ine-enable ang pinaghihigpitang log ng
+      <ph name="PRODUCT_NAME" /> na itinatampok sa Google Apps at pinipigilan ang mga user
+      na baguhin ang setting na ito .
+
+      Kung tutukuyin mo ang setting na ito, maa-access lang ng user ang Google
+      Apps (tulad ng Gmail) na gumagamit ng mga account mula sa mga tinukoy na domain.
+
+      HINDI pipigilan ng setting na ito ang user sa pagla-log in sa isang pinamamahalaang device
+      na nangangailangan ng pagpapatotoo ng Google. Papayagan pa rin ang user na
+      mag-sign in sa mga account mula sa iba pang mga domain, ngunit makakatanggap sila ng error
+      kapag sinusubukang gamitin ang Google Apps gamit ang mga account na iyon.
+
+      Kung iiwan mong walang laman/hindi naka-configure ang setting na ito, magagawa ng user na
+      i-access ang Google Apps gamit ang anumang account.
+
+      Nagdudulot ang patakarang ito na maikabit ang X-GoogApps-Allowed-Domains header sa
+      lahat ng kahilingan ng HTTP at HTTPS sa lahat ng domain ng google.com, tulad nang nakalarawan sa
+      https://support.google.com/a/answer/1668854.
+
+      Hindi mababago o mao-override ng mga user ang setting na ito.</translation>
 <translation id="3997519162482760140">Mga URL na bibigyan ng access sa mga device na nagka-capture ng video sa mga page ng pag-login ng SAML</translation>
 <translation id="4001275826058808087">Magagamit ng mga IT admin para sa mga enterprise device ang flag na ito upang kontrolin kung papayagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
@@ -1119,6 +1140,7 @@
           Kung nakatakda sa true o iniwang hindi nakatakda ang patakarang ito, tatanggapin ang mga lock ng pagpapagana ng screen para sa pamamahala sa power.
 
           Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa lock ng pagpapagana ng screen.</translation>
+<translation id="4882546920824859909">Tukuyin ang mga domain na pinapayagang i-access ang Google Apps</translation>
 <translation id="4890209226533226410">Itakda ang uri ng magnifier ng screen na naka-enable.
 
           Kung nakatakda ang patakaran, kinokontrol nito ang uri naka-enable na magnifier ng screen. Ang pagtatakda sa patakaran sa "Wala" ay magdi-disable sa magnifier ng screen.

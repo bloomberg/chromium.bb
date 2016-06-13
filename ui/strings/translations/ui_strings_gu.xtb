@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1021451612696613363">તમારી સૂચનાઓ જોવા માટે સાઇન ઇન કરો</translation>
 <translation id="111910763555783249">સૂચના સેટિંગ્સ</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 દિવસ પહેલા}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}</translation>
 <translation id="1167268268675672572">લીટીની શરૂઆતમાં ખસેડો અને પસંદગી સંશોધિત કરો</translation>
@@ -10,6 +11,7 @@
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> તરફથી સૂચનાઓ અક્ષમ કરો</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
+<translation id="1685967565548146460">હેટ્સ</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 મિનિટ}one{# મિનિટ}other{# મિનિટ}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> અબજ</translation>
 <translation id="1781701194097416995">શબ્દની ડાબી બાજુએ ખસેડો</translation>
@@ -119,13 +121,11 @@
 <translation id="7814458197256864873">&amp;કૉપિ કરો</translation>
 <translation id="7850320739366109486">ખલેલ પાડશો નહીં</translation>
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
-<translation id="7960078400008666149">એક કલાક માટે ખલેલ પાડશો નહીં</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 કલાક પહેલા}one{# કલાક પહેલાં}other{# કલાક પહેલાં}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 સે બાકી}one{# સે બાકી}other{# સે બાકી}}</translation>
 <translation id="815598010540052116">નીચે સ્ક્રોલ કરો</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">પૃષ્ઠ નીચે</translation>
-<translation id="8226233771743600312">એક દિવસ માટે ખલેલ પાડશો નહીં</translation>
 <translation id="8328145009876646418">ડાબી કિનારી</translation>
 <translation id="8331626408530291785">ઉપર સ્ક્રોલ કરો</translation>
 <translation id="8371695176452482769">હવે બોલો</translation>

@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Kasutaja andmete kataloogi määramine</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
 <translation id="102492767056134033">Sisselogimiskuval kuvatava klaviatuuri vaikeoleku määramine</translation>
+<translation id="1040446814317236570">Luba PAC URL-i eemaldamine (https:// puhul)</translation>
 <translation id="1044878202534415707">Saatke aruandeid riistvara statistika kohta (nt protsessori/RAM-i kasutus).
 
       Kui reegli väärtuseks on määratud Väär, siis statistikat ei saadeta.
@@ -896,6 +897,26 @@
 <translation id="3967075520570946456">Tervituslehe kuvamise lubamine brauseri esmakordsel käivitamisel pärast operatsioonisüsteemi täiendamist.</translation>
 <translation id="3973371701361892765">Ära peida hoidlat kunagi automaatselt</translation>
 <translation id="3984028218719007910">Määrab, kas <ph name="PRODUCT_OS_NAME" /> säilitab kohaliku konto andmed pärast väljalogimist. Selle reegli lubamisel ei säilita <ph name="PRODUCT_OS_NAME" /> kontode andmeid ja kasutaja seansi kõik andmed eemaldatakse pärast väljalogimist. Kui keelate selle reegli või jätate määramata, siis võib seade säilitada kohaliku kasutaja andmeid (krüptitult).</translation>
+<translation id="3994569321696536679">Lubab rakenduse <ph name="PRODUCT_NAME" />
+      piiratud sisselogimise funktsiooni Google'i rakendustes ja takistab kasutajaid
+      seadet muutmast.
+
+      Kui määrate selle seade, saab kasutaja Google'i rakendusi, näiteks Gmaili,
+      kasutada ainult määratud domeenide kontodega.
+
+      Seade EI takista kasutajat sisse logimast hallatud seadmes, mis nõuab
+      Google'i autentimist. Kasutajal on lubatud muudelt domeenidelt pärit
+      kontodele sisse logida, ent nende kontodega Google'i rakendusi kasutades
+      kuvatakse veateade.
+
+      Kui jätate seade tühjaks/seadistamata, on Google'i rakenduste kasutamine
+      lubatud kõikide kontodega.
+
+      Reegli kasutamisel lisatakse kõigile google.com-i domeenidele edastatavate
+      HTTP- ja HTTPS-taotlustele päis X-GoogApps-Allowed-Domains, nagu on
+      kirjeldatud aadressil https://support.google.com/a/answer/1668854.
+
+      Kasutajad ei saa seadet muuta ega alistada.</translation>
 <translation id="3997519162482760140">URL-id, millele antakse SAML-i sisselogimislehtedel juurdepääs videosalvestusseadmetele</translation>
 <translation id="4001275826058808087">Ettevõtte seadmete IT-administraatorid saavad selle märgistuse abil juhtida, kas lubada kasutajatel pakkumisi lunastada Chrome OS-i registreerimise abil.
 
@@ -1111,6 +1132,7 @@
           Kui see reegli väärtuseks on seatud Tõene või on väärtus seadmata, kasutatakse energiahalduseks ekraani aktiveerimise lukustamist.
 
           Kui reegli väärtuseks on seatud Väär, siis ekraani aktiveerimise lukustamise taotlust eiratakse.</translation>
+<translation id="4882546920824859909">Google'i rakenduste kasutamise loaga domeenide määramine</translation>
 <translation id="4890209226533226410">Lubatud ekraaniluubi tüübi määramine.
 
          Kui reegel on määratud, juhib see lubatud ekraaniluubi tüüpi. Reegli seadmine väärtusele Puudub keelab ekraaniluubi.

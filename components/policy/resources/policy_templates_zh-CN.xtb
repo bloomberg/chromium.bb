@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
 <translation id="102492767056134033">设置屏幕键盘在登录屏幕上的默认状态</translation>
+<translation id="1040446814317236570">启用 PAC 网址剔除功能（适用于 https:// 类网址）</translation>
 <translation id="1044878202534415707">报告硬件统计数据，例如 CPU/RAM 使用情况。
 
       如果此政策设为 false，系统将不会报告硬件统计数据。
@@ -817,6 +818,17 @@
 <translation id="3967075520570946456">在操作系统升级后，允许该浏览器首次启动时显示欢迎页面。</translation>
 <translation id="3973371701361892765">一律不自动隐藏任务栏</translation>
 <translation id="3984028218719007910">确定 <ph name="PRODUCT_OS_NAME" />是否要在退出后保留本地帐户数据。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME" />就不会持续保留帐户，且会在退出后舍弃用户会话中的所有数据。如果未配置此政策或将其设置为 false，设备就会保留（经过加密的）本地用户数据。</translation>
+<translation id="3994569321696536679">启用 <ph name="PRODUCT_NAME" /> 的 Google Apps 受限登录功能，并禁止用户更改此设置。
+
+      如果您定义了此设置，用户将只能使用指定网域中的帐户访问 Google Apps（例如 Gmail）。
+
+      此设置不会禁止用户从要求进行 Google 身份验证的托管设备上登录。系统仍会允许用户登录其他网域中的帐户，但如果他们尝试使用这些帐户访问 Google Apps，则会收到错误消息。
+
+      如果您将此设置留空/未配置此设置，用户将能够使用任何帐户访问 Google Apps。
+
+      此政策会使系统将 X-GoogApps-Allowed-Domains 标头附加到向所有 google.com 网域发送的所有 HTTP 和 HTTPS 请求中，如 https://support.google.com/a/answer/1668854 中所述。
+
+      用户无法更改或覆盖此设置。</translation>
 <translation id="3997519162482760140">可通过 SAML 登录页面访问视频捕获设备的网址</translation>
 <translation id="4001275826058808087">企业设备的IT管理员可以使用此项控制是否允许用户通过注册Chrome操作系统兑换优惠。
 
@@ -1006,6 +1018,7 @@
           如果将此政策设为 true 或未进行设置，系统就会允许使用屏幕唤醒锁定，以便进行电源管理。
 
           如果将此政策设为 false，系统就会忽略屏幕唤醒锁定请求。</translation>
+<translation id="4882546920824859909">定义可访问 Google Apps 的网域</translation>
 <translation id="4890209226533226410">设置启用的放大镜类型。
 
           如果设置此政策，则会控制启用的放大镜类型。如果此政策的值设为“None”，那么系统将会停用放大镜。

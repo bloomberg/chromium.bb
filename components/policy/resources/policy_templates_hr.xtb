@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
 <translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
 <translation id="102492767056134033">Postavljanje zadanog stanja zaslonske tipkovnice na zaslonu za prijavu</translation>
+<translation id="1040446814317236570">Omogući uklanjanje dijelova URL za PAC (za https://)</translation>
 <translation id="1044878202534415707">Izvješćivanje o statističkim podacima o hardveru, primjerice, o upotrebi procesora/RAM-a.
 
       Ako se pravilo postavi na "neistinito", neće se izvješćivati o statističkim podacima.
@@ -847,6 +848,26 @@
 <translation id="3967075520570946456">Omogućivanje prikazivanja stranice dobrodošlice prilikom prvog pokretanja preglednika nakon nadogradnje OS-a.</translation>
 <translation id="3973371701361892765">Nikada nemoj automatski sakriti policu</translation>
 <translation id="3984028218719007910">Određuje hoće li sustav <ph name="PRODUCT_OS_NAME" /> zadržati lokalne podatke računa nakon odjave. Ako je to pravilo postavljeno na "istinito", sustav <ph name="PRODUCT_OS_NAME" /> ne zadržava trajne račune i svi podaci s korisnikove sesije bit će odbačeni nakon odjave. Ako je to pravilo postavljeno na "lažno" ili ako nije konfigurirano, uređaj će možda zadržavati (kriptirane) lokalne korisničke podatke.</translation>
+<translation id="3994569321696536679">Omogućuje
+      značajku ograničene prijave za <ph name="PRODUCT_NAME" /> u Google Appsu i korisnicima
+      onemogućuje da promijene tu postavku.
+
+      Ako definirate tu postavku, korisnik će Google Appsu (primjerice Gmailu) moći
+      pristupiti samo pomoću računa s određenih domena.
+
+      Ta postavka NE sprječava korisnika da se prijavi s upravljanog uređaja
+      koji zahtijeva Google autentifikaciju. Korisnik će se i dalje moći
+      prijavljivati na račune s drugih domena, ali će primiti pogrešku pri pokušaju
+      upotrebe Google Appsa s tim računima.
+
+      Ako tu postavku ostavite praznom ili je ne konfigurirate, korisnik će moći
+      pristupiti Google Appsu bilo kojim računom.
+
+      To pravilo uzrokuje dodavanje zaglavlja X-GoogApps-Allowed-Domains
+      svim HTTP i HTTPS zahtjevima za sve google.com domene kao što
+      je opisano na stranici https://support.google.com/a/answer/1668854.
+
+      Korisnici ne mogu promijeniti ni nadjačati tu postavku.</translation>
 <translation id="3997519162482760140">URL-ovi koji će dobiti pristup uređajima za videosnimanje na SAML stranicama za prijavu</translation>
 <translation id="4001275826058808087">IT administratori za poslovne uređaje pomoću te oznake mogu kontrolirati hoće li korisnici moći iskoristiti ponude registracijom OS-a Chrome.
 
@@ -1036,6 +1057,7 @@
           Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
 
           Ako je to pravilo postavljeno na netočno, ti će se zahtjevi zanemarivati.</translation>
+<translation id="4882546920824859909">Definiranje domena kojima je dopušten pristup Google Appsu</translation>
 <translation id="4890209226533226410">Postavi vrstu povećala koje je omogućeno.
 
           Ako se to pravilo postavi, ono upravlja vrstom povećala koje je omogućeno. Postavljanjem tog pravila na opciju "Ništa" povećalo se onemogućuje.

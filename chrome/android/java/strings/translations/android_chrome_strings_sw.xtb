@@ -232,6 +232,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Maelezo ya kisheria</translation>
 <translation id="4089831646916293264">Kipengele hiki kinaweza kutatiza ufikiaji wa huduma za data za kulipia unazopata kutoka kwa mtoa huduma wako.</translation>
+<translation id="4099423833822562131">Chagua anwani ya mahali bidhaa zitakapopelekwa ili uangalie mbinu za kusafirisha.</translation>
 <translation id="4099578267706723511">Saidia kuboresha Chrome kwa kutumia Google takwimu za matumizi na ripoti wakati wowote kivinjari hiki kinapoacha kufanya kazi.</translation>
 <translation id="410351446219883937">Kucheza kiotomatiki</translation>
 <translation id="411254640334432676">Upakuaji haujafaulu.</translation>
@@ -279,6 +280,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4690286298542128877">Vichupo vitasonga kwenye kibadilishaji cha kichupo ndani ya Chrome.</translation>
 <translation id="4698413471314543145">Utendaji muhimu unahitajika kuendesha Chrome zinakosekana; huenda usakinishaji wako wa Chrome haujakamilika, au hauoani na toleo hili la Android.</translation>
 <translation id="4699172675775169585">Picha na faili zilizoakibishwa</translation>
+<translation id="4710672574193412565">Ongeza Akaunti ya Google kutoka kwenye ukurasa wa Akaunti katika programu ya Mipangilio ya kifaa chako.</translation>
 <translation id="4720023427747327413">Fungua katika <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Sasisha</translation>
 <translation id="4738836084190194332">Kilisawazishwa mara ya mwisho: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="5040262127954254034">Faragha</translation>
 <translation id="5056549851600133418">Makala kwa ajili yako</translation>
 <translation id="5063480226653192405">Matumizi</translation>
+<translation id="5087580092889165836">Ongeza kadi</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="5107381076085091558">Upakuaji umesitishwa.</translation>
 <translation id="5118713593561876160">Mambo yanayokuvutia</translation>
@@ -376,7 +379,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="585027516397408832">Kiokoa Data kimewashwa</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="5869522115854928033">Manenosiri yaliyohifadhiwa</translation>
-<translation id="588563574323093535">Uliza kwanza kabla ya kuruhusu tovuti ziweke skrini nzima (inapendekezwa)</translation>
 <translation id="5899349522111170522">Unda faili mpya</translation>
 <translation id="5902828464777634901">Data zote za ndani zilizohifadhiwa na tovuti hii, ikiwemo vidakuzi, zitafutwa.</translation>
 <translation id="5911030830365207728">Google Tafsiri</translation>
@@ -408,7 +410,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo ambayo hayalingani na tovuti nyingine ulizotembelea. Tovuti nyingi bado zitakusanya na kutumia data yako ya kuvinjari — kwa mfano ili kuboresha usalama, kutoa maudhui, matangazo na mapendekezo, na kuzalisha takwimu za kuripoti.</translation>
 <translation id="6277522088822131679">Kulikuwa na tatizo katika kuchapisha ukurasa. Tafadhali jaribu tena.</translation>
 <translation id="6295158916970320988">Tovuti zote</translation>
-<translation id="6317634962183824346">Usawazishaji wa mfumo wa Android umezimwa. Tafadhali washa na ujaribu tena.</translation>
 <translation id="6324360525379265737">Tambua usimbaji fiche wa herufi kiotomatiki</translation>
 <translation id="6333140779060797560">Shiriki kupitia <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Usimbaji fiche</translation>
@@ -603,7 +604,6 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
-<translation id="8793430725658173476">Nakili url</translation>
 <translation id="8798099450830957504">Chaguo Msingi</translation>
 <translation id="8812942424849541387">Dhibiti namna inavyofanya kazi katika <ph name="BEGIN_LINK1" />Mipangilio<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Alamisho</translation>

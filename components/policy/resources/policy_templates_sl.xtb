@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Nastavitev imenika za uporabniške podatke</translation>
 <translation id="1022361784792428773">ID-ji razširitev, katerih namestitev je treba uporabniku preprečiti (ali * za vse)</translation>
 <translation id="102492767056134033">Nastavitev privzetega stanja zaslonske tipkovnice na zaslonu za prijavo</translation>
+<translation id="1040446814317236570">Omogočanje odstranjevanja elementov iz URL-jev za skripte PAC (za https://)</translation>
 <translation id="1044878202534415707">Poročanje statističnih podatkov o strojni opremi, kot je poraba CPE-ja/RAM-a.
 
       Če je pravilnik onemogočen, se statistični podatki ne poročajo.
@@ -912,6 +913,26 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3967075520570946456">Omogočanje prikaza pozdravne strani ob prvem zagonu brskalnika po nadgradnji operacijskega sistema</translation>
 <translation id="3973371701361892765">Nikoli samodejno ne skrij police</translation>
 <translation id="3984028218719007910">Določa, ali <ph name="PRODUCT_OS_NAME" /> po odjavi ohrani lokalne podatke o računu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> ne shrani trajnih računov in vsi podatki seje uporabnika se po odjavi izbrišejo. Če je pravilnik onemogočen ali ni nastavljen, lahko naprava hrani (šifrirane) lokalne podatke uporabnikov.</translation>
+<translation id="3994569321696536679">Omogoči funkcijo
+      omejene prijave za <ph name="PRODUCT_NAME" /> v storitvi Google Apps in uporabnikom
+       prepreči spreminjanje te funkcije.
+
+      Če določite to nastavitev, bo lahko uporabnik do storitev Google
+      Apps (npr. do Gmaila) dostopal samo z računi iz navedenih domen.
+
+      Ta nastavitev uporabniku NE prepreči prijave v upravljani napravi, za katero
+      je potrebno Googlovo prejverjanje pristnosti. Uporabniku bo še vedno
+      dovoljena prijava v račune iz drugih domen, vendar bo prikazana napaka,
+      če s temi računi poskuša uporabiti Google Apps.
+
+      Če to nastavitev pustite prazno/nenastavljeno, bo lahko uporabnik do
+      storitev Google Apps dostopal iz poljubnega računa.
+
+      Ta pravilnik povzroči, da je glava X-GoogApps-Allowed-Domains dodana
+      vsem zahtevam HTTP in HTTPS za vse domene google.com, kot je
+      opisano na strani https://support.google.com/a/answer/1668854.
+
+      Uporabniki te nastavitve ne morejo spremeniti ali preglasiti.</translation>
 <translation id="3997519162482760140">URL-ji, ki jim bo odobren dostop do naprav za zajem videa na straneh za prijavo SAML</translation>
 <translation id="4001275826058808087">Skrbniki za IT, ki upravljajo naprave v podjetju, lahko s to zastavico določijo, ali je uporabnikom dovoljeno unovčiti ponudbe prek registracije sistema Chrome OS.
 
@@ -1127,6 +1148,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
 
           Če je ta pravilnik nastavljen na »False«, bodo zahteve za zaklepanje preklopa zaslona iz mirovanja prezrta.</translation>
+<translation id="4882546920824859909">Opredelitev domen, ki smejo dostopati do storitve Google Apps</translation>
 <translation id="4890209226533226410">Nastavitev vrste lupe, ki je omogočena.
 
           Če je ta pravilnik nastavljen, določa vrsto lupe, ki je omogočena. Če pravilnik nastavite na »Brez«, bo lupa onemogočena.

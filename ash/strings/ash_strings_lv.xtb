@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Chrome ierīce</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Aizpildīt mūsu aptauju</translation>
 <translation id="1723752762323179280">Iziešana no sesijas</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1812696562331527143">Ievades metode ir mainīta uz <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />trešā puse<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6062360702481658777">Jūs tiksiet automātiski izrakstīts pēc šāda laika: <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Tuvumā esošas Bluetooth ierīces var uztvert jūsu datoru; tā nosaukums ir “<ph name="NAME" />”, adrese — <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Uzlāde: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Palīdziet mums uzlabot Chromebook datorus</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6203030746557259519">Virtuālais displejs</translation>
@@ -213,6 +215,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="7823564328645135659">Pēc jūsu iestatījumu sinhronizēšanas valoda ir mainīta no <ph name="FROM_LOCALE" /> uz <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Skatīt mobilo kontu</translation>
 <translation id="7864539943188674973">Atspējot Bluetooth</translation>
+<translation id="7869829692393275047">Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts.</translation>
 <translation id="7893838033650689677">Ieslēgt Wi-Fi</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā ir ieslēgta. Izmantojiet oficiālo uzlādes ierīci.</translation>

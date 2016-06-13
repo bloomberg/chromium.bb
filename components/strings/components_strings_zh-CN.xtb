@@ -75,6 +75,7 @@
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
@@ -135,6 +136,7 @@
 <translation id="2400837204278978822">文件类型未知。</translation>
 <translation id="2413528052993050574">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能已被撤消。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2455981314101692989">该网页已对该表单停用自动填充功能。</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />运行网络诊断<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">搜索网址无效。</translation>
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="2495083838625180221">JSON 解析器</translation>
@@ -161,6 +163,7 @@
 <translation id="2712173769900027643">请求批准</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />运行网络连接诊断<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">移除所选项</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
 <translation id="2778107779445548489">您之所以看到这条消息，是因为您的家长屏蔽了此网站。</translation>
@@ -197,6 +200,7 @@
 <translation id="3105172416063519923">资产 ID：</translation>
 <translation id="3109728660330352905">您未获授权，无法查看此网页。</translation>
 <translation id="3118046075435288765">服务器意外关闭了连接。</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />尝试运行网络连接诊断<ph name="END_LINK" />。</translation>
 <translation id="3145945101586104090">无法对响应解码</translation>
 <translation id="3147485256806412701">此网站使用的是新的通用顶级域名。</translation>
 <translation id="3150653042067488994">服务器临时错误</translation>
@@ -247,8 +251,8 @@
 <translation id="3586931643579894722">隐藏详细信息</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
-<translation id="3608308818141211642">客户端和服务器不支持常用的 SSL 协议版本或加密套件。导致此问题的原因通常是服务器要求使用 RC4，而这种加密方式根据当前标准已不够安全。</translation>
 <translation id="3609138628363401169">服务器不支持 TLS 重新协商修正。</translation>
+<translation id="36224234498066874">清除浏览数据...</translation>
 <translation id="362276910939193118">显示所有历史记录</translation>
 <translation id="3623476034248543066">显示值</translation>
 <translation id="3630155396527302611">如果它已在可访问网络的程序列表中，请尝试将它从该列表中移除，然后重新添加到其中。</translation>
@@ -304,6 +308,7 @@
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />检查防火墙和防病毒配置<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">崩溃</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />尝试运行网络诊断<ph name="END_LINK" />。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="425582637250725228">系统可能不会保存您所做的更改。</translation>
 <translation id="4258748452823770588">签名无效</translation>
@@ -342,6 +347,7 @@
 <translation id="4697214168136963651">已阻止 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
@@ -561,6 +567,7 @@
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7445762425076701745">无法完全验证您所连接到的服务器的身份。您在连接服务器时使用的服务器名称仅在您的网络中有效，而外部证书授权中心无法验证该名称的所有权。由于一些证书授权中心仍然会为这些名称颁发证书，因此无法确保您连接到想要访问的网站而不是攻击网站。</translation>
 <translation id="7450732239874446337">网络 IO 已暂停。</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7514365320538308">下载</translation>
@@ -701,6 +708,7 @@
 <translation id="9039213469156557790">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，而攻击者可以修改这些资源，从而改变此页的行为。</translation>
 <translation id="9049981332609050619">您试图访问 <ph name="DOMAIN" />，但服务器提供的证书无效。</translation>
 <translation id="9050666287014529139">密码</translation>
+<translation id="9065203028668620118">修改</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> 网页无法正常运作</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>

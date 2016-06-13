@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">log masuk ke Chrome</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk mengongsikannya dengan tapak ini.</translation>
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
-<translation id="1073391069195728457">Chrome - Pemberitahuan</translation>
 <translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ini Chrome anda</translation>
 <translation id="123620459398936149">OS Chrome tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
@@ -101,7 +100,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Pemasang gagal untuk nyahmampat arkib. Sila muat turun Google Chrome semula.</translation>
-<translation id="4167057906098955729">Anda boleh melihat semua pemberitahuan anda dari apl, sambungan dan tapak web Chrome di sini.</translation>
 <translation id="423410644998903704">Chrome memerlukan akses kebenaran untuk mengongsikannya dengan tapak ini.</translation>
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
 <translation id="4309555186815777032">(memerlukan Chrome <ph name="BEGIN_BUTTON" />mula semula<ph name="END_BUTTON" />)</translation>
@@ -114,6 +112,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="4631713731678262610">Sembunyikan dalam menu Chrome</translation>
 <translation id="4633000520311261472">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
+<translation id="4664415150087723341">Kemas kini keselamatan khas untuk Google Chrome baru sahaja dilakukan; anda perlu memulakan semula peranti ini sekarang supaya kemas kini ini berkesan (kami akan memulihkan tab anda).</translation>
 <translation id="4700157086864140907">Google Chrome dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
 <translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
 <translation id="4743926867934016338">Terima &amp; Cari</translation>
@@ -135,6 +134,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome </translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
 <translation id="5253588388888612165">Jika anda berkongsi komputer ini dengan <ph name="PROFILE_NAME" /> , tambahkan diri anda pada Chrome untuk menyemak imbas secara berasingan. Jika tidak, putuskan sambungan Akaun Googlenya.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome akan dimulakan semula dalam 1 saat.}other{Google Chrome akan dimulakan semula dalam # saat.}}</translation>
 <translation id="5328989068199000832">Perduaan Google Chrome</translation>
 <translation id="5334545119300433702">Modul ini diketahui bercanggah dengan Google Chrome.</translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>
@@ -191,7 +191,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7191567847629796517">Google Chrome OS tidak menyokong pelancaran aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME" />. Pautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - Pemberitahuan (<ph name="QUANTITY" /> belum dibaca)</translation>
 <translation id="729375352412857283">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista tidak lagi akan disokong.</translation>
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="7398801000654795464">Anda telah log masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS" />. Sila gunakan akaun yang sama untuk log masuk lagi.</translation>
@@ -227,7 +226,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8286862437124483331">Google Chrome cuba menunjukkan kata laluan. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="8290100596633877290">Alamak! Google Chrome mengalami ranap sistem. Lancarkan semula sekarang?</translation>
 <translation id="8406086379114794905">Bantu mempertingkat Chrome</translation>
-<translation id="8460191995881063249">Pusat Pemberitahuan Chrome</translation>
 <translation id="853189717709780425">Anda log masuk dengan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Pelancar Apl Chrome Canary</translation>
@@ -239,6 +237,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="870251953148363156">Kemas kini &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Anda perlu memulakan semula Google Chrome sekarang.</translation>
 <translation id="8823341990149967727">Chrome sudah Usang</translation>
 <translation id="884296878221830158">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau mengklik butang Laman Utama.</translation>
 <translation id="8851136666856101339">utama</translation>

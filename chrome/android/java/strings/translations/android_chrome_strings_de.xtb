@@ -72,6 +72,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="189172778771606813">Navigationsleiste schließen</translation>
 <translation id="1924956916668006832">Lieferadresse auswählen</translation>
+<translation id="1933845786846280168">Ausgewählter Tab</translation>
 <translation id="194341124344773587">Berechtigung für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
 <translation id="1944384637046898011">Ab <ph name="TIME" /> alle Daten mit Google-Passwort verschlüsseln</translation>
@@ -156,6 +157,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2959609938957585241">Aktivieren Sie "Daten automatisch synchronisieren" in den Android-Kontoeinstellungen, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
+<translation id="2979025552038692506">Ausgewählter Inkognito-Tab</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
 <translation id="2996809686854298943">URL erforderlich</translation>
 <translation id="3012408695656332380">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre bestehenden Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />. Daten, die Sie nach Ihrer Abmeldung erstellt haben, gehen jedoch verloren.</translation>
@@ -230,6 +232,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="4089831646916293264">Diese Funktion beeinträchtigt möglicherweise den Zugang zu Premium-Datendiensten, die von Ihrem Mobilfunkanbieter bereitgestellt werden.</translation>
+<translation id="4099423833822562131">Wählen sie eine Versandadresse aus, um die Versandmethoden zu sehen.</translation>
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
@@ -277,6 +280,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4690286298542128877">Tabs werden in einen Tab-Wechsler in Chrome verschoben.</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
+<translation id="4710672574193412565">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="4720023427747327413">In <ph name="PRODUCT_NAME" /> öffnen</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4738836084190194332">Letzte Synchronisierung: <ph name="WHEN" /></translation>
@@ -299,6 +303,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5056549851600133418">Artikel für Sie</translation>
 <translation id="5063480226653192405">Verwendung</translation>
+<translation id="5087580092889165836">Karte hinzufügen</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5107381076085091558">Download angehalten.</translation>
 <translation id="5118713593561876160">Interessen</translation>
@@ -374,7 +379,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="585027516397408832">Datensparmodus aktiviert</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
-<translation id="588563574323093535">Nachfragen, bevor Websites in den Vollbildmodus wechseln dürfen (empfohlen)</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
@@ -406,7 +410,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Werbeanzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
-<translation id="6317634962183824346">Android-Systemsynchronisierung deaktiviert. Bitte aktivieren und wiederholen.</translation>
 <translation id="6324360525379265737">Zeichencodierung automatisch ermitteln</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
 <translation id="6337234675334993532">Verschlüsselung</translation>
@@ -554,6 +557,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8076014560081431679">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
+<translation id="8103578431304235997">Inkognito-Tab</translation>
 <translation id="8106211421800660735">Kreditkartennummer</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="8137558756159375272">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
@@ -600,7 +604,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
-<translation id="8793430725658173476">URL kopieren</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8812942424849541387">Funktionsweise unter <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>

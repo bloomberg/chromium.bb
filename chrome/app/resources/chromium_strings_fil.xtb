@@ -44,13 +44,13 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2372704305038231957">Maaaring hindi gumana nang maayos ang 32-bit na Chromium dahil hindi na ito sinusuportahan sa Linux system na ito. Mangyaring mag-upgrade sa 64-bit na Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{May nagaganap na pagda-download sa kasalukuyan. Gusto mo bang kanselahin ang pag-download at umalis sa Chromium?}one{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}other{# na pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}}</translation>
 <translation id="2396765026452590966">Binago ng extension na "<ph name="EXTENSION_NAME" />" ang ipinapakitang page kapag sinimulan mo ang Chromium.</translation>
+<translation id="2483889755041906834">Sa Chromium</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2486653164587200256">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Windows XP o Windows Vista.</translation>
 <translation id="2535480412977113886">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="2558641060352364164">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="2572494885440352020">Helper ng Chromium</translation>
 <translation id="2595977381794111014">Gamitin ang shortcut ng <ph name="APPS_ICON_IMAGE" /> sa Chromium bookmarks bar upang patuloy na ma-access ang iyong mga app.</translation>
-<translation id="2602806952220118310">Chromium - Mga Notification</translation>
 <translation id="2636877269779209383">Nangangailangan ang Chromium ng access sa camera upang maibahagi ito sa site na ito.</translation>
 <translation id="2648074677641340862">May naganap na error sa operating system sa panahon ng pag-install. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="2673087257647337101">Halos napapanahon na! Muling ilunsad ang Chromium upang tapusin ang pag-update.</translation>
@@ -70,7 +70,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3130323860337406239">Ginagamit ng Chromium ang iyong mikropono.</translation>
 <translation id="313551035350905294">Nagsa-sign in ka gamit ang isang pinamamahalaang account at ibinibigay mo ang kontrol ng administrator nito sa iyong profile sa Chromium. Permanenteng mauugnay sa <ph name="USER_NAME" /> ang iyong data sa Chromium, gaya ng iyong apps, mga bookmark, kasaysayan, mga password, at iba pang mga setting. Matatanggal mo ang data na ito sa pamamagitan ng Dashboard ng Mga Google Account, ngunit hindi mo maiuugnay ang data na ito sa isa pang account.</translation>
 <translation id="3190315855212034486">Whoa! Nag-crash ang Chromium. Muling ilunsad ngayon?</translation>
-<translation id="3244477511402911926">Chromium Notification Center</translation>
 <translation id="3256316712990552818">Kinopya sa Chromium</translation>
 <translation id="3258596308407688501">Hindi makakapag-read at makakapag-write ang Chromium sa direktoryo ng data nito:
 
@@ -100,6 +99,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4222580632002216401">Naka-sign in ka na ngayon sa Chromium! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="4224199872375172890">Napapanahon ang Chromium.</translation>
 <translation id="4230135487732243613">I-link ang iyong data sa Chromium sa account na ito?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Magre-restart ang Chromium pagkalipas ng 1 segundo.}one{Magre-restart ang Chromium pagkalipas ng # segundo.}other{Magre-restart ang Chromium pagkalipas ng # na segundo.}}</translation>
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukang muli.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
 <translation id="4423735387467980091">I-customize at kontrolin ang Chromium</translation>
@@ -142,6 +142,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6309712487085796862">Ginagamit ng Chromium ang iyong camera.</translation>
 <translation id="6334986366598267305">Ngayon, mas madali nang gamitin ang Chromium sa iyong Google Account at sa mga nakabahaging computer.</translation>
 <translation id="6373523479360886564">Sigurado ka bang nais mong i-uninstall ang Chromium?</translation>
+<translation id="6394232988457703198">Dapat mo nang i-restart ngayon ang Chromium.</translation>
 <translation id="6403826409255603130">Ang Chromium ay isang web browser na nagpapatakbo ng mga webpage at application sa bilis ng kidlat. Ito ay mabilis, maaasahan, at madaling gamitin. Mas maingat na mag-browse sa web gamit ang proteksyon ng Chromium laban sa malware at phishing.</translation>
 <translation id="6475912303565314141">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium.</translation>
 <translation id="6485906693002546646">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chromium. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chromium nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
@@ -191,11 +192,11 @@ Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account
 Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
 <translation id="7419987137528340081">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chromium, maaari kang lumikha ng bagong user ng Chromium para kay <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
-<translation id="7463979740390522693">Chromium - Mga Notification (<ph name="QUANTITY" /> ang hindi pa nababasa)</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7483335560992089831">Hindi ma-install ang parehong Bersyon ng Chromium na kasalukuyang tumatakbo. Pakisara ang Chromium at subukang muli.</translation>
 <translation id="750717762378961310">Nakakahamak ang file na ito, at na-block ito ng Chromium.</translation>
 <translation id="7549178288319965365">Tungkol sa Chromium OS</translation>
+<translation id="7577193603922410712">May kakalapat lang na espesyal na update sa seguridad para sa Chromium; dapat ka nang mag-restart ngayon upang magkabisa ito (ire-restore namin ang iyong mga tab).</translation>
 <translation id="761356813943268536">Ginagamit ng Chromium ang iyong camera at mikropono.</translation>
 <translation id="7617377681829253106">Mas mahusay na ang Chromium</translation>
 <translation id="7641113255207688324">Hindi Chromium ang iyong default na browser.</translation>
@@ -208,7 +209,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="7979877361127045932">Itago sa menu ng Chromium</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>
 <translation id="8033665941300843262">Nangangailangan ang Chromium ng access sa mga pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
-<translation id="805745970029938373">Makikita mo ang lahat ng iyong notification mula sa apps, mga extension, at website ng Chromium dito.</translation>
 <translation id="8134284582177628525">Kung ibabahagi mo ang computer na ito kay <ph name="PROFILE_NAME" />, idagdag ang iyong sarili sa Chromium upang mag-browse nang hiwalay. Kung hindi naman, idiskonekta ang kanilang Google Account.</translation>
 <translation id="8269379391216269538">Tumulong sa pagpapahusay ng Chromium</translation>
 <translation id="8453117565092476964">Sira o di-wasto ang archive ng installer. Mangyaring i-download muli ang Chromium.</translation>

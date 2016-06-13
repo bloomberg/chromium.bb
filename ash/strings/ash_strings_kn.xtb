@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome ಸಾಧನ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="1683360892415596327">ನಮ್ಮ ಸಮೀಕ್ಷೆಯಲ್ಲಿ ಪಾಲ್ಗೊಳ್ಳಿ</translation>
 <translation id="1723752762323179280">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID" />* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK" />3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK" />).
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="607652042414456612">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನಗಳ ಸಮೀಪದಲ್ಲಿ ಅನ್ವೇಷಿಸಬಹುದಾಗಿದೆ ಮತ್ತು <ph name="ADDRESS" /> ವಿಳಾಸದೊಂದಿಗೆ "<ph name="NAME" />" ರೂಪದಲ್ಲಿ ಗೋಚರಿಸುತ್ತದೆ</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ</translation>
+<translation id="6144938890088808325">Chromebooks ಸುಧಾರಿಸಲು ನಮಗೆ ಸಹಾಯಮಾಡಿ</translation>
 <translation id="615957422585914272">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ತೋರಿಸು</translation>
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6203030746557259519">ವರ್ಚುವಲ್ ಪ್ರದರ್ಶನ</translation>
@@ -212,6 +214,7 @@
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು "<ph name="FROM_LOCALE" />" ನಿಂದ "<ph name="TO_LOCALE" />" ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="7869829692393275047">Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ.</translation>
 <translation id="7893838033650689677">ವೈ-ಫೈ ಆನ್ ಮಾಡಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7957227661277029961">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಲು ಪರಿಗಣಿಸಿ.</translation>

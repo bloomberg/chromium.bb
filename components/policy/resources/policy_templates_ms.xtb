@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Tetapkan direktori data pengguna</translation>
 <translation id="1022361784792428773">ID sambungan pengguna perlu dihalang daripada memasang (atau * untuk semua)</translation>
 <translation id="102492767056134033">Tetapkan keadaan lalai papan kekunci pada skrin di skrin log masuk</translation>
+<translation id="1040446814317236570">Dayakan pengeluaran URL PAC (untuk https://)</translation>
 <translation id="1044878202534415707">Laporkan statistik perkakasan seperti penggunaan CPU/RAM.
 
       Jika dasar ditetapkan sebagai palsu, statistik tidak akan dilaporkan.
@@ -913,6 +914,26 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3967075520570946456">Dayakan pemaparan halaman aluan semasa pelancaran penyemak imbas yang pertama sesudah peningkatan OS.</translation>
 <translation id="3973371701361892765">Jangan sekali-kali sembunyikan rak secara automatik</translation>
 <translation id="3984028218719007910">Memastikan sama ada <ph name="PRODUCT_OS_NAME" /> menyimpan data akaun setempat selepas log keluar. Jika ditetapkan kepada benar, tiada akaun berulang akan disimpan oleh <ph name="PRODUCT_OS_NAME" /> dan semua data dari sesi pengguna akan dibuang selepas log keluar. Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, peranti boleh menyimpan data pengguna setempat (disulitkan).</translation>
+<translation id="3994569321696536679">Mendayakan ciri
+      log masuk terhad <ph name="PRODUCT_NAME" /> dalam Google Apps dan menghalang pengguna
+      daripada menukar tetapan ini.
+
+      Jika anda menentukan tetapan ini, pengguna hanya akan dapat mengakses
+      Google Apps (seperti Gmail) menggunakan akaun daripada domain yang ditentukan.
+
+      Tetapan ini TIDAK akan menghalang pengguna daripada mengelog masuk pada peranti terurus
+      yang memerlukan pengesahan Google. Pengguna masih akan dibenarkan
+      mengelog masuk ke akaun daripada domain lain tetapi mereka akan menerima ralat
+      semasa cuba menggunakan Google Apps dengan akaun itu.
+
+      Jika anda membiarkan tetapan ini dikosongkan/tidak dikonfigurasi, pengguna akan dapat
+      mengakses Google Apps dengan mana-mana akaun.
+
+      Dasar ini menyebabkan pengepala X-GoogApps-Allowed-Domains ditambahkan pada
+      semua permintaan HTTP dan HTTPS pada semua domain google.com, seperti yang diterangkan dalam
+      https://support.google.com/a/answer/1668854.
+
+      Pengguna tidak boleh menukar atau membatalkan tetapan ini.</translation>
 <translation id="3997519162482760140">URL yang akan diberikan akses kepada peranti tangkapan video pada halaman log masuk SAML</translation>
 <translation id="4001275826058808087">Pentadbir IT untuk peranti perusahaan boleh menggunakan bendera ini untuk mengawal sama ada membenarkan pengguna menebus tawaran melalui Pendaftaran OS Chrome.
 
@@ -1128,6 +1149,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.
 
           Jika dasar ini ditetapkan kepada palsu, permintaan kunci bangkit skrin akan diabaikan.</translation>
+<translation id="4882546920824859909">Tentukan domain yang dibenarkan untuk mengakses Google Apps</translation>
 <translation id="4890209226533226410">Tetapkan jenis penggadang skrin yang didayakan.
 
           Jika dasar ini ditetapkan, dasar ini mengawal jenis penggadang skrin yang didayakan. Penggadang skrin akan dilumpuhkan jika dasar ini ditetapkan kepada "Tiada".

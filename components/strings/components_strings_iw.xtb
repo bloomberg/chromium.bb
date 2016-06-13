@@ -76,6 +76,7 @@
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1753706481035618306">מספר דף</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
+<translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת של Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
@@ -136,6 +137,7 @@
 <translation id="2400837204278978822">סוג קובץ לא ידוע.</translation>
 <translation id="2413528052993050574">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו בוטל. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2455981314101692989">דף אינטרנט זה השבית מילוי אוטומטי של טופס זה.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />מפעיל את אבחון הרשת<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">כתובת אתר לא חוקית של חיפוש</translation>
 <translation id="2491120439723279231">אישור השרת מכיל שגיאות.</translation>
 <translation id="2495083838625180221">‏מנתח JSON</translation>
@@ -162,6 +164,7 @@
 <translation id="2712173769900027643">בקש רשות</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />מפעיל את אבחון הקישוריות<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">הסר פריטים שנבחרו</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="2778107779445548489">אתה רואה את ההודעה הזו מפני שההורים שלך חסמו את האתר הזה.</translation>
@@ -198,6 +201,7 @@
 <translation id="3105172416063519923">מזהה נכס:</translation>
 <translation id="3109728660330352905">אין לך הרשאה להציג את הדף הזה.</translation>
 <translation id="3118046075435288765">השרת סגר את החיבור באופן בלתי צפוי.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הקישוריות<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">פענוח התגובה נכשל</translation>
 <translation id="3147485256806412701">האתר הזה משתמש בדומיין גנרי חדש ברמה עליונה.</translation>
 <translation id="3150653042067488994">שגיאת שרת זמנית</translation>
@@ -250,8 +254,8 @@
 <translation id="3586931643579894722">הסתר פרטים</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">‏הלקוח והשרת אינם תומכים בגרסת פרוטוקול SSL משותפת או בחבילת צופן משותפת. ייתכן שהסיבה לכך שהשרת זקוק ל-RC4, שכבר לא נחשב בטוח.</translation>
 <translation id="3609138628363401169">‏השרת אינו תומך בתוסף TLS לניהול משא ומתן חוזר.</translation>
+<translation id="36224234498066874">נקה נתוני גלישה...</translation>
 <translation id="362276910939193118">הצג את כל ההיסטוריה</translation>
 <translation id="3623476034248543066">הצג ערך</translation>
 <translation id="3630155396527302611">אם היא כבר רשומה כתוכנית המורשית לגשת לרשת, נסה
@@ -311,6 +315,7 @@
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />לבדוק את תצורת האנטי-וירוס וחומת האש<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">קריסה</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="425582637250725228">ייתכן שהשינויים שביצעת לא יישמרו.</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
@@ -349,6 +354,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> היתה חסומה</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">החיבור נקטע</translation>
+<translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />מפעיל את אבחון הרשת של Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="4744603770635761495">נתיב להפעלה</translation>
@@ -576,6 +582,7 @@ Del</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7445762425076701745">לא ניתן לאמת לגמרי את הזהות של השרת שאליו אתה מחובר. אתה מחובר לשרת באמצעות שם שקיים רק ברשת שלך, ושלרשות אישורים חיצונית אין דרך לאמת את בעלותך עליו. מכיוון שחלק מרשויות האישורים ינפיקו אישורים לשמות אלה ללא קשר, אין דרך להבטיח שאתה מחובר לאתר המיועד ואינך גורם תוקף.</translation>
 <translation id="7450732239874446337">הקלט והפלט של הרשת הושעו.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /> על בעיה זו.</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7514365320538308">הורד</translation>
@@ -716,6 +723,7 @@ Del</translation>
 <translation id="9039213469156557790">כמו כן, דף זה כולל משאבים נוספים שאינם מאובטחים. גורמים אחרים עלולים לראות את המשאבים האלה במהלך העברתם, ותוקף עלול לשנות אותם באופן שישנה את התנהגות הדף.</translation>
 <translation id="9049981332609050619">ניסית להגיע ל-<ph name="DOMAIN" />, אך השרת הציג אישור לא חוקי.</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>
+<translation id="9065203028668620118">ערוך</translation>
 <translation id="9092364396508701805">הדף של <ph name="HOST_NAME" /> לא פועל</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9125941078353557812">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב הכרטיס</translation>

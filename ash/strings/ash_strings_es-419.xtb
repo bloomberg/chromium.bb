@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478">Tiempo restante: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Completa nuestra encuesta</translation>
 <translation id="1723752762323179280">Saliendo de la sesión</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tercero<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6062360702481658777">Saldrás de la sesión automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">La computadora es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Ayúdanos a mejorar las Chromebook</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6203030746557259519">Virtual Display</translation>
@@ -212,6 +214,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="7823564328645135659">Después de sincronizar tu configuración, el idioma se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
+<translation id="7869829692393275047">Texto de la encuesta HaTS del SO Chrome aquí. Texto de la encuesta HaTS del SO Chrome aquí. Texto de la encuesta HaTS del SO Chrome aquí. Texto de la encuesta HaTS del SO Chrome aquí.</translation>
 <translation id="7893838033650689677">Encender Wi-Fi</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7957227661277029961">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido. Considera usar el cargador oficial.</translation>

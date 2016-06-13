@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">બેટરી ખાલી થવામાં બાકી સમય, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome ઉપકરણ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
+<translation id="1683360892415596327">અમારા સર્વેક્ષણમાં ભાગ લો</translation>
 <translation id="1723752762323179280">સત્રથી બહાર નીકળી રહ્યાં છે</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1812696562331527143">તમારી ઇનપુટ પદ્ધતિ  <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3જા પક્ષ<ph name="END_LINK" />)માં બદલાઇ ગયેલ છે.
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">તમે આપમેળે <ph name="LOGOUT_TIME_LEFT" /> માંથી સાઇન આઉટ થઇ જશો.</translation>
 <translation id="607652042414456612">નજીકનાં Bluetooth ઉપકરણો માટે તમારું કમ્પ્યુટર શોધવાયોગ્ય છે અને તે સરનામાં <ph name="ADDRESS" /> સાથે "<ph name="NAME" />" તરીકે દેખાશે</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> ને ચાર્જ કરી રહ્યાં છે</translation>
+<translation id="6144938890088808325">Chromebooks બહેતર બનાવવામાં અમારી સહાય કરો</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6203030746557259519">વર્ચ્યુઅલ ડિસ્પ્લે</translation>
@@ -212,6 +214,7 @@
 <translation id="7823564328645135659">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી ભાષા "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />" માં બદલાઈ ગઈ છે.</translation>
 <translation id="785750925697875037">મોબાઇલ એકાઉન્ટ જુઓ</translation>
 <translation id="7864539943188674973">Bluetooth અક્ષમ કરો</translation>
+<translation id="7869829692393275047">અહીં Chrome OS HaTS સર્વેક્ષણ ટેક્સ્ટ છે. અહીં Chrome OS HaTS સર્વેક્ષણ ટેક્સ્ટ છે. અહીં Chrome OS HaTS સર્વેક્ષણ ટેક્સ્ટ છે. અહીં Chrome OS HaTS સર્વેક્ષણ ટેક્સ્ટ છે.</translation>
 <translation id="7893838033650689677">Wi-Fi ચાલુ કરો</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
 <translation id="7957227661277029961">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે. અધિકૃત ચાર્જરનો ઉપયોગ કરવાનું ધ્યાનમાં રાખો.</translation>

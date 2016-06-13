@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
 <translation id="102492767056134033">Ekrāna tastatūras noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
+<translation id="1040446814317236570">Iespējot PAC URL noņemšanu (protokolam https://)</translation>
 <translation id="1044878202534415707">Tiek ziņota aparatūras statistika, piemēram, centrālā procesora/RAM lietojums.
 
       Ja politikai ir iestatīta vērtība Nepatiesa, statistika netiks ziņota.
@@ -911,6 +912,17 @@
 <translation id="3967075520570946456">Sveiciena lapas rādīšanas iespējošana pirmajā pārlūka palaišanas reizē pēc operētājsistēmas jaunināšanas</translation>
 <translation id="3973371701361892765">Nekad automātiski neslēpt plauktu</translation>
 <translation id="3984028218719007910">Nosaka, vai produkts <ph name="PRODUCT_OS_NAME" /> saglabā lokālā konta datus pēc atteikšanās. Ja politika iestatīta uz Patiesa, produkts  <ph name="PRODUCT_OS_NAME" /> nesaglabā nevienu pastāvīgo kontu un visi dati no lietotāja sesijas tiek atmesti pēc atteikšanās. Ja politika ir iestatīta uz Aplama vai nav konfigurēta, ierīce, iespējams, saglabā (šifrētos) lokālos lietotāja datus.</translation>
+<translation id="3994569321696536679">Iespējo <ph name="PRODUCT_NAME" /> ierobežotās pieteikšanās funkciju Google Apps for Work pakalpojumos un liedz lietotājiem mainīt šo iestatījumu.
+
+      Ja definēsiet šo iestatījumu, lietotājs varēs piekļūt Google Apps for Work pakalpojumiem (piemēram, Gmail), tikai izmantojot norādīto domēnu kontus.
+
+      Šis iestatījumus NEIEROBEŽOS lietotāja pieteikšanos pārvaldītā ierīcē, kurā nepieciešama Google autentifikācija. Lietotājs varēs pierakstīties citu domēnu kontos, taču tiks parādīta kļūda, ja ar šiem kontiem tiks mēģināts piekļūt Google Apps for Work pakalpojumiem.
+
+      Ja atstāsiet šo iestatījumu tukšu/nekonfigurētu, lietotājs varēs piekļūt Google Apps for Work pakalpojumiem ar jebkuru kontu.
+
+      Šī politika izraisa galvenes X-GoogApps-Allowed-Domains pievienošanu visiem HTTP un HTTPS pieprasījumiem visiem google.com domēniem, kā aprakstīts vietnē https://support.google.com/a/answer/1668854.
+
+      Lietotāji nevar mainīt vai ignorēt šo iestatījumu.</translation>
 <translation id="3997519162482760140">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm SAML pieteikšanās lapās.</translation>
 <translation id="4001275826058808087">IT administratori var izmantot šo atzīmi uzņēmuma ierīcēs, lai noteiktu, vai ļaut lietotājiem izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
@@ -1126,6 +1138,7 @@
           Ja politikai ir iestatīta vērtība “true” vai politika nav iestatīta, barošanas pārvaldībā tiks veikta ekrāna aktivizēšanas bloķēšana.
 
           Ja politikai ir iestatīta vērtība “false”, ekrāna aktivizēšanas bloķēšana tiks ignorēta.</translation>
+<translation id="4882546920824859909">To domēnu definēšana, kuri var piekļūt Google Apps for Work pakalpojumiem</translation>
 <translation id="4890209226533226410">Iestatiet iespējotās ekrāna lupas veidu.
 
           Ja šī politika ir iestatīta, tā pārvalda iespējotās ekrāna lupas veidu. Iestatot politiku uz “None”, ekrāna lupa tiek atspējota.

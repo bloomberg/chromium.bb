@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="1061441684050139317">Chrome ต้องการเข้าถึงไมโครโฟนเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="1065672644894730302">ค่ากำหนดของคุณไม่สามารถอ่านได้ คุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>
-<translation id="1073391069195728457">Chrome - การแจ้งเตือน</translation>
 <translation id="1104959162601287462">เกี่ยวกับ &amp;Chrome OS</translation>
 <translation id="110877069173485804">นี่คือ Chrome ของคุณ</translation>
 <translation id="123620459398936149">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านสำหรับการซิงค์</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">กำหนดค่าและควบคุม Google Chrome</translation>
 <translation id="4147555960264124640">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">โปรแกรมติดตั้งยกเลิกการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
-<translation id="4167057906098955729">คุณสามารถดูการแจ้งเตือนทั้งหมดของคุณจากแอป Chrome, ส่วนขยาย และเว็บไซต์ที่นี่</translation>
 <translation id="423410644998903704">Chrome ต้องการเข้าถึงสิทธิ์เพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="4251615635259297716">เชื่อมโยงข้อมูล Chrome กับบัญชีนี้ไหม</translation>
 <translation id="4309555186815777032">(จำเป็นต้อง<ph name="BEGIN_BUTTON" />รีสตาร์ท<ph name="END_BUTTON" /> Chrome)</translation>
@@ -115,6 +113,7 @@
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="4631713731678262610">ซ่อนในเมนู Chrome</translation>
 <translation id="4633000520311261472">เพื่อให้ Chrome ปลอดภัยขึ้น เราปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
+<translation id="4664415150087723341">ระบบเพิ่งนำการอัปเดตความปลอดภัยฉบับพิเศษไปใช้สำหรับ Google Chrome คุณควรรีสตาร์ทโปรแกรมเพื่อให้มีผลใช้งาน (เราจะคืนค่าแท็บให้คุณ)</translation>
 <translation id="4700157086864140907">Google Chrome สามารถให้บริการตรวจสอบการสะกดที่ชาญฉลาดมากขึ้นโดยการส่งสิ่งที่คุณพิมพ์ในเบราว์เซอร์ไปยังเซิร์ฟเวอร์ของ Google ซึ่งจะช่วยให้คุณสามารถใช้เทคโนโลยีตรวจสอบการสะกดแบบเดียวกันกับที่การค้นหาของ Google ใช้</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4743926867934016338">ยอมรับและค้นหา</translation>
@@ -136,6 +135,7 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome</translation>
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
 <translation id="5253588388888612165">หากคุณแชร์คอมพิวเตอร์นี้กับ <ph name="PROFILE_NAME" /> ให้เพิ่มตนเองไปยัง Chrome เพื่อแยกการเรียกดูออกมา มิเช่นนั้น ให้ยกเลิกการเชื่อมต่อบัญชี Google ของเขา</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome จะรีสตาร์ทใน 1 วินาที}other{Google Chrome จะรีสตาร์ทใน # วินาที}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">เป็นที่ทราบว่าโมดูลนี้ขัดแย้งกับ Google Chrome</translation>
 <translation id="5386244825306882791">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือทำการค้นหาจากแถบอเนกประสงค์ด้วย</translation>
@@ -192,7 +192,6 @@
 <translation id="7191567847629796517">Google Chrome OS ไม่สนับสนุนการเรียกใช้แอปพลิเคชันภายนอกเพื่อจัดการลิงก์ <ph name="SCHEME" /> ลิงก์ที่ขอคือ <ph name="PROTOLINK" /></translation>
 <translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="7242029209006116544">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น คุณสามารถเลือกที่จะสร้างโปรไฟล์ใหม่เพื่อแยกเก็บข้อมูล Chrome ที่มีอยู่ของคุณ <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - การแจ้งเตือน (ยังไม่ได้อ่าน <ph name="QUANTITY" />)</translation>
 <translation id="729375352412857283">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Windows XP และ Windows Vista อีกต่อไป</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
 <translation id="7398801000654795464">คุณเคยลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL_ADDRESS" /> โปรดใช้บัญชีเดิมเพื่อลงชื่อเข้าใช้อีกครั้ง</translation>
@@ -228,7 +227,6 @@
 <translation id="8286862437124483331">Google Chrome กำลังพยายามแสดงรหัสผ่าน พิมพ์รหัสผ่าน Windows ของคุณเพื่อแสดงรหัสผ่าน</translation>
 <translation id="8290100596633877290">อ๊ะ! Google Chrome ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
 <translation id="8406086379114794905">ช่วยปรับปรุง Chrome ให้ดีขึ้น</translation>
-<translation id="8460191995881063249">ศูนย์การแจ้งเตือนของ Chrome</translation>
 <translation id="853189717709780425">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ และให้อำนาจผู้ดูแลระบบของบัญชีดังกล่าวในการควบคุมโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะถูกผูกติดกับ <ph name="USER_NAME" /> อย่างถาวร คุณจะสามารถลบข้อมูลนี้ผ่านแดชบอร์ด Google Accounts ได้ แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่นได้</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
@@ -240,6 +238,7 @@
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="870251953148363156">อัปเดต &amp;Google Chrome</translation>
+<translation id="8796108026289707191">คุณควรรีสตาร์ท Google Chrome เลย</translation>
 <translation id="8823341990149967727">Chrome ล้าสมัย</translation>
 <translation id="884296878221830158">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือคลิกปุ่ม "หน้าแรก"</translation>
 <translation id="8851136666856101339">หลัก</translation>

@@ -232,6 +232,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="4062305924942672200">Pravne informacije</translation>
 <translation id="4089831646916293264">Ta funkcija lahko ovira dostop do plačljivih podatkovnih storitev operaterja.</translation>
+<translation id="4099423833822562131">Izberite naslov za pošiljanje, če želite preveriti načine pošiljanja.</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
@@ -279,6 +280,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4690286298542128877">Zavihki bodo premaknjeni v orodje za preklapljanje med zavihki v Chromu.</translation>
 <translation id="4698413471314543145">Ni funkcije, ki je nujno potrebna za izvajanje Chroma. Namestitev Chroma je nepopolna ali ni združljiva s to različico Androida.</translation>
 <translation id="4699172675775169585">Predpomnjene slike in datoteke</translation>
+<translation id="4710672574193412565">Na strani za račune v aplikaciji Nastavitve dodajte Google Račun.</translation>
 <translation id="4720023427747327413">Odpri v: <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Posodobi</translation>
 <translation id="4738836084190194332">Zadnja sinhronizacija: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="5040262127954254034">Zasebnost</translation>
 <translation id="5056549851600133418">Članki za vas</translation>
 <translation id="5063480226653192405">Uporaba</translation>
+<translation id="5087580092889165836">Dodaj kartico</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="5107381076085091558">Prenos je zaustavljen.</translation>
 <translation id="5118713593561876160">Zanimanja</translation>
@@ -376,7 +379,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="585027516397408832">Varčevanje s podatki je omogočeno</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
-<translation id="588563574323093535">Poziv, preden se spletnim mestom dovoli preklop v celozaslonski način (priporočeno)</translation>
 <translation id="5899349522111170522">Ustvari novo datoteko</translation>
 <translation id="5902828464777634901">Vsi lokalni podatki na tem spletnem mestu, vključno s piškotki, bodo izbrisani.</translation>
 <translation id="5911030830365207728">Google Prevajalnik</translation>
@@ -408,7 +410,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
-<translation id="6317634962183824346">Sinhronizacija sistema Android je onemogočena. Omogočite jo in poskusite znova.</translation>
 <translation id="6324360525379265737">Samodejno ugotavljanje kodiranja znakov</translation>
 <translation id="6333140779060797560">Skupna raba prek: <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Šifriranje</translation>
@@ -603,7 +604,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8719023831149562936">Trenutnega zavihka ni mogoče prenesti</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8730621377337864115">Končano</translation>
-<translation id="8793430725658173476">Kopiraj URL</translation>
 <translation id="8798099450830957504">Privzeto</translation>
 <translation id="8812942424849541387">Delovanje tega lahko nadzirate v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Zaznamki</translation>

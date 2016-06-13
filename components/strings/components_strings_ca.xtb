@@ -74,6 +74,7 @@
 <translation id="17513872634828108">Pestanyes obertes</translation>
 <translation id="1753706481035618306">Número de pàgina</translation>
 <translation id="1763864636252898013">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre dispositiu considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de xarxa de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Sol·licitud o paràmetres de la sol·licitud no vàlids</translation>
@@ -134,6 +135,7 @@
 <translation id="2400837204278978822">Tipus fitxer descon.</translation>
 <translation id="2413528052993050574">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi revocat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="2455981314101692989">Aquesta pàgina web ha desactivat l'emplenament automàtic per a aquest formulari.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar el Diagnòstic de xarxa<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL de cerca no vàlid.</translation>
 <translation id="2491120439723279231">El certificat del servidor conté errors.</translation>
 <translation id="2495083838625180221">Analitzador JSON</translation>
@@ -160,6 +162,7 @@
 <translation id="2712173769900027643">Demana permís</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2728127805433021124">El certificat del servidor està signat mitjançant un algoritme de signatura dèbil.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar el Diagnòstic de connectivitat<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Suprimeix els elements seleccionats</translation>
 <translation id="277499241957683684">Falta el registre del dispositiu</translation>
 <translation id="2778107779445548489">Veieu aquest missatge perquè els vostres pares han bloquejat aquest lloc.</translation>
@@ -196,6 +199,7 @@
 <translation id="3105172416063519923">Identificador de l'element:</translation>
 <translation id="3109728660330352905">No teniu permís per veure aquesta pàgina.</translation>
 <translation id="3118046075435288765">El servidor ha tancat la connexió de manera inesperada.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de connectivitat<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">No s'ha pogut descodificar la resposta</translation>
 <translation id="3147485256806412701">En aquest lloc s'utilitza un nou domini genèric de nivell superior.</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
@@ -248,8 +252,8 @@
 <translation id="3586931643579894722">Oculta els detalls</translation>
 <translation id="3587482841069643663">Tots</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">El client i el servidor no admeten cap versió de protocol SSL comú ni cap sistema de xifratge obsolet. És probable que això passi perquè el servidor ha de ser compatible amb el sistema RC4, que ja no es considera segur.</translation>
 <translation id="3609138628363401169">El servidor no admet l'extensió de renegociació TLS.</translation>
+<translation id="36224234498066874">Elimina les dades de navegació...</translation>
 <translation id="362276910939193118">Mostra l'historial complet</translation>
 <translation id="3623476034248543066">Mostra el valor</translation>
 <translation id="3630155396527302611">Si ja està inclòs a la llista de programes autoritzats per accedir a la xarxa, proveu
@@ -306,6 +310,7 @@
 <translation id="4196861286325780578">&amp;Refés el moviment</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comproveu la configuració del tallafoc i de l'antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Errors</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de xarxa<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">És possible que els canvis que heu fet no es desin.</translation>
 <translation id="4258748452823770588">Signatura errònia</translation>
@@ -344,6 +349,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> s'ha bloquejat</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">La connexió s'ha interromput</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar el Diagnòstic de xarxa de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Camí executable</translation>
@@ -566,6 +572,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="7445762425076701745">La identitat del servidor al qual esteu connectat no es pot acabar de validar. Esteu connectat a un servidor que utilitza un nom que només és vàlid dins la vostra xarxa, de manera que una autoritat de certificació externa no en pot validar la propietat. Com que de tota manera algunes autoritats de certificació emetran certificats per a aquests noms, no es pot assegurar que estigueu connectat al lloc web previst i no a un atacant.</translation>
 <translation id="7450732239874446337">E/S de xarxa suspeses.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Obtenir més informació<ph name="END_LINK" /> sobre aquest problema</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
 <translation id="7514365320538308">Baixa</translation>
@@ -706,6 +713,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="9039213469156557790">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar el comportament de la pàgina.</translation>
 <translation id="9049981332609050619">Heu provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat no vàlid.</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>
+<translation id="9065203028668620118">Edita</translation>
 <translation id="9092364396508701805">La pàgina de <ph name="HOST_NAME" /> no funciona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="9125941078353557812">Introduïu el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>

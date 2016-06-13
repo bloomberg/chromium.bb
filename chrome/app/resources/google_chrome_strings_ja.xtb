@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">Chrome にログイン</translation>
 <translation id="1061441684050139317">このサイトとマイクを共有するには Chrome にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
-<translation id="1073391069195728457">Chrome - お知らせ</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
@@ -101,7 +100,6 @@
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
-<translation id="4167057906098955729">Chrome のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
@@ -114,6 +112,7 @@
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4631713731678262610">Chrome メニューで非表示</translation>
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
+<translation id="4664415150087723341">Google Chrome の特別なセキュリティ アップデートが適用されました。アップデートを反映するため、今すぐ Google Chrome を再起動してください（タブは復元されます）。</translation>
 <translation id="4700157086864140907">Google Chrome ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されているスペルチェック テクノロジーを活用できます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4743926867934016338">承諾して検索</translation>
@@ -135,6 +134,7 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
 <translation id="5253588388888612165">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chrome に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome は 1 秒後に再起動します。}other{Google Chrome は # 秒後に再起動します。}}</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
@@ -191,7 +191,6 @@
 <translation id="7191567847629796517">Google Chrome OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - お知らせ（<ph name="QUANTITY" /> 件未読）</translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
@@ -227,7 +226,6 @@
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>
 <translation id="8406086379114794905">Chrome の品質向上にご協力ください</translation>
-<translation id="8460191995881063249">Chrome 通知センター</translation>
 <translation id="853189717709780425">現在、管理対象アカウントでログインし、管理者に Google Chrome プロフィールの管理を委ねています。アプリ、ブックマーク、履歴、パスワード、その他の設定などの Chrome データは <ph name="USER_NAME" /> に永続的に関連付けられます。このデータは、Google アカウントのダッシュボードで削除できますが、別のアカウントに関連付けることはできません。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
@@ -239,6 +237,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
+<translation id="8796108026289707191">今すぐ Google Chrome を再起動してください。</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8851136666856101339">本文</translation>

@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
 <translation id="102492767056134033">Angi skjermtastaturets standardtilstand på påloggingssiden</translation>
+<translation id="1040446814317236570">Slå på PAC-nettadresserydding (for https://)</translation>
 <translation id="1044878202534415707">Rapportér maskinvarestatistikk, for eksempel bruk av prosessor og minne.
 
       Hvis regelen settes til «false» (usann), rapporteres ikke statistikken.
@@ -499,7 +500,7 @@
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="2682225790874070339">Deaktiverer Google Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
-<translation id="2731627323327011390">Slå av bruken av sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
+<translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
       Hvis denne regelen slås på («true»), skjules ikonene.
@@ -877,6 +878,26 @@
 <translation id="3967075520570946456">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.</translation>
 <translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
 <translation id="3984028218719007910">Avgjør om <ph name="PRODUCT_OS_NAME" /> beholder lokal kontodata etter avlogging. Hvis retningslinjen er angitt som Sann, beholdes det ikke noen vedvarende kontoer av <ph name="PRODUCT_OS_NAME" />, og all data fra brukerøkten blir forkastet etter avlogging. Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, kan enheten beholde (kryptert) lokal brukerdata.</translation>
+<translation id="3994569321696536679">Slår på funksjonen for begrenset pålogging for <ph name="PRODUCT_NAME" />
+      i Google-apper og hindrer brukerne i å
+      endre denne innstillingen.
+
+      Hvis du definerer denne innstillingen, kan brukeren bare bruke
+      Google-apper (for eksempel Gmail) med kontoer fra de spesifiserte domenene.
+
+      Denne innstillingen hindrer IKKE brukerne i å logge på fra administrerte enheter
+      som krever Google-autentisering. Brukerne kan fortsatt
+      logge på kontoer fra andre domener, men får en feilmelding når de
+      prøver å bruke Google-apper med disse kontoene.
+
+      Hvis du ikke konfigurerer denne innstillingen, kan brukeren
+      bruke Google-apper med alle typer kontoer.
+
+      Denne innstillingen gjør at toppteksten X-GoogApps-Allowed-Domains legges til
+      for alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som beskrevet i
+      https://support.google.com/a/answer/1668854.
+
+      Brukerne kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="3997519162482760140">Nettadresser som får tilgang til videoopptaksenheter på SAML-påloggingssider</translation>
 <translation id="4001275826058808087">IT-administratorer for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan innløse tilbud via Chrome OS- registrering.
 
@@ -1085,6 +1106,7 @@
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
+<translation id="4882546920824859909">Spesifiser hvilke domener som har tilgang til Google-apper</translation>
 <translation id="4890209226533226410">Angi type forstørrelsesskjerm som er aktivert.
 
           Hvis denne innstillingen aktiveres, kontrollerer den typen forstørrelsesskjerm som aktiveres. Hvis innstillingen angis til «None», deaktiveres forstørrelsesskjermen.
@@ -1925,7 +1947,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Nettadressemønstrene må formateres i henhold til informasjonen på https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      Du kan spesifisere unntak i URL whitelist-regelen. Disse reglene er begrenset til 1000 oppføringer, og eventuelle påfølgende oppføringer ignoreres.
+      Du kan spesifisere unntak i regelen for hvitelistede nettadresser (URL whitelist. Disse reglene er begrenset til 1000 oppføringer, og eventuelle påfølgende oppføringer ignoreres.
 
       Merk at du ikke bør blokkere interne «chrome://*»-nettadressr, siden det kan føre til uventede feil.
 
@@ -1999,7 +2021,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen ikke spesifiseres, har det samme effekt som om TimezoneAutomaticDetectionUsersDecide var angitt.
 
       Hvis SystemTimezone-regelen er spesifisert, overstyrer den denne regelen. I så fall er automatisk påvisning av tidssoner slått helt av.</translation>
-<translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke sertifikater for <ph name="PRODUCT_OS_NAME" /> tilgjengelige for ARC-apper.
+<translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.

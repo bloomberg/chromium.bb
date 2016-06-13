@@ -42,13 +42,13 @@
 <translation id="2372704305038231957">32 位 Chromium 已不再适用于此 Linux 系统，因此可能无法正常运行。请升级到 64 位 Chromium。</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出 Chromium 吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出 Chromium 吗？}}</translation>
 <translation id="2396765026452590966">“<ph name="EXTENSION_NAME" />”扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
+<translation id="2483889755041906834">在 Chromium 中</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2486653164587200256">Chromium 可能无法正常运行，因为它不再支持 Windows XP 或 Windows Vista。</translation>
 <translation id="2535480412977113886">您的帐户登录详细信息已过期，Chromium操作系统无法同步您的数据。</translation>
 <translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="2595977381794111014">请使用 Chromium 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式继续访问您的应用。</translation>
-<translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="2673087257647337101">即将更新到最新版本！重新启动 Chromium 以完成更新。</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="313551035350905294">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
-<translation id="3244477511402911926">Chromium 通知中心</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
 
@@ -98,6 +97,7 @@
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>
 <translation id="4224199872375172890">Chromium 已是最新版本。</translation>
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐户相关联？</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium 将在 1 秒后重新启动。}other{Chromium 将在 # 秒后重新启动。}}</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
@@ -140,6 +140,7 @@
 <translation id="6309712487085796862">Chromium 正在使用您的摄像头。</translation>
 <translation id="6334986366598267305">现在，无论是通过Google帐户还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
+<translation id="6394232988457703198">您应立即重新启动 Chromium。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
@@ -189,11 +190,11 @@ Chromium 无法恢复您的设置。</translation>
 有关详细说明，请查看 <ph name="ACCOUNT_EMAIL" /> 中的电子邮件。</translation>
 <translation id="7419987137528340081">如果您更倾向于单独保存您现有的 Chromium 数据，可以为 <ph name="USER_NAME" /> 创建一个新的 Chromium 用户。</translation>
 <translation id="7421823331379285070">您需要在 Windows XP 或更高版本的操作系统中运行 Chromium，否则可能无法正常使用某些功能。</translation>
-<translation id="7463979740390522693">Chromium - 通知（<ph name="QUANTITY" />条未读）</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="750717762378961310">这是恶意文件，Chromium 已将其拦截。</translation>
 <translation id="7549178288319965365">关于 Chromium 操作系统</translation>
+<translation id="7577193603922410712">系统刚刚为 Chromium 应用了一项特殊的安全更新；您应立即重新启动，以使此更新生效（我们会恢复您的标签页）。</translation>
 <translation id="761356813943268536">Chromium 正在使用您的摄像头和麦克风。</translation>
 <translation id="7617377681829253106">Chromium现在更好用了</translation>
 <translation id="7641113255207688324">Chromium 不是您的默认浏览器。</translation>
@@ -206,7 +207,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>
 <translation id="8033665941300843262">Chromium 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
-<translation id="805745970029938373">您可以在此处查看来自 Chromium 应用、扩展程序和网站的所有通知。</translation>
 <translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐户添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>

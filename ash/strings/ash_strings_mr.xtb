@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome डिव्हाइस</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
+<translation id="1683360892415596327">आमचे सर्वेक्षण करा</translation>
 <translation id="1723752762323179280">सत्रातून निर्गमन करत आहे</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1812696562331527143">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्षावर<ph name="END_LINK" />)बदलली.
@@ -117,7 +118,7 @@
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
-<translation id="453661520163887813">पूर्ण होण्यासाठी <ph name="TIME" /></translation>
+<translation id="453661520163887813">पूर्ण होण्यात <ph name="TIME" /></translation>
 <translation id="4544944664594876241">स्क्रीन लॉक करण्‍याचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">आपल्याला <ph name="LOGOUT_TIME_LEFT" /> मधून स्वयंचलितपणे साइन आउट केले जाईल.</translation>
 <translation id="607652042414456612">आपला संगणक जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS" /> पत्त्यासह "<ph name="NAME" />" म्हणून दिसेल</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज करीत आहे</translation>
+<translation id="6144938890088808325">Chromebooks सुधारण्यात आम्हाला मदत करा</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6203030746557259519">व्हर्च्युअल प्रदर्शन</translation>
@@ -212,6 +214,7 @@
 <translation id="7823564328645135659">आपली सेटिंग्ज समक्रमित केल्यानंतर भाषा "<ph name="FROM_LOCALE" />" मधून "<ph name="TO_LOCALE" />" मध्ये बदलली आहे.</translation>
 <translation id="785750925697875037">मोबाइल खाते पहा</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
+<translation id="7869829692393275047">Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे.</translation>
 <translation id="7893838033650689677">Wi-Fi चालू करा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7957227661277029961">आपले <ph name="DEVICE_TYPE" /> चालू केलेले असते तेव्‍हा ते कदाचित चार्ज होणार नाही. अधिकृत चार्जर वापरून पहा.</translation>

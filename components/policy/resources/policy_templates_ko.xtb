@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">사용자 데이터 디렉토리 설정</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
 <translation id="102492767056134033">로그인 화면에서 터치 키보드의 기본 상태를 설정</translation>
+<translation id="1040446814317236570">PAC URL 제거 사용(https://용)</translation>
 <translation id="1044878202534415707">CPU/RAM 사용 등의 하드웨어 통계를 보고합니다.
 
       정책이 false로 설정되면 통계가 보고되지 않습니다.
@@ -904,6 +905,27 @@
 <translation id="3967075520570946456">OS 업그레이드 후 처음 브라우저를 실행하면 시작 페이지가 표시되도록 합니다.</translation>
 <translation id="3973371701361892765">실행기를 자동으로 숨기지 않음</translation>
 <translation id="3984028218719007910"><ph name="PRODUCT_OS_NAME" />이(가) 로그아웃 뒤에 로컬 계정 데이터를 유지할 지를 결정합니다. true로 설정하면, <ph name="PRODUCT_OS_NAME" />이(가) 유지하는 영구 계정이 없으며 사용자 세션의 모든 데이터가 로그아웃 뒤에 삭제됩니다. 이 정책이 false로 설정되거나 구성되지 않으면 기기는 암호화된 로컬 사용자 데이터를 유지합니다.</translation>
+<translation id="3994569321696536679">Google Apps에서 <ph name="PRODUCT_NAME" />의
+      제한된 로그인 기능을 사용 설정하고 사용자가
+      이 설정을 변경할 수 없도록 합니다.
+
+      이 설정을 정의하면 사용자는 지정된 도메인의 계정을 통해서만
+      Gmail 등의 Google Apps에 액세스할 수 있습니다.
+
+      이 설정을 사용하더라도 Google 승인이 필요한
+      관리 기기에 사용자가 로그인하려는 경우는 차단되지 않습니다.
+      사용자는 다른 도메인의 계정을 통해 로그인할 수 있지만,
+      이 계정으로 Google Apps를 사용하려고 하면 오류가 표시됩니다.
+
+      이 설정을 empty/not-configured로 남겨두면 사용자는
+      어떤 계정을 사용하건 Google Apps에 액세스할 수 있습니다.
+
+      이 정책을 사용하면
+      https://support.google.com/a/answer/1668854에서 설명된 바와 같이
+      X-GoogApps-Allowed-Domains 헤더가
+      모든 google.com 도메인에 대한 HTTP 및 HTTPS 요청에 첨부됩니다.
+
+      사용자는 이 설정을 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="3997519162482760140">SAML 로그인 페이지에서 동영상 캡처 기기에 액세스할 수 있는 권한이 부여되는 URL입니다.</translation>
 <translation id="4001275826058808087">기업 기기를 담당하는 IT 관리자는 이 플래그를 사용하여 사용자가 Chrome OS 등록을 통해 쿠폰을 사용하도록 할지 여부를 제어할 수 있습니다.
 
@@ -1119,6 +1141,7 @@
           정책이 True로 설정되거나 설정되지 않은 경우, 화면 잠금이 전원 관리에 적용됩니다.
 
           정책이 False로 설정된 경우, 잠금 요청이 무시됩니다.</translation>
+<translation id="4882546920824859909">Google Apps에 액세스할 수 있도록 허용된 도메인 정의</translation>
 <translation id="4890209226533226410">사용하도록 설정한 화면 돋보기의 유형을 설정합니다.
 
           이 정책을 설정하면 사용하도록 설정되는 화면 돋보기의 유형을 제어합니다. 정책을 '없음'으로 설정하면 화면 돋보기가 사용 중지됩니다.
@@ -1969,7 +1992,7 @@
 <translation id="7719251660743813569">사용 통계를 Google에 다시 보고할 지 여부를 조정합니다. true로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 사용 통계를 보고합니다. 구성하지 않거나 false로 설정하면 통계 보고는 사용하지 않습니다.</translation>
 <translation id="7723433108978650103">목록에 있는 URL에 대한 액세스를 차단합니다.
 
-      이 정책은 사용자가 차단 목록에 있는 URL의 웹페이지를 로드하지 못하도록 합니다. 차단 목록은 어떤 URL을 차단해야 하는지 지정하는 URL 패턴 목록을 제공합니다.
+      이 정책은 사용자가 차단 목록에 있는 URL의 웹페이지를 로드하지 못하도록 합니다. 차단 목록은 차단해야 할 URL을 명시하는 URL 패턴 목록을 제공합니다.
 
       URL 패턴은 https://www.chromium.org/administrators/url-blacklist-filter-format 페이지에 따라 형식이 지정되어야 합니다.
 

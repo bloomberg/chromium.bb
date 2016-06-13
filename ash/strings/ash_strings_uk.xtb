@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Пристрій Chrome</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Візьміть участь у нашому опитуванні</translation>
 <translation id="1723752762323179280">Завершення сеансу</translation>
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />третя сторона<ph name="END_LINK" />).
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777">Ви автоматично вийдете за <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ваш комп’ютер видимий для пристроїв Bluetooth поблизу та відображатиметься з назвою "<ph name="NAME" />" та адресою <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Заряджає <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Допоможіть нам покращити Chromebook</translation>
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6203030746557259519">Віртуальний дисплей</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Переглянути обліковий запис для мобільних пристроїв</translation>
 <translation id="7864539943188674973">Вимкнути Bluetooth</translation>
+<translation id="7869829692393275047">Текст опитування HaTS ОС Chrome тут. Текст опитування HaTS ОС Chrome тут. Текст опитування HaTS ОС Chrome тут. Текст опитування HaTS ОС Chrome тут.</translation>
 <translation id="7893838033650689677">Увімкнути Wi-Fi</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
 <translation id="7957227661277029961">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений. Скористайтесь зарядним пристроєм, який входить у комплект.</translation>

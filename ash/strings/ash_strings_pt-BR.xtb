@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
+<translation id="1683360892415596327">Responder nossa pesquisa</translation>
 <translation id="1723752762323179280">Saindo da sessão</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
 <translation id="1812696562331527143">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />). 
@@ -161,6 +162,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Carregando <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Ajudar a melhorar os Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6203030746557259519">Tela virtual</translation>
@@ -212,6 +214,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="7823564328645135659">O idioma foi alterado de "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização de suas configurações.</translation>
 <translation id="785750925697875037">Exibir conta de celular</translation>
 <translation id="7864539943188674973">Desativar bluetooth</translation>
+<translation id="7869829692393275047">Texto da pesquisa HaTS do Chrome OS aqui. Texto da pesquisa HaTS do Chrome OS aqui. Texto da pesquisa HaTS do Chrome OS aqui. Texto da pesquisa HaTS do Chrome OS aqui.</translation>
 <translation id="7893838033650689677">Ativar Wi-Fi</translation>
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
 <translation id="7957227661277029961">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado. Tente usar o carregador original.</translation>

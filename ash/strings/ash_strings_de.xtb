@@ -26,6 +26,8 @@
 <translation id="1602076796624386989">Mobilfunk aktivieren</translation>
 <translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-Gerät</translation>
+<translation id="1677472565718498478">Verbleibende Zeit: <ph name="TIME" /> h</translation>
+<translation id="1683360892415596327">An unserer Umfrage teilnehmen</translation>
 <translation id="1723752762323179280">Sitzung wird beendet</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />Drittanbieter<ph name="END_LINK" />) geändert.
@@ -116,6 +118,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing.</translation>
+<translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
@@ -160,6 +163,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6062360702481658777">Sie werden in <ph name="LOGOUT_TIME_LEFT" /> automatisch abgemeldet.</translation>
 <translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als "<ph name="NAME" />" mit der Adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wird aufgeladen</translation>
+<translation id="6144938890088808325">Bei der Verbesserung von Chromebooks helfen</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6203030746557259519">Virtueller Bildschirm</translation>
@@ -211,6 +215,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="785750925697875037">Mobiles Konto aufrufen</translation>
 <translation id="7864539943188674973">Bluetooth deaktivieren</translation>
+<translation id="7869829692393275047">Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier.</translation>
 <translation id="7893838033650689677">WLAN aktivieren</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7957227661277029961">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist. Wir empfehlen Ihnen, dass offizielle Ladegerät zu verwenden.</translation>
@@ -224,6 +229,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> % verbleibend</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
 <translation id="8814190375133053267">WLAN</translation>

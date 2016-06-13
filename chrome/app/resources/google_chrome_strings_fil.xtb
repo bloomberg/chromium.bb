@@ -9,7 +9,6 @@
 <translation id="1065672644894730302">Hindi mabasa ang iyong mga kagustuhan.
 
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
-<translation id="1073391069195728457">Chrome - Mga Notification</translation>
 <translation id="1104959162601287462">Tungkol sa &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ito ang iyong Chrome</translation>
 <translation id="123620459398936149">Hindi ma-sync ng Chrome OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
@@ -105,7 +104,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4053720452172726777">I-customize at kontrolin ang Google Chrome</translation>
 <translation id="4147555960264124640">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Nabigo ang installer sa pag-uncompress ng archive. Paki-download muli ang Google Chrome.</translation>
-<translation id="4167057906098955729">Makikita mo ang lahat ng iyong notification mula sa apps, mga extension, at website ng Chrome dito.</translation>
 <translation id="423410644998903704">Kailangan ng Chrome ng access sa pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
 <translation id="4251615635259297716">I-link ang iyong data sa Chrome sa account na ito</translation>
 <translation id="4309555186815777032">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chrome)</translation>
@@ -118,6 +116,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="4631713731678262610">Itago sa menu ng Chrome</translation>
 <translation id="4633000520311261472">Upang gawing mas ligtas ang Chrome, nag-disable kami ng ilang extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> at maaaring naidagdag nang hindi mo nalalaman.</translation>
+<translation id="4664415150087723341">May kakalapat lang na espesyal na update sa seguridad para sa Google Chrome; dapat ka nang mag-restart ngayon para magkabisa ito (ire-restore namin ang iyong mga tab).</translation>
 <translation id="4700157086864140907">Maaaring magbigay ng mas mahusay na pagsusuri ng pagbabaybay ang Google Chrome sa pamamagitan ng pagpapadala sa mga server ng Google kung ano ang iyong tina-type sa browser, na nagbibigay-daan sa iyong gamitin ang parehong teknolohiya ng pagsusuri ng pagbabaybay na ginagamit ng paghahanap sa Google.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
@@ -141,6 +140,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
 <translation id="5253588388888612165">Kung ibabahagi mo ang computer na ito kay <ph name="PROFILE_NAME" />, idagdag ang iyong sarili sa Chrome upang mag-browse nang hiwalay. Kung hindi naman, idiskonekta ang kanilang Google Account.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{Magre-restart ang Google Chrome pagkalipas ng 1 segundo.}one{Magre-restart ang Google Chrome pagkalipas ng # segundo}other{Magre-restart ang Google Chrome pagkalipas ng # na segundo}}</translation>
 <translation id="5328989068199000832">Mga Google Chrome Binary</translation>
 <translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="5386244825306882791">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o naghanap mula sa Omnibox.</translation>
@@ -199,7 +199,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7191567847629796517">Hindi sinusuportahan ng Google Chrome OS ang paglulunsad ng external na application upang mangasiwa ng mga link ng <ph name="SCHEME" />. Ang hiniling na link ay <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="7242029209006116544">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. Maaari ka ring gumawa ng bagong profile upang ihiwalay ang iyong umiiral na data sa Chrome. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome - Mga Notification (<ph name="QUANTITY" /> ang hindi pa nababasa)</translation>
 <translation id="729375352412857283">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Windows XP at Windows Vista.</translation>
 <translation id="7339898014177206373">Bagong window</translation>
 <translation id="7398801000654795464">Naka-sign in ka sa Chrome bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
@@ -235,7 +234,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8286862437124483331">Sinusubukan ng Google Chrome na ipakita ang mga password. I-type ang iyong password sa Windows upang payagan ito.</translation>
 <translation id="8290100596633877290">Whoa! Nag-crash ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="8406086379114794905">Tulungang pahusayin ang Chrome</translation>
-<translation id="8460191995881063249">Chrome Notification Center</translation>
 <translation id="853189717709780425">Nagsa-sign in ka gamit ang isang pinamamahalaang account at ibinibigay mo ang kontrol ng administrator nito sa iyong profile sa Google Chrome. Permanenteng mauugnay sa <ph name="USER_NAME" /> ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, mga password, at iba pang mga setting. Matatanggal mo ang data na ito sa pamamagitan ng Dashboard ng Mga Google Account, ngunit hindi mo maiuugnay ang data na ito sa isa pang account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Canary ng App Launcher ng Chrome</translation>
@@ -247,6 +245,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Dapat mo nang i-restart ngayon ang Google Chrome.</translation>
 <translation id="8823341990149967727">Luma na ang Chrome</translation>
 <translation id="884296878221830158">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o na-click ang button ng Home.</translation>
 <translation id="8851136666856101339">main</translation>

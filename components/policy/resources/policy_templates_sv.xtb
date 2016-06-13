@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
 <translation id="102492767056134033">Ange standardläget för skärmtangentbordet på inloggningsskärmen</translation>
+<translation id="1040446814317236570">Aktivera filtrering av webbadresser för PAC (för https://)</translation>
 <translation id="1044878202534415707">Rapportera maskinvarustatistik som exempelvis användning av processor eller RAM-minne.
 
       Om policyn är inställd på falskt kommer statistiken inte att rapporteras.
@@ -916,6 +917,26 @@
 <translation id="3967075520570946456">Gör att välkomstsidan visas när webbläsaren startas för första gången efter en uppgradering av operativsystemet.</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
 <translation id="3984028218719007910">Avgör om <ph name="PRODUCT_OS_NAME" /> ska spara lokala kontodata efter utloggning. Om värdet är sant sparas inga konton permanent av <ph name="PRODUCT_OS_NAME" /> och alla data från användarsessionen kasseras efter utloggning. Om policyn är inställd på falskt eller inte konfigurerad kan lokala användardata sparas (krypterade) i enheten.</translation>
+<translation id="3994569321696536679">Aktiverar <ph name="PRODUCT_NAME" />s
+      funktion för begränsad inloggning i Google Apps och förhindrar att användare
+      ändrar inställningen.
+
+      Om du anger inställningen får användare bara tillgång till
+      Google Apps (som Gmail) via konton från de angivna domänerna.
+
+      Den här inställningen förhindrar INTE att användare loggar in via en hanterad enhet
+      som kräver Google-autentisering. Användaren kan fortfarande
+      logga in på konton från andra domäner, men det visas ett felmeddelande
+      när de försöker använda Google Apps med dessa konton.
+
+      Om du lämnar inställningen tom/ej konfigurerad får användaren tillgång till
+      Google Apps med alla konton.
+
+      Policyn innebär att huvudet X-GoogApps-Allowed-Domains läggs till i
+      alla HTTP- och HTTPS-begäranden till alla domäner på google.com, i enlighet med
+      https://support.google.com/a/answer/1668854.
+
+      Användare kan inte ändra eller åsidosätta inställningen.</translation>
 <translation id="3997519162482760140">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter på inloggningssidor med SAML</translation>
 <translation id="4001275826058808087">IT-administratörer för företagsenheter kan använda den här flaggan för att styra om användarna ska kunna utnyttja erbjudanden via registrering i Chrome OS.
 
@@ -1131,6 +1152,7 @@
           Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
 
           Om policyn har inställningen falskt kommer skärmaktiveringslåset att ignoreras.</translation>
+<translation id="4882546920824859909">Ange vilka domäner som ska ha tillgång till Google Apps</translation>
 <translation id="4890209226533226410">Anger vilken typ av skärmförstorare som är aktiverad.
 
           Om den här principen har angetts bestämmer den vilken typ av skärmförstorare som är aktiv. Skärmförstoraren inaktiveras om värdet på principen är Ingen.
@@ -1989,7 +2011,7 @@
 
       Webbadressmönstren måste ha det format som anges på https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      Undantag kan anges i principen för vitlistade webbadresser. Principerna kan som mest ha 1000 poster. Alla poster utöver det ignoreras.
+      Undantag kan anges i principen för vitlistade webbadresser. Principerna kan som mest ha 1 000 poster. Alla poster utöver det ignoreras.
 
       Observera att interna webbadresser med chrome://* inte bör blockeras, eftersom det kan leda till oväntade fel.
 

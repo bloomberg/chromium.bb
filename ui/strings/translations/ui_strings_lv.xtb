@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1021451612696613363">Pierakstieties, lai skatītu savus paziņojumus.</translation>
 <translation id="111910763555783249">Paziņojumu iestatījumi</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1167268268675672572">Pārvietot uz rindiņas sākumu un mainīt atlasi</translation>
@@ -10,6 +11,7 @@
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1413622004203049571">Atspējot paziņojumu saņemšanu no: <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
+<translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minūte}zero{# minūtes}one{# minūte}other{# minūtes}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1781701194097416995">Pārvietot pa kreisi par vienu vārdu</translation>
@@ -119,13 +121,11 @@
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
 <translation id="7850320739366109486">Netraucēt</translation>
 <translation id="7907591526440419938">Atvērt failu</translation>
-<translation id="7960078400008666149">Netraucēt stundu</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pirms 1 stundas}zero{Pirms # stundām}one{Pirms # stundas}other{Pirms # stundām}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Atlikusi 1 s}zero{Atlikušas # s}one{Atlikusi # s}other{Atlikušas # s}}</translation>
 <translation id="815598010540052116">Ritināt lejup</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8210608804940886430">Lejup</translation>
-<translation id="8226233771743600312">Netraucēt dienu</translation>
 <translation id="8328145009876646418">Kreisā mala</translation>
 <translation id="8331626408530291785">Ritināt augšup</translation>
 <translation id="8371695176452482769">Runājiet tūlīt</translation>

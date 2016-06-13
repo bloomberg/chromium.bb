@@ -42,13 +42,13 @@
 <translation id="2372704305038231957">32-bittinen Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta. Päivitä Chromium 64-bittiseen versioon.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Lataus on parhaillaan käynnissä. Haluatko peruuttaa latauksen ja poistua Chromiumista?}other{# latausta on parhaillaan käynnissä. Haluatko peruuttaa lataukset ja poistua Chromiumista?}}</translation>
 <translation id="2396765026452590966">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromiumin aloitussivun.</translation>
+<translation id="2483889755041906834">Chromiumissa</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2486653164587200256">Chromium ei välttämättä toimi oikein, koska se ei enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2595977381794111014">Voit jatkaa sovellustesi käyttöä Chromiumin kirjanmerkkipalkissa olevalla <ph name="APPS_ICON_IMAGE" />-pikanäppäimellä.</translation>
-<translation id="2602806952220118310">Chromium – ilmoitukset</translation>
 <translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2648074677641340862">Asennuksessa ilmeni käyttöjärjestelmävirhe. Lataa Chromium uudelleen.</translation>
 <translation id="2673087257647337101">Lähes valmista! Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">Chromium käyttää mikrofoniasi.</translation>
 <translation id="313551035350905294">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin.</translation>
 <translation id="3190315855212034486">Hups! Chromium kaatui. Käynnistetäänkö uudelleen?</translation>
-<translation id="3244477511402911926">Chromiumin ilmoituskeskus</translation>
 <translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
 <translation id="3258596308407688501">Chromium ei voi lukea tietohakemistoaan ja kirjoittaa siihen:
 
@@ -98,6 +97,7 @@
 <translation id="4222580632002216401">Olet nyt kirjautunut sisään Chromiumiin! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="4224199872375172890">Chromium on ajan tasalla.</translation>
 <translation id="4230135487732243613">Linkitetäänkö Chromium-tiedot tähän tiliin?</translation>
+<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium käynnistyy uudelleen 1 sekunnin kuluttua}other{Chromium käynnistyy uudelleen # sekunnin kuluttua}}</translation>
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
 <translation id="4330585738697551178">Tämän moduulin tiedetään aiheuttavan ristiriitoja Chromiumin kanssa.</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
@@ -140,6 +140,7 @@
 <translation id="6309712487085796862">Chromium käyttää kameraasi.</translation>
 <translation id="6334986366598267305">Nyt voit helpommin käyttää Chromiumia Google-tililläsi ja jaetuilla tietokoneilla.</translation>
 <translation id="6373523479360886564">Haluatko varmasti poistaa Chromiumin asennuksen?</translation>
+<translation id="6394232988457703198">Käynnistä Chromium uudelleen</translation>
 <translation id="6403826409255603130">Chromium on selain, jolla verkkosivut ja sovellukset toimivat salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Chromiumin sisäänrakennettu haittaohjelma- ja tietojenkalastelusuojaus tekevät verkkoselauksesta turvallisempaa.</translation>
 <translation id="6475912303565314141">Määrittää myös Chromiumin aloitussivun.</translation>
 <translation id="6485906693002546646">Synkronoit Chromiumin tietosi osoitteella <ph name="PROFILE_EMAIL" />. Voit vaihtaa synkronoinnin asetuksia tai siirtyä käyttämään Chromiumia ilman Google-tiliä käymällä <ph name="SETTINGS_LINK" />.</translation>
@@ -189,11 +190,11 @@ Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiil
 Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Jos haluat pitää nykyiset Chromium-tietosi erillään, voit luoda käyttäjälle <ph name="USER_NAME" /> uuden Chromium-tunnuksen.</translation>
 <translation id="7421823331379285070">Chromium vaatii Windows XP:n tai uudemman version. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
-<translation id="7463979740390522693">Chromium – ilmoitukset (lukematta: <ph name="QUANTITY" />)</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
 <translation id="750717762378961310">Tämä tiedosto on haitallinen, ja Chromium on estänyt sen.</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
+<translation id="7577193603922410712">Chromiumin tärkeä tietoturvapäivitys on asennettu. Käynnistä se uudelleen, niin päivitys otetaan käyttöön (avoimet välilehdet palautetaan).</translation>
 <translation id="761356813943268536">Chromium käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="7617377681829253106">Chromium on nyt entistä parempi</translation>
 <translation id="7641113255207688324">Chromium ei ole oletusselain.</translation>
@@ -206,7 +207,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8033665941300843262">Chromium tarvitsee lupien käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
-<translation id="805745970029938373">Täällä näet kaikki ilmoituksesi Chromium-sovelluksista, laajennuksista ja verkkosivustoista.</translation>
 <translation id="8134284582177628525">Jos jaat tämän tietokoneen henkilön <ph name="PROFILE_NAME" /> kanssa, lisää itsesi Chromiumiin, jotta voitte selata erikseen. Muuten sinun on irrotettava hänen Google-tilinsä.</translation>
 <translation id="8269379391216269538">Auta parantamaan Chromiumia</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>

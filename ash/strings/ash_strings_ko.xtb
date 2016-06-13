@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
 <translation id="164969095109328410">Chrome 기기</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
+<translation id="1683360892415596327">설문조사 참여하기</translation>
 <translation id="1723752762323179280">세션 종료</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />타사<ph name="END_LINK" />)(으)로 변경되었습니다.
@@ -162,6 +163,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> 후 자동으로 로그아웃됩니다.</translation>
 <translation id="607652042414456612">내 컴퓨터가 근처 블루투스 기기에서 검색할 수 있도록 설정되어 있으며 주소(<ph name="ADDRESS" />)와 함께 '<ph name="NAME" />'(으)로 표시됩니다.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> 충전 중</translation>
+<translation id="6144938890088808325">Chromebook 개선에 도움을 주세요.</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6203030746557259519">가상 디스플레이</translation>
@@ -213,6 +215,7 @@
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE" />'에서 '<ph name="TO_LOCALE" />'(으)로 변경되었습니다.</translation>
 <translation id="785750925697875037">모바일 계정 표시</translation>
 <translation id="7864539943188674973">블루투스 사용 안 함</translation>
+<translation id="7869829692393275047">Chrome OS HaTS 설문조사 텍스트입니다. Chrome OS HaTS 설문조사 텍스트입니다. Chrome OS HaTS 설문조사 텍스트입니다. Chrome OS HaTS 설문조사 텍스트입니다.</translation>
 <translation id="7893838033650689677">Wi-Fi 사용</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다. 정품 충전기를 사용하는 것이 좋습니다.</translation>

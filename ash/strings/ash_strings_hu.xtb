@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-eszköz</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
+<translation id="1683360892415596327">Töltse ki kérdőívünket</translation>
 <translation id="1723752762323179280">Kilépés a munkamenetből</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1812696562331527143">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />harmadik fél<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6062360702481658777">A rendszer automatikusan kijelentkezteti Önt <ph name="LOGOUT_TIME_LEFT" /> idő múlva.</translation>
 <translation id="607652042414456612">Számítógépét felfedezhetik a közeli Bluetooth-eszközök. Számítógépe „<ph name="NAME" />” néven, <ph name="ADDRESS" /> címmel lesz látható</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> töltése folyamatban</translation>
+<translation id="6144938890088808325">Segítsen nekünk a Chromebookok továbbfejlesztésében</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6203030746557259519">Virtuális kijelző</translation>
@@ -213,6 +215,7 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="7823564328645135659">A beállítások szinkronizálását követően "<ph name="FROM_LOCALE" />" nyelvről "<ph name="TO_LOCALE" />" nyelvre változott a nyelvi beállítás.</translation>
 <translation id="785750925697875037">Mobil fiók megtekintése</translation>
 <translation id="7864539943188674973">Bluetooth letiltása</translation>
+<translation id="7869829692393275047">Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege.</translation>
 <translation id="7893838033650689677">Wi-Fi bekapcsolása</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7957227661277029961">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva. Érdemes a hivatalos töltőt használnia.</translation>

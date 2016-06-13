@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhed</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
+<translation id="1683360892415596327">Deltag i vores undersøgelse</translation>
 <translation id="1723752762323179280">Afslutter session</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som "<ph name="NAME" />" med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Oplader <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Hjælp os med at forbedre Chromebooks</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6203030746557259519">Virtuel skærm</translation>
@@ -213,6 +215,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
+<translation id="7869829692393275047">Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here.</translation>
 <translation id="7893838033650689677">Slå Wi-Fi til</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7957227661277029961">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt. Overvej at bruge den officielle oplader.</translation>

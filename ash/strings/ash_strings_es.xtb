@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478">Tiempo restante: <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Realizar encuesta</translation>
 <translation id="1723752762323179280">Saliendo de la sesión</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de entrada ha cambiado a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />externo<ph name="END_LINK" />).
@@ -117,7 +118,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse.</translation>
-<translation id="453661520163887813">Tiempo para completar la carga: <ph name="TIME" /></translation>
+<translation id="453661520163887813"><ph name="TIME" /> para completar la carga</translation>
 <translation id="4544944664594876241">La combinación de teclas para bloquear la pantalla ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
@@ -162,6 +163,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6062360702481658777">Tu sesión se cerrará automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Tu ordenador es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Ayúdanos a mejorar los Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6203030746557259519">Pantalla virtual</translation>
@@ -213,6 +215,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="7823564328645135659">El idioma ha cambiado de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
 <translation id="7864539943188674973">Inhabilitar Bluetooth</translation>
+<translation id="7869829692393275047">Texto de la encuesta de Chrome OS HaTS. Texto de la encuesta de Chrome OS HaTS. Texto de la encuesta de Chrome OS HaTS. Texto de la encuesta de Chrome OS HaTS.</translation>
 <translation id="7893838033650689677">Activar Wi-Fi</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7957227661277029961">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido. Te recomendamos que utilices el cargador oficial.</translation>

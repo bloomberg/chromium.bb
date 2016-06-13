@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Urządzenie z Chrome</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Wypełnij ankietę</translation>
 <translation id="1723752762323179280">Zamykanie sesji</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1812696562331527143">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6062360702481658777">Zostaniesz automatycznie wylogowany za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Twój komputer jest wykrywalny na urządzenia Bluetooth znajdujących się w pobliżu. Będzie prezentowany jako „<ph name="NAME" />” z adresem <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Ładowanie: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Pomóż nam ulepszyć Chromebooki</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6203030746557259519">Wirtualny wyświetlacz</translation>
@@ -213,6 +215,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7823564328645135659">Po zsynchronizowaniu ustawień zmieniono język z „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />”.</translation>
 <translation id="785750925697875037">Wyświetl konto dla telefonów komórkowych</translation>
 <translation id="7864539943188674973">Wyłącz Bluetooth</translation>
+<translation id="7869829692393275047">Tekst ankiety badającej zadowolenie użytkowników systemu operacyjnego Chrome. Tekst ankiety badającej zadowolenie użytkowników systemu operacyjnego Chrome. Tekst ankiety badającej zadowolenie użytkowników systemu operacyjnego Chrome. Tekst ankiety badającej zadowolenie użytkowników systemu operacyjnego Chrome.</translation>
 <translation id="7893838033650689677">Włącz Wi-Fi</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony. Użyj oficjalnej ładowarki.</translation>

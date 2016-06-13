@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Thiết bị Chrome</translation>
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Hãy tham gia cuộc khảo sát của chúng tôi</translation>
 <translation id="1723752762323179280">Thoát phiên</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />bên thứ ba<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6062360702481658777">Bạn sẽ tự động được đăng xuất sau <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Máy tính của bạn có thể phát hiện thiết bị Bluetooth gần đó và hiện thị dưới tên "<ph name="NAME" />" với địa chỉ là <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Đang sạc <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Giúp chúng tôi cải thiện Chromebook</translation>
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6203030746557259519">Màn hình ảo</translation>
@@ -213,6 +215,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="785750925697875037">Xem tài khoản di động</translation>
 <translation id="7864539943188674973">Tắt bluetooth</translation>
+<translation id="7869829692393275047">Đây là nội dung Cuộc khảo sát theo dõi mức độ hài lòng (HaTS) về Chrome OS. Đây là nội dung Cuộc khảo sát theo dõi mức độ hài lòng (HaTS) về Chrome OS. Đây là nội dung Cuộc khảo sát theo dõi mức độ hài lòng (HaTS) về Chrome OS. Đây là nội dung Cuộc khảo sát theo dõi mức độ hài lòng (HaTS) về Chrome OS.</translation>
 <translation id="7893838033650689677">Bật Wi-Fi</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật. Cân nhắc việc sử dụng bộ sạc chính thức.</translation>

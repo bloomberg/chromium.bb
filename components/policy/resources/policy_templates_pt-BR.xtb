@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Definir diretório de dados do usuário</translation>
 <translation id="1022361784792428773">IDs de extensão que devem ser impedidos de serem instalados pelo usuário (ou * para todos)</translation>
 <translation id="102492767056134033">Definir o estado padrão do teclado na tela, na tela de login</translation>
+<translation id="1040446814317236570">Ativar a retirada de URL PAC (para https://)</translation>
 <translation id="1044878202534415707">Relatórios sobre estatísticas de hardware, como o uso de CPU/RAM.
 
       Se a política é definida como "false", as estatísticas não são informadas.
@@ -834,6 +835,25 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3967075520570946456">Ativar a exibição da página de boas-vindas na primeira inicialização do navegador após a atualização do sistema operacional.</translation>
 <translation id="3973371701361892765">Nunca ocultar automaticamente a estante</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> deve manter os dados locais da conta após a saída. Se for configurada como true, nenhuma conta persistente será mantida pelo <ph name="PRODUCT_OS_NAME" /> e todos os dados da sessão do usuário serão descartados após a saída. Se esta política for configurada como false ou não for configurada, o dispositivo poderá manter os dados locais do usuário (criptografados).</translation>
+<translation id="3994569321696536679">Permite o recurso
+      de login restrito do <ph name="PRODUCT_NAME" /> no Google Apps for Work e impede que os usuários
+      alterem esta configuração.
+
+      Se você definir esta configuração, o usuário só poderá acessar
+      Google Apps for Work (como o Gmail) usando contas dos domínios especificados.
+
+      Esta configuração não impedirá que o usuário faça login em um dispositivo gerenciado
+      que requer autenticação com uma conta do Google. O usuário ainda terá permissão para
+      fazer login em contas de outros domínios, mas receberá uma mensagem de erro
+      ao tentar usar o Google Apps for Work com essas contas.
+
+      Se esta configuração for deixada em branco/não configurada, o usuário poderá acessar Google Apps for Work com qualquer conta.
+
+      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains seja anexado a
+      todas as solicitações HTTP e HTTPS para todos os domínios do google.com, conforme descrito em
+      https://support.google.com/a/answer/1668854.
+
+      Os usuários não poderão alterar ou modificar esta configuração.</translation>
 <translation id="3997519162482760140">URLs que terão acesso a dispositivos de captura de vídeo em páginas de login SAML</translation>
 <translation id="4001275826058808087">Administradores de TI de dispositivos corporativos podem usar essa sinalização para controlar se os usuários têm permissão para resgatar ofertas por meio de registro do Chrome OS.
 
@@ -1023,6 +1043,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
 
           Se esta política estiver definida como falsa, as solicitações de bloqueio de ativação da tela são ignoradas.</translation>
+<translation id="4882546920824859909">Define os domínios autorizados a acessar Google Apps</translation>
 <translation id="4890209226533226410">Definir o tipo de lupa ativada.
 
           Se esta política for definida, controlará o tipo de lupa ativada. Configurar a política como "Nenhuma" desativa a lupa.
@@ -1789,7 +1810,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Exceções podem ser definidas na política de lista de permissões de URL. Essas políticas são limitadas a 1000 entradas. Entradas subsequentes serão ignoradas.
 
-      Não é recomendado bloquear URLS "chrome://*" internos, pois isso pode causar erros inesperados.
+      Não é recomendado bloquear URLs "chrome://*" internos, pois isso pode causar erros inesperados.
 
       Se esta política não for definida, nenhum URL será adicionado à lista negra no navegador.</translation>
 <translation id="7749402620209366169">Permite autenticação de dois fatores para hosts de acesso remoto em vez de PIN especificado pelo usuário. 

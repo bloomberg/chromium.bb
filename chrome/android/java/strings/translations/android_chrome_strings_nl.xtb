@@ -232,6 +232,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="4089831646916293264">Deze functie kan problemen veroorzaken met toegang tot premium gegevensservices geleverd door je provider.</translation>
+<translation id="4099423833822562131">Selecteer een verzendadres om verzendmethoden te bekijken.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="411254640334432676">Downloaden mislukt.</translation>
@@ -279,6 +280,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4690286298542128877">Tabbladen worden verplaatst naar een tabbladschakelaar in Chrome.</translation>
 <translation id="4698413471314543145">Er ontbreekt essentiële functionaliteit voor het uitvoeren van Chrome. Je Chrome-installatie is onvolledig of niet compatibel met deze versie van Android.</translation>
 <translation id="4699172675775169585">Gecachte afbeeldingen en bestanden</translation>
+<translation id="4710672574193412565">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="4720023427747327413">Openen in <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4738836084190194332">Laatst gesynchroniseerd: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5056549851600133418">Artikelen voor jou</translation>
 <translation id="5063480226653192405">Gebruik</translation>
+<translation id="5087580092889165836">Kaart toevoegen</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
 <translation id="5107381076085091558">Download onderbroken.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -376,7 +379,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="585027516397408832">Databesparing ingeschakeld</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
-<translation id="588563574323093535">Eerst vragen voordat sites op volledig scherm mogen worden weergegeven (aanbevolen)</translation>
 <translation id="5899349522111170522">Nieuw bestand maken</translation>
 <translation id="5902828464777634901">Alle lokale gegevens die zijn opgeslagen door deze website, inclusief cookies, worden verwijderd.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -408,7 +410,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
-<translation id="6317634962183824346">Android-systeemsynchronisatie uit. Schakel dit weer in en probeer het opnieuw.</translation>
 <translation id="6324360525379265737">Tekencodering automatisch detecteren</translation>
 <translation id="6333140779060797560">Delen via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Codering</translation>
@@ -603,7 +604,6 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8730621377337864115">Gereed</translation>
-<translation id="8793430725658173476">URL kopiëren</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8812942424849541387">Beheer hoe dit werkt via <ph name="BEGIN_LINK1" />Instellingen<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bladwijzers</translation>

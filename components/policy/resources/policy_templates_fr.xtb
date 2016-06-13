@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
 <translation id="102492767056134033">Définir l'état par défaut du clavier à l'écran sur l'écran de connexion</translation>
+<translation id="1040446814317236570">Activer la suppression des URL via PAC (pour "https://")</translation>
 <translation id="1044878202534415707">Envoyer des rapports sur les statistiques matérielles tels que l'utilisation du processeur et de la RAM.
 
       Si cette règle est définie sur "False", les statistiques ne seront pas envoyées.
@@ -916,6 +917,28 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3967075520570946456">Activer l'affichage de la page d'accueil à la première exécution du navigateur suivant la mise à jour de l'OS</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
+<translation id="3994569321696536679">Active la fonctionnalité de connexion limitée de <ph name="PRODUCT_NAME" />
+      dans les applications Google et empêche les utilisateurs de modifier
+      ce paramètre.
+
+      Si vous définissez ce paramètre, l'utilisateur ne peut accéder aux
+      applications Google (Gmail, par exemple) que via des comptes associés
+      aux domaines spécifiés.
+
+      Ce paramètre n'empêche PAS l'utilisateur de se connecter sur un appareil
+      géré pour lequel une procédure d'authentification Google est requise.
+      L'utilisateur est toujours autorisé à se connecter à des comptes associés
+      à d'autres domaines, mais il reçoit un message d'erreur lorsqu'il tente
+      d'utiliser des applications Google avec ces comptes.
+
+      Si vous laissez ce paramètre vide/ne le configurez pas, l'utilisateur
+      peut accéder aux applications Google avec n'importe quel compte.
+
+      Cette règle entraîne l'ajout de l'en-tête "X-GoogApps-Allowed-Domains"
+      à toutes les demandes HTTP et HTTPS sur tous les domaines google.com,
+      comme décrit sur la page https://support.google.com/a/answer/1668854.
+
+      Les utilisateurs ne peuvent pas modifier ni remplacer ce paramètre.</translation>
 <translation id="3997519162482760140">URL autorisées à accéder aux appareils de capture vidéo sur les pages de connexion SAML</translation>
 <translation id="4001275826058808087">Les administrateurs informatiques des appareils d'entreprise peuvent utiliser cet indicateur pour autoriser ou non les utilisateurs à profiter de leurs offres via le service d'enregistrement de Chrome OS.
 
@@ -1132,6 +1155,7 @@ Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou 
           Si cette règle est définie sur "true" ou si elle n'est pas définie, les WakeLock forçant l'activation de l'écran sont pris en compte pour la gestion de l'alimentation.
 
           Si cette règle est définie sur "false", les demandes des WakeLock sont ignorées.</translation>
+<translation id="4882546920824859909">Définir les domaines autorisés à accéder aux applications Google</translation>
 <translation id="4890209226533226410">Définit le type de loupe activé.
 
           Si vous définissez cette règle, elle contrôle le type de loupe qui est activée. Définissez la règle sur "Aucun" pour désactiver la loupe.

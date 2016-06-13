@@ -6,6 +6,7 @@
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="1022361784792428773">Udvidelses-id'er, som brugeren skal forhindres i at installere (eller * for alle)</translation>
 <translation id="102492767056134033">Angiv standardtilstanden for skærmtastaturet på loginskærmen</translation>
+<translation id="1040446814317236570">Aktivér PAC til fjernelse af webadresser (for https://)</translation>
 <translation id="1044878202534415707">Rapportér hardwarestatistik, f.eks. CPU/RAM-forbrug.
 
       Hvis politikken angives som Falsk, rapporteres statistikken ikke.
@@ -315,7 +316,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne indstilling ikke er konfigureret, kan brugerne vælge, om stavekontrol skal aktiveres eller ej.</translation>
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
-<translation id="2309390639296060546">Standardindstilling for geografisk placering</translation>
+<translation id="2309390639296060546">Standardindstilling for geoplacering</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen "Webadresser, der skal åbnes ved opstart" ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
 <translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="2371309782685318247">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten forespørges om oplysninger om brugerpolitikken.
@@ -346,7 +347,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           indbyggede beskedhosts, der er installeret på brugerniveau.</translation>
 <translation id="240213793013362302">Konfigurer baggrundsbillede.
 
-      Denne politik tillader, at du konfigurerer baggrundsbilledet, der vises på brugerens skrivebord og på loginskærmen. Politikken indstilles ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at verificere downloadets integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelsesproces.
+      Denne politik tillader, at du konfigurerer baggrundsbilledet, der vises på brugerens skrivebord og på loginskærmen. Politikken indstilles ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at bekræfte downloadets integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelsesproces.
 
       Baggrundsbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
 
@@ -860,6 +861,26 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="3967075520570946456">Aktivér visning af velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME" /> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME" />, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
+<translation id="3994569321696536679">Aktiverer <ph name="PRODUCT_NAME" />s
+      begrænsede funktion til login i Google Apps og forhindrer brugere i at
+      ændre denne indstilling.
+
+      Hvis du definerer denne indstilling, kan brugerne kun få adgang til
+      Google Apps (f.eks. Gmail) via konti fra de angivne domæner.
+
+      Denne indstilling forhindrer IKKE brugerne i at logge ind på en administreret enhed,
+      der kræver Google-godkendelse. Brugerne har stadig mulighed for at
+      logge ind på konti fra andre domæner, men de modtager en fejlmeddelelse,
+      hvis de forsøger at bruge Google Apps med disse konti.
+
+      Hvis du undlader at markere/konfigurere denne indstilling, kan brugeren
+      få adgang til Google Apps med enhver konto.
+
+      Denne politik bevirker, at headeren X-GoogApps-Allowed-Domains føjes til
+      alle HTTP- og HTTPS-anmodninger på alle google.com-domæner, som beskrevet på
+      https://support.google.com/a/answer/1668854.
+
+      Brugere kan ikke ændre eller tilsidesætte denne indstilling.</translation>
 <translation id="3997519162482760140">Webadresser, der får adgang til videooptagelsesenheder på SAML-loginsider</translation>
 <translation id="4001275826058808087">It-administratorer for virksomhedsenheder kan bruge denne markering til at kontrollere, om brugerne skal have tilladelse til at indløse tilbud via Chrome OS-registrering.
 
@@ -1053,6 +1074,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Hvis denne politik er angivet til sand eller ikke er angivet, indfries aktiveringslåse for skærm med strømstyring.
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
+<translation id="4882546920824859909">Definer domæner, der har adgang til Google Apps</translation>
 <translation id="4890209226533226410">Indstil den type lup, der er aktiveret.
 
           Hvis denne politik indstilles, kontrollerer den den type lup, der er aktiveret.
@@ -1584,7 +1606,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="687046793986382807">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 35.
 
       Hukommelsesoplysninger rapporteres dog stadigvæk til siden uanset indstillingsværdien, men de rapporterede
-      størrelser er kvantiseret, og opdateringshastigheden er begrænset af sikkerhedsmæssige hensyn. Du kan få
+      størrelser er kvantiseret, og opdateringsfrekvensen er begrænset af sikkerhedsmæssige hensyn. Du kan få
       nøjagtige data i realtid ved at bruge værktøjer som f.eks. Telemetri.</translation>
 <translation id="6899705656741990703">Registrer proxyindstillinger automatisk</translation>
 <translation id="6903814433019432303">Denne politik er kun aktiv i detailtilstand.
@@ -1900,9 +1922,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis politikken ikke er angivet, opfører den sig, som hvis TimezoneAutomaticDetectionUsersDecide er angivet.
 
       Hvis politikken SystemTimezone er angivet, tilsidesætter den denne politik, og automatisk registrering af tidszone deaktiveres fuldstændigt.</translation>
-<translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certificater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
+<translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certifikater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
 
-      Hvis den er angivet til CopyCaCerts, er alle ONC-installered CA-certificater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
+      Hvis den er angivet til CopyCaCerts, er alle ONC-installerede CA-certifikater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>

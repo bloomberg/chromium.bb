@@ -77,6 +77,7 @@
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">檔案類型不明。</translation>
 <translation id="2413528052993050574">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已遭撤銷。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />執行網路診斷<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
 <translation id="2495083838625180221">JSON 剖析器</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">要求權限</translation>
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />執行連線診斷<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">移除選取的項目</translation>
 <translation id="277499241957683684">沒有裝置紀錄</translation>
 <translation id="2778107779445548489">Chrome 顯示這則訊息是因為您的家長已封鎖這個網站。</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="3109728660330352905">您未獲得授權，無法瀏覽這個網頁。</translation>
 <translation id="3118046075435288765">伺服器意外中斷連線。</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />嘗試執行連線診斷<ph name="END_LINK" />。</translation>
 <translation id="3145945101586104090">無法將回應解碼</translation>
 <translation id="3147485256806412701">這個網站使用的是最新通用頂層網域。</translation>
 <translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3587482841069643663">[全部]</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
-<translation id="3608308818141211642">用戶端和伺服器不支援通用 SSL 通訊協定版本或加密套件。這可能是因為系統判定伺服器所需的 RC4 不安全。</translation>
 <translation id="3609138628363401169">伺服器並不支援 TLS 重新交涉擴充功能。</translation>
+<translation id="36224234498066874">清除瀏覽資料...</translation>
 <translation id="362276910939193118">顯示完整記錄</translation>
 <translation id="3623476034248543066">顯示政策值</translation>
 <translation id="3630155396527302611">如果程式已列在允許存取網路的清單中，建議您
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟體設定<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">當機</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />嘗試執行網路診斷<ph name="END_LINK" />。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="425582637250725228">系統可能不會儲存您所做的變更。</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651">系統已封鎖 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的連線已中斷</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />執行 Windows 網路診斷<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">重新載入政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
@@ -569,6 +575,7 @@
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7445762425076701745">您所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在您的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保您所連上的網站是正確的，而不會遭到網路攻擊。</translation>
 <translation id="7450732239874446337">網路 IO 已暫停。</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
 <translation id="7481312909269577407">下一頁</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7514365320538308">下載</translation>
@@ -709,6 +716,7 @@
 <translation id="9039213469156557790">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁行為。</translation>
 <translation id="9049981332609050619">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證無效。</translation>
 <translation id="9050666287014529139">通關密語</translation>
+<translation id="9065203028668620118">編輯</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> 頁面無法正常運作</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9125941078353557812">請輸入信用卡背面的三位數信用卡安全碼</translation>

@@ -7,7 +7,6 @@
 <translation id="1035334672863811645">inicie sessão no Chrome</translation>
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="1065672644894730302">Não é possível ler as suas preferências. Algumas funcionalidades poderão estar indisponíveis e as alterações efetuadas às preferências não serão guardadas.</translation>
-<translation id="1073391069195728457">Chrome – Notificações</translation>
 <translation id="1104959162601287462">Acerca do SO &amp;Chrome</translation>
 <translation id="110877069173485804">Este é o seu Chrome</translation>
 <translation id="123620459398936149">O SO Chrome não conseguiu sincronizar os dados. Atualize a sua frase de acesso de sincronização.</translation>
@@ -74,7 +73,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3251381707915721925">Para definir que Websites <ph name="NEW_PROFILE_NAME" /> pode ver, pode configurar restrições e definições ao aceder a <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode procurar tudo na Web.
 
 Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se de que bloqueia o seu perfil quando não estiver a utilizar o Chrome. Para o fazer, clique no seu nome de perfil no canto superior direito do navegador e selecione "Sair e bloqueio para criança".
-<ph name="BEGIN_LINK_2" />Saiba mais<ph name="END_LINK_2" />
+<ph name="BEGIN_LINK_2" />Saber mais<ph name="END_LINK_2" />
 
 Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
@@ -101,7 +100,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="4147555960264124640">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
-<translation id="4167057906098955729">Pode ver aqui todas as suas notificações de aplicações, extensões e Websites do Chrome.</translation>
 <translation id="423410644998903704">O Chrome necessita de acesso às autorizações para as partilhar com este site.</translation>
 <translation id="4251615635259297716">Associar os seus dados do Chrome a esta conta?</translation>
 <translation id="4309555186815777032">(é necessário <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> o Chrome)</translation>
@@ -114,6 +112,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4631713731678262610">Ocultar no menu do Chrome</translation>
 <translation id="4633000520311261472">Para tornar o Chrome mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
+<translation id="4664415150087723341">Acabou de ser instalada uma atualização de segurança especial para o Google Chrome. Deve reiniciar agora para que tenha efeito (iremos restaurar os seus separadores).</translation>
 <translation id="4700157086864140907">O Google Chrome pode disponibilizar uma verificação ortográfica mais inteligente, enviando o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da pesquisa do Google.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
@@ -135,6 +134,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome</translation>
 <translation id="5251420635869119124">Os convidados podem utilizar o Chrome sem perder qualquer funcionalidade.</translation>
 <translation id="5253588388888612165">Se partilha este computador com <ph name="PROFILE_NAME" />, adicione-se ao Chrome para navegar em separado. Caso contrário, desassocie a Conta Google do outro utilizador.</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{O Google Chrome irá reiniciar dentro de 1 segundo.}other{O Google Chrome irá reiniciar dentro de # segundos.}}</translation>
 <translation id="5328989068199000832">Binários do Google Chrome</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="5386244825306882791">Também controla a página apresentada quando inicia o Chrome ou pesquisa a partir da Caixa geral.</translation>
@@ -191,7 +191,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7191567847629796517">O SO Google Chrome não suporta iniciar uma aplicação externa para processar links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
-<translation id="7282192067747128786">Chrome – Notificações (<ph name="QUANTITY" /> não lidas)</translation>
 <translation id="729375352412857283">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não serão suportados.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
@@ -227,7 +226,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8286862437124483331">O Google Chrome está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
-<translation id="8460191995881063249">Centro de Notificações do Chrome</translation>
 <translation id="853189717709780425">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições ficarão permanentemente associados a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google mas não poderá associar estes dados a outra conta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Iniciador de Aplicações do Chrome para o Canary</translation>
@@ -239,6 +237,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
 <translation id="8679801911857917785">Também controla a página apresentada quando inicia o Chrome.</translation>
 <translation id="870251953148363156">Atualizar o &amp;Google Chrome</translation>
+<translation id="8796108026289707191">Deve reiniciar o Google Chrome agora.</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
 <translation id="884296878221830158">Também controla a página apresentada quando inicia o Chrome ou clica no botão Página Inicial.</translation>
 <translation id="8851136666856101339">main</translation>

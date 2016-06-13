@@ -77,6 +77,7 @@
 <translation id="17513872634828108">Avatud vahelehed</translation>
 <translation id="1753706481035618306">Lk</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proovige käitada Windowsi võrgudiagnostika tööriista<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Värskendage sünkroonimise parooli.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
@@ -137,6 +138,7 @@
 <translation id="2400837204278978822">Tundmatu failitüüp.</translation>
 <translation id="2413528052993050574">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla tühistatud. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="2455981314101692989">See veebileht on keelanud automaatse täitmise selle vormi puhul.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Võrgudiagnostika käitamine<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
 <translation id="2491120439723279231">Serveri sertifikaat sisaldab vigu.</translation>
 <translation id="2495083838625180221">JSON-i parser</translation>
@@ -163,6 +165,7 @@
 <translation id="2712173769900027643">Küsi luba</translation>
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="2728127805433021124">Serveri sertifikaat on allkirjastatud nõrga allkirjaalgoritmiga.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Ühenduvusdiagnostika käitamine<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Eemalda valitud üksused</translation>
 <translation id="277499241957683684">Seadme kirje puudub</translation>
 <translation id="2778107779445548489">Näete seda sõnumit, kuna teie vanem blokeeris selle saidi.</translation>
@@ -199,6 +202,7 @@
 <translation id="3105172416063519923">Vara ID:</translation>
 <translation id="3109728660330352905">Teil pole volitust selle lehe vaatamiseks.</translation>
 <translation id="3118046075435288765">Server sulges ühenduse ootamatult.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Proovige käitada ühenduvusdiagnostikat<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Vastuse dekodeerimine ebaõnnestus</translation>
 <translation id="3147485256806412701">See sait kasutab uut üldist üladomeeni.</translation>
 <translation id="3150653042067488994">Serveris ilmnes ajutine viga</translation>
@@ -251,8 +255,8 @@
 <translation id="3586931643579894722">Peida üksikasjad</translation>
 <translation id="3587482841069643663">Kõik</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Klient ja server ei toeta šifreerimiskomplekti ega SSL-protokolli ühist versiooni. Põhjuseks on tõenäoliselt see, et server vajab RC4, mida ei loeta enam turvaliseks.</translation>
 <translation id="3609138628363401169">Server ei toeta TLS-i taasläbirääkimise laiendust.</translation>
+<translation id="36224234498066874">Kustuta sirvimise andmed...</translation>
 <translation id="362276910939193118">Näita kogu ajalugu</translation>
 <translation id="3623476034248543066">Kuva väärtused</translation>
 <translation id="3630155396527302611">Kui see on juba loendis kui programm, millele on lubatud võrgujuurdepääs, proovige
@@ -309,6 +313,7 @@
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Krahhid</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proovige käitada võrgudiagnostikat<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="425582637250725228">Tehtud muudatusi ei pruugita salvestada.</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
@@ -347,6 +352,7 @@
 <translation id="4697214168136963651"><ph name="URL" /> oli blokeeritud</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Teie ühendus katkes</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windowsi võrgudiagnostika käitamine<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Laadi reeglid uuesti</translation>
 <translation id="4728558894243024398">Platvorm</translation>
 <translation id="4744603770635761495">Täitmistee</translation>
@@ -569,6 +575,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="7445762425076701745">Serveri identiteeti, millega olete ühenduses, ei saa täielikult valideerida. Olete ühenduses serveriga nime abil, mis kehtib ainult teie võrgus, mistõttu ei saa väline sertifitseerimisorgan selle omandiõigust valideerida. Kuna mõni sertifitseerimisorgan väljastab sertifikaate hoolimata nende nimedest, puudub igasugune võimalus tagada, et olete ühenduses soovitud veebisaidi, mitte ründajaga.</translation>
 <translation id="7450732239874446337">Võrk IO on peatatud.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Vaadake lisateavet<ph name="END_LINK" /> probleemi kohta.</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -709,6 +716,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="9039213469156557790">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe käitumise muutmiseks ressursse muuta.</translation>
 <translation id="9049981332609050619">Proovisite jõuda domeenile <ph name="DOMAIN" />, kuid server esitas kehtetu sertifikaadi.</translation>
 <translation id="9050666287014529139">Parool</translation>
+<translation id="9065203028668620118">Muuda</translation>
 <translation id="9092364396508701805">Hosti <ph name="HOST_NAME" /> leht ei tööta</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9125941078353557812">Sisestage 3-kohaline CVC kaardi tagaküljelt</translation>

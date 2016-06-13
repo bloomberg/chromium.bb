@@ -74,6 +74,7 @@
 <translation id="17513872634828108">Otevřené karty</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
+<translation id="1768211456781949159"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě systému Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
@@ -134,6 +135,7 @@
 <translation id="2400837204278978822">Neznámý typ souboru</translation>
 <translation id="2413528052993050574">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě zrušen. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="2455981314101692989">U tohoto formuláře je na dané webové stránce vypnuto automatické vyplňování.</translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Neplatná adresa URL vyhledávání.</translation>
 <translation id="2491120439723279231">Certifikát serveru obsahuje chyby.</translation>
 <translation id="2495083838625180221">Analyzátor souborů JSON</translation>
@@ -160,6 +162,7 @@
 <translation id="2712173769900027643">Požádat o oprávnění</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2728127805433021124">Certifikát serveru je podepsán slabým algoritmem.</translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Spustit Diagnostiku připojení<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Odstranit vybrané položky</translation>
 <translation id="277499241957683684">Chybějící záznam zařízení</translation>
 <translation id="2778107779445548489">Tato zpráva se zobrazila, protože rodiče k tomuto webu zablokovali přístup.</translation>
@@ -196,6 +199,7 @@
 <translation id="3105172416063519923">ID díla:</translation>
 <translation id="3109728660330352905">K zobrazení této stránky nemáte oprávnění.</translation>
 <translation id="3118046075435288765">Server neočekávaně ukončil připojení.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku připojení<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Dekódování odpovědi se nezdařilo</translation>
 <translation id="3147485256806412701">Tento web používá novou generickou doménu nejvyšší úrovně.</translation>
 <translation id="3150653042067488994">Dočasná chyba serveru</translation>
@@ -245,8 +249,8 @@
 <translation id="3586931643579894722">Skrýt podrobnosti</translation>
 <translation id="3587482841069643663">Vše</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608308818141211642">Klient a server nepodporují společnou verzi protokolu SSL nebo šifrovací sadu. Tento problém bývá často způsoben tím, že server požaduje šifrovací algoritmus RC4, který již není považován za bezpečný.</translation>
 <translation id="3609138628363401169">Server nepodporuje rozšíření opětovného vyjednání protokolu TLS.</translation>
+<translation id="36224234498066874">Smazat údaje o prohlížení...</translation>
 <translation id="362276910939193118">Zobrazit celou historii</translation>
 <translation id="3623476034248543066">Zobrazit hodnotu</translation>
 <translation id="3630155396527302611">Pokud je program v seznamu programů s oprávněním přistupovat k síti již uveden, zkuste jej ze seznamu odebrat a znovu přidat.</translation>
@@ -302,6 +306,7 @@
 <translation id="4196861286325780578">&amp;Opakovat přesunutí</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci firewallu a antivirového softwaru<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Selhání</translation>
+<translation id="4226937834893929579"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="425582637250725228">Je možné, že provedené změny nebudou uloženy.</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
@@ -340,6 +345,7 @@
 <translation id="4697214168136963651">Adresa <ph name="URL" /> byla blokována</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Připojení bylo přerušeno</translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě systému Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Spustitelná cesta</translation>
@@ -559,6 +565,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="7445762425076701745">Totožnost serveru, k němuž jste připojeni, nelze plně ověřit. Jste připojeni k serveru, který používá název platný pouze v rámci vaší sítě. Externí certifikační autorita nemůže vlastnictví názvu nijak ověřit. Některé certifikační autority však vydají certifikát i pro takové názvy, a nelze tedy zaručit, že jste připojeni k požadovanému webu a nikoli k webu útočníka.</translation>
 <translation id="7450732239874446337">Funkce vstupu a výstupu sítě byly pozastaveny.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o tomto problému.</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
 <translation id="7514365320538308">Stáhnout</translation>
@@ -698,6 +705,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="9039213469156557790">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak chování stránky.</translation>
 <translation id="9049981332609050619">Pokusili jste se přejít do domény <ph name="DOMAIN" />, ale server předložil certifikát, jehož platnost vypršela.</translation>
 <translation id="9050666287014529139">Heslová fráze</translation>
+<translation id="9065203028668620118">Upravit</translation>
 <translation id="9092364396508701805">Stránka <ph name="HOST_NAME" /> nefunguje</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9125941078353557812">Zadejte třípísmenný kód CVC uvedený na zadní straně karty.</translation>

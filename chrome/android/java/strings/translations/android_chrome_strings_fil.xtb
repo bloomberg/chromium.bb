@@ -232,6 +232,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Impormasyong legal</translation>
 <translation id="4089831646916293264">Maaaring makasagabal ang feature na ito sa pag-access ng mga premium na data service mula sa iyong carrier.</translation>
+<translation id="4099423833822562131">Pumili ng address sa pagpapadala upang makita ang mga paraan ng pagpapadala.</translation>
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
 <translation id="410351446219883937">I-autoplay</translation>
 <translation id="411254640334432676">Hindi na-download.</translation>
@@ -279,6 +280,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4690286298542128877">Malilipat ang mga tab sa isang tagalipat ng tab sa Chrome.</translation>
 <translation id="4698413471314543145">Wala ang mahalagang functionality na kinakailangan upang patakbuhin ang Chrome; maaaring hindi natapos ang pag-install sa iyong Chrome o hindi ito tugma sa bersyong ito ng Android.</translation>
 <translation id="4699172675775169585">Mga naka-cache na larawan at file</translation>
+<translation id="4710672574193412565">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
 <translation id="4720023427747327413">Buksan sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Mag-update</translation>
 <translation id="4738836084190194332">Huling na-sync: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5056549851600133418">Mga artikulo para sa iyo</translation>
 <translation id="5063480226653192405">Paggamit</translation>
+<translation id="5087580092889165836">Magdagdag ng card</translation>
 <translation id="5100237604440890931">Naka-collapse - i-click upang palawakin</translation>
 <translation id="5107381076085091558">Na-pause ang pag-download.</translation>
 <translation id="5118713593561876160">Mga Interes</translation>
@@ -376,7 +379,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="585027516397408832">Naka-enable ang Data Saver</translation>
 <translation id="5860033963881614850">Naka-off</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
-<translation id="588563574323093535">Magtanong muna bago payagan ang mga site na mag-fullscreen (inirerekomenda)</translation>
 <translation id="5899349522111170522">Gumawa ng bagong file</translation>
 <translation id="5902828464777634901">Made-delete ang lahat ng lokal na data na inimbak ng website na ito, kasama ang cookies.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -408,7 +410,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan ng pagpapakita sa iyo ng mga ad na hindi ibinatay sa iba pang mga nabisita mo nang website. Kokolektahin at gagamitin pa rin ng maraming website ang iyong data mula sa pagba-browse - halimbawa, upang mapahusay ang seguridad, makapagpakita ng content, mga ad at rekomendasyon, at makabuo ng mga istatistika sa pag-uulat.</translation>
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
 <translation id="6295158916970320988">Lahat ng site</translation>
-<translation id="6317634962183824346">Naka-disable ang pag-sync ng Android system. Mangyaring i-enable muli at subukang muli.</translation>
 <translation id="6324360525379265737">Awtomatikong tukuyin ang pag-e-encode ng character</translation>
 <translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Pag-encrypt</translation>
@@ -603,7 +604,6 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8719023831149562936">Hindi ma-beam ang kasalukuyang tab</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8730621377337864115">Tapos na</translation>
-<translation id="8793430725658173476">Kopyahin ang url</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8812942424849541387">Kontrolin kung paano ito gumagana sa <ph name="BEGIN_LINK1" />Mga Setting<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>

@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Masa yang tinggal sehingga bateri kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Peranti Chrome</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Jawab tinjauan kami</translation>
 <translation id="1723752762323179280">Keluar Dari Sesi</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="1812696562331527143">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ke-3<ph name="END_LINK" />).
@@ -161,6 +162,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6062360702481658777">Anda akan dilog keluar secara automatik dalam masa <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Komputer anda boleh ditemui oleh peranti Bluetooth yang berdekatan sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengecas <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Bantu kami memperbaik Chromebook</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6203030746557259519">Paparan Maya</translation>
@@ -212,6 +214,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="7823564328645135659">Bahasa telah ditukar daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
 <translation id="785750925697875037">Lihat akaun mudah alih</translation>
 <translation id="7864539943188674973">Lumpuhkan Bluetooth</translation>
+<translation id="7869829692393275047">Teks tinjauan OS Chrome HaTS di sini. Teks tinjauan OS Chrome HaTS di sini. Teks tinjauan OS Chrome HaTS di sini. Teks tinjauan OS Chrome HaTS di sini.</translation>
 <translation id="7893838033650689677">Hidupkan Wi-Fi</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan. Pertimbangkan untuk menggunakan pengecas rasmi.</translation>

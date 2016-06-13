@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Appareil Google Chrome</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Participer à notre enquête</translation>
 <translation id="1723752762323179280">Fermeture de la session</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1812696562331527143">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tiers<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6062360702481658777">Vous allez être déconnecté automatiquement dans <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Votre ordinateur est visible par les appareils Bluetooth situés à proximité sous le nom "<ph name="NAME" />", associé à l'adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> en charge</translation>
+<translation id="6144938890088808325">Aidez-nous à améliorer les Chromebooks</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6203030746557259519">Affichage virtuel</translation>
@@ -213,6 +215,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7823564328645135659">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="785750925697875037">Afficher le compte mobile</translation>
 <translation id="7864539943188674973">Désactiver le Bluetooth</translation>
+<translation id="7869829692393275047">Emplacement du texte de l'enquête sur la satisfaction Chrome OS. Emplacement du texte de l'enquête sur la satisfaction Chrome OS. Emplacement du texte de l'enquête sur la satisfaction Chrome OS. Emplacement du texte de l'enquête sur la satisfaction Chrome OS.</translation>
 <translation id="7893838033650689677">Activer le Wi-Fi</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7957227661277029961">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé. Essayez d'utiliser le chargeur officiel.</translation>

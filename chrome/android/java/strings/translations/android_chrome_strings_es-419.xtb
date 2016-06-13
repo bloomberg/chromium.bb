@@ -232,6 +232,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
+<translation id="4099423833822562131">Selecciona una dirección de envío para ver los métodos de envío.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
@@ -279,6 +280,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4690286298542128877">Las pestañas se trasladarán a un alternador de pestañas en Chrome.</translation>
 <translation id="4698413471314543145">Faltan funciones esenciales para que Chrome se ejecute. Es posible que no se haya completado la instalación de Chrome o que tu versión de Android no sea compatible.</translation>
 <translation id="4699172675775169585">Imágenes y archivos almacenados en caché</translation>
+<translation id="4710672574193412565">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5056549851600133418">Artículos para ti</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="5087580092889165836">Agregar tarjeta</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
 <translation id="5107381076085091558">Descarga en pausa</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -377,7 +380,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="585027516397408832">Extensión Reducir datos habilitada</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
-<translation id="588563574323093535">Preguntar primero antes de permitir que los sitios activen la pantalla completa (recomendado)</translation>
 <translation id="5899349522111170522">Crear un archivo nuevo</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos almacenados en este sitio web, incluidas las cookies.</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
@@ -409,7 +411,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncios que no están basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación, por ejemplo, para mejorar la seguridad, proporcionar contenido, anuncios y recomendaciones, y generar estadísticas de informes.</translation>
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
-<translation id="6317634962183824346">Sincronización de Android inhabilitada. Habilítala y vuelve a intentarlo.</translation>
 <translation id="6324360525379265737">Determinar automáticamente la codificación de caracteres</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encriptación</translation>
@@ -604,7 +605,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8719023831149562936">Esta pestaña no se puede transmitir.</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>
-<translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8812942424849541387">Controlar el funcionamiento en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcadores</translation>

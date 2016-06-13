@@ -27,6 +27,7 @@
 <translation id="1621499497873603021">Preostali čas do izpraznitve akumulatorja, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Naprava Chrome</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
+<translation id="1683360892415596327">Sodelujte v naši anketi.</translation>
 <translation id="1723752762323179280">Odjava iz seje</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="1812696562331527143">Način vnosa se je spremenil v <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />drug ponudnik<ph name="END_LINK" />).
@@ -162,6 +163,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6062360702481658777">Samodejno boste odjavljeni čez <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Vaš računalnik je viden bližnjim napravam Bluetooth in bo videti kot »<ph name="NAME" />« z naslovom <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Polnjenje: <ph name="POWER_SOURCE" /></translation>
+<translation id="6144938890088808325">Pomagajte nam izboljšati Chromebooke</translation>
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6203030746557259519">Navidezni zaslon</translation>
@@ -213,6 +215,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="7823564328645135659">Po sinhronizaciji nastavitev se je jezik spremenil iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />«.</translation>
 <translation id="785750925697875037">Prikaz mobilnega računa</translation>
 <translation id="7864539943188674973">Onemogoči Bluetooth</translation>
+<translation id="7869829692393275047">Tukaj je besedilo ankete HaTS za OS Chrome. Tukaj je besedilo ankete HaTS za OS Chrome. Tukaj je besedilo ankete HaTS za OS Chrome. Tukaj je besedilo ankete HaTS za OS Chrome.</translation>
 <translation id="7893838033650689677">Vklop vmesnika Wi-Fi</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7957227661277029961">Akumulator naprave <ph name="DEVICE_TYPE" /> se morda ne bo polnil, medtem ko je naprava vklopljena. Uporabite uradni polnilnik.</translation>

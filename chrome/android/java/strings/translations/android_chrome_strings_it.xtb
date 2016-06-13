@@ -232,6 +232,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4056223980640387499">Seppia</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
 <translation id="4089831646916293264">Questa funzione potrebbe interferire con l'accesso ai servizi di dati premium forniti dal tuo operatore.</translation>
+<translation id="4099423833822562131">Seleziona un indirizzo di spedizione per verificare i metodi di spedizione disponibili.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="411254640334432676">Download non riuscito.</translation>
@@ -279,6 +280,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4690286298542128877">Le schede verranno spostate in un selettore di schede all'interno di Chrome.</translation>
 <translation id="4698413471314543145">Manca una funzionalità fondamentale per l'esecuzione di Chrome; l'installazione di Chrome è incompleta oppure non è compatibile con la versione di Android installata.</translation>
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
+<translation id="4710672574193412565">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4738836084190194332">Ultima sincronizzazione: <ph name="WHEN" /></translation>
@@ -301,6 +303,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5056549851600133418">Articoli per te</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
+<translation id="5087580092889165836">Aggiungi carta</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5107381076085091558">Download sospeso.</translation>
 <translation id="5118713593561876160">Interessi</translation>
@@ -376,7 +379,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="585027516397408832">Funzione Risparmio dati attivata</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869522115854928033">Password salvate</translation>
-<translation id="588563574323093535">Chiedi conferma prima di consentire ai siti di attivare la modalità a schermo intero (opzione consigliata)</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
 <translation id="5902828464777634901">Tutti i dati locali memorizzati da questo sito web, inclusi i cookie, verranno eliminati.</translation>
 <translation id="5911030830365207728">Google Traduttore</translation>
@@ -408,7 +410,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
-<translation id="6317634962183824346">Sincronizzazione del sistema Android non attiva. Riattivala e riprova.</translation>
 <translation id="6324360525379265737">Viene stabilita automaticamente la codifica dei caratteri</translation>
 <translation id="6333140779060797560">Condividi tramite <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Crittografia</translation>
@@ -603,7 +604,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8719023831149562936">Impossibile trasmettere scheda corrente</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8730621377337864115">Fine</translation>
-<translation id="8793430725658173476">Copia URL</translation>
 <translation id="8798099450830957504">Predefinito</translation>
 <translation id="8812942424849541387">Controlla come funziona nelle <ph name="BEGIN_LINK1" />Impostazioni<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Segnalibri</translation>
