@@ -936,16 +936,6 @@
                 {
                     exception: 'InvalidAccessError',
                     func: function(mk) { return mk.setServerCertificate(new Uint8Array(0)); }
-                },
-                // Valid calls, but not supported by Clear Key.
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk) { var cert = new Uint8Array(200); assert_true(ArrayBuffer.isView(cert)); return mk.setServerCertificate(cert); }
-                },
-                {
-                    // Pass in ArrayBuffer
-                    exception: 'NotSupportedError',
-                    func: function(mk) { var cert = new Uint8Array(200); assert_false(ArrayBuffer.isView(cert.buffer)); return mk.setServerCertificate(cert.buffer); }
                 }
             ];
 
@@ -967,8 +957,51 @@
                 });
             }, 'Test MediaKeys setServerCertificate() exceptions.');
 
-            // FIXME: Add test for successful setServerCertificate(). Note that
-            // Clear Key does not support it.
+            // All calls to |func| in this group are expected to resolve.
+            var kSetServerCertificateTestCases = [
+                {
+                    // Pass in ArrayBufferView
+                    func: function(mk) {
+                              var cert = new Uint8Array(200);
+                              assert_true(ArrayBuffer.isView(cert));
+                              return mk.setServerCertificate(cert);
+                    },
+                    expected: false,
+                },
+                {
+                    // Pass in ArrayBuffer
+                    func: function(mk) {
+                              var buffer = new ArrayBuffer(200);
+                              assert_false(ArrayBuffer.isView(buffer));
+                              return mk.setServerCertificate(buffer);
+                    },
+                    expected: false,
+                }
+            ];
+
+            async_test(function(test)
+            {
+                var expected_result;
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
+                    var promises = kSetServerCertificateTestCases.map(function(testCase) {
+                        return testCase.func.call(null, mediaKeys);
+                    });
+                    expected_result = kSetServerCertificateTestCases.map(function(testCase) {
+                        return testCase.expected;
+                    });
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    assert_array_equals(result, expected_result);
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'setServerCertificate() test failed');
+                });
+            }, 'Test MediaKeys setServerCertificate().');
+
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.

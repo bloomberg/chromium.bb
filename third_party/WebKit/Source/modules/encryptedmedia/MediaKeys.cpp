@@ -80,6 +80,42 @@ private:
     const Member<DOMArrayBuffer> m_data;
 };
 
+// This class wraps the promise resolver used when setting the certificate
+// and is passed to Chromium to fullfill the promise. This implementation of
+// complete() will resolve the promise with true, while completeWithError()
+// will reject the promise with an exception. completeWithSession()
+// is not expected to be called, and will reject the promise.
+class SetCertificateResultPromise : public ContentDecryptionModuleResultPromise {
+public:
+    SetCertificateResultPromise(ScriptState* scriptState)
+        : ContentDecryptionModuleResultPromise(scriptState)
+    {
+    }
+
+    ~SetCertificateResultPromise() override
+    {
+    }
+
+    // ContentDecryptionModuleResult implementation.
+    void complete() override
+    {
+        resolve(true);
+    }
+
+    void completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage) override
+    {
+        // The EME spec specifies that "If the Key System implementation does
+        // not support server certificates, return a promise resolved with
+        // false." So convert any NOTSUPPORTEDERROR into resolving with false.
+        if (exceptionCode == WebContentDecryptionModuleExceptionNotSupportedError) {
+            resolve(false);
+            return;
+        }
+
+        ContentDecryptionModuleResultPromise::completeWithError(exceptionCode, systemCode, errorMessage);
+    }
+};
+
 MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
 {
     MediaKeys* mediaKeys = new MediaKeys(context, supportedSessionTypes, std::move(cdm));
@@ -155,7 +191,7 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
     DOMArrayBuffer* serverCertificateBuffer = DOMArrayBuffer::create(serverCertificate.data(), serverCertificate.byteLength());
 
     // 4. Let promise be a new promise.
-    SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
+    SetCertificateResultPromise* result = new SetCertificateResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 5. Run the following steps asynchronously (documented in timerFired()).

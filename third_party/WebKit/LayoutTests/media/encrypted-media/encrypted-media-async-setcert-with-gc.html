@@ -19,11 +19,8 @@
                 }).then(function(mediaKeys) {
                     var cert = new Uint8Array(200);
                     return mediaKeys.setServerCertificate(cert);
-                }).then(function() {
-                    assert_unreached('setServerCertificate() did not fail');
-                }, function(e) {
-                    assert_equals(e.name, 'NotSupportedError');
-                    return Promise.resolve();
+                }).then(function(result) {
+                    assert_false(result);
                 });
             }, 'Test asynchronous setServerCertificate while running garbage collection.');
         </script>
