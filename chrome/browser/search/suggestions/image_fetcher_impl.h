@@ -12,7 +12,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "components/image_fetcher/image_data_fetcher.h"
+#include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "url/gurl.h"
 
@@ -24,11 +25,11 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+// TODO(markusheintz): Move the ImageFetcherImpl to components/image_fetcher
 namespace suggestions {
 
 // image_fetcher::ImageFetcher implementation.
-class ImageFetcherImpl : public image_fetcher::ImageFetcher,
-                         public chrome::BitmapFetcherDelegate {
+class ImageFetcherImpl : public image_fetcher::ImageFetcher {
  public:
   explicit ImageFetcherImpl(net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
@@ -43,31 +44,21 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
       override;
 
  private:
-  // Inherited from BitmapFetcherDelegate.
-  void OnFetchComplete(const GURL& image_url, const SkBitmap* bitmap) override;
-
   using CallbackVector =
       std::vector<base::Callback<void(const std::string&, const gfx::Image&)>>;
 
-  // State related to an image fetch (id, image_url, fetcher, pending
-  // callbacks).
+  // State related to an image fetch (id, pending callbacks).
   struct ImageRequest {
     ImageRequest();
-    // Struct takes ownership of |f|.
-    explicit ImageRequest(chrome::BitmapFetcher* f);
     ImageRequest(const ImageRequest& other);
     ~ImageRequest();
 
     void swap(ImageRequest* other) {
       std::swap(id, other->id);
-      std::swap(image_url, other->image_url);
       std::swap(callbacks, other->callbacks);
-      std::swap(fetcher, other->fetcher);
     }
 
     std::string id;
-    GURL image_url;
-    chrome::BitmapFetcher* fetcher;
     // Queue for pending callbacks, which may accumulate while the request is in
     // flight.
     CallbackVector callbacks;
@@ -75,13 +66,26 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
 
   using ImageRequestMap = std::map<const GURL, ImageRequest>;
 
-  // Map from each image URL to the request information (associated website
-  // url, fetcher, pending callbacks).
-  ImageRequestMap pending_net_requests_;
+  // Processes image URL fetched events. This is the continuation method used
+  // for creating callbacks that are passed to the ImageDataFetcher.
+  void OnImageURLFetched(const GURL& image_url, const std::string& image_data);
+
+  // Processes image decoded events. This is the continuation method used for
+  // creating callbacks that are passed to the ImageDecoder.
+  void OnImageDecoded(const GURL& image_url, const gfx::Image& image);
+
 
   image_fetcher::ImageFetcherDelegate* delegate_;
 
   net::URLRequestContextGetter* url_request_context_;
+
+  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
+
+  std::unique_ptr<image_fetcher::ImageDataFetcher> image_data_fetcher_;
+
+  // Map from each image URL to the request information (associated website
+  // url, fetcher, pending callbacks).
+  ImageRequestMap pending_net_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImpl);
 };
