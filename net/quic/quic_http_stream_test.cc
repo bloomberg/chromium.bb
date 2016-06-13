@@ -221,7 +221,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         .WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
         .WillRepeatedly(Return(kMaxPacketSize));
-    EXPECT_CALL(*send_algorithm_, PacingRate())
+    EXPECT_CALL(*send_algorithm_, PacingRate(_))
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
         .WillRepeatedly(Return(QuicTime::Delta::Zero()));

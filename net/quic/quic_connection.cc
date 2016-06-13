@@ -1387,11 +1387,7 @@ void QuicConnection::OnCanWrite() {
     // We're not write blocked, but some stream didn't write out all of its
     // bytes. Register for 'immediate' resumption so we'll keep writing after
     // other connections and events have had a chance to use the thread.
-    if (FLAGS_quic_only_one_sending_alarm) {
-      send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
-    } else {
-      resume_writes_alarm_->Set(clock_->ApproximateNow());
-    }
+    resume_writes_alarm_->Set(clock_->ApproximateNow());
   }
 }
 
@@ -1737,6 +1733,13 @@ bool QuicConnection::ShouldDiscardPacket(const SerializedPacket& packet) {
     return true;
   }
 
+  // TODO(fayang): Remove IsUnacked and HasRetransmittableFrames from
+  // QuicSentPacketManagerInterface when deprecating
+  // gfe2_reloadable_flag_quic_always_write_queued_retransmissions.
+  if (FLAGS_quic_always_write_queued_retransmissions) {
+    return false;
+  }
+
   // If a retransmission has been acked before sending, don't send it.
   // This occurs if a packet gets serialized, queued, then discarded.
   if (packet.transmission_type != NOT_RETRANSMISSION &&
@@ -1881,10 +1884,6 @@ void QuicConnection::OnRetransmissionTimeout() {
     return;
   }
 
-  // Cancel the send alarm to ensure TimeUntilSend is re-evaluated.
-  if (FLAGS_quic_only_one_sending_alarm) {
-    send_alarm_->Cancel();
-  }
   sent_packet_manager_->OnRetransmissionTimeout();
   WriteIfNotBlocked();
 
@@ -2208,19 +2207,6 @@ void QuicConnection::SetPingAlarm() {
 void QuicConnection::SetRetransmissionAlarm() {
   if (delay_setting_retransmission_alarm_) {
     pending_retransmission_alarm_ = true;
-    return;
-  }
-  // Once the handshake has been confirmed, the retransmission alarm should
-  // never fire before the send alarm.
-  if (FLAGS_quic_only_one_sending_alarm &&
-      sent_packet_manager_->IsHandshakeConfirmed() && send_alarm_->IsSet()) {
-    DCHECK(!sent_packet_manager_->GetRetransmissionTime().IsInitialized() ||
-           sent_packet_manager_->GetRetransmissionTime() >=
-               send_alarm_->deadline())
-        << " retransmission_time:"
-        << sent_packet_manager_->GetRetransmissionTime().ToDebuggingValue()
-        << " send_alarm:" << send_alarm_->deadline().ToDebuggingValue();
-    retransmission_alarm_->Cancel();
     return;
   }
   QuicTime retransmission_time = sent_packet_manager_->GetRetransmissionTime();

@@ -51,5 +51,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_dispatcher_creates_id;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_chlo_policy;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_ignore_zero_length_frames;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_shlo_listener;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_always_write_queued_retransmissions;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_rate_based_sending;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

@@ -1043,10 +1043,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   if (source_address_token_error != HANDSHAKE_OK) {
     info->reject_reasons.push_back(source_address_token_error);
     // No valid source address token.
-    if (FLAGS_use_early_return_when_verifying_chlo) {
-      helper.ValidationComplete(QUIC_NO_ERROR, "");
-      return;
-    }
     found_error = true;
   }
 
@@ -1076,10 +1072,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     // Invalid client nonce.
     LOG(ERROR) << "Invalid client nonce: " << client_hello.DebugString();
     DVLOG(1) << "Invalid client nonce.";
-    if (FLAGS_use_early_return_when_verifying_chlo) {
-      helper.ValidationComplete(QUIC_NO_ERROR, "");
-      return;
-    }
     found_error = true;
   }
 

@@ -156,3 +156,10 @@ bool FLAGS_quic_ignore_zero_length_frames = true;
 // If true, replace ServerHelloNotifier with a check to see if a decrypted
 // packet is forward secure.
 bool FLAGS_quic_no_shlo_listener = true;
+
+// If true, queued retransmission packets, because of write blocked
+// socket, are always sent once the socket gets unblocked
+bool FLAGS_quic_always_write_queued_retransmissions = true;
+
+// Adds a RATE connection option to do rate based sending.
+bool FLAGS_quic_rate_based_sending = true;
