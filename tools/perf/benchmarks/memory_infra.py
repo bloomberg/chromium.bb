@@ -166,7 +166,8 @@ class _MemoryV8Benchmark(_MemoryInfra):
   # Report only V8-specific and overall renderer memory values. Note that
   # detailed values reported by the OS (such as native heap) are excluded.
   _V8_AND_OVERALL_MEMORY_RE = re.compile(
-      r'renderer:(reported_by_chrome:v8|reported_by_os:system:[^:]+$)')
+      r'renderer_processes:'
+      r'(reported_by_chrome:v8|reported_by_os:system_memory:[^:]+$)')
 
   def CreateTimelineBasedMeasurementOptions(self):
     v8_categories = [
