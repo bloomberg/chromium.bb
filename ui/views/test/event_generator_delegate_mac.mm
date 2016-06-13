@@ -382,6 +382,11 @@ void EventGeneratorDelegateMac::OnTouchEvent(ui::TouchEvent* event) {
 void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
                                            gfx::NativeWindow root_window,
                                            gfx::NativeWindow window) {
+  // Mac doesn't use a |root_window|. Assume that if a single-argument
+  // constructor was used, it should be the actual |window|.
+  if (!window)
+    window = root_window;
+
   swizzle_pressed_.reset();
   swizzle_location_.reset();
   swizzle_current_event_.reset();

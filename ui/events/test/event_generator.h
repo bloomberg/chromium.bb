@@ -122,8 +122,7 @@ class EventGenerator {
                  const gfx::Point& initial_location);
 
   // Creates an EventGenerator with the mouse/touch location centered over
-  // |window|. This is currently the only constructor that works on Mac, since
-  // a specific window is required (and there is no root window).
+  // |window|.
   EventGenerator(gfx::NativeWindow root_window, gfx::NativeWindow window);
 
   virtual ~EventGenerator();
