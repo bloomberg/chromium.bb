@@ -1879,7 +1879,7 @@ bool FrameView::needsLayout() const
         || isSubtreeLayout();
 }
 
-void FrameView::checkDoesNotNeedLayout() const
+NOINLINE void FrameView::checkDoesNotNeedLayout() const
 {
     CHECK(!layoutPending());
     CHECK(layoutViewItem().isNull() || !layoutViewItem().needsLayout());
@@ -2639,6 +2639,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
             toPluginView(child.get())->updateAllLifecyclePhases();
     }
 
+    checkDoesNotNeedLayout();
+
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
     HeapVector<Member<FrameView>> frameViews;
@@ -2651,6 +2653,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
 
     for (const auto& frameView : frameViews)
         frameView->updateStyleAndLayoutIfNeededRecursiveInternal();
+
+    checkDoesNotNeedLayout();
 
     // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
     // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
