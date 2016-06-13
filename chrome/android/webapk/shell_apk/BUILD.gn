@@ -66,6 +66,10 @@ android_apk("webapk") {
     "//chrome/android/webapk/libs/common",
     "//chrome/android/webapk/libs/runtime_library",
   ]
+  if (!is_debug) {
+    proguard_enabled = true
+    proguard_configs = [ "//chrome/android/java/proguard.flags" ]
+  }
 }
 
 android_library("shell_apk_javatests") {
