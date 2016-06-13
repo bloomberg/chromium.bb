@@ -261,15 +261,12 @@ void DeclarativeContentCssConditionTracker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      InstructRenderProcessIfManagingBrowserContext(process,
-                                                    GetWatchedCssSelectors());
-      break;
-    }
-  }
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
+
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  InstructRenderProcessIfManagingBrowserContext(process,
+                                                GetWatchedCssSelectors());
 }
 
 void DeclarativeContentCssConditionTracker::

@@ -120,20 +120,13 @@ void CookiesEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS, type);
+
   Profile* profile = content::Source<Profile>(source).ptr();
   if (!profile_->IsSameProfile(profile))
     return;
 
-  switch (type) {
-    case chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS:
-      CookieChanged(
-          profile,
-          content::Details<ChromeCookieDetails>(details).ptr());
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  CookieChanged(profile, content::Details<ChromeCookieDetails>(details).ptr());
 }
 
 void CookiesEventRouter::CookieChanged(

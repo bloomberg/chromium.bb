@@ -33,10 +33,7 @@ NavigationObserver::~NavigationObserver() {}
 void NavigationObserver::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  if (type != content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
 
   NavigationController* controller =
       content::Source<NavigationController>(source).ptr();

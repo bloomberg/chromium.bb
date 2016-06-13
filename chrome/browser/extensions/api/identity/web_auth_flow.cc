@@ -152,30 +152,24 @@ void WebAuthFlow::AfterUrlLoaded() {
 void WebAuthFlow::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED, type);
   DCHECK(app_window_);
 
-  if (!delegate_)
+  if (!delegate_ || embedded_window_created_)
     return;
 
-  if (!embedded_window_created_) {
-    DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED);
+  RenderViewHost* render_view(content::Details<RenderViewHost>(details).ptr());
+  WebContents* web_contents = WebContents::FromRenderViewHost(render_view);
+  GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
+  WebContents* owner = guest ? guest->owner_web_contents() : nullptr;
+  if (!web_contents || owner != WebContentsObserver::web_contents())
+    return;
 
-    RenderViewHost* render_view(
-        content::Details<RenderViewHost>(details).ptr());
-    WebContents* web_contents = WebContents::FromRenderViewHost(render_view);
-    GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
-    WebContents* owner = guest ? guest->owner_web_contents() : NULL;
-    if (web_contents &&
-        (owner == WebContentsObserver::web_contents())) {
-      // Switch from watching the app window to the guest inside it.
-      embedded_window_created_ = true;
-      WebContentsObserver::Observe(web_contents);
+  // Switch from watching the app window to the guest inside it.
+  embedded_window_created_ = true;
+  WebContentsObserver::Observe(web_contents);
 
-      registrar_.RemoveAll();
-    }
-  } else {  // embedded_window_created_
-    NOTREACHED() << "Got a notification that we did not register for: " << type;
-  }
+  registrar_.RemoveAll();
 }
 
 void WebAuthFlow::RenderProcessGone(base::TerminationStatus status) {

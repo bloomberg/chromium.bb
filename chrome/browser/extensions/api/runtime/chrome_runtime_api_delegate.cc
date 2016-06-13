@@ -336,8 +336,8 @@ void ChromeRuntimeAPIDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND);
-  typedef const std::pair<std::string, Version> UpdateDetails;
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND, type);
+  using UpdateDetails = const std::pair<std::string, Version>;
   const std::string& id = content::Details<UpdateDetails>(details)->first;
   const Version& version = content::Details<UpdateDetails>(details)->second;
   if (version.IsValid()) {

@@ -226,10 +226,8 @@ void WindowsEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(OS_MACOSX)
-  if (chrome::NOTIFICATION_NO_KEY_WINDOW == type) {
-    OnActiveWindowChanged(nullptr);
-    return;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_NO_KEY_WINDOW, type);
+  OnActiveWindowChanged(nullptr);
 #endif
 }
 

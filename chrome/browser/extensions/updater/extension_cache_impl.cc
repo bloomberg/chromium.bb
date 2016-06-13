@@ -112,38 +112,32 @@ void ExtensionCacheImpl::OnCacheInitialized() {
 void ExtensionCacheImpl::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR, type);
+
   if (!cache_)
     return;
 
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
-      extensions::CrxInstaller* installer =
-          content::Source<extensions::CrxInstaller>(source).ptr();
-      const std::string& id = installer->expected_id();
-      const std::string& hash = installer->expected_hash();
-      const extensions::CrxInstallError* error =
-          content::Details<const extensions::CrxInstallError>(details).ptr();
-      switch (error->type()) {
-        case extensions::CrxInstallError::ERROR_DECLINED:
-          DVLOG(2) << "Extension install was declined, file kept";
-          break;
-        case extensions::CrxInstallError::ERROR_HASH_MISMATCH: {
-          if (cache_->ShouldRetryDownload(id, hash)) {
-            cache_->RemoveExtension(id, hash);
-            installer->set_hash_check_failed(true);
-          }
-          // We deliberately keep the file with incorrect hash sum, so that it
-          // will not be re-downloaded each time.
-        } break;
-        default:
-          cache_->RemoveExtension(id, hash);
-          break;
-      }
+  extensions::CrxInstaller* installer =
+      content::Source<extensions::CrxInstaller>(source).ptr();
+  const std::string& id = installer->expected_id();
+  const std::string& hash = installer->expected_hash();
+  const extensions::CrxInstallError* error =
+      content::Details<const extensions::CrxInstallError>(details).ptr();
+  switch (error->type()) {
+    case extensions::CrxInstallError::ERROR_DECLINED:
+      DVLOG(2) << "Extension install was declined, file kept";
       break;
-    }
-
+    case extensions::CrxInstallError::ERROR_HASH_MISMATCH:
+      if (cache_->ShouldRetryDownload(id, hash)) {
+        cache_->RemoveExtension(id, hash);
+        installer->set_hash_check_failed(true);
+      }
+      // We deliberately keep the file with incorrect hash sum, so that it
+      // will not be re-downloaded each time.
+      break;
     default:
-      NOTREACHED();
+      cache_->RemoveExtension(id, hash);
+      break;
   }
 }
 

@@ -295,14 +295,9 @@ void ExtensionStorageMonitor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      StopMonitoringAll();
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+
+  StopMonitoringAll();
 }
 
 void ExtensionStorageMonitor::OnExtensionLoaded(

@@ -93,16 +93,11 @@ void ChromeContentRulesRegistry::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      content::WebContents* tab =
-          content::Source<content::WebContents>(source).ptr();
-      // Note that neither non-tab WebContents nor tabs from other browser
-      // contexts will be in the map.
-      active_rules_.erase(tab);
-      break;
-    }
-  }
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+
+  // Note that neither non-tab WebContents nor tabs from other browser
+  // contexts will be in the map.
+  active_rules_.erase(content::Source<content::WebContents>(source).ptr());
 }
 
 void ChromeContentRulesRegistry::RequestEvaluation(

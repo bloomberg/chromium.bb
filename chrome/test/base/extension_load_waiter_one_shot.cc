@@ -34,19 +34,16 @@ void ExtensionLoadWaiterOneShot::WaitForExtension(const char* extension_id,
 void ExtensionLoadWaiterOneShot::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
-      extensions::ExtensionHost* host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
-      if (host->extension_id() == extension_id_) {
-        browser_context_ = host->browser_context();
-        CHECK(browser_context_);
-        registrar_.Remove(
-            this, extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-            content::NotificationService::AllSources());
-        load_looper_->Quit();
-      }
-      break;
-    }
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD, type);
+
+  extensions::ExtensionHost* host =
+      content::Details<extensions::ExtensionHost>(details).ptr();
+  if (host->extension_id() == extension_id_) {
+    browser_context_ = host->browser_context();
+    CHECK(browser_context_);
+    registrar_.Remove(
+        this, extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
+        content::NotificationService::AllSources());
+    load_looper_->Quit();
   }
 }
