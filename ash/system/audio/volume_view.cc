@@ -4,7 +4,7 @@
 
 #include "ash/system/audio/volume_view.h"
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/shell.h"

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"

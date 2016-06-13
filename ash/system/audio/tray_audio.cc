@@ -7,7 +7,7 @@
 #include <cmath>
 #include <utility>
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/volume_control_delegate.h"

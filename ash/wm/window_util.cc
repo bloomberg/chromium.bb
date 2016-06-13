@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/ash_constants.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"

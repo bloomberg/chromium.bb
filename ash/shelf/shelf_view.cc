@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"

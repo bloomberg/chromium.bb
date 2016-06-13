@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/tray_popup_label_button.h"
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/system/tray/tray_popup_label_button_border.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"

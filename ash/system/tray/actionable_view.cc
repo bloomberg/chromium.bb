@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/actionable_view.h"
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 

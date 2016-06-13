@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "ash/ash_constants.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"

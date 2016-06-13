@@ -7,11 +7,11 @@
 #include <queue>
 #include <vector>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/root_window_controller_common.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"

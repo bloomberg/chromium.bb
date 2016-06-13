@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/shell.h"

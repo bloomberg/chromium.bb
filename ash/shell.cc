@@ -127,7 +127,7 @@
 #endif  // defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"

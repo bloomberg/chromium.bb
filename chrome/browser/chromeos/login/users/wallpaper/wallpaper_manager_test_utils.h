@@ -7,11 +7,12 @@
 
 #include <vector>
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class CommandLine;
+class FilePath;
 class ScopedTempDir;
 }  // namespace base
 

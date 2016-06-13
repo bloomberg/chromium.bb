@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/ash_layout_constants.h"
+#include "ash/common/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"

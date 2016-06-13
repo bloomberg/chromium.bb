@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASH_CONSTANTS_H_
-#define ASH_ASH_CONSTANTS_H_
+#ifndef ASH_COMMON_ASH_CONSTANTS_H_
+#define ASH_COMMON_ASH_CONSTANTS_H_
 
 #include "ash/ash_export.h"
-#include "ui/aura/window.h"
-#include "ui/base/ui_base_types.h"
 
 typedef unsigned int SkColor;
 
@@ -39,4 +37,4 @@ extern const int kImmersiveFullscreenTopEdgeInset;
 
 }  // namespace ash
 
-#endif  // ASH_ASH_CONSTANTS_H_
+#endif  // ASH_COMMON_ASH_CONSTANTS_H_

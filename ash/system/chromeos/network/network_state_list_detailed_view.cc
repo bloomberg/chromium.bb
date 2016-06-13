@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/networking_config_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
