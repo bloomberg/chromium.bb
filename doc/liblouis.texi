@@ -2925,13 +2925,13 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  README liblouisxml pindex samp kbd opcodes opcoderef numsign
 @c  LocalWords:  FIXME ctb nemeth filename multipass suboperand uplow litdigit
 @c  LocalWords:  capsign begcaps endcaps letsign noletsign largesign typeform
-@c  LocalWords:  noletsignbefore noletsignafter compbrl firstwordital italsign
+@c  LocalWords:  noletsignbefore noletsignafter compbrl firstwordital
 @c  LocalWords:  lenitalphrase doubleOpcode lastworditalbefore firstletterital
-@c  LocalWords:  lastworditalafter begital lastletterital endital firstwordbold
-@c  LocalWords:  singleletterital lastwordboldbefore boldsign lastwordboldafter
-@c  LocalWords:  firstletterbold begbold lastletterbold endbold lenboldphrase
-@c  LocalWords:  singleletterbold firstwordunder lastwordunderbefore begunder
-@c  LocalWords:  lastwordunderafter firstletterunder lastletterunder endunder
+@c  LocalWords:  lastworditalafter lastletterital firstwordbold
+@c  LocalWords:  singleletterital lastwordboldbefore lastwordboldafter
+@c  LocalWords:  firstletterbold lastletterbold lenboldphrase
+@c  LocalWords:  singleletterbold firstwordunder lastwordunderbefore
+@c  LocalWords:  lastwordunderafter firstletterunder lastletterunder
 @c  LocalWords:  singleletterunder lenunderphrase begcomp endcomp decpoint texi
 @c  LocalWords:  capsnocont noback nofor texinfo setfilename settitle direntry
 @c  LocalWords:  dircategory finalout defindex opcodeindex noindent uref vskip
