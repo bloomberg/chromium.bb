@@ -11,11 +11,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,7 +22,6 @@
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -54,12 +51,6 @@ namespace {
 // The size above which we stop triggering autocomplete.
 static const size_t kMaximumTextSizeForAutocomplete = 1000;
 
-// Experiment information
-const char kFillOnAccountSelectFieldTrialName[] = "FillOnAccountSelect";
-const char kFillOnAccountSelectFieldTrialEnabledWithHighlightGroup[] =
-    "EnableWithHighlight";
-const char kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup[] =
-    "EnableWithNoHighlight";
 const char kDummyUsernameField[] = "anonymous_username";
 const char kDummyPasswordField[] = "anonymous_password";
 
@@ -227,47 +218,6 @@ bool FindFormInputElement(
   return true;
 }
 
-bool ShouldFillOnAccountSelect() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFillOnAccountSelect)) {
-    return false;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFillOnAccountSelect) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFillOnAccountSelectNoHighlighting)) {
-    return true;
-  }
-
-  return group_name ==
-             kFillOnAccountSelectFieldTrialEnabledWithHighlightGroup ||
-         group_name ==
-             kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup;
-}
-
-bool ShouldHighlightFields() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFillOnAccountSelect) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFillOnAccountSelect)) {
-    return true;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFillOnAccountSelectNoHighlighting)) {
-    return false;
-  }
-
-  return group_name !=
-         kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup;
-}
-
 // Helper to search through |control_elements| for the specified input elements
 // in |data|, and add results to |result|.
 bool FindFormInputElements(
@@ -394,28 +344,6 @@ bool CanShowSuggestion(const PasswordFormFillData& fill_data,
                          base::CompareCase::SENSITIVE)) {
       return true;
     }
-  }
-
-  return false;
-}
-
-// Returns true if there exists a credential suggestion whose username field is
-// an exact match to the current username (not just a prefix).
-bool HasExactMatchSuggestion(const PasswordFormFillData& fill_data,
-                             const base::string16& current_username) {
-  if (fill_data.username_field.value == current_username)
-    return true;
-
-  for (const auto& usernames : fill_data.other_possible_usernames) {
-    for (const auto& username_string : usernames.second) {
-      if (username_string == current_username)
-        return true;
-    }
-  }
-
-  for (const auto& login : fill_data.additional_logins) {
-    if (login.first == current_username)
-      return true;
   }
 
   return false;
@@ -588,20 +516,6 @@ bool FillFormOnPasswordReceived(
   // In all other cases, do nothing.
   bool form_has_fillable_username = !username_field_name.empty() &&
                                     IsElementAutocompletable(username_element);
-
-  if (ShouldFillOnAccountSelect()) {
-    if (!ShouldHighlightFields()) {
-      return false;
-    }
-
-    if (form_has_fillable_username) {
-      username_element.setAutofilled(true);
-    } else if (username_element.isNull() ||
-               HasExactMatchSuggestion(fill_data, username_element.value())) {
-      password_element.setAutofilled(true);
-    }
-    return false;
-  }
 
   if (form_has_fillable_username && username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
@@ -1328,12 +1242,41 @@ void PasswordAutofillAgent::DidStartProvisionalLoad() {
 void PasswordAutofillAgent::OnFillPasswordForm(
     int key,
     const PasswordFormFillData& form_data) {
+  std::vector<blink::WebInputElement> elements;
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_ON_FILL_PASSWORD_FORM_METHOD);
   }
+  GetFillableElementFromFormData(key, form_data, logger.get(), &elements);
 
+  // If wait_for_username is true, we don't want to initially fill the form
+  // until the user types in a valid username.
+  if (form_data.wait_for_username)
+    return;
+
+  for (auto element : elements) {
+    blink::WebInputElement username_element =
+        !element.isPasswordField() ? element : password_to_username_[element];
+    blink::WebInputElement password_element =
+        element.isPasswordField()
+            ? element
+            : web_input_to_password_info_[element].password_field;
+    FillFormOnPasswordReceived(
+        form_data, username_element, password_element,
+        &nonscript_modified_values_,
+        base::Bind(&PasswordValueGatekeeper::RegisterElement,
+                   base::Unretained(&gatekeeper_)),
+        logger.get());
+  }
+}
+
+void PasswordAutofillAgent::GetFillableElementFromFormData(
+    int key,
+    const PasswordFormFillData& form_data,
+    RendererSavePasswordProgressLogger* logger,
+    std::vector<blink::WebInputElement>* elements) {
+  DCHECK(elements);
   bool ambiguous_or_empty_names =
       DoesFormContainAmbiguousOrEmptyNames(form_data);
   FormElementsList forms;
@@ -1397,17 +1340,6 @@ void PasswordAutofillAgent::OnFillPasswordForm(
         web_input_to_password_info_.end())
       continue;
 
-    // If wait_for_username is true, we don't want to initially fill the form
-    // until the user types in a valid username.
-    if (!form_data.wait_for_username) {
-      FillFormOnPasswordReceived(
-          form_data, username_element, password_element,
-          &nonscript_modified_values_,
-          base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                     base::Unretained(&gatekeeper_)),
-          logger.get());
-    }
-
     PasswordInfo password_info;
     password_info.fill_data = form_data;
     password_info.key = key;
@@ -1415,6 +1347,8 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     web_input_to_password_info_[main_element] = password_info;
     if (!main_element.isPasswordField())
       password_to_username_[password_element] = username_element;
+    if (elements)
+      elements->push_back(main_element);
   }
 }
 

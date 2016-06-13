@@ -363,8 +363,6 @@ const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
     autofill::switches::kDisableFillOnAccountSelect, "" },
   { IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_HIGHLIGHTING,
     autofill::switches::kEnableFillOnAccountSelect, "" },
-  { IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_NO_HIGHLIGHTING,
-    autofill::switches::kEnableFillOnAccountSelectNoHighlighting, "" },
 };
 
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {

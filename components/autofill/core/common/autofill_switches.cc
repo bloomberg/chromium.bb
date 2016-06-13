@@ -44,12 +44,6 @@ const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
 // selection, rather than autofilling on page load, with highlighting of fields.
 const char kEnableFillOnAccountSelect[]     = "enable-fill-on-account-select";
 
-// Enables the experiment for the password manager to only fill on account
-// selection, rather than autofilling on page load, with no highlighting of
-// fields.
-const char kEnableFillOnAccountSelectNoHighlighting[] =
-    "enable-fill-on-account-select-no-highlighting";
-
 // Enables the experimental Full Form Autofill on iOS feature.
 const char kEnableFullFormAutofillIOS[]     = "enable-full-form-autofill-ios";
 

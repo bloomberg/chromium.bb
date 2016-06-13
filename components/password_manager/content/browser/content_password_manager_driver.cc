@@ -105,6 +105,15 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
                                                        username, password));
 }
 
+void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
+    const autofill::PasswordFormFillData& form_data) {
+  const int key = next_free_key_++;
+  password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
+  render_frame_host_->Send(
+      new AutofillMsg_ShowInitialPasswordAccountSuggestions(
+          render_frame_host_->GetRoutingID(), key, form_data));
+}
+
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
   content::RenderFrameHost* host = render_frame_host_;
   host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));

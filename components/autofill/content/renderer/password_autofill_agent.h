@@ -26,6 +26,8 @@ class WebSecurityOrigin;
 
 namespace autofill {
 
+class RendererSavePasswordProgressLogger;
+
 // This class is responsible for filling password forms.
 class PasswordAutofillAgent : public content::RenderFrameObserver {
  public:
@@ -84,6 +86,19 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // signal to make autofilled values of password input elements accessible to
   // JavaScript.
   void FirstUserGestureObserved();
+
+  // Given password form data |form_data| and a supplied key |key| for
+  // referencing the password info, returns a set of WebInputElements in
+  // |elements|, which must be non-null, that the password manager has values
+  // for filling. Also takes an optional logger |logger| for logging password
+  // autofill behavior.
+  void GetFillableElementFromFormData(
+      int key,
+      const PasswordFormFillData& form_data,
+      RendererSavePasswordProgressLogger* logger,
+      std::vector<blink::WebInputElement>* elements);
+
+  bool logging_state_active() const { return logging_state_active_; }
 
  protected:
   virtual bool OriginCanAccessPasswordManager(

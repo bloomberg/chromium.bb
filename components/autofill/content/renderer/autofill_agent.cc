@@ -26,6 +26,7 @@
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
+#include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -34,6 +35,8 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/save_password_progress_logger.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/common/ssl_status.h"
@@ -219,6 +222,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFillPasswordSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewPasswordSuggestion,
                         OnPreviewPasswordSuggestion)
+    IPC_MESSAGE_HANDLER(AutofillMsg_ShowInitialPasswordAccountSuggestions,
+                        OnShowInitialPasswordAccountSuggestions);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -591,6 +596,31 @@ void AutofillAgent::OnPreviewPasswordSuggestion(
       username,
       password);
   DCHECK(handled);
+}
+
+void AutofillAgent::OnShowInitialPasswordAccountSuggestions(
+    int key,
+    const PasswordFormFillData& form_data) {
+  std::vector<blink::WebInputElement> elements;
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
+  if (password_autofill_agent_->logging_state_active()) {
+    logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
+    logger->LogMessage(SavePasswordProgressLogger::
+                           STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
+  }
+  password_autofill_agent_->GetFillableElementFromFormData(
+      key, form_data, logger.get(), &elements);
+
+  // If wait_for_username is true, we don't want to initially show form options
+  // until the user types in a valid username.
+  if (form_data.wait_for_username)
+    return;
+
+  ShowSuggestionsOptions options;
+  options.autofill_on_empty_values = true;
+  options.show_full_suggestion_list = true;
+  for (auto element : elements)
+    ShowSuggestions(element, options);
 }
 
 void AutofillAgent::OnSamePageNavigationCompleted() {

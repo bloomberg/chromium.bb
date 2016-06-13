@@ -4,6 +4,7 @@
 
 #include <tuple>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -251,6 +252,17 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       const PasswordFormFillData& fill_data) {
     AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
     content::RenderFrame::FromWebFrame(frame)->OnMessageReceived(msg);
+  }
+
+  // Simulates the show initial password account suggestions message being sent
+  // to the renderer. We use that so we don't have to make
+  // RenderView::OnShowInitialPasswordAccountSuggestions() protected.
+  void SimulateOnShowInitialPasswordAccountSuggestions(
+      const PasswordFormFillData& fill_data) {
+    AutofillMsg_ShowInitialPasswordAccountSuggestions msg(
+        0, kPasswordFillFormDataId, fill_data);
+    static_cast<content::RenderFrameObserver*>(autofill_agent_)
+        ->OnMessageReceived(msg);
   }
 
   void SendVisiblePasswordForms() {
@@ -1282,7 +1294,7 @@ TEST_F(PasswordAutofillAgentTest,
       autofill::switches::kEnableFillOnAccountSelect);
 
   // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
   // Clear the text fields to start fresh.
   ClearUsernameAndPasswordFields();
@@ -1312,7 +1324,7 @@ TEST_F(PasswordAutofillAgentTest,
       autofill::switches::kEnableFillOnAccountSelect);
 
   // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
   // Clear the text fields to start fresh.
   ClearUsernameAndPasswordFields();
@@ -1564,9 +1576,10 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnly) {
   ClearUsernameAndPasswordFields();
 
   // Simulate the browser sending back the login info for an initial page load.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
-  CheckTextFieldsState(std::string(), true, std::string(), false);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
+  CheckSuggestions(std::string(), true);
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyReadonlyUsername) {
@@ -1579,9 +1592,9 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyReadonlyUsername) {
   SetElementReadOnly(username_element_, true);
 
   // Simulate the browser sending back the login info for an initial page load.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
-  CheckTextFieldsState(std::string("alice"), false, std::string(), true);
+  CheckTextFieldsState(std::string("alice"), false, std::string(), false);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -1595,9 +1608,9 @@ TEST_F(PasswordAutofillAgentTest,
   SetElementReadOnly(username_element_, true);
 
   // Simulate the browser sending back the login info for an initial page load.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
-  CheckTextFieldsState(std::string("Carol"), false, std::string(), true);
+  CheckTextFieldsState(std::string("Carol"), false, std::string(), false);
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
@@ -1621,10 +1634,11 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
   password_element_.setAutofilled(false);
 
   // Simulate the browser sending back the login info for an initial page load.
-  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
 
   EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
-  EXPECT_TRUE(password_element_.isAutofilled());
+  EXPECT_FALSE(password_element_.isAutofilled());
+  CheckSuggestions(std::string(), false);
 }
 
 TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {

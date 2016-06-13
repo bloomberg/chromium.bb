@@ -33,6 +33,7 @@ namespace autofill {
 
 struct FormData;
 struct FormFieldData;
+struct PasswordFormFillData;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
 
@@ -181,6 +182,9 @@ class AutofillAgent : public content::RenderFrameObserver,
                                 const base::string16& password);
   void OnPreviewPasswordSuggestion(const base::string16& username,
                                    const base::string16& password);
+  void OnShowInitialPasswordAccountSuggestions(
+      int key,
+      const PasswordFormFillData& form_data);
 
   // Called when a same-page navigation is detected.
   void OnSamePageNavigationCompleted();

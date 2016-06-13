@@ -11,7 +11,9 @@
 #include <set>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -19,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -45,6 +48,10 @@ typedef autofill::SavePasswordProgressLogger Logger;
 namespace password_manager {
 
 namespace {
+
+// Experiment information
+const char kFillOnAccountSelectFieldTrialName[] = "FillOnAccountSelect";
+const char kFillOnAccountSelectFieldTrialEnabledGroup[] = "Enable";
 
 PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
                                       bool ssl_valid) {
@@ -110,6 +117,25 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
   }
   store_results->weak_erase(first_federated, store_results->end());
   return federated_matches;
+}
+
+bool ShouldShowInitialPasswordAccountSuggestions() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kDisableFillOnAccountSelect)) {
+    return false;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kEnableFillOnAccountSelect)) {
+    return true;
+  }
+
+  return base::StartsWith(group_name,
+                          kFillOnAccountSelectFieldTrialEnabledGroup,
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -533,9 +559,21 @@ void PasswordFormManager::ProcessFrameInternal(
     manager_action_ = kManagerActionNone;
   else
     manager_action_ = kManagerActionAutofilled;
-  password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
-                              federated_matches_, *preferred_match_,
-                              wait_for_username);
+  if (ShouldShowInitialPasswordAccountSuggestions()) {
+    // This is for the fill-on-account-select experiment. Instead of autofilling
+    // found usernames and passwords on load, this instructs the renderer to
+    // return with any found password forms so a list of password account
+    // suggestions can be drawn.
+    password_manager_->ShowInitialPasswordAccountSuggestions(
+        driver.get(), observed_form_, best_matches_, federated_matches_,
+        *preferred_match_, wait_for_username);
+  } else {
+    // If fill-on-account-select is not enabled, continue with autofilling any
+    // password forms as traditionally has been done.
+    password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
+                                federated_matches_, *preferred_match_,
+                                wait_for_username);
+  }
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {

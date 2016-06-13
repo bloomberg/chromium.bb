@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -199,6 +201,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   ~MockPasswordManagerDriver() {}
 
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
+  MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,
+               void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm,
                void(const autofill::PasswordForm&));
 
@@ -676,6 +680,18 @@ class PasswordFormManagerTest : public testing::Test {
   std::unique_ptr<TestPasswordManagerClient> client_;
   std::unique_ptr<PasswordManager> password_manager_;
   std::unique_ptr<PasswordFormManager> form_manager_;
+};
+
+class PasswordFormManagerFillOnAccountSelectTest
+    : public PasswordFormManagerTest {
+ public:
+  PasswordFormManagerFillOnAccountSelectTest() {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        autofill::switches::kEnableFillOnAccountSelect);
+    PasswordFormManagerTest::SetUp();
+  }
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
@@ -3038,6 +3054,12 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerFillOnAccountSelectTest, ProcessFrame) {
+  EXPECT_CALL(*client()->mock_driver(),
+              ShowInitialPasswordAccountSuggestions(_));
+  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
 }
 
 }  // namespace password_manager

@@ -65,6 +65,8 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
                       const base::string16& password) override;
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
+  void ShowInitialPasswordAccountSuggestions(
+      const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
   void ForceSavePassword() override;
   void GeneratePassword() override;

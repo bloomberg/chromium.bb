@@ -305,6 +305,9 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::Autofill";
     case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILLHTTPAUTH:
       return "PasswordManager::AutofillHttpAuth";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS:
+      return "PasswordManager::ShowInitialPasswordAccountSuggestions";
     case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
       return "wait_for_username";
     case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
@@ -359,6 +362,9 @@ std::string SavePasswordProgressLogger::GetStringFromID(
              "visible";
     case SavePasswordProgressLogger::STRING_ON_FILL_PASSWORD_FORM_METHOD:
       return "PasswordAutofillAgent::OnFillPasswordForm";
+    case SavePasswordProgressLogger::
+        STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS:
+      return "AutofillAgent::OnShowInitialPasswordAccountSuggestions";
     case SavePasswordProgressLogger::STRING_AMBIGUOUS_OR_EMPTY_NAMES:
       return "ambiguous_or_empty_names";
     case SavePasswordProgressLogger::STRING_NUMBER_OF_POTENTIAL_FORMS_TO_FILL:

@@ -180,6 +180,12 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewPasswordSuggestion,
                     base::string16 /* username */,
                     base::string16 /* password */)
 
+// Sent when a password form is initially detected and suggestions should be
+// shown. Used by the fill-on-select experiment.
+IPC_MESSAGE_ROUTED2(AutofillMsg_ShowInitialPasswordAccountSuggestions,
+                    int /* key */,
+                    autofill::PasswordFormFillData /* the fill form data */)
+
 // Tells the renderer to find the focused password form (assuming it exists).
 // Renderer is expected to respond with the message
 // |AutofillHostMsg_FocusedPasswordFormFound|.

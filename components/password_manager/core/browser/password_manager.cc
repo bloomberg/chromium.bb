@@ -765,6 +765,32 @@ void PasswordManager::Autofill(
                                  &federated_matches);
 }
 
+void PasswordManager::ShowInitialPasswordAccountSuggestions(
+    password_manager::PasswordManagerDriver* driver,
+    const PasswordForm& form_for_autofill,
+    const PasswordFormMap& best_matches,
+    const std::vector<std::unique_ptr<PasswordForm>>& federated_matches,
+    const PasswordForm& preferred_match,
+    bool wait_for_username) const {
+  DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
+
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogMessage(
+        Logger::
+            STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
+  }
+  autofill::PasswordFormFillData fill_data;
+  InitPasswordFormFillData(form_for_autofill, best_matches, &preferred_match,
+                           wait_for_username, OtherPossibleUsernamesEnabled(),
+                           &fill_data);
+  if (logger)
+    logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
+  driver->ShowInitialPasswordAccountSuggestions(fill_data);
+}
+
 void PasswordManager::AutofillHttpAuth(
     const PasswordFormMap& best_matches,
     const PasswordForm& preferred_match) const {
