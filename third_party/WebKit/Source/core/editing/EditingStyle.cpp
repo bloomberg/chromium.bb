@@ -83,7 +83,6 @@ static const CSSPropertyID staticEditingProperties[] = {
     CSSPropertyFontVariantCaps,
     CSSPropertyFontWeight,
     CSSPropertyLetterSpacing,
-    CSSPropertyLineHeight,
     CSSPropertyOrphans,
     CSSPropertyTextAlign,
     // FIXME: CSSPropertyTextDecoration needs to be removed when CSS3 Text
