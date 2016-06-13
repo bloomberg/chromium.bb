@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
-#define CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
+#ifndef COMPONENTS_NTP_TILES_MOST_VISITED_SITES_H_
+#define COMPONENTS_NTP_TILES_MOST_VISITED_SITES_H_
 
 #include <stddef.h>
 
@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/android/ntp/popular_sites.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/ntp_tiles/popular_sites.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
@@ -286,4 +286,4 @@ class MostVisitedSites : public history::TopSitesObserver,
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
+#endif  // COMPONENTS_NTP_TILES_MOST_VISITED_SITES_H_

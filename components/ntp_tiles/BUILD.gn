@@ -2,9 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_ios)  # TODO(sfiera): support iOS http://crbug.com/617966
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # GYP version: components/ntp_tiles.gypi:ntp_tiles
 source_set("ntp_tiles") {
   sources = [
+    "most_visited_sites.cc",
+    "most_visited_sites.h",
+    "popular_sites.cc",
+    "popular_sites.h",
     "pref_names.cc",
     "pref_names.h",
     "switches.cc",
@@ -13,5 +23,36 @@ source_set("ntp_tiles") {
 
   public_deps = [
     "//base",
+    "//components/history/core/browser",
+    "//components/suggestions",
   ]
+  deps = [
+    "//components/google/core/browser",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/safe_json",
+    "//components/search_engines",
+    "//components/variations",
+    "//components/variations/service",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "most_visited_sites_unittest.cc",
+  ]
+
+  deps = [
+    ":ntp_tiles",
+    "//testing/gtest",
+  ]
+}
+
+if (is_android) {
+  java_cpp_enum("ntp_tiles_enums_java") {
+    sources = [
+      "most_visited_sites.cc",
+    ]
+  }
 }

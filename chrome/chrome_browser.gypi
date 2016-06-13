@@ -880,8 +880,6 @@
       'browser/android/mojo/chrome_service_registrar_android.h',
       'browser/android/net/external_estimate_provider_android.cc',
       'browser/android/net/external_estimate_provider_android.h',
-      'browser/android/ntp/most_visited_sites.cc',
-      'browser/android/ntp/most_visited_sites.h',
       'browser/android/ntp/most_visited_sites_bridge.cc',
       'browser/android/ntp/most_visited_sites_bridge.h',
       'browser/android/ntp/new_tab_page_prefs.cc',

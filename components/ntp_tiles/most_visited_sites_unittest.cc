@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/ntp/most_visited_sites.h"
+#include "components/ntp_tiles/most_visited_sites.h"
 
 #include <stddef.h>
 

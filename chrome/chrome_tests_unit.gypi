@@ -28,7 +28,6 @@
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
       'browser/android/net/external_estimate_provider_android_unittest.cc',
-      'browser/android/ntp/most_visited_sites_unittest.cc',
       'browser/android/preferences/important_sites_util_unittest.cc',
       'browser/android/preferences/pref_service_bridge_unittest.cc',
       'browser/android/shortcut_info_unittest.cc',

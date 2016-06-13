@@ -14,9 +14,9 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/ntp/most_visited_sites.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
+#include "components/ntp_tiles/most_visited_sites.h"
 
 class Profile;
 

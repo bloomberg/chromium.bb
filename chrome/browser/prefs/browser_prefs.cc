@@ -137,9 +137,9 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/android/ntp/most_visited_sites.h"
 #include "chrome/browser/android/ntp/new_tab_page_prefs.h"
-#include "chrome/browser/android/ntp/popular_sites.h"
+#include "components/ntp_tiles/most_visited_sites.h"
+#include "components/ntp_tiles/popular_sites.h"
 #else
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/upgrade_detector.h"
