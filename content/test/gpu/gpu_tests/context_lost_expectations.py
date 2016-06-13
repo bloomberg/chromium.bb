@@ -17,8 +17,12 @@ class ContextLostExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=479975)
 
     # Win7 bots
-    self.Flaky('ContextLost.WebGLContextLostFromGPUProcessExit',
-               ['win7'], bug=603329)
+    # Related bug: http://crbug.com/603329 .
+    # Flaky retries aren't working well in this case. Need to shut
+    # down the browser between runs. This will be done in the new test
+    # harness (http://crbug.com/352807).
+    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+              ['win7'], bug=619196)
 
     # Win8 Release and Debug NVIDIA bots.
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
