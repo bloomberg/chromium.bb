@@ -94,6 +94,8 @@ class ShellSurfaceWidget : public views::Widget {
   // Overridden from views::Widget
   void Close() override { shell_surface_->Close(); }
   void OnKeyEvent(ui::KeyEvent* event) override {
+    // TODO(hidehiko): Handle ESC + SHIFT + COMMAND accelerator key
+    // to escape pinned mode.
     // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
     // management keys (like the tab key) as well.
     if (GetFocusManager()->ProcessAccelerator(ui::Accelerator(*event)))
@@ -340,6 +342,20 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
   widget_->SetFullscreen(fullscreen);
+}
+
+void ShellSurface::SetPinned(bool pinned) {
+  TRACE_EVENT1("exo", "ShellSurface::SetPinned", "pinned", pinned);
+
+  if (!widget_)
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+
+  // Note: This will ask client to configure its surface even if pinned
+  // state doesn't change.
+  ScopedConfigure scoped_configure(this, true);
+  // TODO(hidehiko): Implement pinned feature in ash layer, and switch to the
+  // real implementation.
+  widget_->SetAlwaysOnTop(pinned);
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {

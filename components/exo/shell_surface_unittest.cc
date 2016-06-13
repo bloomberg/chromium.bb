@@ -156,6 +156,17 @@ TEST_P(ShellSurfaceTest, SetFullscreen) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
 }
 
+TEST_P(ShellSurfaceTest, SetPinned) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  shell_surface->SetPinned(true);
+  EXPECT_TRUE(shell_surface->GetWidget()->IsAlwaysOnTop());
+}
+
 TEST_P(ShellSurfaceTest, SetTitle) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));

@@ -108,6 +108,9 @@ class ShellSurface : public SurfaceDelegate,
   // Set fullscreen state for shell surface.
   void SetFullscreen(bool fullscreen);
 
+  // Pins the shell surface.
+  void SetPinned(bool pinned);
+
   // Set title for surface.
   void SetTitle(const base::string16& title);
 

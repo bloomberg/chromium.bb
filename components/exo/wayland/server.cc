@@ -1455,6 +1455,28 @@ void remote_surface_restore(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ShellSurface>(resource)->Restore();
 }
 
+void remote_surface_pin(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(true);
+  // Send set_pinned event here to notify client that pinning is successfully
+  // done. Note that this is temporary code and could cause a bug when pinning
+  // is failed.
+  // TODO(hidehiko): Implement the notification properly.
+  zwp_remote_surface_v1_send_set_pinned(resource);
+}
+
+void remote_surface_unpin(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(false);
+  // Send unset_pinned event here to notify client that unpinning is
+  // successfully done. Note that this is temporary code and could cause a bug
+  // when unpinning is failed.
+  // TODO(hidehiko): Implement the notification properly.
+  zwp_remote_surface_v1_send_unset_pinned(resource);
+}
+
+void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
+}
+
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -1463,7 +1485,10 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_fullscreen,
     remote_surface_maximize,
     remote_surface_minimize,
-    remote_surface_restore};
+    remote_surface_restore,
+    remote_surface_pin,
+    remote_surface_unpin,
+    remote_surface_unfullscreen};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
@@ -1658,7 +1683,7 @@ void remote_shell_get_remote_surface(wl_client* client,
 const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface};
 
-const uint32_t remote_shell_version = 2;
+const uint32_t remote_shell_version = 3;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
