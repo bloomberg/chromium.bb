@@ -155,7 +155,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
-  service()->SetSetupInProgress(true);
+  sync_blocker_ = service()->GetSetupInProgressHandle();
 
   DCHECK(!username_.empty());
   if (signin_type_ == SigninType::UI_SIGNIN) {
@@ -305,7 +305,7 @@ bool ProfileSyncServiceHarness::IsSyncDisabled() const {
 }
 
 void ProfileSyncServiceHarness::FinishSyncSetup() {
-  service()->SetSetupInProgress(false);
+  sync_blocker_.reset();
   service()->SetFirstSetupComplete();
 }
 

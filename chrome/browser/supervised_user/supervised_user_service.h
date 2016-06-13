@@ -60,6 +60,10 @@ namespace extensions {
 class ExtensionRegistry;
 }
 
+namespace sync_driver {
+class SyncSetupInProgressHandle;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -408,6 +412,9 @@ class SupervisedUserService : public KeyedService,
   std::unique_ptr<SafeSearchURLReporter> url_reporter_;
 
   base::ObserverList<SupervisedUserServiceObserver> observer_list_;
+
+  // Prevents Sync from running until configuration is complete.
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 };

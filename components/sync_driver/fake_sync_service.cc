@@ -79,7 +79,9 @@ bool FakeSyncService::IsFirstSetupInProgress() const {
   return false;
 }
 
-void FakeSyncService::SetSetupInProgress(bool setup_in_progress) {
+std::unique_ptr<SyncSetupInProgressHandle>
+FakeSyncService::GetSetupInProgressHandle() {
+  return nullptr;
 }
 
 bool FakeSyncService::IsSetupInProgress() const {

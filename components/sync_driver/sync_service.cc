@@ -9,9 +9,15 @@
 
 namespace sync_driver {
 
+SyncSetupInProgressHandle::SyncSetupInProgressHandle(base::Closure on_destroy)
+    : on_destroy_(on_destroy) {}
+
+SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
+  on_destroy_.Run();
+}
+
 SyncService::SyncTokenStatus::SyncTokenStatus()
     : connection_status(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
-SyncService::SyncTokenStatus::~SyncTokenStatus() {}
 
-}
+}  // namespace sync_driver

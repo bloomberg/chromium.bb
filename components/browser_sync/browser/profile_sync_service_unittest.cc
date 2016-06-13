@@ -424,9 +424,9 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   TestSyncServiceObserver observer(service());
   service()->AddObserver(&observer);
 
-  service()->SetSetupInProgress(true);
+  auto sync_blocker = service()->GetSetupInProgressHandle();
   EXPECT_TRUE(observer.setup_in_progress());
-  service()->SetSetupInProgress(false);
+  sync_blocker.reset();
   EXPECT_FALSE(observer.setup_in_progress());
 
   service()->RemoveObserver(&observer);
