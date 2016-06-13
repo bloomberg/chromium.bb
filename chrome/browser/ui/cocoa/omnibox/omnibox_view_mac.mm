@@ -584,6 +584,12 @@ void OmniboxViewMac::ApplyTextAttributes(
                            value:@"en_US_POSIX"
                            range:as_entire_string];
 
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    [attributedString addAttribute:NSForegroundColorAttributeName
+                             value:HostTextColor(in_dark_mode)
+                             range:as_entire_string];
+  }
+
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
       display_text, ChromeAutocompleteSchemeClassifier(profile_), &scheme,
