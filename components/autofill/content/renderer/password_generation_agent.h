@@ -56,7 +56,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // consider analyzing. Virtual so that it can be overriden during testing.
   virtual bool ShouldAnalyzeDocument() const;
 
-  // RenderViewObserver:
+  // RenderFrameObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Use to force enable during testing.
