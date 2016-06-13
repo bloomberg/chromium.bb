@@ -54,7 +54,7 @@ class SettingsAppMonitor::Context {
   // for the dedicated thread on which the context lives (owned by its
   // UIAutomationClient).
   void Initialize(base::SingleThreadTaskRunner* task_runner,
-                  base::SequencedTaskRunner* monitor_runner,
+                  scoped_refptr<base::SequencedTaskRunner> monitor_runner,
                   const base::WeakPtr<SettingsAppMonitor>& monitor);
 
  private:
@@ -96,7 +96,7 @@ class SettingsAppMonitor::Context {
   base::SingleThreadTaskRunner* task_runner_ = nullptr;
 
   // The task runner on which the owning monitor lives.
-  base::SequencedTaskRunner* monitor_runner_ = nullptr;
+  scoped_refptr<base::SequencedTaskRunner> monitor_runner_ = nullptr;
 
   // The monitor that owns this context.
   base::WeakPtr<SettingsAppMonitor> monitor_;
@@ -564,7 +564,7 @@ void SettingsAppMonitor::Context::DeleteOnAutomationThread() {
 
 void SettingsAppMonitor::Context::Initialize(
     base::SingleThreadTaskRunner* task_runner,
-    base::SequencedTaskRunner* monitor_runner,
+    scoped_refptr<base::SequencedTaskRunner> monitor_runner,
     const base::WeakPtr<SettingsAppMonitor>& monitor) {
   // This and all other methods must be called on the automation thread.
   DCHECK(task_runner->BelongsToCurrentThread());
@@ -705,7 +705,7 @@ SettingsAppMonitor::SettingsAppMonitor(Delegate* delegate)
       FROM_HERE,
       base::Bind(&SettingsAppMonitor::Context::Initialize, context_,
                  base::Unretained(automation_thread_.task_runner().get()),
-                 base::Unretained(base::SequencedTaskRunnerHandle::Get().get()),
+                 base::SequencedTaskRunnerHandle::Get(),
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
