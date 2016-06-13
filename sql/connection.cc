@@ -239,23 +239,6 @@ bool Connection::ShouldIgnoreSqliteError(int error) {
   return current_ignorer_cb_->Run(error);
 }
 
-// static
-bool Connection::ShouldIgnoreSqliteCompileError(int error) {
-  // Put this first in case tests need to see that the check happened.
-  if (ShouldIgnoreSqliteError(error))
-    return true;
-
-  // Trim extended error codes.
-  int basic_error = error & 0xff;
-
-  // These errors relate more to the runtime context of the system than to
-  // errors with a SQL statement or with the schema, so they aren't generally
-  // interesting to flag.  This list is not comprehensive.
-  return basic_error == SQLITE_BUSY ||
-      basic_error == SQLITE_NOTADB ||
-      basic_error == SQLITE_CORRUPT;
-}
-
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
@@ -1462,7 +1445,14 @@ scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
 
 scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
     const char* sql) {
+  return GetStatementImpl(this, sql);
+}
+
+scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
+    sql::Connection* tracking_db, const char* sql) const {
   AssertIOAllowed();
+  DCHECK(sql);
+  DCHECK(!tracking_db || const_cast<Connection*>(tracking_db)==this);
 
   // Return inactive statement.
   if (!db_)
@@ -1472,33 +1462,19 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    if (!ShouldIgnoreSqliteCompileError(rc))
+    if (rc == SQLITE_ERROR)
       DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL, sql);
     return new StatementRef(NULL, NULL, false);
   }
-  return new StatementRef(this, stmt, true);
+  return new StatementRef(tracking_db, stmt, true);
 }
 
-// TODO(shess): Unify this with GetUniqueStatement().  The only difference that
-// seems legitimate is not passing |this| to StatementRef.
 scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
     const char* sql) const {
-  // Return inactive statement.
-  if (!db_)
-    return new StatementRef(NULL, NULL, poisoned_);
-
-  sqlite3_stmt* stmt = NULL;
-  int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
-  if (rc != SQLITE_OK) {
-    // This is evidence of a syntax error in the incoming SQL.
-    if (!ShouldIgnoreSqliteCompileError(rc))
-      DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
-    return new StatementRef(NULL, NULL, false);
-  }
-  return new StatementRef(NULL, stmt, true);
+  return GetStatementImpl(NULL, sql);
 }
 
 std::string Connection::GetSchema() const {
@@ -1898,7 +1874,8 @@ void Connection::AddTaggedHistogram(const std::string& name,
     histogram->Add(sample);
 }
 
-int Connection::OnSqliteError(int err, sql::Statement *stmt, const char* sql) {
+int Connection::OnSqliteError(
+    int err, sql::Statement *stmt, const char* sql) const {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.Error", err);
   AddTaggedHistogram("Sqlite.Error", err);
 

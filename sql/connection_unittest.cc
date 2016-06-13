@@ -1443,22 +1443,13 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
 #else
 TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   const size_t kMmapAlot = 25 * 1024 * 1024;
+  int64_t mmap_status = MetaTable::kMmapFailure;
 
   // If there is no meta table (as for a fresh database), assume that everything
-  // should be mapped.
+  // should be mapped, and the status of the meta table is not affected.
   ASSERT_TRUE(!db().DoesTableExist("meta"));
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
-
-  // Getting the status fails if there is an error.  GetAppropriateMmapSize()
-  // should not call GetMmapStatus() if the table does not exist, but this is an
-  // easy error to setup for testing.
-  int64_t mmap_status;
-  {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_ERROR);
-    ASSERT_FALSE(MetaTable::GetMmapStatus(&db(), &mmap_status));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
-  }
+  ASSERT_TRUE(!db().DoesTableExist("meta"));
 
   // When the meta table is first created, it sets up to map everything.
   MetaTable().Init(&db(), 1, 1);
@@ -1487,5 +1478,20 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
 }
 #endif
+
+// To prevent invalid SQL from accidentally shipping to production, prepared
+// statements which fail to compile with SQLITE_ERROR call DLOG(FATAL).  This
+// case cannot be suppressed with an error callback.
+TEST_F(SQLConnectionTest, CompileError) {
+  // DEATH tests not supported on Android or iOS.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (DLOG_IS_ON(FATAL)) {
+    db().set_error_callback(base::Bind(&IgnoreErrorCallback));
+    ASSERT_DEATH({
+        db().GetUniqueStatement("SELECT x");
+      }, "SQL compile error no such column: x");
+  }
+#endif
+}
 
 }  // namespace sql

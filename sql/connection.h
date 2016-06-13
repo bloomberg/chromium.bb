@@ -480,10 +480,6 @@ class SQL_EXPORT Connection {
   // tests.
   static bool ShouldIgnoreSqliteError(int error);
 
-  // Additionally ignores errors which are unlikely to be caused by problems
-  // with the syntax of a SQL statement, or problems with the database schema.
-  static bool ShouldIgnoreSqliteCompileError(int error);
-
   // Collect various diagnostic information and post a crash dump to aid
   // debugging.  Dump rate per database is limited to prevent overwhelming the
   // crash server.
@@ -624,18 +620,24 @@ class SQL_EXPORT Connection {
   // error handlers to transparently convert errors into success.
   // Unfortunately, transactions are not generally restartable, so
   // this did not work out.
-  int OnSqliteError(int err, Statement* stmt, const char* sql);
+  int OnSqliteError(int err, Statement* stmt, const char* sql) const;
 
   // Like |Execute()|, but retries if the database is locked.
   bool ExecuteWithTimeout(const char* sql, base::TimeDelta ms_timeout)
       WARN_UNUSED_RESULT;
 
-  // Internal helper for const functions.  Like GetUniqueStatement(),
-  // except the statement is not entered into open_statements_,
-  // allowing this function to be const.  Open statements can block
-  // closing the database, so only use in cases where the last ref is
-  // released before close could be called (which should always be the
-  // case for const functions).
+  // Implementation helper for GetUniqueStatement() and GetUntrackedStatement().
+  // |tracking_db| is the db the resulting ref should register with for
+  // outstanding statement tracking, which should be |this| to track or NULL to
+  // not track.
+  scoped_refptr<StatementRef> GetStatementImpl(
+      sql::Connection* tracking_db, const char* sql) const;
+
+  // Helper for implementing const member functions.  Like GetUniqueStatement(),
+  // except the StatementRef is not entered into |open_statements_|, so an
+  // outstanding StatementRef from this function can block closing the database.
+  // The StatementRef will not call OnSqliteError(), because that can call
+  // |error_callback_| which can close the database.
   scoped_refptr<StatementRef> GetUntrackedStatement(const char* sql) const;
 
   bool IntegrityCheckHelper(

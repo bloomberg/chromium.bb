@@ -4219,14 +4219,8 @@ TEST_F(DirectoryBackingStoreTest,
                                                GetDatabasePath()));
     dbs->SetCatastrophicErrorHandler(handler);
     ASSERT_TRUE(dbs->db_->has_error_callback());
-    {
-      // The corruption will be detected when we attempt to load the data. Use a
-      // ScopedErrorIgnorer to ensure we don't crash in debug builds.
-      sql::ScopedErrorIgnorer error_ignorer;
-      error_ignorer.IgnoreError(SQLITE_CORRUPT);
-      ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-      ASSERT_TRUE(error_ignorer.CheckIgnoredErrors());
-    }
+    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+
     // See that the first open failed as expected.
     ASSERT_TRUE(dbs->DidFailFirstOpenAttempt());
   }
