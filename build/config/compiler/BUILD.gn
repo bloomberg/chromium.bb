@@ -191,7 +191,13 @@ config("compiler") {
 
     # Stack protection.
     if (is_mac) {
-      cflags += [ "-fstack-protector-strong" ]
+      # The strong variant of the stack protector significantly increases
+      # binary size, so only enable it in debug mode.
+      if (is_debug) {
+        cflags += [ "-fstack-protector-strong" ]
+      } else {
+        cflags += [ "-fstack-protector" ]
+      }
     } else if (is_posix && !is_chromeos && !is_nacl) {
       # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
       # See also https://crbug.com/533294
