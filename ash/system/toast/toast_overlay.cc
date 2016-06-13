@@ -143,7 +143,9 @@ ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
 class ToastOverlayView : public views::View, public views::ButtonListener {
  public:
   // This object is not owned by the views hiearchy or by the widget.
-  ToastOverlayView(ToastOverlay* overlay, const std::string& text);
+  ToastOverlayView(ToastOverlay* overlay,
+                   const std::string& text,
+                   const std::string& dismiss_text);
   ~ToastOverlayView() override;
 
   // views::View overrides:
@@ -164,11 +166,14 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
 };
 
 ToastOverlayView::ToastOverlayView(ToastOverlay* overlay,
-                                   const std::string& text)
+                                   const std::string& text,
+                                   const std::string& dismiss_text)
     : overlay_(overlay),
       button_(new ToastOverlayButton(
           this,
-          l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON))) {
+          dismiss_text.empty()
+              ? l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON)
+              : base::UTF8ToUTF16(dismiss_text))) {
   ToastOverlayLabel* label = new ToastOverlayLabel(text);
   label->SetMaximumWidth(
       GetMaximumSize().width() - button_->GetPreferredSize().width() -
@@ -212,10 +217,13 @@ void ToastOverlayView::ButtonPressed(views::Button* sender,
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ToastOverlay
-ToastOverlay::ToastOverlay(Delegate* delegate, const std::string& text)
+ToastOverlay::ToastOverlay(Delegate* delegate,
+                           const std::string& text,
+                           const std::string& dismiss_text)
     : delegate_(delegate),
       text_(text),
-      overlay_view_(new ToastOverlayView(this, text)),
+      dismiss_text_(dismiss_text),
+      overlay_view_(new ToastOverlayView(this, text, dismiss_text)),
       widget_size_(overlay_view_->GetPreferredSize()) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;

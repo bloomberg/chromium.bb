@@ -12,12 +12,20 @@
 namespace ash {
 
 struct ASH_EXPORT ToastData {
-  ToastData(const std::string& id, const std::string& text, int32_t duration_ms)
-      : id(id), text(text), duration_ms(duration_ms) {}
+  // "|duration_ms| == -1" means the toast view should be displayed until the
+  // dismiss button is clicked.
+  static const int32_t kInfiniteDuration = -1;
+
+  ToastData(std::string id,
+            std::string text,
+            int32_t duration_ms,
+            std::string dismiss_text);
+  ToastData(const ToastData& other);
 
   std::string id;
   std::string text;
   int32_t duration_ms;
+  std::string dismiss_text;
 };
 
 }  // namespace ash

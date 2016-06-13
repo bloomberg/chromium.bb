@@ -13,7 +13,7 @@ namespace ash {
 namespace {
 
 // Minimum duration for a toast to be visible (in millisecond).
-int32_t kMinimumDurationMs = 200;
+const int32_t kMinimumDurationMs = 200;
 
 }  // anonymous namespace
 
@@ -72,18 +72,19 @@ void ToastManager::ShowLatest() {
   const ToastData data = std::move(queue_.front());
   queue_.pop_front();
 
-  int32_t duration_ms = std::max(data.duration_ms, kMinimumDurationMs);
-
   current_toast_id_ = data.id;
   serial_++;
 
-  overlay_.reset(new ToastOverlay(this, data.text));
+  overlay_.reset(new ToastOverlay(this, data.text, data.dismiss_text));
   overlay_->Show(true);
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ToastManager::OnDurationPassed,
-                            weak_ptr_factory_.GetWeakPtr(), serial_),
-      base::TimeDelta::FromMilliseconds(duration_ms));
+  if (data.duration_ms != ToastData::kInfiniteDuration) {
+    int32_t duration_ms = std::max(data.duration_ms, kMinimumDurationMs);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ToastManager::OnDurationPassed,
+                              weak_ptr_factory_.GetWeakPtr(), serial_),
+        base::TimeDelta::FromMilliseconds(duration_ms));
+  }
 }
 
 void ToastManager::OnDurationPassed(int toast_number) {

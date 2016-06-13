@@ -36,7 +36,12 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
     virtual void OnClosed() = 0;
   };
 
-  ToastOverlay(Delegate* delegate, const std::string& text);
+  // Creates the Toast overlay UI. |text| is the message to be shown, and
+  // |dismiss_text| is the message for the button to dismiss the toast message.
+  // |dismiss_text| is optional. If empty, the default text is used.
+  ToastOverlay(Delegate* delegate,
+               const std::string& text,
+               const std::string& dismiss_text);
   ~ToastOverlay() override;
 
   // Shows or hides the overlay.
@@ -56,6 +61,7 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
 
   Delegate* const delegate_;
   const std::string text_;
+  const std::string dismiss_text_;
   std::unique_ptr<views::Widget> overlay_widget_;
   std::unique_ptr<ToastOverlayView> overlay_view_;
   gfx::Size widget_size_;

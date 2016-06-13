@@ -538,6 +538,8 @@
       'system/status_area_widget_delegate.h',
       'system/system_notifier.cc',
       'system/system_notifier.h',
+      'system/toast/toast_data.cc',
+      'system/toast/toast_data.h',
       'system/toast/toast_manager.cc',
       'system/toast/toast_manager.h',
       'system/toast/toast_overlay.cc',

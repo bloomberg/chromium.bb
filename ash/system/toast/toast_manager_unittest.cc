@@ -15,9 +15,6 @@
 
 namespace ash {
 
-// Long duration so the timeout doesn't occur.
-const int32_t kLongLongDuration = INT32_MAX;
-
 class DummyEvent : public ui::Event {
  public:
   DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
@@ -58,6 +55,11 @@ class ToastManagerTest : public test::AshTestBase {
     return overlay ? overlay->text_ : std::string();
   }
 
+  std::string GetCurrentDismissText() {
+    ToastOverlay* overlay = GetCurrentOverlay();
+    return overlay ? overlay->dismiss_text_ : std::string();
+  }
+
   void ClickDismissButton() {
     ToastOverlay* overlay = GetCurrentOverlay();
     if (overlay)
@@ -78,7 +80,15 @@ class ToastManagerTest : public test::AshTestBase {
 
   std::string ShowToast(const std::string& text, int32_t duration) {
     std::string id = "TOAST_ID_" + base::UintToString(serial_++);
-    manager()->Show(ToastData(id, text, duration));
+    manager()->Show(ToastData(id, text, duration, ""));
+    return id;
+  }
+
+  std::string ShowToastWithDismiss(const std::string& text,
+                                   int32_t duration,
+                                   const std::string& dismiss_text) {
+    std::string id = "TOAST_ID_" + base::UintToString(serial_++);
+    manager()->Show(ToastData(id, text, duration, dismiss_text));
     return id;
   }
 
@@ -101,7 +111,7 @@ TEST_F(ToastManagerTest, ShowAndCloseAutomatically) {
 }
 
 TEST_F(ToastManagerTest, ShowAndCloseManually) {
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
 
   EXPECT_EQ(1, GetToastSerial());
 
@@ -116,7 +126,7 @@ TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_TRUE(GetCurrentWidget()->GetLayer()->GetAnimator()->is_animating());
   base::RunLoop().RunUntilIdle();
 
@@ -155,7 +165,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
   SetShelfState(ash::SHELF_VISIBLE);
   SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM);
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
@@ -187,7 +197,7 @@ TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
   shelf->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
@@ -207,7 +217,7 @@ TEST_F(ToastManagerTest, PositionWithHiddenBottomShelf) {
   SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM);
   SetShelfState(ash::SHELF_HIDDEN);
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
@@ -225,7 +235,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   SetShelfState(ash::SHELF_VISIBLE);
   SetShelfAlignment(SHELF_ALIGNMENT_LEFT);
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
@@ -259,7 +269,7 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   SetShelfState(ash::SHELF_VISIBLE);
   SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM);
 
-  ShowToast("DUMMY", kLongLongDuration /* prevent timeout */);
+  ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
@@ -282,9 +292,9 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
 }
 
 TEST_F(ToastManagerTest, CancelToast) {
-  std::string id1 = ShowToast("TEXT1", kLongLongDuration /* prevent timeout */);
-  std::string id2 = ShowToast("TEXT2", kLongLongDuration /* prevent timeout */);
-  std::string id3 = ShowToast("TEXT3", kLongLongDuration /* prevent timeout */);
+  std::string id1 = ShowToast("TEXT1", ToastData::kInfiniteDuration);
+  std::string id2 = ShowToast("TEXT2", ToastData::kInfiniteDuration);
+  std::string id3 = ShowToast("TEXT3", ToastData::kInfiniteDuration);
 
   // Confirm that the first toast is shown.
   EXPECT_EQ("TEXT1", GetCurrentText());

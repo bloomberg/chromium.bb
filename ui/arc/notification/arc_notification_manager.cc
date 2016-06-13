@@ -180,7 +180,7 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   ash::Shell::GetInstance()->toast_manager()->Show(
-      ash::ToastData(data->id, data->text, data->duration));
+      ash::ToastData(data->id, data->text, data->duration, data->dismiss_text));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
