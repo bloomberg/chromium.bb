@@ -183,8 +183,18 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       // Mac, leading to high CPU usage. Instead we poll with a 1ms delay. This
       // should have minimal impact, as we will only hit this path when we are
       // more than one frame (16ms) behind.
-      while (!previous_frame_fence_->HasCompleted()) {
+      //
+      // Note that on some platforms (10.9), fences appear to sometimes get
+      // lost and will never pass. Add a 32ms timout to prevent these
+      // situations from causing a GPU process hang. crbug.com/618075
+      int timeout_msec = 32;
+      while (!previous_frame_fence_->HasCompleted() && timeout_msec > 0) {
+        --timeout_msec;
         base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+      }
+      if (!previous_frame_fence_->HasCompleted()) {
+        // We timed out waiting for the above fence, just issue a glFinish.
+        glFinish();
       }
     }
 
