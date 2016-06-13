@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/custom/CustomElementUpgradeReaction.h"
+#include "core/dom/custom/CustomElementReaction.h"
 
 #include "core/dom/custom/CustomElementDefinition.h"
 
 namespace blink {
 
-CustomElementUpgradeReaction::CustomElementUpgradeReaction(
+CustomElementReaction::CustomElementReaction(
     CustomElementDefinition* definition)
-    : CustomElementReaction(definition)
+    : m_definition(definition)
 {
 }
 
-void CustomElementUpgradeReaction::invoke(Element* element)
+DEFINE_TRACE(CustomElementReaction)
 {
-    m_definition->upgrade(element);
+    visitor->trace(m_definition);
 }
 
 } // namespace blink

@@ -1424,12 +1424,14 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     }
 
     if (inShadowIncludingDocument()) {
-        if (getCustomElementState() != CustomElementState::Custom && CustomElement::descriptorMayMatch(*this)) {
+        if (getCustomElementState() == CustomElementState::Custom) {
+            CustomElement::enqueueConnectedCallback(this);
+        } else if (isUpgradedV0CustomElement()) {
+            V0CustomElement::didAttach(this, document());
+        } else if (getCustomElementState() == CustomElementState::Undefined) {
             if (CustomElementsRegistry* registry = CustomElement::registry(*this))
                 registry->addCandidate(this);
         }
-        if (isUpgradedV0CustomElement())
-            V0CustomElement::didAttach(this, document());
     }
 
     TreeScope& scope = insertionPoint->treeScope();
@@ -1490,7 +1492,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (hasPendingResources())
             document().accessSVGExtensions().removeElementFromPendingResources(this);
 
-        if (isUpgradedV0CustomElement())
+        if (getCustomElementState() == CustomElementState::Custom)
+            CustomElement::enqueueDisconnectedCallback(this);
+        else if (isUpgradedV0CustomElement())
             V0CustomElement::didDetach(this, insertionPoint->document());
 
         if (needsStyleInvalidation())
@@ -3189,7 +3193,9 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 
     if (oldValue != newValue) {
         document().styleEngine().attributeChangedForElement(name, *this);
-        if (isUpgradedV0CustomElement())
+        if (getCustomElementState() == CustomElementState::Custom)
+            CustomElement::enqueueAttributeChangedCallback(this, name, oldValue, newValue);
+        else if (isUpgradedV0CustomElement())
             V0CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 

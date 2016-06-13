@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementUpgradeReaction_h
-#define CustomElementUpgradeReaction_h
+#ifndef CustomElementConnectedCallbackReaction_h
+#define CustomElementConnectedCallbackReaction_h
 
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementReaction.h"
@@ -12,13 +12,11 @@
 
 namespace blink {
 
-class Element;
-
-class CORE_EXPORT CustomElementUpgradeReaction final
+class CORE_EXPORT CustomElementConnectedCallbackReaction final
     : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(CustomElementUpgradeReaction);
+    WTF_MAKE_NONCOPYABLE(CustomElementConnectedCallbackReaction);
 public:
-    CustomElementUpgradeReaction(CustomElementDefinition*);
+    CustomElementConnectedCallbackReaction(CustomElementDefinition*);
 
 private:
     void invoke(Element*) override;
@@ -26,4 +24,4 @@ private:
 
 } // namespace blink
 
-#endif // CustomElementUpgradeReaction_h
+#endif // CustomElementConnectedCallbackReaction_h

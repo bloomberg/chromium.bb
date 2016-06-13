@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/custom/CustomElementUpgradeReaction.h"
+#include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
 
 #include "core/dom/custom/CustomElementDefinition.h"
 
 namespace blink {
 
-CustomElementUpgradeReaction::CustomElementUpgradeReaction(
+CustomElementConnectedCallbackReaction::CustomElementConnectedCallbackReaction(
     CustomElementDefinition* definition)
     : CustomElementReaction(definition)
 {
+    DCHECK(definition->hasConnectedCallback());
 }
 
-void CustomElementUpgradeReaction::invoke(Element* element)
+void CustomElementConnectedCallbackReaction::invoke(Element* element)
 {
-    m_definition->upgrade(element);
+    m_definition->runConnectedCallback(element);
 }
 
 } // namespace blink

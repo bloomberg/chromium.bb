@@ -167,7 +167,7 @@ void CustomElementsRegistry::define(
     HeapVector<Member<Element>> candidates;
     collectCandidates(descriptor, &candidates);
     for (Element* candidate : candidates)
-        CustomElement::enqueueUpgradeReaction(candidate, definition);
+        definition->enqueueUpgradeReaction(candidate);
 
     // 19: when-defined promise processing
     const auto& entry = m_whenDefinedPromiseMap.find(name);

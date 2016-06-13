@@ -4,6 +4,13 @@
 
 #include "core/dom/custom/CustomElementDefinition.h"
 
+#include "core/dom/custom/CEReactionsScope.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementAttributeChangedCallbackReaction.h"
+#include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
+#include "core/dom/custom/CustomElementDisconnectedCallbackReaction.h"
+#include "core/dom/custom/CustomElementUpgradeReaction.h"
+
 namespace blink {
 
 CustomElementDefinition::CustomElementDefinition(
@@ -24,10 +31,17 @@ DEFINE_TRACE(CustomElementDefinition)
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
 void CustomElementDefinition::upgrade(Element* element)
 {
-    // TODO(dominicc): When the attributeChangedCallback is implemented,
-    // enqueue reactions for attributes here.
-    // TODO(dominicc): When the connectedCallback is implemented, enqueue
-    // reactions here, if applicable.
+    // TODO(kojii): This should be reversed by exposing observedAttributes from
+    // ScriptCustomElementDefinition, because Element::attributes() requires
+    // attribute synchronizations, and generally elements have more attributes
+    // than custom elements observe.
+    for (const auto& attribute : element->attributes()) {
+        if (hasAttributeChangedCallback(attribute.name()))
+            enqueueAttributeChangedCallback(element, attribute.name(), nullAtom, attribute.value());
+    }
+
+    if (element->inShadowIncludingDocument() && hasConnectedCallback())
+        enqueueConnectedCallback(element);
 
     m_constructionStack.append(element);
     size_t depth = m_constructionStack.size();
@@ -44,6 +58,36 @@ void CustomElementDefinition::upgrade(Element* element)
         return;
 
     CHECK(element->getCustomElementState() == CustomElementState::Custom);
+}
+
+static void enqueueReaction(Element* element, CustomElementReaction* reaction)
+{
+    // CEReactionsScope must be created by [CEReactions] in IDL,
+    // or callers must setup explicitly if it does not go through bindings.
+    DCHECK(CEReactionsScope::current());
+    CEReactionsScope::current()->enqueue(element, reaction);
+}
+
+void CustomElementDefinition::enqueueUpgradeReaction(Element* element)
+{
+    enqueueReaction(element, new CustomElementUpgradeReaction(this));
+}
+
+void CustomElementDefinition::enqueueConnectedCallback(Element* element)
+{
+    enqueueReaction(element, new CustomElementConnectedCallbackReaction(this));
+}
+
+void CustomElementDefinition::enqueueDisconnectedCallback(Element* element)
+{
+    enqueueReaction(element, new CustomElementDisconnectedCallbackReaction(this));
+}
+
+void CustomElementDefinition::enqueueAttributeChangedCallback(Element* element,
+    const QualifiedName& name,
+    const AtomicString& oldValue, const AtomicString& newValue)
+{
+    enqueueReaction(element, new CustomElementAttributeChangedCallbackReaction(this, name, oldValue, newValue));
 }
 
 } // namespace blink

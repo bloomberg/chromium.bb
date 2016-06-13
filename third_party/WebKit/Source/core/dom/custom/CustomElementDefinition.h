@@ -43,6 +43,22 @@ public:
 
     void upgrade(Element*);
 
+    // TODO(kojii): Change these methods to pure when script-side is implemented.
+    virtual bool hasConnectedCallback() const { return true; }
+    virtual bool hasDisconnectedCallback() const { return true; }
+    virtual bool hasAttributeChangedCallback(const QualifiedName&) const { return true; }
+
+    virtual void runConnectedCallback(Element*) {}
+    virtual void runDisconnectedCallback(Element*) {}
+    virtual void runAttributeChangedCallback(Element*, const QualifiedName&,
+        const AtomicString& oldValue, const AtomicString& newValue) {}
+
+    void enqueueUpgradeReaction(Element*);
+    void enqueueConnectedCallback(Element*);
+    void enqueueDisconnectedCallback(Element*);
+    void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
+        const AtomicString& oldValue, const AtomicString& newValue);
+
 protected:
     virtual bool runConstructor(Element*) = 0;
 

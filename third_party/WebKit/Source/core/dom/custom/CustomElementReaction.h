@@ -11,16 +11,22 @@
 
 namespace blink {
 
+class CustomElementDefinition;
 class Element;
 
 class CORE_EXPORT CustomElementReaction
     : public GarbageCollectedFinalized<CustomElementReaction> {
     WTF_MAKE_NONCOPYABLE(CustomElementReaction);
 public:
-    CustomElementReaction() { }
-    virtual ~CustomElementReaction() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    CustomElementReaction(CustomElementDefinition*);
+    virtual ~CustomElementReaction() = default;
+
     virtual void invoke(Element*) = 0;
+
+    DECLARE_VIRTUAL_TRACE();
+
+protected:
+    Member<CustomElementDefinition> m_definition;
 };
 
 } // namespace blink

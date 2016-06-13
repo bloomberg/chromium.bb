@@ -6,9 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
-#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
-#include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
@@ -28,6 +26,13 @@ CustomElementsRegistry* CustomElement::registry(const Document& document)
 {
     if (LocalDOMWindow* window = document.domWindow())
         return window->customElements();
+    return nullptr;
+}
+
+CustomElementDefinition* CustomElement::definitionForElement(const Element& element)
+{
+    if (CustomElementsRegistry* registry = CustomElement::registry(element))
+        return registry->definitionForName(element.localName());
     return nullptr;
 }
 
@@ -131,17 +136,35 @@ HTMLElement* CustomElement::createCustomElementAsync(Document& document,
     element->setCustomElementState(CustomElementState::Undefined);
     // 6.2.2. Enqueue a custom element upgrade reaction given result and
     // definition.
-    enqueueUpgradeReaction(element, &definition);
+    definition.enqueueUpgradeReaction(element);
     return element;
 }
 
-void CustomElement::enqueueUpgradeReaction(Element* element, CustomElementDefinition* definition)
+void CustomElement::enqueueConnectedCallback(Element* element)
 {
-    // CEReactionsScope must be created by [CEReactions] in IDL,
-    // or callers must setup explicitly if it does not go through bindings.
-    DCHECK(CEReactionsScope::current());
-    CEReactionsScope::current()->enqueue(element,
-        new CustomElementUpgradeReaction(definition));
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+    CustomElementDefinition* definition = definitionForElement(*element);
+    if (definition->hasConnectedCallback())
+        definition->enqueueConnectedCallback(element);
+}
+
+void CustomElement::enqueueDisconnectedCallback(Element* element)
+{
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+    CustomElementDefinition* definition = definitionForElement(*element);
+    if (definition->hasDisconnectedCallback())
+        definition->enqueueDisconnectedCallback(element);
+}
+
+
+void CustomElement::enqueueAttributeChangedCallback(Element* element,
+    const QualifiedName& name,
+    const AtomicString& oldValue, const AtomicString& newValue)
+{
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+    CustomElementDefinition* definition = definitionForElement(*element);
+    if (definition->hasAttributeChangedCallback(name))
+        definition->enqueueAttributeChangedCallback(element, name, oldValue, newValue);
 }
 
 } // namespace blink

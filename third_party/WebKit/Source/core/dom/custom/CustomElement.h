@@ -18,6 +18,7 @@ class Element;
 class HTMLElement;
 class QualifiedName;
 class CustomElementDefinition;
+class CustomElementReaction;
 class CustomElementRegistry;
 
 class CORE_EXPORT CustomElement {
@@ -29,25 +30,7 @@ public:
     static CustomElementsRegistry* registry(const Element&);
     static CustomElementsRegistry* registry(const Document&);
 
-    // Returns true if element could possibly match a custom element
-    // descriptor *now*. See CustomElementDescriptor::matches for the
-    // meaning of "match". Custom element processing which depends on
-    // matching a descriptor, such as upgrade, can be skipped for
-    // elements that fail this test.
-    //
-    // Although this result is currently constant for a given element,
-    // when customized built-in elements are implemented the result
-    // will depend on the value of the 'is' attribute. In addition,
-    // these elements may stop matching descriptors after being
-    // upgraded, so use Node::getCustomElementState to detect
-    // customized elements.
-    static bool descriptorMayMatch(const Element& element)
-    {
-        // TODO(dominicc): Broaden this check when customized built-in
-        // elements are implemented.
-        return isValidName(element.localName())
-            && element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
-    }
+    static CustomElementDefinition* definitionForElement(const Element&);
 
     static bool isValidName(const AtomicString& name);
 
@@ -57,10 +40,14 @@ public:
     static HTMLElement* createCustomElement(Document&, const AtomicString& localName, CreateElementFlags);
     static HTMLElement* createCustomElement(Document&, const QualifiedName&, CreateElementFlags);
 
-    static void enqueueUpgradeReaction(Element*, CustomElementDefinition*);
+    static void enqueueConnectedCallback(Element*);
+    static void enqueueDisconnectedCallback(Element*);
+    static void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
+        const AtomicString& oldValue, const AtomicString& newValue);
 
 private:
     static HTMLElement* createCustomElementAsync(Document&, CustomElementDefinition&, const QualifiedName&);
+
 };
 
 } // namespace blink

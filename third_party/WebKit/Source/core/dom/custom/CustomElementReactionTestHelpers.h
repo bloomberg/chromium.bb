@@ -77,6 +77,7 @@ class TestReaction : public CustomElementReaction {
     WTF_MAKE_NONCOPYABLE(TestReaction);
 public:
     TestReaction(std::initializer_list<Command*> commands)
+        : CustomElementReaction(nullptr)
     {
         // TODO(dominicc): Simply pass the initializer list when
         // HeapVector supports initializer lists like Vector.

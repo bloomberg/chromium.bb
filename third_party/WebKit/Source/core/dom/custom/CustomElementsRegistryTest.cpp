@@ -268,13 +268,55 @@ public:
     // TODO(dominicc): Make this class collect a vector of what's
     // upgraded; it will be useful in more tests.
     Member<Element> m_element;
-    uint32_t m_invocationCount;
+    enum MethodType {
+        Constructor,
+        ConnectedCallback,
+        DisconnectedCallback,
+        AttributeChangedCallback,
+    };
+    Vector<MethodType> m_logs;
+
+    struct AttributeChanged {
+        QualifiedName name;
+        AtomicString oldValue;
+        AtomicString newValue;
+    };
+    Vector<AttributeChanged> m_attributeChanged;
+
+    void clear()
+    {
+        m_logs.clear();
+        m_attributeChanged.clear();
+    }
 
     bool runConstructor(Element* element) override
     {
-        m_invocationCount++;
+        m_logs.append(Constructor);
         m_element = element;
         return TestCustomElementDefinition::runConstructor(element);
+    }
+
+    bool hasConnectedCallback() const override { return true; }
+    bool hasDisconnectedCallback() const override { return true; }
+    bool hasAttributeChangedCallback(const QualifiedName&) const override { return true; }
+
+    void runConnectedCallback(Element* element) override
+    {
+        m_logs.append(ConnectedCallback);
+        EXPECT_EQ(element, m_element);
+    }
+
+    void runDisconnectedCallback(Element* element) override
+    {
+        m_logs.append(DisconnectedCallback);
+        EXPECT_EQ(element, m_element);
+    }
+
+    void runAttributeChangedCallback(Element* element, const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue) override
+    {
+        m_logs.append(AttributeChangedCallback);
+        EXPECT_EQ(element, m_element);
+        m_attributeChanged.append(AttributeChanged { name, oldValue, newValue });
     }
 };
 
@@ -299,6 +341,8 @@ TEST_F(CustomElementsRegistryFrameTest, define_upgradesInDocumentElements)
     ScriptForbiddenScope doNotRelyOnScript;
 
     Element* element = CreateElement("a-a").inDocument(&document());
+    element->setAttribute(QualifiedName(nullAtom, "attr1", HTMLNames::xhtmlNamespaceURI), "v1");
+    element->setBooleanAttribute(HTMLNames::contenteditableAttr, true);
     document().documentElement()->appendChild(element);
 
     LogUpgradeBuilder builder;
@@ -313,10 +357,99 @@ TEST_F(CustomElementsRegistryFrameTest, define_upgradesInDocumentElements)
     }
     LogUpgradeDefinition* definition =
         static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
-    EXPECT_EQ(1u, definition->m_invocationCount)
+    EXPECT_EQ(LogUpgradeDefinition::Constructor, definition->m_logs[0])
         << "defining the element should have 'upgraded' the existing element";
     EXPECT_EQ(element, definition->m_element)
         << "the existing a-a element should have been upgraded";
+
+    EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback, definition->m_logs[1])
+        << "Upgrade should invoke attributeChangedCallback for all attributes";
+    EXPECT_EQ("attr1", definition->m_attributeChanged[0].name);
+    EXPECT_EQ(nullAtom, definition->m_attributeChanged[0].oldValue);
+    EXPECT_EQ("v1", definition->m_attributeChanged[0].newValue);
+
+    EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback, definition->m_logs[2])
+        << "Upgrade should invoke attributeChangedCallback for all attributes";
+    EXPECT_EQ("contenteditable", definition->m_attributeChanged[1].name);
+    EXPECT_EQ(nullAtom, definition->m_attributeChanged[1].oldValue);
+    EXPECT_EQ(emptyAtom, definition->m_attributeChanged[1].newValue);
+    EXPECT_EQ(2u, definition->m_attributeChanged.size())
+        << "Upgrade should invoke attributeChangedCallback for all attributes";
+
+    EXPECT_EQ(LogUpgradeDefinition::ConnectedCallback, definition->m_logs[3])
+        << "upgrade should invoke connectedCallback";
+
+    EXPECT_EQ(4u, definition->m_logs.size())
+        << "upgrade should not invoke other callbacks";
+}
+
+TEST_F(CustomElementsRegistryFrameTest, attributeChangedCallback)
+{
+    ScriptForbiddenScope doNotRelyOnScript;
+
+    Element* element = CreateElement("a-a").inDocument(&document());
+    document().documentElement()->appendChild(element);
+
+    LogUpgradeBuilder builder;
+    NonThrowableExceptionState shouldNotThrow;
+    {
+        CEReactionsScope reactions;
+        registry().define(
+            "a-a",
+            builder,
+            ElementRegistrationOptions(),
+            shouldNotThrow);
+    }
+    LogUpgradeDefinition* definition =
+        static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+
+    definition->clear();
+    {
+        CEReactionsScope reactions;
+        element->setAttribute(QualifiedName(nullAtom, "attr2", HTMLNames::xhtmlNamespaceURI), "v2");
+    }
+    EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback, definition->m_logs[0])
+        << "Adding an attribute should invoke attributeChangedCallback";
+    EXPECT_EQ(1u, definition->m_attributeChanged.size())
+        << "Adding an attribute should invoke attributeChangedCallback";
+    EXPECT_EQ("attr2", definition->m_attributeChanged[0].name);
+    EXPECT_EQ(nullAtom, definition->m_attributeChanged[0].oldValue);
+    EXPECT_EQ("v2", definition->m_attributeChanged[0].newValue);
+
+    EXPECT_EQ(1u, definition->m_logs.size())
+        << "upgrade should not invoke other callbacks";
+}
+
+TEST_F(CustomElementsRegistryFrameTest, disconnectedCallback)
+{
+    ScriptForbiddenScope doNotRelyOnScript;
+
+    Element* element = CreateElement("a-a").inDocument(&document());
+    document().documentElement()->appendChild(element);
+
+    LogUpgradeBuilder builder;
+    NonThrowableExceptionState shouldNotThrow;
+    {
+        CEReactionsScope reactions;
+        registry().define(
+            "a-a",
+            builder,
+            ElementRegistrationOptions(),
+            shouldNotThrow);
+    }
+    LogUpgradeDefinition* definition =
+        static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+
+    definition->clear();
+    {
+        CEReactionsScope reactions;
+        element->remove(shouldNotThrow);
+    }
+    EXPECT_EQ(LogUpgradeDefinition::DisconnectedCallback, definition->m_logs[0])
+        << "remove() should invoke disconnectedCallback";
+
+    EXPECT_EQ(1u, definition->m_logs.size())
+        << "remove() should not invoke other callbacks";
 }
 
 // TODO(dominicc): Add tests which adjust the "is" attribute when type
