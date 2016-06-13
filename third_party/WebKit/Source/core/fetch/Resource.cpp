@@ -898,7 +898,7 @@ String Resource::getMemoryDumpName() const
 void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
 {
     SECURITY_CHECK(m_redirectChain.isEmpty());
-    SECURITY_CHECK(validatingResponse.url() == m_response.url());
+    SECURITY_CHECK(equalIgnoringFragmentIdentifier(validatingResponse.url(), m_response.url()));
     m_response.setResourceLoadTiming(validatingResponse.resourceLoadTiming());
 
     // RFC2616 10.3.5

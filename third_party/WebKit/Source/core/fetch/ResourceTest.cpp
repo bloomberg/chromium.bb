@@ -112,4 +112,24 @@ TEST(ResourceTest, LockFailureNoCrash)
     EXPECT_EQ(size_t(0), resource->encodedSize());
 }
 
+TEST(ResourceTest, RevalidateWithFragment)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    Resource* resource = Resource::create(url, Resource::Raw);
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+
+    // Revalidating with a url that differs by only the fragment
+    // shouldn't trigger a securiy check.
+    url.setFragmentIdentifier("bar");
+    resource->setRevalidatingRequest(ResourceRequest(url));
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setURL(url);
+    revalidatingResponse.setHTTPStatusCode(304);
+    resource->responseReceived(revalidatingResponse, nullptr);
+}
+
 } // namespace blink
