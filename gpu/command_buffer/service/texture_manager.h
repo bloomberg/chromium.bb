@@ -1076,8 +1076,10 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   uint32_t GetServiceIdGeneration() const;
   void IncrementServiceIdGeneration();
 
-  GLenum AdjustTexInternalFormat(GLenum format) const;
-  GLenum AdjustTexFormat(GLenum format) const;
+  static GLenum AdjustTexInternalFormat(const gles2::FeatureInfo* feature_info,
+                                        GLenum format);
+  static GLenum AdjustTexFormat(const gles2::FeatureInfo* feature_info,
+                                GLenum format);
 
  private:
   friend class Texture;

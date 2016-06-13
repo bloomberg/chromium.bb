@@ -373,12 +373,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
-    self.Skip('deqp/functional/gles3/texturespecification/' +
-        'basic_copyteximage2d.html',
-        ['mac'], bug=577144)
-    self.Skip('deqp/functional/gles3/texturespecification/' +
-        'basic_copytexsubimage2d.html',
-        ['mac'], bug=577144)
     self.Fail('deqp/functional/gles3/textureformat/unsized_2d_array.html',
         ['mac'], bug=577144)
     self.Fail('deqp/functional/gles3/textureformat/unsized_3d.html',

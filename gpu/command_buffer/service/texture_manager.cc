@@ -272,6 +272,7 @@ static const Texture::CompatibilitySwizzle kSwizzledFormats[] = {
     {GL_LUMINANCE_ALPHA, GL_RG, GL_RED, GL_RED, GL_RED, GL_GREEN},
 };
 
+// static
 const Texture::CompatibilitySwizzle* GetCompatibilitySwizzle(GLenum format) {
   size_t count = arraysize(kSwizzledFormats);
   for (size_t i = 0; i < count; ++i) {
@@ -2675,23 +2676,28 @@ void TextureManager::ValidateAndDoTexSubImage(
     // to look it up.
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
       glTexImage3D(args.target, args.level, internal_format, args.width,
-                   args.height, args.depth, 0, AdjustTexFormat(args.format),
-                   args.type, args.pixels);
-    } else {
-      glTexImage2D(args.target, args.level,
-                   AdjustTexInternalFormat(internal_format), args.width,
-                   args.height, 0, AdjustTexFormat(args.format), args.type,
+                   args.height, args.depth, 0,
+                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
                    args.pixels);
+    } else {
+      glTexImage2D(
+          args.target, args.level,
+          AdjustTexInternalFormat(feature_info_.get(), internal_format),
+          args.width, args.height, 0,
+          AdjustTexFormat(feature_info_.get(), args.format), args.type,
+          args.pixels);
     }
   } else {
     ScopedTextureUploadTimer timer(texture_state);
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset, args.width, args.height, args.depth,
-                      AdjustTexFormat(args.format), args.type, args.pixels);
+                      AdjustTexFormat(feature_info_.get(), args.format),
+                      args.type, args.pixels);
     } else {
       glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
-                      args.width, args.height, AdjustTexFormat(args.format),
+                      args.width, args.height,
+                      AdjustTexFormat(feature_info_.get(), args.format),
                       args.type, args.pixels);
     }
   }
@@ -2711,7 +2717,8 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     if (args.height > 1) {
       glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
                       args.width, args.height - 1,
-                      AdjustTexFormat(args.format), args.type, args.pixels);
+                      AdjustTexFormat(feature_info_.get(), args.format),
+                      args.type, args.pixels);
       GLint actual_width = state->unpack_row_length > 0 ?
           state->unpack_row_length : args.width;
       uint32_t size;
@@ -2729,9 +2736,9 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexSubImage2D(args.target, args.level, args.xoffset,
-                    args.yoffset + args.height - 1,
-                    args.width, 1, AdjustTexFormat(args.format), args.type,
-                    reinterpret_cast<const void *>(offset));
+                    args.yoffset + args.height - 1, args.width, 1,
+                    AdjustTexFormat(feature_info_.get(), args.format),
+                    args.type, reinterpret_cast<const void*>(offset));
     glPixelStorei(GL_UNPACK_ALIGNMENT, state->unpack_alignment);
     {
       uint32_t size;
@@ -2749,7 +2756,8 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     if (args.depth > 1) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset, args.width, args.height, args.depth - 1,
-                      AdjustTexFormat(args.format), args.type, args.pixels);
+                      AdjustTexFormat(feature_info_.get(), args.format),
+                      args.type, args.pixels);
       GLint actual_height = state->unpack_image_height > 0 ?
           state->unpack_image_height : args.height;
       uint32_t size;
@@ -2769,7 +2777,8 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     if (args.height > 1) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset + args.depth - 1, args.width,
-                      args.height - 1, 1, AdjustTexFormat(args.format),
+                      args.height - 1, 1,
+                      AdjustTexFormat(feature_info_.get(), args.format),
                       args.type, reinterpret_cast<const void*>(offset));
       uint32_t size;
       uint32_t padding;
@@ -2787,9 +2796,9 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexSubImage3D(args.target, args.level, args.xoffset,
                     args.yoffset + args.height - 1,
-                    args.zoffset + args.depth - 1,
-                    args.width, 1, 1, AdjustTexFormat(args.format), args.type,
-                    reinterpret_cast<const void *>(offset));
+                    args.zoffset + args.depth - 1, args.width, 1, 1,
+                    AdjustTexFormat(feature_info_.get(), args.format),
+                    args.type, reinterpret_cast<const void*>(offset));
     glPixelStorei(GL_UNPACK_ALIGNMENT, state->unpack_alignment);
     {
       uint32_t size;
@@ -2815,7 +2824,7 @@ void TextureManager::DoTexSubImageRowByRowWorkaround(
   DCHECK_EQ(0, state->unpack_skip_rows);
   DCHECK_EQ(0, state->unpack_skip_images);
 
-  GLenum format = AdjustTexFormat(args.format);
+  GLenum format = AdjustTexFormat(feature_info_.get(), args.format);
 
   GLsizei row_bytes = unpack_params.row_length *
                       GLES2Util::ComputeImageGroupSize(format, args.type);
@@ -2856,8 +2865,11 @@ void TextureManager::DoTexSubImageRowByRowWorkaround(
   glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_params.row_length);
 }
 
-GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {
-  if (feature_info_->gl_version_info().is_desktop_core_profile) {
+// static
+GLenum TextureManager::AdjustTexInternalFormat(
+    const gles2::FeatureInfo* feature_info,
+    GLenum format) {
+  if (feature_info->gl_version_info().is_desktop_core_profile) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzle(format);
     if (swizzle)
@@ -2866,16 +2878,18 @@ GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {
   return format;
 }
 
-GLenum TextureManager::AdjustTexFormat(GLenum format) const {
+// static
+GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
+                                       GLenum format) {
   // TODO(bajones): GLES 3 allows for internal format and format to differ.
   // This logic may need to change as a result.
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
+  if (!feature_info->gl_version_info().is_es) {
     if (format == GL_SRGB_EXT)
       return GL_RGB;
     if (format == GL_SRGB_ALPHA_EXT)
       return GL_RGBA;
   }
-  if (feature_info_->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().is_desktop_core_profile) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzle(format);
     if (swizzle)
@@ -2934,7 +2948,8 @@ void TextureManager::DoTexImage(
                         args.format, args.type, args.pixels);
       } else {
         glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
-                        AdjustTexFormat(args.format), args.type, args.pixels);
+                        AdjustTexFormat(feature_info_.get(), args.format),
+                        args.type, args.pixels);
       }
     }
     SetLevelInfo(texture_ref, args.target, args.level, args.internal_format,
@@ -2952,10 +2967,12 @@ void TextureManager::DoTexImage(
                    args.height, args.depth, args.border, args.format,
                    args.type, args.pixels);
     } else {
-      glTexImage2D(args.target, args.level,
-                   AdjustTexInternalFormat(args.internal_format), args.width,
-                   args.height, args.border, AdjustTexFormat(args.format),
-                   args.type, args.pixels);
+      glTexImage2D(
+          args.target, args.level,
+          AdjustTexInternalFormat(feature_info_.get(), args.internal_format),
+          args.width, args.height, args.border,
+          AdjustTexFormat(feature_info_.get(), args.format), args.type,
+          args.pixels);
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);

@@ -56,6 +56,8 @@ source_set("service_sources") {
     "gl_utils.h",
     "gles2_cmd_clear_framebuffer.cc",
     "gles2_cmd_clear_framebuffer.h",
+    "gles2_cmd_copy_tex_image.cc",
+    "gles2_cmd_copy_tex_image.h",
     "gles2_cmd_copy_texture_chromium.cc",
     "gles2_cmd_copy_texture_chromium.h",
     "gles2_cmd_decoder.cc",

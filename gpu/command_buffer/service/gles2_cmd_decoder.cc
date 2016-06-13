@@ -40,6 +40,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
@@ -1973,6 +1974,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                        GLuint* source_texture_service_id,
                                        GLenum* source_texture_target);
 
+  bool InitializeCopyTexImageBlitter(const char* function_name);
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -2155,6 +2157,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Log extra info.
   bool service_logging_;
 
+  std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
   std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
 
@@ -4276,6 +4279,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   }
   ReleaseAllBackTextures();
   if (have_context) {
+    if (copy_tex_image_blit_.get()) {
+      copy_tex_image_blit_->Destroy();
+      copy_tex_image_blit_.reset();
+    }
+
     if (copy_texture_CHROMIUM_.get()) {
       copy_texture_CHROMIUM_->Destroy();
       copy_texture_CHROMIUM_.reset();
@@ -4347,6 +4355,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // state_.current_program object.
   state_.current_program = NULL;
 
+  copy_tex_image_blit_.reset();
   copy_texture_CHROMIUM_.reset();
   clear_framebuffer_blit_.reset();
 
@@ -12374,6 +12383,14 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     framebuffer_state_.clear_state_dirty = true;
   }
 
+  bool requires_luma_blit =
+      CopyTexImageResourceManager::CopyTexImageRequiresBlit(feature_info_.get(),
+                                                            format);
+  if (requires_luma_blit &&
+      !InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
+    return;
+  }
+
   // Clip to size to source dimensions
   GLint copyX = 0;
   GLint copyY = 0;
@@ -12389,21 +12406,29 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // some part was clipped so clear the rect.
     std::unique_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
-    glTexImage2D(target, level,
-                 texture_manager()->AdjustTexInternalFormat(internal_format),
+    glTexImage2D(target, level, TextureManager::AdjustTexInternalFormat(
+                                    feature_info_.get(), internal_format),
                  width, height, border, format, type, zero.get());
     if (copyHeight > 0 && copyWidth > 0) {
       GLint dx = copyX - x;
       GLint dy = copyY - y;
       GLint destX = dx;
       GLint destY = dy;
-      glCopyTexSubImage2D(target, level,
-                          destX, destY, copyX, copyY,
-                          copyWidth, copyHeight);
+      if (requires_luma_blit) {
+        copy_tex_image_blit_->DoCopyTexSubImage2DToLUMAComatabilityTexture(
+            this, texture->service_id(), texture->target(), target, format,
+            type, level, destX, destY, copyX, copyY, copyWidth, copyHeight,
+            framebuffer_state_.bound_read_framebuffer->service_id(),
+            framebuffer_state_.bound_read_framebuffer
+                ->GetReadBufferInternalFormat());
+      } else {
+        glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY,
+                            copyWidth, copyHeight);
+      }
     }
   } else {
-    GLenum final_internal_format =
-        texture_manager()->AdjustTexInternalFormat(internal_format);
+    GLenum final_internal_format = TextureManager::AdjustTexInternalFormat(
+        feature_info_.get(), internal_format);
 
     // The service id and target of the texture attached to READ_FRAMEBUFFER.
     GLuint source_texture_service_id = 0;
@@ -12413,6 +12438,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         final_internal_format, channels_exist, &source_texture_service_id,
         &source_texture_target);
     if (use_workaround) {
+      DCHECK(!requires_luma_blit);
       GLenum dest_texture_target = target;
       GLenum framebuffer_target = features().chromium_framebuffer_multisample
                                       ? GL_READ_FRAMEBUFFER_EXT
@@ -12453,8 +12479,17 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       glDeleteTextures(1, &temp_texture);
     } else {
-      glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
-                       copyWidth, copyHeight, border);
+      if (requires_luma_blit) {
+        copy_tex_image_blit_->DoCopyTexImage2DToLUMAComatabilityTexture(
+            this, texture->service_id(), texture->target(), target, format,
+            type, level, internal_format, copyX, copyY, copyWidth, copyHeight,
+            framebuffer_state_.bound_read_framebuffer->service_id(),
+            framebuffer_state_.bound_read_framebuffer
+                ->GetReadBufferInternalFormat());
+      } else {
+        glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
+                         copyWidth, copyHeight, border);
+      }
     }
   }
   GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
@@ -12554,9 +12589,21 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   }
 
   if (copyHeight > 0 && copyWidth > 0) {
-    glCopyTexSubImage2D(target, level,
-                        destX, destY, copyX, copyY,
-                        copyWidth, copyHeight);
+    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+            feature_info_.get(), internal_format)) {
+      if (!InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
+        return;
+      }
+      copy_tex_image_blit_->DoCopyTexSubImage2DToLUMAComatabilityTexture(
+          this, texture->service_id(), texture->target(), target,
+          internal_format, type, level, xoffset, yoffset, x, y, width, height,
+          framebuffer_state_.bound_read_framebuffer->service_id(),
+          framebuffer_state_.bound_read_framebuffer
+              ->GetReadBufferInternalFormat());
+    } else {
+      glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY, copyWidth,
+                          copyHeight);
+    }
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -14448,11 +14495,12 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
     glBindTexture(dest_target, dest_texture->service_id());
-    glTexImage2D(dest_target, 0,
-                 texture_manager()->AdjustTexInternalFormat(internal_format),
-                 source_width, source_height, 0,
-                 texture_manager()->AdjustTexFormat(internal_format), dest_type,
-                 NULL);
+    glTexImage2D(
+        dest_target, 0, TextureManager::AdjustTexInternalFormat(
+                            feature_info_.get(), internal_format),
+        source_width, source_height, 0,
+        TextureManager::AdjustTexFormat(feature_info_.get(), internal_format),
+        dest_type, NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
     if (error != GL_NO_ERROR) {
       RestoreCurrentTextureBindings(&state_, dest_target);
@@ -14691,6 +14739,19 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
       yoffset, x, y, width, height, dest_width, dest_height, source_width,
       source_height, unpack_flip_y == GL_TRUE,
       unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE);
+}
+
+bool GLES2DecoderImpl::InitializeCopyTexImageBlitter(
+    const char* function_name) {
+  if (!copy_tex_image_blit_.get()) {
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
+    copy_tex_image_blit_.reset(
+        new CopyTexImageResourceManager(feature_info_.get()));
+    copy_tex_image_blit_->Initialize(this);
+    if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR)
+      return false;
+  }
+  return true;
 }
 
 bool GLES2DecoderImpl::InitializeCopyTextureCHROMIUM(
