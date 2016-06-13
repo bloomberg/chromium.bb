@@ -27,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -293,17 +294,17 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
 void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos((const char*)data->front(),
+  file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->front()),
                          base::checked_cast<int>(data->size()));
   if (!pdf_file_saved_closure.is_null())
     pdf_file_saved_closure.Run();
 }
 
-std::string GetDefaultPrinterOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+std::string GetDefaultPrinterOnBlockingPoolThread() {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
@@ -406,8 +407,8 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 #endif
 }
 
-void EnumeratePrintersOnFileThread(base::ListValue* printers) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void EnumeratePrintersOnBlockingPoolThread(base::ListValue* printers) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
@@ -440,9 +441,9 @@ void EnumeratePrintersOnFileThread(base::ListValue* printers) {
           << " printers";
 }
 
-std::unique_ptr<base::DictionaryValue> GetPrinterCapabilitiesOnFileThread(
-    const std::string& device_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+std::unique_ptr<base::DictionaryValue>
+GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!device_name.empty());
 
   scoped_refptr<printing::PrintBackend> print_backend(
@@ -694,13 +695,11 @@ PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
 
 void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
   base::ListValue* results = new base::ListValue;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&EnumeratePrintersOnFileThread,
-                 base::Unretained(results)),
+  BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE, base::Bind(&EnumeratePrintersOnBlockingPoolThread,
+                            base::Unretained(results)),
       base::Bind(&PrintPreviewHandler::SetupPrinterList,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(results)));
+                 weak_factory_.GetWeakPtr(), base::Owned(results)));
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
@@ -1117,9 +1116,9 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     return;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetPrinterCapabilitiesOnFileThread, printer_name),
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&GetPrinterCapabilitiesOnBlockingPoolThread, printer_name),
       base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
                  weak_factory_.GetWeakPtr(), printer_name));
 }
@@ -1238,9 +1237,9 @@ void PrintPreviewHandler::HandleGetInitialSettings(
     const base::ListValue* /*args*/) {
   // Send before SendInitialSettings() to allow cloud printer auto select.
   SendCloudPrintEnabled();
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDefaultPrinterOnFileThread),
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&GetDefaultPrinterOnBlockingPoolThread),
       base::Bind(&PrintPreviewHandler::SendInitialSettings,
                  weak_factory_.GetWeakPtr()));
 }
@@ -1468,13 +1467,11 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
     NOTREACHED() << "Preview data was checked before file dialog.";
     return;
   }
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&PrintToPdfCallback,
-                                     data,
-                                     print_to_pdf_path_,
-                                     pdf_file_saved_closure_));
-  print_to_pdf_path_ = base::FilePath();
+
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&PrintToPdfCallback, data, print_to_pdf_path_,
+                            pdf_file_saved_closure_));
+  print_to_pdf_path_.clear();
   ClosePreviewDialog();
 }
 
