@@ -39,6 +39,9 @@ class ArcStorageManager : public ArcService,
       void(bool succeeded, arc::mojom::ApplicationsSizePtr)>;
   bool GetApplicationsSize(const GetApplicationsSizeCallback& callback);
 
+  // Deletes all applications' cache files.
+  bool DeleteApplicationsCache(const base::Callback<void()>& callback);
+
  private:
   mojom::StorageManagerInstance* GetStorageManagerInstance();
 

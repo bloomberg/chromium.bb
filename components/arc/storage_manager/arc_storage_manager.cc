@@ -62,6 +62,16 @@ bool ArcStorageManager::GetApplicationsSize(
   return true;
 }
 
+bool ArcStorageManager::DeleteApplicationsCache(
+    const base::Callback<void()>& callback) {
+  auto storage_manager_instance = GetStorageManagerInstance();
+  if (!storage_manager_instance) {
+    return false;
+  }
+  storage_manager_instance->DeleteApplicationsCache(callback);
+  return true;
+}
+
 mojom::StorageManagerInstance* ArcStorageManager::GetStorageManagerInstance() {
   auto bridge_service = arc_bridge_service();
   auto storage_manager_instance = bridge_service->storage_manager_instance();

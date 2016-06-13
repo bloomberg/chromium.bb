@@ -14,8 +14,8 @@ struct ApplicationsSize {
     uint64 total_cache_bytes;
 };
 
-// Next MinVersion: 2
-// Next method ID: 4
+// Next MinVersion: 3
+// Next method ID: 5
 // Deprecated method ID: 1
 interface StorageManagerInstance {
   // Opens private volume details settings.
@@ -29,4 +29,9 @@ interface StorageManagerInstance {
   // When |succeeded| is false, |applications_size| is null.
   [MinVersion=1] GetApplicationsSize@3()
       => (bool succeeded, ApplicationsSize? applications_size);
+
+  // Deletes all applications' cache files. Because this operation takes a
+  // little while, the callback function will be called when the operation is
+  // finished.
+  [MinVersion=2] DeleteApplicationsCache@4() => ();
 };
