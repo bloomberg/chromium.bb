@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
-        android:background="@color/bookmark_appbar_background" >
+        android:background="@color/appbar_background" >
 
         <org.chromium.chrome.browser.widget.NumberRollView
             android:id="@+id/selection_mode_number"

@@ -272,7 +272,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             getMenu().setGroupVisible(R.id.normal_menu_group, true);
             getMenu().setGroupVisible(R.id.selection_mode_menu_group, false);
             setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.bookmark_appbar_background));
+                    R.color.appbar_background));
 
             numberRollView.setVisibility(View.GONE);
             numberRollView.setNumber(0, false);

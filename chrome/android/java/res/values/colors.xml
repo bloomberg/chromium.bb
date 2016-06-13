@@ -156,6 +156,9 @@
     <color name="webapp_url_bar_bg">#fafafa</color>
     <color name="webapp_url_bar_separator">#e1e1e1</color>
 
+    <!-- Colors common to secondary activities like the BookmarkActivity and the DownloadManagerUi -->
+    <color name="appbar_background">@color/default_primary_color</color>
+
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_text">#212121</color>
     <color name="bookmark_detail_section">#7C7B79</color>
@@ -163,7 +166,6 @@
     <color name="bookmark_drawer_selected_background_color">#F0F0F0</color>
     <color name="bookmark_list_item_highlight_color">#804281f4</color>
     <color name="bookmark_icon_background_color">#ff787878</color>
-    <color name="bookmark_appbar_background">@color/default_primary_color</color>
 
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">#1D000000</color>

@@ -47,6 +47,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/PasswordUIView.java",
   "java/src/org/chromium/chrome/browser/PowerBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/RepostFormWarningDialog.java",
+  "java/src/org/chromium/chrome/browser/SnackbarActivity.java",
   "java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java",
   "java/src/org/chromium/chrome/browser/ShortcutHelper.java",
   "java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java",

@@ -7,13 +7,10 @@ package org.chromium.chrome.browser.bookmarks;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.WindowManager;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.SynchronousInitializationActivity;
+import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
@@ -21,19 +18,15 @@ import org.chromium.components.bookmarks.BookmarkId;
  * inside of it and creates a snackbar manager. This activity should only be shown on phones; on
  * tablet the bookmark UI is shown inside of a tab (see {@link BookmarkPage}).
  */
-public class BookmarkActivity extends SynchronousInitializationActivity
-        implements SnackbarManageable {
+public class BookmarkActivity extends SnackbarActivity {
 
     private BookmarkManager mBookmarkManager;
-    private SnackbarManager mSnackbarManager;
     static final int EDIT_BOOKMARK_REQUEST_CODE = 14;
     public static final String INTENT_VISIT_BOOKMARK_ID = "BookmarkEditActivity.VisitBookmarkId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        mSnackbarManager = new SnackbarManager(this);
         mBookmarkManager = new BookmarkManager(this, true);
         String url = getIntent().getDataString();
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
@@ -47,26 +40,9 @@ public class BookmarkActivity extends SynchronousInitializationActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        mSnackbarManager.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mSnackbarManager.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         mBookmarkManager.destroy();
-    }
-
-    @Override
-    public SnackbarManager getSnackbarManager() {
-        return mSnackbarManager;
     }
 
     @Override

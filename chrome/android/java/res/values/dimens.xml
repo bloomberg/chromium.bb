@@ -305,6 +305,10 @@
     <dimen name="snackbar_width_tablet">450dp</dimen>
     <dimen name="snackbar_margin_tablet">24dp</dimen>
 
+    <!-- Drawers -->
+    <dimen name="drawer_width">240dp</dimen>
+    <dimen name="drawer_margin_large">16dp</dimen>
+
     <!-- Bookmarks dimensions -->
     <dimen name="bookmark_item_corner_radius">3dp</dimen>
     <dimen name="bookmark_item_icon_text_size">10dp</dimen>

@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- Bookmark UI colors -->
-    <color name="bookmark_appbar_background">@android:color/white</color>
+    <!-- Colors common to secondary activities like the BookmarkActivity and the DownloadManagerUi -->
+    <color name="appbar_background">@android:color/white</color>
 </resources>
