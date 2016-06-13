@@ -16,6 +16,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#endif  // OS_ANDROID
+
 namespace content {
 
 class PowerSaveBlocker;
@@ -35,6 +39,7 @@ class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void WebContentsDestroyed() override;
 
   // Requests wake lock for RenderFrame identified by |render_process_id| and
   // |render_frame_id|.
@@ -58,6 +63,9 @@ class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
 
   // The actual power save blocker for screen.
   std::unique_ptr<PowerSaveBlocker> wake_lock_;
+#if defined(OS_ANDROID)
+  std::unique_ptr<base::WeakPtrFactory<ui::ViewAndroid>> view_weak_factory_;
+#endif
 
   base::WeakPtrFactory<WakeLockServiceContext> weak_factory_;
 

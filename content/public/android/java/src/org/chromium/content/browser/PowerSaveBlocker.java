@@ -25,9 +25,8 @@ class PowerSaveBlocker {
     private PowerSaveBlocker() {}
 
     @CalledByNative
-    private void applyBlock(ContentViewCore contentViewCore) {
+    private void applyBlock(ViewAndroidDelegate delegate) {
         assert mKeepScreenOnView == null;
-        ViewAndroidDelegate delegate = contentViewCore.getViewAndroidDelegate();
         View anchorView = delegate.acquireAnchorView();
         mKeepScreenOnView = new WeakReference<>(anchorView);
         delegate.setAnchorViewPosition(anchorView, 0, 0, 0, 0);
@@ -35,13 +34,12 @@ class PowerSaveBlocker {
     }
 
     @CalledByNative
-    private void removeBlock(ContentViewCore contentViewCore) {
+    private void removeBlock(ViewAndroidDelegate delegate) {
         assert mKeepScreenOnView != null;
         View anchorView = mKeepScreenOnView.get();
         mKeepScreenOnView = null;
         if (anchorView == null) return;
 
-        ViewAndroidDelegate delegate = contentViewCore.getViewAndroidDelegate();
         anchorView.setKeepScreenOn(false);
         delegate.releaseAnchorView(anchorView);
     }

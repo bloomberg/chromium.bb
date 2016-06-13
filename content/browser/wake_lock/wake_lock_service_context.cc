@@ -13,6 +13,7 @@
 #include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/service_registry.h"
 
 namespace content {
@@ -34,6 +35,12 @@ void WakeLockServiceContext::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   CancelWakeLock(render_frame_host->GetProcess()->GetID(),
                  render_frame_host->GetRoutingID());
+}
+
+void WakeLockServiceContext::WebContentsDestroyed() {
+#if defined(OS_ANDROID)
+  view_weak_factory_.reset();
+#endif
 }
 
 void WakeLockServiceContext::RequestWakeLock(int render_process_id,
@@ -69,8 +76,12 @@ void WakeLockServiceContext::CreateWakeLock() {
   // On Android, additionaly associate the blocker with this WebContents.
   DCHECK(web_contents());
 
-  static_cast<PowerSaveBlockerImpl*>(wake_lock_.get())
-      ->InitDisplaySleepBlocker(web_contents());
+  if (web_contents()->GetNativeView()) {
+    view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
+        web_contents()->GetNativeView()));
+    static_cast<PowerSaveBlockerImpl*>(wake_lock_.get())
+        ->InitDisplaySleepBlocker(view_weak_factory_->GetWeakPtr());
+  }
 #endif
 }
 

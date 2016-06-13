@@ -9,10 +9,15 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/power_save_blocker.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#endif  // OS_ANDROID
 
 namespace content {
 
@@ -29,10 +34,11 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   ~PowerSaveBlockerImpl() override;
 
 #if defined(OS_ANDROID)
-  // In Android platform, the kPowerSaveBlockPreventDisplaySleep type of
-  // PowerSaveBlocker should associated with a WebContents, so the blocker
-  // could be removed by platform if the WebContents is hidden.
-  void InitDisplaySleepBlocker(WebContents* web_contents);
+  // On Android, the kPowerSaveBlockPreventDisplaySleep type of
+  // PowerSaveBlocker should associated with a View, so the blocker can be
+  // removed by the platform.
+  void InitDisplaySleepBlocker(
+      const base::WeakPtr<ui::ViewAndroid>& view_android);
 #endif
 
  private:

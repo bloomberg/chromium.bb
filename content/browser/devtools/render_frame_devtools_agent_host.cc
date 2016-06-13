@@ -506,7 +506,12 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
           PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
           PowerSaveBlocker::kReasonOther, "DevTools")
           .release()));
-  power_save_blocker_->InitDisplaySleepBlocker(web_contents());
+  if (web_contents()->GetNativeView()) {
+    view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
+        web_contents()->GetNativeView()));
+    power_save_blocker_->InitDisplaySleepBlocker(
+        view_weak_factory_->GetWeakPtr());
+  }
 #endif
 
   // TODO(kaznacheev): Move this call back to DevToolsManager when
@@ -751,6 +756,12 @@ void RenderFrameDevToolsAgentHost::DidFailProvisionalLoad(
     return;
   if (pending_ && pending_->host() == render_frame_host)
     DiscardPending();
+}
+
+void RenderFrameDevToolsAgentHost::WebContentsDestroyed() {
+#if defined(OS_ANDROID)
+  view_weak_factory_.reset();
+#endif
 }
 
 void RenderFrameDevToolsAgentHost::

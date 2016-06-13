@@ -35,6 +35,9 @@ MediaWebContentsObserver::~MediaWebContentsObserver() {}
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
   g_audible_metrics.Get().UpdateAudibleWebContentsState(web_contents(), false);
+#if defined(OS_ANDROID)
+  view_weak_factory_.reset();
+#endif
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
@@ -193,8 +196,12 @@ void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
       PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       PowerSaveBlocker::kReasonVideoPlayback, "Playing video");
 #if defined(OS_ANDROID)
-  static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
-      ->InitDisplaySleepBlocker(web_contents());
+  if (web_contents()->GetNativeView()) {
+    view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
+        web_contents()->GetNativeView()));
+    static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
+        ->InitDisplaySleepBlocker(view_weak_factory_->GetWeakPtr());
+  }
 #endif
 }
 

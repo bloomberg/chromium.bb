@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/power_save_blocker_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/android/content_view_core.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "jni/PowerSaveBlocker_jni.h"
 #include "ui/android/view_android.h"
 
@@ -18,10 +16,9 @@ namespace content {
 using base::android::AttachCurrentThread;
 
 class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate>,
-      public WebContentsObserver {
+    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  Delegate(WebContents* web_contents,
+  Delegate(base::WeakPtr<ui::ViewAndroid> view_android,
            scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
   // Does the actual work to apply or remove the desired power save block.
@@ -30,9 +27,9 @@ class PowerSaveBlockerImpl::Delegate
 
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
-  ~Delegate() override;
+  ~Delegate();
 
-  base::android::ScopedJavaLocalRef<jobject> GetContentViewCore();
+  base::WeakPtr<ui::ViewAndroid> view_android_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_power_save_blocker_;
 
@@ -42,9 +39,9 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 PowerSaveBlockerImpl::Delegate::Delegate(
-    WebContents* web_contents,
+    base::WeakPtr<ui::ViewAndroid> view_android,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
-    : WebContentsObserver(web_contents), ui_task_runner_(ui_task_runner) {
+    : view_android_(view_android), ui_task_runner_(ui_task_runner) {
   JNIEnv* env = AttachCurrentThread();
   java_power_save_blocker_.Reset(Java_PowerSaveBlocker_create(env));
 }
@@ -54,41 +51,23 @@ PowerSaveBlockerImpl::Delegate::~Delegate() {
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
-      GetContentViewCore();
-  if (java_content_view_core.is_null())
-    return;
 
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
   JNIEnv* env = AttachCurrentThread();
-  Java_PowerSaveBlocker_applyBlock(env, obj.obj(),
-                                   java_content_view_core.obj());
+  if (view_android_) {
+    Java_PowerSaveBlocker_applyBlock(
+        env, obj.obj(), view_android_->GetViewAndroidDelegate().obj());
+  }
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
-      GetContentViewCore();
-  if (java_content_view_core.is_null())
-    return;
-
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
   JNIEnv* env = AttachCurrentThread();
-  Java_PowerSaveBlocker_removeBlock(env, obj.obj(),
-                                    java_content_view_core.obj());
-}
-
-base::android::ScopedJavaLocalRef<jobject>
-PowerSaveBlockerImpl::Delegate::GetContentViewCore() {
-  if (!web_contents())
-    return base::android::ScopedJavaLocalRef<jobject>();
-
-  ContentViewCoreImpl* content_view_core_impl =
-      ContentViewCoreImpl::FromWebContents(web_contents());
-  if (!content_view_core_impl)
-    return base::android::ScopedJavaLocalRef<jobject>();
-
-  return content_view_core_impl->GetJavaObject();
+  if (view_android_) {
+    Java_PowerSaveBlocker_removeBlock(
+        env, obj.obj(), view_android_->GetViewAndroidDelegate().obj());
+  }
 }
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(
@@ -109,12 +88,13 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   }
 }
 
-void PowerSaveBlockerImpl::InitDisplaySleepBlocker(WebContents* web_contents) {
+void PowerSaveBlockerImpl::InitDisplaySleepBlocker(
+    const base::WeakPtr<ui::ViewAndroid>& view_android) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  if (!web_contents)
+  if (!view_android)
     return;
 
-  delegate_ = new Delegate(web_contents, ui_task_runner_);
+  delegate_ = new Delegate(view_android, ui_task_runner_);
   delegate_->ApplyBlock();
 }
 
