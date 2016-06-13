@@ -3942,6 +3942,7 @@
                   'cryptui.lib',
                   'dwmapi.lib',
                   'ndfapi.lib',
+                  'netapi32.lib',
                   'pdh.lib',
                   'wtsapi32.lib',
                 ],

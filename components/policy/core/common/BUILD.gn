@@ -147,7 +147,6 @@ source_set("common") {
 
     if (is_win) {
       libs = [
-        "netapi32.lib",
         "shlwapi.lib",
         "userenv.lib",
         "ntdsapi.lib",

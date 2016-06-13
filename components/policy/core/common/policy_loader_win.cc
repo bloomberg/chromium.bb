@@ -5,7 +5,6 @@
 #include "components/policy/core/common/policy_loader_win.h"
 
 #include <windows.h>
-#include <lm.h>       // For limits.
 #include <ntdsapi.h>  // For Ds[Un]Bind
 #include <rpc.h>      // For struct GUID
 #include <shlwapi.h>  // For PathIsUNC()
@@ -95,7 +94,8 @@ GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
 //   (a) existing enumerated constants should never be deleted or reordered, and
 //   (b) new constants should only be appended at the end of the enumeration.
 enum DomainCheckErrors {
-  DOMAIN_CHECK_ERROR_GET_JOIN_INFO = 0,
+  // The check error below is no longer possible.
+  DEPRECATED_DOMAIN_CHECK_ERROR_GET_JOIN_INFO = 0,
   DOMAIN_CHECK_ERROR_DS_BIND = 1,
   DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
@@ -334,18 +334,7 @@ void CollectEnterpriseUMAs() {
                             base::win::OSInfo::GetInstance()->version_type(),
                             base::win::SUITE_LAST);
 
-  // Get the computer's domain status.
-  LPWSTR domain;
-  NETSETUP_JOIN_STATUS join_status;
-  if (NERR_Success != ::NetGetJoinInformation(NULL, &domain, &join_status)) {
-    UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
-                              DOMAIN_CHECK_ERROR_GET_JOIN_INFO,
-                              DOMAIN_CHECK_ERROR_SIZE);
-    return;
-  }
-  ::NetApiBufferFree(domain);
-
-  bool in_domain = join_status == NetSetupDomainName;
+  bool in_domain = base::win::IsEnrolledToDomain();
   UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.InDomain", in_domain);
   if (in_domain) {
     // This check will tell us how often are domain computers actually
