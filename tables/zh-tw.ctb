@@ -1,4 +1,4 @@
-# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2015
+# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2016-5
 
 # U.S. English 8 dot Computer braille table
 include en-us-comp8.ctb
@@ -44,7 +44,28 @@ sign \x00C4 36-17
 sign \x00C5 1357-17
 sign \x00C6 17-157
 sign \x00D7 4-16
+sign \x00E0 17-256
+sign \x00E1 17-23
+sign \x00E8 157-256
+sign \x00E9 157-23
+sign \x00EC 247-256
+sign \x00ED 247-23
+sign \x00EF 4-24
+sign \x00F2 1357-256
+sign \x00F3 1357-23
 sign \x00F7 46-34
+sign \x00F9 1367-256
+sign \x00FA 1367-23
+sign \x0101 17-2
+sign \x0113 157-2
+sign \x011B 157-25
+sign \x012B 247-2
+sign \x014D 1357-2
+sign \x016B 1367-2
+sign \x01CE 17-25
+sign \x01D0 247-25
+sign \x01D2 1357-25
+sign \x01D4 1367-25
 sign \x0251 46-1
 sign \x02C7 34567-4
 sign \x02C9 34567-3
@@ -231,12 +252,12 @@ sign \x21E8 1246-25-25-135
 sign \x2200 256-1-123-123
 sign \x2201 14-135-134-1234-123
 sign \x2202 1234-14
-sign \x2203 2345-15
+sign \x2203 4-26
 sign \x2204 2345-1345-15
 sign \x2205 456-356
 sign \x2206 24-1345-13
 sign \x2207 46-1246
-sign \x2208 15-123-134
+sign \x2208 4-15
 sign \x2209 1345-15-123-134
 sign \x220A 234-15-123-134
 sign \x220B 134-15-134-12
@@ -262,16 +283,17 @@ sign \x2223 1256
 sign \x2224 34-46-16
 sign \x2225 1246-123
 sign \x2226 34-1246-123
-sign \x2227 46-1237
-sign \x2228 12367
+sign \x2227 4-146
+sign \x2228 4-346
 sign \x2229 46-146
 sign \x222A 46-346
 sign \x222B 23467-2368
 sign \x222E 23467-1468
 sign \x2234 6-16
 sign \x2235 4-34
-sign \x2236 156
+sign \x2236 5-2
 sign \x2237 1234-1235-135-1234
+sign \x223C 1-156-1-156
 sign \x2245 5-123456-126-156-12456
 sign \x224C 4-156-123456
 sign \x2251 123456
@@ -288,16 +310,20 @@ sign \x2272 126-123456
 sign \x2273 345-123456
 sign \x2276 126-345
 sign \x2277 345-126
-sign \x2282 234-136-12-234
-sign \x2283 234-136-1234-234
+sign \x2282 456-5-13
+sign \x2283 456-46-2
 sign \x2286 234-136-12-234-123456
 sign \x2287 234-136-1234-234-123456
+sign \x2295 1246-14-456-1246-346-12456
+sign \x2296 1246-14-456-1246-36-12456
 sign \x22A5 1246-1234
 sign \x22BF 1246-2345
 sign \x22DC 123456-126
 sign \x22DD 123456-345
 sign \x22EF 5-5-5
 sign \x2307 45
+sign \x2329 126
+sign \x232A 345
 sign \x2460 246-2-135
 sign \x2461 246-23-135
 sign \x2462 246-25-135
@@ -460,7 +486,18 @@ sign \x2605 16
 sign \x2606 16
 sign \x2713 12378-67
 sign \x2714 2467-1346-124567
+sign \x2748 16-0
 sign \x2794 36-36-345
+sign \x2ED1 12-1346-2
+sign \x2F00 16-3
+sign \x2F24 145-345-5
+sign \x2F46 34-2
+sign \x2F64 235-5
+sign \x2F6C 134-34-5
+sign \x2F70 24-156-5
+sign \x2F83 125-156-5
+sign \x2F8F 15-13456-2
+sign \x2FB4 346-5
 
 #Braille patterns
 include braille-patterns.cti
@@ -7260,7 +7297,7 @@ sign \x5279 14-34-5
 sign \x527A 14-16-2
 sign \x527B 12345-12356-2
 sign \x527C 24-1236-3
-sign \x527D 1234-246-3
+sign \x527D 1234-246-5
 sign \x527E 123-12356-3
 sign \x527F 13-246-4
 sign \x5280 13-35-3
@@ -8224,7 +8261,7 @@ sign \x563D 124-1236-3
 sign \x563E 124-1236-2
 sign \x563F 1235-356-3
 sign \x5640 15-256-5
-sign \x5641 34-5
+sign \x5641 2346-4
 sign \x5642 125-123456-4
 sign \x5643 12345-1236-3
 sign \x5644 12-156-3
@@ -8272,7 +8309,7 @@ sign \x566D 13-246-5
 sign \x566E 45-5
 sign \x566F 2456-5
 sign \x5670 235-3
-sign \x5671 15-236-2
+sign \x5671 15-236-3
 sign \x5672 123-2356-5
 sign \x5673 1256-4
 sign \x5674 1234-136-3
@@ -8351,7 +8388,7 @@ sign \x56BC 13-236-2
 sign \x56BD 12-25-5
 sign \x56BE 1235-12456-3
 sign \x56BF 1235-25-5
-sign \x56C0 1-12456-5
+sign \x56C0 1-12456-4
 sign \x56C1 1345-346-5
 sign \x56C2 15-246-3
 sign \x56C3 245-345-5
@@ -9051,7 +9088,7 @@ sign \x5978 13-2345-3
 sign \x5979 1248-345-3
 sign \x597A 13-234-4
 sign \x597B 1345-1236-2
-sign \x597C 12-345-4
+sign \x597C 12-345-5
 sign \x597D 1235-146-4
 sign \x597E 15-2345-3
 sign \x597F 12345-1236-5
@@ -9754,7 +9791,7 @@ sign \x5C37 13-1236-3
 sign \x5C38 24-156-3
 sign \x5C39 1456-4
 sign \x5C3A 12-156-4
-sign \x5C3B 123-146-3
+sign \x5C3B 123-146-4
 sign \x5C3C 1345-16-2
 sign \x5C3D 13-1456-4
 sign \x5C3E 1246-4
@@ -9987,7 +10024,7 @@ sign \x5D20 145-12346-3
 sign \x5D21 1235-1236-2
 sign \x5D22 1-1356-3
 sign \x5D23 1246-4
-sign \x5D24 15-246-2
+sign \x5D24 146-2
 sign \x5D25 1234-16-4
 sign \x5D26 2345-3
 sign \x5D27 15-12346-3
@@ -10003,7 +10040,7 @@ sign \x5D30 125-156-3
 sign \x5D31 125-2346-2
 sign \x5D32 1235-456-2
 sign \x5D33 1256-2
-sign \x5D34 12456-4
+sign \x5D34 1246-3
 sign \x5D35 46-2
 sign \x5D36 12345-1356-3
 sign \x5D37 245-234-2
@@ -10156,7 +10193,7 @@ sign \x5DC9 12-1236-2
 sign \x5DCA 13456-4
 sign \x5DCB 123-1246-3
 sign \x5DCC 2345-2
-sign \x5DCD 1246-3
+sign \x5DCD 1246-2
 sign \x5DCE 1345-146-2
 sign \x5DCF 245-45-2
 sign \x5DD0 12-146-4
@@ -10535,7 +10572,7 @@ sign \x5F44 123-12356-3
 sign \x5F45 13-2345-4
 sign \x5F46 135-346-5
 sign \x5F47 15-246-3
-sign \x5F48 145-1236-5
+sign \x5F48 124-1236-2
 sign \x5F49 1235-25-5
 sign \x5F4A 245-46-2
 sign \x5F4B 1235-12346-2
@@ -11446,9 +11483,9 @@ sign \x62D3 124-25-5
 sign \x62D4 135-345-2
 sign \x62D5 124-25-3
 sign \x62D6 124-25-3
-sign \x62D7 134-234-5
+sign \x62D7 1345-234-5
 sign \x62D8 13-1256-3
-sign \x62D9 1-25-3
+sign \x62D9 1-25-2
 sign \x62DA 1234-1456-3
 sign \x62DB 1-146-3
 sign \x62DC 135-2456-5
@@ -11659,7 +11696,7 @@ sign \x63A8 124-1246-3
 sign \x63A9 2345-4
 sign \x63AA 245-25-5
 sign \x63AB 125-12356-3
-sign \x63AC 13-1256-3
+sign \x63AC 13-1256-2
 sign \x63AD 124-2345-5
 sign \x63AE 245-2345-2
 sign \x63AF 123-136-5
@@ -11937,7 +11974,7 @@ sign \x64BE 25-3
 sign \x64BF 13-2345-4
 sign \x64C0 13-1236-4
 sign \x64C1 235-4
-sign \x64C2 14-356-5
+sign \x64C2 14-356-2
 sign \x64C3 123-25-4
 sign \x64C4 14-34-4
 sign \x64C5 24-1236-5
@@ -12129,7 +12166,7 @@ sign \x657E 24-1236-5
 sign \x657F 13-246-4
 sign \x6580 1-25-2
 sign \x6581 16-5
-sign \x6582 14-2345-4
+sign \x6582 14-2345-5
 sign \x6583 135-16-5
 sign \x6584 14-16-5
 sign \x6585 15-246-5
@@ -12581,7 +12618,7 @@ sign \x6742 125-345-2
 sign \x6743 245-45-2
 sign \x6744 245-2345-3
 sign \x6745 1256-2
-sign \x6746 13-1236-4
+sign \x6746 13-1236-3
 sign \x6747 34-3
 sign \x6748 12-345-5
 sign \x6749 24-1236-3
@@ -13335,7 +13372,7 @@ sign \x6A34 1-156-2
 sign \x6A35 245-246-2
 sign \x6A36 125-1246-3
 sign \x6A37 245-12346-2
-sign \x6A38 1234-34-4
+sign \x6A38 1234-34-2
 sign \x6A39 24-34-5
 sign \x6A3A 1235-35-5
 sign \x6A3B 123-1246-5
@@ -13435,7 +13472,7 @@ sign \x6A98 135-16-5
 sign \x6A99 145-13456-4
 sign \x6A9A 12-34-4
 sign \x6A9B 1-35-3
-sign \x6A9C 1235-1246-5
+sign \x6A9C 123-2356-5
 sign \x6A9D 13-16-2
 sign \x6A9E 13-346-4
 sign \x6A9F 13-23456-4
@@ -15099,7 +15136,7 @@ sign \x7118 145-146-5
 sign \x7119 135-356-5
 sign \x711A 12345-136-2
 sign \x711B 14-1456-5
-sign \x711C 1235-123456-3
+sign \x711C 123-123456-3
 sign \x711D 1235-123456-5
 sign \x711E 124-123456-3
 sign \x711F 15-16-2
@@ -15904,7 +15941,7 @@ sign \x743D 145-34-4
 sign \x743E 13-346-5
 sign \x743F 1235-1246-3
 sign \x7440 1256-4
-sign \x7441 134-156-5
+sign \x7441 134-356-5
 sign \x7442 134-356-2
 sign \x7443 12-123456-3
 sign \x7444 15-45-3
@@ -16459,7 +16496,7 @@ sign \x7668 1235-25-5
 sign \x7669 14-2456-5
 sign \x766A 13-16-3
 sign \x766B 145-2345-3
-sign \x766C 15-45-4
+sign \x766C 15-2345-4
 sign \x766D 13456-4
 sign \x766E 1456-4
 sign \x766F 245-1256-2
@@ -16860,7 +16897,7 @@ sign \x77F9 34-5
 sign \x77FA 1-2346-2
 sign \x77FB 123-34-5
 sign \x77FC 13-46-3
-sign \x77FD 15-16-3
+sign \x77FD 15-16-5
 sign \x77FE 12345-1236-2
 sign \x77FF 123-456-5
 sign \x7800 145-1346-5
@@ -16894,7 +16931,7 @@ sign \x781B 13-1456-3
 sign \x781C 12345-1356-3
 sign \x781D 12345-345-4
 sign \x781E 134-126-5
-sign \x781F 1-345-5
+sign \x781F 1-345-3
 sign \x7820 245-1256-3
 sign \x7821 1256-5
 sign \x7822 14-25-4
@@ -17727,7 +17764,7 @@ sign \x7B5C 145-1346-3
 sign \x7B5D 1-1356-3
 sign \x7B5E 245-2346-5
 sign \x7B5F 12345-34-3
-sign \x7B60 256-3
+sign \x7B60 256-2
 sign \x7B61 124-34-2
 sign \x7B62 1234-345-2
 sign \x7B63 14-16-2
@@ -18364,7 +18401,7 @@ sign \x7DD9 123-2346-5
 sign \x7DDA 15-2345-5
 sign \x7DDB 1245-12456-4
 sign \x7DDC 134-2345-2
-sign \x7DDD 13-16-3
+sign \x7DDD 245-16-5
 sign \x7DDE 145-12456-5
 sign \x7DDF 1-12346-5
 sign \x7DE0 145-16-5
@@ -18451,7 +18488,7 @@ sign \x7E30 15-16-4
 sign \x7E31 125-12346-5
 sign \x7E32 14-356-2
 sign \x7E33 1-12456-5
-sign \x7E34 15-2345-3
+sign \x7E34 245-2345-5
 sign \x7E35 134-1236-5
 sign \x7E36 1-156-2
 sign \x7E37 14-1256-4
@@ -18794,7 +18831,7 @@ sign \x7F87 13-16-3
 sign \x7F88 13-16-3
 sign \x7F89 14-12456-2
 sign \x7F8A 46-2
-sign \x7F8B 134-16-4
+sign \x7F8B 134-346-3
 sign \x7F8C 245-46-3
 sign \x7F8D 124-345-5
 sign \x7F8E 134-356-4
@@ -19481,7 +19518,7 @@ sign \x8236 135-126-2
 sign \x8237 15-2345-2
 sign \x8238 13-2346-4
 sign \x8239 12-12456-2
-sign \x823A 15-23456-2
+sign \x823A 13-23456-4
 sign \x823B 14-34-2
 sign \x823C 245-235-2
 sign \x823D 1234-1346-2
@@ -20137,7 +20174,7 @@ sign \x84C6 15-16-2
 sign \x84C7 13-34-4
 sign \x84C8 14-1346-2
 sign \x84C9 1245-12346-2
-sign \x84CA 12346-3
+sign \x84CA 12346-4
 sign \x84CB 13-2456-5
 sign \x84CC 245-25-5
 sign \x84CD 24-156-3
@@ -20709,7 +20746,7 @@ sign \x8702 12345-1356-3
 sign \x8703 24-136-5
 sign \x8704 1-136-5
 sign \x8705 12345-34-4
-sign \x8706 15-45-4
+sign \x8706 15-2345-4
 sign \x8707 1-2346-2
 sign \x8708 34-2
 sign \x8709 12345-34-2
@@ -22619,7 +22656,7 @@ sign \x8E78 14-1456-5
 sign \x8E79 124-345-5
 sign \x8E7A 245-246-3
 sign \x8E7B 245-246-2
-sign \x8E7C 1234-34-4
+sign \x8E7C 1234-34-2
 sign \x8E7D 14-246-3
 sign \x8E7E 145-123456-3
 sign \x8E7F 245-12456-3
@@ -23337,7 +23374,7 @@ sign \x9146 12345-1356-3
 sign \x9147 125-1236-5
 sign \x9148 14-16-5
 sign \x9149 234-4
-sign \x914A 145-13456-3
+sign \x914A 145-13456-4
 sign \x914B 245-234-2
 sign \x914C 1-25-2
 sign \x914D 1234-356-5
@@ -23574,7 +23611,7 @@ sign \x9233 123-2346-3
 sign \x9234 14-13456-2
 sign \x9235 135-13456-5
 sign \x9236 15-156-5
-sign \x9237 13-34-4
+sign \x9237 13-34-3
 sign \x9238 135-126-2
 sign \x9239 1234-16-2
 sign \x923A 1256-5
@@ -24959,7 +24996,7 @@ sign \x979C 124-345-5
 sign \x979D 24-1346-5
 sign \x979E 135-13456-4
 sign \x979F 123-25-5
-sign \x97A0 13-1256-3
+sign \x97A0 13-1256-2
 sign \x97A1 14-345-3
 sign \x97A2 15-346-5
 sign \x97A3 1245-12356-2
@@ -27013,6 +27050,10 @@ sign \x9FA2 1235-2346-2
 sign \x9FA3 13-236-2
 sign \x9FA4 15-346-2
 sign \x9FA5 1256-5
+sign \xE18C 12356-17-23456
+sign \xE18D 12356-127-23456
+sign \xE18E 12356-147-23456
+sign \xE18F 12356-1457-23456
 sign \xF900 245-16-4
 sign \xF901 13-1356-5
 sign \xF902 12-2346-3
@@ -27475,6 +27516,11 @@ sign \xFAD5 245-25-5
 sign \xFAD7 13-346-2
 sign \xFAD8 13-2346-2
 sign \xFAD9 1234-1346-2
+sign \xFB00 124-124
+sign \xFB01 124-24
+sign \xFB02 124-123
+sign \xFB03 124-124-24
+sign \xFB04 124-124-123
 sign \xFE30 25-25
 sign \xFE31 1256-0
 sign \xFE33 456
@@ -27582,7 +27628,7 @@ sign \xFF3A 13567-0
 sign \xFF3B 2467-0
 sign \xFF3C 12567-0
 sign \xFF3D 124567-0
-sign \xFF3E 1456 
+sign \xFF3F 456-0
 sign \xFF40 4-0
 sign \xFF41 1-0
 sign \xFF42 12-0
@@ -27938,7 +27984,6 @@ always \x5614\x5410 12356-4-124-34-5
 always \x5614\x6c23 12356-5-245-16-5
 always \x5629\x5566 1235-35-3-14-345-3
 always \x5630\x54e9 13-16-3-14-16-3
-always \x5641\x5fc3 2346-4-15-1456-3
 always \x5668\x6a02 245-16-5-236-5
 always \x5687\x963b 1235-2346-5-125-34-4
 always \x56db\x884c 15-156-5-1235-1346-2
@@ -27980,7 +28025,6 @@ always \x5916\x76f8 2356-5-15-46-5
 always \x5916\x884c 2356-5-1235-1346-2
 always \x5916\x9577 2356-5-1-1346-4
 always \x591a\x91cd 145-25-3-12-12346-2
-always \x5922\x9b58 134-1356-5-346-5
 always \x5927\x5b9b 145-345-5-45-3
 always \x5927\x5c07 145-345-5-13-46-5
 always \x5927\x7387 145-345-5-24-2356-5
@@ -28125,8 +28169,6 @@ always \x5f37\x5e79 245-46-4-13-1236-5
 always \x5f37\x6a6b 245-46-2-1235-1356-5
 always \x5f37\x6c42 245-46-4-245-234-2
 always \x5f37\x8a18 245-46-4-13-16-5
-always \x5F48\x6027 124-1236-2-15-13456-5
-always \x5F48\x7C27 124-1236-2-1235-456-2
 always \x5f4c\x6492 134-16-2-15-345-3
 always \x5f4e\x66f2 12456-3-245-1256-3
 always \x5f71\x5b50 13456-4-125-156-1
@@ -28218,7 +28260,7 @@ always \x62b9\x715e 134-126-4-24-345-3
 always \x62bd\x7a7a 12-12356-3-123-12346-5
 always \x62cd\x5b50 1234-2456-3-125-156-1
 always \x62d4\x90fd 135-345-2-145-34-3
-always \x62d7\x53e3 246-5-123-12356-4
+always \x62d7\x53e3 146-5-123-12356-4
 always \x62d8\x6ce5 13-1256-3-1345-16-5
 always \x62d9\x8457 1-25-2-1-34-5
 always \x6307\x6458 1-156-4-1-2346-2
@@ -28606,7 +28648,6 @@ always \x738b\x51a0 456-2-13-12456-3
 always \x738b\x90fd 456-2-145-34-3
 always \x73a9\x5473 12456-5-1246-5
 always \x73a9\x5ffd 12456-5-1235-34-3
-always \x73a9\x6cd5 12456-5-12345-345-4
 always \x73e0\x5b50 1-34-3-125-156-1
 always \x73ed\x5b50 135-1236-3-125-156-1
 always \x73ed\x9577 135-1236-3-1-1346-4

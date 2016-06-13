@@ -230,13 +230,13 @@ extern "C"
     CTO_EmphClass,
     
     /* Do not change the order of the following opcodes! */
-    CTO_SingleLetterEmph,
-    CTO_EmphWord,
-    CTO_EmphWordStop,
-    CTO_FirstLetterEmph,
-    CTO_LastLetterEmph,
-    CTO_FirstWordEmph,
-    CTO_LastWordEmph,
+    CTO_EmphLetter,
+    CTO_BegEmphWord,
+    CTO_EndEmphWord,
+    CTO_BegEmph,
+    CTO_EndEmph,
+    CTO_BegEmphPhrase,
+    CTO_EndEmphPhrase,
     CTO_LenEmphPhrase,
     /* End of ordered opcodes */
     
