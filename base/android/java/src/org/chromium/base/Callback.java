@@ -28,4 +28,10 @@ public abstract class Callback<T> {
     private void onResultFromNative(boolean result) {
         onResult((T) Boolean.valueOf(result));
     }
+
+    @SuppressWarnings("unchecked")
+    @CalledByNative
+    private void onResultFromNative(int result) {
+        onResult((T) Integer.valueOf(result));
+    }
 }

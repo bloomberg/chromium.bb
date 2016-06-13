@@ -22,6 +22,11 @@ void RunCallbackAndroid(const JavaRef<jobject>& callback, bool arg) {
                                       static_cast<jboolean>(arg));
 }
 
+void RunCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
+  Java_Callback_onResultFromNativeV_I(base::android::AttachCurrentThread(),
+                                      callback.obj(), arg);
+}
+
 bool RegisterCallbackAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

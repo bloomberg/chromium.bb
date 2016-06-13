@@ -18,10 +18,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -65,7 +65,7 @@ public class OfflinePageBridgeTest {
     ArgumentCaptor<List<OfflinePageItem>> mResultArgument;
 
     @Captor
-    ArgumentCaptor<MultipleOfflinePageItemCallback> mCallbackArgument;
+    ArgumentCaptor<Callback<List<OfflinePageItem>>> mCallbackArgument;
 
     /**
      * Mocks the observer.
@@ -179,7 +179,7 @@ public class OfflinePageBridgeTest {
         final int itemCount = 0;
 
         answerNativeGetAllPages(itemCount);
-        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
 
         mBridge.getAllPages(callback);
         verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
@@ -194,7 +194,7 @@ public class OfflinePageBridgeTest {
         final int itemCount = 2;
 
         answerNativeGetAllPages(itemCount);
-        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
 
         mBridge.getAllPages(callback);
         verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
@@ -216,8 +216,8 @@ public class OfflinePageBridgeTest {
         });
     }
 
-    private MultipleOfflinePageItemCallback createMultipleItemCallback(final int itemCount) {
-        return spy(new MultipleOfflinePageItemCallback() {
+    private Callback<List<OfflinePageItem>> createMultipleItemCallback(final int itemCount) {
+        return spy(new Callback<List<OfflinePageItem>>() {
             @Override
             public void onResult(List<OfflinePageItem> items) {
                 assertNotNull(items);

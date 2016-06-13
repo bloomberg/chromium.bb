@@ -8,11 +8,11 @@ import android.content.Context;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -230,7 +230,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getAllPages(new MultipleOfflinePageItemCallback() {
+                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
                     @Override
                     public void onResult(List<OfflinePageItem> allPages) {
                         result.addAll(allPages);

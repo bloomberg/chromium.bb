@@ -67,49 +67,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Callback used when deleting an offline page.
-     */
-    public interface DeletePageCallback {
-        /**
-         * Delivers result of deleting a page.
-         *
-         * @param deletePageResult Result of deleting the page. Uses
-         *     {@see org.chromium.components.offlinepages.DeletePageResult} enum.
-         * @see OfflinePageBridge#deletePage()
-         */
-        @CalledByNative("DeletePageCallback")
-        void onDeletePageDone(int deletePageResult);
-    }
-
-    /**
-     * Callback that delivers information about multiple offline page entries.
-     *
-     * The returned List will be empty (but non-null) if no items are found.
-     */
-    public interface MultipleOfflinePageItemCallback {
-        @CalledByNative("MultipleOfflinePageItemCallback")
-        void onResult(List<OfflinePageItem> items);
-    }
-
-    /**
-     * Callback that delivers information about one offline page entry.
-     *
-     * The returned item will be null if no items are found.
-     */
-    public interface SingleOfflinePageItemCallback {
-        @CalledByNative("SingleOfflinePageItemCallback")
-        void onResult(OfflinePageItem item);
-    }
-
-    /**
-     * Callback used when determining whether we have any offline pages.
-     */
-    public interface HasPagesCallback {
-        @CalledByNative("HasPagesCallback")
-        void onResult(boolean result);
-    }
-
-    /**
      * Base observer class listeners to be notified of changes to the offline page model.
      */
     public abstract static class OfflinePageModelObserver {
@@ -213,7 +170,7 @@ public class OfflinePageBridge {
      * @param callback The callback to run when the operation completes.
      */
     @VisibleForTesting
-    public void getAllPages(final MultipleOfflinePageItemCallback callback) {
+    public void getAllPages(final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
         nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
     }
@@ -224,7 +181,7 @@ public class OfflinePageBridge {
      * TODO(dewittj): Remove @VisibleForTesting when this method is called in mainline Chrome.
      */
     @VisibleForTesting
-    public void hasPages(final String namespace, final HasPagesCallback callback) {
+    public void hasPages(final String namespace, final Callback<Boolean> callback) {
         nativeHasPages(mNativeOfflinePageBridge, namespace, callback);
     }
 
@@ -249,7 +206,7 @@ public class OfflinePageBridge {
      */
     @VisibleForTesting
     public void getPagesByClientId(
-            final ClientId clientId, final MultipleOfflinePageItemCallback callback) {
+            final ClientId clientId, final Callback<List<OfflinePageItem>> callback) {
         runWhenLoaded(new Runnable() {
             @Override
             public void run() {
@@ -280,7 +237,7 @@ public class OfflinePageBridge {
      */
     @VisibleForTesting
     public void getPagesByOnlineUrl(
-            final String onlineUrl, final MultipleOfflinePageItemCallback callback) {
+            final String onlineUrl, final Callback<List<OfflinePageItem>> callback) {
         runWhenLoaded(new Runnable() {
             @Override
             public void run() {
@@ -302,11 +259,11 @@ public class OfflinePageBridge {
     /**
      * Get the offline page associated with the provided offline URL.
      *
-     * @param string URL pointing to the offline copy of the web page.
-     * @param SingleOfflinePageItemCallback callback to pass back the
+     * @param offlineUrl URL pointing to the offline copy of the web page.
+     * @param callback callback to pass back the
      * matching {@link OfflinePageItem} if found. Will pass back <code>null</code> if not.
      */
-    public void getPageByOfflineUrl(String offlineUrl, SingleOfflinePageItemCallback callback) {
+    public void getPageByOfflineUrl(String offlineUrl, Callback<OfflinePageItem> callback) {
         nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl, callback);
     }
 
@@ -344,10 +301,9 @@ public class OfflinePageBridge {
      *
      * @param clientId Client ID for which the offline copy will be deleted.
      * @param callback Interface that contains a callback.
-     * @see DeletePageCallback
      */
     @VisibleForTesting
-    public void deletePage(final ClientId clientId, DeletePageCallback callback) {
+    public void deletePage(final ClientId clientId, Callback<Integer> callback) {
         assert mIsNativeOfflinePageModelLoaded;
         ArrayList<ClientId> ids = new ArrayList<ClientId>();
         ids.add(clientId);
@@ -362,7 +318,7 @@ public class OfflinePageBridge {
      * @param clientIds A list of Client IDs for which the offline pages will be deleted.
      * @param callback A callback that will be called once operation is completed.
      */
-    public void deletePagesByClientId(List<ClientId> clientIds, DeletePageCallback callback) {
+    public void deletePagesByClientId(List<ClientId> clientIds, Callback<Integer> callback) {
         assert mIsNativeOfflinePageModelLoaded;
         List<Long> idList = new ArrayList<>(clientIds.size());
         for (ClientId clientId : clientIds) {
@@ -371,7 +327,7 @@ public class OfflinePageBridge {
         deletePages(idList, callback);
     }
 
-    void deletePages(List<Long> offlineIds, DeletePageCallback callback) {
+    void deletePages(List<Long> offlineIds, Callback<Integer> callback) {
         long[] ids = new long[offlineIds.size()];
         for (int i = 0; i < offlineIds.size(); i++) {
             ids[i] = offlineIds.get(i);
@@ -512,11 +468,11 @@ public class OfflinePageBridge {
 
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
-            final MultipleOfflinePageItemCallback callback);
+            final Callback<List<OfflinePageItem>> callback);
     private native void nativeCheckPagesExistOffline(long nativeOfflinePageBridge, Object[] urls,
             CheckPagesExistOfflineCallbackInternal callback);
     native void nativeHasPages(
-            long nativeOfflinePageBridge, String nameSpace, final HasPagesCallback callback);
+            long nativeOfflinePageBridge, String nameSpace, final Callback<Boolean> callback);
 
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
@@ -526,13 +482,13 @@ public class OfflinePageBridge {
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
     private native OfflinePageItem nativeGetBestPageForOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
-    private native void nativeGetPageByOfflineUrl(long nativeOfflinePageBridge, String offlineUrl,
-            SingleOfflinePageItemCallback callback);
+    private native void nativeGetPageByOfflineUrl(
+            long nativeOfflinePageBridge, String offlineUrl, Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
     private native void nativeSavePageLater(
             long nativeOfflinePageBridge, String url, String clientNamespace, String clientId);
     private native void nativeDeletePages(
-            long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
+            long nativeOfflinePageBridge, Callback<Integer> callback, long[] offlineIds);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
 }

@@ -10,8 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
@@ -92,15 +94,12 @@ void GetAllPagesCallback(
     const OfflinePageModel::MultipleOfflinePageItemResult& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ToJavaOfflinePageList(env, j_result_obj.obj(), result);
-
-  Java_MultipleOfflinePageItemCallback_onResult(env, j_callback_obj.obj(),
-                                                j_result_obj.obj());
+  base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
 void HasPagesCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                       bool result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_HasPagesCallback_onResult(env, j_callback_obj.obj(), result);
+  base::android::RunCallbackAndroid(j_callback_obj, result);
 }
 
 void SavePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
@@ -116,10 +115,7 @@ void SavePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 
 void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                         OfflinePageModel::DeletePageResult result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  Java_DeletePageCallback_onDeletePageDone(
-      env, j_callback_obj.obj(), static_cast<int>(result));
+  base::android::RunCallbackAndroid(j_callback_obj, static_cast<int>(result));
 }
 
 void SingleOfflinePageItemCallback(
@@ -130,8 +126,7 @@ void SingleOfflinePageItemCallback(
 
   if (result)
     j_result = ToJavaOfflinePageItem(env, *result);
-  Java_SingleOfflinePageItemCallback_onResult(env, j_callback_obj.obj(),
-                                              j_result.obj());
+  base::android::RunCallbackAndroid(j_callback_obj, j_result);
 }
 
 }  // namespace

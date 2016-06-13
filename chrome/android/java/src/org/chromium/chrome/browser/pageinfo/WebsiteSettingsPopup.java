@@ -41,11 +41,11 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SingleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -910,7 +910,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             return;
         }
 
-        SingleOfflinePageItemCallback callback = new SingleOfflinePageItemCallback() {
+        Callback<OfflinePageItem> callback = new Callback<OfflinePageItem>() {
             @Override
             public void onResult(OfflinePageItem item) {
                 String offlinePageOriginalUrl = null;

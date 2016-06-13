@@ -12,8 +12,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -225,10 +223,10 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.deletePage(bookmarkId, new DeletePageCallback() {
+                mOfflinePageBridge.deletePage(bookmarkId, new Callback<Integer>() {
                     @Override
-                    public void onDeletePageDone(int deletePageResult) {
-                        deletePageResultRef.set(deletePageResult);
+                    public void onResult(Integer deletePageResult) {
+                        deletePageResultRef.set(deletePageResult.intValue());
                         semaphore.release();
                     }
                 });
@@ -244,7 +242,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getAllPages(new MultipleOfflinePageItemCallback() {
+                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
                     @Override
                     public void onResult(List<OfflinePageItem> pages) {
                         result.addAll(pages);
@@ -273,7 +271,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 mOfflinePageBridge.getPagesByClientId(
-                        clientId, new MultipleOfflinePageItemCallback() {
+                        clientId, new Callback<List<OfflinePageItem>>() {
                             @Override
                             public void onResult(List<OfflinePageItem> items) {
                                 if (!items.isEmpty()) {
