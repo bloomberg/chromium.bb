@@ -19,7 +19,17 @@ config("ui_warnings") {
   }
 }
 
-source_set("ui") {
+# Use a static library here because many test binaries depend on this but don't
+# require many files from it. This makes linking more efficient.
+if (is_mac) {
+  # TODO(brettw) bug 618797: On Mac making this target a static_library causes
+  # a crash on startup and the browser_tests all fail. My guess is this is due
+  # to a required static initializer not being brought in.
+  chrome_browser_target_type = "source_set"
+} else {
+  chrome_browser_target_type = "static_library"
+}
+target(chrome_browser_target_type, "ui") {
   sources = []
   defines = []
   libs = []
