@@ -478,7 +478,6 @@ component("media") {
     "//skia",
     "//third_party/libwebm",
     "//third_party/libyuv",
-    "//third_party/opus",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
