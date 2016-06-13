@@ -6,6 +6,7 @@
 #define CompositorProxyClientImpl_h
 
 #include "core/dom/CompositorProxyClient.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -33,6 +34,8 @@ public:
     // CompositorProxyClient:
     void setGlobalScope(WorkerGlobalScope*) override;
     void requestAnimationFrame() override;
+    void registerCompositorProxy(CompositorProxy*) override;
+    void unregisterCompositorProxy(CompositorProxy*) override;
 
 private:
     bool executeAnimationFrameCallbacks(double monotonicTimeNow);
@@ -41,6 +44,8 @@ private:
 
     Member<CompositorWorkerGlobalScope> m_globalScope;
     bool m_requestedAnimationFrameCallbacks;
+
+    HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
 };
 
 } // namespace blink

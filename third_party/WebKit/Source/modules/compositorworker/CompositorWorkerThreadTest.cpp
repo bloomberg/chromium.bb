@@ -68,6 +68,8 @@ public:
 
     void setGlobalScope(WorkerGlobalScope*) override {}
     void requestAnimationFrame() override {}
+    void registerCompositorProxy(CompositorProxy*) override {}
+    void unregisterCompositorProxy(CompositorProxy*) override {}
 };
 
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {

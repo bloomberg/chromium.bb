@@ -9,6 +9,8 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "public/platform/Platform.h"
@@ -112,39 +114,57 @@ CompositorProxy* CompositorProxy::create(ExecutionContext* context, Element* ele
     return new CompositorProxy(*element, attributeArray);
 }
 
-CompositorProxy* CompositorProxy::create(uint64_t elementId, uint32_t compositorMutableProperties)
+CompositorProxy* CompositorProxy::create(ExecutionContext* context, uint64_t elementId, uint32_t compositorMutableProperties)
 {
+    if (context->isCompositorWorkerGlobalScope()) {
+        WorkerClients* clients = toWorkerGlobalScope(context)->clients();
+        DCHECK(clients);
+        CompositorProxyClient* client = CompositorProxyClient::from(clients);
+        return new CompositorProxy(elementId, compositorMutableProperties, client);
+    }
+
     return new CompositorProxy(elementId, compositorMutableProperties);
-}
-
-CompositorProxy::CompositorProxy(Element& element, const Vector<String>& attributeArray)
-    : m_elementId(DOMNodeIds::idForNode(&element))
-    , m_compositorMutableProperties(compositorMutablePropertiesFromNames(attributeArray))
-{
-    DCHECK(isMainThread());
-    DCHECK(m_compositorMutableProperties);
-#if DCHECK_IS_ON()
-    DCHECK(sanityCheckMutableProperties(m_compositorMutableProperties));
-#endif
-
-    incrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
 }
 
 CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t compositorMutableProperties)
     : m_elementId(elementId)
     , m_compositorMutableProperties(compositorMutableProperties)
+    , m_client(nullptr)
 {
-    DCHECK(isControlThread());
+    DCHECK(m_compositorMutableProperties);
 #if DCHECK_IS_ON()
     DCHECK(sanityCheckMutableProperties(m_compositorMutableProperties));
 #endif
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+
+    if (isMainThread()) {
+        incrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
+    } else {
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+    }
+}
+
+CompositorProxy::CompositorProxy(Element& element, const Vector<String>& attributeArray)
+    : CompositorProxy(DOMNodeIds::idForNode(&element), compositorMutablePropertiesFromNames(attributeArray))
+{
+    DCHECK(isMainThread());
+}
+
+CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t compositorMutableProperties, CompositorProxyClient* client)
+    : CompositorProxy(elementId, compositorMutableProperties)
+{
+    m_client = client;
+    DCHECK(m_client);
+    DCHECK(isControlThread());
+    m_client->registerCompositorProxy(this);
 }
 
 CompositorProxy::~CompositorProxy()
 {
-    if (m_connected)
-        disconnect();
+    // We do not explicitly unregister from client here. The client has a weak
+    // reference to us which gets collected on its own. This way we avoid using
+    // a pre-finalizer.
+    disconnectInternal();
+    DCHECK(!m_connected);
 }
 
 bool CompositorProxy::supports(const String& attributeName) const
@@ -239,11 +259,21 @@ bool CompositorProxy::raiseExceptionIfNotMutable(uint32_t property, ExceptionSta
 
 void CompositorProxy::disconnect()
 {
+    disconnectInternal();
+    if (m_client)
+        m_client->unregisterCompositorProxy(this);
+}
+
+void CompositorProxy::disconnectInternal()
+{
+    if (!m_connected)
+        return;
     m_connected = false;
-    if (isMainThread())
+    if (isMainThread()) {
         decrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
-    else
+    } else {
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+    }
 }
 
 } // namespace blink

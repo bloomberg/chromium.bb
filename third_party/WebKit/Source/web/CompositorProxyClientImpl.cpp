@@ -23,6 +23,7 @@ DEFINE_TRACE(CompositorProxyClientImpl)
     CompositorProxyClient::trace(visitor);
     visitor->trace(m_mutator);
     visitor->trace(m_globalScope);
+    visitor->trace(m_proxies);
 }
 
 void CompositorProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope)
@@ -62,6 +63,16 @@ bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(double monotonicT
     double highResTimeMs = 1000.0 * (monotonicTimeNow - m_globalScope->timeOrigin());
     const bool shouldReinvoke = m_globalScope->executeAnimationFrameCallbacks(highResTimeMs);
     return shouldReinvoke;
+}
+
+void CompositorProxyClientImpl::registerCompositorProxy(CompositorProxy* proxy)
+{
+    m_proxies.add(proxy);
+}
+
+void CompositorProxyClientImpl::unregisterCompositorProxy(CompositorProxy* proxy)
+{
+    m_proxies.remove(proxy);
 }
 
 } // namespace blink

@@ -30,6 +30,12 @@ public:
 
     virtual void setGlobalScope(WorkerGlobalScope*) = 0;
     virtual void requestAnimationFrame() = 0;
+    virtual void registerCompositorProxy(CompositorProxy*) = 0;
+    // It is not guaranteed to receive an unregister call for every registered
+    // proxy. In fact we only receive one when a proxy is explicitly
+    // disconnected otherwise we rely on oilpan collection process to remove the
+    // weak reference to the proxy.
+    virtual void unregisterCompositorProxy(CompositorProxy*) = 0;
 };
 
 CORE_EXPORT void provideCompositorProxyClientTo(WorkerClients*, CompositorProxyClient*);

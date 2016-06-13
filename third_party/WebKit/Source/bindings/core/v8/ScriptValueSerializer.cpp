@@ -1764,7 +1764,7 @@ bool SerializedScriptValueReader::readCompositorProxy(v8::Local<v8::Value>* valu
     if (!doReadUint32(&attributes))
         return false;
 
-    CompositorProxy* compositorProxy = CompositorProxy::create(element, attributes);
+    CompositorProxy* compositorProxy = CompositorProxy::create(m_scriptState->getExecutionContext(), element, attributes);
     *value = toV8(compositorProxy, m_scriptState->context()->Global(), isolate());
     return !value->IsEmpty();
 }
