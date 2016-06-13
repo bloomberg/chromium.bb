@@ -12,9 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/file_stream.h"
@@ -70,10 +72,9 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
 FileSystemURLRequestJob::~FileSystemURLRequestJob() {}
 
 void FileSystemURLRequestJob::Start() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FileSystemURLRequestJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FileSystemURLRequestJob::StartAsync,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemURLRequestJob::Kill() {

@@ -15,11 +15,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util_proxy.h"
 #include "base/format_macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -63,7 +65,7 @@ BlobURLRequestJob::BlobURLRequestJob(
 
 void BlobURLRequestJob::Start() {
   // Continue asynchronously.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }
