@@ -141,13 +141,11 @@ void X11EventSource::DispatchXEvents() {
 }
 
 void X11EventSource::BlockUntilWindowMapped(XID window) {
-  XEvent event;
-  do {
-    // Block until there's a message of |event_mask| type on |w|. Then remove
-    // it from the queue and stuff it in |event|.
-    XWindowEvent(display_, window, StructureNotifyMask, &event);
-    ExtractCookieDataDispatchEvent(&event);
-  } while (event.type != MapNotify);
+  BlockOnWindowStructureEvent(window, MapNotify);
+}
+
+void X11EventSource::BlockUntilWindowUnmapped(XID window) {
+  BlockOnWindowStructureEvent(window, UnmapNotify);
 }
 
 Time X11EventSource::UpdateLastSeenServerTime() {
@@ -221,6 +219,16 @@ void X11EventSource::PostDispatchEvent(XEvent* xevent) {
     // Clear stored scroll data
     ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses();
   }
+}
+
+void X11EventSource::BlockOnWindowStructureEvent(XID window, int type) {
+  XEvent event;
+  do {
+    // Block until there's a StructureNotify event of |type| on |window|. Then
+    // remove it from the queue and stuff it in |event|.
+    XWindowEvent(display_, window, StructureNotifyMask, &event);
+    ExtractCookieDataDispatchEvent(&event);
+  } while (event.type != type);
 }
 
 void X11EventSource::StopCurrentEventStream() {

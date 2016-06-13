@@ -260,6 +260,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Is the window mapped to the screen?
   bool window_mapped_;
 
+  // Should we wait for an UnmapNotify before trying to remap the window?
+  bool wait_for_unmap_;
+
   // The bounds of |xwindow_|.
   gfx::Rect bounds_in_pixels_;
 

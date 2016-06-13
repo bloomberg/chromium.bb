@@ -165,6 +165,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
+      wait_for_unmap_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
       use_native_frame_(false),
@@ -977,6 +978,7 @@ void DesktopWindowTreeHostX11::HideImpl() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;
+    wait_for_unmap_ = true;
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
@@ -1665,13 +1667,22 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
                     1);
   }
 
+  ui::X11EventSource* event_source = ui::X11EventSource::GetInstance();
+  DCHECK(event_source);
+
+  if (wait_for_unmap_) {
+    // Block until our window is unmapped. This avoids a race condition when
+    // remapping an unmapped window.
+    event_source->BlockUntilWindowUnmapped(xwindow_);
+    DCHECK(!wait_for_unmap_);
+  }
+
   XMapWindow(xdisplay_, xwindow_);
 
   // We now block until our window is mapped. Some X11 APIs will crash and
   // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
   // asynchronous.
-  if (ui::X11EventSource::GetInstance())
-    ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
+  event_source->BlockUntilWindowMapped(xwindow_);
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
@@ -1903,6 +1914,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case UnmapNotify: {
+      wait_for_unmap_ = false;
       FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
                         observer_list_,
                         OnWindowUnmapped(xwindow_));

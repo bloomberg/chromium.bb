@@ -62,6 +62,8 @@ class EVENTS_EXPORT X11EventSource {
   // functions which require a mapped window.
   void BlockUntilWindowMapped(XID window);
 
+  void BlockUntilWindowUnmapped(XID window);
+
   XDisplay* display() { return display_; }
   Time last_seen_server_time() const { return last_seen_server_time_; }
 
@@ -80,6 +82,10 @@ class EVENTS_EXPORT X11EventSource {
 
   // Handles updates after event has been dispatched.
   void PostDispatchEvent(XEvent* xevent);
+
+  // Block until receiving a structure notify event of |type| on |window|.
+  // Dispatch all encountered events prior to the one we're blocking on.
+  void BlockOnWindowStructureEvent(XID window, int type);
 
  private:
   static X11EventSource* instance_;
