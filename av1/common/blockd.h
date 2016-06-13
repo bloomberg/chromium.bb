@@ -94,6 +94,9 @@ typedef struct {
   // Only for INTER blocks
   InterpFilter interp_filter;
   MV_REFERENCE_FRAME ref_frame[2];
+#if CONFIG_MOTION_VAR
+  MOTION_MODE motion_mode;
+#endif  // CONFIG_MOTION_VAR
   TX_TYPE tx_type;
 
 #if CONFIG_REF_MV
@@ -296,6 +299,20 @@ static INLINE void reset_skip_context(MACROBLOCKD *xd, BLOCK_SIZE bsize) {
            sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_high_lookup[plane_bsize]);
   }
 }
+
+#if CONFIG_MOTION_VAR
+static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
+  return (bsize >= BLOCK_8X8);
+}
+
+static INLINE int is_motion_variation_allowed(const MB_MODE_INFO *mbmi) {
+  return is_motion_variation_allowed_bsize(mbmi->sb_type);
+}
+
+static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
+  return (is_inter_block(mbmi));
+}
+#endif  // CONFIG_MOTION_VAR
 
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   int blk_row, int blk_col,

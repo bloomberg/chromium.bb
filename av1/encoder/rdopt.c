@@ -3214,6 +3214,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->interp_filter =
         cm->interp_filter == SWITCHABLE ? EIGHTTAP : cm->interp_filter;
     mbmi->mv[0].as_int = mbmi->mv[1].as_int = 0;
+#if CONFIG_MOTION_VAR
+    mbmi->motion_mode = SIMPLE_TRANSLATION;
+#endif  // CONFIG_MOTION_VAR
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
@@ -3779,6 +3782,9 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
   mbmi->ref_frame[0] = LAST_FRAME;
   mbmi->ref_frame[1] = NONE;
   mbmi->mv[0].as_int = 0;
+#if CONFIG_MOTION_VAR
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+#endif  // CONFIG_MOTION_VAR
   x->skip = 1;
 
 #if CONFIG_REF_MV
@@ -4024,6 +4030,9 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
     // them for this frame.
     mbmi->interp_filter =
         cm->interp_filter == SWITCHABLE ? EIGHTTAP : cm->interp_filter;
+#if CONFIG_MOTION_VAR
+    mbmi->motion_mode = SIMPLE_TRANSLATION;
+#endif  // CONFIG_MOTION_VAR
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 

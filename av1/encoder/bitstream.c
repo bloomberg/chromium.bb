@@ -48,6 +48,9 @@ static struct av1_token partition_encodings[PARTITION_TYPES];
 #if !CONFIG_REF_MV
 static struct av1_token inter_mode_encodings[INTER_MODES];
 #endif
+#if CONFIG_MOTION_VAR
+static struct av1_token motion_mode_encodings[MOTION_MODES];
+#endif  // CONFIG_MOTION_VAR
 static struct av1_token ext_tx_encodings[TX_TYPES];
 
 void av1_encode_token_init() {
@@ -57,6 +60,9 @@ void av1_encode_token_init() {
 #if !CONFIG_REF_MV
   av1_tokens_from_tree(inter_mode_encodings, av1_inter_mode_tree);
 #endif
+#if CONFIG_MOTION_VAR
+  av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
+#endif  // CONFIG_MOTION_VAR
   av1_tokens_from_tree(ext_tx_encodings, av1_ext_tx_tree);
 }
 
@@ -141,6 +147,16 @@ static void write_drl_idx(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
   }
 }
 #endif
+
+#if CONFIG_MOTION_VAR
+static void write_motion_mode(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
+                              aom_writer *w) {
+  if (is_motion_variation_allowed(mbmi))
+    av1_write_token(w, av1_motion_mode_tree,
+                    cm->fc->motion_mode_prob[mbmi->sb_type],
+                    &motion_mode_encodings[mbmi->motion_mode]);
+}
+#endif  // CONFIG_MOTION_VAR
 
 static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
                                 int max) {
@@ -541,6 +557,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         }
       }
     }
+#if CONFIG_MOTION_VAR
+    write_motion_mode(cm, mbmi, w);
+#endif  // CONFIG_MOTION_VAR
   }
 
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
@@ -1528,6 +1547,12 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
       prob_diff_update(av1_inter_mode_tree, cm->fc->inter_mode_probs[i],
                        counts->inter_mode[i], INTER_MODES, &header_bc);
 #endif
+#if CONFIG_MOTION_VAR
+    for (i = 0; i < BLOCK_SIZES; ++i)
+      if (is_motion_variation_allowed_bsize(i))
+        prob_diff_update(av1_motion_mode_tree, cm->fc->motion_mode_prob[i],
+                         counts->motion_mode[i], MOTION_MODES, &header_bc);
+#endif  // CONFIG_MOTION_VAR
     if (cm->interp_filter == SWITCHABLE)
       update_switchable_interp_probs(cm, &header_bc, counts);
 

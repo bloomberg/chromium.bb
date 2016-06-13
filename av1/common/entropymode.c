@@ -237,6 +237,23 @@ const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
   -INTER_OFFSET(NEWMV)
 };
 
+#if CONFIG_MOTION_VAR
+const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, -OBMC_CAUSAL
+};
+
+// clang-format off
+static const aom_prob
+    default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] = {
+        { 255 },
+        { 255 }, { 255 }, { 151 },
+        { 153 }, { 144 }, { 178 },
+        { 165 }, { 160 }, { 207 },
+        { 195 }, { 168 }, { 244 },
+    };
+// clang-format on
+#endif  // CONFIG_MOTION_VAR
+
 const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
   -PARTITION_NONE, 2, -PARTITION_HORZ, 4, -PARTITION_VERT, -PARTITION_SPLIT
 };
@@ -343,6 +360,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->drl_prob, default_drl_prob);
 #endif
   av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
+#if CONFIG_MOTION_VAR
+  av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
+#endif  // CONFIG_MOTION_VAR
 #if CONFIG_MISC_FIXES
   av1_copy(fc->seg.tree_probs, default_seg_probs.tree_probs);
   av1_copy(fc->seg.pred_probs, default_seg_probs.pred_probs);
@@ -406,6 +426,11 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     aom_tree_merge_probs(av1_inter_mode_tree, pre_fc->inter_mode_probs[i],
                          counts->inter_mode[i], fc->inter_mode_probs[i]);
 #endif
+#if CONFIG_MOTION_VAR
+  for (i = 0; i < BLOCK_SIZES; i++)
+    aom_tree_merge_probs(av1_motion_mode_tree, pre_fc->motion_mode_prob[i],
+                         counts->motion_mode[i], fc->motion_mode_prob[i]);
+#endif  // CONFIG_MOTION_VAR
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->y_mode_prob[i],

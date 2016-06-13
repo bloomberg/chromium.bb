@@ -380,6 +380,12 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
     for (j = 0; j < INTER_MODES; j++)
       cm->counts.inter_mode[i][j] += counts->inter_mode[i][j];
 
+#if CONFIG_MOTION_VAR
+  for (i = 0; i < BLOCK_SIZES; ++i)
+    for (j = 0; j < MOTION_MODES; ++j)
+      cm->counts.motion_mode[i][j] += counts->motion_mode[i][j];
+#endif  // CONFIG_MOTION_VAR
+
   for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
     for (j = 0; j < 2; j++)
       cm->counts.intra_inter[i][j] += counts->intra_inter[i][j];

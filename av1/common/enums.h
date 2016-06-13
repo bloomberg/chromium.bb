@@ -131,6 +131,14 @@ typedef uint8_t PREDICTION_MODE;
 
 #define INTER_MODES (1 + NEWMV - NEARESTMV)
 
+#if CONFIG_MOTION_VAR
+typedef enum {
+  SIMPLE_TRANSLATION = 0,  // regular block based motion compensation
+  OBMC_CAUSAL = 1,         // 2-sided overlapped block prediction
+  MOTION_MODES = 2
+} MOTION_MODE;
+#endif  // CONFIG_MOTION_VAR
+
 #define SKIP_CONTEXTS 3
 
 #if CONFIG_REF_MV

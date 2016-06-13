@@ -144,6 +144,23 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 #endif
 
+#if CONFIG_MOTION_VAR
+static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    MB_MODE_INFO *mbmi, aom_reader *r) {
+  if (is_motion_variation_allowed(mbmi)) {
+    int motion_mode;
+    FRAME_COUNTS *counts = xd->counts;
+
+    motion_mode = aom_read_tree(r, av1_motion_mode_tree,
+                                cm->fc->motion_mode_prob[mbmi->sb_type]);
+    if (counts) ++counts->motion_mode[mbmi->sb_type][motion_mode];
+    return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
+  } else {
+    return SIMPLE_TRANSLATION;
+  }
+}
+#endif  // CONFIG_MOTION_VAR
+
 static int read_segment_id(aom_reader *r,
                            const struct segmentation_probs *segp) {
   return aom_read_tree(r, av1_segment_tree, segp->tree_probs);
@@ -695,7 +712,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->mode = ZEROMV;
     if (bsize < BLOCK_8X8) {
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Invalid usage of segement feature on small blocks");
+                         "Invalid usage of segment feature on small blocks");
       return;
     }
   } else {
@@ -819,6 +836,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     xd->corrupted |= !assign_mv(cm, xd, mbmi->mode, 0, mbmi->mv, nearestmv,
                                 nearestmv, nearmv, is_compound, allow_hp, r);
   }
+#if CONFIG_MOTION_VAR
+  mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);
+#endif  // CONFIG_MOTION_VAR
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,

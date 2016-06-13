@@ -1020,6 +1020,11 @@ static void update_state(AV1_COMP *cpi, ThreadData *td, PICK_MODE_CONTEXT *ctx,
         const int ctx = av1_get_pred_context_switchable_interp(xd);
         ++td->counts->switchable_interp[ctx][mbmi->interp_filter];
       }
+
+#if CONFIG_MOTION_VAR
+      if (is_motion_variation_allowed(mbmi))
+        ++td->counts->motion_mode[bsize][mbmi->motion_mode];
+#endif  // CONFIG_MOTION_VAR
     }
 
     rdc->comp_pred_diff[SINGLE_REFERENCE] += ctx->single_pred_diff;

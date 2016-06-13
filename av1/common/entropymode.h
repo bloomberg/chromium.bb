@@ -66,6 +66,9 @@ typedef struct frame_contexts {
 #endif
 
   aom_prob inter_mode_probs[INTER_MODE_CONTEXTS][INTER_MODES - 1];
+#if CONFIG_MOTION_VAR
+  aom_prob motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1];
+#endif  // CONFIG_MOTION_VAR
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_prob single_ref_prob[REF_CONTEXTS][2];
@@ -104,6 +107,9 @@ typedef struct FRAME_COUNTS {
 #endif
 
   unsigned int inter_mode[INTER_MODE_CONTEXTS][INTER_MODES];
+#if CONFIG_MOTION_VAR
+  unsigned int motion_mode[BLOCK_SIZES][MOTION_MODES];
+#endif  // CONFIG_MOTION_VAR
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
   unsigned int single_ref[REF_CONTEXTS][2][2];
@@ -127,6 +133,9 @@ extern const aom_prob
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
+#if CONFIG_MOTION_VAR
+extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
+#endif  // CONFIG_MOTION_VAR
 extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
 extern const aom_tree_index
     av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];

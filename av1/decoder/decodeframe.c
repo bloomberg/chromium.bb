@@ -1900,6 +1900,14 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
     read_inter_mode_probs(fc, &r);
 
+#if CONFIG_MOTION_VAR
+    for (j = 0; j < BLOCK_SIZES; ++j)
+      if (is_motion_variation_allowed_bsize(j)) {
+        for (i = 0; i < MOTION_MODES - 1; ++i)
+          av1_diff_update_prob(&r, &fc->motion_mode_prob[j][i]);
+      }
+#endif  // CONFIG_MOTION_VAR
+
     if (cm->interp_filter == SWITCHABLE) read_switchable_interp_probs(fc, &r);
 
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
@@ -1957,6 +1965,10 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.switchable_interp)));
   assert(!memcmp(cm->counts.inter_mode, zero_counts.inter_mode,
                  sizeof(cm->counts.inter_mode)));
+#if CONFIG_MOTION_VAR
+  assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
+                 sizeof(cm->counts.motion_mode)));
+#endif  // CONFIG_MOTION_VAR
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
   assert(!memcmp(cm->counts.comp_inter, zero_counts.comp_inter,
