@@ -13,6 +13,7 @@
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
+#include "cc/quads/tile_draw_quad.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
@@ -38,6 +39,11 @@ class CC_EXPORT DirectRenderer : public Renderer {
                  const gfx::Rect& device_clip_rect,
                  bool disable_picture_quad_image_filtering) override;
   virtual void SwapBuffersComplete() {}
+
+  // If a pass contains a single tile draw quad and can be drawn without
+  // a render pass (e.g. applying a filter directly to the tile quad)
+  // return that quad, otherwise return null.
+  virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
@@ -152,6 +158,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
                      std::unique_ptr<ScopedResource>,
                      RenderPassIdHash>
       render_pass_textures_;
+  std::unordered_map<RenderPassId, TileDrawQuad, RenderPassIdHash>
+      render_pass_bypass_quads_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   std::unique_ptr<OverlayProcessor> overlay_processor_;

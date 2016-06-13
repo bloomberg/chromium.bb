@@ -13,6 +13,7 @@
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
+#include "cc/test/solid_color_content_layer_client.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -162,6 +163,41 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(0, 0, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
+  background->AddChild(green);
+  green->SetMaskLayer(mask.get());
+
+  gfx::Transform replica_transform;
+  replica_transform.Rotate(-90.0);
+
+  scoped_refptr<Layer> replica = Layer::Create();
+  replica->SetTransformOrigin(gfx::Point3F(25.f, 25.f, 0.f));
+  replica->SetPosition(gfx::PointF(50.f, 50.f));
+  replica->SetTransform(replica_transform);
+  green->SetReplicaLayer(replica.get());
+
+  RunPixelResourceTest(
+      background, base::FilePath(FILE_PATH_LITERAL("mask_with_replica.png")));
+}
+
+// Test collapsing of render passes containing a single tile quad and
+// drawing them directly with masks and replicas.
+TEST_P(LayerTreeHostMasksPixelTest, ContentLayerMaskWithReplica) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetIsMask(true);
+
+  // Use a border to defeat solid color detection to force a tile quad.
+  SolidColorContentLayerClient green_client(kCSSGreen, mask_bounds, 1,
+                                            SK_ColorBLACK);
+  scoped_refptr<PictureLayer> green = PictureLayer::Create(&green_client);
+  green->SetBounds(mask_bounds);
+  green->SetIsDrawable(true);
   background->AddChild(green);
   green->SetMaskLayer(mask.get());
 

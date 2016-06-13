@@ -177,9 +177,16 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                         ScopedResource* background_texture,
                                         const gfx::RectF& rect);
 
+  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+
   void DrawRenderPassQuad(DrawingFrame* frame,
                           const RenderPassDrawQuad* quadi,
                           const gfx::QuadF* clip_region);
+  void DrawRenderPassQuadInternal(DrawingFrame* frame,
+                                  const RenderPassDrawQuad* quad,
+                                  const gfx::QuadF* clip_region,
+                                  const Resource* contents_texture,
+                                  bool is_render_pass_input);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad,
                           const gfx::QuadF* clip_region);
