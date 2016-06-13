@@ -186,11 +186,6 @@ class AutofillProfile : public AutofillDataModel {
   // for storing or displaying to the user.
   static base::string16 CanonicalizeProfileString(const base::string16& str);
 
-  // Returns true if the given two profile strings are similar enough that
-  // they probably refer to the same thing.
-  static bool AreProfileStringsSimilar(const base::string16& a,
-                                       const base::string16& b);
-
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 

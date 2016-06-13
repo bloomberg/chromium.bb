@@ -135,6 +135,8 @@
         'autofill/core/browser/autofill_popup_delegate.h',
         'autofill/core/browser/autofill_profile.cc',
         'autofill/core/browser/autofill_profile.h',
+        'autofill/core/browser/autofill_profile_comparator.cc',
+        'autofill/core/browser/autofill_profile_comparator.h',
         'autofill/core/browser/autofill_regex_constants.cc',
         'autofill/core/browser/autofill_regex_constants.h',
         'autofill/core/browser/autofill_scanner.cc',

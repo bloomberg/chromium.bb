@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -216,27 +217,6 @@ void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
     }
   }
   std::swap(*type_set, collapsed_set);
-}
-
-base::string16 NormalizeForComparison(const base::string16& text) {
-  using icu::UnicodeString;
-  using icu::Transliterator;
-
-  // Use ICU transliteration to remove diacritics and fold case.
-  // See http://userguide.icu-project.org/transforms/general
-  UErrorCode status = U_ZERO_ERROR;
-  std::unique_ptr<Transliterator> transliterator(Transliterator::createInstance(
-      "NFD; [:Nonspacing Mark:] Remove; Lower; NFC", UTRANS_FORWARD, status));
-  if (U_FAILURE(status) || transliterator == nullptr) {
-    LOG(ERROR) << "Failed to create ICU Transliterator: "
-               << u_errorName(status);
-    return text;
-  }
-
-  UnicodeString value = UnicodeString(text.data(), text.length());
-  transliterator->transliterate(value);
-
-  return base::string16(value.getBuffer(), value.length());
 }
 
 }  // namespace
@@ -795,64 +775,9 @@ void AutofillProfile::RecordAndLogUse() {
 // static
 base::string16 AutofillProfile::CanonicalizeProfileString(
     const base::string16& str) {
-  base::string16 ret;
-  ret.reserve(str.size());
-
-  // This algorithm is not designed to be perfect, we could get arbitrarily
-  // fancy here trying to canonicalize address lines. Instead, this is designed
-  // to handle common cases for all types of data (addresses and names) without
-  // the need of domain-specific logic.
-  //
-  // 1. Convert punctuation to spaces and normalize all whitespace to spaces.
-  //    This will convert "Mid-Island Plz." -> "Mid Island Plz " (the trailing
-  //    space will be trimmed off outside of the end of the loop).
-  //
-  // 2. Collapse consecutive punctuation/whitespace characters to a single
-  //    space. We pretend the string has already started with whitespace in
-  //    order to trim leading spaces.
-  //
-  // 3. Remove diacritics (accents and other non-spacing marks) and perform
-  //    case folding to lower-case.
-
-  bool previous_was_whitespace = true;
-  for (base::i18n::UTF16CharIterator iter(&str); !iter.end(); iter.Advance()) {
-    switch (u_charType(iter.get())) {
-      // Punctuation
-      case U_DASH_PUNCTUATION:
-      case U_START_PUNCTUATION:
-      case U_END_PUNCTUATION:
-      case U_CONNECTOR_PUNCTUATION:
-      case U_OTHER_PUNCTUATION:
-      // Whitespace
-      case U_CONTROL_CHAR:  // To escape the '\n' character.
-      case U_SPACE_SEPARATOR:
-      case U_LINE_SEPARATOR:
-      case U_PARAGRAPH_SEPARATOR:
-        if (!previous_was_whitespace) {
-          ret.push_back(' ');
-          previous_was_whitespace = true;
-        }
-        break;
-
-      default:
-        previous_was_whitespace = false;
-        base::WriteUnicodeCharacter(iter.get(), &ret);
-        break;
-    }
-  }
-
-  // Trim off trailing whitespace if we left one.
-  if (previous_was_whitespace && !ret.empty())
-    ret.resize(ret.size() - 1);
-
-  // Remove diacritics and perform case folding.
-  return NormalizeForComparison(ret);
-}
-
-// static
-bool AutofillProfile::AreProfileStringsSimilar(const base::string16& a,
-                                               const base::string16& b) {
-  return CanonicalizeProfileString(a) == CanonicalizeProfileString(b);
+  // The locale doesn't matter for general string canonicalization.
+  AutofillProfileComparator comparator("en-US");
+  return comparator.NormalizeForComparison(str);
 }
 
 void AutofillProfile::GetSupportedTypes(

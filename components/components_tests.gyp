@@ -34,6 +34,7 @@
       'autofill/core/browser/autofill_merge_unittest.cc',
       'autofill/core/browser/autofill_metrics_unittest.cc',
       'autofill/core/browser/autofill_profile_unittest.cc',
+      'autofill/core/browser/autofill_profile_comparator_unittest.cc',
       'autofill/core/browser/autofill_type_unittest.cc',
       'autofill/core/browser/contact_info_unittest.cc',
       'autofill/core/browser/country_names_unittest.cc',
