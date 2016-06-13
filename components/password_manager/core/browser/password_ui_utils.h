@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
+
 #include "url/gurl.h"
 
 namespace autofill {
@@ -16,6 +18,12 @@ struct PasswordForm;
 }
 
 namespace password_manager {
+
+// Reverses order of labels in hostname.
+std::string SplitByDotAndReverse(base::StringPiece host);
+
+// Removes 'android://' and reverses order of labels in hostname.
+std::string StripAndroidAndReverse(const std::string& origin);
 
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of

@@ -4,8 +4,11 @@
 
 #include "components/password_manager/core/browser/password_ui_utils.h"
 
+#include <algorithm>
 #include <string>
 
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -20,6 +23,20 @@ namespace {
 const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 
 }  // namespace
+
+std::string SplitByDotAndReverse(base::StringPiece host) {
+  std::vector<std::string> parts =
+      base::SplitString(host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::reverse(parts.begin(), parts.end());
+  return base::JoinString(parts, ".");
+}
+
+std::string StripAndroidAndReverse(const std::string& origin) {
+  const int kAndroidAppSchemeAndDelimiterLength = sizeof("android://") - 1;
+  return SplitByDotAndReverse(
+      base::StringPiece(&origin[kAndroidAppSchemeAndDelimiterLength],
+                        origin.length() - kAndroidAppSchemeAndDelimiterLength));
+}
 
 std::string GetShownOriginAndLinkUrl(
     const autofill::PasswordForm& password_form,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -51,17 +52,7 @@ using password_manager::PasswordStore;
 
 namespace {
 
-const int kAndroidAppSchemeAndDelimiterLength = 10;  // Length of 'android://'.
-
 const char kSortKeyPartsSeparator = ' ';
-
-// Reverse order of subdomains in hostname.
-std::string SplitByDotAndReverse(StringPiece host) {
-  std::vector<std::string> parts =
-      base::SplitString(host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::reverse(parts.begin(), parts.end());
-  return base::JoinString(parts, ".");
-}
 
 // Helper function that returns the type of the entry (non-Android credentials,
 // Android w/ affiliated web realm (i.e. clickable) or w/o web realm).
@@ -88,9 +79,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
       form, &is_android_uri, &link_url, &is_clickable);
 
   if (!is_clickable) {  // e.g. android://com.example.r => r.example.com.
-    origin = SplitByDotAndReverse(
-        StringPiece(&origin[kAndroidAppSchemeAndDelimiterLength],
-                    origin.length() - kAndroidAppSchemeAndDelimiterLength));
+    origin = password_manager::StripAndroidAndReverse(origin);
   }
 
   std::string site_name =
@@ -99,7 +88,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   if (site_name.empty())  // e.g. localhost.
     site_name = origin;
   std::string key =
-      site_name + SplitByDotAndReverse(StringPiece(
+      site_name + password_manager::SplitByDotAndReverse(StringPiece(
                       &origin[0], origin.length() - site_name.length()));
 
   if (entry_type == PasswordEntryType::SAVED) {
