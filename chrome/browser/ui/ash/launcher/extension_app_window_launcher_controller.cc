@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -33,7 +34,7 @@ std::string GetAppShelfId(AppWindow* app_window) {
 ExtensionAppWindowLauncherController::ExtensionAppWindowLauncherController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(owner->GetProfile());
   registry_.insert(registry);
   registry->AddObserver(this);
 }
@@ -138,8 +139,11 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
     // If the app shelf id is not unique, and there is already a shelf
     // item for this app id (e.g. pinned), use that shelf item.
-    if (app_shelf_id == app_id)
-      shelf_id = owner()->GetShelfIDForAppID(app_id);
+    if (app_shelf_id == app_id) {
+      shelf_id =
+          ash::Shell::GetInstance()->GetShelfDelegate()->GetShelfIDForAppID(
+              app_id);
+    }
     if (shelf_id == 0) {
       shelf_id = owner()->CreateAppLauncherItem(controller, app_id, status);
       // Restore any existing app icon and flag as set.

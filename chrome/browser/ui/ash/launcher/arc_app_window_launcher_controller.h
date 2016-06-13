@@ -16,6 +16,10 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 
+namespace ash {
+class ShelfDelegate;
+}
+
 namespace aura {
 class Window;
 }
@@ -34,7 +38,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public aura::WindowObserver,
                                        public ArcAppListPrefs::Observer {
  public:
-  explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
+  ArcAppWindowLauncherController(ChromeLauncherController* owner,
+                                 ash::ShelfDelegate* shelf_delegate);
   ~ArcAppWindowLauncherController() override;
 
   // AppWindowLauncherControllre:
@@ -84,6 +89,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
 
+  // Not owned
+  ash::ShelfDelegate* shelf_delegate_;
   int active_task_id_ = -1;
   TaskIdToAppWindow task_id_to_app_window_;
   AppControllerMap app_controller_map_;

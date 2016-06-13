@@ -14,12 +14,13 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
 class ArcAppDeferredLauncherItemController;
-class ChromeLauncherController;
+class ChromeLauncherControllerImpl;
 
 class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
                                          public ArcAppIconLoader::PostEffect {
  public:
-  explicit ArcAppDeferredLauncherController(ChromeLauncherController* owner);
+  explicit ArcAppDeferredLauncherController(
+      ChromeLauncherControllerImpl* owner);
   ~ArcAppDeferredLauncherController() override;
 
   base::TimeDelta GetActiveTime(const std::string& app_id) const;
@@ -46,7 +47,7 @@ class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
   void RegisterNextUpdate();
 
   // Unowned pointers.
-  ChromeLauncherController* owner_;
+  ChromeLauncherControllerImpl* owner_;
   Profile* observed_profile_ = nullptr;
 
   AppControllerMap app_controller_map_;

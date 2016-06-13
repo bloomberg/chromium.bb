@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 
 #include "ash/common/shelf/shelf_item_types.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 
 ArcLauncherContextMenu::ArcLauncherContextMenu(
-    ChromeLauncherController* controller,
+    ChromeLauncherControllerImpl* controller,
     const ash::ShelfItem* item,
     ash::WmShelf* wm_shelf)
     : LauncherContextMenu(controller, item, wm_shelf) {

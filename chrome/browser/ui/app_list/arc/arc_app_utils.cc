@@ -214,7 +214,7 @@ bool LaunchApp(content::BrowserContext* context,
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
     DCHECK(chrome_controller);
-    chrome_controller->arc_deferred_launcher()->RegisterDeferredLaunch(app_id);
+    chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(app_id);
     return true;
   }
 

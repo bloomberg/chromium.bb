@@ -28,7 +28,7 @@ class ChromeLauncherController;
 // controller keeps track of all windows associated with the app and their
 // activation order. Instances are owned by ash::ShelfItemDelegateManager.
 //
-// Tests are in chrome_launcher_controller_browsertest.cc
+// Tests are in chrome_launcher_controller_impl_browsertest.cc
 class AppWindowLauncherItemController : public LauncherItemController,
                                         public aura::WindowObserver {
  public:

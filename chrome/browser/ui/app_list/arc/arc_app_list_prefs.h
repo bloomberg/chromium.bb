@@ -146,7 +146,7 @@ class ArcAppListPrefs : public KeyedService,
   void OnOptInEnabled(bool enabled) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerTest, ArcAppPinPolicy);
+  FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, ArcAppPinPolicy);
 
   // See the Create methods.
   ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);

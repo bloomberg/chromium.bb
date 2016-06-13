@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 
 #include <stddef.h>
 
@@ -82,6 +82,11 @@ using extensions::Extension;
 using content::WebContents;
 
 namespace {
+
+ChromeLauncherControllerImpl* GetChromeLauncherControllerImpl() {
+  return static_cast<ChromeLauncherControllerImpl*>(
+      ChromeLauncherController::instance());
+}
 
 class TestEvent : public ui::Event {
  public:
@@ -188,7 +193,7 @@ class LauncherPlatformAppBrowserTest
 
   void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
-    controller_ = ChromeLauncherController::instance();
+    controller_ = GetChromeLauncherControllerImpl();
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
@@ -237,7 +242,7 @@ class LauncherPlatformAppBrowserTest
   }
 
   ash::Shelf* shelf_;
-  ChromeLauncherController* controller_;
+  ChromeLauncherControllerImpl* controller_;
 
  private:
 
@@ -265,7 +270,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
     model_ = ash::test::ShellTestApi(ash::Shell::GetInstance()).shelf_model();
-    controller_ = ChromeLauncherController::instance();
+    controller_ = GetChromeLauncherControllerImpl();
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 
@@ -389,10 +394,9 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
   ash::Shelf* shelf_;
   ash::ShelfModel* model_;
-  ChromeLauncherController* controller_;
+  ChromeLauncherControllerImpl* controller_;
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTest);
 };
 
@@ -900,9 +904,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
   LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
                          NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id(),
-                                                  ash::LAUNCH_FROM_UNKNOWN,
-                                                  0);
+  controller_->LaunchApp(last_loaded_extension_id(),
+                                               ash::LAUNCH_FROM_UNKNOWN,
+                                               0);
 }
 
 // Confirm that clicking a icon for an app running in one of 2 maxmized windows
@@ -942,13 +946,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  ChromeLauncherController::instance()->ActivateApp(extension->id(),
-                                                    ash::LAUNCH_FROM_UNKNOWN,
-                                                    0);
+  controller_->ActivateApp(extension->id(),
+                                                 ash::LAUNCH_FROM_UNKNOWN,
+                                                 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->ActivateApp(extension->id(),
-                                                    ash::LAUNCH_FROM_UNKNOWN,
-                                                    0);
+  controller_->ActivateApp(extension->id(),
+                                                 ash::LAUNCH_FROM_UNKNOWN,
+                                                 0);
   EXPECT_EQ(tab_count, tab_strip->count());
 }
 
@@ -959,13 +963,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  ChromeLauncherController::instance()->LaunchApp(extension->id(),
-                                                  ash::LAUNCH_FROM_UNKNOWN,
-                                                  0);
+  controller_->LaunchApp(extension->id(),
+                                               ash::LAUNCH_FROM_UNKNOWN,
+                                               0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->LaunchApp(extension->id(),
-                                                  ash::LAUNCH_FROM_UNKNOWN,
-                                                  0);
+  controller_->LaunchApp(extension->id(),
+                                               ash::LAUNCH_FROM_UNKNOWN,
+                                               0);
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 

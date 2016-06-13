@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
 #include "ash/metrics/task_switch_metrics_recorder.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -37,23 +38,21 @@ gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
 }
 
 bool AppListControllerDelegateAsh::IsAppPinned(const std::string& app_id) {
-  return ChromeLauncherController::instance()->IsAppPinned(app_id);
+  return ash::Shell::GetInstance()->GetShelfDelegate()->IsAppPinned(app_id);
 }
 
 bool AppListControllerDelegateAsh::IsAppOpen(const std::string& app_id) const {
-  ChromeLauncherController* controller = ChromeLauncherController::instance();
-  ash::ShelfID id = controller->GetShelfIDForAppID(app_id);
-  if (!id)
-    return false;
-  return controller->IsOpen(id);
+  ash::ShelfID id =
+      ash::Shell::GetInstance()->GetShelfDelegate()->GetShelfIDForAppID(app_id);
+  return id && ChromeLauncherController::instance()->IsOpen(id);
 }
 
 void AppListControllerDelegateAsh::PinApp(const std::string& app_id) {
-  ChromeLauncherController::instance()->PinAppWithID(app_id);
+  ash::Shell::GetInstance()->GetShelfDelegate()->PinAppWithID(app_id);
 }
 
 void AppListControllerDelegateAsh::UnpinApp(const std::string& app_id) {
-  ChromeLauncherController::instance()->UnpinAppWithID(app_id);
+  ash::Shell::GetInstance()->GetShelfDelegate()->UnpinAppWithID(app_id);
 }
 
 AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(

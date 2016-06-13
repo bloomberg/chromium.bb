@@ -1227,7 +1227,7 @@ if (!is_android) {
         # TODO: enable these on windows and linux.
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/accelerator_controller_browsertest.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
+        "../browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc",
         "../browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
       ]

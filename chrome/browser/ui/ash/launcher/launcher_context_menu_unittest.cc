@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,7 +36,8 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   void SetUp() override {
     arc_test_.SetUp(profile_.get());
     ash::test::AshTestBase::SetUp();
-    controller_.reset(new ChromeLauncherController(profile(), &shelf_model_));
+    controller_.reset(
+        new ChromeLauncherControllerImpl(profile(), &shelf_model_));
   }
 
   void TearDown() override {
@@ -68,12 +69,12 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   Profile* profile() { return profile_.get(); }
 
-  ChromeLauncherController* controller() { return controller_.get(); }
+  ChromeLauncherControllerImpl* controller() { return controller_.get(); }
 
  private:
   std::unique_ptr<TestingProfile> profile_;
   ash::ShelfModel shelf_model_;
-  std::unique_ptr<ChromeLauncherController> controller_;
+  std::unique_ptr<ChromeLauncherControllerImpl> controller_;
   ArcAppTest arc_test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);

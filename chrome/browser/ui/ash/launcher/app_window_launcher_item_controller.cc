@@ -138,8 +138,8 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 AppWindowLauncherItemController::GetTitle() {
-  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
-                                               app_id());
+  return LauncherControllerHelper::GetAppTitle(
+      launcher_controller()->GetProfile(), app_id());
 }
 
 bool AppWindowLauncherItemController::IsDraggable() {

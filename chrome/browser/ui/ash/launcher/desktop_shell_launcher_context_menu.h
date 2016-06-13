@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
-class ChromeLauncherController;
+class ChromeLauncherControllerImpl;
 
 namespace ash {
 struct ShelfItem;
@@ -18,7 +18,7 @@ class WmShelf;
 // Class for context menu which is shown when right click on desktop shell.
 class DesktopShellLauncherContextMenu : public LauncherContextMenu {
  public:
-  DesktopShellLauncherContextMenu(ChromeLauncherController* controller,
+  DesktopShellLauncherContextMenu(ChromeLauncherControllerImpl* controller,
                                   const ash::ShelfItem* item,
                                   ash::WmShelf* shelf);
   ~DesktopShellLauncherContextMenu() override;

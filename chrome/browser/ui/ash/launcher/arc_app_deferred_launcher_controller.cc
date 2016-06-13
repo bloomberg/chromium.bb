@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -55,10 +55,10 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 }  // namespace
 
 ArcAppDeferredLauncherController::ArcAppDeferredLauncherController(
-    ChromeLauncherController* owner)
+    ChromeLauncherControllerImpl* owner)
     : owner_(owner), weak_ptr_factory_(this) {
-  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
-    observed_profile_ = owner->profile();
+  if (arc::ArcAuthService::IsAllowedForProfile(owner->GetProfile())) {
+    observed_profile_ = owner->GetProfile();
     ArcAppListPrefs::Get(observed_profile_)->AddObserver(this);
   }
 }
@@ -109,7 +109,7 @@ void ArcAppDeferredLauncherController::OnAppReadyChanged(
 
   Close(app_id);
 
-  arc::LaunchApp(owner_->profile(), app_id);
+  arc::LaunchApp(owner_->GetProfile(), app_id);
 }
 
 void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
@@ -131,7 +131,7 @@ void ArcAppDeferredLauncherController::UpdateApps() {
 
   RegisterNextUpdate();
   for (const auto pair : app_controller_map_)
-    owner_->OnAppUpdated(owner_->profile(), pair.first);
+    owner_->OnAppUpdated(owner_->GetProfile(), pair.first);
 }
 
 void ArcAppDeferredLauncherController::RegisterNextUpdate() {

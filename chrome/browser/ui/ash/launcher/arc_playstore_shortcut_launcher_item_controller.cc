@@ -28,8 +28,8 @@ ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
     auth_service->EnableArc();
 
   // Deferred launcher.
-  playstore_launcher_.reset(
-      new ArcAppLauncher(controller()->profile(), arc::kPlayStoreAppId, true));
+  playstore_launcher_.reset(new ArcAppLauncher(controller()->GetProfile(),
+                                               arc::kPlayStoreAppId, true));
 
   return kNoAction;
 }

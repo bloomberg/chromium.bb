@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class ChromeLauncherController;
+class ChromeLauncherControllerImpl;
 
 namespace ash {
 class WmShelf;
@@ -26,7 +26,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   ~LauncherContextMenu() override;
 
   // Static function to create contextmenu instance.
-  static LauncherContextMenu* Create(ChromeLauncherController* controller,
+  static LauncherContextMenu* Create(ChromeLauncherControllerImpl* controller,
                                      const ash::ShelfItem* item,
                                      ash::WmShelf* wm_shelf);
 
@@ -56,10 +56,10 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_ITEM_COUNT
   };
 
-  LauncherContextMenu(ChromeLauncherController* controller,
+  LauncherContextMenu(ChromeLauncherControllerImpl* controller,
                       const ash::ShelfItem* item,
                       ash::WmShelf* wm_shelf);
-  ChromeLauncherController* controller() const { return controller_; }
+  ChromeLauncherControllerImpl* controller() const { return controller_; }
 
   const ash::ShelfItem& item() const { return item_; }
 
@@ -90,7 +90,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   FRIEND_TEST_ALL_PREFIXES(ShelfAppBrowserTest,
                            LauncherContextMenuVerifyCloseItemAppearance);
 
-  ChromeLauncherController* controller_;
+  ChromeLauncherControllerImpl* controller_;
 
   ash::ShelfItem item_;
 

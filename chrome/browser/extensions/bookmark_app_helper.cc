@@ -72,7 +72,8 @@
 #endif  // defined(OS_WIN)
 
 #if defined(USE_ASH)
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "ash/shelf/shelf_delegate.h"
+#include "ash/shell.h"
 #endif
 
 namespace {
@@ -716,7 +717,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                            creation_locations, current_profile, extension);
 #else
-  ChromeLauncherController::instance()->PinAppWithID(extension->id());
+  ash::Shell::GetInstance()->GetShelfDelegate()->PinAppWithID(extension->id());
 #endif  // !defined(USE_ASH)
 #endif  // !defined(OS_MACOSX)
 

@@ -639,7 +639,7 @@
       'browser/ui/ash/accelerator_controller_browsertest.cc',
       'browser/ui/ash/chrome_new_window_delegate_browsertest.cc',
       'browser/ui/ash/keyboard_controller_browsertest.cc',
-      'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
+      'browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc',
       'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
       'browser/ui/ash/multi_user/multi_user_window_manager_test.cc',
       'browser/ui/ash/multi_user/multi_user_window_manager_test.h',
@@ -2518,7 +2518,7 @@
             # TODO: enable these on windows and linux.
             'browser/ui/ash/accelerator_commands_browsertest.cc',
             'browser/ui/ash/accelerator_controller_browsertest.cc',
-            'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
+            'browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
             'browser/ui/ash/shelf_browsertest.cc',
             'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',

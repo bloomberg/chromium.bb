@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/common/pref_names.h"
@@ -39,7 +39,7 @@ bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
 
 // static
 LauncherContextMenu* LauncherContextMenu::Create(
-    ChromeLauncherController* controller,
+    ChromeLauncherControllerImpl* controller,
     const ash::ShelfItem* item,
     ash::WmShelf* wm_shelf) {
   DCHECK(controller);
@@ -50,7 +50,7 @@ LauncherContextMenu* LauncherContextMenu::Create(
 
   // Create ArcLauncherContextMenu if the item is an Arc app.
   const std::string& app_id = controller->GetAppIDForShelfID(item->id);
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(controller->profile());
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(controller->GetProfile());
   if (arc_prefs && arc_prefs->IsRegistered(app_id))
     return new ArcLauncherContextMenu(controller, item, wm_shelf);
 
@@ -58,9 +58,10 @@ LauncherContextMenu* LauncherContextMenu::Create(
   return new ExtensionLauncherContextMenu(controller, item, wm_shelf);
 }
 
-LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         const ash::ShelfItem* item,
-                                         ash::WmShelf* wm_shelf)
+LauncherContextMenu::LauncherContextMenu(
+    ChromeLauncherControllerImpl* controller,
+    const ash::ShelfItem* item,
+    ash::WmShelf* wm_shelf)
     : ui::SimpleMenuModel(nullptr),
       controller_(controller),
       item_(item ? *item : ash::ShelfItem()),
@@ -99,7 +100,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
           ->user_wallpaper_delegate()
           ->CanOpenSetWallpaperPage();
     case MENU_AUTO_HIDE:
-      return CanUserModifyShelfAutoHideBehavior(controller_->profile());
+      return CanUserModifyShelfAutoHideBehavior(controller_->GetProfile());
     default:
       DCHECK(command_id < MENU_ITEM_COUNT);
       return true;
@@ -182,7 +183,7 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
   // while in fullscreen because it is confusing when the preference appears
   // not to apply.
   if (!IsFullScreenMode() &&
-      CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
+      CanUserModifyShelfAutoHideBehavior(controller_->GetProfile())) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
@@ -192,7 +193,7 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);
   }
-  if (!controller_->profile()->IsGuestSession())
+  if (!controller_->GetProfile()->IsGuestSession())
     AddItemWithStringId(MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER);
 }
 

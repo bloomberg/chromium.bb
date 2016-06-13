@@ -44,7 +44,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -422,7 +422,8 @@ app_list::AppListPresenter* ChromeShellDelegate::GetAppListPresenter() {
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     ash::ShelfModel* model) {
   if (!shelf_delegate_) {
-    shelf_delegate_ = ChromeLauncherController::CreateInstance(NULL, model);
+    shelf_delegate_ =
+        ChromeLauncherControllerImpl::CreateInstance(nullptr, model);
     shelf_delegate_->Init();
   }
   return shelf_delegate_;

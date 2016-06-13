@@ -22,7 +22,7 @@ ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 
 base::string16 ArcAppWindowLauncherItemController::GetTitle() {
   ArcAppListPrefs* arc_prefs =
-      ArcAppListPrefs::Get(launcher_controller()->profile());
+      ArcAppListPrefs::Get(launcher_controller()->GetProfile());
   DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());

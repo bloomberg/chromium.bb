@@ -24,7 +24,7 @@ namespace keyboard {
 class KeyboardUI;
 }
 
-class ChromeLauncherController;
+class ChromeLauncherControllerImpl;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
@@ -79,7 +79,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  ChromeLauncherController* shelf_delegate_;
+  ChromeLauncherControllerImpl* shelf_delegate_;
 
   base::ObserverList<ash::VirtualKeyboardStateObserver>
       keyboard_state_observer_list_;

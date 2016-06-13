@@ -4,6 +4,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
 #include "ash/common/wm/window_state.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -186,10 +187,11 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 };
 
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
-    ChromeLauncherController* owner)
-    : AppWindowLauncherController(owner) {
-  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
-    observed_profile_ = owner->profile();
+    ChromeLauncherController* owner,
+    ash::ShelfDelegate* shelf_delegate)
+    : AppWindowLauncherController(owner), shelf_delegate_(shelf_delegate) {
+  if (arc::ArcAuthService::IsAllowedForProfile(owner->GetProfile())) {
+    observed_profile_ = owner->GetProfile();
     StartObserving(observed_profile_);
   }
 }
@@ -334,7 +336,7 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
-  if (observed_profile_ != owner()->profile())
+  if (observed_profile_ != owner()->GetProfile())
     return;
 
   TaskIdToAppWindow::iterator previous_active_app_it =
@@ -425,7 +427,7 @@ void ArcAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     shelf_id = controller->shelf_id();
   } else {
     controller = new ArcAppWindowLauncherItemController(app_id, owner());
-    shelf_id = owner()->GetShelfIDForAppID(app_id);
+    shelf_id = shelf_delegate_->GetShelfIDForAppID(app_id);
     if (shelf_id == 0) {
       // Map Play Store shelf icon to Arc Support host, to share one entry.
       shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
