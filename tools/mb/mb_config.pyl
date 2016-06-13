@@ -755,7 +755,12 @@
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'linux_chromium_gn_chromeos_variable': 'findit',
       'linux_chromium_gn_upload': 'gn_linux_upload',
-      'linux_chromium_msan_rel_ng': 'swarming_msan_gn_release_trybot',
+
+      # This is intentionally a release_bot and not a release_trybot;
+      # enabling DCHECKs seems to cause flaky failures that don't show up
+      # on the continuous builder.
+      'linux_chromium_msan_rel_ng': 'swarming_msan_gn_release_bot',
+
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng':
         'swarming_tsan_disable_nacl_gn_release_trybot',
@@ -1868,10 +1873,6 @@
 
     'swarming_msan_gn_release_bot': [
       'swarming', 'msan', 'gn', 'release_bot',
-    ],
-
-    'swarming_msan_gn_release_trybot': [
-      'swarming', 'msan', 'gn', 'release_trybot',
     ],
 
     'win_clang_debug_bot': [
