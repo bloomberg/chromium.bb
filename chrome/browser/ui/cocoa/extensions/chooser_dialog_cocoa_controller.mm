@@ -109,11 +109,17 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
 }
 
 - (void)onOptionRemoved:(NSInteger)index {
-  // |tableView_| will automatically selects the next item if the current
-  // item is removed, so here it tracks if the removed item is the item
-  // that was previously selected, if so, deselect it.
-  if ([tableView_ selectedRow] == index)
+  // |tableView_| will automatically select the removed item's next item.
+  // So here it tracks if the removed item is the item that was currently
+  // selected, if so, deselect it. Also if the removed item is before the
+  // currently selected item, the currently selected item's index needs to
+  // be adjusted by one.
+  NSInteger selectedRow = [tableView_ selectedRow];
+  if (selectedRow == index)
     [tableView_ deselectRow:index];
+  else if (selectedRow > index)
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow - 1]
+            byExtendingSelection:NO];
 
   [self updateTableView];
 }
