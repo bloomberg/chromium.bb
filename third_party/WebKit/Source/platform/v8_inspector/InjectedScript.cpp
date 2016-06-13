@@ -405,14 +405,8 @@ bool InjectedScript::Scope::initialize()
 
 bool InjectedScript::Scope::installCommandLineAPI()
 {
-    DCHECK(m_injectedScript && !m_context.IsEmpty() && m_global.IsEmpty());
-    m_extensionPrivate = V8Debugger::scopeExtensionPrivate(m_debugger->isolate());
-    v8::Local<v8::Object> global = m_context->Global();
-    if (!global->SetPrivate(m_context, m_extensionPrivate, m_injectedScript->commandLineAPI()).FromMaybe(false)) {
-        *m_errorString = "Internal error";
-        return false;
-    }
-    m_global = global;
+    DCHECK(m_injectedScript && !m_context.IsEmpty() && !m_commandLineAPIScope.get());
+    m_commandLineAPIScope.reset(new V8Console::CommandLineAPIScope(m_context, m_injectedScript->commandLineAPI(), m_context->Global()));
     return true;
 }
 
@@ -443,12 +437,7 @@ void InjectedScript::Scope::pretendUserGesture()
 
 void InjectedScript::Scope::cleanup()
 {
-    v8::Local<v8::Object> global;
-    if (m_global.ToLocal(&global)) {
-        DCHECK(!m_context.IsEmpty());
-        global->DeletePrivate(m_context, m_extensionPrivate);
-        m_global = v8::MaybeLocal<v8::Object>();
-    }
+    m_commandLineAPIScope.reset();
     if (!m_context.IsEmpty()) {
         m_context->Exit();
         m_context.Clear();

@@ -41,7 +41,6 @@
 namespace blink {
 
 class LocalFrame;
-class V8Debugger;
 class SecurityOrigin;
 
 class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
@@ -68,7 +67,6 @@ public:
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
 
-    static bool isCommandLineAPIMethod(const String& name);
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;

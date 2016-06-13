@@ -1,0 +1,144 @@
+Tests that CommandLineAPI is presented only while evaluation.
+
+{
+    result : {
+        description : 15
+        type : number
+        value : 15
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+setPropertyForMethod()
+{
+    result : {
+        description : 14
+        type : number
+        value : 14
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 42
+        type : number
+        value : 42
+    }
+    wasThrown : false
+}
+defineValuePropertyForMethod()
+{
+    result : {
+        description : 14
+        type : number
+        value : 14
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 42
+        type : number
+        value : 42
+    }
+    wasThrown : false
+}
+definePropertiesForMethod()
+{
+    result : {
+        description : 14
+        type : number
+        value : 14
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 42
+        type : number
+        value : 42
+    }
+    wasThrown : false
+}
+defineAccessorPropertyForMethod()
+{
+    result : {
+        description : 14
+        type : number
+        value : 14
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 42
+        type : number
+        value : 42
+    }
+    wasThrown : false
+}
+redefineGetOwnPropertyDescriptors()
+{
+    result : {
+        description : 14
+        type : number
+        value : 14
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 0
+        type : number
+        value : 0
+    }
+    wasThrown : false
+}
+{
+    result : {
+        description : 42
+        type : number
+        value : 42
+    }
+    wasThrown : false
+}
+

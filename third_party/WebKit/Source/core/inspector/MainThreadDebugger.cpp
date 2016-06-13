@@ -237,17 +237,6 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v
     return toV8(MemoryInfo::create(), context->Global(), isolate);
 }
 
-bool MainThreadDebugger::isCommandLineAPIMethod(const String& name)
-{
-    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
-    if (methods.size() == 0) {
-        const char* members[] = { "$", "$$", "$x" };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
-            methods.add(members[i]);
-    }
-    return methods.find(name) != methods.end() || ThreadDebugger::isCommandLineAPIMethod(name);
-}
-
 void MainThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
     ThreadDebugger::installAdditionalCommandLineAPI(context, object);

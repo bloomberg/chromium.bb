@@ -43,10 +43,6 @@ public:
     virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) = 0;
     virtual bool isPaused() = 0;
 
-    static v8::Local<v8::Private> scopeExtensionPrivate(v8::Isolate*);
-    static bool isCommandLineAPIMethod(const String16& name);
-    static bool isCommandLineAPIGetter(const String16& name);
-
     virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;
     virtual std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
 };

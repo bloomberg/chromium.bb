@@ -136,17 +136,6 @@ void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::
         return;
 }
 
-bool ThreadDebugger::isCommandLineAPIMethod(const String& name)
-{
-    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
-    if (methods.size() == 0) {
-        const char* members[] = { "monitorEvents", "unmonitorEvents", "getEventListeners" };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
-            methods.add(members[i]);
-    }
-    return methods.find(name) != methods.end() || V8Debugger::isCommandLineAPIMethod(name);
-}
-
 void ThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
     createFunctionProperty(context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback, "function monitorEvents(object, [types]) { [Command Line API] }");

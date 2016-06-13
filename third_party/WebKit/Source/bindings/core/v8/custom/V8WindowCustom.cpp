@@ -56,13 +56,11 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 
@@ -246,41 +244,6 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, openedWindow, impl);
 }
 
-static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!InspectorInstrumentation::hasFrontends())
-        return false;
-
-    bool isGetter = V8Debugger::isCommandLineAPIGetter(nameString);
-    bool isMethod = !isGetter && MainThreadDebugger::isCommandLineAPIMethod(nameString);
-    if (!isGetter && !isMethod)
-        return false;
-
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::Local<v8::Object> global = context->Global();
-    v8::Local<v8::Value> scopeExtensionValue;
-
-    if (v8Call(global->GetPrivate(context, V8Debugger::scopeExtensionPrivate(isolate)), scopeExtensionValue)) {
-        v8::Local<v8::Value> value;
-        if (scopeExtensionValue->IsObject() && v8Call(scopeExtensionValue->ToObject(isolate)->Get(context, name), value)) {
-            if (isMethod) {
-                v8SetReturnValue(info, value);
-                return true;
-            }
-            if (isGetter && value->IsFunction()) {
-                v8::Local<v8::Function> getterFunction = v8::Local<v8::Function>::Cast(value);
-                v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-                if (getterFunction->Call(context, scopeExtensionValue, 0, nullptr).ToLocal(&value)) {
-                    v8SetReturnValue(info, value);
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     auto nameString = name.As<v8::String>();
@@ -306,9 +269,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 
     // If the frame is remote, the caller will never be able to access further named results.
     if (!frame->isLocalFrame())
-        return;
-
-    if (namedPropertyFromDebuggerScopeExtension(name, propName, info))
         return;
 
     // Search named items in the document.

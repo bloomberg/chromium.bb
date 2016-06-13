@@ -35,6 +35,7 @@
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 
@@ -114,8 +115,7 @@ public:
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;
         v8::Local<v8::Context> m_context;
-        v8::Local<v8::Private> m_extensionPrivate;
-        v8::MaybeLocal<v8::Object> m_global;
+        std::unique_ptr<V8Console::CommandLineAPIScope> m_commandLineAPIScope;
         bool m_ignoreExceptionsAndMuteConsole;
         V8DebuggerImpl::PauseOnExceptionsState m_previousPauseOnExceptionsState;
         bool m_userGesture;
