@@ -1,0 +1,14 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x174
+  LayoutBlockFlow {HTML} at (0,0) size 800x174
+    LayoutBlockFlow {BODY} at (8,8) size 784x158
+      LayoutText {#text} at (0,0) size 0x0
+layer at (108,108) size 304x154
+  LayoutIFrame (relative positioned) {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 300x150
+      LayoutView at (0,0) size 300x150
+    layer at (0,0) size 300x34
+      LayoutBlockFlow {HTML} at (0,0) size 300x34
+        LayoutBlockFlow {BODY} at (8,8) size 284x18
+          LayoutImage {IMG} at (0,3) size 11x11
