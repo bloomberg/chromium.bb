@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import os
+import random
 import sys
 import time
 
@@ -188,6 +189,12 @@ class Worker(object):
                                                remote_log_path)
     # Self destruct.
     if self._self_destruct:
+      # Workaround for ComputeEngine internal bug b/28760288.
+      random_delay = random.random() * 600.0  # Up to 10 minutes.
+      self._logger.info(
+          'Wait %.0fs to avoid load spikes on compute engine.' % random_delay)
+      time.sleep(random_delay)
+
       self._logger.info('Starting instance destruction: ' + self._instance_name)
       google_instance_helper = GoogleInstanceHelper(
           self._credentials, self._project_name, self._logger)
