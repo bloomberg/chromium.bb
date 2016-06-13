@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray_update.h"
+#include "ash/common/system/update/tray_update.h"
 
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -19,8 +18,7 @@ using TrayUpdateTest = test::AshTestBase;
 // Tests that the update icon becomes visible when an update becomes
 // available.
 TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
-  TrayUpdate* tray_update =
-      Shell::GetInstance()->GetPrimarySystemTray()->GetTrayUpdateForTesting();
+  TrayUpdate* tray_update = GetPrimarySystemTray()->GetTrayUpdateForTesting();
 
   // The system starts with no update pending.
   test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray_update.h"
+#include "ash/common/system/update/tray_update.h"
 
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -12,13 +12,11 @@
 #include "ash/system/tray/system_tray.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 

@@ -272,6 +272,10 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
   return ash_test_helper_->test_screenshot_delegate();
 }
 
+SystemTray* AshTestBase::GetPrimarySystemTray() {
+  return Shell::GetInstance()->GetPrimarySystemTray();
+}
+
 TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
   return static_cast<TestSystemTrayDelegate*>(
       WmShell::Get()->system_tray_delegate());

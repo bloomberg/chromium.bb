@@ -42,6 +42,7 @@ class WindowDelegate;
 
 namespace ash {
 class DisplayManager;
+class SystemTray;
 
 namespace test {
 
@@ -123,6 +124,10 @@ class AshTestBase : public testing::Test {
   void RunAllPendingInMessageLoop();
 
   TestScreenshotDelegate* GetScreenshotDelegate();
+
+  // Returns the system tray on the primary display.
+  SystemTray* GetPrimarySystemTray();
+
   TestSystemTrayDelegate* GetSystemTrayDelegate();
 
   // Utility methods to emulate user logged in or not, session started or not
