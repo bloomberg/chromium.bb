@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
@@ -60,8 +61,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     const int kTestingSessionId = 1;
     recognizer_ = new SpeechRecognizerImpl(
         this, kTestingSessionId, false, false, sr_engine);
-    audio_manager_.reset(new media::MockAudioManager(
-        base::MessageLoop::current()->task_runner().get()));
+    audio_manager_.reset(
+        new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get().get()));
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());
 
     int audio_packet_length_bytes =

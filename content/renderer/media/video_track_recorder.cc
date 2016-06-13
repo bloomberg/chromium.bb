@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
@@ -117,7 +118,7 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
           int32_t bits_per_second,
           scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
               nullptr)
-      : main_task_runner_(base::MessageLoop::current()->task_runner()),
+      : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         encoding_task_runner_(encoding_task_runner),
         paused_(false),
         on_encoded_video_callback_(on_encoded_video_callback),
@@ -177,7 +178,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     base::TimeTicks capture_timestamp) {
   // Cache the thread sending frames on first frame arrival.
   if (!origin_task_runner_.get())
-    origin_task_runner_ = base::MessageLoop::current()->task_runner();
+    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(origin_task_runner_->BelongsToCurrentThread());
   if (paused_)
     return;

@@ -5684,7 +5684,7 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       render_thread->compositor_task_runner();
   if (!compositor_task_runner.get())
-    compositor_task_runner = base::MessageLoop::current()->task_runner();
+    compositor_task_runner = base::ThreadTaskRunnerHandle::Get();
 
   return new WebMediaPlayerMS(
       frame_, client, GetWebMediaPlayerDelegate()->AsWeakPtr(),

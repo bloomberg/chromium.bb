@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
 
@@ -109,7 +109,7 @@ WebRtcAudioSink::Adapter::Adapter(
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       source_(std::move(source)),
       signaling_task_runner_(std::move(signaling_task_runner)),
-      main_task_runner_(base::MessageLoop::current()->task_runner()) {
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(signaling_task_runner_);
 }
 

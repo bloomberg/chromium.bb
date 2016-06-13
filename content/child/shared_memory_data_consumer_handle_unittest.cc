@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/child/fixed_received_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,8 +207,8 @@ class SharedMemoryDataConsumerHandleTest
 
 void RunPostedTasks() {
   base::RunLoop run_loop;
-  base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
-                                                        run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   run_loop.Run();
 }
 

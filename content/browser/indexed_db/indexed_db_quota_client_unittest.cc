@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
@@ -47,8 +48,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
     scoped_refptr<storage::QuotaManager> quota_manager =
         new MockQuotaManager(false /*in_memory*/, browser_context_->GetPath(),
-                             base::MessageLoop::current()->task_runner(),
-                             base::MessageLoop::current()->task_runner(),
+                             base::ThreadTaskRunnerHandle::Get(),
+                             base::ThreadTaskRunnerHandle::Get(),
                              browser_context_->GetSpecialStoragePolicy());
 
     idb_context_ =

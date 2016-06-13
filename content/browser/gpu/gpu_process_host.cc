@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -569,11 +570,11 @@ bool GpuProcessHost::Init() {
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(g_gpu_main_thread_factory);
-    in_process_gpu_thread_.reset(
-        g_gpu_main_thread_factory(InProcessChildThreadParams(
-            channel_id, base::MessageLoop::current()->task_runner(),
-            std::string(), mojo_application_host_->GetToken()),
-            gpu_preferences));
+    in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
+        InProcessChildThreadParams(
+            channel_id, base::ThreadTaskRunnerHandle::Get(), std::string(),
+            mojo_application_host_->GetToken()),
+        gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.
