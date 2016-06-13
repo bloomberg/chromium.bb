@@ -353,6 +353,11 @@ static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	if (msm_ring->ring_bo)
 		fd_bo_del(msm_ring->ring_bo);
+	free(msm_ring->submit.relocs);
+	free(msm_ring->submit.cmds);
+	free(msm_ring->submit.bos);
+	free(msm_ring->bos);
+	free(msm_ring->rings);
 	free(msm_ring);
 }
 
