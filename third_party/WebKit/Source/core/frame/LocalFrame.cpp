@@ -463,27 +463,6 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
-String LocalFrame::layerTreeAsText(LayerTreeFlags flags) const
-{
-    TextStream textStream;
-    textStream << localLayerTreeAsText(flags);
-
-    for (Frame* child = tree().firstChild(); child; child = child->tree().traverseNext(this)) {
-        if (!child->isLocalFrame())
-            continue;
-        String childLayerTree = toLocalFrame(child)->localLayerTreeAsText(flags);
-        if (!childLayerTree.length())
-            continue;
-
-        textStream << "\n\n--------\nFrame: '";
-        textStream << child->tree().uniqueName();
-        textStream << "'\n--------\n";
-        textStream << childLayerTree;
-    }
-
-    return textStream.release();
-}
-
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
 {
     // In setting printing, we should not validate resources already cached for the document.
@@ -751,7 +730,7 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
-String LocalFrame::localLayerTreeAsText(unsigned flags) const
+String LocalFrame::layerTreeAsText(unsigned flags) const
 {
     if (contentLayoutItem().isNull())
         return String();

@@ -193,8 +193,6 @@ private:
     bool isLocalFrame() const override { return true; }
     bool isRemoteFrame() const override { return false; }
 
-    String localLayerTreeAsText(unsigned flags) const;
-
     void enableNavigation() { --m_navigationDisableCount; }
     void disableNavigation() { ++m_navigationDisableCount; }
 

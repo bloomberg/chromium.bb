@@ -65,28 +65,3 @@
   ]
 }
 
-
---------
-Frame: '<!--framePath //<!--frame0-->-->'
---------
-{
-  "position": [-615, 0],
-  "bounds": [1000, 1000],
-  "children": [
-    {
-      "bounds": [1000, 1000],
-      "drawsContent": true,
-      "backgroundColor": "#FF0000",
-      "children": [
-        {
-          "position": [665, 50],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        }
-      ]
-    }
-  ]
-}
-

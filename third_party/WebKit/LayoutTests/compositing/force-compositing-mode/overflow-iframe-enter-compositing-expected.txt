@@ -56,17 +56,3 @@
   ]
 }
 
-
---------
-Frame: '<!--framePath //<!--frame0-->-->'
---------
-{
-  "bounds": [508, 516],
-  "children": [
-    {
-      "bounds": [508, 516],
-      "drawsContent": true
-    }
-  ]
-}
-
