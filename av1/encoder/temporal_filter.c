@@ -39,7 +39,9 @@ static void temporal_filter_predictors_mb_c(
   const MV mv = { mv_row, mv_col };
   enum mv_precision mv_precision_uv;
   int uv_stride;
-  InterpFilter *interp_filter = &xd->mi[0]->mbmi.interp_filter;
+  InterpFilter interp_filter[4] = { EIGHTTAP_SHARP, EIGHTTAP_SHARP,
+                                    EIGHTTAP_SHARP, EIGHTTAP_SHARP };
+  (void)xd;
   if (uv_block_width == 8) {
     uv_stride = (stride + 1) >> 1;
     mv_precision_uv = MV_PRECISION_Q4;
@@ -90,15 +92,37 @@ void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
 
   for (i = 0, k = 0; i < block_height; i++) {
     for (j = 0; j < block_width; j++, k++) {
-      int src_byte = frame1[byte];
-      int pixel_value = *frame2++;
+      int pixel_value = *frame2;
 
-      modifier = src_byte - pixel_value;
-      // This is an integer approximation of:
-      // float coeff = (3.0 * modifer * modifier) / pow(2, strength);
-      // modifier =  (int)roundf(coeff > 16 ? 0 : 16-coeff);
-      modifier *= modifier;
+      // non-local mean approach
+      int diff_sse[9] = { 0 };
+      int idx, idy, index = 0;
+
+      for (idy = -1; idy <= 1; ++idy) {
+        for (idx = -1; idx <= 1; ++idx) {
+          int row = i + idy;
+          int col = j + idx;
+
+          if (row >= 0 && row < (int)block_height && col >= 0 &&
+              col < (int)block_width) {
+            int diff = frame1[byte + idy * (int)stride + idx] -
+                       frame2[idy * (int)block_width + idx];
+            diff_sse[index] = diff * diff;
+            ++index;
+          }
+        }
+      }
+
+      assert(index > 0);
+
+      modifier = 0;
+      for (idx = 0; idx < 9; ++idx) modifier += diff_sse[idx];
+
       modifier *= 3;
+      modifier /= index;
+
+      ++frame2;
+
       modifier += rounding;
       modifier >>= strength;
 
@@ -131,15 +155,37 @@ void av1_highbd_temporal_filter_apply_c(
 
   for (i = 0, k = 0; i < block_height; i++) {
     for (j = 0; j < block_width; j++, k++) {
-      int src_byte = frame1[byte];
-      int pixel_value = *frame2++;
+      int pixel_value = *frame2;
 
-      modifier = src_byte - pixel_value;
-      // This is an integer approximation of:
-      // float coeff = (3.0 * modifer * modifier) / pow(2, strength);
-      // modifier =  (int)roundf(coeff > 16 ? 0 : 16-coeff);
-      modifier *= modifier;
+      // non-local mean approach
+      int diff_sse[9] = { 0 };
+      int idx, idy, index = 0;
+
+      for (idy = -1; idy <= 1; ++idy) {
+        for (idx = -1; idx <= 1; ++idx) {
+          int row = i + idy;
+          int col = j + idx;
+
+          if (row >= 0 && row < (int)block_height && col >= 0 &&
+              col < (int)block_width) {
+            int diff = frame1[byte + idy * (int)stride + idx] -
+                       frame2[idy * (int)block_width + idx];
+            diff_sse[index] = diff * diff;
+            ++index;
+          }
+        }
+      }
+
+      assert(index > 0);
+
+      modifier = 0;
+      for (idx = 0; idx < 9; ++idx) modifier += diff_sse[idx];
+
       modifier *= 3;
+      modifier /= index;
+
+      ++frame2;
+
       modifier += rounding;
       modifier >>= strength;
 
@@ -324,44 +370,44 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
           if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             int adj_strength = strength + 2 * (mbd->bd - 8);
             // Apply the filter (YUV)
-            av1_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply_c(
                 f->y_buffer + mb_y_offset, f->y_stride, predictor, 16, 16,
                 adj_strength, filter_weight, accumulator, count);
-            av1_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply_c(
                 f->u_buffer + mb_uv_offset, f->uv_stride, predictor + 256,
                 mb_uv_width, mb_uv_height, adj_strength, filter_weight,
                 accumulator + 256, count + 256);
-            av1_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply_c(
                 f->v_buffer + mb_uv_offset, f->uv_stride, predictor + 512,
                 mb_uv_width, mb_uv_height, adj_strength, filter_weight,
                 accumulator + 512, count + 512);
           } else {
             // Apply the filter (YUV)
-            av1_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
-                                      predictor, 16, 16, strength,
-                                      filter_weight, accumulator, count);
-            av1_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
-                                      predictor + 256, mb_uv_width,
-                                      mb_uv_height, strength, filter_weight,
-                                      accumulator + 256, count + 256);
-            av1_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
-                                      predictor + 512, mb_uv_width,
-                                      mb_uv_height, strength, filter_weight,
-                                      accumulator + 512, count + 512);
+            av1_temporal_filter_apply_c(f->y_buffer + mb_y_offset, f->y_stride,
+                                        predictor, 16, 16, strength,
+                                        filter_weight, accumulator, count);
+            av1_temporal_filter_apply_c(
+                f->u_buffer + mb_uv_offset, f->uv_stride, predictor + 256,
+                mb_uv_width, mb_uv_height, strength, filter_weight,
+                accumulator + 256, count + 256);
+            av1_temporal_filter_apply_c(
+                f->v_buffer + mb_uv_offset, f->uv_stride, predictor + 512,
+                mb_uv_width, mb_uv_height, strength, filter_weight,
+                accumulator + 512, count + 512);
           }
 #else
           // Apply the filter (YUV)
-          av1_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
-                                    predictor, 16, 16, strength, filter_weight,
-                                    accumulator, count);
-          av1_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
-                                    predictor + 256, mb_uv_width, mb_uv_height,
-                                    strength, filter_weight, accumulator + 256,
-                                    count + 256);
-          av1_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
-                                    predictor + 512, mb_uv_width, mb_uv_height,
-                                    strength, filter_weight, accumulator + 512,
-                                    count + 512);
+          av1_temporal_filter_apply_c(f->y_buffer + mb_y_offset, f->y_stride,
+                                      predictor, 16, 16, strength,
+                                      filter_weight, accumulator, count);
+          av1_temporal_filter_apply_c(f->u_buffer + mb_uv_offset, f->uv_stride,
+                                      predictor + 256, mb_uv_width,
+                                      mb_uv_height, strength, filter_weight,
+                                      accumulator + 256, count + 256);
+          av1_temporal_filter_apply_c(f->v_buffer + mb_uv_offset, f->uv_stride,
+                                      predictor + 512, mb_uv_width,
+                                      mb_uv_height, strength, filter_weight,
+                                      accumulator + 512, count + 512);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         }
       }
