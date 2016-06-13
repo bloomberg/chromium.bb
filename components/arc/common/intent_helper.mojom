@@ -51,6 +51,9 @@ interface IntentHelperHost {
 
   // Opens the url with Chrome for Chrome OS.
   OnOpenUrl@0(string url);
+
+  // Opens the wallpaper picker dialog.
+  [MinVersion=6] OpenWallpaperPicker@3();
 };
 
 // Sends intents to ARC on behalf of Chrome.

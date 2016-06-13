@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -43,9 +44,21 @@ void ArcIntentHelperBridge::OnIconInvalidated(
   icon_loader_->InvalidateIcons(package_name);
 }
 
+void ArcIntentHelperBridge::OnOpenDownloads() {
+  // TODO(607411): If the FileManager is not yet open this will open to
+  // downloads by default, which is what we want.  However if it is open it will
+  // simply be brought to the forgeground without forcibly being navigated to
+  // downloads, which is probably not ideal.
+  ash::Shell::GetInstance()->new_window_delegate()->OpenFileManager();
+}
+
 void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
   GURL gurl(url.get());
   ash::Shell::GetInstance()->delegate()->OpenUrl(gurl);
+}
+
+void ArcIntentHelperBridge::OpenWallpaperPicker() {
+  ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
 }
 
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
@@ -55,14 +68,6 @@ std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
   if (!impl->Init(url))
     return nullptr;
   return std::move(impl);
-}
-
-void ArcIntentHelperBridge::OnOpenDownloads() {
-  // TODO(607411): If the FileManager is not yet open this will open to
-  // downloads by default, which is what we want.  However if it is open it will
-  // simply be brought to the forgeground without forcibly being navigated to
-  // downloads, which is probably not ideal.
-  ash::Shell::GetInstance()->new_window_delegate()->OpenFileManager();
 }
 
 }  // namespace arc

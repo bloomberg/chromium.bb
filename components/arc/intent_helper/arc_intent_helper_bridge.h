@@ -39,12 +39,11 @@ class ArcIntentHelperBridge : public ArcService,
   void OnIntentHelperInstanceReady() override;
   void OnIntentHelperInstanceClosed() override;
 
-  // arc::IntentHelperHost
-  void OnOpenDownloads() override;
-
   // arc::mojom::IntentHelperHost
   void OnIconInvalidated(const mojo::String& package_name) override;
+  void OnOpenDownloads() override;
   void OnOpenUrl(const mojo::String& url) override;
+  void OpenWallpaperPicker() override;
 
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
