@@ -37,17 +37,7 @@
 
 namespace blink {
 
-std::ostream& operator<<(std::ostream& os, const Decimal& decimal)
-{
-    Decimal::EncodedData data = decimal.value();
-    return os
-        << "encode(" << String::number(data.coefficient()).ascii().data()
-        << ", " << String::number(data.exponent()).ascii().data()
-        << ", " << (data.getSign() == Decimal::Negative ? "Negative" : "Positive")
-        << ")=" << decimal.toString().ascii().data();
-}
-
-// Simulate WebCore/html/StepRange
+// Simulate core/html/forms/StepRange
 class DecimalStepRange {
 public:
     Decimal maximum;

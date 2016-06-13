@@ -1028,4 +1028,14 @@ Decimal Decimal::zero(Sign sign)
     return Decimal(EncodedData(sign, EncodedData::ClassZero));
 }
 
+std::ostream& operator<<(std::ostream& ostream, const Decimal& decimal)
+{
+    Decimal::EncodedData data = decimal.value();
+    return ostream
+        << "encode(" << String::number(data.coefficient()).ascii().data()
+        << ", " << String::number(data.exponent()).ascii().data()
+        << ", " << (data.getSign() == Decimal::Negative ? "Negative" : "Positive")
+        << ")=" << decimal.toString().ascii().data();
+}
+
 } // namespace blink

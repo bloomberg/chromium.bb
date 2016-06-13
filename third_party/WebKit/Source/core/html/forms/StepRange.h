@@ -84,6 +84,9 @@ public:
     Decimal step() const { return m_step; }
     Decimal stepBase() const { return m_stepBase; }
     bool stepMismatch(const Decimal&) const;
+    // Returns the maximum step-matched value between minimum() and
+    // maximum(). If there's no such value, this returns Decimal::nan().
+    Decimal stepSnappedMaximum() const;
 
     // Clamp the middle value according to the step
     Decimal defaultValue() const

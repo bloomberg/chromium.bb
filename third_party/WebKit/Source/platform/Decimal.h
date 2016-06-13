@@ -179,6 +179,8 @@ private:
     EncodedData m_data;
 };
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const Decimal&);
+
 } // namespace blink
 
 #endif // Decimal_h

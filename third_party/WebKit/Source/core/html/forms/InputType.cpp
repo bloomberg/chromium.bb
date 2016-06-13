@@ -747,13 +747,12 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
     // greater than or equal to the element's minimum and less than or equal to
     // the element's maximum that, when subtracted from the step base, is an
     // integral multiple of the allowed value step, then abort these steps.
-    const Decimal base = stepRange.stepBase();
-    const Decimal step = stepRange.step();
-    const Decimal alignedMaximum = base + ((stepRange.maximum() - base) / step).floor() * step;
-    ASSERT(alignedMaximum <= stepRange.maximum());
-    if (alignedMaximum < stepRange.minimum())
+    Decimal alignedMaximum = stepRange.stepSnappedMaximum();
+    if (!alignedMaximum.isFinite())
         return;
 
+    Decimal base = stepRange.stepBase();
+    Decimal step = stepRange.step();
     EventQueueScope scope;
     Decimal newValue = current;
     const AtomicString& stepString = element().fastGetAttribute(stepAttr);

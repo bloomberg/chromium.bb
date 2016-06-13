@@ -168,4 +168,19 @@ bool StepRange::stepMismatch(const Decimal& valueForCheck) const
     return computedAcceptableError < remainder && remainder < (m_step - computedAcceptableError);
 }
 
+Decimal StepRange::stepSnappedMaximum() const
+{
+    Decimal base = stepBase();
+    Decimal step = this->step();
+    if (base - step == base || !(base / step).isFinite())
+        return Decimal::nan();
+    Decimal alignedMaximum = base + ((maximum() - base) / step).floor() * step;
+    if (alignedMaximum > maximum())
+        alignedMaximum -= step;
+    DCHECK_LE(alignedMaximum, maximum());
+    if (alignedMaximum < minimum())
+        return Decimal::nan();
+    return alignedMaximum;
+}
+
 } // namespace blink
