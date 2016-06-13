@@ -1514,11 +1514,6 @@ void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
 }
 
 void WebMediaPlayerAndroid::OnHidden() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMediaSuspend)) {
-    return;
-  }
-
   OnSuspendRequested(false);
 }
 
@@ -1528,6 +1523,12 @@ void WebMediaPlayerAndroid::OnShown() {
 }
 
 void WebMediaPlayerAndroid::OnSuspendRequested(bool must_suspend) {
+  if (!must_suspend &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMediaSuspend)) {
+    return;
+  }
+
   // If we're idle or playing video, pause and release resources; audio only
   // players are allowed to continue unless indicated otherwise by the call.
   if (must_suspend || (paused() && playback_completed_) || hasVideo())

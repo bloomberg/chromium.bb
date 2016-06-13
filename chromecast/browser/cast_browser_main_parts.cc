@@ -200,6 +200,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // issues with DRM and v8 that block media playback for numerous apps.
   // Reenable when the Unified Media Pipeline is stable enough for testing.
   { switches::kDisableUnifiedMediaPipeline, ""},
+  { switches::kDisableMediaSuspend, ""},
 #else
   // GPU shader disk cache disabling is largely to conserve disk space.
   { switches::kDisableGpuShaderDiskCache, "" },
