@@ -220,10 +220,6 @@ class AshInit {
     window_manager_connection_ =
         views::WindowManagerConnection::Create(connector, identity);
 
-    display::Screen* screen = display::Screen::GetScreen();
-    DCHECK(screen);
-    gfx::Size size = screen->GetPrimaryDisplay().bounds().size();
-
     // Uninstall the ScreenMus installed by WindowManagerConnection, so that ash
     // installs and uses the ScreenAsh. This can be removed once ash learns to
     // talk to mus for managing displays.

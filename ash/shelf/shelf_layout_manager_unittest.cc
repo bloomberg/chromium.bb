@@ -1074,8 +1074,6 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   widget->Init(params);
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
-  gfx::Rect display_bounds(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1760,9 +1758,6 @@ TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {
 
   aura::Window* window = widget->GetNativeWindow();
   layout_manager->LayoutShelf();
-
-  gfx::Rect shelf_shown = GetShelfWidget()->GetWindowBoundsInScreen();
-  gfx::Rect bounds_shelf = window->bounds();
 
   // Edge swipe when SHELF_VISIBLE should not change visibility state.
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());

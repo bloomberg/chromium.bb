@@ -186,9 +186,6 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     UpdateTouchRadius(display2);
   }
 
-  gfx::Size fb_size =
-      Shell::GetInstance()->display_configurator()->framebuffer_size();
-
   if (display_manager->IsInMirrorMode()) {
     int64_t primary_display_id =
         window_tree_host_manager->GetPrimaryDisplayId();

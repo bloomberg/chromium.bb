@@ -260,10 +260,6 @@ TEST_F(WorkspaceEventHandlerTest,
 
   wm::ActivateWindow(window.get());
 
-  gfx::Rect work_area = display::Screen::GetScreen()
-                            ->GetDisplayNearestWindow(window.get())
-                            .work_area();
-
   delegate.set_maximum_size(gfx::Size(0, 100));
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -285,10 +281,6 @@ TEST_F(WorkspaceEventHandlerTest,
       CreateTestWindow(&delegate, restored_bounds));
 
   wm::ActivateWindow(window.get());
-
-  gfx::Rect work_area = display::Screen::GetScreen()
-                            ->GetDisplayNearestWindow(window.get())
-                            .work_area();
 
   delegate.set_maximum_size(gfx::Size(100, 0));
 
@@ -480,10 +472,6 @@ TEST_F(WorkspaceEventHandlerTest,
   window->SetProperty(aura::client::kCanMaximizeKey, true);
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  gfx::Rect restore_bounds = window->bounds();
-  gfx::Rect work_area_in_parent = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      window.get());
-
   EXPECT_FALSE(window_state->IsMaximized());
 
   // First click will go to a client
@@ -509,10 +497,6 @@ TEST_F(WorkspaceEventHandlerTest, DoubleTapTwoDifferentTargetsDoesntMaximize) {
   window->SetProperty(aura::client::kCanMaximizeKey, true);
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  gfx::Rect restore_bounds = window->bounds();
-  gfx::Rect work_area_in_parent = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      window.get());
-
   EXPECT_FALSE(window_state->IsMaximized());
 
   // First tap will go to a client
@@ -536,10 +520,6 @@ TEST_F(WorkspaceEventHandlerTest,
   window->SetProperty(aura::client::kCanMaximizeKey, true);
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  gfx::Rect restore_bounds = window->bounds();
-  gfx::Rect work_area_in_parent = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      window.get());
-
   EXPECT_FALSE(window_state->IsMaximized());
 
   // First click will go to a client

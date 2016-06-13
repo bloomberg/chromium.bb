@@ -503,7 +503,6 @@ TEST_F(ToplevelWindowEventHandlerTest,
   std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
-  gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
   target->SetProperty(aura::client::kCanMinimizeKey, false);
@@ -598,7 +597,6 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
-  gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
 

@@ -73,7 +73,6 @@ void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   // vertically aligned as the button would violate the width constraint on the
   // shelf.
   if (IsHorizontalAlignment(alignment)) {
-    gfx::Insets insets = button_->GetInsets();
     int additional_padding = std::max(0, top_padding - left_padding);
     left_padding += additional_padding;
     right_padding += additional_padding;

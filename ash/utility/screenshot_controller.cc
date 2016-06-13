@@ -118,7 +118,6 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     const SkColor kSelectedAreaOverlayColor = 0x60000000;
     // Screenshot area representation: transparent hole with half opaque gray
     // overlay.
-    gfx::Rect rect(region_);
     ui::PaintRecorder recorder(context, layer()->size());
 
     recorder.canvas()->FillRect(gfx::Rect(layer()->size()),

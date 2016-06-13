@@ -730,7 +730,6 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   EXPECT_EQ(2, static_cast<int>(root_windows.size()));
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);

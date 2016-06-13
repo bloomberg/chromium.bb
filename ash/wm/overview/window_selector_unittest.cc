@@ -185,7 +185,6 @@ class WindowSelectorTest : public test::AshTestBase {
 
   void ClickWindow(aura::Window* window) {
     ui::test::EventGenerator event_generator(window->GetRootWindow(), window);
-    gfx::RectF target = GetTransformedBounds(window);
     event_generator.ClickLeftButton();
   }
 

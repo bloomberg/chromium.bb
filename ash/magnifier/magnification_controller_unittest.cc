@@ -67,12 +67,11 @@ class MagnificationControllerTest: public test::AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
-    aura::Window* root = GetRootWindow();
-    gfx::Rect root_bounds(root->bounds());
-
 #if defined(OS_WIN)
     // RootWindow and Display can't resize on Windows Ash.
     // http://crbug.com/165962
+    aura::Window* root = GetRootWindow();
+    gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(kRootHeight, root_bounds.height());
     EXPECT_EQ(kRootWidth, root_bounds.width());
 #endif

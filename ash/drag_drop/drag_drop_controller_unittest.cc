@@ -561,7 +561,6 @@ TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   std::unique_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
-  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
 

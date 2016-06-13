@@ -37,10 +37,6 @@ LockWindowState::~LockWindowState() {
 
 void LockWindowState::OnWMEvent(wm::WindowState* window_state,
                                 const wm::WMEvent* event) {
-  aura::Window* window =
-      ash::WmWindowAura::GetAuraWindow(window_state->window());
-  gfx::Rect bounds = window->bounds();
-
   switch (event->type()) {
     case wm::WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());

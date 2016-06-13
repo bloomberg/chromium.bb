@@ -1053,7 +1053,6 @@ void DockedWindowLayoutManager::Relayout() {
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  gfx::Rect dock_bounds = dock_container_->GetBoundsInScreen();
   WmWindow* active_window = nullptr;
   std::vector<WindowWithHeight> visible_windows;
   for (WmWindow* window : dock_container_->GetChildren()) {

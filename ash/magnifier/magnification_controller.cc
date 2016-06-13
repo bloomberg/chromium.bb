@@ -770,7 +770,6 @@ void MagnificationControllerImpl::MoveMagnifierWindowFollowRect(
   const int left = viewport_rect.x();
   const int right = viewport_rect.right();
   const gfx::Point rect_center = rect.CenterPoint();
-  const gfx::Point window_center = viewport_rect.CenterPoint();
 
   int x = left;
   if (rect.x() < left || right < rect.right()) {
