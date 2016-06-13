@@ -129,5 +129,9 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return options
 
   @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  @classmethod
   def Name(cls):
     return 'system_health.webview_startup'
