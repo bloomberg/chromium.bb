@@ -278,19 +278,11 @@ void FastUnloadController::Observe(
       int type,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED: {
-      registrar_.Remove(this,
-                        content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                        source);
-      content::WebContents* contents =
-          content::Source<content::WebContents>(source).ptr();
-      ClearUnloadState(contents);
-      break;
-    }
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED, type);
+
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                    source);
+  ClearUnloadState(content::Source<content::WebContents>(source).ptr());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

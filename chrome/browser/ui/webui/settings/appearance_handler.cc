@@ -57,16 +57,11 @@ void AppearanceHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
-      CallJavascriptFunction("cr.webUIListenerCallback",
-                             base::StringValue("reset-theme-enabled-changed"),
-                             base::FundamentalValue(ResetThemeEnabled()));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
+
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("reset-theme-enabled-changed"),
+                         base::FundamentalValue(ResetThemeEnabled()));
 }
 
 void AppearanceHandler::HandleResetTheme(const base::ListValue* /*args*/) {

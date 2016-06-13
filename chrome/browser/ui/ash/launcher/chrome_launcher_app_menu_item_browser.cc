@@ -57,13 +57,7 @@ void ChromeLauncherAppMenuItemBrowser::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BROWSER_CLOSING:
-      DCHECK_EQ(browser_, content::Source<Browser>(source).ptr());
-      browser_ = NULL;
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
+  DCHECK_EQ(browser_, content::Source<Browser>(source).ptr());
+  browser_ = nullptr;
 }

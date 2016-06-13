@@ -998,17 +998,12 @@ void UserManagerScreenHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY:
-      // Only respond to one Browser Window Ready event.
-      registrar_.Remove(this,
-                        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                        content::NotificationService::AllSources());
-      OnBrowserWindowReady(content::Source<Browser>(source).ptr());
-    break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_READY, type);
+
+  // Only respond to one Browser Window Ready event.
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                    content::NotificationService::AllSources());
+  OnBrowserWindowReady(content::Source<Browser>(source).ptr());
 }
 
 // This callback is run after switching to a new profile has finished. This

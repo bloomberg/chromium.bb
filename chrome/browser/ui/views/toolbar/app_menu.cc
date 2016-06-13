@@ -1078,16 +1078,12 @@ void AppMenu::BookmarkModelChanged() {
 void AppMenu::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
-      // A change in the global errors list can add or remove items from the
-      // menu. Close the menu to avoid have a stale menu on-screen.
-      if (root_)
-        root_->Cancel();
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED, type);
+
+  // A change in the global errors list can add or remove items from the
+  // menu. Close the menu to avoid have a stale menu on-screen.
+  if (root_)
+    root_->Cancel();
 }
 
 void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {

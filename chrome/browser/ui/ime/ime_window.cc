@@ -151,8 +151,8 @@ ImeWindow::~ImeWindow() {}
 void ImeWindow::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_APP_TERMINATING)
-    Close();
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  Close();
 }
 
 content::WebContents* ImeWindow::OpenURLFromTab(

@@ -413,16 +413,11 @@ void HelpHandler::RegisterMessages() {
 
 void HelpHandler::Observe(int type, const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-      // A version update is installed and ready to go. Refresh the UI so the
-      // correct state will be shown.
-      RequestUpdate(NULL);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
+
+  // A version update is installed and ready to go. Refresh the UI so the
+  // correct state will be shown.
+  RequestUpdate(nullptr);
 }
 
 // static

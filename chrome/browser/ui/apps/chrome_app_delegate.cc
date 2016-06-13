@@ -336,12 +336,7 @@ void ChromeAppDelegate::OnShow() {
 void ChromeAppDelegate::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      if (!terminating_callback_.is_null())
-        terminating_callback_.Run();
-      break;
-    default:
-      NOTREACHED() << "Received unexpected notification";
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  if (!terminating_callback_.is_null())
+    terminating_callback_.Run();
 }

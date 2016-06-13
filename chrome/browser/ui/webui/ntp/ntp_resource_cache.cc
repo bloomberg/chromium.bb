@@ -270,19 +270,18 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
 void NTPResourceCache::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
+
   // Invalidate the cache.
-  if (chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type)
-    Invalidate();
-  else
-    NOTREACHED();
+  Invalidate();
 }
 
 void NTPResourceCache::OnPreferenceChanged() {
   // A change occurred to one of the preferences we care about, so flush the
   // cache.
-  new_tab_incognito_html_ = NULL;
-  new_tab_html_ = NULL;
-  new_tab_css_ = NULL;
+  new_tab_incognito_html_ = nullptr;
+  new_tab_html_ = nullptr;
+  new_tab_css_ = nullptr;
 }
 
 // TODO(dbeam): why must Invalidate() and OnPreferenceChanged() both exist?

@@ -69,10 +69,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/webview/webview.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/controls/webview/webview.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/keyboard/keyboard_util.h"
 #endif
@@ -848,19 +844,15 @@ void AppListViewDelegate::OnTemplateURLServiceChanged() {
 void AppListViewDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      FOR_EACH_OBSERVER(
-          app_list::AppListViewDelegateObserver, observers_, OnShutdown());
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
 
-      SetProfile(NULL);  // Ensures launcher page web contents are torn down.
+  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver, observers_,
+                    OnShutdown());
 
-      // SigninManagerFactory is not a leaky singleton (unlike this class), and
-      // its destructor will check that it has no remaining observers.
-      scoped_observer_.RemoveAll();
-      SigninManagerFactory::GetInstance()->RemoveObserver(this);
-      break;
-    default:
-      NOTREACHED();
-  }
+  SetProfile(nullptr);  // Ensures launcher page web contents are torn down.
+
+  // SigninManagerFactory is not a leaky singleton (unlike this class), and
+  // its destructor will check that it has no remaining observers.
+  scoped_observer_.RemoveAll();
+  SigninManagerFactory::GetInstance()->RemoveObserver(this);
 }

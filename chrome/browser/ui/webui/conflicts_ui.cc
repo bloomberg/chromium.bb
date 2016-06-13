@@ -144,15 +144,10 @@ void ConflictsDOMHandler::SendModuleList() {
 void ConflictsDOMHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_MODULE_LIST_ENUMERATED:
-      SendModuleList();
-      registrar_.RemoveAll();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_MODULE_LIST_ENUMERATED, type);
+
+  SendModuleList();
+  registrar_.RemoveAll();
 }
 
 }  // namespace

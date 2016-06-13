@@ -214,10 +214,8 @@ void HandlerOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED)
-    UpdateHandlerList();
-  else
-    NOTREACHED();
+  DCHECK_EQ(chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED, type);
+  UpdateHandlerList();
 }
 
 }  // namespace options

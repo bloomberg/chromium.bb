@@ -166,7 +166,7 @@ void ConflictingModuleView::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE);
+  DCHECK_EQ(chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE, type);
   EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
   if (!model->ShouldShowConflictWarning())
     GetWidget()->Close();

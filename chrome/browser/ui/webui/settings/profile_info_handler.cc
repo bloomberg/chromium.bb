@@ -83,13 +83,8 @@ void ProfileInfoHandler::OnJavascriptDisallowed() {
 void ProfileInfoHandler::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED:
-      PushProfileInfo();
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED, type);
+  PushProfileInfo();
 }
 #endif
 

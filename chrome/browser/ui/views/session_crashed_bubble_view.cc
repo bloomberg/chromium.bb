@@ -393,8 +393,8 @@ void SessionCrashedBubbleView::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_TAB_CLOSING)
-    CloseBubble();
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_CLOSING, type);
+  CloseBubble();
 }
 
 void SessionCrashedBubbleView::TabDetachedAt(content::WebContents* contents,

@@ -444,13 +444,8 @@ void Panel::ExecuteCommandWithDisposition(int id,
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      Close();
-      break;
-    default:
-      NOTREACHED() << "Received unexpected notification " << type;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  Close();
 }
 
 void Panel::RenderViewHostChanged(content::RenderViewHost* old_host,

@@ -464,17 +464,12 @@ void SigninCreateProfileHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY:
-      // Only respond to one Browser Window Ready event.
-      registrar_.Remove(this,
-                        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                        content::NotificationService::AllSources());
-      UserManager::Hide();
-    break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_READY, type);
+
+  // Only respond to one Browser Window Ready event.
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                    content::NotificationService::AllSources());
+  UserManager::Hide();
 }
 
 void SigninCreateProfileHandler::OnBrowserReadyCallback(

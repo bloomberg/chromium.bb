@@ -535,8 +535,8 @@ void MultiUserWindowManagerChromeOS::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == NOTIFICATION_BROWSER_WINDOW_READY)
-    AddBrowserWindow(content::Source<Browser>(source).ptr());
+  DCHECK_EQ(NOTIFICATION_BROWSER_WINDOW_READY, type);
+  AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
 void MultiUserWindowManagerChromeOS::SetAnimationSpeedForTest(
@@ -545,7 +545,7 @@ void MultiUserWindowManagerChromeOS::SetAnimationSpeedForTest(
 }
 
 bool MultiUserWindowManagerChromeOS::IsAnimationRunningForTest() {
-  return animation_.get() != NULL && !animation_->IsAnimationFinished();
+  return animation_ && !animation_->IsAnimationFinished();
 }
 
 const AccountId& MultiUserWindowManagerChromeOS::GetCurrentUserForTest() const {

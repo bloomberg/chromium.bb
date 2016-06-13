@@ -745,7 +745,7 @@ void AppMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
 void AppMenuModel::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   UpdateZoomControls();
 }
 

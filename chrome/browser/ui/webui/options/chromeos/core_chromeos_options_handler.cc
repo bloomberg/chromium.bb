@@ -160,8 +160,7 @@ void CoreChromeOSOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // The only expected notification for now is this one.
-  DCHECK(type == chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED);
+  DCHECK_EQ(chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED, type);
 
   // Finish this asynchronously because the notification has to tricle in to all
   // Chrome components before we can reliably read the status on the other end.
@@ -171,22 +170,17 @@ void CoreChromeOSOptionsHandler::Observe(
 }
 
 void CoreChromeOSOptionsHandler::NotifyOwnershipChanged() {
-  for (SubscriptionMap::iterator it = pref_subscription_map_.begin();
-       it != pref_subscription_map_.end(); ++it) {
-    NotifySettingsChanged(it->first);
-  }
+  for (auto it : pref_subscription_map_)
+    NotifySettingsChanged(it.first);
 }
 
 base::Value* CoreChromeOSOptionsHandler::FetchPref(
     const std::string& pref_name) {
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
-    base::Value *value = NULL;
+    base::Value* value = nullptr;
     proxy_cros_settings_parser::GetProxyPrefValue(
         proxy_config_service_, pref_name, &value);
-    if (!value)
-      return base::Value::CreateNullValue().release();
-
-    return value;
+    return value ? value : base::Value::CreateNullValue().release();
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());

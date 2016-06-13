@@ -53,10 +53,10 @@ void TabModalConfirmDialogDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Close the dialog if we load a page (because the action might not apply to
-  // the same page anymore).
   DCHECK_EQ(content::NOTIFICATION_LOAD_START, type);
 
+  // Close the dialog if we load a page (because the action might not apply to
+  // the same page anymore).
   Close();
 }
 

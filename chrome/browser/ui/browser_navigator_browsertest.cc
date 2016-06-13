@@ -212,14 +212,8 @@ void BrowserNavigatorTest::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
-      ++this->created_tab_contents_count_;
-      break;
-    }
-    default:
-      break;
-  }
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED, type);
+  ++created_tab_contents_count_;
 }
 
 
