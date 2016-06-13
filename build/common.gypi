@@ -2013,8 +2013,7 @@
           ['syzyasan==1 or kasko_hang_reports==1 or kasko_failed_rdv_reports==1', {
             'kasko': 1,
           }],
-          ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
-            # Only enabled by default for ninja because it's buggy in VS.
+          ['component=="shared_library"', {
             # Not enabled for component=static_library because some targets
             # are too large and the toolchain fails due to the size of the
             # .obj files.
@@ -2140,12 +2139,11 @@
           '-t', 'ios',
           '--no-output-all-resource-defines',
         ],
-        # Enable host builds when generating with ninja-ios.
-        'conditions': [
-          ['"<(GENERATOR)"=="ninja"', {
-            'host_os%': "mac",
-          }],
 
+        # Enable host builds.
+        'host_os%': "mac",
+
+        'conditions': [
           # Use the version of clang shipped with Xcode when building official
           # version of Chrome for iOS.
           #
@@ -4287,6 +4285,10 @@
               }]]
           }],
           ['clang==1', {
+            'cflags': [
+              # See http://crbug.com/110262
+              '-fcolor-diagnostics',
+            ],
             'cflags_cc': [
               # gnu++11 instead of c++11 is needed because some code uses
               # typeof() (a GNU extension).
@@ -4331,12 +4333,6 @@
               # Align the stack on 16-byte boundaries, http://crbug.com/418554.
               '-mstack-alignment=16',
               '-mstackrealign',
-            ],
-          }],
-          ['clang==1 and "<(GENERATOR)"=="ninja"', {
-            'cflags': [
-              # See http://crbug.com/110262
-              '-fcolor-diagnostics',
             ],
           }],
           # Common options for AddressSanitizer, LeakSanitizer,
@@ -5079,6 +5075,12 @@
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}
             ],
+            ['clang==1', {
+              'OTHER_CFLAGS': [
+                # See http://crbug.com/110262
+                '-fcolor-diagnostics',
+              ],
+            }],
             # Note that the prebuilt Clang binaries should not be used for iOS
             # development except for ASan builds.
             ['clang_xcode==0', {
@@ -5098,22 +5100,6 @@
             ['clang==1 and clang_xcode==0 and clang_add_plugin!=""', {
               'OTHER_CFLAGS': [
                 '-Xclang', '-add-plugin', '-Xclang', '<(clang_add_plugin)',
-              ],
-            }],
-            ['clang==1 and "<(GENERATOR)"=="ninja"', {
-              'OTHER_CFLAGS': [
-                # See http://crbug.com/110262
-                '-fcolor-diagnostics',
-              ],
-            }],
-            ['OS=="ios" and target_subarch!="arm32" and \
-              "<(GENERATOR)"=="xcode"', {
-              'OTHER_CFLAGS': [
-                # TODO(ios): when building Chrome for iOS on 64-bit platform
-                # with Xcode, the -Wshorted-64-to-32 warning is automatically
-                # enabled. This cause failures when compiling protobuf code,
-                # so disable the warning. http://crbug.com/359107
-                '-Wno-shorten-64-to-32',
               ],
             }],
           ],
@@ -6058,10 +6044,7 @@
         ['CXX.host', '<(host_cxx)'],
       ],
     }],
-    # TODO(yyanagisawa): supports GENERATOR==make
-    #  make generator doesn't support CC_wrapper without CC
-    #  in make_global_settings yet.
-    ['use_goma==1 and ("<(GENERATOR)"=="ninja" or clang==1)', {
+    ['use_goma==1', {
       'make_global_settings': [
        ['CC_wrapper', '<(gomadir)/gomacc'],
        ['CXX_wrapper', '<(gomadir)/gomacc'],
@@ -6340,14 +6323,7 @@
         'TARGETED_DEVICE_FAMILY': '1,2',
         'conditions': [
           ['ios_sdk_path==""', {
-            'conditions': [
-              # TODO(justincohen): Ninja only supports simulator for now.
-              ['"<(GENERATOR)"=="xcode"', {
-                'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
-              }, {
-                'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
-              }],
-            ],
+            'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
           }, {
             'SDKROOT': '<(ios_sdk_path)',  # -isysroot
           }],

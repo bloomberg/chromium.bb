@@ -8,9 +8,7 @@
     'breakpad_handler.gypi',
   ],
   'conditions': [
-    # minidump_stackwalk and minidump_dump are tool-type executables that do
-    # not build on iOS with Xcode (but do build on iOS with ninja.)
-    ['(OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja") and OS!="win"', {
+    ['OS!="win"', {
       'targets': [
         {
           # code shared by both {micro,mini}dump_stackwalk
@@ -166,7 +164,7 @@
         },
       ],
     }],
-    ['OS=="mac" or (OS=="ios" and ("<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"))', {
+    ['OS=="mac" or OS=="ios"', {
       'target_defaults': {
         'include_dirs': [
           'src',
@@ -895,98 +893,6 @@
           },
         }
       ]
-    }],
-    ['OS=="ios" and "<(GENERATOR)"=="xcode" and "<(GENERATOR_FLAVOR)"!="ninja"', {
-      'variables': {
-        'ninja_output_dir': 'ninja-breakpad',
-        'ninja_product_dir':
-          '<(DEPTH)/xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
-      },
-      # Generation is done via two actions: (1) compiling the executable with
-      # ninja, and (2) copying the executable into a location that is shared
-      # with other projects. These actions are separated into two targets in
-      # order to be able to specify that the second action should not run until
-      # the first action finishes (since the ordering of multiple actions in
-      # one target is defined only by inputs and outputs, and it's impossible
-      # to set correct inputs for the ninja build, so setting all the inputs
-      # and outputs isn't an option).
-      'targets': [
-        {
-          'target_name': 'compile_breakpad_utilities',
-          'type': 'none',
-          'variables': {
-            # Gyp to rerun
-            're_run_targets': [
-              'breakpad/breakpad.gyp',
-            ],
-          },
-          'includes': ['../build/ios/mac_build.gypi'],
-          'actions': [
-            {
-              'action_name': 'compile breakpad utilities',
-              'inputs': [],
-              'outputs': [],
-              'action': [
-                '<@(ninja_cmd)',
-                'dump_syms',
-                'symupload',
-              ],
-              'message': 'Generating the breakpad executables',
-            },
-          ],
-        },
-        {
-          'target_name': 'breakpad_utilities',
-          'type': 'none',
-          'dependencies': [
-            'compile_breakpad_utilities',
-          ],
-          'actions': [
-            {
-              'action_name': 'copy dump_syms',
-              'inputs': [
-                '<(ninja_product_dir)/dump_syms',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/dump_syms',
-              ],
-              'action': [
-                'cp',
-                '<(ninja_product_dir)/dump_syms',
-                '<(PRODUCT_DIR)/dump_syms',
-              ],
-            },
-            {
-              'action_name': 'copy symupload',
-              'inputs': [
-                '<(ninja_product_dir)/symupload',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/symupload',
-              ],
-              'action': [
-                'cp',
-                '<(ninja_product_dir)/symupload',
-                '<(PRODUCT_DIR)/symupload',
-              ],
-            },
-          ],
-        },
-        {
-          'target_name': 'dump_syms',
-          'type': 'none',
-          'dependencies': [
-            'breakpad_utilities',
-          ],
-        },
-        {
-          'target_name': 'symupload',
-          'type': 'none',
-          'dependencies': [
-            'breakpad_utilities',
-          ],
-        }
-      ],
     }],
     ['OS=="android"', {
       'targets': [
