@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/test/bluetooth_gatt_server_test.h"
@@ -44,6 +46,19 @@ class BluetoothLocalGattCharacteristicTest : public BluetoothGattServerTest {
     EXPECT_LT(0u, write_characteristic_->GetIdentifier().size());
     EXPECT_LT(0u, notify_characteristic_->GetIdentifier().size());
     CompleteGattSetup();
+  }
+
+  void CheckNotification(
+      const BluetoothDevice* expected_device,
+      uint64_t expected_value,
+      bool expected_indicate_flag,
+      const BluetoothTestBase::NotificationType& actual_notification) {
+    if (expected_device) {
+      EXPECT_EQ(expected_device->GetIdentifier(),
+                actual_notification.device_path);
+    }
+    EXPECT_EQ(GetValue(expected_value), actual_notification.value);
+    EXPECT_EQ(expected_indicate_flag, actual_notification.indicate);
   }
 
  protected:
@@ -157,64 +172,94 @@ TEST_F(BluetoothLocalGattCharacteristicTest, StartAndStopNotifications) {
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattCharacteristicTest, SendNotifications) {
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  const uint64_t kNotifyValue = 0x7331ul;
+  EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS,
+            notify_characteristic_->NotifyValueChanged(
+                device, GetValue(kNotifyValue), false));
+  CheckNotification(
+      device, kNotifyValue, false,
+      LastNotifactionValueForCharacteristic(notify_characteristic_.get()));
+
+  const uint64_t kIndicateValue = 0x1337ul;
+  EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS,
+            indicate_characteristic_->NotifyValueChanged(
+                device, GetValue(kIndicateValue), true));
+  CheckNotification(
+      device, kIndicateValue, true,
+      LastNotifactionValueForCharacteristic(indicate_characteristic_.get()));
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothLocalGattCharacteristicTest, SendNotificationsToNullDevice) {
   const uint64_t kNotifyValue = 0x7331ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS,
             notify_characteristic_->NotifyValueChanged(
                 nullptr, GetValue(kNotifyValue), false));
-  EXPECT_EQ(kNotifyValue, GetInteger(LastNotifactionValueForCharacteristic(
-                              notify_characteristic_.get())));
+  CheckNotification(
+      nullptr, kNotifyValue, false,
+      LastNotifactionValueForCharacteristic(notify_characteristic_.get()));
 
   const uint64_t kIndicateValue = 0x1337ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS,
             indicate_characteristic_->NotifyValueChanged(
                 nullptr, GetValue(kIndicateValue), true));
-  EXPECT_EQ(kIndicateValue, GetInteger(LastNotifactionValueForCharacteristic(
-                                indicate_characteristic_.get())));
+  CheckNotification(
+      nullptr, kIndicateValue, true,
+      LastNotifactionValueForCharacteristic(indicate_characteristic_.get()));
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattCharacteristicTest, SendNotificationsWrongProperties) {
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
   const uint64_t kNewValue = 0x3334ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFY_PROPERTY_NOT_SET,
             read_characteristic_->NotifyValueChanged(
-                nullptr, GetValue(kNewValue), false));
+                device, GetValue(kNewValue), false));
   EXPECT_NE(kNewValue, GetInteger(LastNotifactionValueForCharacteristic(
-                           read_characteristic_.get())));
+                                      read_characteristic_.get())
+                                      .value));
 
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFY_PROPERTY_NOT_SET,
             write_characteristic_->NotifyValueChanged(
-                nullptr, GetValue(kNewValue), false));
+                device, GetValue(kNewValue), false));
   EXPECT_NE(kNewValue, GetInteger(LastNotifactionValueForCharacteristic(
-                           write_characteristic_.get())));
+                                      write_characteristic_.get())
+                                      .value));
 
   const uint64_t kNotifyValue = 0x7331ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::INDICATE_PROPERTY_NOT_SET,
             notify_characteristic_->NotifyValueChanged(
-                nullptr, GetValue(kNotifyValue), true));
+                device, GetValue(kNotifyValue), true));
   EXPECT_NE(kNotifyValue, GetInteger(LastNotifactionValueForCharacteristic(
-                              notify_characteristic_.get())));
+                                         notify_characteristic_.get())
+                                         .value));
 
   const uint64_t kIndicateValue = 0x1337ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFY_PROPERTY_NOT_SET,
             indicate_characteristic_->NotifyValueChanged(
-                nullptr, GetValue(kIndicateValue), false));
+                device, GetValue(kIndicateValue), false));
   EXPECT_NE(kIndicateValue, GetInteger(LastNotifactionValueForCharacteristic(
-                                indicate_characteristic_.get())));
+                                           indicate_characteristic_.get())
+                                           .value));
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattCharacteristicTest,
        SendNotificationsServiceNotRegistered) {
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
   service_->Unregister(GetCallback(Call::EXPECTED),
                        GetGattErrorCallback(Call::NOT_EXPECTED));
   const uint64_t kNotifyValue = 0x7331ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::SERVICE_NOT_REGISTERED,
             notify_characteristic_->NotifyValueChanged(
-                nullptr, GetValue(kNotifyValue), false));
+                device, GetValue(kNotifyValue), false));
   EXPECT_NE(kNotifyValue, GetInteger(LastNotifactionValueForCharacteristic(
-                              notify_characteristic_.get())));
+                                         notify_characteristic_.get())
+                                         .value));
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 

@@ -106,10 +106,14 @@ FakeBluetoothGattCharacteristicServiceProvider::
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::SendValueChanged(
-    const std::vector<uint8_t>& value) {
+    const dbus::ObjectPath& device_path,
+    const std::vector<uint8_t>& value,
+    bool indicate) {
   VLOG(1) << "Sent characteristic value changed: " << object_path_.value()
           << " UUID: " << uuid_;
-  sent_value_ = value;
+  last_device_path_ = device_path;
+  last_value_ = value;
+  last_indicate_flag_ = indicate;
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::GetValue(

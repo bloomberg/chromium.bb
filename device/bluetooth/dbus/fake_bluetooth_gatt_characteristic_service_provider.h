@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_CHARACTERISTIC_SERVICE_PROVIDER_H_
 
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,7 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
-#include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_attribute_value_delegate.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_service_provider.h"
 
 namespace bluez {
@@ -34,7 +35,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   ~FakeBluetoothGattCharacteristicServiceProvider() override;
 
   // BluetoothGattCharacteristicServiceProvider override.
-  void SendValueChanged(const std::vector<uint8_t>& value) override;
+  void SendValueChanged(const dbus::ObjectPath& device_path,
+                        const std::vector<uint8_t>& value,
+                        bool indicate) override;
 
   // Methods to simulate value get/set requests issued from a remote device. The
   // methods do nothing, if the associated service was not registered with the
@@ -58,7 +61,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   const dbus::ObjectPath& object_path() const override;
   const std::string& uuid() const { return uuid_; }
   const dbus::ObjectPath& service_path() const { return service_path_; }
-  const std::vector<uint8_t>& sent_value() const { return sent_value_; }
+  const dbus::ObjectPath& last_device_path() const { return last_device_path_; }
+  const std::vector<uint8_t>& last_value() const { return last_value_; }
+  const bool& last_indicate_flag() const { return last_indicate_flag_; }
 
  private:
   // D-Bus object path of the fake GATT characteristic.
@@ -73,8 +78,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   // Object path of the service that this characteristic belongs to.
   const dbus::ObjectPath service_path_;
 
-  // Value that was sent to the fake remote device.
-  std::vector<uint8_t> sent_value_;
+  // Last device that sent a value.
+  dbus::ObjectPath last_device_path_;
+  // Last value that was sent to the fake remote device.
+  std::vector<uint8_t> last_value_;
+  // Last value of the indicate flag used when sending a notification.
+  bool last_indicate_flag_;
 
   // The delegate that method calls are passed on to.
   std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate_;

@@ -1129,15 +1129,24 @@ bool BluetoothAdapterBlueZ::IsGattServiceRegistered(
 }
 
 bool BluetoothAdapterBlueZ::SendValueChanged(
+    const device::BluetoothDevice* device,
     BluetoothLocalGattCharacteristicBlueZ* characteristic,
-    const std::vector<uint8_t>& value) {
+    const std::vector<uint8_t>& value,
+    bool indicate) {
   if (registered_gatt_services_.count(
           static_cast<BluetoothLocalGattServiceBlueZ*>(
               characteristic->GetService())
               ->object_path()) == 0)
     return false;
-  gatt_application_provider_->SendValueChanged(characteristic->object_path(),
-                                               value);
+
+  dbus::ObjectPath device_path;
+  if (device) {
+    device_path =
+        static_cast<const BluetoothDeviceBlueZ*>(device)->object_path();
+  }
+
+  gatt_application_provider_->SendValueChanged(
+      device_path, characteristic->object_path(), value, indicate);
   return true;
 }
 

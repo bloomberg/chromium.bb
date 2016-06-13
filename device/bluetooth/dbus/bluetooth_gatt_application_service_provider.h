@@ -47,8 +47,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProvider {
       const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
           services);
 
-  void SendValueChanged(const dbus::ObjectPath& characteristic_path,
-                        const std::vector<uint8_t>& value);
+  void SendValueChanged(const dbus::ObjectPath& device_path,
+                        const dbus::ObjectPath& characteristic_path,
+                        const std::vector<uint8_t>& value,
+                        bool indicate);
 
  protected:
   BluetoothGattApplicationServiceProvider();

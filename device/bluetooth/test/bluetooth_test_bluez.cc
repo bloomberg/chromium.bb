@@ -5,6 +5,7 @@
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -278,7 +279,8 @@ bool BluetoothTestBlueZ::SimulateLocalGattCharacteristicNotificationsRequest(
   return characteristic_provider->NotificationsChange(start);
 }
 
-std::vector<uint8_t> BluetoothTestBlueZ::LastNotifactionValueForCharacteristic(
+BluetoothTestBase::NotificationType
+BluetoothTestBlueZ::LastNotifactionValueForCharacteristic(
     BluetoothLocalGattCharacteristic* characteristic) {
   bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
       static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
@@ -291,8 +293,22 @@ std::vector<uint8_t> BluetoothTestBlueZ::LastNotifactionValueForCharacteristic(
           fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
               characteristic_bluez->object_path());
 
-  return characteristic_provider ? characteristic_provider->sent_value()
-                                 : std::vector<uint8_t>();
+  if (!characteristic_provider)
+    return NotificationType();
+
+  bluez::BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<bluez::BluetoothAdapterBlueZ*>(adapter_.get());
+
+  std::string device_id;
+  bluez::BluetoothDeviceBlueZ* device = adapter_bluez->GetDeviceWithPath(
+      characteristic_provider->last_device_path());
+  if (device)
+    device_id = device->GetIdentifier();
+
+  NotificationType notification = {
+      device_id, characteristic_provider->last_value(),
+      characteristic_provider->last_indicate_flag()};
+  return notification;
 }
 
 std::vector<BluetoothLocalGattService*>

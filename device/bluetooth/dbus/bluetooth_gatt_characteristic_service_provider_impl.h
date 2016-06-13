@@ -39,7 +39,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
   ~BluetoothGattCharacteristicServiceProviderImpl() override;
 
   // BluetoothGattCharacteristicServiceProvider override.
-  void SendValueChanged(const std::vector<uint8_t>& value) override;
+  void SendValueChanged(const dbus::ObjectPath& device_path,
+                        const std::vector<uint8_t>& value,
+                        bool indicate) override;
 
  private:
   // Returns true if the current thread is on the origin thread.

@@ -81,7 +81,8 @@ BluetoothLocalGattCharacteristicBlueZ::NotifyValueChanged(
   if (!indicate && !(properties_ & PROPERTY_NOTIFY))
     return NOTIFY_PROPERTY_NOT_SET;
   DCHECK(service_);
-  return service_->GetAdapter()->SendValueChanged(this, new_value)
+  return service_->GetAdapter()->SendValueChanged(device, this, new_value,
+                                                  indicate)
              ? NOTIFICATION_SUCCESS
              : SERVICE_NOT_REGISTERED;
 }
