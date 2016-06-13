@@ -115,7 +115,9 @@
         <div class="settings-box two-line">
           <div class="start">
             <div>$i18n{spellCheckListTitle}</div>
-            <div class="secondary">[[spellCheckSecondary_]]</div>
+            <div class="secondary">
+              [[getSpellCheckSecondaryText_(languages.enabled.*)]]
+            </div>
           </div>
           <cr-expand-button expanded="{{spellCheckOpened_}}">
           </cr-expand-button>

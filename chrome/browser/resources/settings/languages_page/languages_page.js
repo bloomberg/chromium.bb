@@ -163,6 +163,44 @@ Polymer({
   },
 
   /**
+   * Returns the secondary text for the spell check subsection based on the
+   * enabled spell check languages, listing at most 2 languages.
+   * @return {string}
+   * @private
+   */
+  getSpellCheckSecondaryText_: function() {
+    var enabledSpellCheckLanguages =
+        this.languages.enabled.filter(function(languageState) {
+          return languageState.spellCheckEnabled &&
+                 languageState.language.supportsSpellcheck;
+        });
+    switch (enabledSpellCheckLanguages.length) {
+      case 0:
+        return '';
+      case 1:
+        return enabledSpellCheckLanguages[0].language.displayName;
+      case 2:
+        return loadTimeData.getStringF(
+            'spellCheckSummaryTwoLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName);
+      case 3:
+        // "foo, bar, and 1 other"
+        return loadTimeData.getStringF(
+            'spellCheckSummaryThreeLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName);
+      default:
+        // "foo, bar, and [N-2] others"
+        return loadTimeData.getStringF(
+            'spellCheckSummaryMultipleLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName,
+            (enabledSpellCheckLanguages.length - 2).toLocaleString());
+    }
+  },
+
+  /**
    * Opens the Custom Dictionary page.
    * @private
    */
