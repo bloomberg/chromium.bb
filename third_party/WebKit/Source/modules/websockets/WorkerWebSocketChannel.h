@@ -104,6 +104,8 @@ public:
         void disconnect();
 
         DECLARE_VIRTUAL_TRACE();
+        // Promptly clear connection to bridge + loader proxy.
+        EAGERLY_FINALIZE();
 
         // WebSocketChannelClient functions.
         void didConnect(const String& subprotocol, const String& extensions) override;
@@ -146,6 +148,8 @@ public:
         WebSocketChannelClient* client() { return m_client; }
 
         DECLARE_TRACE();
+        // Promptly clear connection to peer + loader proxy.
+        EAGERLY_FINALIZE();
 
     private:
         // Returns false if shutdown event is received before method completion.
