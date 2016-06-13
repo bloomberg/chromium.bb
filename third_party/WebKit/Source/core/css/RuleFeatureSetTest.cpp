@@ -19,6 +19,47 @@
 
 namespace blink {
 
+// TODO(sof): consider making these part object helper abstractions
+// available from platform/heap/.
+
+template<typename T>
+class HeapPartObject final : public GarbageCollectedFinalized<HeapPartObject<T>> {
+public:
+    static HeapPartObject* create()
+    {
+        return new HeapPartObject;
+    }
+
+    T* get() { return &m_part; }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_part);
+    }
+
+private:
+    HeapPartObject()
+    {
+    }
+
+    T m_part;
+};
+
+template<typename T>
+class PersistentPartObject final {
+    DISALLOW_NEW();
+public:
+    PersistentPartObject()
+        : m_part(HeapPartObject<T>::create())
+    {
+    }
+
+    T* operator->() const { return (*m_part).get(); }
+
+private:
+    Persistent<HeapPartObject<T>> m_part;
+};
+
 class RuleFeatureSetTest : public ::testing::Test {
 public:
     RuleFeatureSetTest()
@@ -41,31 +82,31 @@ public:
 
         StyleRule* styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
         RuleData ruleData(styleRule, 0, 0, RuleHasNoSpecialState);
-        return m_ruleFeatureSet.collectFeaturesFromRuleData(ruleData);
+        return m_ruleFeatureSet->collectFeaturesFromRuleData(ruleData);
     }
 
     void collectInvalidationSetsForClass(InvalidationLists& invalidationLists, const AtomicString& className) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
-        m_ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, *element, className);
+        m_ruleFeatureSet->collectInvalidationSetsForClass(invalidationLists, *element, className);
     }
 
     void collectInvalidationSetsForId(InvalidationLists& invalidationLists, const AtomicString& id) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
-        m_ruleFeatureSet.collectInvalidationSetsForId(invalidationLists, *element, id);
+        m_ruleFeatureSet->collectInvalidationSetsForId(invalidationLists, *element, id);
     }
 
     void collectInvalidationSetsForAttribute(InvalidationLists& invalidationLists, const QualifiedName& attributeName) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
-        m_ruleFeatureSet.collectInvalidationSetsForAttribute(invalidationLists, *element, attributeName);
+        m_ruleFeatureSet->collectInvalidationSetsForAttribute(invalidationLists, *element, attributeName);
     }
 
     void collectInvalidationSetsForPseudoClass(InvalidationLists& invalidationLists, CSSSelector::PseudoType pseudo) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
-        m_ruleFeatureSet.collectInvalidationSetsForPseudoClass(invalidationLists, *element, pseudo);
+        m_ruleFeatureSet->collectInvalidationSetsForPseudoClass(invalidationLists, *element, pseudo);
     }
 
     const HashSet<AtomicString>& classSet(const InvalidationSet& invalidationSet)
@@ -172,22 +213,16 @@ public:
 
     void expectSiblingRuleCount(unsigned count)
     {
-        EXPECT_EQ(count, m_ruleFeatureSet.siblingRules.size());
+        EXPECT_EQ(count, m_ruleFeatureSet->siblingRules.size());
     }
 
     void expectUncommonAttributeRuleCount(unsigned count)
     {
-        EXPECT_EQ(count, m_ruleFeatureSet.uncommonAttributeRules.size());
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_ruleFeatureSet);
-        visitor->trace(m_document);
+        EXPECT_EQ(count, m_ruleFeatureSet->uncommonAttributeRules.size());
     }
 
 private:
-    RuleFeatureSet m_ruleFeatureSet;
+    PersistentPartObject<RuleFeatureSet> m_ruleFeatureSet;
     Persistent<Document> m_document;
 };
 
