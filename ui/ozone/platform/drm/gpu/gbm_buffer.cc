@@ -164,13 +164,16 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
   for (size_t i = 0;
        i < gfx::NumberOfPlanesForBufferFormat(buffer_->GetFormat()); ++i) {
-    base::ScopedFD scoped_fd(HANDLE_EINTR(dup(buffer_->GetFd(i))));
-    if (!scoped_fd.is_valid()) {
-      PLOG(ERROR) << "dup";
-      return gfx::NativePixmapHandle();
+    // Some formats (e.g: YVU_420) might have less than one fd per plane.
+    if (i < buffer_->GetFdCount()) {
+      base::ScopedFD scoped_fd(HANDLE_EINTR(dup(buffer_->GetFd(i))));
+      if (!scoped_fd.is_valid()) {
+        PLOG(ERROR) << "dup";
+        return gfx::NativePixmapHandle();
+      }
+      handle.fds.emplace_back(
+          base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
     }
-    handle.fds.emplace_back(
-        base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
     handle.strides_and_offsets.emplace_back(buffer_->GetStride(i),
                                             buffer_->GetOffset(i));
   }

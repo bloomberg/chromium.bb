@@ -5924,6 +5924,7 @@ bool CreateImageValidInternalFormat(GLenum internalformat,
     case GL_RGBA:
     case GL_RGB_YCBCR_422_CHROMIUM:
     case GL_RGB_YCBCR_420V_CHROMIUM:
+    case GL_RGB_YCRCB_420_CHROMIUM:
     case GL_BGRA_EXT:
       return true;
     default:

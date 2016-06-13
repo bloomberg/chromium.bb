@@ -185,6 +185,8 @@ Buffer::Texture::Texture(cc::ContextProvider* context_provider,
   image_id_ =
       gles2->CreateImageCHROMIUM(gpu_memory_buffer->AsClientBuffer(),
                                  size.width(), size.height(), internalformat_);
+  DLOG_IF(WARNING, !image_id_) << "Failed to create GLImage";
+
   gles2->GenQueriesEXT(1, &query_id_);
   texture_id_ = CreateGLTexture(gles2, texture_target_);
 }
