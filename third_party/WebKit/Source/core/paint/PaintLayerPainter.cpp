@@ -482,13 +482,14 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
     bool isFixedPosObjectInPagedMedia = object->style()->position() == FixedPosition && object->container() == view && view->pageLogicalHeight();
     PaintLayer* paginationLayer = m_paintLayer.enclosingPaginationLayer();
     PaintLayerFragments fragments;
-    if (isFixedPosObjectInPagedMedia) {
+    // TODO(crbug.com/619094): Figure out the correct behaviour for fixed position objects
+    // in paged media with vertical writing modes.
+    if (isFixedPosObjectInPagedMedia && view->isHorizontalWritingMode()) {
         // "For paged media, boxes with fixed positions are repeated on every page."
         // - https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
-        ASSERT(view->firstChild() && view->firstChild()->isLayoutBlock());
-        int pages = static_cast<int>(ceilf(toLayoutBlock(view->firstChild())->logicalHeight() / view->pageLogicalHeight()));
+        unsigned pages = ceilf(view->documentRect().height() / view->pageLogicalHeight());
         LayoutPoint paginationOffset;
-        for (int i = 0; i < pages; i++) {
+        for (unsigned i = 0; i < pages; i++) {
             PaintLayerFragment fragment;
             fragment.backgroundRect = paintingInfo.paintDirtyRect;
             fragment.paginationOffset = paginationOffset;
