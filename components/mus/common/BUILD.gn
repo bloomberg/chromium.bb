@@ -51,6 +51,10 @@ component("mus_common") {
     "//mojo/public/cpp/system",
     "//ui/base",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 source_set("run_all_shelltests") {
