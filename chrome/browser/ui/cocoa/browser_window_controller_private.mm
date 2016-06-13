@@ -764,6 +764,11 @@ willPositionSheet:(NSWindow*)sheet
 
   if (fullscreenLowPowerCoordinator_)
     fullscreenLowPowerCoordinator_->SetInFullscreenTransition(false);
+
+  if (shouldExitAfterEnteringFullscreen_) {
+    shouldExitAfterEnteringFullscreen_ = NO;
+    [self exitAppKitFullscreen];
+  }
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
@@ -929,6 +934,15 @@ willPositionSheet:(NSWindow*)sheet
 - (void)exitAppKitFullscreen {
   if (FramedBrowserWindow* framedBrowserWindow =
           base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+
+    // If we're in the process of entering fullscreen, toggleSystemFullscreen
+    // will get ignored. Set |shouldExitAfterEnteringFullscreen_| to true so
+    // the browser will exit fullscreen immediately after it enters it.
+    if (enteringAppKitFullscreen_) {
+      shouldExitAfterEnteringFullscreen_ = YES;
+      return;
+    }
+
     [framedBrowserWindow toggleSystemFullScreen];
   }
 }

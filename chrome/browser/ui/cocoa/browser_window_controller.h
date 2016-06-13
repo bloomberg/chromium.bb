@@ -167,6 +167,10 @@ class Command;
   // True if the toolbar needs to be shown in fullscreen.
   BOOL shouldShowFullscreenToolbar_;
 
+  // True if a call to exit AppKit fullscreen was made during the transition to
+  // fullscreen.
+  BOOL shouldExitAfterEnteringFullscreen_;
+
   // True if AppKit has finished exiting fullscreen before the exit animation
   // is completed. This flag is used to ensure that |windowDidExitFullscreen|
   // is called after the exit fullscreen animation is complete.
