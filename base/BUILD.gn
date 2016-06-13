@@ -124,12 +124,14 @@ config("android_system_libs") {
 # test code (test support and anything in the test directory) which should use
 # source_set as is recommended for GN targets).
 component("base") {
-  # TODO(phosek) bug 570839: If field_trial.cc is in a static library,
-  # hacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
-  # reasons for this seem to involve obscure toolchain bugs. This should be
-  # fixed and this target should always be a static_library in the
-  # non-component case.
-  component_never_use_source_set = !is_nacl_nonsfi
+  if (is_nacl_nonsfi) {
+    # TODO(phosek) bug 570839: If field_trial.cc is in a static library,
+    # hacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
+    # reasons for this seem to involve obscure toolchain bugs. This should be
+    # fixed and this target should always be a static_library in the
+    # non-component case.
+    static_component_type = "source_set"
+  }
 
   sources = [
     "allocator/allocator_check.cc",
