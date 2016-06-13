@@ -228,6 +228,37 @@ ReturnType CallWithContext(ReturnType (*f)(ParamType),
 }
 
 template <typename T, typename MaybeConstUserType>
+struct HasGetBeginMethod {
+  template <typename U>
+  static char Test(decltype(U::GetBegin(std::declval<MaybeConstUserType&>()))*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <
+    typename Traits,
+    typename MaybeConstUserType,
+    typename std::enable_if<
+        HasGetBeginMethod<Traits, MaybeConstUserType>::value>::type* = nullptr>
+decltype(Traits::GetBegin(std::declval<MaybeConstUserType&>()))
+CallGetBeginIfExists(MaybeConstUserType& input) {
+  return Traits::GetBegin(input);
+}
+
+template <
+    typename Traits,
+    typename MaybeConstUserType,
+    typename std::enable_if<
+        !HasGetBeginMethod<Traits, MaybeConstUserType>::value>::type* = nullptr>
+size_t CallGetBeginIfExists(MaybeConstUserType& input) {
+  return 0;
+}
+
+template <typename T, typename MaybeConstUserType>
 struct HasGetDataMethod {
   template <typename U>
   static char Test(decltype(U::GetData(std::declval<MaybeConstUserType&>()))*);

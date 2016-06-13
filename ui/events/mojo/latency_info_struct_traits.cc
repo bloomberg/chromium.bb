@@ -236,30 +236,6 @@ bool StructTraits<ui::mojom::LatencyComponentId,
   return true;
 }
 
-void* StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::SetUpContext(
-    const ui::LatencyInfo& info) {
-  // TODO(fsamuel): It would be nice if we had IterableTraits.
-  auto components = new mojo::Array<ui::mojom::LatencyComponentPairPtr>(
-      info.latency_components().size());
-  uint32_t i = 0;
-  for (ui::LatencyInfo::LatencyMap::const_iterator
-           it = info.latency_components().begin();
-       it != info.latency_components().end(); ++it, ++i) {
-    auto latency_component_pair = ui::mojom::LatencyComponentPair::New();
-    latency_component_pair->key = it->first;
-    latency_component_pair->value = it->second;
-    (*components)[i] = std::move(latency_component_pair);
-  }
-  return components;
-}
-
-void StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::TearDownContext(
-    const ui::LatencyInfo& info,
-    void* context) {
-  // static_cast to ensure destructor is called.
-  delete static_cast<mojo::Array<ui::mojom::LatencyComponentPairPtr>*>(context);
-}
-
 // static
 const std::string&
 StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::trace_name(
@@ -267,15 +243,11 @@ StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::trace_name(
   return info.trace_name_;
 }
 
-// static
-mojo::Array<ui::mojom::LatencyComponentPairPtr>&
+const ui::LatencyInfo::LatencyMap&
 StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::latency_components(
-    const ui::LatencyInfo& info,
-    void* context) {
-  return *static_cast<mojo::Array<ui::mojom::LatencyComponentPairPtr>*>(
-      context);
+    const ui::LatencyInfo& info) {
+  return info.latency_components();
 }
-
 InputCoordinateArray
 StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::input_coordinates(
     const ui::LatencyInfo& info) {
@@ -304,6 +276,7 @@ bool StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::Read(
   if (!data.ReadTraceName(&out->trace_name_))
     return false;
 
+  // TODO(fsamuel): Figure out how to optimize deserialization.
   mojo::Array<ui::mojom::LatencyComponentPairPtr> components;
   if (!data.ReadLatencyComponents(&components))
     return false;

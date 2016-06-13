@@ -14,6 +14,30 @@ namespace mojo {
 using InputCoordinateArray = CArray<gfx::PointF>;
 
 template <>
+struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
+  using Element = ui::LatencyInfo::LatencyMap::value_type;
+  using Iterator = ui::LatencyInfo::LatencyMap::iterator;
+  using ConstIterator = ui::LatencyInfo::LatencyMap::const_iterator;
+
+  static ConstIterator GetBegin(const ui::LatencyInfo::LatencyMap& input) {
+    return input.begin();
+  }
+  static Iterator GetBegin(ui::LatencyInfo::LatencyMap& input) {
+    return input.begin();
+  }
+
+  static void AdvanceIterator(ConstIterator& iterator) { iterator++; }
+  static void AdvanceIterator(Iterator& iterator) { iterator++; }
+
+  static const Element& GetValue(ConstIterator& iterator) { return *iterator; }
+  static Element& GetValue(Iterator& iterator) { return *iterator; }
+
+  static size_t GetSize(const ui::LatencyInfo::LatencyMap& input) {
+    return input.size();
+  }
+};
+
+template <>
 struct StructTraits<ui::mojom::LatencyComponent,
                     ui::LatencyInfo::LatencyComponent> {
   static int64_t sequence_number(
@@ -24,6 +48,22 @@ struct StructTraits<ui::mojom::LatencyComponent,
       const ui::LatencyInfo::LatencyComponent& component);
   static bool Read(ui::mojom::LatencyComponentDataView data,
                    ui::LatencyInfo::LatencyComponent* out);
+};
+
+template <>
+struct StructTraits<ui::mojom::LatencyComponentPair,
+                    ui::LatencyInfo::LatencyMap::value_type> {
+  static const std::pair<ui::LatencyComponentType, int64_t>& key(
+      const ui::LatencyInfo::LatencyMap::value_type& input) {
+    return input.first;
+  }
+
+  static const ui::LatencyInfo::LatencyComponent& value(
+      const ui::LatencyInfo::LatencyMap::value_type& input) {
+    return input.second;
+  }
+
+  // TODO(fsamuel): Figure out how to optimize deserialization.
 };
 
 template <>
@@ -38,12 +78,9 @@ struct StructTraits<ui::mojom::LatencyComponentId,
 
 template <>
 struct StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo> {
-  static void* SetUpContext(const ui::LatencyInfo& info);
-  static void TearDownContext(const ui::LatencyInfo& info, void* context);
   static const std::string& trace_name(const ui::LatencyInfo& info);
-  static mojo::Array<ui::mojom::LatencyComponentPairPtr>& latency_components(
-      const ui::LatencyInfo& info,
-      void* context);
+  static const ui::LatencyInfo::LatencyMap& latency_components(
+      const ui::LatencyInfo& info);
   static uint32_t input_coordinates_size(const ui::LatencyInfo& info);
   static InputCoordinateArray input_coordinates(const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);
