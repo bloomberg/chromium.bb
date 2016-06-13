@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sstream>
+#include <string>
 
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
@@ -15,17 +15,31 @@ namespace remoting {
 class KeyTesterInstance : public pp::Instance {
  public:
   explicit KeyTesterInstance(PP_Instance instance) : pp::Instance(instance) {
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
     RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
   }
 
   virtual ~KeyTesterInstance() {}
 
-  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+  bool HandleInputEvent(const pp::InputEvent& event) override {
     switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_KEYDOWN:
       case PP_INPUTEVENT_TYPE_KEYUP:
       case PP_INPUTEVENT_TYPE_CHAR: {
         HandleKeyboardEvent(pp::KeyboardInputEvent(event));
+        break;
+      }
+      case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+      case PP_INPUTEVENT_TYPE_MOUSEUP:
+      case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+      case PP_INPUTEVENT_TYPE_MOUSEENTER:
+      case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
+        HandleMouseEvent(pp::MouseInputEvent(event));
+        break;
+      }
+      case PP_INPUTEVENT_TYPE_WHEEL: {
+        HandleWheelEvent(pp::WheelInputEvent(event));
         break;
       }
       default:
@@ -45,7 +59,31 @@ class KeyTesterInstance : public pp::Instance {
     PostMessage(out);
   }
 
-  std::string EventTypeToString(PP_InputEvent_Type t) {
+  void HandleMouseEvent(const pp::MouseInputEvent& event) {
+    pp::VarDictionary out;
+    out.Set("type", EventTypeToString(event.GetType()));
+    out.Set("button", (double)event.GetButton());
+    out.Set("position", PointToString(event.GetPosition()));
+    out.Set("clickCount", event.GetClickCount());
+    out.Set("movement", PointToString(event.GetMovement()));
+    PostMessage(out);
+  }
+
+  void HandleWheelEvent(const pp::WheelInputEvent& event) {
+    pp::VarDictionary out;
+    out.Set("type", EventTypeToString(event.GetType()));
+    out.Set("delta", PointToString(event.GetDelta()));
+    out.Set("ticks", PointToString(event.GetTicks()));
+    out.Set("scrollByPage", event.GetScrollByPage());
+    PostMessage(out);
+  }
+
+  template <typename T>
+  static std::string PointToString(const T& point) {
+    return std::to_string(point.x()) + ", " + std::to_string(point.y());
+  }
+
+  static std::string EventTypeToString(PP_InputEvent_Type t) {
     switch (t) {
       case PP_INPUTEVENT_TYPE_UNDEFINED:
         return "UNDEFINED";

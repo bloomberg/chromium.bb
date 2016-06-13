@@ -34,7 +34,13 @@ html {
 }
 
 #pnacl-listener {
-  height: 0;
+  height: 100px;
+}
+
+#pnacl-plugin {
+  height: 100%;
+  width: 100%;
+  background-color: gray;
 }
 
 .selectable {

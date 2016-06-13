@@ -100,8 +100,8 @@ EventListeners.prototype.onKeyPress_ = function(event) {
 EventListeners.prototype.onMessage_ = function (event) {
   var pnaclEvent = /** @type {PNaClEvent} */ (event['data']);
 
-  this.appendToTextLog_(this.jsonifyPnaclKeyboardInputEvent_(pnaclEvent));
-  var title = this.jsonifyPnaclKeyboardInputEvent_(pnaclEvent, 2);
+  this.appendToTextLog_(this.jsonifyPnaclInputEvent_(pnaclEvent));
+  var title = this.jsonifyPnaclInputEvent_(pnaclEvent, 2);
   if (pnaclEvent.type == "KEYDOWN") {
     this.pnaclChordTracker_.addKeyDownEvent(pnaclEvent.code, title);
   }
@@ -159,10 +159,13 @@ EventListeners.prototype.jsonifyJavascriptKeyEvent_ =
  * @return {string}
  * @private
  */
-EventListeners.prototype.jsonifyPnaclKeyboardInputEvent_ =
+EventListeners.prototype.jsonifyPnaclInputEvent_ =
     function(event, opt_space) {
-  return "PNaCl KeyboardInputEvent = " + JSON.stringify(
+  return "PNaCl InputEvent = " + JSON.stringify(
       event,
-      ['type', 'modifiers', 'keyCode', 'characterText', 'code'],
+      ['type',
+       'modifiers', 'keyCode', 'characterText', 'code',
+       'button', 'position', 'clickcount', 'movement',
+       'delta', 'ticks', 'scrollByPage' ],
       opt_space);
 };
