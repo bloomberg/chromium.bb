@@ -380,61 +380,191 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
+  // These numbers are sensitive to where the histogram buckets are.
+  int touchstart_timestamps_ms[] = {11, 25, 35};
+  int touchmove_timestamps_ms[] = {1, 5, 12};
+  int touchend_timestamps_ms[] = {3, 8, 12};
+
   for (InputEventAckState blocking :
        {INPUT_EVENT_ACK_STATE_NOT_CONSUMED, INPUT_EVENT_ACK_STATE_CONSUMED}) {
     SyntheticWebTouchEvent event;
-    event.PressPoint(1, 1);
+    {
+      // Touch start.
+      event.PressPoint(1, 1);
 
-    ui::LatencyInfo latency_start;
-    tracker()->OnInputEvent(event, &latency_start);
-    tracker()->OnInputEventAck(event, &latency_start,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      ui::LatencyInfo latency;
+      tracker()->OnInputEvent(event, &latency);
 
-    ui::LatencyInfo latency_move;
-    event.MovePoint(0, 20, 20);
-    tracker()->OnInputEvent(event, &latency_move);
+      ui::LatencyInfo fake_latency;
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+          tracker()->latency_component_id(), 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[0]),
+          1);
 
-    EXPECT_TRUE(latency_move.FindLatency(
-        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-    EXPECT_TRUE(
-        latency_move.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 tracker()->latency_component_id(), nullptr));
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[1]),
+          1);
 
-    EXPECT_EQ(2U, latency_move.latency_components().size());
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[2]),
+          1);
 
-    ui::LatencyInfo fake_latency_move;
-    fake_latency_move.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-        tracker()->latency_component_id(), 0,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1), 1);
+      // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+      // overwriting components.
+      tracker()->ComputeInputLatencyHistograms(
+          event.type, tracker()->latency_component_id(), fake_latency,
+          blocking);
 
-    fake_latency_move.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(5), 1);
+      tracker()->OnInputEventAck(event, &latency,
+                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    }
 
-    fake_latency_move.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(12), 1);
+    {
+      // Touch move.
+      ui::LatencyInfo latency;
+      event.MovePoint(0, 20, 20);
+      tracker()->OnInputEvent(event, &latency);
 
-    // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
-    // overwriting components.
-    tracker()->ComputeInputLatencyHistograms(event.type,
-                                             tracker()->latency_component_id(),
-                                             fake_latency_move, blocking);
+      EXPECT_TRUE(latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
+      EXPECT_TRUE(
+          latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                   tracker()->latency_component_id(), nullptr));
+
+      EXPECT_EQ(2U, latency.latency_components().size());
+
+      ui::LatencyInfo fake_latency;
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+          tracker()->latency_component_id(), 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[0]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[1]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[2]),
+          1);
+
+      // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+      // overwriting components.
+      tracker()->ComputeInputLatencyHistograms(
+          event.type, tracker()->latency_component_id(), fake_latency,
+          blocking);
+    }
+
+    {
+      // Touch end.
+      ui::LatencyInfo latency;
+      event.ReleasePoint(0);
+      tracker()->OnInputEvent(event, &latency);
+
+      EXPECT_TRUE(latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
+      EXPECT_TRUE(
+          latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                   tracker()->latency_component_id(), nullptr));
+
+      EXPECT_EQ(2U, latency.latency_components().size());
+
+      ui::LatencyInfo fake_latency;
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+          tracker()->latency_component_id(), 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[0]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[1]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[2]),
+          1);
+
+      // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+      // overwriting components.
+      tracker()->ComputeInputLatencyHistograms(
+          event.type, tracker()->latency_component_id(), fake_latency,
+          blocking);
+    }
   }
 
+  // Touch start.
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.QueueingTime.TouchStartDefaultPrevented"),
+      ElementsAre(Bucket(
+          touchstart_timestamps_ms[1] - touchstart_timestamps_ms[0], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.QueueingTime.TouchStartDefaultAllowed"),
+      ElementsAre(Bucket(
+          touchstart_timestamps_ms[1] - touchstart_timestamps_ms[0], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.BlockingTime.TouchStartDefaultPrevented"),
+      ElementsAre(Bucket(
+          touchstart_timestamps_ms[2] - touchstart_timestamps_ms[1], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.BlockingTime.TouchStartDefaultAllowed"),
+      ElementsAre(Bucket(
+          touchstart_timestamps_ms[2] - touchstart_timestamps_ms[1], 1)));
+
+  // Touch move.
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "Event.Latency.QueueingTime.TouchMoveDefaultPrevented"),
-              ElementsAre(Bucket(4, 1)));
+              ElementsAre(Bucket(
+                  touchmove_timestamps_ms[1] - touchmove_timestamps_ms[0], 1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "Event.Latency.QueueingTime.TouchMoveDefaultAllowed"),
-              ElementsAre(Bucket(4, 1)));
+              ElementsAre(Bucket(
+                  touchmove_timestamps_ms[1] - touchmove_timestamps_ms[0], 1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "Event.Latency.BlockingTime.TouchMoveDefaultPrevented"),
-              ElementsAre(Bucket(7, 1)));
+              ElementsAre(Bucket(
+                  touchmove_timestamps_ms[2] - touchmove_timestamps_ms[1], 1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "Event.Latency.BlockingTime.TouchMoveDefaultAllowed"),
-              ElementsAre(Bucket(7, 1)));
+              ElementsAre(Bucket(
+                  touchmove_timestamps_ms[2] - touchmove_timestamps_ms[1], 1)));
+
+  // Touch end.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.TouchEndDefaultPrevented"),
+              ElementsAre(Bucket(
+                  touchend_timestamps_ms[1] - touchend_timestamps_ms[0], 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.TouchEndDefaultAllowed"),
+              ElementsAre(Bucket(
+                  touchend_timestamps_ms[1] - touchend_timestamps_ms[0], 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.BlockingTime.TouchEndDefaultPrevented"),
+              ElementsAre(Bucket(
+                  touchend_timestamps_ms[2] - touchend_timestamps_ms[1], 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.BlockingTime.TouchEndDefaultAllowed"),
+              ElementsAre(Bucket(
+                  touchend_timestamps_ms[2] - touchend_timestamps_ms[1], 1)));
 }
 
 }  // namespace content

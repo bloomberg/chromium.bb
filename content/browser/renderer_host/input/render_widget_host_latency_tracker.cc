@@ -270,22 +270,60 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     }
   }
 
+  // Both tap and scroll gestures depend on the disposition of the touch start
+  // and the current touch. For touch start, touch_start_default_prevented_ ==
+  // (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED).
+  bool action_prevented = touch_start_default_prevented_ ||
+                          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+
   LatencyInfo::LatencyComponent main_component;
   if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,
                           &main_component)) {
     DCHECK_EQ(main_component.event_count, 1u);
     base::TimeDelta queueing_delta =
         main_component.event_time - rwh_component.event_time;
-    if (type == WebInputEvent::TouchMove && !multi_finger_gesture_) {
-      if (touch_start_default_prevented_ ||
-          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
-        UMA_HISTOGRAM_TIMES(
-            "Event.Latency.QueueingTime.TouchMoveDefaultPrevented",
-            queueing_delta);
-      } else if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
-        UMA_HISTOGRAM_TIMES(
-            "Event.Latency.QueueingTime.TouchMoveDefaultAllowed",
-            queueing_delta);
+
+    if (!multi_finger_gesture_) {
+      if (action_prevented) {
+        switch (type) {
+          case WebInputEvent::TouchStart:
+            UMA_HISTOGRAM_TIMES(
+              "Event.Latency.QueueingTime.TouchStartDefaultPrevented",
+              queueing_delta);
+            break;
+          case WebInputEvent::TouchMove:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.QueueingTime.TouchMoveDefaultPrevented",
+                queueing_delta);
+            break;
+          case WebInputEvent::TouchEnd:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.QueueingTime.TouchEndDefaultPrevented",
+                queueing_delta);
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (type) {
+          case WebInputEvent::TouchStart:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.QueueingTime.TouchStartDefaultAllowed",
+                queueing_delta);
+            break;
+          case WebInputEvent::TouchMove:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.QueueingTime.TouchMoveDefaultAllowed",
+                queueing_delta);
+            break;
+          case WebInputEvent::TouchEnd:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.QueueingTime.TouchEndDefaultAllowed",
+                queueing_delta);
+            break;
+          default:
+            break;
+        }
       }
     }
   }
@@ -307,20 +345,51 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
                                   100);
     }
 
-    if (type == WebInputEvent::TouchMove && !multi_finger_gesture_ &&
+    if (!multi_finger_gesture_ &&
         main_component.event_time != base::TimeTicks()) {
       base::TimeDelta blocking_delta;
       blocking_delta = acked_component.event_time - main_component.event_time;
 
-      if (touch_start_default_prevented_ ||
-          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
-        UMA_HISTOGRAM_TIMES(
-            "Event.Latency.BlockingTime.TouchMoveDefaultPrevented",
-            blocking_delta);
-      } else if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
-        UMA_HISTOGRAM_TIMES(
-            "Event.Latency.BlockingTime.TouchMoveDefaultAllowed",
-            blocking_delta);
+      if (action_prevented) {
+        switch (type) {
+          case WebInputEvent::TouchStart:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchStartDefaultPrevented",
+                blocking_delta);
+            break;
+          case WebInputEvent::TouchMove:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchMoveDefaultPrevented",
+                blocking_delta);
+            break;
+          case WebInputEvent::TouchEnd:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchEndDefaultPrevented",
+                blocking_delta);
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (type) {
+          case WebInputEvent::TouchStart:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchStartDefaultAllowed",
+                blocking_delta);
+            break;
+          case WebInputEvent::TouchMove:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchMoveDefaultAllowed",
+                blocking_delta);
+            break;
+          case WebInputEvent::TouchEnd:
+            UMA_HISTOGRAM_TIMES(
+                "Event.Latency.BlockingTime.TouchEndDefaultAllowed",
+                blocking_delta);
+            break;
+          default:
+            break;
+        }
       }
     }
   }

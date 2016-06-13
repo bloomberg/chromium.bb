@@ -12108,8 +12108,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.BlockingTime.TouchMoveDefaultAllowed"
-    units="microseconds">
+<histogram name="Event.Latency.BlockingTime.TouchEndDefaultAllowed" units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchend event and acking
+    it, for events which were not preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.BlockingTime.TouchEndDefaultPrevented"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchend event and acking
+    it, for events which were preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.BlockingTime.TouchMoveDefaultAllowed" units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between the renderer main thread receiving a touchmove event and acking
@@ -12118,11 +12134,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.BlockingTime.TouchMoveDefaultPrevented"
-    units="microseconds">
+    units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between the renderer main thread receiving a touchmove event and acking
     it, for events which were preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.BlockingTime.TouchStartDefaultAllowed"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchstart event and
+    acking it, for events which were not preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.BlockingTime.TouchStartDefaultPrevented"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchstart event and
+    acking it, for events which were preventDefaulted.
   </summary>
 </histogram>
 
@@ -12462,8 +12496,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time between input event received by OS and sent to Chrome.</summary>
 </histogram>
 
-<histogram name="Event.Latency.QueueingTime.TouchMoveDefaultAllowed"
-    units="microseconds">
+<histogram name="Event.Latency.QueueingTime.TouchEndDefaultAllowed" units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchend event to the renderer main thread and when
+    the renderer begins to process that event, for events which were not
+    preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchEndDefaultPrevented"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchend event to the renderer main thread and when
+    the renderer begins to process that event, for events which were
+    preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchMoveDefaultAllowed" units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between sending a touchmove event to the renderer main thread and when
@@ -12473,10 +12525,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.QueueingTime.TouchMoveDefaultPrevented"
-    units="microseconds">
+    units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between sending a touchmove event to the renderer main thread and when
+    the renderer begins to process that event, for events which were
+    preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchStartDefaultAllowed"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchstart event to the renderer main thread and when
+    the renderer begins to process that event, for events which were not
+    preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchStartDefaultPrevented"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchstart event to the renderer main thread and when
     the renderer begins to process that event, for events which were
     preventDefaulted.
   </summary>
