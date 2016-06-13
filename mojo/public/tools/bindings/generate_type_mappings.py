@@ -101,6 +101,10 @@ def ParseTypemap(typemap):
     pass_by_value = (match_result.group(3) and
                      match_result.group(3) == "pass_by_value")
 
+    assert mojom_type not in result, (
+        "Cannot map multiple native types (%s, %s) to the same mojom type: %s" %
+        (result[mojom_type]['typename'], native_type, mojom_type))
+
     result[mojom_type] = {
         'typename': native_type,
         'pass_by_value': pass_by_value,
