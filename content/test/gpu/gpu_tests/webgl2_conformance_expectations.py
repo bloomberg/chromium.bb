@@ -362,8 +362,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
         ['mac'], bug=606074)
+    self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
+        ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
+    # GPU-specific expectations aren't working properly.
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
@@ -492,8 +498,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['mac', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
@@ -558,8 +562,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
-        ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
