@@ -12,6 +12,7 @@ import sys
 from chromite.cbuildbot import constants
 from chromite.lib import build_time_stats
 from chromite.cli import command
+from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
 from chromite.lib import cros_logging as logging
 
 # Used by --build-type option.
@@ -35,7 +36,7 @@ class StatsCommand(command.CliCommand):
 
     stats_args = parser.add_argument_group()
 
-    stats_args.add_argument('--cred-dir', type='path', required=True,
+    stats_args.add_argument('--cred-dir', type='path',
                             metavar='CIDB_CREDENTIALS_DIR',
                             help='Database credentials directory with'
                                  ' certificates and other connection'
@@ -114,10 +115,14 @@ class StatsCommand(command.CliCommand):
     """Run cros build."""
     self.options.Freeze()
 
+    credentials = self.options.cred_dir
+    if not credentials:
+      credentials = cros_cidbcreds.CheckAndGetCIDBCreds()
+
     # Delay import so sqlalchemy isn't pulled in until we need it.
     from chromite.lib import cidb
 
-    db = cidb.CIDBConnection(self.options.cred_dir)
+    db = cidb.CIDBConnection(credentials)
 
     # Timeframe for discovering builds, if options.build_id not used.
     start_date, end_date = self.OptionsToStartEndDates(self.options)

@@ -36,14 +36,13 @@ def CheckAndGetCIDBCreds(force_update=False, folder=None):
         shutil.rmtree(cidb_dir, ignore_errors=True)
         logging.debug('Force updating CIDB creds. Deleted %s.', cidb_dir)
       else:
-        logging.notice('CIDB credentials already exist at %s', cidb_dir)
+        logging.debug('Using cached credentials %s', cidb_dir)
         return cidb_dir
 
     os.mkdir(cidb_dir)
 
     try:
       GetCIDBCreds(cidb_dir)
-      logging.notice('Please find CIDB credentials at %s', cidb_dir)
       return cidb_dir
     except Exception as e:
       if isinstance(e, gs.GSCommandError):
@@ -74,5 +73,6 @@ class CidbCredsCommand(command.CliCommand):
   def Run(self):
     """Run cros cidbcreds."""
     self.options.Freeze()
-    CheckAndGetCIDBCreds(force_update=self.options.force_update,
-                         folder=self.options.folder)
+    cidb_dir = CheckAndGetCIDBCreds(force_update=self.options.force_update,
+                                    folder=self.options.folder)
+    logging.notice('CIDB credentials at: %s', cidb_dir)
