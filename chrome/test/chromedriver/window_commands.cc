@@ -482,7 +482,8 @@ Status ExecuteGoBack(Session* session,
                      const base::DictionaryValue& params,
                      std::unique_ptr<base::Value>* value,
                      Timeout* timeout) {
-  Status status = web_view->TraverseHistory(-1);
+  timeout->SetDuration(session->page_load_timeout);
+  Status status = web_view->TraverseHistory(-1, timeout);
   if (status.IsError())
     return status;
   session->SwitchToTopFrame();
@@ -494,7 +495,8 @@ Status ExecuteGoForward(Session* session,
                         const base::DictionaryValue& params,
                         std::unique_ptr<base::Value>* value,
                         Timeout* timeout) {
-  Status status = web_view->TraverseHistory(1);
+  timeout->SetDuration(session->page_load_timeout);
+  Status status = web_view->TraverseHistory(1, timeout);
   if (status.IsError())
     return status;
   session->SwitchToTopFrame();
@@ -506,7 +508,8 @@ Status ExecuteRefresh(Session* session,
                       const base::DictionaryValue& params,
                       std::unique_ptr<base::Value>* value,
                       Timeout* timeout) {
-  Status status = web_view->Reload();
+  timeout->SetDuration(session->page_load_timeout);
+  Status status = web_view->Reload(timeout);
   if (status.IsError())
     return status;
   session->SwitchToTopFrame();

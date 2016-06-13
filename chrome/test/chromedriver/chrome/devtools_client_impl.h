@@ -16,6 +16,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -127,6 +128,7 @@ class DevToolsClientImpl : public DevToolsClient {
     ResponseState state;
     std::string method;
     internal::InspectorCommandResponse response;
+    Timeout command_timeout;
   };
   typedef std::map<int, linked_ptr<ResponseInfo> > ResponseInfoMap;
 

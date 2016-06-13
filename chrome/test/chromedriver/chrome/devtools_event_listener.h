@@ -13,6 +13,7 @@ class DictionaryValue;
 
 class DevToolsClient;
 class Status;
+class Timeout;
 
 // Receives notification of incoming Blink Inspector messages and connection
 // to the DevTools server.
@@ -31,7 +32,8 @@ class DevToolsEventListener {
   // Called when a command success response is received.
   virtual Status OnCommandSuccess(DevToolsClient* client,
                                   const std::string& method,
-                                  const base::DictionaryValue& result);
+                                  const base::DictionaryValue& result,
+                                  const Timeout& command_timeout);
 
   // True if the listener should be added to the browser-wide |DevToolsClient|
   // in addition to all webview |DevToolsClient|s. False by default. If set to

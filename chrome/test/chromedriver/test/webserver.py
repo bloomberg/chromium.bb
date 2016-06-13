@@ -182,7 +182,10 @@ class WebServer(object):
   def SetCallbackForPath(self, path, func):
     self._path_maps_lock.acquire()
     try:
-      self._path_callback_map[path] = func
+      if func is None:
+        del self._path_callback_map[path]
+      else:
+        self._path_callback_map[path] = func
     finally:
       self._path_maps_lock.release()
 

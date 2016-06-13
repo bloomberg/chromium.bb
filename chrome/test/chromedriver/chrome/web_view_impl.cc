@@ -34,6 +34,8 @@
 
 namespace {
 
+const int kWaitForNavigationStopSeconds = 10;
+
 Status GetContextIdForFrame(FrameTracker* tracker,
                             const std::string& frame,
                             int* context_id) {
@@ -190,13 +192,13 @@ Status WebViewImpl::Load(const std::string& url, const Timeout* timeout) {
   return client_->SendCommandWithTimeout("Page.navigate", params, timeout);
 }
 
-Status WebViewImpl::Reload() {
+Status WebViewImpl::Reload(const Timeout* timeout) {
   base::DictionaryValue params;
   params.SetBoolean("ignoreCache", false);
-  return client_->SendCommand("Page.reload", params);
+  return client_->SendCommandWithTimeout("Page.reload", params, timeout);
 }
 
-Status WebViewImpl::TraverseHistory(int delta) {
+Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
   base::DictionaryValue params;
   std::unique_ptr<base::DictionaryValue> result;
   Status status = client_->SendCommandAndGetResult(
@@ -235,7 +237,8 @@ Status WebViewImpl::TraverseHistory(int delta) {
     return Status(kUnknownError, "history entry does not have an id");
   params.SetInteger("entryId", entry_id);
 
-  return client_->SendCommand("Page.navigateToHistoryEntry", params);
+  return client_->SendCommandWithTimeout("Page.navigateToHistoryEntry", params,
+                                         timeout);
 }
 
 Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
@@ -436,8 +439,13 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
     std::unique_ptr<base::Value> unused_value;
     navigation_tracker_->set_timed_out(true);
     EvaluateScript(std::string(), "window.stop();", &unused_value);
-    Status new_status =
-        client_->HandleEventsUntil(not_pending_navigation, timeout);
+    // We don't consider |timeout| here to make sure the navigation actually
+    // stops and we cleanup properly after a command that caused a navigation
+    // that timed out.  Otherwise we might have to wait for that before
+    // executing the next command, and it will be counted towards its timeout.
+    Status new_status = client_->HandleEventsUntil(
+        not_pending_navigation,
+        Timeout(base::TimeDelta::FromSeconds(kWaitForNavigationStopSeconds)));
     navigation_tracker_->set_timed_out(false);
     if (new_status.IsError())
       status = new_status;

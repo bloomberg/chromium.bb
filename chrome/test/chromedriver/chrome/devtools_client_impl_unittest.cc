@@ -1070,7 +1070,8 @@ class MockCommandListener : public DevToolsEventListener {
 
   Status OnCommandSuccess(DevToolsClient* client,
                           const std::string& method,
-                          const base::DictionaryValue& result) override {
+                          const base::DictionaryValue& result,
+                          const Timeout& command_timeout) override {
     msgs_.push_back(method);
     if (!callback_.is_null())
       callback_.Run(client);

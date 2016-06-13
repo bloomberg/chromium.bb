@@ -17,7 +17,6 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/util.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
-#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
 namespace {
@@ -274,6 +273,8 @@ Status DevToolsClientImpl::SendCommandInternal(
   if (wait_for_response) {
     linked_ptr<ResponseInfo> response_info =
         make_linked_ptr(new ResponseInfo(method));
+    if (timeout)
+      response_info->command_timeout = *timeout;
     response_info_map_[command_id] = response_info;
     while (response_info->state == kWaiting) {
       Status status = ProcessNextMessage(
@@ -474,7 +475,8 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfCommandResponse() {
     Status status = listener->OnCommandSuccess(
         this,
         unnotified_cmd_response_info_->method,
-        *unnotified_cmd_response_info_->response.result.get());
+        *unnotified_cmd_response_info_->response.result.get(),
+        unnotified_cmd_response_info_->command_timeout);
     if (status.IsError())
       return status;
   }

@@ -363,7 +363,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
 Status NavigationTracker::OnCommandSuccess(
     DevToolsClient* client,
     const std::string& method,
-    const base::DictionaryValue& result) {
+    const base::DictionaryValue& result,
+    const Timeout& command_timeout) {
   if ((method == "Page.navigate" || method == "Page.navigateToHistoryEntry") &&
       loading_state_ != kLoading) {
     // At this point the browser has initiated the navigation, but besides that,
@@ -395,11 +396,11 @@ Status NavigationTracker::OnCommandSuccess(
     base::DictionaryValue params;
     params.SetString("expression", "document.URL");
     std::unique_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResult(
-        "Runtime.evaluate", params, &result);
+    Status status = client_->SendCommandAndGetResultWithTimeout(
+        "Runtime.evaluate", params, &command_timeout, &result);
     std::string url;
     if (status.IsError() || !result->GetString("result.value", &url))
-      return Status(kUnknownError, "cannot determine loading status", status);
+      return MakeNavigationCheckFailedStatus(status);
     if (loading_state_ == kUnknown && url.empty())
       loading_state_ = kLoading;
   }

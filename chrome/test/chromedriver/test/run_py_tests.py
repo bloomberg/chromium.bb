@@ -190,6 +190,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # cross-process navigations.
         # TODO(samuong): reenable when it does.
         'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
+        'ChromeDriverPageLoadTimeoutTest.'
+            'testHistoryNavigationWithPageLoadTimeout',
     ]
 )
 
@@ -1268,44 +1270,81 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 
-  def _CheckPageLoadTimeout(self, driver, host=None):
-    initial_url = self.GetHttpUrlForFile('/chromedriver/empty.html')
-    driver.Load(initial_url)
+  class _RequestHandler(object):
+    def __init__(self):
+      self.request_received_event = threading.Event()
+      self.send_response_event = threading.Event()
 
-    request_received_event = threading.Event()
-    send_response_event = threading.Event()
-    def hang(request):
-      request_received_event.set()
+    def handle(self, request):
+      self.request_received_event.set()
       # Don't hang infinitely, 10 seconds are enough.
-      send_response_event.wait(10)
-      return {}, 'Hi!'
+      self.send_response_event.wait(10)
+      self.send_response_event.clear()
+      return {'Cache-Control': 'no-store'}, 'Hi!'
 
+  def setUp(self):
+    self._handler = ChromeDriverPageLoadTimeoutTest._RequestHandler()
+    self._http_server.SetCallbackForPath('/hang', self._handler.handle)
+    super(ChromeDriverPageLoadTimeoutTest, self).setUp()
+
+    self._driver = self.CreateDriver(
+        chrome_switches=['host-resolver-rules=MAP * 127.0.0.1'])
+    self._initial_url = self.GetHttpUrlForFile('/chromedriver/empty.html')
+    self._driver.Load(self._initial_url)
+    # NB: With a too small timeout chromedriver might not send the
+    # Navigate command at all.
+    self._driver.SetTimeout('page load', 500) # 500 ms
+
+  def tearDown(self):
+    super(ChromeDriverPageLoadTimeoutTest, self).tearDown()
+    self._http_server.SetCallbackForPath('/hang', None)
+
+  def _LoadHangingUrl(self, host=None):
+    self._driver.Load(self._http_server.GetUrl(host) + '/hang')
+
+  def _CheckPageLoadTimeout(self, action):
+    self._handler.request_received_event.clear()
+    timed_out = False
     try:
-      self._http_server.SetCallbackForPath('/hang', hang)
-      # NB: With a too small timeout chromedriver might not send the
-      # Navigate command at all.
-      driver.SetTimeout('page load', 500) # 500 ms
-      driver.Load(self._http_server.GetUrl(host) + '/hang')
+      action()
     except chromedriver.ChromeDriverException as e:
       self.assertNotEqual(-1, e.message.find('timeout'))
-      # Verify that the browser actually made that request.
-      self.assertTrue(request_received_event.wait(1))
+      timed_out = True
     finally:
-      send_response_event.set()
-      pass
+      self._handler.send_response_event.set()
 
-    self.assertEquals(initial_url, driver.GetCurrentUrl())
+    self.assertTrue(timed_out)
+    # Verify that the browser actually made that request.
+    self.assertTrue(self._handler.request_received_event.wait(1))
 
   def testPageLoadTimeout(self):
-    self._CheckPageLoadTimeout(self.CreateDriver())
+    self._CheckPageLoadTimeout(self._LoadHangingUrl)
+    self.assertEquals(self._initial_url, self._driver.GetCurrentUrl())
 
   def testPageLoadTimeoutCrossDomain(self):
-    driver = self.CreateDriver(
-        chrome_switches=['host-resolver-rules=MAP * 127.0.0.1'])
     # Cross-domain navigation is likely to be a cross-process one. In this case
     # DevToolsAgentHost behaves quite differently and does not send command
     # responses if the navigation hangs, so this case deserves a dedicated test.
-    self._CheckPageLoadTimeout(driver, 'foo.bar')
+    self._CheckPageLoadTimeout(lambda: self._LoadHangingUrl('foo.bar'))
+    self.assertEquals(self._initial_url, self._driver.GetCurrentUrl())
+
+  def testHistoryNavigationWithPageLoadTimeout(self):
+    # Allow the page to load for the first time.
+    self._handler.send_response_event.set()
+    self._LoadHangingUrl()
+    self.assertTrue(self._handler.request_received_event.wait(1))
+
+    self._driver.GoBack()
+    self._CheckPageLoadTimeout(self._driver.GoForward)
+    self.assertEquals(self._initial_url, self._driver.GetCurrentUrl())
+
+  def testRefreshWithPageLoadTimeout(self):
+    # Allow the page to load for the first time.
+    self._handler.send_response_event.set()
+    self._LoadHangingUrl()
+    self.assertTrue(self._handler.request_received_event.wait(1))
+
+    self._CheckPageLoadTimeout(self._driver.Refresh)
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):

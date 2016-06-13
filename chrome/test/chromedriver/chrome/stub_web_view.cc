@@ -36,11 +36,11 @@ Status StubWebView::Load(const std::string& url, const Timeout* timeout) {
   return Status(kOk);
 }
 
-Status StubWebView::Reload() {
+Status StubWebView::Reload(const Timeout* timeout) {
   return Status(kOk);
 }
 
-Status StubWebView::TraverseHistory(int delta) {
+Status StubWebView::TraverseHistory(int delta, const Timeout* timeout) {
   return Status(kOk);
 }
 

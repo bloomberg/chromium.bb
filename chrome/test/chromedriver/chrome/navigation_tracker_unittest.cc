@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -374,7 +375,7 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
   base::DictionaryValue result;
   result.SetString("frameId", "f");
-  tracker.OnCommandSuccess(&client, "Page.navigate", result);
+  tracker.OnCommandSuccess(&client, "Page.navigate", result, Timeout());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
   tracker.OnEvent(&client, "Page.loadEventFired", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));

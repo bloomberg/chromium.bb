@@ -52,8 +52,8 @@ class WebViewImpl : public WebView {
   Status HandleReceivedEvents() override;
   Status GetUrl(std::string* url) override;
   Status Load(const std::string& url, const Timeout* timeout) override;
-  Status Reload() override;
-  Status TraverseHistory(int delta) override;
+  Status Reload(const Timeout* timeout) override;
+  Status TraverseHistory(int delta, const Timeout* timeout) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& expression,
                         std::unique_ptr<base::Value>* result) override;

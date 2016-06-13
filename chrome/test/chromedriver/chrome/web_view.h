@@ -52,12 +52,12 @@ class WebView {
   virtual Status Load(const std::string& url, const Timeout* timeout) = 0;
 
   // Reload the current page.
-  virtual Status Reload() = 0;
+  virtual Status Reload(const Timeout* timeout) = 0;
 
   // Navigate |delta| steps forward in the browser history. A negative value
   // will navigate back in the history. If the delta exceeds the number of items
   // in the browser history, stay on the current page.
-  virtual Status TraverseHistory(int delta) = 0;
+  virtual Status TraverseHistory(int delta, const Timeout* timeout) = 0;
 
   // Evaluates a JavaScript expression in a specified frame and returns
   // the result. |frame| is a frame ID or an empty string for the main frame.
