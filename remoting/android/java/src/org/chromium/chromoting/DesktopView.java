@@ -201,18 +201,14 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         getHolder().unlockCanvasAndPost(canvas);
 
-        if (!mOnPaint.isEmpty()) {
-            requestRepaint();
-        } else {
-            synchronized (mAnimationLock) {
-                if (mInputAnimationRunning) {
-                    getHandler().postAtTime(new Runnable() {
-                        @Override
-                        public void run() {
-                            processAnimation();
-                        }
-                    }, startTimeMs + 30);
-                }
+        synchronized (mAnimationLock) {
+            if (mInputAnimationRunning) {
+                getHandler().postAtTime(new Runnable() {
+                    @Override
+                    public void run() {
+                        processAnimation();
+                    }
+                }, startTimeMs + 30);
             }
         }
     }
@@ -224,6 +220,8 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
         if (running) {
             mInputHandler.processAnimation();
+            requestRepaint();
+        } else if (!mOnPaint.isEmpty()) {
             requestRepaint();
         }
     }
