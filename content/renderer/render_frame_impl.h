@@ -1257,7 +1257,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<ExternalPopupMenu> external_popup_menu_;
 #endif
 
-  FrameBlameContext* blame_context_;  // Not owned.
+  std::unique_ptr<FrameBlameContext> blame_context_;
 
   // Plugins -------------------------------------------------------------------
 #if defined(ENABLE_PLUGINS)

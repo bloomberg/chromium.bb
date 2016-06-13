@@ -335,6 +335,8 @@ void LocalFrame::detach(FrameDetachType type)
     // - Document::detach()'s deferred widget updates can run script.
     ScriptForbiddenScope forbidScript;
     m_loader.clear();
+    // Clear FrameScheduler again in case it is recreated in scripting.
+    m_frameScheduler.reset();
     if (!client())
         return;
 
