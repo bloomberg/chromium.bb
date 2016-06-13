@@ -397,7 +397,9 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 // BrowserNonClientFrameView:
 void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
   Browser* browser = browser_view()->browser();
-  if ((browser->is_type_tabbed() || browser->is_app()) &&
+  if (!browser->is_type_tabbed() && !browser->is_app())
+    return;
+  if ((browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE) ||
       chrome::MultiUserWindowManager::ShouldShowAvatar(
           browser_view()->GetNativeWindow())) {
     UpdateProfileIndicatorIcon();
