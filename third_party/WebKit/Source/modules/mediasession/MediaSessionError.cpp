@@ -14,7 +14,7 @@ namespace blink {
 // static
 DOMException* MediaSessionError::take(ScriptPromiseResolver*, const WebMediaSessionError& webError)
 {
-    ASSERT(webError == WebMediaSessionError::Activate);
+    DCHECK(webError == WebMediaSessionError::Activate);
     return DOMException::create(InvalidStateError, "The media session activation failed.");
 }
 
