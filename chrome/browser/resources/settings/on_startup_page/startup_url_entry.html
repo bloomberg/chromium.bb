@@ -15,6 +15,10 @@
         box-shadow: 0 2px 6px grey;
       }
 
+      .hide-overflow {
+        overflow: hidden;
+      }
+
       paper-item:hover {
         background-color: var(--settings-hover-color);
       }
@@ -23,7 +27,7 @@
       <div class="favicon-image"
           style="background-image: [[getIconSet_(model.url)]]">
       </div>
-      <div class="middle">
+      <div class="middle hide-overflow">
         <div class="text-elide">[[model.title]]</div>
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
