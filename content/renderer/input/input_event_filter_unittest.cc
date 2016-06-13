@@ -179,7 +179,7 @@ TEST_F(InputEventFilterTest, Basic) {
   EXPECT_EQ(0U, event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
-  filter_->DidAddInputHandler(kTestRoutingID);
+  filter_->RegisterRoutingID(kTestRoutingID);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
@@ -255,7 +255,7 @@ TEST_F(InputEventFilterTest, Basic) {
 }
 
 TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
-  filter_->DidAddInputHandler(kTestRoutingID);
+  filter_->RegisterRoutingID(kTestRoutingID);
   event_recorder_.set_send_to_widget(true);
 
 
@@ -318,7 +318,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
       SyntheticWebMouseWheelEventBuilder::Build(30, 30, 0, 53, 1, false),
   };
 
-  filter_->DidAddInputHandler(kTestRoutingID);
+  filter_->RegisterRoutingID(kTestRoutingID);
   event_recorder_.set_send_to_widget(true);
   event_recorder_.set_passive(true);
 
@@ -396,7 +396,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
 
-  filter_->DidAddInputHandler(kTestRoutingID);
+  filter_->RegisterRoutingID(kTestRoutingID);
   event_recorder_.set_send_to_widget(true);
   event_recorder_.set_passive(true);
 
@@ -470,7 +470,7 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   SyntheticWebTouchEvent kBlockingEvents[1];
   kBlockingEvents[0].PressPoint(10, 10);
 
-  filter_->DidAddInputHandler(kTestRoutingID);
+  filter_->RegisterRoutingID(kTestRoutingID);
   event_recorder_.set_send_to_widget(true);
   event_recorder_.set_passive(true);
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));

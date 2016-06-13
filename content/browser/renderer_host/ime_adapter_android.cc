@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -264,8 +263,8 @@ void ImeAdapterAndroid::SetEditableSelectionOffsets(
   if (!rfh)
     return;
 
-  rfh->Send(new FrameMsg_SetEditableSelectionOffsets(rfh->GetRoutingID(),
-                                                     start, end));
+  rfh->Send(new InputMsg_SetEditableSelectionOffsets(rfh->GetRoutingID(), start,
+                                                     end));
 }
 
 void ImeAdapterAndroid::SetCharacterBounds(

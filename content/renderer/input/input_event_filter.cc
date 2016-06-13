@@ -69,13 +69,13 @@ void InputEventFilter::SetIsFlingingInMainThreadEventQueue(int routing_id,
   iter->second->set_is_flinging(is_flinging);
 }
 
-void InputEventFilter::DidAddInputHandler(int routing_id) {
+void InputEventFilter::RegisterRoutingID(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
   route_queues_[routing_id].reset(new MainThreadEventQueue(routing_id, this));
 }
 
-void InputEventFilter::DidRemoveInputHandler(int routing_id) {
+void InputEventFilter::UnregisterRoutingID(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.erase(routing_id);
   route_queues_.erase(routing_id);

@@ -1202,6 +1202,30 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
+    // Tests that the method call order is kept.
+    // See crbug.com/601707 for details.
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testSetSelectionCommitTextOrder() throws Exception {
+        final ChromiumBaseInputConnection connection = mConnection;
+        runBlockingOnImeThread(new Callable<Void>() {
+            @Override
+            public Void call() {
+                connection.beginBatchEdit();
+                connection.commitText("hello world", 1);
+                connection.setSelection(6, 6);
+                connection.deleteSurroundingText(0, 5);
+                connection.commitText("'", 1);
+                connection.commitText("world", 1);
+                connection.setSelection(7, 7);
+                connection.setComposingText("", 1);
+                connection.endBatchEdit();
+                return null;
+            }
+        });
+        waitAndVerifyUpdateSelection(0, 7, 7, -1, -1);
+    }
+
     private void performGo(TestCallbackHelperContainer testCallbackHelperContainer)
             throws Throwable {
         final InputConnection inputConnection = mConnection;

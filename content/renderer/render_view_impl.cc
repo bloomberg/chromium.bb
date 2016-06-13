@@ -629,7 +629,8 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       expected_content_intent_id_(0),
 #endif
       enumeration_completion_id_(0),
-      session_storage_namespace_id_(params.session_storage_namespace_id) {
+      session_storage_namespace_id_(params.session_storage_namespace_id),
+      has_added_input_handler_(false) {
   GetWidget()->set_owner_delegate(this);
 }
 
@@ -1952,16 +1953,18 @@ void RenderViewImpl::initializeLayerTreeView() {
   // (SnowLeopard, which has Aqua scrollbars which need synchronous updates).
   use_threaded_event_handling = compositor_deps_->IsElasticOverscrollEnabled();
 #endif
-  if (use_threaded_event_handling) {
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    // render_thread may be NULL in tests.
-    InputHandlerManager* input_handler_manager =
-        render_thread ? render_thread->input_handler_manager() : NULL;
-    if (input_handler_manager) {
-      input_handler_manager->AddInputHandler(
-          GetRoutingID(), rwc->GetInputHandler(), AsWeakPtr(),
-          webkit_preferences_.enable_scroll_animator);
-    }
+  if (!use_threaded_event_handling)
+    return;
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->AddInputHandler(
+        GetRoutingID(), rwc->GetInputHandler(), AsWeakPtr(),
+        webkit_preferences_.enable_scroll_animator);
+    has_added_input_handler_ = true;
   }
 }
 
@@ -2112,6 +2115,10 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
 
 float RenderViewImpl::GetDeviceScaleFactorForTest() const {
   return device_scale_factor_;
+}
+
+bool RenderViewImpl::HasAddedInputHandler() const {
+  return has_added_input_handler_;
 }
 
 gfx::Point RenderViewImpl::ConvertWindowPointToViewport(

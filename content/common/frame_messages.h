@@ -741,12 +741,6 @@ IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
                     bool, /* if true, a reply is requested */
                     int /* world_id */)
 
-// Selects between the given start and end offsets in the currently focused
-// editable field.
-IPC_MESSAGE_ROUTED2(FrameMsg_SetEditableSelectionOffsets,
-                    int /* start */,
-                    int /* end */)
-
 // Requests a navigation to the supplied markup, in an iframe with sandbox
 // attributes.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetupTransitionView,

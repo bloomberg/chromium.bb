@@ -123,8 +123,8 @@ class TestInputHandlerManagerClient
 
   // content::InputHandlerManagerClient:
   void SetBoundHandler(const Handler& handler) override {}
-  void DidAddInputHandler(int routing_id) override {}
-  void DidRemoveInputHandler(int routing_id) override {}
+  void RegisterRoutingID(int routing_id) override {}
+  void UnregisterRoutingID(int routing_id) override {}
   void DidOverscroll(int routing_id,
                      const content::DidOverscrollParams& params) override {}
   void DidStartFlinging(int routing_id) override {}

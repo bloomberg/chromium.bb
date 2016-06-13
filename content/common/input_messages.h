@@ -151,6 +151,12 @@ IPC_MESSAGE_ROUTED2(InputMsg_ExtendSelectionAndDelete,
                     int /* before */,
                     int /* after */)
 
+// Selects between the given start and end offsets in the currently focused
+// editable field.
+IPC_MESSAGE_ROUTED2(InputMsg_SetEditableSelectionOffsets,
+                    int /* start */,
+                    int /* end */)
+
 // This message sends a string being composed with an input method.
 IPC_MESSAGE_ROUTED5(
     InputMsg_ImeSetComposition,
