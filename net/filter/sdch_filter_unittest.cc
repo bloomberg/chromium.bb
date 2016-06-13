@@ -974,6 +974,94 @@ TEST_F(SdchFilterTest, FilterChaining) {
   EXPECT_EQ(output, expanded_);
 }
 
+// Test that filters can be cascaded (chained) so that the output of one filter
+// is processed by the next one. This is most critical for SDCH, which is
+// routinely followed by gzip (during encoding). The filter we'll test for will
+// do the gzip decoding first, and then decode the SDCH content and start
+// doing gzip decoding again, which should result in FILTER_ERROR and
+// empty output buffer.
+TEST_F(SdchFilterTest, FilterDoubleChaining) {
+  // Construct a valid SDCH dictionary from a VCDIFF dictionary.
+  const std::string kSampleDomain = "sdchtest.com";
+  std::string dictionary(NewSdchDictionary(kSampleDomain));
+
+  std::string url_string = "http://" + kSampleDomain;
+
+  GURL url(url_string);
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
+
+  std::string sdch_compressed(NewSdchCompressedData(dictionary));
+
+  // Use Gzip to compress the sdch sdch_compressed data.
+  std::string gzip_compressed_sdch = gzip_compress(sdch_compressed);
+
+  // Construct a chained filter.
+  std::vector<Filter::FilterType> filter_types;
+  filter_types.push_back(Filter::FILTER_TYPE_SDCH);
+  filter_types.push_back(Filter::FILTER_TYPE_GZIP);
+  filter_types.push_back(Filter::FILTER_TYPE_SDCH);
+  filter_types.push_back(Filter::FILTER_TYPE_GZIP);
+
+  // First try with a large buffer (larger than test input, or compressed data).
+  const size_t kLargeInputBufferSize(1000);  // Used internally in filters.
+  CHECK_GT(kLargeInputBufferSize, gzip_compressed_sdch.size());
+  CHECK_GT(kLargeInputBufferSize, sdch_compressed.size());
+  CHECK_GT(kLargeInputBufferSize, expanded_.size());
+  SetupFilterContextWithGURL(url);
+  std::unique_ptr<Filter> filter(SdchFilterChainingTest::Factory(
+      filter_types, *filter_context(), kLargeInputBufferSize));
+  EXPECT_EQ(static_cast<int>(kLargeInputBufferSize),
+            filter->stream_buffer_size());
+
+  // Verify that chained filter is waiting for data.
+  char tiny_output_buffer[10];
+  int tiny_output_size = sizeof(tiny_output_buffer);
+  EXPECT_EQ(Filter::FILTER_NEED_MORE_DATA,
+            filter->ReadData(tiny_output_buffer, &tiny_output_size));
+
+  // Make chain process all data.
+  size_t feed_block_size = kLargeInputBufferSize;
+  size_t output_block_size = kLargeInputBufferSize;
+  std::string output;
+  EXPECT_FALSE(FilterTestData(gzip_compressed_sdch, feed_block_size,
+                              output_block_size, filter.get(), &output));
+  EXPECT_EQ("", output);
+
+  // Next try with a mid-sized internal buffer size.
+  const size_t kMidSizedInputBufferSize(100);
+  // Buffer should be big enough to swallow whole gzip content.
+  CHECK_GT(kMidSizedInputBufferSize, gzip_compressed_sdch.size());
+  // Buffer should be small enough that entire SDCH content can't fit.
+  // We'll go even further, and force the chain to flush the buffer between the
+  // two filters more than once (that is why we multiply by 2).
+  CHECK_LT(kMidSizedInputBufferSize * 2, sdch_compressed.size());
+  filter_context()->SetURL(url);
+  filter = SdchFilterChainingTest::Factory(filter_types, *filter_context(),
+                                           kMidSizedInputBufferSize);
+  EXPECT_EQ(static_cast<int>(kMidSizedInputBufferSize),
+            filter->stream_buffer_size());
+
+  feed_block_size = kMidSizedInputBufferSize;
+  output_block_size = kMidSizedInputBufferSize;
+  output.clear();
+  EXPECT_FALSE(FilterTestData(gzip_compressed_sdch, feed_block_size,
+                              output_block_size, filter.get(), &output));
+  EXPECT_EQ("", output);
+
+  // Next try with a tiny input and output buffer to cover edge effects.
+  filter = SdchFilterChainingTest::Factory(filter_types, *filter_context(),
+                                           kLargeInputBufferSize);
+  EXPECT_EQ(static_cast<int>(kLargeInputBufferSize),
+            filter->stream_buffer_size());
+
+  feed_block_size = 1;
+  output_block_size = 1;
+  output.clear();
+  EXPECT_FALSE(FilterTestData(gzip_compressed_sdch, feed_block_size,
+                              output_block_size, filter.get(), &output));
+  EXPECT_EQ("", output);
+}
+
 TEST_F(SdchFilterTest, DefaultGzipIfSdch) {
   // Construct a valid SDCH dictionary from a VCDIFF dictionary.
   const std::string kSampleDomain = "sdchtest.com";
