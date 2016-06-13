@@ -56,7 +56,9 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
       0, pitches[0] * size.height() + pitches[1] * size.height() / 2,
       pitches[0] * size.height(),
   };
-  size_t byte_number = offsets[2] + pitches[2] * size.height() / 2;
+  size_t byte_number = pitches[0] * size.height() +
+                       pitches[1] * size.height() / 2 +
+                       pitches[2] * size.height() / 2;
 
   struct drm_i915_gem_create gem_create {};
   gem_create.size = byte_number;
