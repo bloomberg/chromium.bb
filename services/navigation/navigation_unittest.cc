@@ -70,7 +70,8 @@ class NavigationTest : public shell::test::ShellTest,
   DISALLOW_COPY_AND_ASSIGN(NavigationTest);
 };
 
-TEST_F(NavigationTest, Navigate) {
+// See crbug.com/619523
+TEST_F(NavigationTest, DISABLED_Navigate) {
   mojom::ViewFactoryPtr view_factory;
   connector()->ConnectToInterface("exe:navigation", &view_factory);
 
