@@ -7,9 +7,10 @@ description("MessagePorts (and their execution contexts) should be collected by 
 window.jsTestIsAsync = true;
 
 function runGCAndTest() {
-    gc();
-    shouldBeTrue("iframeDocGC.wasCollected");
-    finishJSTest();
+    asyncGC(function() {
+        shouldBeTrue("iframeDocGC.wasCollected");
+        finishJSTest();
+    });
 }
 
 window.onmessage = function(evt) {

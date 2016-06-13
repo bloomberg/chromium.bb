@@ -10,9 +10,10 @@ function runTest() {
     port.onmessage = function() {
         iframeDocGC = internals.observeGC(document.querySelector('iframe').contentDocument);
         document.querySelector('iframe').remove();
-        gc();
-        shouldBeTrue("iframeDocGC.wasCollected");
-        finishJSTest();
+        asyncGC(function() {
+            shouldBeTrue("iframeDocGC.wasCollected");
+            finishJSTest();
+        });
     };
     window.frames[0].postMessage("connect", "*", [channel.port2]);
 }
