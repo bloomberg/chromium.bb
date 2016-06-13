@@ -19,6 +19,7 @@ struct UrlHandlerInfo {
   string package_name;
   string activity_name;  // A hint for retrieving the package's icon.
   [MinVersion=4] ActionType action;
+  [MinVersion=6] bool is_preferred;
 };
 
 // Describes an activity.
