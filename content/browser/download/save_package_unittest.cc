@@ -94,7 +94,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   }
 
   GURL GetUrlToBeSaved() {
-    return save_package_success_->GetUrlToBeSaved();
+    return SavePackage::GetUrlToBeSaved(save_package_success_->web_contents());
   }
 
  protected:
@@ -119,6 +119,13 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     save_package_fail_ = new SavePackage(contents(),
         temp_dir_.path().AppendASCII(long_file_name + HTML_EXTENSION),
         temp_dir_.path().AppendASCII(long_file_name + "_files"));
+  }
+
+  void TearDown() override {
+    save_package_success_ = nullptr;
+    save_package_fail_ = nullptr;
+
+    RenderViewHostImplTestHarness::TearDown();
   }
 
  private:
@@ -254,8 +261,8 @@ TEST_F(SavePackageTest, MAYBE_TestLongSafePureFilename) {
 
   // Test that the filename + extension doesn't exceed kMaxFileNameLength
   uint32_t max_path = SavePackage::GetMaxPathLengthForDirectory(save_dir);
-  ASSERT_TRUE(SavePackage::GetSafePureFileName(save_dir, ext, max_path,
-                                               &filename));
+  ASSERT_TRUE(SavePackage::TruncateBaseNameToFitPathConstraints(
+      save_dir, ext, max_path, &filename));
   EXPECT_TRUE(filename.length() <= kMaxFileNameLength-ext.length());
 }
 

@@ -173,7 +173,7 @@ class CONTENT_EXPORT SavePackage
   void FinalizeDownloadEntry();
 
   // Detach from DownloadManager.
-  void StopObservation();
+  void RemoveObservers();
 
   // Return max length of a path for a specific base directory.
   // This is needed on POSIX, which restrict the length of file names in
@@ -181,11 +181,27 @@ class CONTENT_EXPORT SavePackage
   // |base_dir| is assumed to be a directory name with no trailing slash.
   static uint32_t GetMaxPathLengthForDirectory(const base::FilePath& base_dir);
 
-  static bool GetSafePureFileName(
-      const base::FilePath& dir_path,
-      const base::FilePath::StringType& file_name_ext,
-      uint32_t max_file_path_len,
-      base::FilePath::StringType* pure_file_name);
+  // Truncates a filename to fit length constraints.
+  //
+  // |directory|    : Directory containing target file.
+  // |extension|    : Extension.
+  // |max_path_len| : Maximum size allowed for |len(directory + base_name +
+  //                  extension|.
+  // |base_name|    : Variable portion. The length of this component will be
+  //                  adjusted to fit the length constraints described at
+  //                  |max_path_len| above.
+  //
+  // Returns true if |base_name| could be successfully adjusted to fit the
+  // aforementioned constraints, or false otherwise.
+  // TODO(asanka): This funciton is wrong. |base_name| cannot be truncated
+  //   without knowing its encoding and truncation has to be performed on
+  //   character boundaries. Also the implementation doesn't look up the actual
+  //   path constraints and instead uses hard coded constants. crbug.com/618737
+  static bool TruncateBaseNameToFitPathConstraints(
+      const base::FilePath& directory,
+      const base::FilePath::StringType& extension,
+      uint32_t max_path_len,
+      base::FilePath::StringType* base_name);
 
   // Create a file name based on the response from the server.
   bool GenerateFileName(const std::string& disposition,
@@ -263,20 +279,21 @@ class CONTENT_EXPORT SavePackage
                                               bool end_of_data);
 
   // Look up SaveItem by save item id from in progress map.
-  SaveItem* LookupSaveItemInProcess(SaveItemId save_item_id);
+  SaveItem* LookupInProgressSaveItem(SaveItemId save_item_id);
 
   // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
 
   // Retrieves the URL to be saved from the WebContents.
-  GURL GetUrlToBeSaved();
+  static GURL GetUrlToBeSaved(WebContents* web_contents);
 
-  void CreateDirectoryOnFileThread(const base::FilePath& website_save_dir,
-                                   const base::FilePath& download_save_dir,
-                                   bool skip_dir_check,
-                                   const std::string& mime_type);
-  void ContinueGetSaveInfo(const base::FilePath& suggested_path,
-                           bool can_save_as_complete);
+  static base::FilePath CreateDirectoryOnFileThread(
+      const base::FilePath& website_save_dir,
+      const base::FilePath& download_save_dir,
+      const base::FilePath& suggested_filename,
+      bool skip_dir_check);
+  void ContinueGetSaveInfo(bool can_save_as_complete,
+                           const base::FilePath& suggested_path);
   void OnPathPicked(
       const base::FilePath& final_name,
       SavePageType type,
