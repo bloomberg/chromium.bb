@@ -53,9 +53,10 @@ class InspectorStyleSheetBase;
 typedef HeapVector<Member<CSSRule>> CSSRuleVector;
 typedef Vector<unsigned> LineEndings;
 
-class InspectorStyle final : public GarbageCollected<InspectorStyle> {
+class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
 public:
-    static InspectorStyle* create(CSSStyleDeclaration*, CSSRuleSourceData*, InspectorStyleSheetBase* parentStyleSheet);
+    static InspectorStyle* create(CSSStyleDeclaration*, PassRefPtr<CSSRuleSourceData>, InspectorStyleSheetBase* parentStyleSheet);
+    ~InspectorStyle();
 
     CSSStyleDeclaration* cssStyle() { return m_style.get(); }
     std::unique_ptr<protocol::CSS::CSSStyle> buildObjectForStyle();
@@ -66,14 +67,14 @@ public:
     DECLARE_TRACE();
 
 private:
-    InspectorStyle(CSSStyleDeclaration*, CSSRuleSourceData*, InspectorStyleSheetBase* parentStyleSheet);
+    InspectorStyle(CSSStyleDeclaration*, PassRefPtr<CSSRuleSourceData>, InspectorStyleSheetBase* parentStyleSheet);
 
-    void populateAllProperties(HeapVector<CSSPropertySourceData>& result);
+    void populateAllProperties(Vector<CSSPropertySourceData>& result);
     std::unique_ptr<protocol::CSS::CSSStyle> styleWithProperties();
     String shorthandValue(const String& shorthandProperty);
 
     Member<CSSStyleDeclaration> m_style;
-    Member<CSSRuleSourceData> m_sourceData;
+    RefPtr<CSSRuleSourceData> m_sourceData;
     Member<InspectorStyleSheetBase> m_parentStyleSheet;
 };
 
@@ -181,7 +182,7 @@ private:
     Member<CSSStyleSheet> m_pageStyleSheet;
     String m_origin;
     String m_documentURL;
-    Member<RuleSourceDataList> m_sourceData;
+    std::unique_ptr<RuleSourceDataList> m_sourceData;
     String m_text;
     CSSRuleVector m_cssomFlatRules;
     CSSRuleVector m_parsedFlatRules;
@@ -199,7 +200,7 @@ public:
     bool setText(const String&, ExceptionState&) override;
     bool getText(String* result) override;
     CSSStyleDeclaration* inlineStyle();
-    CSSRuleSourceData* ruleSourceData();
+    PassRefPtr<CSSRuleSourceData> ruleSourceData();
 
     DECLARE_VIRTUAL_TRACE();
 

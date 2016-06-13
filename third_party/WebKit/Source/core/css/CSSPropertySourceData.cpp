@@ -74,14 +74,4 @@ CSSPropertySourceData::CSSPropertySourceData(const CSSPropertySourceData& other)
 {
 }
 
-DEFINE_TRACE(CSSRuleSourceData)
-{
-    visitor->trace(ruleHeaderRange);
-    visitor->trace(ruleBodyRange);
-    visitor->trace(selectorRanges);
-    visitor->trace(styleSourceData);
-    visitor->trace(childRules);
-    visitor->trace(mediaSourceData);
-}
-
 } // namespace blink

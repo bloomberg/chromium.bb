@@ -1890,7 +1890,7 @@ CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(CSSPropertyID p
 void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString, Element* element, CSSStyleDeclaration* style, CSSPropertyID propertyId, const String& value, bool forceImportant)
 {
     InspectorStyleSheetBase* inspectorStyleSheet =  nullptr;
-    CSSRuleSourceData* sourceData = nullptr;
+    RefPtr<CSSRuleSourceData> sourceData;
     // An absence of the parent rule means that given style is an inline style.
     if (style->parentRule()) {
         InspectorStyleSheet* styleSheet = bindStyleSheet(style->parentStyleSheet());
@@ -1914,7 +1914,7 @@ void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString, Element* 
     String longhand = getPropertyNameString(propertyId);
 
     int foundIndex = -1;
-    HeapVector<CSSPropertySourceData> properties = sourceData->styleSourceData->propertyData;
+    Vector<CSSPropertySourceData> properties = sourceData->styleSourceData->propertyData;
     for (unsigned i = 0; i < properties.size(); ++i) {
         CSSPropertySourceData property = properties[properties.size() - i - 1];
         String name = property.name;
@@ -1964,7 +1964,7 @@ void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString, Element* 
 void InspectorCSSAgent::layoutEditorItemSelected(Element* element, CSSStyleDeclaration* style)
 {
     InspectorStyleSheetBase* inspectorStyleSheet =  nullptr;
-    CSSRuleSourceData* sourceData = nullptr;
+    RefPtr<CSSRuleSourceData> sourceData;
     if (style->parentRule()) {
         InspectorStyleSheet* styleSheet = bindStyleSheet(style->parentStyleSheet());
         inspectorStyleSheet = styleSheet;
