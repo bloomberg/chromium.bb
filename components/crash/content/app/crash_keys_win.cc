@@ -30,7 +30,7 @@ CrashKeysWin* CrashKeysWin::keeper_;
 CrashKeysWin::CrashKeysWin()
     : custom_entries_(new std::vector<google_breakpad::CustomInfoEntry>),
       dynamic_keys_offset_(0) {
-  DCHECK_EQ(static_cast<CrashKeysWin*>(NULL), keeper_);
+  DCHECK(!keeper_);
   keeper_ = this;
 }
 

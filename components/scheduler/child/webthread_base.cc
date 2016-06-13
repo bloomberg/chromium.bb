@@ -20,7 +20,7 @@ namespace scheduler {
 class WebThreadBase::TaskObserverAdapter
     : public base::MessageLoop::TaskObserver {
  public:
-  TaskObserverAdapter(WebThread::TaskObserver* observer)
+  explicit TaskObserverAdapter(WebThread::TaskObserver* observer)
       : observer_(observer) {}
 
   void WillProcessTask(const base::PendingTask& pending_task) override {
@@ -47,7 +47,7 @@ WebThreadBase::~WebThreadBase() {
 void WebThreadBase::addTaskObserver(TaskObserver* observer) {
   CHECK(isCurrentThread());
   std::pair<TaskObserverMap::iterator, bool> result = task_observer_map_.insert(
-      std::make_pair(observer, static_cast<TaskObserverAdapter*>(NULL)));
+      std::make_pair(observer, nullptr));
   if (result.second)
     result.first->second = new TaskObserverAdapter(observer);
   AddTaskObserverInternal(result.first->second);

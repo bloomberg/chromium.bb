@@ -19,8 +19,8 @@ namespace browser_sync {
 
 namespace {
 
-const std::string kValidUrl = "http://www.example.com";
-const std::string kInvalidUrl = "invalid.url";
+const char kValidUrl[] = "http://www.example.com";
+const char kInvalidUrl[] = "invalid.url";
 
 }  // namespace
 
@@ -173,7 +173,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   ASSERT_TRUE(GetTracker()->LookupSessionTab(tag1, 2, &tab_ptr));
   ASSERT_EQ(tab_ptr, tabs1[2]);
   ASSERT_FALSE(GetTracker()->LookupSessionTab(tag1, 3, &tab_ptr));
-  ASSERT_EQ(static_cast<const sessions::SessionTab*>(NULL), tab_ptr);
+  ASSERT_FALSE(tab_ptr);
 
   std::vector<const sessions::SessionWindow*> windows;
   ASSERT_TRUE(GetTracker()->LookupSessionWindows(tag1, &windows));

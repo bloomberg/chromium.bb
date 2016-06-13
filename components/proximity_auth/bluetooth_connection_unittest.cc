@@ -214,8 +214,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest, Connect_NoBluetoothAdapter) {
 TEST_F(ProximityAuthBluetoothConnectionTest, Connect_DeviceMissing) {
   StrictMock<MockBluetoothConnection> connection;
 
-  ON_CALL(*adapter_, GetDevice(_))
-      .WillByDefault(Return(static_cast<device::BluetoothDevice*>(NULL)));
+  ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(nullptr));
   EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
   EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
   connection.Connect();

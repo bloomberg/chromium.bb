@@ -224,8 +224,7 @@ TEST(ProximityAuthConnectionTest,
   connection.AddObserver(&observer);
 
   ON_CALL(connection, DeserializeWireMessageProxy(_))
-      .WillByDefault(DoAll(SetArgPointee<0>(true),
-                           Return(static_cast<WireMessage*>(NULL))));
+      .WillByDefault(DoAll(SetArgPointee<0>(true), Return(nullptr)));
   EXPECT_CALL(observer, OnMessageReceived(_, _)).Times(0);
   connection.OnBytesReceived(std::string());
 }
@@ -239,8 +238,7 @@ TEST(ProximityAuthConnectionTest,
   connection.AddObserver(&observer);
 
   ON_CALL(connection, DeserializeWireMessageProxy(_))
-      .WillByDefault(DoAll(SetArgPointee<0>(false),
-                           Return(static_cast<WireMessage*>(NULL))));
+      .WillByDefault(DoAll(SetArgPointee<0>(false), Return(nullptr)));
   EXPECT_CALL(observer, OnMessageReceived(_, _)).Times(0);
   connection.OnBytesReceived(std::string());
 }

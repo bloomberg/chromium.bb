@@ -55,7 +55,6 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
 
 class CrashKeysWinTest : public testing::Test {
  public:
-
   size_t CountKeyValueOccurences(
       const google_breakpad::CustomClientInfo* client_info,
       const wchar_t* key, const wchar_t* value);
@@ -79,7 +78,7 @@ size_t CrashKeysWinTest::CountKeyValueOccurences(
 }
 
 TEST_F(CrashKeysWinTest, RecordsSelf) {
-  ASSERT_EQ(static_cast<CrashKeysWin*>(NULL), CrashKeysWin::keeper());
+  ASSERT_FALSE(CrashKeysWin::keeper());
 
   {
     CrashKeysWin crash_keys;
@@ -87,7 +86,7 @@ TEST_F(CrashKeysWinTest, RecordsSelf) {
     ASSERT_EQ(&crash_keys, CrashKeysWin::keeper());
   }
 
-  ASSERT_EQ(static_cast<CrashKeysWin*>(NULL), CrashKeysWin::keeper());
+  ASSERT_FALSE(CrashKeysWin::keeper());
 }
 
 // Tests the crash keys set up for the most common official build consumer
