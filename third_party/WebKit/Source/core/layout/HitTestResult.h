@@ -126,7 +126,6 @@ public:
     void setIsOverWidget(bool b) { m_isOverWidget = b; }
 
     bool isSelected() const;
-    String spellingToolTip(TextDirection&) const;
     String title(TextDirection&) const;
     const AtomicString& altDisplayString() const;
     Image* image() const;

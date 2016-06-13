@@ -140,14 +140,9 @@ void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
 
 void ChromeClient::setToolTip(const HitTestResult& result)
 {
-    // First priority is a potential toolTip representing a spelling or grammar
-    // error.
+    // First priority is a tooltip for element with "title" attribute.
     TextDirection toolTipDirection;
-    String toolTip = result.spellingToolTip(toolTipDirection);
-
-    // Next we'll consider a tooltip for element with "title" attribute.
-    if (toolTip.isEmpty())
-        toolTip = result.title(toolTipDirection);
+    String toolTip = result.title(toolTipDirection);
 
     // Lastly, some elements provide default tooltip strings.  e.g. <input
     // type="file" multiple> shows a tooltip for the selected filenames.
