@@ -240,16 +240,8 @@ void PrintViewManagerBase::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
-      OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
+  OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
 }
 
 void PrintViewManagerBase::OnNotifyPrintJobEvent(

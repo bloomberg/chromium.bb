@@ -345,10 +345,7 @@ void OwnerSettingsServiceChromeOS::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (type != chrome::NOTIFICATION_PROFILE_CREATED) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
 
   Profile* profile = content::Source<Profile>(source).ptr();
   if (profile != profile_) {

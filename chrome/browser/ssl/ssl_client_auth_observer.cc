@@ -67,7 +67,7 @@ void SSLClientAuthObserver::Observe(
     const content::NotificationDetails& details) {
   DVLOG(1) << "SSLClientAuthObserver::Observe " << this;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(type == chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED);
+  DCHECK_EQ(chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED, type);
 
   CertDetails* cert_details = content::Details<CertDetails>(details).ptr();
   if (!cert_details->first->host_and_port.Equals(

@@ -238,9 +238,7 @@ void PermissionBubbleMediaAccessHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    content::WebContents* web_contents =
-        content::Source<content::WebContents>(source).ptr();
-    pending_requests_.erase(web_contents);
-  }
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+
+  pending_requests_.erase(content::Source<content::WebContents>(source).ptr());
 }

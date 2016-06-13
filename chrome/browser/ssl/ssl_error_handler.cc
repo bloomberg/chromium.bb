@@ -379,15 +379,15 @@ void SSLErrorHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
-    timer_.Stop();
-    CaptivePortalService::Results* results =
-        content::Details<CaptivePortalService::Results>(details).ptr();
-    if (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
-      ShowCaptivePortalInterstitial(results->landing_url);
-    else
-      ShowSSLInterstitial();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
+
+  timer_.Stop();
+  CaptivePortalService::Results* results =
+      content::Details<CaptivePortalService::Results>(details).ptr();
+  if (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
+    ShowCaptivePortalInterstitial(results->landing_url);
+  else
+    ShowSSLInterstitial();
 #endif
 }
 

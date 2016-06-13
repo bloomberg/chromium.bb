@@ -65,11 +65,12 @@ void UpdateShortcutWorker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_TAB_CLOSING &&
-      content::Source<NavigationController>(source).ptr() ==
-        &web_contents_->GetController()) {
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_CLOSING, type);
+
+  if (content::Source<NavigationController>(source).ptr() ==
+      &web_contents_->GetController()) {
     // Underlying tab is closing.
-    web_contents_ = NULL;
+    web_contents_ = nullptr;
   }
 }
 

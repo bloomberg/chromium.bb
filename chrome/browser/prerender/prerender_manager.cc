@@ -1203,15 +1203,10 @@ void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
 void PrerenderManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
-      on_close_web_contents_deleters_.clear();
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+
+  DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
+  on_close_web_contents_deleters_.clear();
 }
 
 void PrerenderManager::OnCreatingAudioStream(int render_process_id,

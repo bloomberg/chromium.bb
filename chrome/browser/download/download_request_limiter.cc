@@ -222,7 +222,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED);
+  DCHECK_EQ(chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED, type);
 
   // Content settings have been updated for our web contents, e.g. via the OIB
   // or the settings page. Check to see if the automatic downloads setting is

@@ -158,12 +158,9 @@ void CloudExternalDataPolicyObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED) {
-    NOTREACHED();
-    return;
-  }
-  Profile* profile = content::Details<Profile>(details).ptr();
+  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED, type);
 
+  Profile* profile = content::Details<Profile>(details).ptr();
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user) {

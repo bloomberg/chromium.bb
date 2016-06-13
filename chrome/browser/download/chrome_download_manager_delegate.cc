@@ -712,7 +712,7 @@ void ChromeDownloadManagerDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(ENABLE_EXTENSIONS)
-  DCHECK(type == extensions::NOTIFICATION_CRX_INSTALLER_DONE);
+  DCHECK_EQ(extensions::NOTIFICATION_CRX_INSTALLER_DONE, type);
 
   registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
 

@@ -82,21 +82,17 @@ void UserPolicySigninServiceBase::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_ADDED:
-      // A new profile has been loaded - if it's signed in, then initialize the
-      // UCPM, otherwise shut down the UCPM (which deletes any cached policy
-      // data). This must be done here instead of at constructor time because
-      // the Profile is not fully initialized when this object is constructed
-      // (DoFinalInit() has not yet been called, so ProfileIOData and
-      // SSLConfigServiceManager have not been created yet).
-      // TODO(atwilson): Switch to using a timer instead, to avoid contention
-      // with other services at startup (http://crbug.com/165468).
-      InitializeOnProfileReady(content::Source<Profile>(source).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
+
+  // A new profile has been loaded - if it's signed in, then initialize the
+  // UCPM, otherwise shut down the UCPM (which deletes any cached policy
+  // data). This must be done here instead of at constructor time because
+  // the Profile is not fully initialized when this object is constructed
+  // (DoFinalInit() has not yet been called, so ProfileIOData and
+  // SSLConfigServiceManager have not been created yet).
+  // TODO(atwilson): Switch to using a timer instead, to avoid contention
+  // with other services at startup (http://crbug.com/165468).
+  InitializeOnProfileReady(content::Source<Profile>(source).ptr());
 }
 
 void UserPolicySigninServiceBase::OnInitializationCompleted(

@@ -44,11 +44,8 @@ void PluginStatusPrefSetter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED) {
-    StartUpdate();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
+  StartUpdate();
 }
 
 void PluginStatusPrefSetter::StartUpdate() {

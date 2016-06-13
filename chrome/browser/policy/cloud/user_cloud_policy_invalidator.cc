@@ -64,7 +64,7 @@ void UserCloudPolicyInvalidator::Observe(
     const content::NotificationDetails& details) {
   // Initialize now that profile creation is complete and the invalidation
   // service can safely be initialized.
-  DCHECK(type == chrome::NOTIFICATION_PROFILE_ADDED);
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
   if (invalidation_provider)

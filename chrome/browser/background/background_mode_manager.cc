@@ -463,24 +463,19 @@ void BackgroundModeManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      // Make sure we aren't still keeping the app alive (only happens if we
-      // don't receive an EXTENSIONS_READY notification for some reason).
-      ReleaseStartupKeepAlive();
-      // Performing an explicit shutdown, so exit background mode (does nothing
-      // if we aren't in background mode currently).
-      EndBackgroundMode();
-      // Shutting down, so don't listen for any more notifications so we don't
-      // try to re-enter/exit background mode again.
-      registrar_.RemoveAll();
-      for (const auto& it : background_mode_data_)
-        it.second->applications_->RemoveObserver(this);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+
+  // Make sure we aren't still keeping the app alive (only happens if we
+  // don't receive an EXTENSIONS_READY notification for some reason).
+  ReleaseStartupKeepAlive();
+  // Performing an explicit shutdown, so exit background mode (does nothing
+  // if we aren't in background mode currently).
+  EndBackgroundMode();
+  // Shutting down, so don't listen for any more notifications so we don't
+  // try to re-enter/exit background mode again.
+  registrar_.RemoveAll();
+  for (const auto& it : background_mode_data_)
+    it.second->applications_->RemoveObserver(this);
 }
 
 void BackgroundModeManager::OnExtensionsReady(Profile* profile) {

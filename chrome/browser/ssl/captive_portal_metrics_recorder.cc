@@ -81,29 +81,30 @@ void CaptivePortalMetricsRecorder::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
+
   // When detection is disabled, captive portal service always sends
   // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
   if (!captive_portal_detection_enabled_)
     return;
-  if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
-    captive_portal_probe_completed_ = true;
-    CaptivePortalService::Results* results =
-        content::Details<CaptivePortalService::Results>(details).ptr();
-    // If a captive portal was detected at any point when the interstitial was
-    // displayed, assume that the interstitial was caused by a captive portal.
-    // Example scenario:
-    // 1- Interstitial displayed and captive portal detected, setting the flag.
-    // 2- Captive portal detection automatically opens portal login page.
-    // 3- User logs in on the portal login page.
-    // A notification will be received here for RESULT_INTERNET_CONNECTED. Make
-    // sure we don't clear the captive protal flag, since the interstitial was
-    // potentially caused by the captive portal.
-    captive_portal_detected_ =
-        captive_portal_detected_ ||
-        (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-    // Also keep track of non-HTTP portals and error cases.
-    captive_portal_no_response_ =
-        captive_portal_no_response_ ||
-        (results->result == captive_portal::RESULT_NO_RESPONSE);
-  }
+
+  captive_portal_probe_completed_ = true;
+  CaptivePortalService::Results* results =
+      content::Details<CaptivePortalService::Results>(details).ptr();
+  // If a captive portal was detected at any point when the interstitial was
+  // displayed, assume that the interstitial was caused by a captive portal.
+  // Example scenario:
+  // 1- Interstitial displayed and captive portal detected, setting the flag.
+  // 2- Captive portal detection automatically opens portal login page.
+  // 3- User logs in on the portal login page.
+  // A notification will be received here for RESULT_INTERNET_CONNECTED. Make
+  // sure we don't clear the captive protal flag, since the interstitial was
+  // potentially caused by the captive portal.
+  captive_portal_detected_ =
+      captive_portal_detected_ ||
+      (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+  // Also keep track of non-HTTP portals and error cases.
+  captive_portal_no_response_ =
+      captive_portal_no_response_ ||
+      (results->result == captive_portal::RESULT_NO_RESPONSE);
 }

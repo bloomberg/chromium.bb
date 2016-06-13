@@ -77,14 +77,12 @@ void RecommendationRestorer::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    logged_in_ = true;
-    notification_registrar_.RemoveAll();
-    StopTimer();
-    RestoreAll();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_CHANGED, type);
+
+  logged_in_ = true;
+  notification_registrar_.RemoveAll();
+  StopTimer();
+  RestoreAll();
 }
 
 void RecommendationRestorer::OnUserActivity(const ui::Event* event) {

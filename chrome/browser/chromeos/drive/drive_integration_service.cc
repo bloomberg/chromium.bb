@@ -565,13 +565,12 @@ void DriveIntegrationService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_CREATED) {
-    Profile* created_profile = content::Source<Profile>(source).ptr();
-    if (created_profile->IsOffTheRecord() &&
-        created_profile->IsSameProfile(profile_)) {
-      download_handler_->ObserveIncognitoDownloadManager(
-          BrowserContext::GetDownloadManager(created_profile));
-    }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+  Profile* created_profile = content::Source<Profile>(source).ptr();
+  if (created_profile->IsOffTheRecord() &&
+      created_profile->IsSameProfile(profile_)) {
+    download_handler_->ObserveIncognitoDownloadManager(
+        BrowserContext::GetDownloadManager(created_profile));
   }
 }
 

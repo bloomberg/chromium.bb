@@ -77,18 +77,13 @@ void AuthPrewarmer::DefaultNetworkChanged(const NetworkState* network) {
 void AuthPrewarmer::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED:
-      registrar_.Remove(
-          this,
-          chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
-          content::Source<Profile>(ProfileHelper::GetSigninProfile()));
-      if (IsNetworkConnected())
-        DoPrewarm();
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
+            type);
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
+      content::Source<Profile>(ProfileHelper::GetSigninProfile()));
+  if (IsNetworkConnected())
+    DoPrewarm();
 }
 
 void AuthPrewarmer::DoPrewarm() {

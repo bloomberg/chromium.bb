@@ -112,17 +112,10 @@ void PrintJobManager::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  switch (type) {
-    case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
-      OnPrintJobEvent(content::Source<PrintJob>(source).ptr(),
-                      *content::Details<JobEventDetails>(details).ptr());
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
+
+  OnPrintJobEvent(content::Source<PrintJob>(source).ptr(),
+                  *content::Details<JobEventDetails>(details).ptr());
 }
 
 void PrintJobManager::OnPrintJobEvent(

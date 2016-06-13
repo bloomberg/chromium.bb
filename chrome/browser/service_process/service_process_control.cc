@@ -204,9 +204,8 @@ void ServiceProcessControl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
-    Send(new ServiceMsg_UpdateAvailable);
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
+  Send(new ServiceMsg_UpdateAvailable);
 }
 
 void ServiceProcessControl::OnCloudPrintProxyInfo(

@@ -38,15 +38,12 @@ void NotificationObservingWebContentsInformation::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_CONNECTED, type);
+
   content::WebContents* web_contents =
       content::Source<content::WebContents>(source).ptr();
-
-  switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
-      if (CheckOwnership(web_contents))
-        observer_callback_.Run(web_contents);
-      break;
-  }
+  if (CheckOwnership(web_contents))
+    observer_callback_.Run(web_contents);
 }
 
 }  // namespace task_manager

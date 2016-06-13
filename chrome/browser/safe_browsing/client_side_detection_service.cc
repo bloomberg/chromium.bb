@@ -224,7 +224,7 @@ void ClientSideDetectionService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
   SendModelToProcess(
       content::Source<content::RenderProcessHost>(source).ptr());
 }

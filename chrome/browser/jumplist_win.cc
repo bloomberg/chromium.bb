@@ -318,7 +318,7 @@ void JumpList::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
   // Profile was destroyed, do clean-up.
   Terminate();
 }

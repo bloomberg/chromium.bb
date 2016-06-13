@@ -94,7 +94,8 @@ void SignInScreenController::Observe(
     // http://crbug.com/125276
     registrar_.RemoveAll();
     return;
-  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
+  }
+  if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
     user_selection_screen_->OnUserImageChanged(
         *content::Details<user_manager::User>(details).ptr());
     return;

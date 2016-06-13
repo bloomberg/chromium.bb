@@ -628,7 +628,6 @@ void FileSelectHelper::RunFileChooserEnd() {
 void FileSelectHelper::EnumerateDirectory(int request_id,
                                           RenderViewHost* render_view_host,
                                           const base::FilePath& path) {
-
   // Because this class returns notifications to the RenderViewHost, it is
   // difficult for callers to know how long to keep a reference to this
   // instance. We AddRef() here to keep the instance alive after we return
@@ -648,16 +647,10 @@ void FileSelectHelper::EnumerateDirectoryEnd() {
 void FileSelectHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
-      DCHECK(content::Source<RenderWidgetHost>(source).ptr() ==
-             render_frame_host_->GetRenderViewHost()->GetWidget());
-      render_frame_host_ = NULL;
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
+  DCHECK_EQ(content::Source<RenderWidgetHost>(source).ptr(),
+            render_frame_host_->GetRenderViewHost()->GetWidget());
+  render_frame_host_ = nullptr;
 }
 
 void FileSelectHelper::RenderViewHostChanged(RenderViewHost* old_host,

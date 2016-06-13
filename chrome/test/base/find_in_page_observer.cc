@@ -38,28 +38,27 @@ void FindInPageNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
-    content::Details<FindNotificationDetails> find_details(details);
-    if (find_details->request_id() == current_find_request_id_) {
-      // We get multiple responses and one of those will contain the ordinal.
-      // This message comes to us before the final update is sent.
-      if (find_details->active_match_ordinal() > -1) {
-        active_match_ordinal_ = find_details->active_match_ordinal();
-        selection_rect_ = find_details->selection_rect();
-      }
-      if (find_details->final_update()) {
-        number_of_matches_ = find_details->number_of_matches();
-        seen_ = true;
-        if (running_) {
-          running_ = false;
-          message_loop_runner_->Quit();
-        }
-      } else {
-        DVLOG(1) << "Ignoring, since we only care about the final message";
-      }
+  DCHECK_EQ(chrome::NOTIFICATION_FIND_RESULT_AVAILABLE, type);
+
+  content::Details<FindNotificationDetails> find_details(details);
+  if (find_details->request_id() != current_find_request_id_)
+    return;
+
+  // We get multiple responses and one of those will contain the ordinal.
+  // This message comes to us before the final update is sent.
+  if (find_details->active_match_ordinal() > -1) {
+    active_match_ordinal_ = find_details->active_match_ordinal();
+    selection_rect_ = find_details->selection_rect();
+  }
+  if (find_details->final_update()) {
+    number_of_matches_ = find_details->number_of_matches();
+    seen_ = true;
+    if (running_) {
+      running_ = false;
+      message_loop_runner_->Quit();
     }
   } else {
-    NOTREACHED();
+    DVLOG(1) << "Ignoring, since we only care about the final message";
   }
 }
 

@@ -1008,20 +1008,13 @@ void ProfileShortcutManagerWin::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    // This notification is triggered when a profile is loaded.
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      Profile* profile =
-          content::Source<Profile>(source).ptr()->GetOriginalProfile();
-      if (profile->GetPrefs()->GetInteger(prefs::kProfileIconVersion) <
-          kCurrentProfileIconVersion) {
-        // Ensure the profile's icon file has been created.
-        CreateOrUpdateProfileIcon(profile->GetPath());
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+
+  Profile* profile =
+      content::Source<Profile>(source).ptr()->GetOriginalProfile();
+  if (profile->GetPrefs()->GetInteger(prefs::kProfileIconVersion) <
+      kCurrentProfileIconVersion) {
+    // Ensure the profile's icon file has been created.
+    CreateOrUpdateProfileIcon(profile->GetPath());
   }
 }
