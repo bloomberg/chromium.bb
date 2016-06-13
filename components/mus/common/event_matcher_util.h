@@ -7,15 +7,15 @@
 
 #include "components/mus/common/mus_common_export.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
-#include "components/mus/public/interfaces/input_event_constants.mojom.h"
-#include "components/mus/public/interfaces/input_key_codes.mojom.h"
+#include "ui/events/mojo/event_constants.mojom.h"
+#include "ui/events/mojo/keyboard_codes.mojom.h"
 
 namespace mus {
 
 // |flags| is a bitfield of kEventFlag* and kMouseEventFlag* values in
 // input_event_constants.mojom.
 mojom::EventMatcherPtr MUS_COMMON_EXPORT
-CreateKeyMatcher(mojom::KeyboardCode code, int flags);
+CreateKeyMatcher(ui::mojom::KeyboardCode code, int flags);
 
 }  // namespace mus
 

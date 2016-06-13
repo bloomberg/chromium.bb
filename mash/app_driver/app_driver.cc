@@ -29,21 +29,21 @@ enum class Accelerator : uint32_t {
 
 struct AcceleratorSpec {
   Accelerator id;
-  mus::mojom::KeyboardCode keyboard_code;
+  ui::mojom::KeyboardCode keyboard_code;
   // A bitfield of kEventFlag* and kMouseEventFlag* values in
   // input_event_constants.mojom.
   int event_flags;
 };
 
 AcceleratorSpec g_spec[] = {
-    {Accelerator::NewChromeWindow, mus::mojom::KeyboardCode::N,
-     mus::mojom::kEventFlagControlDown},
-    {Accelerator::NewChromeTab, mus::mojom::KeyboardCode::T,
-     mus::mojom::kEventFlagControlDown},
-    {Accelerator::NewChromeIncognitoWindow, mus::mojom::KeyboardCode::N,
-     mus::mojom::kEventFlagControlDown | mus::mojom::kEventFlagShiftDown},
-    {Accelerator::ShowTaskManager, mus::mojom::KeyboardCode::ESCAPE,
-     mus::mojom::kEventFlagShiftDown},
+    {Accelerator::NewChromeWindow, ui::mojom::KeyboardCode::N,
+     ui::mojom::kEventFlagControlDown},
+    {Accelerator::NewChromeTab, ui::mojom::KeyboardCode::T,
+     ui::mojom::kEventFlagControlDown},
+    {Accelerator::NewChromeIncognitoWindow, ui::mojom::KeyboardCode::N,
+     ui::mojom::kEventFlagControlDown | ui::mojom::kEventFlagShiftDown},
+    {Accelerator::ShowTaskManager, ui::mojom::KeyboardCode::ESCAPE,
+     ui::mojom::kEventFlagShiftDown},
 };
 
 void AssertTrue(bool success) {

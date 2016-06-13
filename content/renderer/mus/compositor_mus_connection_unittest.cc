@@ -11,9 +11,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/mus/public/cpp/tests/test_window.h"
-#include "components/mus/public/interfaces/input_event_constants.mojom.h"
-#include "components/mus/public/interfaces/input_events.mojom.h"
-#include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -28,6 +25,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/mojo/event.mojom.h"
+#include "ui/events/mojo/event_constants.mojom.h"
+#include "ui/events/mojo/keyboard_codes.mojom.h"
 
 using mus::mojom::EventResult;
 

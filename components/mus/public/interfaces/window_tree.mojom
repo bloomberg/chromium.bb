@@ -8,10 +8,10 @@ import "cc/ipc/surface_id.mojom";
 import "components/mus/public/interfaces/compositor_frame.mojom";
 import "components/mus/public/interfaces/cursor.mojom";
 import "components/mus/public/interfaces/event_matcher.mojom";
-import "components/mus/public/interfaces/input_events.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/window_manager.mojom";
 import "components/mus/public/interfaces/window_manager_constants.mojom";
+import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
@@ -373,13 +373,13 @@ interface WindowTreeClient {
   // receive farther events until the event is ack'ed.
   OnWindowInputEvent(uint32 event_id,
                      uint32 window,
-                     Event event,
+                     ui.mojom.Event event,
                      uint32 event_observer_id);
 
   // Invoked when an |event| is sent via the EventObserver and not targeted at a
   // specific window. The |event_observer_id| is the one supplied to
   // SetEventObserver. The client should not acknowledge these events.
-  OnEventObserved(Event event, uint32 event_observer_id);
+  OnEventObserved(ui.mojom.Event event, uint32 event_observer_id);
 
   // Called in two distinct cases: when a window known to the connection gains
   // focus, or when focus moves from a window known to the connection to a

@@ -88,7 +88,7 @@ void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
     // TODO(jamescook): Extend event observers to handle multiple event types.
     mus::mojom::EventMatcherPtr matcher = mus::mojom::EventMatcher::New();
     matcher->type_matcher = mus::mojom::EventTypeMatcher::New();
-    matcher->type_matcher->type = mus::mojom::EventType::POINTER_DOWN;
+    matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
     client_->SetEventObserver(std::move(matcher));
   }
 }

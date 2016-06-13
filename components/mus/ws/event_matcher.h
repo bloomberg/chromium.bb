@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
-#include "components/mus/public/interfaces/input_event_constants.mojom.h"
-#include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "ui/events/event.h"
+#include "ui/events/mojo/event_constants.mojom.h"
+#include "ui/events/mojo/keyboard_codes.mojom.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace mus {

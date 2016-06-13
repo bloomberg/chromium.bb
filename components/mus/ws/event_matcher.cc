@@ -17,25 +17,25 @@ EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
   if (matcher.type_matcher) {
     fields_to_match_ |= TYPE;
     switch (matcher.type_matcher->type) {
-      case mus::mojom::EventType::POINTER_DOWN:
+      case ui::mojom::EventType::POINTER_DOWN:
         event_type_ = ui::ET_POINTER_DOWN;
         break;
-      case mus::mojom::EventType::POINTER_MOVE:
+      case ui::mojom::EventType::POINTER_MOVE:
         event_type_ = ui::ET_POINTER_MOVED;
         break;
-      case mus::mojom::EventType::MOUSE_EXIT:
+      case ui::mojom::EventType::MOUSE_EXIT:
         event_type_ = ui::ET_POINTER_EXITED;
         break;
-      case mus::mojom::EventType::POINTER_UP:
+      case ui::mojom::EventType::POINTER_UP:
         event_type_ = ui::ET_POINTER_UP;
         break;
-      case mus::mojom::EventType::POINTER_CANCEL:
+      case ui::mojom::EventType::POINTER_CANCEL:
         event_type_ = ui::ET_POINTER_CANCELLED;
         break;
-      case mus::mojom::EventType::KEY_PRESSED:
+      case ui::mojom::EventType::KEY_PRESSED:
         event_type_ = ui::ET_KEY_PRESSED;
         break;
-      case mus::mojom::EventType::KEY_RELEASED:
+      case ui::mojom::EventType::KEY_RELEASED:
         event_type_ = ui::ET_KEY_RELEASED;
         break;
       default:
@@ -55,10 +55,10 @@ EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
   if (matcher.pointer_kind_matcher) {
     fields_to_match_ |= POINTER_KIND;
     switch (matcher.pointer_kind_matcher->pointer_kind) {
-      case mojom::PointerKind::MOUSE:
+      case ui::mojom::PointerKind::MOUSE:
         pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
         break;
-      case mojom::PointerKind::TOUCH:
+      case ui::mojom::PointerKind::TOUCH:
         pointer_type_ = ui::EventPointerType::POINTER_TYPE_TOUCH;
         break;
       default:

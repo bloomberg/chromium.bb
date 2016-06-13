@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mus.mojom;
+module ui.mojom;
 
 // Denotes during which phase of event targeting that an accelerator will be
 // notified of an event. PRE_TARGET will be notified instead of the target

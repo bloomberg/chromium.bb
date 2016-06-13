@@ -179,7 +179,7 @@ class EventDispatcher : public ServerWindowObserver {
   // Returns an Accelerator bound to the specified code/flags, and of the
   // matching |phase|. Otherwise returns null.
   Accelerator* FindAccelerator(const ui::KeyEvent& event,
-                               const mojom::AcceleratorPhase phase);
+                               const ui::mojom::AcceleratorPhase phase);
 
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,

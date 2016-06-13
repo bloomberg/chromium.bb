@@ -340,9 +340,9 @@ void WindowManagerState::AddDebugAccelerators() {
   // Always register the accelerators, even if they only work in debug, so that
   // keyboard behavior is the same in release and debug builds.
   mojom::EventMatcherPtr matcher = CreateKeyMatcher(
-      mus::mojom::KeyboardCode::S,
-      mus::mojom::kEventFlagControlDown | mus::mojom::kEventFlagAltDown
-          | mus::mojom::kEventFlagShiftDown);
+      ui::mojom::KeyboardCode::S, ui::mojom::kEventFlagControlDown |
+                                      ui::mojom::kEventFlagAltDown |
+                                      ui::mojom::kEventFlagShiftDown);
   event_dispatcher_.AddAccelerator(kPrintWindowsDebugAcceleratorId,
                                    std::move(matcher));
 }

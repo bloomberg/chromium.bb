@@ -33,7 +33,7 @@ class Accelerator {
   // Returns true if |event| and |phase | matches the definition in the
   // mojom::EventMatcher used for initialization.
   bool MatchesEvent(const ui::Event& event,
-                    const mojom::AcceleratorPhase phase) const;
+                    const ui::mojom::AcceleratorPhase phase) const;
 
   // Returns true if |other| was created with an identical mojom::EventMatcher.
   bool EqualEventMatcher(const Accelerator* other) const;
@@ -44,7 +44,7 @@ class Accelerator {
 
  private:
   uint32_t id_;
-  mojom::AcceleratorPhase accelerator_phase_;
+  ui::mojom::AcceleratorPhase accelerator_phase_;
   EventMatcher event_matcher_;
   base::WeakPtrFactory<Accelerator> weak_factory_;
 

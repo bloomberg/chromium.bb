@@ -83,8 +83,8 @@ WindowManagerStateTest::WindowManagerStateTest()
 
 std::unique_ptr<Accelerator> WindowManagerStateTest::CreateAccelerator() {
   mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
-      mus::mojom::KeyboardCode::W, mus::mojom::kEventFlagControlDown);
-  matcher->accelerator_phase = mojom::AcceleratorPhase::POST_TARGET;
+      ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
+  matcher->accelerator_phase = ui::mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 1;
   std::unique_ptr<Accelerator> accelerator(
       new Accelerator(accelerator_id, *matcher));
@@ -217,8 +217,8 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   tracker->changes()->clear();
   ui::KeyEvent key2(ui::ET_KEY_PRESSED, ui::VKEY_Y, ui::EF_CONTROL_DOWN);
   mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
-      mus::mojom::KeyboardCode::Y, mus::mojom::kEventFlagControlDown);
-  matcher->accelerator_phase = mojom::AcceleratorPhase::POST_TARGET;
+      ui::mojom::KeyboardCode::Y, ui::mojom::kEventFlagControlDown);
+  matcher->accelerator_phase = ui::mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 2;
   std::unique_ptr<Accelerator> accelerator2(
       new Accelerator(accelerator_id, *matcher));

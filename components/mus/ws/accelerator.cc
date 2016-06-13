@@ -16,7 +16,7 @@ Accelerator::Accelerator(uint32_t id, const mojom::EventMatcher& matcher)
 Accelerator::~Accelerator() {}
 
 bool Accelerator::MatchesEvent(const ui::Event& event,
-                               const mojom::AcceleratorPhase phase) const {
+                               const ui::mojom::AcceleratorPhase phase) const {
   if (accelerator_phase_ != phase)
     return false;
   if (!event_matcher_.MatchesEvent(event))

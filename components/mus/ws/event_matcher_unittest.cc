@@ -6,9 +6,9 @@
 
 #include "base/time/time.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
-#include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace mus {
@@ -23,7 +23,7 @@ using EventTesterTest = testing::Test;
 TEST_F(EventTesterTest, MatchesEventByType) {
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
-  matcher->type_matcher->type = mojom::EventType::POINTER_DOWN;
+  matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
   EventMatcher pointer_down_matcher(*matcher);
 
   ui::PointerEvent pointer_down(
@@ -38,9 +38,9 @@ TEST_F(EventTesterTest, MatchesEventByType) {
 TEST_F(EventTesterTest, MatchesEventByKeyCode) {
   mojom::EventMatcherPtr matcher(mojom::EventMatcher::New());
   matcher->type_matcher = mojom::EventTypeMatcher::New();
-  matcher->type_matcher->type = mojom::EventType::KEY_PRESSED;
+  matcher->type_matcher->type = ui::mojom::EventType::KEY_PRESSED;
   matcher->key_matcher = mojom::KeyEventMatcher::New();
-  matcher->key_matcher->keyboard_code = mojom::KeyboardCode::Z;
+  matcher->key_matcher->keyboard_code = ui::mojom::KeyboardCode::Z;
   EventMatcher z_matcher(*matcher);
 
   ui::KeyEvent z_key(ui::ET_KEY_PRESSED, ui::VKEY_Z, ui::EF_NONE);
@@ -53,11 +53,11 @@ TEST_F(EventTesterTest, MatchesEventByKeyCode) {
 TEST_F(EventTesterTest, MatchesEventByKeyFlags) {
   mojom::EventMatcherPtr matcher(mojom::EventMatcher::New());
   matcher->type_matcher = mojom::EventTypeMatcher::New();
-  matcher->type_matcher->type = mojom::EventType::KEY_PRESSED;
+  matcher->type_matcher->type = ui::mojom::EventType::KEY_PRESSED;
   matcher->flags_matcher = mojom::EventFlagsMatcher::New();
-  matcher->flags_matcher->flags = mojom::kEventFlagControlDown;
+  matcher->flags_matcher->flags = ui::mojom::kEventFlagControlDown;
   matcher->key_matcher = mojom::KeyEventMatcher::New();
-  matcher->key_matcher->keyboard_code = mojom::KeyboardCode::N;
+  matcher->key_matcher->keyboard_code = ui::mojom::KeyboardCode::N;
   EventMatcher control_n_matcher(*matcher);
 
   ui::KeyEvent control_n(ui::ET_KEY_PRESSED, ui::VKEY_N, ui::EF_CONTROL_DOWN);

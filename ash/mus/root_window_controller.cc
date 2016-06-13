@@ -161,8 +161,8 @@ RootWindowController::~RootWindowController() {}
 void RootWindowController::AddAccelerators() {
   window_manager_client()->AddAccelerator(
       kWindowSwitchAccelerator,
-      ::mus::CreateKeyMatcher(::mus::mojom::KeyboardCode::TAB,
-                              ::mus::mojom::kEventFlagControlDown),
+      ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::TAB,
+                              ui::mojom::kEventFlagControlDown),
       base::Bind(&AssertTrue));
 }
 

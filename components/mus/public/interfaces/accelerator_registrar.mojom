@@ -5,10 +5,10 @@
 module mus.mojom;
 
 import "components/mus/public/interfaces/event_matcher.mojom";
-import "components/mus/public/interfaces/input_events.mojom";
+import "ui/events/mojo/event.mojom";
 
 interface AcceleratorHandler {
-  OnAccelerator(uint32 id, Event event);
+  OnAccelerator(uint32 id, ui.mojom.Event event);
 };
 
 interface AcceleratorRegistrar {

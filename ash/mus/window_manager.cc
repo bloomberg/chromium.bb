@@ -20,9 +20,9 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_client.h"
-#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "ui/events/mojo/event.mojom.h"
 
 namespace ash {
 namespace mus {

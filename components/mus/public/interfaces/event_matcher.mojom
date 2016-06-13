@@ -4,16 +4,16 @@
 
 module mus.mojom;
 
-import "components/mus/public/interfaces/input_event_constants.mojom";
-import "components/mus/public/interfaces/input_key_codes.mojom";
+import "ui/events/mojo/event_constants.mojom";
+import "ui/events/mojo/keyboard_codes.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct KeyEventMatcher {
-  KeyboardCode keyboard_code;
+  ui.mojom.KeyboardCode keyboard_code;
 };
 
 struct PointerKindMatcher {
-  PointerKind pointer_kind;
+  ui.mojom.PointerKind pointer_kind;
 };
 
 struct PointerLocationMatcher {
@@ -21,7 +21,7 @@ struct PointerLocationMatcher {
 };
 
 struct EventTypeMatcher {
-  EventType type;
+  ui.mojom.EventType type;
 };
 
 struct EventFlagsMatcher {
@@ -35,15 +35,15 @@ struct EventFlagsMatcher {
 // types will match this EventMatcher. Similarly, if |key_matcher| is missing,
 // then all key-events will match.
 // An example matcher to match the Ctrl+A accelerator would be:
-// - |type_matcher.type| = mus::mojom::EventType::KEY_PRESSED
-// - |flags_matcher.flags| = mus::mojom::kEventVlagControlDown
-// - |key_matcher.keyboard_code| = mus::mojom::KeyboardCode::A
+// - |type_matcher.type| = ui::mojom::EventType::KEY_PRESSED
+// - |flags_matcher.flags| = ui::mojom::kEventVlagControlDown
+// - |key_matcher.keyboard_code| = ui::mojom::KeyboardCode::A
 //
 // A matcher to match any key-press event would be:
-// - |type_matcher.type| = mus::mojom::EventType::KEY_PRESSED
+// - |type_matcher.type| = ui::mojom::EventType::KEY_PRESSED
 struct EventMatcher {
   // TODO(jamescook): Move this to somewhere accelerator-specific.
-  AcceleratorPhase accelerator_phase;
+  ui.mojom.AcceleratorPhase accelerator_phase;
   EventTypeMatcher? type_matcher;
   EventFlagsMatcher? flags_matcher;
   // These flags will be stripped from incoming events' flags when comparing

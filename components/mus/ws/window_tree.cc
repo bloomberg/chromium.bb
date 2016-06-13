@@ -1141,16 +1141,13 @@ void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
     DVLOG(1) << "SetEventObserver must specify an event type.";
     return;
   }
-  const mojom::EventType event_type_whitelist[] = {
-      mojom::EventType::POINTER_CANCEL,
-      mojom::EventType::POINTER_DOWN,
-      mojom::EventType::POINTER_MOVE,
-      mojom::EventType::POINTER_UP,
-      mojom::EventType::MOUSE_EXIT,
-      mojom::EventType::WHEEL,
+  const ui::mojom::EventType event_type_whitelist[] = {
+      ui::mojom::EventType::POINTER_CANCEL, ui::mojom::EventType::POINTER_DOWN,
+      ui::mojom::EventType::POINTER_MOVE,   ui::mojom::EventType::POINTER_UP,
+      ui::mojom::EventType::MOUSE_EXIT,     ui::mojom::EventType::WHEEL,
   };
   bool allowed = false;
-  for (mojom::EventType event_type : event_type_whitelist) {
+  for (ui::mojom::EventType event_type : event_type_whitelist) {
     if (matcher->type_matcher->type == event_type) {
       allowed = true;
       break;

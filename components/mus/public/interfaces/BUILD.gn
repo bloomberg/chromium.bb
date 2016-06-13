@@ -17,9 +17,6 @@ mojom("interfaces") {
     "gpu.mojom",
     "gpu_memory_buffer.mojom",
     "gpu_service.mojom",
-    "input_event_constants.mojom",
-    "input_events.mojom",
-    "input_key_codes.mojom",
     "mus_constants.mojom",
     "user_access_manager.mojom",
     "window_manager.mojom",
@@ -38,6 +35,7 @@ mojom("interfaces") {
   public_deps = [
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
+    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
     "//ui/platform_window/mojo:interfaces",

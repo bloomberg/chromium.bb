@@ -254,7 +254,7 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
     if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char()) {
       Accelerator* pre_target =
-          FindAccelerator(*key_event, mojom::AcceleratorPhase::PRE_TARGET);
+          FindAccelerator(*key_event, ui::mojom::AcceleratorPhase::PRE_TARGET);
       if (pre_target) {
         delegate_->OnAccelerator(pre_target->id(), event);
         return;
@@ -274,7 +274,7 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
 
 void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
   Accelerator* post_target =
-      FindAccelerator(event, mojom::AcceleratorPhase::POST_TARGET);
+      FindAccelerator(event, ui::mojom::AcceleratorPhase::POST_TARGET);
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
   if (focused_window) {
@@ -497,7 +497,7 @@ void EventDispatcher::UnobserveWindow(ServerWindow* window) {
 
 Accelerator* EventDispatcher::FindAccelerator(
     const ui::KeyEvent& event,
-    const mojom::AcceleratorPhase phase) {
+    const ui::mojom::AcceleratorPhase phase) {
   for (const auto& pair : accelerators_) {
     if (pair.second->MatchesEvent(event, phase)) {
       return pair.second.get();

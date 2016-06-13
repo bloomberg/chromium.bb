@@ -476,7 +476,7 @@ TEST_F(WindowTreeClientTest, OnEventObserved) {
   // Set up an event observer.
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
-  matcher->type_matcher->type = mojom::EventType::POINTER_DOWN;
+  matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
   setup.client()->SetEventObserver(std::move(matcher));
 
   // Simulate the server sending an observed event.
@@ -513,7 +513,7 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithEventObserver) {
   // Set up an event observer.
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
-  matcher->type_matcher->type = mojom::EventType::POINTER_DOWN;
+  matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
   setup.client()->SetEventObserver(std::move(matcher));
 
   // Simulate the server dispatching an event that also matched the observer.
@@ -540,14 +540,14 @@ TEST_F(WindowTreeClientTest, EventObserverReplaced) {
   // Set up an event observer.
   mojom::EventMatcherPtr matcher1 = mojom::EventMatcher::New();
   matcher1->type_matcher = mojom::EventTypeMatcher::New();
-  matcher1->type_matcher->type = mojom::EventType::POINTER_DOWN;
+  matcher1->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
   setup.client()->SetEventObserver(std::move(matcher1));
   uint32_t event_observer_id1 = setup.GetEventObserverId();
 
   // Replace it with a second observer.
   mojom::EventMatcherPtr matcher2 = mojom::EventMatcher::New();
   matcher2->type_matcher = mojom::EventTypeMatcher::New();
-  matcher2->type_matcher->type = mojom::EventType::POINTER_UP;
+  matcher2->type_matcher->type = ui::mojom::EventType::POINTER_UP;
   setup.client()->SetEventObserver(std::move(matcher2));
   uint32_t event_observer_id2 = setup.GetEventObserverId();
 

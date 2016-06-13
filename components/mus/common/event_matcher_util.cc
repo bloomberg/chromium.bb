@@ -6,19 +6,20 @@
 
 namespace mus {
 
-mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code, int flags) {
+mojom::EventMatcherPtr CreateKeyMatcher(ui::mojom::KeyboardCode code,
+                                        int flags) {
   mojom::EventMatcherPtr matcher(mojom::EventMatcher::New());
   matcher->type_matcher = mojom::EventTypeMatcher::New();
   matcher->flags_matcher = mojom::EventFlagsMatcher::New();
   matcher->ignore_flags_matcher = mojom::EventFlagsMatcher::New();
   // Ignoring these makes most accelerator scenarios more straight forward. Code
   // that needs to check them can override this setting.
-  matcher->ignore_flags_matcher->flags = mojom::kEventFlagCapsLockOn |
-                                         mojom::kEventFlagScrollLockOn |
-                                         mojom::kEventFlagNumLockOn;
+  matcher->ignore_flags_matcher->flags = ui::mojom::kEventFlagCapsLockOn |
+                                         ui::mojom::kEventFlagScrollLockOn |
+                                         ui::mojom::kEventFlagNumLockOn;
   matcher->key_matcher = mojom::KeyEventMatcher::New();
 
-  matcher->type_matcher->type = mus::mojom::EventType::KEY_PRESSED;
+  matcher->type_matcher->type = ui::mojom::EventType::KEY_PRESSED;
   matcher->flags_matcher->flags = flags;
   matcher->key_matcher->keyboard_code = code;
   return matcher;

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/mus/public/interfaces/input_events.mojom"
+mojom = "//ui/events/mojo/event.mojom"
 public_headers = [ "//ui/events/event.h" ]
 traits_headers = [ "//ui/events/mojo/event_struct_traits.h" ]
 deps = [
@@ -14,4 +14,4 @@ sources = [
   "//ui/events/mojo/event_struct_traits.cc",
 ]
 # TODO(moshayedi): crbug.com/617167. Map mojom.Event directly to ui::Event.
-type_mappings = [ "mus.mojom.Event=std::unique_ptr<ui::Event>(pass_by_value)" ]
+type_mappings = [ "ui.mojom.Event=std::unique_ptr<ui::Event>(pass_by_value)" ]

@@ -87,7 +87,7 @@ ServerWindow* GetCaptureWindow(Display* display) {
   return display->GetActiveWindowManagerState()->capture_window();
 }
 
-mojom::EventMatcherPtr CreateEventMatcher(mojom::EventType type) {
+mojom::EventMatcherPtr CreateEventMatcher(ui::mojom::EventType type) {
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
   matcher->type_matcher->type = type;
@@ -302,7 +302,7 @@ TEST_F(WindowTreeTest, SetEventObserver) {
 
   // Create an observer for pointer-down events.
   WindowTreeTestApi(tree).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::POINTER_DOWN), 111u);
+      CreateEventMatcher(ui::mojom::EventType::POINTER_DOWN), 111u);
 
   // Pointer-down events are sent to the client.
   DispatchEventAndAckImmediately(pointer_down);
@@ -328,7 +328,7 @@ TEST_F(WindowTreeTest, SetEventObserverNonMatching) {
 
   // Create an observer for pointer-down events.
   WindowTreeTestApi(tree).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::POINTER_DOWN), 111u);
+      CreateEventMatcher(ui::mojom::EventType::POINTER_DOWN), 111u);
 
   // Pointer-up events are not sent to the client, since they don't match.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
@@ -347,7 +347,7 @@ TEST_F(WindowTreeTest, SetEventObserverSendsOnce) {
   // Create an observer for pointer-up events (which do not cause focus
   // changes).
   WindowTreeTestApi(tree).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::POINTER_UP), 111u);
+      CreateEventMatcher(ui::mojom::EventType::POINTER_UP), 111u);
 
   // Create an event inside the bounds of the client.
   ui::PointerEvent pointer_up = CreatePointerUpEvent(25, 25);
@@ -370,9 +370,10 @@ TEST_F(WindowTreeTest, SetEventObserverWrongUser) {
 
   // Set event observers on both the wm tree and the other user's tree.
   WindowTreeTestApi(wm_tree()).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::POINTER_UP), 111u);
+      CreateEventMatcher(ui::mojom::EventType::POINTER_UP), 111u);
   WindowTreeTestApi(other_tree)
-      .SetEventObserver(CreateEventMatcher(mojom::EventType::POINTER_UP), 222u);
+      .SetEventObserver(CreateEventMatcher(ui::mojom::EventType::POINTER_UP),
+                        222u);
 
   // An event is observed by the wm tree, but not by the other user's tree.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
@@ -385,13 +386,13 @@ TEST_F(WindowTreeTest, SetEventObserverWrongUser) {
 // Tests that an event observer cannot observe keystrokes.
 TEST_F(WindowTreeTest, SetEventObserverKeyEventsDisallowed) {
   WindowTreeTestApi(wm_tree()).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::KEY_PRESSED), 111u);
+      CreateEventMatcher(ui::mojom::EventType::KEY_PRESSED), 111u);
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
 
   WindowTreeTestApi(wm_tree()).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::KEY_RELEASED), 222u);
+      CreateEventMatcher(ui::mojom::EventType::KEY_RELEASED), 222u);
   ui::KeyEvent key_released(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_released);
   EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
