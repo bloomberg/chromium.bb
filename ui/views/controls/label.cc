@@ -192,8 +192,16 @@ void Label::SetHandlesTooltips(bool enabled) {
   handles_tooltips_ = enabled;
 }
 
-void Label::SizeToFit(int max_width) {
+void Label::SizeToFit(int fixed_width) {
   DCHECK(multi_line());
+  DCHECK_EQ(0, max_width_);
+  fixed_width_ = fixed_width;
+  SizeToPreferredSize();
+}
+
+void Label::SetMaximumWidth(int max_width) {
+  DCHECK(multi_line());
+  DCHECK_EQ(0, fixed_width_);
   max_width_ = max_width;
   SizeToPreferredSize();
 }
@@ -234,12 +242,16 @@ gfx::Size Label::GetPreferredSize() const {
   if (!visible() && collapse_when_hidden_)
     return gfx::Size();
 
-  if (multi_line() && max_width_ != 0 && !text().empty())
-    return gfx::Size(max_width_, GetHeightForWidth(max_width_));
+  if (multi_line() && fixed_width_ != 0 && !text().empty())
+    return gfx::Size(fixed_width_, GetHeightForWidth(fixed_width_));
 
   gfx::Size size(GetTextSize());
   const gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
+
+  if (multi_line() && max_width_ != 0 && max_width_ < size.width())
+    return gfx::Size(max_width_, GetHeightForWidth(max_width_));
+
   return size;
 }
 
@@ -419,6 +431,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   UpdateColorsFromTheme(GetNativeTheme());
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
+  fixed_width_ = 0;
   max_width_ = 0;
   is_first_paint_text_ = true;
   SetText(text);

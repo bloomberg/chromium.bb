@@ -60,13 +60,7 @@ class ToastOverlayLabel : public views::Label {
   explicit ToastOverlayLabel(const std::string& label);
   ~ToastOverlayLabel() override;
 
-  void SetMaximumWidth(int width);
-
  private:
-  int maximum_width_ = 0;
-
-  gfx::Size GetPreferredSize() const override;
-
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayLabel);
 };
 
@@ -90,19 +84,6 @@ ToastOverlayLabel::ToastOverlayLabel(const std::string& label) {
 }
 
 ToastOverlayLabel::~ToastOverlayLabel() {}
-
-void ToastOverlayLabel::SetMaximumWidth(int width) {
-  maximum_width_ = width;
-}
-
-gfx::Size ToastOverlayLabel::GetPreferredSize() const {
-  gfx::Size original_size = Label::GetPreferredSize();
-
-  if (maximum_width_ != 0 && maximum_width_ < original_size.width())
-    return gfx::Size(maximum_width_, GetHeightForWidth(maximum_width_));
-  else
-    return original_size;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ToastOverlayButton
