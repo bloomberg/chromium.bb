@@ -62,7 +62,7 @@ interface PaymentRequestClient {
 // requires the amount.
 struct CurrencyAmount {
   // ISO 4217 currency code. Three upper case ASCII letters.
-  string currency_code;
+  string currency;
 
   // ISO 20022 CurrencyAnd30Amount. Up to 30 total digits. Up to 10 fraction
   // digits. Separated by a dot.

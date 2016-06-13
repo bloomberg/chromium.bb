@@ -47,7 +47,7 @@ struct TypeConverter<CurrencyAmountPtr, blink::CurrencyAmount> {
     static CurrencyAmountPtr Convert(const blink::CurrencyAmount& input)
     {
         CurrencyAmountPtr output = CurrencyAmount::New();
-        output->currency_code = input.currency();
+        output->currency = input.currency();
         output->value = input.value();
         return output;
     }

@@ -328,11 +328,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return false;
         }
 
-        String totalCurrency = details.total.amount.currencyCode;
+        String totalCurrency = details.total.amount.currency;
         CurrencyStringFormatter formatter =
                 new CurrencyStringFormatter(totalCurrency, Locale.getDefault());
 
-        if (!formatter.isValidAmountCurrencyCode(details.total.amount.currencyCode)) {
+        if (!formatter.isValidAmountCurrencyCode(details.total.amount.currency)) {
             disconnectFromClientWithDebugMessage("Invalid total amount currency");
             return false;
         }
@@ -376,9 +376,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * @return True if all fields are present and non-empty.
      */
     private static boolean hasAllPaymentItemFields(PaymentItem item) {
-        // "label", "currencyCode", and "value" should be non-empty.
+        // "label", "currency", and "value" should be non-empty.
         return item != null && !TextUtils.isEmpty(item.label) && item.amount != null
-                && !TextUtils.isEmpty(item.amount.currencyCode)
+                && !TextUtils.isEmpty(item.amount.currency)
                 && !TextUtils.isEmpty(item.amount.value);
     }
 
@@ -401,8 +401,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
             if (!hasAllPaymentItemFields(item)) return null;
 
-            // All currency codes must match.
-            if (!item.amount.currencyCode.equals(totalCurrency)) return null;
+            // All currencies must match.
+            if (!item.amount.currency.equals(totalCurrency)) return null;
 
             // Value should be in correct format.
             if (!formatter.isValidAmountValue(item.amount.value)) return null;
@@ -432,13 +432,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (int i = 0; i < options.length; i++) {
             ShippingOption option = options[i];
 
-            // Each "id", "label", "currencyCode", and "value" should be non-empty.
+            // Each "id", "label", "currency", and "value" should be non-empty.
             // Each "value" should be a valid amount value.
-            // Each "currencyCode" should match the total currency code.
+            // Each "currency" should match the total currency.
             if (option == null || TextUtils.isEmpty(option.id) || TextUtils.isEmpty(option.label)
-                    || option.amount == null || TextUtils.isEmpty(option.amount.currencyCode)
+                    || option.amount == null || TextUtils.isEmpty(option.amount.currency)
                     || TextUtils.isEmpty(option.amount.value)
-                    || !totalCurrency.equals(option.amount.currencyCode)
+                    || !totalCurrency.equals(option.amount.currency)
                     || !formatter.isValidAmountValue(option.amount.value)) {
                 return null;
             }
