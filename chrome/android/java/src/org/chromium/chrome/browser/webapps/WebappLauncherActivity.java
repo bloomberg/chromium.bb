@@ -64,6 +64,9 @@ public class WebappLauncherActivity extends Activity {
             // - the request was for a WebAPK that is valid;
             // - the MAC is present and valid for the homescreen shortcut to be opened;
             // - the intent was sent by Chrome.
+            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                ChromeWebApkHost.init();
+            }
             boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
 
             if (isValidWebApk

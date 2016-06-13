@@ -118,6 +118,9 @@ public class WebApkValidator {
      * @param expectedSignature
      */
     public static void initWithBrowserHostSignature(byte[] expectedSignature) {
+        if (sExpectedSignature != null) {
+            return;
+        }
         sExpectedSignature = Arrays.copyOf(expectedSignature, expectedSignature.length);
     }
 }
