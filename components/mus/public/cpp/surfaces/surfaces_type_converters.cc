@@ -24,7 +24,6 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
 
 using cc::mojom::Color;
 using cc::mojom::ColorPtr;
@@ -79,8 +78,7 @@ namespace {
 bool ConvertDrawQuad(const DrawQuadPtr& input,
                      const cc::CompositorFrameMetadata& metadata,
                      cc::SharedQuadState* sqs,
-                     cc::RenderPass* render_pass,
-                     CustomSurfaceConverter* custom_converter) {
+                     cc::RenderPass* render_pass) {
   switch (input->material) {
     case cc::mojom::Material::DEBUG_BORDER: {
       cc::DebugBorderDrawQuad* debug_border_quad =
@@ -124,10 +122,6 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
       if (input->surface_quad_state.is_null())
         return false;
 
-      if (custom_converter) {
-        return custom_converter->ConvertSurfaceDrawQuad(input, metadata, sqs,
-                                                        render_pass);
-      }
       cc::SurfaceDrawQuad* surface_quad =
           render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
       surface_quad->SetAll(
@@ -361,8 +355,7 @@ RenderPassPtr TypeConverter<RenderPassPtr, cc::RenderPass>::Convert(
 // static
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const RenderPassPtr& input,
-    const cc::CompositorFrameMetadata& metadata,
-    CustomSurfaceConverter* custom_converter) {
+    const cc::CompositorFrameMetadata& metadata) {
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
   pass->SetAll(input->id, input->output_rect, input->damage_rect,
@@ -379,8 +372,7 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     while (quad->shared_quad_state_index > sqs_iter.index()) {
       ++sqs_iter;
     }
-    if (!ConvertDrawQuad(quad, metadata, *sqs_iter, pass.get(),
-                         custom_converter))
+    if (!ConvertDrawQuad(quad, metadata, *sqs_iter, pass.get()))
       return std::unique_ptr<cc::RenderPass>();
   }
   return pass;
@@ -391,8 +383,7 @@ std::unique_ptr<cc::RenderPass>
 TypeConverter<std::unique_ptr<cc::RenderPass>, RenderPassPtr>::Convert(
     const RenderPassPtr& input) {
   cc::CompositorFrameMetadata metadata;
-  return ConvertToRenderPass(input, metadata,
-                             nullptr /* CustomSurfaceConverter */);
+  return ConvertToRenderPass(input, metadata);
 }
 
 // static
@@ -415,16 +406,15 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
 
 // static
 std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
-    const CompositorFramePtr& input,
-    CustomSurfaceConverter* custom_converter) {
+    const CompositorFramePtr& input) {
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
   frame_data->resource_list = input->resources.PassStorage();
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
-    std::unique_ptr<cc::RenderPass> pass = ConvertToRenderPass(
-        input->passes[i], input->metadata, custom_converter);
+    std::unique_ptr<cc::RenderPass> pass =
+        ConvertToRenderPass(input->passes[i], input->metadata);
     if (!pass)
       return std::unique_ptr<cc::CompositorFrame>();
     frame_data->render_pass_list.push_back(std::move(pass));
@@ -439,7 +429,7 @@ std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
 std::unique_ptr<cc::CompositorFrame>
 TypeConverter<std::unique_ptr<cc::CompositorFrame>,
               CompositorFramePtr>::Convert(const CompositorFramePtr& input) {
-  return ConvertToCompositorFrame(input, nullptr);
+  return ConvertToCompositorFrame(input);
 }
 
 }  // namespace mojo

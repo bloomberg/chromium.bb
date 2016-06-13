@@ -61,7 +61,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
   // TODO(fsamuel): Validate that SurfaceDrawQuad refer to allowable surface
   // IDs.
   std::unique_ptr<cc::CompositorFrame> compositor_frame =
-      ConvertToCompositorFrame(frame, nullptr);
+      ConvertToCompositorFrame(frame);
   gfx::Size frame_size =
       compositor_frame->delegated_frame_data->render_pass_list.back()
           ->output_rect.size();

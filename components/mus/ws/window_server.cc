@@ -486,31 +486,6 @@ void WindowServer::ScheduleSurfaceDestruction(ServerWindow* window) {
     display->ScheduleSurfaceDestruction(window);
 }
 
-ServerWindow* WindowServer::FindWindowForSurface(
-    const ServerWindow* ancestor,
-    mojom::SurfaceType surface_type,
-    const ClientWindowId& client_window_id) {
-  WindowTree* window_tree;
-  if (ancestor->id().client_id == kInvalidClientId) {
-    WindowManagerAndDisplay wm_and_display =
-        display_manager_->GetWindowManagerAndDisplay(ancestor);
-    window_tree = wm_and_display.window_manager_state
-                      ? wm_and_display.window_manager_state->tree()
-                      : nullptr;
-  } else {
-    window_tree = GetTreeWithId(ancestor->id().client_id);
-  }
-  if (!window_tree)
-    return nullptr;
-  if (surface_type == mojom::SurfaceType::DEFAULT) {
-    // At embed points the default surface comes from the embedded app.
-    WindowTree* tree_with_root = GetTreeWithRoot(ancestor);
-    if (tree_with_root)
-      window_tree = tree_with_root;
-  }
-  return window_tree->GetWindowByClientId(client_window_id);
-}
-
 void WindowServer::OnWindowDestroyed(ServerWindow* window) {
   ProcessWindowDeleted(window);
 }

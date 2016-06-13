@@ -29,13 +29,6 @@ const ServerWindow* TestServerWindowDelegate::GetRootWindow(
 void TestServerWindowDelegate::ScheduleSurfaceDestruction(
     ServerWindow* window) {}
 
-ServerWindow* TestServerWindowDelegate::FindWindowForSurface(
-    const ServerWindow* ancestor,
-    mojom::SurfaceType surface_type,
-    const ClientWindowId& client_window_id) {
-  return nullptr;
-}
-
 }  // namespace ws
 
 }  // namespace mus

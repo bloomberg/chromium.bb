@@ -27,10 +27,6 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
-  ServerWindow* FindWindowForSurface(
-      const ServerWindow* ancestor,
-      mojom::SurfaceType surface_type,
-      const ClientWindowId& client_window_id) override;
 
   const ServerWindow* root_window_;
   scoped_refptr<mus::SurfacesState> surfaces_state_;

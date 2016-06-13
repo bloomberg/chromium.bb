@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -238,10 +237,6 @@ class WindowServer : public ServerWindowDelegate,
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
-  ServerWindow* FindWindowForSurface(
-      const ServerWindow* ancestor,
-      mojom::SurfaceType surface_type,
-      const ClientWindowId& client_window_id) override;
 
   // Overridden from ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;

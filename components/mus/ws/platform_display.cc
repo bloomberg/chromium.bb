@@ -50,29 +50,17 @@ namespace ws {
 namespace {
 
 // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
-// for each that lacks one. A ServerWindow may hold a CompositorFrame that
-// references other ServerWindows in SurfaceDrawQuads. We should not create new
-// SurfaceDrawQuads for these |referenced_window_ids|. Instead,
-// cc::SurfaceAggregator will do the heavy lifting here by expanding those
-// references to generate one top-level display CompositorFrame.
+// for each that lacks one.
 void DrawWindowTree(cc::RenderPass* pass,
                     ServerWindow* window,
                     const gfx::Vector2d& parent_to_root_origin_offset,
-                    float opacity,
-                    std::set<WindowId>* referenced_window_ids) {
+                    float opacity) {
   if (!window->visible())
     return;
 
   ServerWindowSurface* default_surface =
       window->surface_manager() ? window->surface_manager()->GetDefaultSurface()
                                 : nullptr;
-
-  if (default_surface) {
-    // Accumulate referenced windows in each ServerWindow's CompositorFrame.
-    referenced_window_ids->insert(
-        default_surface->referenced_window_ids().begin(),
-        default_surface->referenced_window_ids().end());
-  }
 
   const gfx::Rect absolute_bounds =
       window->bounds() + parent_to_root_origin_offset;
@@ -81,23 +69,18 @@ void DrawWindowTree(cc::RenderPass* pass,
   const float combined_opacity = opacity * window->opacity();
   for (auto it = children.rbegin(); it != children.rend(); ++it) {
     DrawWindowTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
-                   combined_opacity, referenced_window_ids);
+                   combined_opacity);
   }
 
   if (!window->surface_manager() || !window->surface_manager()->ShouldDraw())
     return;
 
-  // If an ancestor has already referenced this window, then we do not need
-  // to create a SurfaceDrawQuad for it.
-  const bool draw_default_surface =
-      default_surface && (referenced_window_ids->count(window->id()) == 0);
-
   ServerWindowSurface* underlay_surface =
       window->surface_manager()->GetUnderlaySurface();
-  if (!draw_default_surface && !underlay_surface)
+  if (!default_surface && !underlay_surface)
     return;
 
-  if (draw_default_surface) {
+  if (default_surface) {
     gfx::Transform quad_to_target_transform;
     quad_to_target_transform.Translate(absolute_bounds.x(),
                                        absolute_bounds.y());
@@ -326,9 +309,8 @@ DefaultPlatformDisplay::GenerateCompositorFrame() {
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels);
 
-  std::set<WindowId> referenced_window_ids;
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
-                 1.0f, &referenced_window_ids);
+                 1.0f);
 
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);

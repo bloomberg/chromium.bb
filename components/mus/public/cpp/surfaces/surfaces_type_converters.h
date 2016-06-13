@@ -29,8 +29,6 @@ class SharedQuadState;
 
 namespace mojo {
 
-class CustomSurfaceConverter;
-
 // Types from quads.mojom
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<cc::mojom::ColorPtr, SkColor> {
@@ -49,8 +47,7 @@ struct MOJO_SURFACES_EXPORT
 
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const cc::mojom::RenderPassPtr& input,
-    const cc::CompositorFrameMetadata& metadata,
-    CustomSurfaceConverter* custom_converter);
+    const cc::CompositorFrameMetadata& metadata);
 
 template <>
 struct MOJO_SURFACES_EXPORT
@@ -67,8 +64,7 @@ struct MOJO_SURFACES_EXPORT
 
 // Types from compositor_frame.mojom
 MOJO_SURFACES_EXPORT std::unique_ptr<cc::CompositorFrame>
-ConvertToCompositorFrame(const mus::mojom::CompositorFramePtr& input,
-                         CustomSurfaceConverter* custom_converter);
+ConvertToCompositorFrame(const mus::mojom::CompositorFramePtr& input);
 
 template <>
 struct MOJO_SURFACES_EXPORT
