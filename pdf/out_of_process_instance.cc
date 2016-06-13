@@ -303,7 +303,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       stop_scrolling_(false),
       background_color_(0),
       top_toolbar_height_(0),
-      accessibility_enabled_(false) {
+      accessibility_state_(ACCESSIBILITY_STATE_OFF) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -630,17 +630,25 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
 }
 
 void OutOfProcessInstance::EnableAccessibility() {
-  if (accessibility_enabled_)
+  if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
     return;
 
-  accessibility_enabled_ = true;
+  if (accessibility_state_ == ACCESSIBILITY_STATE_OFF)
+    accessibility_state_ = ACCESSIBILITY_STATE_PENDING;
 
+  if (document_load_state_ == LOAD_STATE_COMPLETE)
+    LoadAccessibility();
+}
+
+void OutOfProcessInstance::LoadAccessibility() {
+  accessibility_state_ = ACCESSIBILITY_STATE_LOADED;
   PP_PrivateAccessibilityDocInfo doc_info;
   doc_info.page_count = engine_->GetNumberOfPages();
   doc_info.text_accessible = PP_FromBool(
       engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE));
   doc_info.text_copyable = PP_FromBool(
       engine_->HasPermission(PDFEngine::PERMISSION_COPY));
+
   pp::PDF::SetAccessibilityDocInfo(GetPluginInstance(), &doc_info);
 
   // If the document contents isn't accessible, don't send anything more.
@@ -677,7 +685,6 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(page_info.char_count);
   for (uint32_t i = 0; i < page_info.char_count; ++i) {
     chars[i].unicode_character = engine_->GetCharUnicode(page_index, i);
-    chars[i].char_width = engine_->GetCharWidth(page_index, i);
   }
 
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
@@ -687,9 +694,30 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
     pp::FloatRect bounds;
     engine_->GetTextRunInfo(page_index, char_index, &text_run_info.len,
                             &text_run_info.font_size, &bounds);
+    DCHECK_LE(char_index + text_run_info.len,
+              static_cast<uint32_t>(char_count));
     text_run_info.direction = PP_PRIVATEDIRECTION_LTR;
     text_run_info.bounds = bounds;
     text_runs.push_back(text_run_info);
+
+    // We need to provide enough information to draw a bounding box
+    // around any arbitrary text range, but the bounding boxes of characters
+    // we get from PDFium don't necessarily "line up". Walk through the
+    // characters in each text run and let the width of each character be
+    // the difference between the x coordinate of one character and the
+    // x coordinate of the next. The rest of the bounds of each character
+    // can be computed from the bounds of the text run.
+    pp::FloatRect char_bounds = engine_->GetCharBounds(page_index, char_index);
+    for (uint32_t i = 0; i < text_run_info.len - 1; i++) {
+      DCHECK_LT(char_index + i + 1,
+                static_cast<uint32_t>(char_count));
+      pp::FloatRect next_char_bounds = engine_->GetCharBounds(
+          page_index, char_index + i + 1);
+      chars[char_index + i].char_width = next_char_bounds.x() - char_bounds.x();
+      char_bounds = next_char_bounds;
+    }
+    chars[char_index + text_run_info.len - 1].char_width = char_bounds.width();
+
     char_index += text_run_info.len;
   }
 
@@ -1254,6 +1282,9 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   pp::PDF::SetContentRestriction(this, content_restrictions);
 
   uma_.HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
+
+  if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
+    LoadAccessibility();
 }
 
 void OutOfProcessInstance::RotateClockwise() {

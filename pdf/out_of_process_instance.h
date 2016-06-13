@@ -79,6 +79,9 @@ class OutOfProcessInstance : public pp::Instance,
   void GetPrintPresetOptionsFromDocument(PP_PdfPrintPresetOptions_Dev* options);
   void EnableAccessibility();
 
+  // Start loading accessibility information.
+  void LoadAccessibility();
+
   // Send accessibility information about the given page index.
   void SendNextAccessibilityPage(int32_t page_index);
 
@@ -346,8 +349,13 @@ class OutOfProcessInstance : public pp::Instance,
   // toolbar.
   int top_toolbar_height_;
 
-  // Whether we should send accessibility information about the loaded PDF.
-  bool accessibility_enabled_;
+  // The current state of accessibility: either off, enabled but waiting
+  // for the document to load, or fully loaded.
+  enum AccessibilityState {
+    ACCESSIBILITY_STATE_OFF,
+    ACCESSIBILITY_STATE_PENDING,  // Enabled but waiting for doc to load.
+    ACCESSIBILITY_STATE_LOADED
+  } accessibility_state_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };

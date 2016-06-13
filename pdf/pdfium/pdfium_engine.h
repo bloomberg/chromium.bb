@@ -92,7 +92,7 @@ class PDFiumEngine : public PDFEngine,
   void OnCallback(int id) override;
   std::string GetPageAsJSON(int index) override;
   int GetCharCount(int page_index) override;
-  double GetCharWidth(int page_index, int char_index) override;
+  pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
   void GetTextRunInfo(int page_index,
                       int start_char_index,

@@ -375,8 +375,8 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
     if (!base::IsUnicodeWhitespace(character)) {
       // TODO(dmazzoni): this assumes horizontal text.
       // https://crbug.com/580311
-      pp::FloatRect char_rect =
-          GetFloatCharRectInPixels(page, text_page, char_index);
+      pp::FloatRect char_rect = GetFloatCharRectInPixels(
+          page, text_page, char_index);
       if (!char_rect.IsEmpty() && !OverlapsOnYAxis(text_run_bounds, char_rect))
         break;
 
@@ -384,10 +384,25 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
       if (font_size != text_run_font_size)
         break;
 
+      // Heuristic: split a text run after a space longer than 3 average
+      // characters.
+      double avg_char_width =
+          text_run_bounds.width() / (char_index - start_char_index);
+      if (char_rect.x() - text_run_bounds.right() > avg_char_width * 3)
+        break;
+
       text_run_bounds = text_run_bounds.Union(char_rect);
     }
 
     char_index++;
+  }
+
+  // Some PDFs have missing or obviously bogus font sizes; substitute the
+  // height of the bounding box in those cases.
+  if (text_run_font_size <= 1 ||
+      text_run_font_size < text_run_bounds.height() / 2 ||
+      text_run_font_size > text_run_bounds.height() * 2) {
+    text_run_font_size = text_run_bounds.height();
   }
 
   *out_len = char_index - start_char_index;
@@ -400,10 +415,10 @@ uint32_t PDFiumPage::GetCharUnicode(int char_index) {
   return FPDFText_GetUnicode(text_page, char_index);
 }
 
-double PDFiumPage::GetCharWidth(int char_index) {
+pp::FloatRect PDFiumPage::GetCharBounds(int char_index) {
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
-  return GetFloatCharRectInPixels(page, text_page, char_index).width();
+  return GetFloatCharRectInPixels(page, text_page, char_index);
 }
 
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,

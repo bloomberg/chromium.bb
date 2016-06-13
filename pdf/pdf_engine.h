@@ -251,8 +251,8 @@ class PDFEngine {
   virtual std::string GetPageAsJSON(int index) = 0;
   // Get the number of characters on a given page.
   virtual int GetCharCount(int page_index) = 0;
-  // Get the width in pixels of a character on a given page.
-  virtual double GetCharWidth(int page_index, int char_index) = 0;
+  // Get the bounds in page pixels of a character on a given page.
+  virtual pp::FloatRect GetCharBounds(int page_index, int char_index) = 0;
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's

@@ -55,8 +55,8 @@ class PDFiumPage {
                       pp::FloatRect* out_bounds);
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
-  // Get the width of a character in page pixels.
-  double GetCharWidth(int char_index);
+  // Get the bounds of a character in page pixels.
+  pp::FloatRect GetCharBounds(int char_index);
 
   enum Area {
     NONSELECTABLE_AREA,
