@@ -152,12 +152,13 @@ void SineWaveAudioSource::Reset() {
 }
 
 FileSource::FileSource(const AudioParameters& params,
-                       const base::FilePath& path_to_wav_file)
+                       const base::FilePath& path_to_wav_file,
+                       bool loop)
     : params_(params),
       path_to_wav_file_(path_to_wav_file),
       wav_file_read_pos_(0),
-      load_failed_(false) {
-}
+      load_failed_(false),
+      looping_(loop) {}
 
 FileSource::~FileSource() {
 }
@@ -213,13 +214,20 @@ int FileSource::OnMoreData(AudioBus* audio_bus,
 
   DCHECK(wav_audio_handler_.get());
 
-  // Stop playing if we've played out the whole file.
-  if (wav_audio_handler_->AtEnd(wav_file_read_pos_))
-    return 0;
+  if (wav_audio_handler_->AtEnd(wav_file_read_pos_)) {
+    if (looping_)
+      Rewind();
+    else
+      return 0;
+  }
 
   // This pulls data from ProvideInput.
   file_audio_converter_->Convert(audio_bus);
   return audio_bus->frames();
+}
+
+void FileSource::Rewind() {
+  wav_file_read_pos_ = 0;
 }
 
 double FileSource::ProvideInput(AudioBus* audio_bus_into_converter,

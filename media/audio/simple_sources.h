@@ -58,7 +58,8 @@ class MEDIA_EXPORT FileSource : public AudioOutputStream::AudioSourceCallback,
                                 public AudioConverter::InputCallback {
  public:
   FileSource(const AudioParameters& params,
-             const base::FilePath& path_to_wav_file);
+             const base::FilePath& path_to_wav_file,
+             bool loop);
   ~FileSource() override;
 
   // Implementation of AudioSourceCallback.
@@ -80,12 +81,16 @@ class MEDIA_EXPORT FileSource : public AudioOutputStream::AudioSourceCallback,
   std::unique_ptr<AudioConverter> file_audio_converter_;
   int wav_file_read_pos_;
   bool load_failed_;
+  bool looping_;
 
   // Provides audio data from wav_audio_handler_ into the file audio converter.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   // Loads the wav file on the first OnMoreData invocation.
   void LoadWavFile(const base::FilePath& path_to_wav_file);
+
+  // Rewinds the player to the start of the loaded wav file.
+  void Rewind();
 };
 
 class BeepingSource : public AudioOutputStream::AudioSourceCallback {

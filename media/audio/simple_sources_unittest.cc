@@ -78,7 +78,32 @@ TEST(SimpleSources, OnError) {
   EXPECT_EQ(2, source.errors());
 }
 
-TEST(SimpleSources, FileSourceTestData) {
+void VerifyContainsTestFile(const AudioBus* audio_bus) {
+  // Convert the test data (little-endian) into floats and compare. We need to
+  // index past the first bytes in the data, which contain the wav header.
+  const int kFirstSampleIndex = 12 + 8 + 16 + 8;
+  int16_t data[2];
+  data[0] = kTestAudioData[kFirstSampleIndex];
+  data[0] |= (kTestAudioData[kFirstSampleIndex + 1] << 8);
+  data[1] = kTestAudioData[kFirstSampleIndex + 2];
+  data[1] |= (kTestAudioData[kFirstSampleIndex + 3] << 8);
+
+  // The first frame should hold the WAV data.
+  EXPECT_FLOAT_EQ(static_cast<float>(data[0]) / ((1 << 15) - 1),
+                  audio_bus->channel(0)[0]);
+  EXPECT_FLOAT_EQ(static_cast<float>(data[1]) / ((1 << 15) - 1),
+                  audio_bus->channel(1)[0]);
+
+  // All other frames should be zero-padded. This applies even when looping, as
+  // the looping will restart on the next call to OnMoreData.
+  for (int channel = 0; channel < audio_bus->channels(); ++channel) {
+    for (int frame = 1; frame < audio_bus->frames(); ++frame) {
+      EXPECT_FLOAT_EQ(0.0, audio_bus->channel(channel)[frame]);
+    }
+  }
+}
+
+TEST(SimpleSources, FileSourceTestDataWithoutLooping) {
   const int kNumFrames = 10;
 
   // Create a temporary file filled with WAV data.
@@ -97,29 +122,49 @@ TEST(SimpleSources, FileSourceTestData) {
   audio_bus->Zero();
 
   // Create a FileSource that reads this file.
-  FileSource source(params, temp_path);
+  bool loop = false;
+  FileSource source(params, temp_path, loop);
   EXPECT_EQ(kNumFrames, source.OnMoreData(audio_bus.get(), 0, 0));
 
-  // Convert the test data (little-endian) into floats and compare.
-  const int kFirstSampleIndex = 12 + 8 + 16 + 8;
-  int16_t data[2];
-  data[0] = kTestAudioData[kFirstSampleIndex];
-  data[0] |= (kTestAudioData[kFirstSampleIndex + 1] << 8);
-  data[1] = kTestAudioData[kFirstSampleIndex + 2];
-  data[1] |= (kTestAudioData[kFirstSampleIndex + 3] << 8);
+  VerifyContainsTestFile(audio_bus.get());
 
-  // The first frame should hold the WAV data.
-  EXPECT_FLOAT_EQ(static_cast<float>(data[0]) / ((1 << 15) - 1),
-                  audio_bus->channel(0)[0]);
-  EXPECT_FLOAT_EQ(static_cast<float>(data[1]) / ((1 << 15) - 1),
-                  audio_bus->channel(1)[0]);
-
-  // All other frames should be zero-padded.
+  // We should not play any more audio after the file reaches its end.
+  audio_bus->Zero();
+  source.OnMoreData(audio_bus.get(), 0, 0);
   for (int channel = 0; channel < audio_bus->channels(); ++channel) {
-    for (int frame = 1; frame < audio_bus->frames(); ++frame) {
+    for (int frame = 0; frame < audio_bus->frames(); ++frame) {
       EXPECT_FLOAT_EQ(0.0, audio_bus->channel(channel)[frame]);
     }
   }
+}
+
+TEST(SimpleSources, FileSourceTestDataWithLooping) {
+  const int kNumFrames = 10;
+
+  // Create a temporary file filled with WAV data.
+  base::FilePath temp_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
+  base::File temp(temp_path,
+                  base::File::FLAG_WRITE | base::File::FLAG_OPEN_ALWAYS);
+  temp.WriteAtCurrentPos(kTestAudioData, kTestAudioDataSize);
+  ASSERT_EQ(kTestAudioDataSize, static_cast<size_t>(temp.GetLength()));
+  temp.Close();
+
+  // Create AudioParameters which match those in the WAV data.
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
+                         CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
+  audio_bus->Zero();
+
+  bool loop = true;
+  FileSource source(params, temp_path, loop);
+
+  // Verify that we keep reading in the file when looping.
+  source.OnMoreData(audio_bus.get(), 0, 0);
+  audio_bus->Zero();
+  source.OnMoreData(audio_bus.get(), 0, 0);
+
+  VerifyContainsTestFile(audio_bus.get());
 }
 
 TEST(SimpleSources, BadFilePathFails) {
@@ -133,7 +178,8 @@ TEST(SimpleSources, BadFilePathFails) {
   path = path.Append(FILE_PATH_LITERAL("does"))
              .Append(FILE_PATH_LITERAL("not"))
              .Append(FILE_PATH_LITERAL("exist"));
-  FileSource source(params, path);
+  bool loop = false;
+  FileSource source(params, path, loop);
   EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0, 0));
 
   // Confirm all frames are zero-padded.
@@ -167,7 +213,8 @@ TEST(SimpleSources, FileSourceCorruptTestDataFails) {
   audio_bus->Zero();
 
   // Create a FileSource that reads this file.
-  FileSource source(params, temp_path);
+  bool loop = false;
+  FileSource source(params, temp_path, loop);
   EXPECT_EQ(0, source.OnMoreData(audio_bus.get(), 0, 0));
 
   // Confirm all frames are zero-padded.

@@ -93,7 +93,8 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 // the bits as if they came from the microphone, which means you should disable
 // audio processing (lest your audio file will play back distorted). The input
 // file is converted to suit Chrome's audio buses if necessary, so most sane
-// .wav files should work.
+// .wav files should work. You can pass either <path> to play the file looping
+// or <path>%noloop to stop after playing the file to completion.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
 // Enables support for inband text tracks in media content.

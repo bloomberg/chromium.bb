@@ -148,8 +148,9 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
   }
 
   void ConfigureFakeDeviceToPlayFile(const base::FilePath& wav_file_path) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
-        switches::kUseFileForFakeAudioCapture, wav_file_path);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
+        switches::kUseFileForFakeAudioCapture,
+        wav_file_path.value() + FILE_PATH_LITERAL("%noloop"));
   }
 
   void AddAudioFileToWebAudio(const std::string& input_file_relative_url,
