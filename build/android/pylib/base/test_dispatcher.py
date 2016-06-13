@@ -147,12 +147,8 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     index = threadsafe_counter.GetAndIncrement()
     logging.warning('Creating shard %s for device %s.', index, device)
     runner = runner_factory(device, index)
-    if runner:
-      runner.SetUp()
-      out_runners.append(runner)
-    else:
-      logging.info('Device %s is not active. Will not create shard %s.',
-                   str(device), index)
+    runner.SetUp()
+    out_runners.append(runner)
   except (device_errors.CommandFailedError,
           device_errors.CommandTimeoutError,
           device_errors.DeviceUnreachableError):
