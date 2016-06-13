@@ -17,6 +17,7 @@
 #if defined(OS_NACL)
 #include "base/logging.h"
 #else
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #endif
 
@@ -76,8 +77,9 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
   NOTIMPLEMENTED();
   return std::unique_ptr<CertVerifier>();
 #else
-  return base::WrapUnique(
-      new MultiThreadedCertVerifier(CertVerifyProc::CreateDefault()));
+  return base::MakeUnique<CachingCertVerifier>(
+      base::MakeUnique<MultiThreadedCertVerifier>(
+          CertVerifyProc::CreateDefault()));
 #endif
 }
 

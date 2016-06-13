@@ -149,7 +149,7 @@
 #include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "net/cert/cert_verifier.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -1127,8 +1127,8 @@ void ProfileIOData::Init(
       DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
       policy_cert_verifier_->InitializeOnIOThread(verify_proc);
     } else {
-      cert_verifier_.reset(
-          new net::MultiThreadedCertVerifier(verify_proc.get()));
+      cert_verifier_ = base::MakeUnique<net::CachingCertVerifier>(
+          base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
     }
     main_request_context_->set_cert_verifier(cert_verifier_.get());
 #else

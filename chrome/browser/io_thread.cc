@@ -66,6 +66,7 @@
 #include "net/base/host_mapping_rules.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/sdch_manager.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
@@ -563,11 +564,11 @@ void IOThread::Init() {
           "466432 IOThread::InitAsync::UpdateDnsClientEnabled::End"));
 #if defined(OS_CHROMEOS)
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
-      new chromeos::CertVerifyProcChromeOS()));
+  globals_->cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
+      base::MakeUnique<net::MultiThreadedCertVerifier>(
+          new chromeos::CertVerifyProcChromeOS()));
 #else
-  globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
-      net::CertVerifyProc::CreateDefault()));
+  globals_->cert_verifier = net::CertVerifier::CreateDefault();
 #endif
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());

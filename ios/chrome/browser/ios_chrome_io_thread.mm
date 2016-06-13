@@ -44,7 +44,6 @@
 #include "ios/web/public/web_thread.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -348,8 +347,7 @@ void IOSChromeIOThread::Init() {
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
       std::move(external_estimate_provider), network_quality_estimator_params));
 
-  globals_->cert_verifier.reset(
-      new net::MultiThreadedCertVerifier(net::CertVerifyProc::CreateDefault()));
+  globals_->cert_verifier = net::CertVerifier::CreateDefault();
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 
