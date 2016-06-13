@@ -128,9 +128,13 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   base::Closure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
       RunClosure(quit_closure));
-  cricket::WebRtcVideoFrame webrtc_frame;
-  webrtc_frame.InitToBlack(320, 240, 1);
-  source()->SinkInterfaceForTest()->OnFrame(webrtc_frame);
+  rtc::scoped_refptr<webrtc::I420Buffer> buffer(
+      new rtc::RefCountedObject<webrtc::I420Buffer>(320, 240));
+
+  buffer->SetToBlack();
+
+  source()->SinkInterfaceForTest()->OnFrame(
+      cricket::WebRtcVideoFrame(buffer, 1, webrtc::kVideoRotation_0));
   run_loop.Run();
 
   EXPECT_EQ(1, sink.number_of_frames());
