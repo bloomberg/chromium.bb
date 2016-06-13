@@ -130,8 +130,8 @@ void ProcessGoogleUpdateItems(const InstallationState& original_state,
   const bool system_level = installer_state.system_install();
   BrowserDistribution* distribution = product.distribution();
   const ProductState* product_state =
-      original_state.GetProductState(system_level, distribution->GetType());
-  DCHECK(product_state != NULL);
+      original_state.GetNonVersionedProductState(system_level,
+                                                 distribution->GetType());
   ChannelInfo channel_info;
 
   // Remove product's flags from the channel value.
@@ -629,7 +629,7 @@ bool ShouldDeleteProfile(const InstallerState& installer_state,
   // the --delete-profile flag to distinguish them from MSI upgrades.
   if (product.is_chrome_frame() && !installer_state.is_msi()) {
     should_delete = true;
-  } else {
+  } else if (product.is_chrome()) {
     should_delete =
         status == installer::UNINSTALL_DELETE_PROFILE ||
         cmd_line.HasSwitch(installer::switches::kDeleteProfile);
@@ -1231,7 +1231,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     // Unregister any dll servers that we may have registered for this
     // product.
-    if (product_state != NULL) {
+    if (product_state) {
       std::vector<base::FilePath> com_dll_list;
       product.AddComDllList(&com_dll_list);
       base::FilePath dll_folder = installer_state.target_path().AppendASCII(
@@ -1258,9 +1258,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     VLOG(1) << "Closing the Chrome Frame helper process";
     CloseChromeFrameHelperProcess();
   }
-
-  if (product_state == NULL)
-    return installer::UNINSTALL_SUCCESSFUL;
 
   // Finally delete all the files from Chrome folder after moving setup.exe
   // and the user's Local State to a temp location.
@@ -1296,7 +1293,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     RemoveDistributionRegistryState(browser_dist);
   }
 
-  if (!force_uninstall) {
+  if (!force_uninstall && product_state) {
     VLOG(1) << "Uninstallation complete. Launching post-uninstall operations.";
     browser_dist->DoPostUninstallOperations(product_state->version(),
         backup_state_file, distribution_data);

@@ -14,6 +14,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file_enumerator.h"
@@ -22,14 +23,18 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -48,6 +53,64 @@ namespace {
 bool SupportsSingleInstall(BrowserDistribution::Type type) {
   return (type == BrowserDistribution::CHROME_BROWSER ||
           type == BrowserDistribution::CHROME_FRAME);
+}
+
+// Returns true if the "lastrun" value in |root|\|key_path| (a path to Chrome's
+// ClientState key for a user) indicates that Chrome has been used within the
+// last 28 days.
+bool IsActivelyUsedIn(HKEY root, const wchar_t* key_path) {
+  // This duplicates some logic in GoogleUpdateSettings::GetLastRunTime, which
+  // is suitable for use from the context of Chrome but not from the installer
+  // because it was implemented with the assumption that
+  // BrowserDistribution::GetDistribution() will always be the right thing.
+  // This is true in Chrome, but not in the installer in a multi-install world.
+  // Once multi-install goes away, this assumption will once again become true
+  // for the installer, and this new code here can then be deleted.
+  VLOG(1) << "IsActivelyUsedIn probing " << root << "\\" << key_path;
+  base::win::RegKey key;
+  LONG result = key.Open(root, key_path, KEY_WOW64_32KEY | KEY_QUERY_VALUE);
+  if (result != ERROR_SUCCESS) {
+    ::SetLastError(result);
+    PLOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND) << "Failed opening " << root
+                                                   << "\\" << key_path;
+    return false;
+  }
+  base::string16 last_run_time_string;
+  result =
+      key.ReadValue(google_update::kRegLastRunTimeField, &last_run_time_string);
+  if (result != ERROR_SUCCESS) {
+    ::SetLastError(result);
+    PLOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND)
+        << "Failed reading " << root << "\\" << key_path << "@"
+        << google_update::kRegLastRunTimeField;
+    return false;
+  }
+  int64_t last_run_time_value = 0;
+  if (!base::StringToInt64(last_run_time_string, &last_run_time_value))
+    return false;
+  base::Time last_run_time = base::Time::FromInternalValue(last_run_time_value);
+  int days_ago_last_run =
+      (base::Time::NowFromSystemTime() - last_run_time).InDays();
+  VLOG(1) << "Found a user that last ran Chrome " << days_ago_last_run
+          << " days ago.";
+  return days_ago_last_run <= 28;
+}
+
+// A visitor for user hives, run by VisitUserHives. |client_state_path| is the
+// path to Chrome's ClientState key. |is_used| is set to true if Chrome has been
+// used within the last 28 days based on the contents of |user_hive|, in which
+// case |false| is returned to halt the hive visits. |user_sid| and |user_hive|
+// are provided by VisitUserHives.
+bool OnUserHive(const base::string16& client_state_path,
+                bool* is_used,
+                const wchar_t* user_sid,
+                base::win::RegKey* user_hive) {
+  // Continue the iteration if this hive isn't owned by an active Chrome user.
+  if (!IsActivelyUsedIn(user_hive->Handle(), client_state_path.c_str()))
+    return true;
+  // Stop the iteration.
+  *is_used = true;
+  return false;
 }
 
 }  // namespace
@@ -547,6 +610,20 @@ bool IsDowngradeAllowed(const MasterPreferences& prefs) {
   bool allow_downgrade = false;
   return prefs.GetBool(master_preferences::kAllowDowngrade, &allow_downgrade) &&
          allow_downgrade;
+}
+
+bool IsChromeActivelyUsed(const InstallerState& installer_state) {
+  BrowserDistribution* chrome_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
+  if (!installer_state.system_install()) {
+    return IsActivelyUsedIn(HKEY_CURRENT_USER,
+                            chrome_dist->GetStateKey().c_str());
+  }
+  bool is_used = false;
+  VisitUserHives(base::Bind(&OnUserHive, chrome_dist->GetStateKey(),
+                            base::Unretained(&is_used)));
+  return is_used;
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

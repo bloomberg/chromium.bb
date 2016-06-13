@@ -51234,6 +51234,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Setup.Install.StrandedChromeIsUsed" enum="BooleanUsage">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The disposition of a stranded Chrome install discovered while updating
+    multi-install Chrome Binaries. This metric is only logged in an edge case.
+    The buckets indicate whether or not the &quot;stranded&quot; Chrome install
+    has been used in the last 28 days. If so, it respresents a Chrome that has
+    not been updating due to a logic flaw in the installer and will be repaired
+    in the current update. If not, it likely represents Chrome Binaries that
+    were previously used by Chrome Frame that has since been uninstalled and
+    that will be uninstalled in a future update.
+  </summary>
+</histogram>
+
 <histogram name="Setup.Install.UncompressArchivePatchTime" units="ms">
   <owner>grt@chromium.org</owner>
   <summary>

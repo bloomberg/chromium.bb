@@ -124,6 +124,9 @@ base::string16 GuidToSquid(const base::string16& guid);
 // Returns true if downgrade is allowed by installer data.
 bool IsDowngradeAllowed(const MasterPreferences& prefs);
 
+// Returns true if Chrome has been run within the last 28 days.
+bool IsChromeActivelyUsed(const InstallerState& installer_state);
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

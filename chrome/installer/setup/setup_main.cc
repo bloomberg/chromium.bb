@@ -355,11 +355,31 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
         const ProductState* state =
             original_state.GetProductState(installer_state->system_install(),
                                            type);
-        if ((state != NULL) && state->is_multi_install()) {
-          installer_state->AddProductFromState(type, *state);
-          VLOG(1) << "Product already installed and must be included: "
-                  << BrowserDistribution::GetSpecificDistribution(type)->
-                         GetDisplayName();
+        if (state) {
+          if (state->is_multi_install()) {
+            installer_state->AddProductFromState(type, *state);
+            VLOG(1) << "Product already installed and must be included: "
+                    << BrowserDistribution::GetSpecificDistribution(type)
+                           ->GetDisplayName();
+          }
+        } else if (type == BrowserDistribution::CHROME_BROWSER) {
+          // Chrome is not installed from Google Update's point of view (missing
+          // "pv" in its Clients key). This is an edge case resulting from
+          // either local tampering or from a bug when a multi-install Chrome
+          // Frame was uninstalled; see https://crbug.com/579627. Check to see
+          // if any user has run Chrome within the last 28 days.
+          const bool is_used = IsChromeActivelyUsed(*installer_state);
+          UMA_HISTOGRAM_BOOLEAN("Setup.Install.StrandedChromeIsUsed", is_used);
+          if (is_used) {
+            // Add Chrome to the set of products to update to avoid leaving it
+            // behind.
+            std::unique_ptr<Product> multi_chrome(new Product(
+                BrowserDistribution::GetSpecificDistribution(type)));
+            multi_chrome->SetOption(installer::kOptionMultiInstall, true);
+            Product* chrome = installer_state->AddProduct(&multi_chrome);
+            VLOG(1) << "Broken install of product to be included for repair: "
+                    << chrome->distribution()->GetDisplayName();
+          }  // else uninstall the binaries in UninstallBinariesIfUnused.
         }
       }
     }
@@ -732,6 +752,10 @@ void UninstallBinariesIfUnused(
       installer_state.AreBinariesInUse(original_state)) {
     return;
   }
+
+  // TODO(grt): Fix this to properly uninstall unused binaries once we see that
+  // the repair of actively used Chromes is working; see
+  // AddExistingMultiInstalls and https://crbug.com/579627.
 
   LOG(INFO) << "Uninstalling unused binaries";
   installer_state.UpdateStage(installer::UNINSTALLING_BINARIES);

@@ -123,6 +123,9 @@ class VariableExpander:
           'CHROME_UPDATE_REGISTRY_SUBKEY': (
             'Software\\Google\\Update\\Clients\\'
             '{8A69D345-D564-463c-AFF1-A69D9E530F96}'),
+          'CHROME_CLIENT_STATE_KEY': (
+            'Software\\Google\\Update\\ClientState\\'
+            '{8A69D345-D564-463c-AFF1-A69D9E530F96}'),
           'SUPPORTS_SXS': True,
           'CHROME_DIR_SXS': 'Google\\Chrome SxS',
           'CHROME_LONG_NAME_SXS': 'Google Chrome SxS',
@@ -142,6 +145,7 @@ class VariableExpander:
           'CHROME_LONG_NAME': 'Chromium',
           'CHROME_SHORT_NAME': 'Chromium',
           'CHROME_UPDATE_REGISTRY_SUBKEY': 'Software\\Chromium',
+          'CHROME_CLIENT_STATE_KEY': 'Software\\Chromium',
           'SUPPORTS_SXS': False
       })
     else:

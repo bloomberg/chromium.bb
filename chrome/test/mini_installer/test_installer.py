@@ -352,9 +352,6 @@ def main():
 
   suite = unittest.TestSuite()
 
-  # Set the env var used by mini_installer.exe to decide to not show UI.
-  os.environ['MINI_INSTALLER_TEST'] = '1'
-
   variable_expander = VariableExpander(mini_installer_path)
   config = ParseConfigFile(args.config, variable_expander)
 
