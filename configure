@@ -255,6 +255,7 @@ EXPERIMENT_LIST="
     ref_mv
     ext_interp
     motion_var
+    ext_refs
 "
 CONFIG_LIST="
     dependency_tracking
