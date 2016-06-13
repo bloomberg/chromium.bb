@@ -91,18 +91,6 @@ public:
 
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
-    template<typename VisitorDispatcher>
-    void trace(VisitorDispatcher visitor)
-    {
-        static_assert(sizeof(T), "T must be fully defined");
-        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-        if (weaknessConfiguration == WeakPersistentConfiguration) {
-            visitor->registerWeakCell(&m_raw);
-        } else {
-            visitor->mark(m_raw);
-        }
-    }
-
     T* release()
     {
         T* result = m_raw;
@@ -188,6 +176,18 @@ private:
         uninitialize();
     }
 
+    template<typename VisitorDispatcher>
+    void tracePersistent(VisitorDispatcher visitor)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
+        if (weaknessConfiguration == WeakPersistentConfiguration) {
+            visitor->registerWeakCell(&m_raw);
+        } else {
+            visitor->mark(m_raw);
+        }
+    }
+
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
@@ -195,7 +195,7 @@ private:
         if (!m_raw || isHashTableDeletedValue())
             return;
 
-        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
+        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::tracePersistent>::trampoline;
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             ProcessHeap::crossThreadPersistentRegion().allocatePersistentNode(m_persistentNode, this, traceCallback);
             return;
@@ -497,13 +497,6 @@ public:
         uninitialize();
     }
 
-    template<typename VisitorDispatcher>
-    void trace(VisitorDispatcher visitor)
-    {
-        static_assert(sizeof(Collection), "Collection must be fully defined");
-        visitor->trace(*static_cast<Collection*>(this));
-    }
-
     // See PersistentBase::registerAsStaticReference() comment.
     PersistentHeapCollectionBase* registerAsStaticReference()
     {
@@ -516,6 +509,13 @@ public:
     }
 
 private:
+
+    template<typename VisitorDispatcher>
+    void tracePersistent(VisitorDispatcher visitor)
+    {
+        static_assert(sizeof(Collection), "Collection must be fully defined");
+        visitor->trace(*static_cast<Collection*>(this));
+    }
 
     // Used when the registered PersistentNode of this object is
     // released during ThreadState shutdown, clearing the association.
@@ -532,7 +532,7 @@ private:
         // FIXME: Derive affinity based on the collection.
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
-        m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
+        m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::tracePersistent>::trampoline);
 #if ENABLE(ASSERT)
         m_state = state;
 #endif
