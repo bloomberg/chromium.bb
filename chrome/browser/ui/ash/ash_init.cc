@@ -39,7 +39,7 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "chrome/browser/ui/ash/launcher/chrome_mash_shelf_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #endif
 
 namespace chrome {
@@ -101,7 +101,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 void InitializeMash() {
 #if defined(MOJO_SHELL_CLIENT)
   DCHECK(!ash::Shell::HasInstance());
-  ChromeMashShelfController::CreateInstance();
+  ChromeLauncherControllerMus::CreateInstance()->Init();
 #endif
 }
 

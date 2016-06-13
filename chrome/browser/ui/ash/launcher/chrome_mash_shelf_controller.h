@@ -21,19 +21,12 @@ class ChromeShelfItemDelegate;
 class ChromeMashShelfController : public mash::shelf::mojom::ShelfObserver,
                                   public AppIconLoaderDelegate {
  public:
+  ChromeMashShelfController();
   ~ChromeMashShelfController() override;
-
-  // Creates an instance.
-  static ChromeMashShelfController* CreateInstance();
-
-  // Returns the single ChromeMashShelfController instance.
-  static ChromeMashShelfController* instance() { return instance_; }
 
   void LaunchItem(const std::string& app_id);
 
  private:
-  ChromeMashShelfController();
-
   void Init();
 
   void PinAppsFromPrefs();
@@ -48,8 +41,6 @@ class ChromeMashShelfController : public mash::shelf::mojom::ShelfObserver,
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
-
-  static ChromeMashShelfController* instance_;
 
   LauncherControllerHelper helper_;
   mash::shelf::mojom::ShelfControllerPtr shelf_controller_;

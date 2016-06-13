@@ -22,8 +22,11 @@
 
 class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
  public:
-  explicit ChromeShelfItemDelegate(const std::string& app_id)
-      : app_id_(app_id), item_delegate_binding_(this) {}
+  explicit ChromeShelfItemDelegate(const std::string& app_id,
+                                   ChromeMashShelfController* controller)
+      : app_id_(app_id),
+        item_delegate_binding_(this),
+        controller_(controller) {}
   ~ChromeShelfItemDelegate() override {}
 
   mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo
@@ -36,9 +39,7 @@ class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
 
  private:
   // mash::shelf::mojom::ShelfItemDelegate:
-  void LaunchItem() override {
-    ChromeMashShelfController::instance()->LaunchItem(app_id_);
-  }
+  void LaunchItem() override { controller_->LaunchItem(app_id_); }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {
     NOTIMPLEMENTED();
   }
@@ -50,29 +51,23 @@ class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
   mojo::AssociatedBinding<mash::shelf::mojom::ShelfItemDelegate>
       item_delegate_binding_;
 
+  // Not owned.
+  ChromeMashShelfController* controller_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeShelfItemDelegate);
 };
 
-// static
-ChromeMashShelfController* ChromeMashShelfController::instance_ = nullptr;
+ChromeMashShelfController::ChromeMashShelfController()
+    : helper_(ProfileManager::GetActiveUserProfile()),
+      observer_binding_(this) {
+  Init();
+}
 
 ChromeMashShelfController::~ChromeMashShelfController() {}
-
-// static
-ChromeMashShelfController* ChromeMashShelfController::CreateInstance() {
-  DCHECK(!instance_);
-  instance_ = new ChromeMashShelfController();
-  instance_->Init();
-  return instance_;
-}
 
 void ChromeMashShelfController::LaunchItem(const std::string& app_id) {
   helper_.LaunchApp(app_id, ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
 }
-
-ChromeMashShelfController::ChromeMashShelfController()
-    : helper_(ProfileManager::GetActiveUserProfile()),
-      observer_binding_(this) {}
 
 void ChromeMashShelfController::Init() {
   shell::Connector* connector =
@@ -128,7 +123,7 @@ void ChromeMashShelfController::PinAppsFromPrefs() {
     const gfx::Image& image = rb.GetImageNamed(IDR_APP_DEFAULT_ICON);
     item->image = *image.ToSkBitmap();
     std::unique_ptr<ChromeShelfItemDelegate> delegate(
-        new ChromeShelfItemDelegate(app));
+        new ChromeShelfItemDelegate(app, this));
     shelf_controller_->PinItem(std::move(item),
                                delegate->CreateInterfacePtrInfoAndBind(
                                    shelf_controller_.associated_group()));
