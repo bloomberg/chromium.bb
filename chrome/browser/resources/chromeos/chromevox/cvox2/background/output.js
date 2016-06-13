@@ -435,8 +435,8 @@ Output.RULES = {
       enter: '$nameFromNode $role $description'
     },
     heading: {
-      enter:
-          '!relativePitch(hierarchicalLevel) $name= @tag_h+$hierarchicalLevel',
+      enter: '!relativePitch(hierarchicalLevel) ' +
+          '$nameFromNode= @tag_h+$hierarchicalLevel',
       speak: '!relativePitch(hierarchicalLevel)' +
           ' $nameOrDescendants= @tag_h+$hierarchicalLevel'
     },
@@ -1014,7 +1014,7 @@ Output.prototype = {
           this.append_(buff, node.name, options);
         } else if (token == 'nameFromNode') {
           if (chrome.automation.NameFromType[node.nameFrom] ==
-              'nameFromContents')
+              'contents')
             return;
 
           options.annotation.push('name');

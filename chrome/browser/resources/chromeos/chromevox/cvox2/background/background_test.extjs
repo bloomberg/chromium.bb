@@ -870,3 +870,18 @@ TEST_F('BackgroundTest', 'ButtonNameValueDescription', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'NameFromHeadingLink', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <p>before</p>
+    <h1><a href="google.com">go</a><p>here</p></h1>
+  */}, function(root) {
+    var link = root.find({role: RoleType.link});
+    mockFeedback.call(link.focus.bind(link))
+        .expectSpeech('go')
+        .expectSpeech('Link')
+        .expectSpeech('Heading 1')
+        .replay();
+  });
+});

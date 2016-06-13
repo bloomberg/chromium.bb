@@ -234,12 +234,12 @@ chrome.automation.StateType = {
  */
 chrome.automation.NameFromType = {
   0: '',
-  1: 'nameFromUninitialized',
-  2: 'nameFromAttribute',
-  3: 'nameFromContents',
-  4: 'nameFromPlaceholder',
-  5: 'nameFromRelatedElement',
-  6: 'nameFromValue'
+  1: 'uninitialized',
+  2: 'attribute',
+  3: 'contents',
+  4: 'placeholder',
+  5: 'relatedElement',
+  6: 'value'
 };
 
 /**
@@ -247,11 +247,11 @@ chrome.automation.NameFromType = {
  */
 chrome.automation.DescriptionFromType = {
   0: '',
-  1: 'descriptionFromUninitialized',
-  2: 'descriptionFromAttribute',
-  3: 'descriptionFromContents',
-  4: 'descriptionFromPlaceholder',
-  5: 'descriptionFromRelatedElement'
+  1: 'uninitialized',
+  2: 'attribute',
+  3: 'contents',
+  4: 'placeholder',
+  5: 'relatedElement'
 };
 
 /**
