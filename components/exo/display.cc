@@ -29,14 +29,15 @@
 
 namespace exo {
 
-const char kUseExoSurfaceLayer[] = "use-exo-surface-layer";
+const char kDisableExoSurfaceLayer[] = "disable-exo-surface-layer";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
 Display::Display() {
   Surface::SetUseSurfaceLayer(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseExoSurfaceLayer));
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableExoSurfaceLayer));
 }
 
 Display::~Display() {}
