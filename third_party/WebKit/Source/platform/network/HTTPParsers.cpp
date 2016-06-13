@@ -121,6 +121,9 @@ static Suborigin::SuboriginPolicyOptions getSuboriginPolicyOptionFromString(cons
     if (policyOptionName == "'unsafe-postmessage-receive'")
         return Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive;
 
+    if (policyOptionName == "'unsafe-cookies'")
+        return Suborigin::SuboriginPolicyOptions::UnsafeCookies;
+
     return Suborigin::SuboriginPolicyOptions::None;
 }
 

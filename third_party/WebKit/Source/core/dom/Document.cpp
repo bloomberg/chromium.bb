@@ -4052,8 +4052,9 @@ String Document::cookie(ExceptionState& exceptionState) const
         return String();
     }
 
-    // Suborigins are cookie-averse and thus should always return the empty string
-    if (getSecurityOrigin()->hasSuborigin())
+    // Suborigins are cookie-averse and thus should always return the empty
+    // string, unless the 'unsafe-cookies' option is provided.
+    if (getSecurityOrigin()->hasSuborigin() && !getSecurityOrigin()->suborigin()->policyContains(Suborigin::SuboriginPolicyOptions::UnsafeCookies))
         return String();
 
     KURL cookieURL = this->cookieURL();
@@ -4082,8 +4083,9 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
         return;
     }
 
-    // Suborigins are cookie-averse and thus setting should be a no-op.
-    if (getSecurityOrigin()->hasSuborigin())
+    // Suborigins are cookie-averse and thus setting should be a no-op, unless
+    // the 'unsafe-cookies' option is provided.
+    if (getSecurityOrigin()->hasSuborigin() && !getSecurityOrigin()->suborigin()->policyContains(Suborigin::SuboriginPolicyOptions::UnsafeCookies))
         return;
 
     KURL cookieURL = this->cookieURL();

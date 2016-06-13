@@ -254,15 +254,19 @@ TEST(HTTPParsersTest, SuboriginParseValidPolicy)
     const Suborigin::SuboriginPolicyOptions unsafePostmessageSend[] = { Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend };
     const Suborigin::SuboriginPolicyOptions unsafePostmessageReceive[] = { Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive };
     const Suborigin::SuboriginPolicyOptions unsafePostmessageSendAndReceive[] = {  Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend, Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive };
+    const Suborigin::SuboriginPolicyOptions unsafeCookies[] = { Suborigin::SuboriginPolicyOptions::UnsafeCookies };
+    const Suborigin::SuboriginPolicyOptions unsafeAllOptions[] = { Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend, Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive, Suborigin::SuboriginPolicyOptions::UnsafeCookies };
 
     // All simple, valid policies
     expectParsePolicyPass("One policy, unsafe-postmessage-send", "foobar 'unsafe-postmessage-send'", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
     expectParsePolicyPass("One policy, unsafe-postmessage-receive", "foobar 'unsafe-postmessage-receive'", unsafePostmessageReceive, ARRAY_SIZE(unsafePostmessageReceive));
+    expectParsePolicyPass("One policy, unsafe-cookies", "foobar 'unsafe-cookies'", unsafeCookies, ARRAY_SIZE(unsafeCookies));
 
     // Formatting differences of policies and multiple policies
     expectParsePolicyPass("One policy, whitespace all around", "foobar      'unsafe-postmessage-send'          ", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
     expectParsePolicyPass("Multiple, same policies", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-send'", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
     expectParsePolicyPass("Multiple, different policies", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-receive'", unsafePostmessageSendAndReceive, ARRAY_SIZE(unsafePostmessageSendAndReceive));
+    expectParsePolicyPass("Many different policies", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-receive' 'unsafe-cookies'", unsafeAllOptions, ARRAY_SIZE(unsafeAllOptions));
     expectParsePolicyPass("One policy, unknown option", "foobar 'unknown-option'", {}, 0);
 }
 

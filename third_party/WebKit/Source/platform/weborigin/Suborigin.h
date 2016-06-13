@@ -16,7 +16,8 @@ public:
     enum class SuboriginPolicyOptions : unsigned {
         None = 0,
         UnsafePostMessageSend = 1 << 0,
-        UnsafePostMessageReceive = 1 << 1
+        UnsafePostMessageReceive = 1 << 1,
+        UnsafeCookies = 1 << 2
     };
 
     Suborigin();
