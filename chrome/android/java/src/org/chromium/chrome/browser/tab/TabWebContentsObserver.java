@@ -261,14 +261,14 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didChangeThemeColor(int color) {
-        mTab.updateThemeColorIfNeeded();
+        mTab.updateThemeColorIfNeeded(true);
     }
 
     @Override
     public void didAttachInterstitialPage() {
         mTab.getInfoBarContainer().setVisibility(View.INVISIBLE);
         mTab.showRenderedPage();
-        mTab.updateThemeColorIfNeeded();
+        mTab.updateThemeColorIfNeeded(false);
 
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
@@ -288,7 +288,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     @Override
     public void didDetachInterstitialPage() {
         mTab.getInfoBarContainer().setVisibility(View.VISIBLE);
-        mTab.updateThemeColorIfNeeded();
+        mTab.updateThemeColorIfNeeded(false);
 
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
