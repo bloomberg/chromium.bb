@@ -29,6 +29,8 @@ public abstract class ChromeFeatureList {
         return nativeIsEnabled(featureName);
     }
 
+    /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
+    public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
     public static final String MEDIA_STYLE_NOTIFICATION = "MediaStyleNotification";
     public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
     public static final String NTP_MATERIAL_DESIGN = "NTPMaterialDesign";

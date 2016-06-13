@@ -57,4 +57,6 @@
     <string name="help_context_clear_browsing_data">clear_browsing_data</string>
     <string name="help_context_change_sync_passphrase">change_sync_passphrase</string>
 
+    <!-- Our manage space activity. Default pre-KitKat to be nothing. -->
+    <string name="manage_space_activity"></string>
 </resources>

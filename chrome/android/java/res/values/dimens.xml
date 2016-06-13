@@ -310,10 +310,6 @@
     <dimen name="drawer_margin_large">16dp</dimen>
 
     <!-- Bookmarks dimensions -->
-    <dimen name="bookmark_item_corner_radius">3dp</dimen>
-    <dimen name="bookmark_item_icon_text_size">10dp</dimen>
-    <dimen name="bookmark_item_icon_size">16dp</dimen>
-    <dimen name="bookmark_item_min_icon_size">16px</dimen>
     <dimen name="bookmark_item_popup_width">140dp</dimen>
     <dimen name="bookmark_folder_item_left">16dp</dimen>
     <dimen name="bookmark_minimum_dialog_size_tablet">500dp</dimen>
@@ -334,6 +330,9 @@
 
     <!-- Favicon dimensions -->
     <dimen name="default_favicon_size">16dp</dimen>
+    <dimen name="default_favicon_corner_radius">3dp</dimen>
+    <dimen name="default_favicon_icon_text_size">10dp</dimen>
+    <dimen name="default_favicon_min_size">16px</dimen>
 
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>

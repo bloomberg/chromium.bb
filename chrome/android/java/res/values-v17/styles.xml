@@ -152,6 +152,34 @@
         <item name="colorAccent">@color/pref_accent_color</item>
     </style>
 
+    <style name="FlushFooterButton">
+      <item name="android:textColor">@color/light_normal_color</item>
+      <item name="android:background">@drawable/flush_footer_button</item>
+    </style>
+
+    <!-- Manage Space Activity -->
+    <style name="ManageSpaceActivityButton">
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_gravity">end</item>
+      <item name="android:layout_marginTop">8dp</item>
+      <item name="android:paddingStart">32dp</item>
+      <item name="android:paddingEnd">32dp</item>
+    </style>
+    <style name="ManageSpaceActivityExplanationTextView">
+      <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+      <item name="android:layout_width">match_parent</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:paddingTop">6dp</item>
+    </style>
+    <style name="ManageSpaceActivitySizeTextView">
+      <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:paddingTop">6dp</item>
+      <item name="android:maxLines">1</item>
+    </style>
+
     <!-- Alert dialogs -->
     <style name="AlertDialogContent">
         <item name="android:layout_width">match_parent</item>

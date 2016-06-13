@@ -666,13 +666,39 @@ static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
 static void FetchImportantSites(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 const JavaParamRef<jobject>& java_callback) {
+  std::vector<GURL> example_origins;
   std::vector<std::string> important_domains =
-      ImportantSitesUtil::GetImportantRegisterableDomains(GetOriginalProfile(),
-                                                          kMaxImportantSites);
-  ScopedJavaLocalRef<jobjectArray> string_array =
+      ImportantSitesUtil::GetImportantRegisterableDomains(
+          GetOriginalProfile(), kMaxImportantSites, &example_origins);
+  ScopedJavaLocalRef<jobjectArray> java_domains =
       base::android::ToJavaArrayOfStrings(env, important_domains);
+
+  // We reuse the important domains vector to convert example origins to
+  // strings.
+  important_domains.resize(example_origins.size());
+  std::transform(example_origins.begin(), example_origins.end(),
+                 important_domains.begin(),
+                 [](const GURL& origin) { return origin.spec(); });
+  ScopedJavaLocalRef<jobjectArray> java_origins =
+      base::android::ToJavaArrayOfStrings(env, important_domains);
+
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
-      env, java_callback.obj(), string_array.obj());
+      env, java_callback.obj(), java_domains.obj(), java_origins.obj());
+}
+
+static jint GetMaxImportantSites(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz) {
+  return kMaxImportantSites;
+}
+
+static void MarkOriginAsImportantForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jorigin) {
+  GURL origin(base::android::ConvertJavaStringToUTF8(jorigin));
+  CHECK(origin.is_valid());
+  ImportantSitesUtil::MarkOriginAsImportantForTesting(GetOriginalProfile(),
+                                                      origin);
 }
 
 static void ShowNoticeAboutOtherFormsOfBrowsingHistory(

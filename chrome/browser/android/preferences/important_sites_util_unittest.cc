@@ -71,7 +71,7 @@ class ImportantSitesUtilTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(ImportantSitesUtilTest, TestNoImportantSites) {
   EXPECT_TRUE(ImportantSitesUtil::GetImportantRegisterableDomains(
-                  profile(), kNumImportantSites)
+                  profile(), kNumImportantSites, nullptr)
                   .empty());
 }
 
@@ -101,9 +101,13 @@ TEST_F(ImportantSitesUtilTest, NotificationsThenEngagement) {
   // 3: sorted by the score.
   std::vector<std::string> expected_sorted_domains = {
       "foo.bar", "example.com", "chrome.com", "google.com"};
+  std::vector<GURL> example_origins;
   EXPECT_THAT(ImportantSitesUtil::GetImportantRegisterableDomains(
-                  profile(), kNumImportantSites),
+                  profile(), kNumImportantSites, &example_origins),
               ::testing::ElementsAreArray(expected_sorted_domains));
+  std::vector<GURL> expected_sorted_origins = {url7, url5, url4, url3};
+  EXPECT_THAT(example_origins,
+              ::testing::ElementsAreArray(expected_sorted_origins));
 
   // Test that notifications get moved to the front.
   AddContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW,
@@ -116,7 +120,25 @@ TEST_F(ImportantSitesUtilTest, NotificationsThenEngagement) {
   // Same as above, but the site with notifications should be at the front.
   expected_sorted_domains = {"youtube.com", "foo.bar", "example.com",
                              "chrome.com", "google.com"};
+  example_origins.clear();
   EXPECT_THAT(ImportantSitesUtil::GetImportantRegisterableDomains(
-                  profile(), kNumImportantSites),
+                  profile(), kNumImportantSites, &example_origins),
+              ::testing::ElementsAreArray(expected_sorted_domains));
+  expected_sorted_origins = {url6, url7, url5, url4, url3};
+  EXPECT_THAT(example_origins,
+              ::testing::ElementsAreArray(expected_sorted_origins));
+}
+
+TEST_F(ImportantSitesUtilTest, TestNoOriginPopulation) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+
+  GURL url1("http://www.google.com/");
+
+  service->ResetScoreForURL(url1, 5);
+
+  std::vector<std::string> expected_sorted_domains = {"google.com"};
+  EXPECT_THAT(ImportantSitesUtil::GetImportantRegisterableDomains(
+                  profile(), kNumImportantSites, nullptr),
               ::testing::ElementsAreArray(expected_sorted_domains));
 }

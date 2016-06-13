@@ -4,6 +4,10 @@
 
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -12,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/android/preferences/important_sites_util.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
@@ -30,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "jni/WebsitePreferenceBridge_jni.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "url/url_constants.h"
@@ -42,6 +48,11 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 namespace {
+// We need to limit our size due to the algorithm in ImportantSiteUtil, but we
+// want to be more on the liberal side here as we're not exposing these sites
+// to the user, we're just using them for our 'clear unimportant' feature in
+// ManageSpaceActivity.java.
+const int kMaxImportantSites = 10;
 
 Profile* GetActiveUserProfile(bool is_incognito) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -580,25 +591,44 @@ class LocalStorageInfoReadyCallback {
   }
 
   void OnLocalStorageModelInfoLoaded(
+      Profile* profile,
       const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
           local_storage_info) {
     ScopedJavaLocalRef<jobject> map =
         Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env_);
+
+    std::vector<std::string> important_domains =
+        ImportantSitesUtil::GetImportantRegisterableDomains(
+            profile, kMaxImportantSites, nullptr);
 
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::const_iterator
         i;
     for (i = local_storage_info.begin(); i != local_storage_info.end(); ++i) {
       ScopedJavaLocalRef<jstring> full_origin =
           ConvertUTF8ToJavaString(env_, i->origin_url.spec());
+      std::string origin_str = i->origin_url.GetOrigin().spec();
+      bool important = false;
+      std::string registerable_domain;
+      if (i->origin_url.HostIsIPAddress()) {
+        registerable_domain = i->origin_url.host();
+      } else {
+        registerable_domain =
+            net::registry_controlled_domains::GetDomainAndRegistry(
+                i->origin_url,
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+      }
+      if (std::find(important_domains.begin(), important_domains.end(),
+                    registerable_domain) != important_domains.end()) {
+        important = true;
+      }
       // Remove the trailing backslash so the origin is matched correctly in
       // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
-      std::string origin_str = i->origin_url.GetOrigin().spec();
       DCHECK(origin_str[origin_str.size() - 1] == '/');
       origin_str = origin_str.substr(0, origin_str.size() - 1);
       ScopedJavaLocalRef<jstring> origin =
           ConvertUTF8ToJavaString(env_, origin_str);
       Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
-          env_, map.obj(), origin.obj(), full_origin.obj(), i->size);
+          env_, map.obj(), origin.obj(), full_origin.obj(), i->size, important);
     }
 
     base::android::RunCallbackAndroid(java_callback_, map);
@@ -633,7 +663,7 @@ static void FetchLocalStorageInfo(JNIEnv* env,
       new LocalStorageInfoReadyCallback(java_callback);
   local_storage_helper->StartFetching(
       base::Bind(&LocalStorageInfoReadyCallback::OnLocalStorageModelInfoLoaded,
-                 base::Unretained(local_storage_callback)));
+                 base::Unretained(local_storage_callback), profile));
 }
 
 static void FetchStorageInfo(JNIEnv* env,

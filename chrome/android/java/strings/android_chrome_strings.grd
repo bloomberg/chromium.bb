@@ -502,6 +502,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time. This is the direct object of the sentence 'Clear data from the beginning of time'.">
         beginning of time
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_IMPORTANT_DIALOG_TEXT" desc="The text of the dialog presenting the user with 'important' sites that they can exclude from clearing.">
+        This will clear cookies and cache for all sites, including:
+      </message>
 
       <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
         Usage and crash reports
@@ -2313,6 +2316,66 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 
       <message name="IDS_CLOSE_TAB" desc="Context menu option that allows the user to close the selected tab.">
         Close tab
+      </message>
+
+      <!-- Storage Preference UI strings for clearing storage. -->
+      <message name="IDS_STORAGE_MANAGEMENT_ACTIVITY_LABEL" desc="Title for Chrome's Manage Space Activity.">
+         Google <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> storage
+      </message>
+      <message name="IDS_STORAGE_CLEAR_SITE_STORAGE_TITLE" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data. [CHAR-LIMIT=24]">
+        Clear site storage?
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_UNIMPORTANT_SITE_DATA_DESCRIPTION" desc="Text to describe the data stored by unimportant or infrequent sites.">
+        Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_UNIMPORTANT_SITE_DATA_SIZE_LABEL" desc="Label for the data usage of site data for unimportant sites (followed by a number of megabytes). [CHAR-LIMIT=30]">
+        Unimportant storage
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_CLEAR_UNIMPORTANT_SITE_DATA_BUTTON" desc="Text on the button to clear all Chrome data. [CHAR LIMIT=30]">
+        Free up space
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_CLEAR_UNIMPORTANT_DIALOG_TEXT" desc="Text of the clear unimportant site data dialog in the storage UI.">
+        This will clear cookies, cache, and other data of sites Chrome doesn't think is important.
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_SITE_DATA_DESCRIPTION" desc="Text to describe the data stored on the device by websites.">
+        All site storage, including cookies and other locally stored data
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_COMPUTING_SIZE" desc="String shown in place of the data usage while it's being calculated. [CHAR-LIMIT=30]">
+        Computing...
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_STARTUP_FAILURE" desc="String shown in place of the data usage when starting the chrome native process failed. [CHAR-LIMIT=30]">
+        Unknown
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_SITE_DATA_SIZE_LABEL" desc="Label for the data usage of site data (followed by a number of megabytes). [CHAR-LIMIT=30]">
+        Site storage
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_MANAGE_SITE_DATA_BUTTON" desc="Text on the button allowing users to manage the space used by websites. [CHAR LIMIT=30]">
+        Manage
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_ALL_STORAGE_DESCRIPTION" desc="Text used to describe all storage space used by Chrome.">
+        Total data used by Chrome, including accounts, bookmarks, and saved settings
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_TOTAL_SIZE_LABEL" desc="The total amount of storage space used (followed by a number of megabytes). [CHAR LIMIT=25]">
+        Total Storage
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_CLEAR_ALL_DATA_BUTTON" desc="Text on the button to clear all Chrome data. [CHAR LIMIT=30]">
+        Clear All Data
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_RESET_APP_DIALOG_TITLE" desc="Title of the reset app dialog in the storage UI used to reset the app.">
+        Delete app data?
+      </message>
+      <message name="IDS_STORAGE_MANAGEMENT_RESET_APP_DIALOG_TEXT" desc="Text of the reset app dialoag in the storage UI.">
+        All Chrome's app data will be deleted permanently. This includes all files, settings, accounts, databases, etc.
+      </message>
+
+      <message name="IDS_STORAGE_CLEAR_BUTTON_TITLE" desc="Title of a button in the storage UI used to clear all storage data. [CHAR-LIMIT=24]">
+        Clear Site Storage...
+      </message>
+      <message name="IDS_STORAGE_CLEAR_DIALOG_TEXT" desc="Text of the clear storage dialog which give the user a choice to reset the app or delete site storage data.">
+        This will clear all <ph name="SIZE_IN_KB">%1$s<ex>101kb</ex></ph> of website storage.
+      </message>
+      <message name="IDS_STORAGE_CLEAR_DIALOG_CLEAR_STORAGE_OPTION" desc="Text of the button that will clear website storage.">
+        Clear
       </message>
 
       <!-- Client certificate selection failure strings. -->

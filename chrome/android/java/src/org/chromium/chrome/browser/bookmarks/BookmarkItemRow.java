@@ -34,12 +34,12 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
      */
     public BookmarkItemRow(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mCornerRadius = getResources().getDimensionPixelSize(R.dimen.bookmark_item_corner_radius);
-        mMinIconSize = (int) getResources().getDimension(R.dimen.bookmark_item_min_icon_size);
-        mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.bookmark_item_icon_size);
-        int textSize = getResources().getDimensionPixelSize(R.dimen.bookmark_item_icon_text_size);
-        int iconColor = ApiCompatibilityUtils.getColor(getResources(),
-                R.color.bookmark_icon_background_color);
+        mCornerRadius = getResources().getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
+        mMinIconSize = (int) getResources().getDimension(R.dimen.default_favicon_min_size);
+        mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
+        int textSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
+        int iconColor = ApiCompatibilityUtils.getColor(
+                getResources(), R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
     }
