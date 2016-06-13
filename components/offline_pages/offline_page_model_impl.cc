@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -507,11 +506,7 @@ void OfflinePageModelImpl::GetPageByOfflineId(
 void OfflinePageModelImpl::GetPageByOfflineIdWhenLoadDone(
     int64_t offline_id,
     const SingleOfflinePageItemCallback& callback) const {
-  SingleOfflinePageItemResult result;
-  const OfflinePageItem* match = MaybeGetPageByOfflineId(offline_id);
-  if (match != nullptr)
-    result = *match;
-  callback.Run(result);
+  callback.Run(MaybeGetPageByOfflineId(offline_id));
 }
 
 const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineId(
@@ -536,16 +531,16 @@ void OfflinePageModelImpl::GetPageByOfflineURLWhenLoadDone(
   // Getting pages by offline URL does not exclude expired pages, as the caller
   // already holds the offline URL and simply needs to look up a corresponding
   // online URL.
-  base::Optional<OfflinePageItem> result;
+  const OfflinePageItem* result = nullptr;
 
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.GetOfflineURL() == offline_url) {
-      callback.Run(base::make_optional(id_page_pair.second));
-      return;
+      result = &id_page_pair.second;
+      break;
     }
   }
 
-  callback.Run(base::nullopt);
+  callback.Run(result);
 }
 
 const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineURL(
@@ -571,13 +566,7 @@ void OfflinePageModelImpl::GetBestPageForOnlineURL(
 void OfflinePageModelImpl::GetBestPageForOnlineURLWhenLoadDone(
     const GURL& online_url,
     const SingleOfflinePageItemCallback& callback) const {
-  SingleOfflinePageItemResult result;
-
-  const OfflinePageItem* best_page = MaybeGetBestPageForOnlineURL(online_url);
-  if (best_page != nullptr)
-    result = *best_page;
-
-  callback.Run(result);
+  callback.Run(MaybeGetBestPageForOnlineURL(online_url));
 }
 
 void OfflinePageModelImpl::GetPagesByOnlineURL(

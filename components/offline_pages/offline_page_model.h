@@ -68,8 +68,6 @@ class OfflinePageModel : public base::SupportsUserData {
       offline_pages::CheckPagesExistOfflineResult;
   using MultipleOfflinePageItemResult =
       offline_pages::MultipleOfflinePageItemResult;
-  using SingleOfflinePageItemResult =
-      offline_pages::SingleOfflinePageItemResult;
   using DeletePageResult = offline_pages::DeletePageResult;
   using SavePageResult = offline_pages::SavePageResult;
 

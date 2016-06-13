@@ -93,7 +93,7 @@ class OfflinePageTabHelperTest :
       const GURL& url,
       const base::FilePath& file_name);
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
-  void OnGetPageByOfflineIdDone(const SingleOfflinePageItemResult& result);
+  void OnGetPageByOfflineIdDone(const OfflinePageItem* result);
 
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
@@ -191,7 +191,7 @@ void OfflinePageTabHelperTest::OnSavePageDone(SavePageResult result,
 }
 
 void OfflinePageTabHelperTest::OnGetPageByOfflineIdDone(
-    const SingleOfflinePageItemResult& result) {
+    const OfflinePageItem* result) {
   DCHECK(result);
   online_url_ = result->url;
   offline_url_ = result->GetOfflineURL();

@@ -120,7 +120,7 @@ void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 
 void SingleOfflinePageItemCallback(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-    const OfflinePageModel::SingleOfflinePageItemResult& result) {
+    const OfflinePageItem* result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_result;
 

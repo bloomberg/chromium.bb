@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -81,9 +80,8 @@ class OfflinePageModelImplTest
   void OnClearAllDone();
   void OnGetOfflineIdsForClientIdDone(MultipleOfflineIdResult* storage,
                                       const MultipleOfflineIdResult& result);
-  void OnGetSingleOfflinePageItemResult(
-      SingleOfflinePageItemResult* storage,
-      const SingleOfflinePageItemResult& result);
+  void OnGetSingleOfflinePageItemResult(const OfflinePageItem** storage,
+                                        const OfflinePageItem* result);
   void OnGetMultipleOfflinePageItemsResult(
       MultipleOfflinePageItemResult* storage,
       const MultipleOfflinePageItemResult& result);
@@ -133,11 +131,11 @@ class OfflinePageModelImplTest
 
   MultipleOfflineIdResult GetOfflineIdsForClientId(const ClientId& client_id);
 
-  SingleOfflinePageItemResult GetPageByOfflineId(int64_t offline_id);
+  const OfflinePageItem* GetPageByOfflineId(int64_t offline_id);
 
-  base::Optional<OfflinePageItem> GetPagesByOnlineURL(const GURL& offline_url);
+  MultipleOfflinePageItemResult GetPagesByOnlineURL(const GURL& offline_url);
 
-  SingleOfflinePageItemResult GetPageByOfflineURL(const GURL& offline_url);
+  const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url);
 
   OfflinePageModelImpl* model() { return model_.get(); }
 
@@ -354,9 +352,9 @@ void OfflinePageModelImplTest::OnGetOfflineIdsForClientIdDone(
   *storage = result;
 }
 
-SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineId(
+const OfflinePageItem* OfflinePageModelImplTest::GetPageByOfflineId(
     int64_t offline_id) {
-  SingleOfflinePageItemResult result;
+  const OfflinePageItem* result = nullptr;
   model()->GetPageByOfflineId(
       offline_id,
       base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
@@ -365,9 +363,9 @@ SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineId(
   return result;
 }
 
-SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineURL(
+const OfflinePageItem* OfflinePageModelImplTest::GetPageByOfflineURL(
     const GURL& offline_url) {
-  SingleOfflinePageItemResult result;
+  const OfflinePageItem* result = nullptr;
   model()->GetPageByOfflineURL(
       offline_url,
       base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
@@ -377,8 +375,8 @@ SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineURL(
 }
 
 void OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult(
-    SingleOfflinePageItemResult* storage,
-    const SingleOfflinePageItemResult& result) {
+    const OfflinePageItem** storage,
+    const OfflinePageItem* result) {
   *storage = result;
 }
 
@@ -392,7 +390,7 @@ void OfflinePageModelImplTest::OnPagesExpired(bool result) {
   last_expire_page_result_ = result;
 }
 
-base::Optional<OfflinePageItem> OfflinePageModelImplTest::GetPagesByOnlineURL(
+MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByOnlineURL(
     const GURL& online_url) {
   MultipleOfflinePageItemResult result;
   model()->GetPagesByOnlineURL(
@@ -400,9 +398,7 @@ base::Optional<OfflinePageItem> OfflinePageModelImplTest::GetPagesByOnlineURL(
       base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
-  if (result.size() > 0)
-    return base::make_optional(result[0]);
-  return base::nullopt;
+  return result;
 }
 
 bool OfflinePageModelImplTest::HasPages(std::string name_space) {
@@ -542,8 +538,8 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(2UL, offline_pages.size());
   // Offline IDs are random, so the order of the pages is also random
   // So load in the right page for the validation below.
-  const OfflinePageItem* page1;
-  const OfflinePageItem* page2;
+  const OfflinePageItem* page1 = nullptr;
+  const OfflinePageItem* page2 = nullptr;
   if (offline_pages[0].client_id == kTestClientId1) {
     page1 = &offline_pages[0];
     page2 = &offline_pages[1];
@@ -723,7 +719,7 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissing) {
 
   ResetResults();
 
-  base::Optional<OfflinePageItem> page = GetPageByOfflineId(offline_id);
+  const OfflinePageItem* page = GetPageByOfflineId(offline_id);
 
   // Delete the offline copy of the page and check the metadata.
   base::DeleteFile(page->file_path, false);
@@ -742,7 +738,7 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissingAfterLoad) {
 
   ResetResults();
 
-  base::Optional<OfflinePageItem> page = GetPageByOfflineId(offline_id);
+  const OfflinePageItem* page = GetPageByOfflineId(offline_id);
   // Delete the offline copy of the page and check the metadata.
   base::DeleteFile(page->file_path, false);
   // Reseting the model should trigger the metadata consistency check as well.
@@ -760,7 +756,7 @@ TEST_F(OfflinePageModelImplTest, DetectThatHeadlessPageIsDeleted) {
   int64_t offline_id = last_save_offline_id();
 
   ResetResults();
-  base::Optional<OfflinePageItem> page = GetPageByOfflineId(offline_id);
+  const OfflinePageItem* page = GetPageByOfflineId(offline_id);
   base::FilePath path = page->file_path;
   EXPECT_TRUE(base::PathExists(path));
   GetStore()->ClearAllPages();
@@ -826,23 +822,20 @@ TEST_F(OfflinePageModelImplTest, GetPageByOfflineId) {
   SavePage(kTestUrl2, kTestClientId2);
   int64_t offline2 = last_save_offline_id();
 
-  base::Optional<OfflinePageItem> page = GetPageByOfflineId(offline1);
-  bool page_exists = page != base::nullopt;
-  EXPECT_TRUE(page_exists);
+  const OfflinePageItem* page = GetPageByOfflineId(offline1);
+  EXPECT_TRUE(page);
   EXPECT_EQ(kTestUrl, page->url);
   EXPECT_EQ(kTestClientId1, page->client_id);
   EXPECT_EQ(kTestFileSize, page->file_size);
 
   page = GetPageByOfflineId(offline2);
-  page_exists = page != base::nullopt;
-  EXPECT_TRUE(page_exists);
+  EXPECT_TRUE(page);
   EXPECT_EQ(kTestUrl2, page->url);
   EXPECT_EQ(kTestClientId2, page->client_id);
   EXPECT_EQ(kTestFileSize, page->file_size);
 
   page = GetPageByOfflineId(-42);
-  page_exists = page != base::nullopt;
-  EXPECT_FALSE(page_exists);
+  EXPECT_FALSE(page);
 }
 
 TEST_F(OfflinePageModelImplTest, GetPageByOfflineURL) {
@@ -857,36 +850,38 @@ TEST_F(OfflinePageModelImplTest, GetPageByOfflineURL) {
   GURL offline_url2 = store->last_saved_page().GetOfflineURL();
   int64_t offline2 = last_save_offline_id();
 
-  SingleOfflinePageItemResult page = GetPageByOfflineURL(offline_url2);
-  EXPECT_TRUE(page != base::nullopt);
+  const OfflinePageItem* page = GetPageByOfflineURL(offline_url2);
+  EXPECT_TRUE(page);
   EXPECT_EQ(kTestUrl2, page->url);
   EXPECT_EQ(kTestClientId2, page->client_id);
   EXPECT_EQ(offline2, page->offline_id);
 
   page = GetPageByOfflineURL(offline_url);
-  EXPECT_TRUE(page != base::nullopt);
+  EXPECT_TRUE(page);
   EXPECT_EQ(kTestUrl, page->url);
   EXPECT_EQ(kTestClientId1, page->client_id);
   EXPECT_EQ(offline1, page->offline_id);
 
   page = GetPageByOfflineURL(GURL("http://foo"));
-  EXPECT_TRUE(page == base::nullopt);
+  EXPECT_FALSE(page);
 }
 
 TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURL) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
-  base::Optional<OfflinePageItem> page = GetPagesByOnlineURL(kTestUrl2);
-  EXPECT_EQ(kTestUrl2, page->url);
-  EXPECT_EQ(kTestClientId2, page->client_id);
+  MultipleOfflinePageItemResult pages = GetPagesByOnlineURL(kTestUrl2);
+  EXPECT_EQ(1U, pages.size());
+  EXPECT_EQ(kTestUrl2, pages[0].url);
+  EXPECT_EQ(kTestClientId2, pages[0].client_id);
 
-  page = GetPagesByOnlineURL(kTestUrl);
-  EXPECT_EQ(kTestUrl, page->url);
-  EXPECT_EQ(kTestClientId1, page->client_id);
+  pages = GetPagesByOnlineURL(kTestUrl);
+  EXPECT_EQ(1U, pages.size());
+  EXPECT_EQ(kTestUrl, pages[0].url);
+  EXPECT_EQ(kTestClientId1, pages[0].client_id);
 
-  page = GetPagesByOnlineURL(GURL("http://foo"));
-  EXPECT_TRUE(base::nullopt == page);
+  pages = GetPagesByOnlineURL(GURL("http://foo"));
+  EXPECT_EQ(0U, pages.size());
 }
 
 TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {

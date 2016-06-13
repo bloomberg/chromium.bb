@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "components/offline_pages/offline_page_item.h"
 
 class GURL;
@@ -65,7 +64,6 @@ enum class LoadResult {
 
 typedef std::set<GURL> CheckPagesExistOfflineResult;
 typedef std::vector<int64_t> MultipleOfflineIdResult;
-typedef base::Optional<OfflinePageItem> SingleOfflinePageItemResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
 typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
@@ -75,7 +73,7 @@ typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
 typedef base::Callback<void(bool)> HasPagesCallback;
 typedef base::Callback<void(const MultipleOfflineIdResult&)>
     MultipleOfflineIdCallback;
-typedef base::Callback<void(const SingleOfflinePageItemResult&)>
+typedef base::Callback<void(const OfflinePageItem*)>
     SingleOfflinePageItemCallback;
 typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;

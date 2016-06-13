@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -64,7 +63,7 @@ const OfflinePageItem* GetOfflinePageForOfflineURL(
 
 void OnGetPageByOfflineURLDone(
     const base::Callback<void(const GURL&)>& callback,
-    const base::Optional<OfflinePageItem>& item) {
+    const OfflinePageItem* item) {
   GURL result_url;
   if (item)
     result_url = item->url;
@@ -73,7 +72,7 @@ void OnGetPageByOfflineURLDone(
 
 void OnGetBestPageForOnlineURLDone(
     const base::Callback<void(const GURL&)>& callback,
-    const base::Optional<OfflinePageItem>& item) {
+    const OfflinePageItem* item) {
   GURL result_url;
   if (item)
     result_url = item->GetOfflineURL();
@@ -100,8 +99,7 @@ void OfflinePageUtils::GetOfflineURLForOnlineURL(
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&OnGetPageByOfflineURLDone, callback, base::nullopt));
+        FROM_HERE, base::Bind(&OnGetPageByOfflineURLDone, callback, nullptr));
     return;
   }
 
@@ -130,8 +128,7 @@ void OfflinePageUtils::GetOnlineURLForOfflineURL(
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&OnGetPageByOfflineURLDone, callback, base::nullopt));
+        FROM_HERE, base::Bind(&OnGetPageByOfflineURLDone, callback, nullptr));
     return;
   }
 
