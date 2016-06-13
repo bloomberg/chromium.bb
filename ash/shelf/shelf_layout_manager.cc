@@ -13,7 +13,6 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -561,16 +560,6 @@ void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnOverviewModeStarting() {
-  state_.is_overview_mode = true;
-  UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
-}
-
-void ShelfLayoutManager::OnOverviewModeEnded() {
-  state_.is_overview_mode = false;
-  UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
-}
-
 void ShelfLayoutManager::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -608,7 +597,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   // Preserve the log in screen states.
   state.is_adding_user_screen = state_.is_adding_user_screen;
   state.is_screen_locked = state_.is_screen_locked;
-  state.is_overview_mode = state_.is_overview_mode;
 
   // Force an update because gesture drags affect the shelf bounds and we
   // should animate back to the normal bounds at the end of a gesture.
@@ -981,9 +969,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       (!state_.is_screen_locked && !state_.is_adding_user_screen &&
        window_overlaps_shelf_) ||
-      (state_.visibility_state == SHELF_AUTO_HIDE) ||
-      (ash::MaterialDesignController::IsOverviewMaterial() &&
-       state_.is_overview_mode)) {
+      (state_.visibility_state == SHELF_AUTO_HIDE)) {
     return SHELF_BACKGROUND_OVERLAP;
   }
 

@@ -25,9 +25,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/material_design_controller_test_api.h"
 #include "ash/test/shelf_test_api.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -385,10 +383,6 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     Shell::GetInstance()->session_state_delegate()->UnlockScreen();
     // The test session state delegate does not fire the lock state change.
     Shell::GetInstance()->OnLockStateChanged(false);
-  }
-
-  void ToggleOverview() {
-    Shell::GetInstance()->window_selector_controller()->ToggleOverview();
   }
 
  private:
@@ -2201,22 +2195,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
-}
-
-// Verify that the shelf switches to overlap background when overview mode is
-// active with Material Design.
-TEST_F(ShelfLayoutManagerTest, ShelfBackgroundDarkInOverview) {
-  test::MaterialDesignControllerTestAPI material_design_state(
-      ash::MaterialDesignController::MATERIAL_EXPERIMENTAL);
-
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
-  ToggleOverview();
-  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
-  ToggleOverview();
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 }
 
 #if defined(OS_CHROMEOS)

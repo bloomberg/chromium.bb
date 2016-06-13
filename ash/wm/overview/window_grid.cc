@@ -27,8 +27,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
@@ -95,12 +93,17 @@ const int kMinCardsMajor = 3;
 const int kOverviewSelectorTransitionMilliseconds = 100;
 
 // The color and opacity of the screen shield in overview.
-const SkColor kShieldColor = SkColorSetARGB(102, 0, 0, 0);
+const SkColor kShieldColor = SkColorSetARGB(178, 0, 0, 0);
 
 // The color and opacity of the overview selector.
 const SkColor kWindowSelectionColor = SkColorSetARGB(128, 0, 0, 0);
+const SkColor kWindowSelectionColorMD = SkColorSetARGB(78, 255, 255, 255);
 const SkColor kWindowSelectionBorderColor = SkColorSetARGB(38, 255, 255, 255);
+const SkColor kWindowSelectionBorderColorMD = SkColorSetARGB(51, 255, 255, 255);
+
+// Border thickness of overview selector.
 const int kWindowSelectionBorderThickness = 2;
+const int kWindowSelectionBorderThicknessMD = 1;
 
 // The minimum amount of spacing between the bottom of the text filtering
 // text field and the top of the selection widget on the first row of items.
@@ -226,8 +229,12 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
   widget->set_focus_on_creation(false);
+  // Parenting in kShellWindowId_DesktopBackgroundContainer allows proper
+  // layering of the shield and selection widgets. Since that container is
+  // created with USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in
+  // |root_window_| need to be provided.
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      widget, kShellWindowId_DefaultContainer, &params);
+      widget, kShellWindowId_DesktopBackgroundContainer, &params);
   widget->Init(params);
   WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget);
   // Disable the "bounce in" animation when showing the window.
@@ -243,7 +250,7 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
         views::Border::CreateSolidBorder(border_thickness, border_color));
   }
   widget->SetContentsView(content_view);
-  widget_window->GetParent()->StackChildAtBottom(widget_window);
+  widget_window->GetParent()->StackChildAtTop(widget_window);
   widget->Show();
   // New background widget starts with 0 opacity and then fades in.
   widget_window->SetOpacity(0.f);
@@ -292,10 +299,8 @@ void WindowGrid::PositionWindows(bool animate) {
     // Keep the background shield widget covering the whole screen.
     WmWindow* widget_window =
         WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
-    const gfx::Rect bounds = widget_window->GetParent()->GetBoundsInScreen();
-    display::Display dst_display =
-        display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    widget_window->SetBoundsInScreen(bounds, dst_display);
+    const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
+    widget_window->SetBounds(bounds);
   }
   CHECK(!window_list_.empty());
   gfx::Rect bounding_rect;
@@ -325,6 +330,11 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
   bool recreate_selection_widget = false;
   bool out_of_bounds = false;
   bool changed_selection_index = false;
+
+  // Make the old selected window header non-transparent first.
+  if (SelectedWindow())
+    SelectedWindow()->SetSelected(false);
+
   if (!selection_widget_) {
     switch (direction) {
      case WindowSelector::LEFT:
@@ -384,6 +394,10 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
 
   MoveSelectionWidget(direction, recreate_selection_widget,
                       out_of_bounds, animate);
+
+  // Make the new selected window header fully transparent.
+  if (SelectedWindow())
+    SelectedWindow()->SetSelected(true);
   return out_of_bounds;
 }
 
@@ -466,10 +480,8 @@ void WindowGrid::InitShieldWidget() {
 
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
-  const gfx::Rect bounds = widget_window->GetParent()->GetBoundsInScreen();
-  display::Display dst_display =
-      display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  widget_window->SetBoundsInScreen(bounds, dst_display);
+  const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
+  widget_window->SetBounds(bounds);
 
   ui::ScopedLayerAnimationSettings animation_settings(
       widget_window->GetLayer()->GetAnimator());
@@ -482,19 +494,23 @@ void WindowGrid::InitShieldWidget() {
 }
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
+  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
+  const int border_thickness = material ? kWindowSelectionBorderThicknessMD
+                                        : kWindowSelectionBorderThickness;
+  const int border_color =
+      material ? kWindowSelectionBorderColorMD : kWindowSelectionBorderColor;
+  const int selection_color =
+      material ? kWindowSelectionColorMD : kWindowSelectionColor;
   selection_widget_.reset(CreateBackgroundWidget(
-      root_window_, kWindowSelectionColor, kWindowSelectionBorderThickness,
-      kWindowSelectionBorderColor));
+      root_window_, selection_color, border_thickness, border_color));
 
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
-  const gfx::Rect target_bounds = SelectedWindow()->target_bounds();
+  const gfx::Rect target_bounds =
+      root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
   gfx::Vector2d fade_out_direction =
           GetSlideVectorForFadeIn(direction, target_bounds);
-  display::Display dst_display =
-      display::Screen::GetScreen()->GetDisplayMatching(target_bounds);
-  widget_window->SetBoundsInScreen(target_bounds - fade_out_direction,
-                                   dst_display);
+  widget_window->SetBounds(target_bounds - fade_out_direction);
 }
 
 void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
@@ -542,6 +558,8 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
 }
 
 void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
+  const gfx::Rect bounds =
+      root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
   if (animate) {
     WmWindow* selection_widget_window =
         WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
@@ -552,11 +570,11 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
     animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    selection_widget_->SetBounds(SelectedWindow()->target_bounds());
+    selection_widget_->SetBounds(bounds);
     selection_widget_->SetOpacity(1.f);
     return;
   }
-  selection_widget_->SetBounds(SelectedWindow()->target_bounds());
+  selection_widget_->SetBounds(bounds);
   selection_widget_->SetOpacity(1.f);
 }
 

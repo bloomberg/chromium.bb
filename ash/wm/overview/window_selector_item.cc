@@ -30,7 +30,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/gfx/vector_icons.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -52,9 +54,12 @@ static const int kWindowMarginMD = 10;
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
 
+// TODO(tdanderson): Move this to a central location.
+static const SkColor kCloseButtonColor = SK_ColorWHITE;
+
 // Background label color. Matches background of IDR_AURA_WINDOW_OVERVIEW_CLOSE.
 // TODO(varkha): Make background color conform to window header.
-static const SkColor kLabelBackgroundColor = SkColorSetARGB(179, 0, 0, 0);
+static const SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
 // Label shadow color.
 static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);
@@ -71,8 +76,14 @@ static const int kVerticalShadowOffset = 1;
 // Amount of blur applied to the label shadow
 static const int kShadowBlur = 10;
 
+// Height of an item header in Material Design.
+static const int kHeaderHeight = 32;
+
 // Opacity for dimmed items.
 static const float kDimmedItemOpacity = 0.5f;
+
+// Duration of background opacity transition for the selected label.
+static const int kSelectorFadeInMilliseconds = 200;
 
 // Calculates the |window| bounds after being transformed to the selector's
 // space. With Material Design at most |title_height| is reserved above the
@@ -120,18 +131,31 @@ class OverviewCloseButton : public views::ImageButton {
   ~OverviewCloseButton() override;
 
  private:
+  gfx::ImageSkia icon_image_;
+
   DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
 };
 
 OverviewCloseButton::OverviewCloseButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SetImage(views::CustomButton::STATE_NORMAL,
-           rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE));
-  SetImage(views::CustomButton::STATE_HOVERED,
-           rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_H));
-  SetImage(views::CustomButton::STATE_PRESSED,
-           rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_P));
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    icon_image_ = gfx::CreateVectorIcon(gfx::VectorIconId::WINDOW_CONTROL_CLOSE,
+                                        kCloseButtonColor);
+    SetImage(views::CustomButton::STATE_NORMAL, &icon_image_);
+    SetImage(views::CustomButton::STATE_HOVERED, &icon_image_);
+    SetImage(views::CustomButton::STATE_PRESSED, &icon_image_);
+    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                      views::ImageButton::ALIGN_MIDDLE);
+    SetMinimumImageSize(gfx::Size(kHeaderHeight, kHeaderHeight));
+  } else {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    SetImage(views::CustomButton::STATE_NORMAL,
+             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE));
+    SetImage(views::CustomButton::STATE_HOVERED,
+             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_H));
+    SetImage(views::CustomButton::STATE_PRESSED,
+             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_P));
+  }
 }
 
 OverviewCloseButton::~OverviewCloseButton() {
@@ -163,26 +187,32 @@ gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   return bounds;
 }
 
+// Container View that has an item label and a close button as children.
 class WindowSelectorItem::CaptionContainerView : public views::View {
  public:
-  explicit CaptionContainerView(WindowSelectorItem::OverviewLabelButton* child)
-      : child_(child) {
-    AddChildView(child);
-  }
-
-  void SetBackgroundColor(SkColor background_color) {
-    child_->SetBackgroundColor(background_color);
-    set_background(views::Background::CreateSolidBackground(background_color));
+  CaptionContainerView(WindowSelectorItem::OverviewLabelButton* label,
+                       views::ImageButton* close_button)
+      : label_(label), close_button_(close_button) {
+    AddChildView(label_);
+    AddChildView(close_button_);
   }
 
  protected:
   // views::View:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    child_->SetBoundsRect(GetLocalBounds());
+  void Layout() override {
+    gfx::Rect bounds(GetLocalBounds());
+    bounds.Inset(0, 0, bounds.height(), 0);
+    label_->SetBoundsRect(bounds);
+    bounds.set_x(bounds.right());
+    bounds.set_width(bounds.height());
+    close_button_->SetBoundsRect(bounds);
   }
 
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override { Layout(); }
+
  private:
-  WindowSelectorItem::OverviewLabelButton* child_;
+  WindowSelectorItem::OverviewLabelButton* label_;
+  views::ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
 };
@@ -193,39 +223,35 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
       root_window_(window->GetRootWindow()),
       transform_window_(window),
       in_bounds_update_(false),
+      caption_container_view_(nullptr),
       window_label_button_view_(nullptr),
       close_button_(new OverviewCloseButton(this)),
       window_selector_(window_selector) {
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   CreateWindowLabel(window->GetTitle());
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  close_button_widget_.set_focus_on_creation(false);
-  window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      &close_button_widget_, kShellWindowId_OverlayContainer, &params);
-  close_button_widget_.Init(params);
-  close_button_->SetVisible(false);
-  close_button_widget_.SetContentsView(close_button_);
-  close_button_widget_.SetSize(close_button_->GetPreferredSize());
-  close_button_widget_.Show();
+  if (!ash::MaterialDesignController::IsOverviewMaterial()) {
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_POPUP;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    close_button_widget_.set_focus_on_creation(false);
+    window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+        &close_button_widget_, kShellWindowId_OverlayContainer, &params);
+    close_button_widget_.Init(params);
+    close_button_->SetVisible(false);
+    close_button_widget_.SetContentsView(close_button_);
+    close_button_widget_.SetSize(close_button_->GetPreferredSize());
+    close_button_widget_.Show();
 
-  gfx::Rect close_button_rect(close_button_->GetPreferredSize());
-  // Align the center of the button with position (0, 0) so that the
-  // translate transform does not need to take the button dimensions into
-  // account.
-  if (material) {
-    close_button_rect.set_x(-close_button_rect.width());
-    close_button_rect.set_y(-close_button_rect.height());
-  } else {
+    gfx::Rect close_button_rect(close_button_->GetPreferredSize());
+    // Align the center of the button with position (0, 0) so that the
+    // translate transform does not need to take the button dimensions into
+    // account.
     close_button_rect.set_x(-close_button_rect.width() / 2);
     close_button_rect.set_y(-close_button_rect.height() / 2);
+    WmLookup::Get()
+        ->GetWindowForWidget(&close_button_widget_)
+        ->SetBounds(close_button_rect);
   }
-  WmLookup::Get()
-      ->GetWindowForWidget(&close_button_widget_)
-      ->SetBounds(close_button_rect);
-
   GetWindow()->AddObserver(this);
 }
 
@@ -272,6 +298,21 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   UpdateHeaderLayout(animation_type);
   if (!ash::MaterialDesignController::IsOverviewMaterial())
     UpdateWindowLabel(target_bounds, animation_type);
+}
+
+void WindowSelectorItem::SetSelected(bool selected) {
+  if (!ash::MaterialDesignController::IsOverviewMaterial())
+    return;
+  WmWindow* window =
+      WmLookup::Get()->GetWindowForWidget(window_label_selector_.get());
+  ui::ScopedLayerAnimationSettings animation_settings(
+      window->GetLayer()->GetAnimator());
+  animation_settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kSelectorFadeInMilliseconds));
+  animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  animation_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  window->SetOpacity(selected ? 0.0f : 1.0f);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
@@ -349,7 +390,8 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 
 void WindowSelectorItem::SetOpacity(float opacity) {
   window_label_->SetOpacity(opacity);
-  close_button_widget_.SetOpacity(opacity);
+  if (!ash::MaterialDesignController::IsOverviewMaterial())
+    close_button_widget_.SetOpacity(opacity);
 
   transform_window_.SetOpacity(opacity);
 }
@@ -402,15 +444,25 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
                             kShadowBlur, kLabelShadow)));
   }
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  window_label_button_view_->SetFontList(
-      bundle.GetFontList(ui::ResourceBundle::BoldFont));
+  window_label_button_view_->SetFontList(bundle.GetFontList(
+      material ? ui::ResourceBundle::BaseFont : ui::ResourceBundle::BoldFont));
   if (material) {
     caption_container_view_ =
-        new CaptionContainerView(window_label_button_view_);
-    caption_container_view_->SetBackgroundColor(kLabelBackgroundColor);
+        new CaptionContainerView(window_label_button_view_, close_button_);
     window_label_->SetContentsView(caption_container_view_);
     window_label_button_view_->SetVisible(false);
     window_label_->Show();
+
+    views::View* background_view = new views::View;
+    background_view->set_background(
+        views::Background::CreateSolidBackground(kLabelBackgroundColor));
+    window_label_selector_.reset(new views::Widget);
+    params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+    params.accept_events = false;
+    window_label_selector_->Init(params);
+    window_label_selector_->set_focus_on_creation(false);
+    window_label_selector_->SetContentsView(background_view);
+    window_label_selector_->Show();
   } else {
     window_label_->SetContentsView(window_label_button_view_);
   }
@@ -422,7 +474,32 @@ void WindowSelectorItem::UpdateHeaderLayout(
       root_window_->ConvertRectFromScreen(GetTransformedBounds(
           GetWindow(), close_button_->GetPreferredSize().height()));
 
-  {
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    gfx::Rect label_rect(close_button_->GetPreferredSize());
+    label_rect.set_y(-label_rect.height());
+    label_rect.set_width(transformed_window_bounds.width());
+
+    if (!window_label_button_view_->visible()) {
+      window_label_button_view_->SetVisible(true);
+      SetupFadeInAfterLayout(window_label_.get());
+      SetupFadeInAfterLayout(window_label_selector_.get());
+    }
+    WmWindow* window_label_window =
+        WmLookup::Get()->GetWindowForWidget(window_label_.get());
+    WmWindow* window_label_selector_window =
+        WmLookup::Get()->GetWindowForWidget(window_label_selector_.get());
+    window_label_window->SetBounds(label_rect);
+    window_label_selector_window->SetBounds(label_rect);
+    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
+        ScopedOverviewAnimationSettingsFactory::Get()
+            ->CreateOverviewAnimationSettings(animation_type,
+                                              window_label_window);
+    gfx::Transform label_transform;
+    label_transform.Translate(transformed_window_bounds.x(),
+                              transformed_window_bounds.y());
+    window_label_window->SetTransform(label_transform);
+    window_label_selector_window->SetTransform(label_transform);
+  } else {
     if (!close_button_->visible()) {
       close_button_->SetVisible(true);
       SetupFadeInAfterLayout(&close_button_widget_);
@@ -438,29 +515,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
     close_button_transform.Translate(transformed_window_bounds.right(),
                                      transformed_window_bounds.y());
     close_button_widget_window->SetTransform(close_button_transform);
-  }
-
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    gfx::Rect label_rect(close_button_->GetPreferredSize());
-    label_rect.set_y(-label_rect.height());
-    label_rect.set_width(transformed_window_bounds.width() -
-                         label_rect.width());
-
-    if (!window_label_button_view_->visible()) {
-      window_label_button_view_->SetVisible(true);
-      SetupFadeInAfterLayout(window_label_.get());
-    }
-    WmWindow* window_label_window =
-        WmLookup::Get()->GetWindowForWidget(window_label_.get());
-    window_label_window->SetBounds(label_rect);
-    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-        ScopedOverviewAnimationSettingsFactory::Get()
-            ->CreateOverviewAnimationSettings(animation_type,
-                                              window_label_window);
-    gfx::Transform label_transform;
-    label_transform.Translate(transformed_window_bounds.x(),
-                              transformed_window_bounds.y());
-    window_label_window->SetTransform(label_transform);
   }
 }
 

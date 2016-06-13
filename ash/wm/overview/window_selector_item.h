@@ -80,6 +80,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void SetBounds(const gfx::Rect& target_bounds,
                  OverviewAnimationType animation_type);
 
+  // Activates or deactivates selection depending on |selected|.
+  // Currently does nothing unless Material Design is enabled. With Material
+  // Design the item's caption is shown transparent in selected state and blends
+  // with the selection widget.
+  void SetSelected(bool selected);
+
   // Recomputes the positions for the windows in this selection item. This is
   // dispatched when the bounds of a window change.
   void RecomputeWindowTransforms();
@@ -149,22 +155,28 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // a window layer for display on another monitor.
   bool in_bounds_update_;
 
-  // Label under the window displaying its active tab name.
+  // Label displaying its name (active tab for tabbed windows).
+  // With Material Design this Widget owns |caption_container_view_| and is
+  // shown above the |transform_window_|.
+  // Otherwise it is shown under the window.
   std::unique_ptr<views::Widget> window_label_;
 
-  // View for the label under the window or (with material design) above it.
-  // TODO(varkha): We should be able to use one widget for both the label and
-  // the close button with material design.
-  OverviewLabelButton* window_label_button_view_;
+  // Label background widget used to fade in opacity when moving selection.
+  std::unique_ptr<views::Widget> window_label_selector_;
 
-  // Container view used as a background for |window_label_button_view_|.
+  // Container view that owns |window_label_button_view_| and |close_button_|.
+  // Only used with Material Design.
   CaptionContainerView* caption_container_view_;
 
-  // The close buttons widget container.
+  // View for the label below the window or (with material design) above it.
+  OverviewLabelButton* window_label_button_view_;
+
+  // The close buttons widget container. Not used with Material Design.
   views::Widget close_button_widget_;
 
-  // An easy to access close button for the window in this item. Owned by the
-  // close_button_widget_.
+  // A close button for the window in this item. Owned by the
+  // |caption_container_view_| with Material Design or by |close_button_widget_|
+  // otherwise.
   views::ImageButton* close_button_;
 
   // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
