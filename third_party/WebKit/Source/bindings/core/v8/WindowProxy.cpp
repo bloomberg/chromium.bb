@@ -521,12 +521,9 @@ static void getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<
         v8SetReturnValue(info, result);
         return;
     }
-    v8::Local<v8::Value> prototype = info.Holder()->GetPrototype();
-    if (prototype->IsObject()) {
-        v8::Local<v8::Value> value;
-        if (prototype.As<v8::Object>()->Get(info.GetIsolate()->GetCurrentContext(), property).ToLocal(&value))
-            v8SetReturnValue(info, value);
-    }
+    v8::Local<v8::Value> value;
+    if (info.Holder()->GetRealNamedPropertyInPrototypeChain(info.GetIsolate()->GetCurrentContext(), property.As<v8::String>()).ToLocal(&value))
+        v8SetReturnValue(info, value);
 }
 
 void WindowProxy::namedItemAdded(HTMLDocument* document, const AtomicString& name)
