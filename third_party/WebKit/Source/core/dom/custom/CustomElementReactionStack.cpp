@@ -30,16 +30,21 @@ void CustomElementReactionStack::push()
 void CustomElementReactionStack::popInvokingReactions()
 {
     ElementQueue* queue = m_stack.last();
-    m_stack.removeLast();
-    if (!queue)
+    if (!queue) {
+        m_stack.removeLast();
         return;
-    for (auto& element : *queue) {
+    }
+
+    for (size_t i = 0; i < queue->size(); ++i) {
+        Element* element = (*queue)[i];
         if (CustomElementReactionQueue* reactions = m_map.get(element)) {
             reactions->invokeReactions(element);
             CHECK(reactions->isEmpty());
             m_map.remove(element);
         }
     }
+
+    m_stack.removeLast();
 }
 
 void CustomElementReactionStack::enqueue(

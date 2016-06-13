@@ -111,4 +111,48 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement)
     EXPECT_EQ(log, std::vector<char>({'z'})) << "reactions should be run once";
 }
 
+class EnqueueToStack : public Command {
+    WTF_MAKE_NONCOPYABLE(EnqueueToStack);
+public:
+    EnqueueToStack(CustomElementReactionStack* stack, Element* element, CustomElementReaction* reaction)
+        : m_stack(stack)
+        , m_element(element)
+        , m_reaction(reaction)
+    {
+    }
+    ~EnqueueToStack() override = default;
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        Command::trace(visitor);
+        visitor->trace(m_stack);
+        visitor->trace(m_element);
+        visitor->trace(m_reaction);
+    }
+    void run(Element*) override
+    {
+        m_stack->enqueue(m_element, m_reaction);
+    }
+private:
+    Member<CustomElementReactionStack> m_stack;
+    Member<Element> m_element;
+    Member<CustomElementReaction> m_reaction;
+};
+
+TEST(CustomElementReactionStackTest, enqueueFromReaction)
+{
+    std::vector<char> log;
+
+    Element* element = CreateElement("a");
+
+    CustomElementReactionStack* stack = new CustomElementReactionStack();
+    stack->push();
+    stack->enqueue(element, new TestReaction({
+        new EnqueueToStack(stack, element,
+            new TestReaction({ new Log('a', log) }) )
+    }));
+    stack->popInvokingReactions();
+
+    EXPECT_EQ(log, std::vector<char>({ 'a' })) << "enqueued reaction from another reaction should run in the same invoke";
+}
+
 } // namespace blink
