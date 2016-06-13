@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
+#include "third_party/WebKit/public/platform/WebIconSizesParser.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -82,14 +83,15 @@ void AddInstallIcon(const WebElement& link,
     return;
 
   WebApplicationInfo::IconInfo icon_info;
-  bool is_any = false;
-  std::vector<gfx::Size> icon_sizes;
-  if (link.hasAttribute("sizes") &&
-      ParseIconSizes(link.getAttribute("sizes"), &icon_sizes, &is_any) &&
-      !is_any &&
-      icon_sizes.size() == 1) {
-    icon_info.width = icon_sizes[0].width();
-    icon_info.height = icon_sizes[0].height();
+  if (link.hasAttribute("sizes")) {
+    blink::WebVector<blink::WebSize> icon_sizes =
+        blink::WebIconSizesParser::parseIconSizes(link.getAttribute("sizes"));
+    if (icon_sizes.size() == 1 &&
+        icon_sizes[0].width != 0 &&
+        icon_sizes[0].height != 0) {
+      icon_info.width = icon_sizes[0].width;
+      icon_info.height = icon_sizes[0].height;
+    }
   }
   icon_info.url = url;
   icons->push_back(icon_info);

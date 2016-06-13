@@ -180,10 +180,6 @@ public:
     bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
     bool isCreatedByParser() const { return m_createdByParser; }
 
-    // Parse the icon size attribute into |iconSizes|, make this method public
-    // visible for testing purpose.
-    static void parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes);
-
     DECLARE_VIRTUAL_TRACE();
 
     DECLARE_VIRTUAL_TRACE_WRAPPERS();

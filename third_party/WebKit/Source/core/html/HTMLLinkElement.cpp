@@ -55,73 +55,13 @@
 #include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebIconSizesParser.h"
+#include "public/platform/WebSize.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/StringToNumber.h"
 
 namespace blink {
 
 using namespace HTMLNames;
-
-template <typename CharacterType>
-static void parseSizes(const CharacterType* value, unsigned length, Vector<IntSize>& iconSizes)
-{
-    enum State {
-        ParseStart,
-        ParseWidth,
-        ParseHeight
-    };
-    int width = 0;
-    unsigned start = 0;
-    unsigned i = 0;
-    State state = ParseStart;
-    bool invalid = false;
-    for (; i < length; ++i) {
-        if (state == ParseWidth) {
-            if (value[i] == 'x' || value[i] == 'X') {
-                if (i == start) {
-                    invalid = true;
-                    break;
-                }
-                width = charactersToInt(value + start, i - start);
-                start = i + 1;
-                state = ParseHeight;
-            } else if (value[i] < '0' || value[i] > '9') {
-                invalid = true;
-                break;
-            }
-        } else if (state == ParseHeight) {
-            if (value[i] == ' ') {
-                if (i == start) {
-                    invalid = true;
-                    break;
-                }
-                int height = charactersToInt(value + start, i - start);
-                iconSizes.append(IntSize(width, height));
-                start = i + 1;
-                state = ParseStart;
-            } else if (value[i] < '0' || value[i] > '9') {
-                invalid = true;
-                break;
-            }
-        } else if (state == ParseStart) {
-            if (value[i] >= '0' && value[i] <= '9') {
-                start = i;
-                state = ParseWidth;
-            } else if (value[i] != ' ') {
-                invalid = true;
-                break;
-            }
-        }
-    }
-    if (invalid || state == ParseWidth || (state == ParseHeight && start == i)) {
-        iconSizes.clear();
-        return;
-    }
-    if (state == ParseHeight && i > start) {
-        int height = charactersToInt(value + start, i - start);
-        iconSizes.append(IntSize(width, height));
-    }
-}
 
 static LinkEventSender& linkLoadEventSender()
 {
@@ -133,17 +73,6 @@ static bool styleSheetTypeIsSupported(const String& type)
 {
     String trimmedType = ContentType(type).type();
     return trimmedType.isEmpty() || MIMETypeRegistry::isSupportedStyleSheetMIMEType(trimmedType);
-}
-
-void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes)
-{
-    ASSERT(iconSizes.isEmpty());
-    if (value.isEmpty())
-        return;
-    if (value.is8Bit())
-        parseSizes(value.characters8(), value.length(), iconSizes);
-    else
-        parseSizes(value.characters16(), value.length(), iconSizes);
 }
 
 inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser)
@@ -359,8 +288,10 @@ void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender()
 void HTMLLinkElement::valueWasSet()
 {
     setSynchronizedLazyAttribute(HTMLNames::sizesAttr, m_sizes->value());
-    m_iconSizes.clear();
-    parseSizesAttribute(m_sizes->value(), m_iconSizes);
+    WebVector<WebSize> webIconSizes = WebIconSizesParser::parseIconSizes(m_sizes->value());
+    m_iconSizes.resize(webIconSizes.size());
+    for (size_t i = 0; i < webIconSizes.size(); ++i)
+        m_iconSizes[i] = webIconSizes[i];
     process();
 }
 

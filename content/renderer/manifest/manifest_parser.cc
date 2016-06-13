@@ -17,75 +17,13 @@
 #include "content/public/common/manifest.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/platform/WebIconSizesParser.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebCSSParser.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
-
-namespace {
-
-// Helper function that returns whether the given |str| is a valid width or
-// height value for an icon sizes per:
-// https://html.spec.whatwg.org/multipage/semantics.html#attr-link-sizes
-bool IsValidIconWidthOrHeight(const std::string& str) {
-  if (str.empty() || str[0] == '0')
-    return false;
-  for (size_t i = 0; i < str.size(); ++i)
-    if (!base::IsAsciiDigit(str[i]))
-      return false;
-  return true;
-}
-
-// Parses the 'sizes' attribute of an icon as described in the HTML spec:
-// https://html.spec.whatwg.org/multipage/semantics.html#attr-link-sizes
-// Return a vector of gfx::Size that contains the valid sizes found. "Any" is
-// represented by gfx::Size(0, 0).
-// TODO(mlamouri): this is implemented as a separate function because it should
-// be refactored with the other icon sizes parsing implementations, see
-// http://crbug.com/416477
-std::vector<gfx::Size> ParseIconSizesHTML(const base::string16& sizes_str16) {
-  if (!base::IsStringASCII(sizes_str16))
-    return std::vector<gfx::Size>();
-
-  std::vector<gfx::Size> sizes;
-  std::string sizes_str =
-      base::ToLowerASCII(base::UTF16ToUTF8(sizes_str16));
-  std::vector<std::string> sizes_str_list = base::SplitString(
-      sizes_str, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
-
-  for (size_t i = 0; i < sizes_str_list.size(); ++i) {
-    std::string& size_str = sizes_str_list[i];
-    if (size_str == "any") {
-      sizes.push_back(gfx::Size(0, 0));
-      continue;
-    }
-
-    // It is expected that [0] => width and [1] => height after the split.
-    std::vector<std::string> size_list = base::SplitString(
-        size_str, "x", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (size_list.size() != 2)
-      continue;
-    if (!IsValidIconWidthOrHeight(size_list[0]) ||
-        !IsValidIconWidthOrHeight(size_list[1])) {
-      continue;
-    }
-
-    int width, height;
-    if (!base::StringToInt(size_list[0], &width) ||
-        !base::StringToInt(size_list[1], &height)) {
-      continue;
-    }
-
-    sizes.push_back(gfx::Size(width, height));
-  }
-
-  return sizes;
-}
-
-}  // anonymous namespace
-
 
 ManifestParser::ManifestParser(const base::StringPiece& data,
                                const GURL& manifest_url,
@@ -311,11 +249,16 @@ base::NullableString16 ManifestParser::ParseIconType(
 std::vector<gfx::Size> ManifestParser::ParseIconSizes(
     const base::DictionaryValue& icon) {
   base::NullableString16 sizes_str = ParseString(icon, "sizes", NoTrim);
+  std::vector<gfx::Size> sizes;
 
   if (sizes_str.is_null())
-    return std::vector<gfx::Size>();
+    return sizes;
 
-  std::vector<gfx::Size> sizes = ParseIconSizesHTML(sizes_str.string());
+  blink::WebVector<blink::WebSize> web_sizes =
+      blink::WebIconSizesParser::parseIconSizes(sizes_str.string());
+  sizes.resize(web_sizes.size());
+  for (size_t i = 0; i < web_sizes.size(); ++i)
+    sizes[i] = web_sizes[i];
   if (sizes.empty()) {
     AddErrorInfo("found icon with no valid size.");
   }

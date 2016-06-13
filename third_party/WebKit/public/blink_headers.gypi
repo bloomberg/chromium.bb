@@ -104,6 +104,7 @@
       "platform/WebHTTPHeaderVisitor.h",
       "platform/WebHTTPLoadInfo.h",
       "platform/WebHistoryScrollRestorationType.h",
+      "platform/WebIconSizesParser.h",
       "platform/WebImage.h",
       "platform/WebImageGenerator.h",
       "platform/WebImageLayer.h",
