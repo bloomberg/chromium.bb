@@ -219,6 +219,8 @@ std::vector<int> TextInputController::SelectedRange() {
     return std::vector<int>();
 
   blink::WebRange range = view()->mainFrame()->selectionRange();
+  if (range.isNull())
+    return std::vector<int>();
   std::vector<int> int_array(2);
   int_array[0] = range.startOffset();
   int_array[1] = range.endOffset();
