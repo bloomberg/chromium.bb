@@ -57,10 +57,6 @@ void TestProxyDelegate::OnTunnelConnectCompleted(
 void TestProxyDelegate::OnFallback(const ProxyServer& bad_proxy,
                                    int net_error) {}
 
-void TestProxyDelegate::OnBeforeSendHeaders(URLRequest* request,
-                                            const ProxyInfo& proxy_info,
-                                            HttpRequestHeaders* headers) {}
-
 void TestProxyDelegate::OnBeforeTunnelRequest(
     const HostPortPair& proxy_server,
     HttpRequestHeaders* extra_headers) {

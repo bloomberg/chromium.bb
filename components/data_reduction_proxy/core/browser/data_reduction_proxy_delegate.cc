@@ -75,12 +75,6 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }
 
-void DataReductionProxyDelegate::OnBeforeSendHeaders(
-    net::URLRequest* request,
-    const net::ProxyInfo& proxy_info,
-    net::HttpRequestHeaders* headers) {
-}
-
 void DataReductionProxyDelegate::OnBeforeTunnelRequest(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* extra_headers) {

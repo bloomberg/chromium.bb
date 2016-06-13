@@ -211,9 +211,6 @@ class TestResolveProxyDelegate : public ProxyDelegate {
                                 const HostPortPair& proxy_server,
                                 int net_error) override {}
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
-  void OnBeforeSendHeaders(URLRequest* request,
-                           const ProxyInfo& proxy_info,
-                           HttpRequestHeaders* headers) override {}
   void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
                              HttpRequestHeaders* extra_headers) override {}
   void OnTunnelHeadersReceived(
@@ -252,9 +249,6 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
     proxy_fallback_net_error_ = net_error;
     on_proxy_fallback_called_ = true;
   }
-  void OnBeforeSendHeaders(URLRequest* request,
-                           const ProxyInfo& proxy_info,
-                           HttpRequestHeaders* headers) override {}
   void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
                              HttpRequestHeaders* extra_headers) override {}
   void OnTunnelHeadersReceived(

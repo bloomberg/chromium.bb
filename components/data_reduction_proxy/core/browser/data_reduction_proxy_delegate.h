@@ -52,9 +52,6 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
                       const net::ProxyService& proxy_service,
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
-  void OnBeforeSendHeaders(net::URLRequest* request,
-                           const net::ProxyInfo& proxy_info,
-                           net::HttpRequestHeaders* headers) override;
   void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
                              net::HttpRequestHeaders* extra_headers) override;
   void OnTunnelConnectCompleted(const net::HostPortPair& endpoint,
