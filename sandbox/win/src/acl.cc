@@ -88,8 +88,12 @@ bool RevokeLogonSidFromDefaultDacl(HANDLE token) {
 
   std::unique_ptr<TOKEN_GROUPS, base::FreeDeleter> logon_sid_ptr(logon_sid);
 
-  if (!::GetTokenInformation(token, TokenLogonSid, logon_sid, size, &size))
+  if (!::GetTokenInformation(token, TokenLogonSid, logon_sid, size, &size)) {
+    // If no logon sid, there's nothing to revoke.
+    if (::GetLastError() == ERROR_NOT_FOUND)
+      return true;
     return false;
+  }
   if (logon_sid->GroupCount < 1) {
     ::SetLastError(ERROR_INVALID_TOKEN);
     return false;

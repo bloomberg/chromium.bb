@@ -640,4 +640,21 @@ TEST(RestrictedTokenTest, DoubleInit) {
   ASSERT_EQ(static_cast<DWORD>(ERROR_ALREADY_INITIALIZED), token.Init(NULL));
 }
 
+TEST(RestrictedTokenTest, LockdownDefaultDaclNoLogonSid) {
+  ATL::CAccessToken anonymous_token;
+  ASSERT_TRUE(::ImpersonateAnonymousToken(::GetCurrentThread()));
+  ASSERT_TRUE(anonymous_token.GetThreadToken(TOKEN_ALL_ACCESS));
+  ::RevertToSelf();
+  ATL::CSid logon_sid;
+  // Verify that the anonymous token doesn't have the logon sid.
+  ASSERT_FALSE(anonymous_token.GetLogonSid(&logon_sid));
+
+  RestrictedToken token;
+  ASSERT_EQ(DWORD{ERROR_SUCCESS}, token.Init(anonymous_token.GetHandle()));
+  token.SetLockdownDefaultDacl();
+
+  base::win::ScopedHandle handle;
+  ASSERT_EQ(DWORD{ERROR_SUCCESS}, token.GetRestrictedToken(&handle));
+}
+
 }  // namespace sandbox
