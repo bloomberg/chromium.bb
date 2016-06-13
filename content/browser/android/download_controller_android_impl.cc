@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -132,6 +133,10 @@ static void OnRequestFileAccessResult(JNIEnv* env,
   cb(reinterpret_cast<
       DownloadControllerAndroid::AcquireFileAccessPermissionCallback*>(
       callback_id));
+  if (!granted) {
+    DownloadControllerAndroid::RecordDownloadCancelReason(
+        DownloadControllerAndroid::CANCEL_REASON_NO_STORAGE_PERMISSION);
+  }
   cb->Run(granted);
 }
 
@@ -160,6 +165,13 @@ void DownloadControllerAndroid::SetDownloadControllerAndroid(
     DownloadControllerAndroid* download_controller) {
   base::AutoLock lock(g_download_controller_lock_.Get());
   DownloadControllerAndroid::download_controller_ = download_controller;
+}
+
+// static
+void DownloadControllerAndroid::RecordDownloadCancelReason(
+    DownloadCancelReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "MobileDownload.CancelReason", reason, CANCEL_REASON_MAX);
 }
 
 // static
@@ -495,6 +507,8 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), jguid.obj(),
           joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
+      DownloadControllerAndroid::RecordDownloadCancelReason(
+             DownloadControllerAndroid::CANCEL_REASON_NOT_CANCELED);
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(

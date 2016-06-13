@@ -14,8 +14,11 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+
+using content::DownloadControllerAndroid;
 
 namespace {
 
@@ -96,6 +99,8 @@ std::string ChromeDownloadManagerOverwriteInfoBarDelegate::GetDirFullPath()
 
 void ChromeDownloadManagerOverwriteInfoBarDelegate::InfoBarDismissed() {
   file_selected_callback_.Run(base::FilePath());
+  DownloadControllerAndroid::RecordDownloadCancelReason(
+      DownloadControllerAndroid::CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED);
 }
 
 void ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFileInternal(

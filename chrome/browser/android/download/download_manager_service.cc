@@ -22,6 +22,7 @@
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using content::DownloadControllerAndroid;
 
 // static
 bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
@@ -45,7 +46,7 @@ DownloadManagerService::DownloadManagerService(
     jobject obj)
     : java_ref_(env, obj),
       is_history_query_complete_(false) {
-  content::DownloadControllerAndroid::Get()->SetDefaultDownloadFileName(
+  DownloadControllerAndroid::Get()->SetDefaultDownloadFileName(
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }
 
@@ -77,8 +78,14 @@ void DownloadManagerService::CancelDownload(
     JNIEnv* env,
     jobject obj,
     const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record) {
+    bool is_off_the_record,
+    bool is_notification_dismissed) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+
+  DownloadControllerAndroid::RecordDownloadCancelReason(
+      is_notification_dismissed ?
+          DownloadControllerAndroid::CANCEL_REASON_NOTIFICATION_DISMISSED :
+          DownloadControllerAndroid::CANCEL_REASON_ACTION_BUTTON);
   // Incognito download can only be cancelled in the same browser session, no
   // need to wait for download history.
   if (is_off_the_record) {
@@ -193,6 +200,8 @@ void DownloadManagerService::OnResumptionFailed(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DownloadManagerService::OnResumptionFailedInternal,
                             base::Unretained(this), download_guid));
+  DownloadControllerAndroid::RecordDownloadCancelReason(
+      DownloadControllerAndroid::CANCEL_REASON_NOT_CANCELED);
 }
 
 void DownloadManagerService::OnResumptionFailedInternal(

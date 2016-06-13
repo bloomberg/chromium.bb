@@ -43,7 +43,8 @@ class DownloadManagerService : public DownloadHistory::Observer {
   void CancelDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record);
+                      bool is_off_the_record,
+                      bool is_notification_dismissed);
 
   // Called to pause a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, do nothing as it is already paused.

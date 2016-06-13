@@ -1101,12 +1101,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
     /**
      * Called to cancel a download.
      * @param downloadGuid GUID of the download.
+     * @param isNotificationDismissed Whether cancel is caused by dismissing the notification.
      */
-    void cancelDownload(String downloadGuid) {
+    void cancelDownload(String downloadGuid, boolean isNotificationDismissed) {
         DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
         boolean isOffTheRecord = progress == null
                 ? false : progress.mDownloadItem.getDownloadInfo().isOffTheRecord();
-        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord,
+                isNotificationDismissed);
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, downloadGuid, 0);
     }
 
@@ -1460,6 +1462,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private native void nativeResumeDownload(
             long nativeDownloadManagerService, String downloadGuid);
     private native void nativeCancelDownload(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord,
+            boolean isNotificationDismissed);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid);
 }

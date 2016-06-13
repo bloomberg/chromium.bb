@@ -25,6 +25,19 @@ class CONTENT_EXPORT DownloadControllerAndroid : public DownloadItem::Observer {
   static void SetDownloadControllerAndroid(
       DownloadControllerAndroid* download_controller);
 
+  // UMA histogram enum for download cancellation reasons. Keep this
+  // in sync with MobileDownloadCancelReason in histograms.xml. This should be
+  // append only.
+  enum DownloadCancelReason {
+    CANCEL_REASON_NOT_CANCELED = 0,
+    CANCEL_REASON_ACTION_BUTTON,
+    CANCEL_REASON_NOTIFICATION_DISMISSED,
+    CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED,
+    CANCEL_REASON_NO_STORAGE_PERMISSION,
+    CANCEL_REASON_MAX
+  };
+  static void RecordDownloadCancelReason(DownloadCancelReason reason);
+
   // Starts a new download request with Android. Should be called on the
   // UI thread.
   virtual void CreateGETDownload(int render_process_id, int render_view_id,

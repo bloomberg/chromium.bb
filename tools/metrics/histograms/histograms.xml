@@ -23616,6 +23616,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileDownload.CancelReason" enum="MobileDownloadCancelReason">
+  <owner>qinmin@chromium.org</owner>
+  <summary>Android: Records the reason that a download is canceled.</summary>
+</histogram>
+
 <histogram name="MobileDownload.DownloadResumption"
     enum="MobileDownloadResumption">
   <owner>qinmin@chromium.org</owner>
@@ -81404,6 +81409,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MistSwitchResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="MobileDownloadCancelReason" type="int">
+  <int value="0" label="Not canceled"/>
+  <int value="1" label="Click on the cancel button"/>
+  <int value="2" label="Notification dismissed"/>
+  <int value="3" label="Overwrite infobar dismissed"/>
+  <int value="4" label="No storage permission"/>
 </enum>
 
 <enum name="MobileDownloadInterceptFailureReason" type="int">
