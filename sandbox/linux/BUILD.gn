@@ -313,7 +313,7 @@ if (is_linux) {
       # other flags that executable_config might have.
       configs -= [ "//build/config:executable_config" ]
       if (!use_gold) {
-        ldflags += [ "-Wl,--disable-new-dtags" ]
+        ldflags = [ "-Wl,--disable-new-dtags" ]
       }
     }
 
