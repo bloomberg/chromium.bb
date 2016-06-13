@@ -91,6 +91,9 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(0, mConnectionFactory.getOutAttrs().initialSelStart);
         assertEquals(0, mConnectionFactory.getOutAttrs().initialSelEnd);
 
+        waitForEventLogs("selectionchange");
+        clearEventLogs();
+
         resetAllStates();
     }
 
@@ -1119,6 +1122,9 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_SetComposingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
+        waitForEventLogs("selectionchange,selectionchange");
+        clearEventLogs();
+
         beginBatchEdit();
         setComposingText("a", 1);
         finishComposingText();
@@ -1126,9 +1132,23 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
 
         // TODO(changwan): reduce the number of selection changes
-        waitForEventLogs("selectionchange,selectionchange,selectionchange,"
-                + "keydown(229),compositionstart(),compositionupdate(a),input,"
-                + "keyup(229),compositionupdate(a),input,compositionend(a),selectionchange,"
+        waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),input,keyup(229),"
+                + "compositionupdate(a),input,compositionend(a),selectionchange,selectionchange,"
+                + "selectionchange,selectionchange,selectionchange");
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testInputTextEvents_SetComposingText() throws Throwable {
+        beginBatchEdit();
+        setComposingText("a", 1);
+        finishComposingText();
+        endBatchEdit();
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+
+        // TODO(changwan): reduce the number of selection changes
+        waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),"
+                + "input,keyup(229),compositionupdate(a),input,compositionend(a),selectionchange,"
                 + "selectionchange,selectionchange,selectionchange,selectionchange");
     }
 
@@ -1136,15 +1156,63 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_CommitText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
+        waitForEventLogs("selectionchange,selectionchange");
+        clearEventLogs();
+
         commitText("a", 1);
         waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
 
-        // TODO(changwan): reduce the number of selection changes
-        waitForEventLogs("selectionchange,selectionchange,selectionchange,keydown(229),input,"
-                + "keyup(229),selectionchange");
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
     }
 
-    private void waitForEventLogs(String expectedLogs) throws Throwable {
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testInputTextEvents_CommitText() throws Throwable {
+        commitText("a", 1);
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testContentEditableEvents_DeleteSurroundingText() throws Throwable {
+        focusElementAndWaitForStateUpdate("contenteditable_event");
+        waitForEventLogs("selectionchange,selectionchange");
+        clearEventLogs();
+
+        commitText("a", 1);
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        clearEventLogs();
+
+        deleteSurroundingText(1, 0);
+        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange,selectionchange");
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testInputTextEvents_DeleteSurroundingText() throws Throwable {
+        commitText("a", 1);
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        clearEventLogs();
+
+        deleteSurroundingText(1, 0);
+        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange,selectionchange");
+    }
+
+    private void clearEventLogs() throws Exception {
+        final String code = "clearEventLogs()";
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getContentViewCore().getWebContents(), code);
+    }
+
+    private void waitForEventLogs(String expectedLogs) throws Exception {
         final String code = "getEventLogs()";
         final String sanitizedExpectedLogs = "\"" + expectedLogs + "\"";
         if (usingReplicaInputConnection()) {
