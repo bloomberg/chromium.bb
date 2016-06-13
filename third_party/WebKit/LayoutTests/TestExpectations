@@ -1646,9 +1646,11 @@ crbug.com/617033 [ Mac10.11 Retina ] tables/mozilla/bugs/bug30692.html [ Failure
 
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
-crbug.com/606984 compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
-crbug.com/606984 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
-crbug.com/606984 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
+crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/606302 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/606302 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/606302 [ Linux Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/613497 [ Linux Release ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
 crbug.com/619242 [ Linux ] fast/events/message-port-gc-closed-cloned.html [ Failure ]
 crbug.com/619242 [ Linux ] virtual/pointerevent/fast/events/message-port-gc-closed-cloned.html [ Pass Failure ]

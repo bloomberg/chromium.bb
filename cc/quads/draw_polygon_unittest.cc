@@ -12,7 +12,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +29,6 @@ namespace {
 
 #define CREATE_NEW_DRAW_POLYGON(name, points_vector, normal, polygon_id) \
   DrawPolygon name(NULL, points_vector, normal, polygon_id)
-
-#define CREATE_NEW_DRAW_POLYGON_PTR(name, points_vector, normal, polygon_id) \
-  std::unique_ptr<DrawPolygon> name(base::MakeUnique<DrawPolygon>(           \
-      nullptr, points_vector, normal, polygon_id))
 
 #define CREATE_TEST_DRAW_FORWARD_POLYGON(name, points_vector, id)        \
   DrawPolygon name(NULL, points_vector, gfx::Vector3dF(0, 0, 1.0f), id); \
@@ -62,27 +57,6 @@ static void ValidatePoints(const DrawPolygon& polygon,
   for (size_t i = 0; i < points.size(); i++) {
     EXPECT_POINT_EQ(polygon.points()[i], points[i]);
   }
-}
-
-std::unique_ptr<DrawPolygon> ClonePolygon(const DrawPolygon& polygon) {
-  return base::MakeUnique<DrawPolygon>(polygon.original_ref(), polygon.points(),
-                                       polygon.normal(), polygon.order_index());
-}
-
-// Classifies polygon a with respect to b
-BspCompareResult SideCompare(const DrawPolygon& a, const DrawPolygon& b) {
-  std::unique_ptr<DrawPolygon> front;
-  std::unique_ptr<DrawPolygon> back;
-  bool is_coplanar;
-  b.SplitPolygon(ClonePolygon(a), &front, &back, &is_coplanar);
-  if (is_coplanar) {
-    return (front != nullptr) ? BSP_COPLANAR_FRONT : BSP_COPLANAR_BACK;
-  }
-  if (front == nullptr)
-    return BSP_BACK;
-  if (back == nullptr)
-    return BSP_FRONT;
-  return BSP_SPLIT;
 }
 
 // A simple square in a plane.
@@ -234,7 +208,7 @@ TEST(DrawPolygonSplitTest, NearlyTouchingOrder) {
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal, 0);
   CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal, 1);
 
-  EXPECT_EQ(BSP_BACK, SideCompare(polygon_b, polygon_a));
+  EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(polygon_b, polygon_a));
 }
 
 // Two quads are definitely not touching and so no split should occur.
@@ -260,7 +234,7 @@ TEST(DrawPolygonSplitTest, NotClearlyInFront) {
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal_a, 0);
   CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal_b, 1);
 
-  EXPECT_EQ(BSP_FRONT, SideCompare(polygon_b, polygon_a));
+  EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(polygon_b, polygon_a));
 }
 
 // Two quads are definitely not touching and so no split should occur.
@@ -276,16 +250,15 @@ TEST(DrawPolygonSplitTest, NotTouchingNoSplit) {
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 15.0f));
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 5.0f));
 
-  CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a,
-                          gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b,
-                          gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_a, vertices_a, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_b, vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
 
-  EXPECT_EQ(BSP_FRONT, SideCompare(polygon_b, polygon_a));
+  EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(polygon_b, polygon_a));
 }
 
-// One quad is resting against another, but doesn't cross its plane so no
-// split
+// One quad is resting against another, but doesn't cross its plane so no split
 // should occur.
 TEST(DrawPolygonSplitTest, BarelyTouchingNoSplit) {
   std::vector<gfx::Point3F> vertices_a;
@@ -299,12 +272,12 @@ TEST(DrawPolygonSplitTest, BarelyTouchingNoSplit) {
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, -10.0f));
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 0.0f));
 
-  CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a,
-                          gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b,
-                          gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_a, vertices_a, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_b, vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
 
-  EXPECT_EQ(BSP_BACK, SideCompare(polygon_b, polygon_a));
+  EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(polygon_b, polygon_a));
 }
 
 // One quad intersects another and becomes two pieces.
@@ -320,20 +293,18 @@ TEST(DrawPolygonSplitTest, BasicSplit) {
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 5.0f));
   vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 5.0f));
 
-  CREATE_NEW_DRAW_POLYGON_PTR(polygon_a, vertices_a,
-                              gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
-  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b,
-                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_a, vertices_a, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_b, vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+
+  EXPECT_EQ(BSP_SPLIT, DrawPolygon::SideCompare(polygon_b, polygon_a));
 
   std::unique_ptr<DrawPolygon> front_polygon;
   std::unique_ptr<DrawPolygon> back_polygon;
-  bool is_coplanar;
-
-  polygon_a->SplitPolygon(std::move(polygon_b), &front_polygon, &back_polygon,
-                          &is_coplanar);
-  EXPECT_FALSE(is_coplanar);
-  EXPECT_TRUE(front_polygon != nullptr);
-  EXPECT_TRUE(back_polygon != nullptr);
+  polygon_b.Split(polygon_a, &front_polygon, &back_polygon);
+  EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(*front_polygon, polygon_a));
+  EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(*back_polygon, polygon_a));
 
   std::vector<gfx::Point3F> test_points_a;
   test_points_a.push_back(gfx::Point3F(5.0f, 0.0f, 0.0f));
@@ -366,20 +337,21 @@ TEST(DrawPolygonSplitTest, AngledSplit) {
   vertices_b.push_back(gfx::Point3F(-1.0f, -5.0f, -2.0f));
   vertices_b.push_back(gfx::Point3F(-1.0f, 5.0f, -2.0f));
 
-  CREATE_NEW_DRAW_POLYGON_PTR(polygon_a, vertices_a,
-                              gfx::Vector3dF(0.0f, 1.0f, 0.0f), 0);
-  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b,
-                              gfx::Vector3dF(0.707107f, 0.0f, -0.707107f), 1);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_a, vertices_a, gfx::Vector3dF(0.0f, 1.0f, 0.0f), 0);
+  CREATE_NEW_DRAW_POLYGON(
+      polygon_b, vertices_b, gfx::Vector3dF(0.707107f, 0.0f, -0.707107f), 1);
+
+  EXPECT_EQ(BSP_SPLIT, DrawPolygon::SideCompare(polygon_a, polygon_b));
 
   std::unique_ptr<DrawPolygon> front_polygon;
   std::unique_ptr<DrawPolygon> back_polygon;
-  bool is_coplanar;
+  polygon_a.Split(polygon_b, &front_polygon, &back_polygon);
+  EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(*front_polygon, polygon_b));
+  EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(*back_polygon, polygon_b));
 
-  polygon_b->SplitPolygon(std::move(polygon_a), &front_polygon, &back_polygon,
-                          &is_coplanar);
-  EXPECT_FALSE(is_coplanar);
-  EXPECT_TRUE(front_polygon != nullptr);
-  EXPECT_TRUE(back_polygon != nullptr);
+  EXPECT_EQ(3u, front_polygon->points().size());
+  EXPECT_EQ(5u, back_polygon->points().size());
 
   std::vector<gfx::Point3F> test_points_a;
   test_points_a.push_back(gfx::Point3F(10.0f, 0.0f, 9.0f));
