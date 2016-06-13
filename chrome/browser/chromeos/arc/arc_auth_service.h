@@ -201,7 +201,7 @@ class ArcAuthService : public ArcService,
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
-  std::unique_ptr<UbertokenFetcher> ubertoken_fethcher_;
+  std::unique_ptr<UbertokenFetcher> ubertoken_fetcher_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;

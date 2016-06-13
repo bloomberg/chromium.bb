@@ -367,6 +367,7 @@ void ArcAuthService::Shutdown() {
   pref_change_registrar_.RemoveAll();
   profile_ = nullptr;
   token_service_ = nullptr;
+  account_id_ = "";
   SetState(State::NOT_INITIALIZED);
 }
 
@@ -473,9 +474,8 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 void ArcAuthService::ShutdownBridge() {
   playstore_launcher_.reset();
   auth_callback_.reset();
-  ubertoken_fethcher_.reset();
+  ubertoken_fetcher_.reset();
   merger_fetcher_.reset();
-  account_id_ = "";
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
     SetState(State::STOPPED);
@@ -592,10 +592,10 @@ void ArcAuthService::DisableArc() {
 void ArcAuthService::PrepareContext() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
-  ubertoken_fethcher_.reset(
+  ubertoken_fetcher_.reset(
       new UbertokenFetcher(token_service_, this, GaiaConstants::kChromeOSSource,
                            storage_partition_->GetURLRequestContext()));
-  ubertoken_fethcher_->StartFetchingToken(account_id_);
+  ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
 void ArcAuthService::StartUI() {
