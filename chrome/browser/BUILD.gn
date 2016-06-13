@@ -1053,10 +1053,7 @@ if (is_chrome_branded) {
 }
 
 # In GYP this is part of test_support_common.
-#
-# Use a static library here because many test binaries depend on this but don't
-# require many files from it. This makes linking more efficient.
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
 
   # Always include this via the main test support target.

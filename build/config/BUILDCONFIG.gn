@@ -596,32 +596,23 @@ set_defaults("test") {
 # ==============================================================================
 
 # Defines a component, which equates to a shared_library when
-# is_component_build == true and a static_library otherwise.
+# is_component_build == true and a source_set / static_library otherwise.
 #
-# Use static libraries for the static build rather than source sets because
-# many of of our test binaries link many large dependencies but often don't
-# use large portions of them. The static libraries are much more efficient to
-# link in this situation since only the necessary object files are linked.
-#
-# The invoker can override the type of the target in the non-component-build
-# case by setting static_component_type to either "source_set" or
-# "static_library". If unset, the default will be used.
+# Arguments are the same as a normal library with this addition:
+#   component_never_use_source_set: Whether to use static_library instead of
+#       source_set for non-component builds. Some targets (e.g. //base) should
+#       use static_library rather than source_set to avoid linking unused object
+#       files.
 template("component") {
+  _never_use_source_set = defined(invoker.component_never_use_source_set) &&
+                          invoker.component_never_use_source_set
+  assert(_never_use_source_set || true)  # Mark as used.
   if (is_component_build) {
     _component_mode = "shared_library"
-  } else if (defined(invoker.static_component_type)) {
-    assert(invoker.static_component_type == "static_library" ||
-           invoker.static_component_type == "source_set")
-    _component_mode = invoker.static_component_type
-  } else if (!defined(invoker.sources) || is_mac) {
-    # When there are no sources defined, use a source set to avoid creating
-    # an empty static library (which generally don't work).
-    #
-    # TODO(brettw) bug 618797: On Mac making these as static_library causes
-    # crashes. Remove the mac condition above when this is fixed.
-    _component_mode = "source_set"
-  } else {
+  } else if (_never_use_source_set) {
     _component_mode = "static_library"
+  } else {
+    _component_mode = "source_set"
   }
   target(_component_mode, target_name) {
     # Explicitly forward visibility, implicitly forward everything else.
