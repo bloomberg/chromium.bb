@@ -37,6 +37,20 @@ CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas, Offscr
 {
 }
 
+void CanvasRenderingContext::dispose()
+{
+    // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
+    // When the pair is no longer reachable, their destruction order is non-
+    // deterministic, so the first of the two to be destroyed needs to notify
+    // the other in order to break the circular reference.  This is to avoid
+    // an error when CanvasRenderingContext2D::didProcessTask() is invoked
+    // after the HTMLCanvasElement is destroyed.
+    if (canvas()) {
+        canvas()->detachContext();
+        m_canvas = nullptr;
+    }
+}
+
 CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(const String& id)
 {
     if (id == "2d")
@@ -72,7 +86,7 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource, Se
             return true;
     }
 
-    ASSERT(!canvas() == !!destinationSecurityOrigin); // Must have one or the other
+    DCHECK_EQ(!canvas(), !!destinationSecurityOrigin); // Must have one or the other
     bool taintOrigin = imageSource->wouldTaintOrigin(destinationSecurityOrigin ? destinationSecurityOrigin : canvas()->getSecurityOrigin());
 
     if (hasURL) {

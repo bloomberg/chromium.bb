@@ -70,6 +70,7 @@ typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextO
 class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public ContextLifecycleObserver, public PageLifecycleObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
+    USING_PRE_FINALIZER(HTMLCanvasElement, dispose);
 public:
     using Node::getExecutionContext;
 
@@ -202,11 +203,14 @@ public:
     CanvasSurfaceLayerBridge* surfaceLayerBridge() const { return m_surfaceLayerBridge.get(); }
     void createSurfaceLayerBridge();
 
+    void detachContext() { m_context = nullptr; }
+
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
 
 private:
     explicit HTMLCanvasElement(Document&);
+    void dispose();
 
     using ContextFactoryVector = Vector<OwnPtr<CanvasRenderingContextFactory>>;
     static ContextFactoryVector& renderingContextFactories();

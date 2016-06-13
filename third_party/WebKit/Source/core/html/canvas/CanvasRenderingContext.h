@@ -46,6 +46,7 @@ class ImageBitmap;
 
 class CORE_EXPORT CanvasRenderingContext : public GarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
+    USING_PRE_FINALIZER(CanvasRenderingContext, dispose);
 public:
     virtual ~CanvasRenderingContext() { }
 
@@ -74,8 +75,8 @@ public:
     virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
     virtual bool isContextLost() const { return true; }
-    virtual void setCanvasGetContextResult(RenderingContext&) { ASSERT_NOT_REACHED(); };
-    virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) { ASSERT_NOT_REACHED(); }
+    virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
+    virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) { NOTREACHED(); }
 
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
@@ -106,16 +107,16 @@ public:
     virtual unsigned hitRegionsCount() const { return 0; }
     virtual void setFont(const String&) { }
     virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
-    virtual std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) { ASSERT_NOT_REACHED(); return std::make_pair(nullptr, String()); }
+    virtual std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) { NOTREACHED(); return std::make_pair(nullptr, String()); }
     virtual String getIdFromControl(const Element* element) { return String(); }
 
     // WebGL-specific interface
     virtual bool is3d() const { return false; }
-    virtual void setFilterQuality(SkFilterQuality) { ASSERT_NOT_REACHED(); }
-    virtual void reshape(int width, int height) { ASSERT_NOT_REACHED(); }
-    virtual void markLayerComposited() { ASSERT_NOT_REACHED(); }
-    virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual int externallyAllocatedBytesPerPixel() { ASSERT_NOT_REACHED(); return 0; }
+    virtual void setFilterQuality(SkFilterQuality) { NOTREACHED(); }
+    virtual void reshape(int width, int height) { NOTREACHED(); }
+    virtual void markLayerComposited() { NOTREACHED(); }
+    virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) { NOTREACHED(); return nullptr; }
+    virtual int externallyAllocatedBytesPerPixel() { NOTREACHED(); return 0; }
 
     // ImageBitmap-specific interface
     virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
@@ -127,12 +128,16 @@ public:
     OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
     virtual ImageBitmap* transferToImageBitmap(ExceptionState&) { return nullptr; }
 
+    void detachCanvas() { m_canvas = nullptr; }
+
 protected:
     CanvasRenderingContext(HTMLCanvasElement* = nullptr, OffscreenCanvas* = nullptr);
     DECLARE_VIRTUAL_TRACE();
     virtual void stop() = 0;
 
 private:
+    void dispose();
+
     Member<HTMLCanvasElement> m_canvas;
     Member<OffscreenCanvas> m_offscreenCanvas;
     HashSet<String> m_cleanURLs;

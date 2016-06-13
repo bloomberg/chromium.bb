@@ -84,6 +84,7 @@ protected:
 
     void createContext(OpacityMode);
     void TearDown();
+    void unrefCanvas();
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
@@ -717,6 +718,28 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas)
     // Tear down the second image buffer
     imageBuffer2.reset();
     EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+}
+
+TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext)
+{
+    createContext(NonOpaque);
+    context2d()->fillRect(0, 0, 1, 1); // results in task observer registration
+
+    context2d()->detachCanvas();
+
+    // This is the only method that is callable after detachCanvas
+    // Test passes by not crashing.
+    context2d()->didProcessTask();
+
+    // Test passes by not crashing during teardown
+}
+
+TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas)
+{
+    createContext(NonOpaque);
+
+    canvasElement().detachContext();
+    // Passes by not crashing later during teardown
 }
 
 } // namespace blink

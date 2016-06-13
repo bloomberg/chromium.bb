@@ -125,7 +125,7 @@ bool canCreateImageBuffer(const IntSize& size)
 
 PassRefPtr<Image> createTransparentImage(const IntSize& size)
 {
-    ASSERT(canCreateImageBuffer(size));
+    DCHECK(canCreateImageBuffer(size));
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
     surface->getCanvas()->clear(SK_ColorTRANSPARENT);
     return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
@@ -152,6 +152,14 @@ DEFINE_NODE_FACTORY(HTMLCanvasElement)
 HTMLCanvasElement::~HTMLCanvasElement()
 {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
+}
+
+void HTMLCanvasElement::dispose()
+{
+    if (m_context) {
+        m_context->detachCanvas();
+        m_context = nullptr;
+    }
 }
 
 void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
@@ -187,22 +195,22 @@ void HTMLCanvasElement::setWidth(int value)
 
 HTMLCanvasElement::ContextFactoryVector& HTMLCanvasElement::renderingContextFactories()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     DEFINE_STATIC_LOCAL(ContextFactoryVector, s_contextFactories, (CanvasRenderingContext::ContextTypeCount));
     return s_contextFactories;
 }
 
 CanvasRenderingContextFactory* HTMLCanvasElement::getRenderingContextFactory(int type)
 {
-    ASSERT(type < CanvasRenderingContext::ContextTypeCount);
+    DCHECK(type < CanvasRenderingContext::ContextTypeCount);
     return renderingContextFactories()[type].get();
 }
 
 void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory> renderingContextFactory)
 {
     CanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
-    ASSERT(type < CanvasRenderingContext::ContextTypeCount);
-    ASSERT(!renderingContextFactories()[type]);
+    DCHECK(type < CanvasRenderingContext::ContextTypeCount);
+    DCHECK(!renderingContextFactories()[type]);
     renderingContextFactories()[type] = std::move(renderingContextFactory);
 }
 
@@ -313,11 +321,11 @@ void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const
 
 void HTMLCanvasElement::doDeferredPaintInvalidation()
 {
-    ASSERT(!m_dirtyRect.isEmpty());
+    DCHECK(!m_dirtyRect.isEmpty());
     if (!m_context->is2d()) {
         didFinalizeFrame();
     } else {
-        ASSERT(hasImageBuffer());
+        DCHECK(hasImageBuffer());
         FloatRect srcRect(0, 0, size().width(), size().height());
         m_dirtyRect.intersect(srcRect);
         LayoutBox* lb = layoutBox();
@@ -333,7 +341,7 @@ void HTMLCanvasElement::doDeferredPaintInvalidation()
             m_imageBuffer->finalizeFrame(m_dirtyRect);
         }
     }
-    ASSERT(m_dirtyRect.isEmpty());
+    DCHECK(m_dirtyRect.isEmpty());
 }
 
 void HTMLCanvasElement::reset()
@@ -390,7 +398,7 @@ void HTMLCanvasElement::reset()
 
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
 {
-    ASSERT(m_context);
+    DCHECK(m_context);
 
     if (!m_context->isAccelerated())
         return true;
@@ -555,7 +563,7 @@ const AtomicString HTMLCanvasElement::imageSourceURL() const
 
 void HTMLCanvasElement::prepareSurfaceForPaintingIfNeeded() const
 {
-    ASSERT(m_context && m_context->is2d()); // This function is called by the 2d context
+    DCHECK(m_context && m_context->is2d()); // This function is called by the 2d context
     if (buffer())
         m_imageBuffer->prepareSurfaceForPaintingIfNeeded();
 }
@@ -584,7 +592,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
     if (!m_context)
         return imageData;
 
-    ASSERT(m_context->is2d());
+    DCHECK(m_context->is2d());
     RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
     if (snapshot) {
         SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
@@ -823,7 +831,7 @@ void HTMLCanvasElement::createImageBuffer()
 
 void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
 {
-    ASSERT(!m_imageBuffer);
+    DCHECK(!m_imageBuffer);
 
     m_didFailToCreateImageBuffer = true;
     m_imageBufferIsClear = true;
@@ -935,7 +943,7 @@ SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const
 
 ImageBuffer* HTMLCanvasElement::buffer() const
 {
-    ASSERT(m_context);
+    DCHECK(m_context);
     if (!hasImageBuffer() && !m_didFailToCreateImageBuffer)
         const_cast<HTMLCanvasElement*>(this)->createImageBuffer();
     return m_imageBuffer.get();
@@ -951,7 +959,7 @@ void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(PassOwnPtr<Image
 
 void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
 {
-    ASSERT(m_context);
+    DCHECK(m_context);
     if ((hasImageBuffer() && !m_imageBuffer->isAccelerated()) || m_didFailToCreateImageBuffer)
         return;
     discardImageBuffer();
@@ -995,7 +1003,7 @@ void HTMLCanvasElement::clearCopiedImage()
 
 AffineTransform HTMLCanvasElement::baseTransform() const
 {
-    ASSERT(hasImageBuffer() && !m_didFailToCreateImageBuffer);
+    DCHECK(hasImageBuffer() && !m_didFailToCreateImageBuffer);
     return m_imageBuffer->baseTransform();
 }
 
@@ -1081,7 +1089,7 @@ IntSize HTMLCanvasElement::bitmapSourceSize() const
 
 ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
-    ASSERT(eventTarget.toLocalDOMWindow());
+    DCHECK(eventTarget.toLocalDOMWindow());
     if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
