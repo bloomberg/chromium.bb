@@ -1493,15 +1493,17 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
 
-// Observer class that monitors workspace state needed to implement the
-// remote shell interface.
-class WaylandWorkspaceObserver : public ash::ShellObserver,
-                                 public aura::client::ActivationChangeObserver,
-                                 public display::DisplayObserver {
+// Implements remote shell interface and monitors workspace state needed
+// for the remote shell interface.
+class WaylandRemoteShell : public ash::ShellObserver,
+                           public aura::client::ActivationChangeObserver,
+                           public display::DisplayObserver {
  public:
-  WaylandWorkspaceObserver(const display::Display& display,
-                           wl_resource* remote_shell_resource)
-      : display_id_(display.id()),
+  WaylandRemoteShell(Display* display,
+                     int64_t display_id,
+                     wl_resource* remote_shell_resource)
+      : display_(display),
+        display_id_(display_id),
         remote_shell_resource_(remote_shell_resource) {
     ash::WmShell::Get()->AddShellObserver(this);
     ash::Shell* shell = ash::Shell::GetInstance();
@@ -1510,10 +1512,15 @@ class WaylandWorkspaceObserver : public ash::ShellObserver,
     SendConfigure();
     SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
   }
-  ~WaylandWorkspaceObserver() override {
+  ~WaylandRemoteShell() override {
     ash::WmShell::Get()->RemoveShellObserver(this);
     ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
+  }
+
+  std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface,
+                                                   int container) {
+    return display_->CreateRemoteShellSurface(surface, container);
   }
 
   // Overridden from display::DisplayObserver:
@@ -1582,13 +1589,16 @@ class WaylandWorkspaceObserver : public ash::ShellObserver,
     wl_client_flush(client);
   }
 
+  // The exo display instance. Not owned.
+  Display* const display_;
+
   // The identifier associated with the observed display.
   int64_t display_id_;
 
   // The remote shell resource associated with observer.
   wl_resource* const remote_shell_resource_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandWorkspaceObserver);
+  DISALLOW_COPY_AND_ASSIGN(WaylandRemoteShell);
 };
 
 void remote_shell_destroy(wl_client* client, wl_resource* resource) {
@@ -1657,7 +1667,7 @@ void remote_shell_get_remote_surface(wl_client* client,
                                      wl_resource* surface,
                                      uint32_t container) {
   std::unique_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)->CreateRemoteShellSurface(
+      GetUserDataAs<WaylandRemoteShell>(resource)->CreateShellSurface(
           GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container));
   if (!shell_surface) {
     wl_resource_post_error(resource, ZWP_REMOTE_SHELL_V1_ERROR_ROLE,
@@ -1698,9 +1708,9 @@ void bind_remote_shell(wl_client* client,
                                         ->display_manager()
                                         ->GetPrimaryDisplayCandidate();
 
-  SetImplementation(
-      resource, &remote_shell_implementation,
-      base::WrapUnique(new WaylandWorkspaceObserver(display, resource)));
+  SetImplementation(resource, &remote_shell_implementation,
+                    base::WrapUnique(new WaylandRemoteShell(
+                        static_cast<Display*>(data), display.id(), resource)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
