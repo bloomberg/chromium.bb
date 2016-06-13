@@ -542,14 +542,19 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
                << ". Profile to be deleted " << local_profile->guid();
       profile_map->erase(it);
       break;
-    } else if (!local_profile->IsVerified() &&
-               !new_profile->IsVerified() &&
-               !local_profile->PrimaryValue().empty() &&
-               local_profile->PrimaryValue() == new_profile->PrimaryValue()) {
-      // Add it to candidates for merge - if there is no profile with this
-      // guid we will merge them.
-      bundle->candidates_to_merge.insert(
-          std::make_pair(local_profile->guid(), new_profile));
+    } else {
+      if (!local_profile->IsVerified() && !new_profile->IsVerified()) {
+        base::string16 local_profile_primary_value(
+            local_profile->PrimaryValue(app_locale_));
+        if (!local_profile_primary_value.empty() &&
+            local_profile_primary_value ==
+                new_profile->PrimaryValue(app_locale_)) {
+          // Add it to candidates for merge - if there is no profile with this
+          // guid we will merge them.
+          bundle->candidates_to_merge.insert(
+              std::make_pair(local_profile->guid(), new_profile));
+        }
+      }
     }
   }
   profiles_.push_back(new_profile);

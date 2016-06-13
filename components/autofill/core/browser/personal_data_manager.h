@@ -225,11 +225,10 @@ class PersonalDataManager : public KeyedService,
   // otherwise appends |new_profile| to the end of that list. Fills
   // |merged_profiles| with the result. Returns the |guid| of the new or updated
   // profile.
-  static std::string MergeProfile(
-      const AutofillProfile& new_profile,
-      std::vector<AutofillProfile*> existing_profiles,
-      const std::string& app_locale,
-      std::vector<AutofillProfile>* merged_profiles);
+  std::string MergeProfile(const AutofillProfile& new_profile,
+                           std::vector<AutofillProfile*> existing_profiles,
+                           const std::string& app_locale,
+                           std::vector<AutofillProfile>* merged_profiles);
 
   // Returns true if |country_code| is a country that the user is likely to
   // be associated with the user. More concretely, it checks if there are any
@@ -253,6 +252,10 @@ class PersonalDataManager : public KeyedService,
   // PersonalDataManager.
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           FindAndMergeDuplicateProfiles_ProfilesToDelete);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           FindAndMergeDuplicateProfiles_MergedProfileValues);
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -407,6 +410,32 @@ class PersonalDataManager : public KeyedService,
       const AutofillType& type,
       const base::string16& field_contents,
       const std::vector<CreditCard*>& cards_to_suggest) const;
+
+  // Goes through the |existing_profiles| to find similar profiles to
+  // |profile_to_merge|. If a similar profile is found |profile_to_merge| is
+  // merged into it, gets deleted and the result becomes the new
+  // |profile_to_merge|. The process continues until the end of
+  // |existing_profiles| is reached.
+  //
+  // |existing_profiles| should be sorted by frecency to ensure that the more
+  // relevant profiles get merged into the less relevant ones.
+  void FindMergeAndDeleteDuplicateProfiles(
+      const std::vector<AutofillProfile*>& existing_profiles,
+      AutofillProfile* profile_to_merge);
+
+  // Goes through the |existing_profiles| to find similar profiles to
+  // |profile_to_merge|. If a similar profile is found |profile_to_merge| is
+  // merged into it, its GUID gets added to |profile_guids_to_delete| and the
+  // result becomes the new |profile_to_merge|. The process continues until the
+  // end of |existing_profiles| is reached.
+  //
+  // Note: This method is exposed for testability and should not be called
+  // directly in the code except in FindMergeAndDeleteDuplicateProfiles. Please
+  // use that method instead.
+  void FindAndMergeDuplicateProfiles(
+      const std::vector<AutofillProfile*>& existing_profiles,
+      AutofillProfile* profile_to_merge,
+      std::vector<std::string>* profile_guids_to_delete);
 
   const std::string app_locale_;
 

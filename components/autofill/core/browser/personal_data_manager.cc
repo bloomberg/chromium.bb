@@ -889,7 +889,8 @@ bool PersonalDataManager::IsValidLearnableProfile(
   return true;
 }
 
-// static
+// TODO(crbug.com/618448): Refactor MergeProfile to not depend on class
+// variables.
 std::string PersonalDataManager::MergeProfile(
     const AutofillProfile& new_profile,
     std::vector<AutofillProfile*> existing_profiles,
@@ -913,7 +914,8 @@ std::string PersonalDataManager::MergeProfile(
   // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
   for (AutofillProfile* existing_profile : existing_profiles) {
-    if (!matching_profile_found && !new_profile.PrimaryValue().empty() &&
+    if (!matching_profile_found &&
+        !new_profile.PrimaryValue(app_locale_).empty() &&
         existing_profile->SaveAdditionalInfo(new_profile, app_locale)) {
       // Unverified profiles should always be updated with the newer data,
       // whereas verified profiles should only ever be overwritten by verified
@@ -921,6 +923,9 @@ std::string PersonalDataManager::MergeProfile(
       // verified profile, just drop it.
       matching_profile_found = true;
       guid = existing_profile->guid();
+
+      // Look for duplicates of |existing_profile| to merge into.
+      FindMergeAndDeleteDuplicateProfiles(existing_profiles, existing_profile);
 
       // We set the modification date so that immediate requests for profiles
       // will properly reflect the fact that this profile has been modified
@@ -1535,6 +1540,46 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
   }
 
   return suggestions;
+}
+
+void PersonalDataManager::FindMergeAndDeleteDuplicateProfiles(
+    const std::vector<AutofillProfile*>& existing_profiles,
+    AutofillProfile* profile_to_merge) {
+  std::vector<std::string> profile_guids_to_delete;
+
+  FindAndMergeDuplicateProfiles(existing_profiles, profile_to_merge,
+                                &profile_guids_to_delete);
+
+  // Delete the duplicate profiles.
+  for (const std::string& profile_guid_to_delete : profile_guids_to_delete) {
+    RemoveByGUID(profile_guid_to_delete);
+  }
+}
+
+void PersonalDataManager::FindAndMergeDuplicateProfiles(
+    const std::vector<AutofillProfile*>& existing_profiles,
+    AutofillProfile* profile_to_merge,
+    std::vector<std::string>* profile_guids_to_delete) {
+  for (AutofillProfile* existing_profile : existing_profiles) {
+    // Don't try to merge a profile with itself or with any profile with a
+    // different PrimaryValue.
+    if (existing_profile->guid() != profile_to_merge->guid() &&
+        AutofillProfile::CanonicalizeProfileString(
+            existing_profile->PrimaryValue(app_locale_)) ==
+            AutofillProfile::CanonicalizeProfileString(
+                profile_to_merge->PrimaryValue(app_locale_))) {
+      if (existing_profile->SaveAdditionalInfo(*profile_to_merge,
+                                               app_locale_)) {
+        // Since |profile_to_merge| was a duplicate of |existing_profile| and
+        // was merged sucessfully, it can now be deleted.
+        profile_guids_to_delete->push_back(profile_to_merge->guid());
+
+        // Now try to merge the new resulting profile with the rest of the
+        // existing profiles.
+        profile_to_merge = existing_profile;
+      }
+    }
+  }
 }
 
 }  // namespace autofill

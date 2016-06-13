@@ -1268,4 +1268,20 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_ComplementaryInformation) {
             a.GetRawInfo(NAME_FULL));
 }
 
+// Tests that PrimaryValues of two similar profiles with different
+// punctuation and case are equal.
+TEST(AutofillProfileTest, PrimaryValue_SimilarProfiles) {
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com/");
+  test::SetProfileInfo(&profile1, "Marion", "Mitchell", "Morrison",
+                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetProfileInfo(&profile2, "marion", "mitchell", "morrison",
+                       "marion@me.xyz", "Fox", "123, Zoo St", "unit 5",
+                       "hollywood", "CA", "91601", "US", "12345678910");
+
+  EXPECT_EQ(profile1.PrimaryValue("en-US"), profile2.PrimaryValue("en-US"));
+}
+
 }  // namespace autofill

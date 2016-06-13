@@ -415,9 +415,15 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
   return !operator==(profile);
 }
 
-const base::string16 AutofillProfile::PrimaryValue() const {
-  return GetRawInfo(NAME_FIRST) + GetRawInfo(NAME_LAST) +
-         GetRawInfo(ADDRESS_HOME_LINE1) + GetRawInfo(ADDRESS_HOME_CITY);
+const base::string16 AutofillProfile::PrimaryValue(
+    const std::string& app_locale) const {
+  std::vector<base::string16> primary_values{
+      GetInfo(AutofillType(NAME_FIRST), app_locale),
+      GetInfo(AutofillType(NAME_LAST), app_locale),
+      GetInfo(AutofillType(ADDRESS_HOME_LINE1), app_locale),
+      GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale)};
+  return CanonicalizeProfileString(
+      base::JoinString(primary_values, base::UTF8ToUTF16(" ")));
 }
 
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
