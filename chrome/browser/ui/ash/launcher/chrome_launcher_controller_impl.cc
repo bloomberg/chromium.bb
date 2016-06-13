@@ -1121,67 +1121,7 @@ void ChromeLauncherControllerImpl::UnpinAppWithID(const std::string& app_id) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::ShelfItemDelegateManagerObserver:
-
-void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
-    ash::ShelfID id,
-    ash::ShelfItemDelegate* item_delegate) {
-  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
-  // get into this state in the first place.
-  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-  if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
-    return;
-  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
-  id_to_item_controller_map_.erase(iter);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ash::ShelfModelObserver:
-
-void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {
-  // The app list launcher can get added to the shelf after we applied the
-  // preferences. In that case the item might be at the wrong spot. As such we
-  // call the function again.
-  if (model_->items()[index].type == ash::TYPE_APP_LIST)
-    UpdateAppLaunchersFromPref();
-}
-
-void ChromeLauncherControllerImpl::ShelfItemRemoved(int index,
-                                                    ash::ShelfID id) {
-  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
-  // get into this state in the first place.
-  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-  if (iter == id_to_item_controller_map_.end())
-    return;
-
-  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
-
-  id_to_item_controller_map_.erase(iter);
-}
-
-void ChromeLauncherControllerImpl::ShelfItemMoved(int start_index,
-                                                  int target_index) {
-  const ash::ShelfItem& item = model_->items()[target_index];
-  // We remember the moved item position if it is either pinnable or
-  // it is the app list with the alternate shelf layout.
-  if ((HasShelfIDToAppIDMapping(item.id) && IsPinned(item.id)) ||
-      item.type == ash::TYPE_APP_LIST)
-    PersistPinnedState();
-}
-
-void ChromeLauncherControllerImpl::ShelfItemChanged(
-    int index,
-    const ash::ShelfItem& old_item) {}
-
-///////////////////////////////////////////////////////////////////////////////
-// ash::WindowTreeHostManager::Observer:
-
-void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
-  SetShelfBehaviorsFromPrefs();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// LauncherAppUpdater:
+// LauncherAppUpdater::Delegate:
 
 void ChromeLauncherControllerImpl::OnAppInstalled(
     content::BrowserContext* browser_context,
@@ -1221,41 +1161,6 @@ void ChromeLauncherControllerImpl::OnAppUninstalled(
     AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
     if (app_icon_loader)
       app_icon_loader->ClearImage(app_id);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AppSyncUIStateObserver:
-
-void ChromeLauncherControllerImpl::OnAppSyncUIStatusChanged() {
-  if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
-    model_->set_status(ash::ShelfModel::STATUS_LOADING);
-  else
-    model_->set_status(ash::ShelfModel::STATUS_NORMAL);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AppIconLoaderDelegate:
-
-void ChromeLauncherControllerImpl::OnAppImageUpdated(
-    const std::string& id,
-    const gfx::ImageSkia& image) {
-  // TODO: need to get this working for shortcuts.
-  for (IDToItemControllerMap::const_iterator i =
-           id_to_item_controller_map_.begin();
-       i != id_to_item_controller_map_.end(); ++i) {
-    LauncherItemController* controller = i->second;
-    if (controller->app_id() != id)
-      continue;
-    if (controller->image_set_by_controller())
-      continue;
-    int index = model_->ItemIndexByID(i->first);
-    if (index == -1)
-      continue;
-    ash::ShelfItem item = model_->items()[index];
-    item.image = image;
-    model_->Set(index, item);
-    // It's possible we're waiting on more than one item, so don't break.
   }
 }
 
@@ -1888,4 +1793,99 @@ AppIconLoader* ChromeLauncherControllerImpl::GetAppIconLoaderForApp(
   }
 
   return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ash::ShelfItemDelegateManagerObserver:
+
+void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
+    ash::ShelfID id,
+    ash::ShelfItemDelegate* item_delegate) {
+  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
+  // get into this state in the first place.
+  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
+    return;
+  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+  id_to_item_controller_map_.erase(iter);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ash::ShelfModelObserver:
+
+void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {
+  // The app list launcher can get added to the shelf after we applied the
+  // preferences. In that case the item might be at the wrong spot. As such we
+  // call the function again.
+  if (model_->items()[index].type == ash::TYPE_APP_LIST)
+    UpdateAppLaunchersFromPref();
+}
+
+void ChromeLauncherControllerImpl::ShelfItemRemoved(int index,
+                                                    ash::ShelfID id) {
+  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
+  // get into this state in the first place.
+  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  if (iter == id_to_item_controller_map_.end())
+    return;
+
+  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+
+  id_to_item_controller_map_.erase(iter);
+}
+
+void ChromeLauncherControllerImpl::ShelfItemMoved(int start_index,
+                                                  int target_index) {
+  const ash::ShelfItem& item = model_->items()[target_index];
+  // We remember the moved item position if it is either pinnable or
+  // it is the app list with the alternate shelf layout.
+  if ((HasShelfIDToAppIDMapping(item.id) && IsPinned(item.id)) ||
+      item.type == ash::TYPE_APP_LIST)
+    PersistPinnedState();
+}
+
+void ChromeLauncherControllerImpl::ShelfItemChanged(
+    int index,
+    const ash::ShelfItem& old_item) {}
+
+///////////////////////////////////////////////////////////////////////////////
+// ash::WindowTreeHostManager::Observer:
+
+void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
+  SetShelfBehaviorsFromPrefs();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AppSyncUIStateObserver:
+
+void ChromeLauncherControllerImpl::OnAppSyncUIStatusChanged() {
+  if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
+    model_->set_status(ash::ShelfModel::STATUS_LOADING);
+  else
+    model_->set_status(ash::ShelfModel::STATUS_NORMAL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AppIconLoaderDelegate:
+
+void ChromeLauncherControllerImpl::OnAppImageUpdated(
+    const std::string& id,
+    const gfx::ImageSkia& image) {
+  // TODO: need to get this working for shortcuts.
+  for (IDToItemControllerMap::const_iterator i =
+           id_to_item_controller_map_.begin();
+       i != id_to_item_controller_map_.end(); ++i) {
+    LauncherItemController* controller = i->second;
+    if (controller->app_id() != id)
+      continue;
+    if (controller->image_set_by_controller())
+      continue;
+    int index = model_->ItemIndexByID(i->first);
+    if (index == -1)
+      continue;
+    ash::ShelfItem item = model_->items()[index];
+    item.image = image;
+    model_->Set(index, item);
+    // It's possible we're waiting on more than one item, so don't break.
+  }
 }

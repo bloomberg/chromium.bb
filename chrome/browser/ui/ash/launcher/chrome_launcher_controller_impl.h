@@ -57,12 +57,12 @@ class ChromeLauncherControllerUserSwitchObserver;
 class ChromeLauncherControllerImpl
     : public ChromeLauncherController,
       public ash::ShelfDelegate,
-      public ash::ShelfModelObserver,
-      public ash::WindowTreeHostManager::Observer,
-      public AppIconLoaderDelegate,
-      public AppSyncUIStateObserver,
       public LauncherAppUpdater::Delegate,
-      public ash::ShelfItemDelegateManagerObserver {
+      private ash::ShelfModelObserver,
+      private ash::WindowTreeHostManager::Observer,
+      private AppIconLoaderDelegate,
+      private AppSyncUIStateObserver,
+      private ash::ShelfItemDelegateManagerObserver {
  public:
   ChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model);
   ~ChromeLauncherControllerImpl() override;
@@ -167,35 +167,13 @@ class ChromeLauncherControllerImpl
   bool IsAppPinned(const std::string& app_id) override;
   void UnpinAppWithID(const std::string& app_id) override;
 
-  // ash::ShelfItemDelegateManagerObserver:
-  void OnSetShelfItemDelegate(ash::ShelfID id,
-                              ash::ShelfItemDelegate* item_delegate) override;
-
-  // ash::ShelfModelObserver:
-  void ShelfItemAdded(int index) override;
-  void ShelfItemRemoved(int index, ash::ShelfID id) override;
-  void ShelfItemMoved(int start_index, int target_index) override;
-  void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
-
-  // ash::WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
-
-  // LauncherAppUpdater:
+  // LauncherAppUpdater::Delegate:
   void OnAppInstalled(content::BrowserContext* browser_context,
                       const std::string& app_id) override;
   void OnAppUpdated(content::BrowserContext* browser_context,
                     const std::string& app_id) override;
   void OnAppUninstalled(content::BrowserContext* browser_context,
                         const std::string& app_id) override;
-
-  // AppSyncUIStateObserver:
-  void OnAppSyncUIStatusChanged() override;
-
-  // AppIconLoaderDelegate:
-  void OnAppImageUpdated(const std::string& app_id,
-                         const gfx::ImageSkia& image) override;
-
-
 
  protected:
   // Creates a new app shortcut item and controller on the shelf at |index|.
@@ -218,6 +196,7 @@ class ChromeLauncherControllerImpl
   friend class ChromeLauncherControllerImplTest;
   friend class ShelfAppBrowserTest;
   friend class LauncherPlatformAppBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, AppPanels);
 
   typedef std::map<ash::ShelfID, LauncherItemController*> IDToItemControllerMap;
   typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
@@ -329,6 +308,26 @@ class ChromeLauncherControllerImpl
   void ReleaseProfile();
 
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
+
+  // ash::ShelfItemDelegateManagerObserver:
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override;
+
+  // ash::ShelfModelObserver:
+  void ShelfItemAdded(int index) override;
+  void ShelfItemRemoved(int index, ash::ShelfID id) override;
+  void ShelfItemMoved(int start_index, int target_index) override;
+  void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
+
+  // ash::WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
+
+  // AppSyncUIStateObserver:
+  void OnAppSyncUIStatusChanged() override;
+
+  // AppIconLoaderDelegate:
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override;
 
   ash::ShelfModel* model_;
 
