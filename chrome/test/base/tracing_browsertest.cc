@@ -170,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
 
 // Single-process mode.
 // Linux ASan: https://crbug.com/585026.
-#if defined(ADDRESS_SANITIZER)
+// Linux https://crbug/619515.
+#if defined(ADDRESS_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
 #else
 #define MAYBE_TestMemoryInfra TestMemoryInfra
