@@ -20,7 +20,8 @@ CORE_EXPORT extern const CSSParserToken& staticEOFToken;
 class CORE_EXPORT CSSParserTokenRange {
     DISALLOW_NEW();
 public:
-    CSSParserTokenRange(const Vector<CSSParserToken>& vector)
+    template<size_t inlineBuffer>
+    CSSParserTokenRange(const Vector<CSSParserToken, inlineBuffer>& vector)
     : m_first(vector.begin())
     , m_last(vector.end())
     {

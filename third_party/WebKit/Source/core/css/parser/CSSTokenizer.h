@@ -35,7 +35,7 @@ public:
 
     private:
         void storeString(const String& string) { m_stringPool.append(string); }
-        Vector<CSSParserToken> m_tokens;
+        Vector<CSSParserToken, 32> m_tokens;
         // We only allocate strings when escapes are used.
         Vector<String> m_stringPool;
         String m_string;
