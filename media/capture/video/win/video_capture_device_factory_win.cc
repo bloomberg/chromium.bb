@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
@@ -114,7 +115,8 @@ static bool IsDeviceBlackListed(const std::string& name) {
     if (base::StartsWith(name, kBlacklistedCameraNames[i],
                          base::CompareCase::INSENSITIVE_ASCII)) {
       DVLOG(1) << "Enumerated blacklisted device: " << name;
-      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.BlacklistedDevice", i,
+      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.BlacklistedDevice",
+                                base::checked_cast<int>(i),
                                 BLACKLISTED_CAMERA_MAX + 1);
       return true;
     }
