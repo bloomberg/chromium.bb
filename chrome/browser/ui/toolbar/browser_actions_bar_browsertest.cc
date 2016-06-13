@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -554,4 +557,87 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   browser_actions_bar()->HidePopup();
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_FALSE(browser_actions_bar()->HasPopup());
+}
+
+// Test removing an action while it is popped out.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       RemovePoppedOutAction) {
+  // First, load up three separate extensions and reduce the visible count to
+  // one (so that two are in the overflow).
+  scoped_refptr<const extensions::Extension> extension1 =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "extension1", extensions::extension_action_test_util::BROWSER_ACTION);
+  extension_service()->AddExtension(extension1.get());
+  scoped_refptr<const extensions::Extension> extension2 =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "extension2", extensions::extension_action_test_util::BROWSER_ACTION);
+  extension_service()->AddExtension(extension2.get());
+  scoped_refptr<const extensions::Extension> extension3 =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "extension3", extensions::extension_action_test_util::BROWSER_ACTION);
+  extension_service()->AddExtension(extension3.get());
+
+  toolbar_model()->SetVisibleIconCount(1);
+
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+
+  // Pop out Extension 3 (index 3).
+  base::Closure closure = base::Bind(&base::DoNothing);
+  ToolbarActionsBar* toolbar_actions_bar =
+      browser()->window()->GetToolbarActionsBar();
+  EXPECT_EQ(extension3->id(), toolbar_actions_bar->GetActions()[2]->GetId());
+  toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[2], false,
+                                    closure);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  EXPECT_EQ(extension3->id(),
+            toolbar_actions_bar->popped_out_action()->GetId());
+
+  // Remove extension 2 - there should still be one left in the overflow
+  // (extension 2) and one left on the main bar (extension 1).
+  extension_service()->UnloadExtension(
+      extension3->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
+
+  // Add back extension 3, and reduce visible size to 0.
+  extension_service()->AddExtension(extension3.get());
+  toolbar_model()->SetVisibleIconCount(0);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+
+  // Pop out extension 2 (index 1).
+  EXPECT_EQ(extension2->id(), toolbar_actions_bar->GetActions()[1]->GetId());
+  toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[1], false,
+                                    closure);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  EXPECT_EQ(extension2->id(),
+            toolbar_actions_bar->popped_out_action()->GetId());
+
+  // Remove extension 2 - the remaining two should both be overflowed.
+  extension_service()->UnloadExtension(
+      extension2->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
+
+  // Finally, set visible count to 1, pop out extension 1, and remove it. There
+  // should only be one action left on the bar.
+  toolbar_model()->SetVisibleIconCount(1);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension3->id(), toolbar_actions_bar->GetActions()[1]->GetId());
+  toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[1], false,
+                                    closure);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  EXPECT_EQ(extension3->id(),
+            toolbar_actions_bar->popped_out_action()->GetId());
+  extension_service()->UnloadExtension(
+      extension3->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
 }

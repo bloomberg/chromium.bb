@@ -674,6 +674,8 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   std::unique_ptr<ToolbarActionViewController> removed_action(*iter);
   toolbar_actions_.weak_erase(iter);
   delegate_->RemoveViewForAction(removed_action.get());
+  if (popped_out_action_ == removed_action.get())
+    UndoPopOut();
   removed_action.reset();
 
   // If the extension is being upgraded we don't want the bar to shrink
