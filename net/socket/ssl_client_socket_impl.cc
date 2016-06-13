@@ -65,17 +65,6 @@ namespace net {
 
 namespace {
 
-// Enable this to see logging for state machine state transitions.
-#if 0
-#define GotoState(s)                                                          \
-  do {                                                                        \
-    DVLOG(2) << (void*)this << " " << __FUNCTION__ << " jump to state " << s; \
-    next_handshake_state_ = s;                                                \
-  } while (0)
-#else
-#define GotoState(s) next_handshake_state_ = s
-#endif
-
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
 const int kNoPendingResult = 1;
@@ -651,7 +640,7 @@ int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
   // Set SSL to client mode. Handshake happens in the loop below.
   SSL_set_connect_state(ssl_);
 
-  GotoState(STATE_HANDSHAKE);
+  next_handshake_state_ = STATE_HANDSHAKE;
   rv = DoHandshakeLoop(OK);
   if (rv == ERR_IO_PENDING) {
     user_connect_callback_ = callback;
@@ -833,10 +822,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
                                  ? SSLInfo::HANDSHAKE_RESUME
                                  : SSLInfo::HANDSHAKE_FULL;
 
-  DVLOG(3) << "Encoded connection status: cipher suite = "
-           << SSLConnectionStatusToCipherSuite(ssl_info->connection_status)
-           << " version = "
-           << SSLConnectionStatusToVersion(ssl_info->connection_status);
   return true;
 }
 
@@ -1126,7 +1111,7 @@ int SSLClientSocketImpl::DoHandshake() {
     if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
       // The server supports channel ID. Stop to look one up before returning to
       // the handshake.
-      GotoState(STATE_CHANNEL_ID_LOOKUP);
+      next_handshake_state_ = STATE_CHANNEL_ID_LOOKUP;
       return OK;
     }
     if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP &&
@@ -1136,7 +1121,7 @@ int SSLClientSocketImpl::DoHandshake() {
     if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
       DCHECK(ssl_config_.client_private_key);
       DCHECK_NE(kNoPendingResult, signature_result_);
-      GotoState(STATE_HANDSHAKE);
+      next_handshake_state_ = STATE_HANDSHAKE;
       return ERR_IO_PENDING;
     }
 
@@ -1144,7 +1129,7 @@ int SSLClientSocketImpl::DoHandshake() {
     net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
     if (net_error == ERR_IO_PENDING) {
       // If not done, stay in this state
-      GotoState(STATE_HANDSHAKE);
+      next_handshake_state_ = STATE_HANDSHAKE;
       return ERR_IO_PENDING;
     }
 
@@ -1180,7 +1165,7 @@ int SSLClientSocketImpl::DoHandshake() {
     }
   }
 
-  GotoState(STATE_HANDSHAKE_COMPLETE);
+  next_handshake_state_ = STATE_HANDSHAKE_COMPLETE;
   return net_error;
 }
 
@@ -1241,7 +1226,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   // Verify the certificate.
   UpdateServerCert();
-  GotoState(STATE_VERIFY_CERT);
+  next_handshake_state_ = STATE_VERIFY_CERT;
   return OK;
 }
 
@@ -1249,7 +1234,7 @@ int SSLClientSocketImpl::DoChannelIDLookup() {
   NetLog::ParametersCallback callback = base::Bind(
       &NetLogChannelIDLookupCallback, base::Unretained(channel_id_service_));
   net_log_.BeginEvent(NetLog::TYPE_SSL_GET_CHANNEL_ID, callback);
-  GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
+  next_handshake_state_ = STATE_CHANNEL_ID_LOOKUP_COMPLETE;
   return channel_id_service_->GetOrCreateChannelID(
       host_and_port_.host(), &channel_id_key_,
       base::Bind(&SSLClientSocketImpl::OnHandshakeIOComplete,
@@ -1277,7 +1262,7 @@ int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
 
   // Return to the handshake.
   channel_id_sent_ = true;
-  GotoState(STATE_HANDSHAKE);
+  next_handshake_state_ = STATE_HANDSHAKE;
   return OK;
 }
 
@@ -1285,7 +1270,7 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   DCHECK(!server_cert_chain_->empty());
   DCHECK(start_cert_verification_time_.is_null());
 
-  GotoState(STATE_VERIFY_CERT_COMPLETE);
+  next_handshake_state_ = STATE_VERIFY_CERT_COMPLETE;
 
   // OpenSSL decoded the certificate, but the platform certificate
   // implementation could not. This is treated as a fatal SSL-level protocol
@@ -1302,7 +1287,6 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   }
   CertStatus cert_status;
   if (ssl_config_.IsAllowedBadCert(der_cert, &cert_status)) {
-    VLOG(1) << "Received an expected bad cert with status: " << cert_status;
     server_cert_verify_result_.Reset();
     server_cert_verify_result_.cert_status = cert_status;
     server_cert_verify_result_.verified_cert = server_cert_;
@@ -1368,9 +1352,6 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
     DCHECK(!certificate_verified_);
     certificate_verified_ = true;
     MaybeCacheSession();
-  } else {
-    DVLOG(1) << "DoVerifyCertComplete error " << ErrorToString(result) << " ("
-             << result << ")";
   }
 
   completed_connect_ = true;
@@ -1442,11 +1423,6 @@ void SSLClientSocketImpl::VerifyCT() {
               ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
           ev_policy_compliance !=
               ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
-        // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
-        VLOG(1) << "EV certificate for "
-                << server_cert_verify_result_.verified_cert->subject()
-                       .GetDisplayName()
-                << " does not conform to CT policy, removing EV status.";
         server_cert_verify_result_.cert_status |=
             CERT_STATUS_CT_COMPLIANCE_FAILED;
         server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
@@ -1507,7 +1483,7 @@ int SSLClientSocketImpl::DoHandshakeLoop(int last_io_result) {
     // State handlers can and often do call GotoState just
     // to stay in the current state.
     State state = next_handshake_state_;
-    GotoState(STATE_NONE);
+    next_handshake_state_ = STATE_NONE;
     switch (state) {
       case STATE_HANDSHAKE:
         rv = DoHandshake();
@@ -1834,7 +1810,6 @@ int SSLClientSocketImpl::TransportReadComplete(int result) {
     result = ERR_CONNECTION_CLOSED;
   int bytes_read = 0;
   if (result < 0) {
-    DVLOG(1) << "TransportReadComplete result " << result;
     // Received an error. Save it to be reported in a future read on
     // transport_bio_'s peer.
     transport_read_error_ = result;
@@ -1849,7 +1824,6 @@ int SSLClientSocketImpl::TransportReadComplete(int result) {
 }
 
 int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
-  DVLOG(3) << "OpenSSL ClientCertRequestCallback called";
   DCHECK(ssl == ssl_);
 
   net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_REQUESTED);
@@ -2032,7 +2006,6 @@ int SSLClientSocketImpl::SelectNextProtoCallback(unsigned char** out,
   }
 
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);
-  DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
   set_negotiation_extension(kExtensionNPN);
   return SSL_TLSEXT_ERR_OK;
 }
