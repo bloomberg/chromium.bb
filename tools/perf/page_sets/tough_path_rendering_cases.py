@@ -15,12 +15,10 @@ class ToughPathRenderingCasesPage(page_module.Page):
 class ChalkboardPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     with action_runner.CreateInteraction('ClickStart'):
       action_runner.EvaluateJavaScript(
           'document.getElementById("StartButton").click()')
-      action_runner.WaitForJavaScriptCondition(
-          'document.getElementById("FinalTime").innerText != ""')
+      action_runner.Wait(20)
 
 class ToughPathRenderingCasesPageSet(story.StorySet):
 
