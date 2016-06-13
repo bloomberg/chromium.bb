@@ -38,9 +38,7 @@
 
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
-#include "platform/Histogram.h"
 #include "png.h"
-#include "wtf/Threading.h"
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
@@ -181,11 +179,6 @@ void PNGImageDecoder::headerAvailable()
     png_uint_32 width = png_get_image_width(png, info);
     png_uint_32 height = png_get_image_height(png, info);
 
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(blink::CustomCountHistogram,
-        dimensionsLocationHistogram,
-        new blink::CustomCountHistogram("Blink.DecodedImage.EffectiveDimensionsLocation.PNG", 0, 50000, 50));
-    dimensionsLocationHistogram.count(m_reader->getReadOffset() - png->current_buffer_size - 1);
-
     // Protect against large PNGs. See http://bugzil.la/251381 for more details.
     const unsigned long maxPNGSize = 1000000UL;
     if (width > maxPNGSize || height > maxPNGSize) {
@@ -243,7 +236,7 @@ void PNGImageDecoder::headerAvailable()
 #endif
             png_uint_32 profileLength = 0;
             if (png_get_iCCP(png, info, &profileName, &compressionType, &profile, &profileLength)) {
-                setColorProfileAndTransform(profile, profileLength, imageHasAlpha, false /* useSRGB */);
+                setColorProfileAndTransform(reinterpret_cast<char*>(profile), profileLength, imageHasAlpha, false /* useSRGB */);
             }
         }
 #endif // PNG_iCCP_SUPPORTED

@@ -46,11 +46,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     (PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
   assert(png_ptr);
 
-  png_ptr->flags &= ~PNG_FLAG_CRC_CRITICAL_MASK;
-  png_ptr->flags |= PNG_FLAG_CRC_CRITICAL_IGNORE;
-
-  png_ptr->flags &= ~PNG_FLAG_CRC_ANCILLARY_MASK;
-  png_ptr->flags |= PNG_FLAG_CRC_ANCILLARY_NOWARN;
+  png_set_crc_action(png_ptr, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   assert(info_ptr);
@@ -66,7 +62,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   png_set_sig_bytes(png_ptr, kPngHeaderSize);
 
   // libpng error handling.
-  if (setjmp(png_ptr->jmpbuf)) {
+  if (setjmp(png_jmpbuf(png_ptr))) {
     return 0;
   }
 
@@ -77,7 +73,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         &png_free, png_ptr, row));
 
   // reset error handler to put png_deleter into scope.
-  if (setjmp(png_ptr->jmpbuf)) {
+  if (setjmp(png_jmpbuf(png_ptr))) {
     return 0;
   }
 

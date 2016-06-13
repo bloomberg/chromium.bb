@@ -9,31 +9,25 @@
       'dependencies': [
         '../zlib/zlib.gyp:zlib',
       ],
-      'variables': {
-        # Upstream uses self-assignment to avoid warnings.
-        'clang_warning_flags': [ '-Wno-self-assign' ]
-      },
-      'defines': [
-        'CHROME_PNG_WRITE_SUPPORT',
-        'PNG_USER_CONFIG',
-      ],
       'sources': [
         'png.c',
         'png.h',
         'pngconf.h',
         'pngerror.c',
-        'pnggccrd.c',
         'pngget.c',
+        'pnginfo.h',
+        'pnglibconf.h',
         'pngmem.c',
         'pngpread.c',
+        'pngprefix.h',
+        'pngpriv.h',
         'pngread.c',
         'pngrio.c',
         'pngrtran.c',
         'pngrutil.c',
         'pngset.c',
+        'pngstruct.h',
         'pngtrans.c',
-        'pngusr.h',
-        'pngvcrd.c',
         'pngwio.c',
         'pngwrite.c',
         'pngwtran.c',
@@ -43,10 +37,6 @@
         'include_dirs': [
           '.',
         ],
-        'defines': [
-          'CHROME_PNG_WRITE_SUPPORT',
-          'PNG_USER_CONFIG',
-        ],
       },
       'export_dependent_settings': [
         '../zlib/zlib.gyp:zlib',
@@ -54,6 +44,37 @@
       # TODO(jschuh): http://crbug.com/167187
       'msvs_disabled_warnings': [ 4267 ],
       'conditions': [
+        # Disable ARM optimizations on IOS.  Can't find a way to get gyp to even try
+        # to compile the optimization files.  This works fine on GN.
+        [ 'OS=="ios"', {
+          'defines': [
+            'PNG_ARM_NEON_OPT=0',
+          ],
+        }],
+
+        # SSE optimizations
+        [ 'target_arch=="ia32" or target_arch=="x64"', {
+          'defines': [
+            'PNG_INTEL_SSE_OPT=1',
+          ],
+          'sources': [
+            'contrib/intel/intel_init.c',
+            'contrib/intel/filter_sse2_intrinsics.c',
+          ],
+        }],
+
+        # ARM optimizations
+        [ '(target_arch=="arm" or target_arch=="arm64") and OS!="ios"', {
+          'defines': [
+            'PNG_ARM_NEON_OPT=2',
+            'PNG_ARM_NEON_IMPLEMENTATION=1',
+          ],
+          'sources': [
+            'arm/arm_init.c',
+            'arm/filter_neon_intrinsics.c',
+          ],
+        }],
+      
         ['OS!="win"', {'product_name': 'png'}],
         ['OS=="win"', {
           'type': '<(component)',
@@ -73,20 +94,8 @@
             ],
           },
         }],
-        ['OS=="android" or chromecast==1', {
-          'conditions': [
-            ['OS=="android"', {
-              'toolsets': ['target', 'host'],
-            }],
-          ],
-          'defines': [
-            'CHROME_PNG_READ_PACK_SUPPORT',  # Required by freetype.
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'CHROME_PNG_READ_PACK_SUPPORT',
-            ],
-          },
+        ['OS=="android"', {
+          'toolsets': ['target', 'host'],
         }],
       ],
     },
