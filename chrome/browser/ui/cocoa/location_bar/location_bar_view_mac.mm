@@ -728,7 +728,7 @@ void LocationBarViewMac::UpdateLocationIcon() {
   } else {
     vector_icon_id = omnibox_view_->GetVectorIcon();
     if (in_dark_mode) {
-      vector_icon_color = SK_ColorWHITE;
+      vector_icon_color = LocationBarDecoration::kMaterialDarkModeTextColor;
     } else {
       security_state::SecurityStateModel::SecurityLevel security_level =
           GetToolbarModel()->GetSecurityLevel(false);
