@@ -31,6 +31,7 @@
 #ifndef FormSubmission_h
 #define FormSubmission_h
 
+#include "core/loader/FrameLoadRequest.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -38,9 +39,9 @@
 
 namespace blink {
 
+class Document;
 class EncodedFormData;
 class Event;
-struct FrameLoadRequest;
 class HTMLFormElement;
 
 class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
@@ -92,7 +93,7 @@ public:
     static FormSubmission* create(HTMLFormElement*, const Attributes&, Event*);
     DECLARE_TRACE();
 
-    void populateFrameLoadRequest(FrameLoadRequest&);
+    FrameLoadRequest createFrameLoadRequest(Document* originDocument);
 
     KURL requestURL() const;
 
@@ -102,7 +103,6 @@ public:
     void clearTarget() { m_target = nullAtom; }
     HTMLFormElement* form() const { return m_form.get(); }
     EncodedFormData* data() const { return m_formData.get(); }
-    Event* event() const { return m_event.get(); }
 
     const String& result() const { return m_result; }
 

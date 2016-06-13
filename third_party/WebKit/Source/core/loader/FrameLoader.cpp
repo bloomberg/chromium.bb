@@ -766,15 +766,19 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     takeObjectSnapshot();
 }
 
-void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
+// static
+void FrameLoader::setReferrerForFrameRequest(FrameLoadRequest& frameRequest)
 {
+    ResourceRequest& request = frameRequest.resourceRequest();
+    Document* originDocument = frameRequest.originDocument();
+
     if (!originDocument)
         return;
     // Anchor elements with the 'referrerpolicy' attribute will have
     // already set the referrer on the request.
     if (request.didSetHTTPReferrer())
         return;
-    if (shouldSendReferrer == NeverSendReferrer)
+    if (frameRequest.getShouldSendReferrer() == NeverSendReferrer)
         return;
 
     // Always use the initiating document to generate the referrer.
@@ -949,7 +953,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
         return;
     }
 
-    setReferrerForFrameRequest(request.resourceRequest(), request.getShouldSendReferrer(), request.originDocument());
+    setReferrerForFrameRequest(request);
 
     FrameLoadType newLoadType = (frameLoadType == FrameLoadTypeStandard) ?
         determineFrameLoadType(request) : frameLoadType;

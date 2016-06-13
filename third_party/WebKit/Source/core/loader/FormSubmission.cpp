@@ -271,8 +271,10 @@ KURL FormSubmission::requestURL() const
     return requestURL;
 }
 
-void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
+FrameLoadRequest FormSubmission::createFrameLoadRequest(Document* originDocument)
 {
+    FrameLoadRequest frameRequest(originDocument);
+
     if (!m_target.isEmpty())
         frameRequest.setFrameName(m_target);
 
@@ -288,6 +290,11 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     }
 
     frameRequest.resourceRequest().setURL(requestURL());
+
+    frameRequest.setTriggeringEvent(m_event);
+    frameRequest.setForm(m_form);
+
+    return frameRequest;
 }
 
 } // namespace blink

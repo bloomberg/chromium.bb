@@ -192,12 +192,13 @@ public:
 
     DECLARE_TRACE();
 
+    static void setReferrerForFrameRequest(FrameLoadRequest&);
+
 private:
     void checkTimerFired(Timer<FrameLoader>*);
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 
     bool prepareRequestForThisFrame(FrameLoadRequest&);
-    static void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer, Document*);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);

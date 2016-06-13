@@ -5,6 +5,7 @@
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/dom/Element.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"

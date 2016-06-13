@@ -276,11 +276,8 @@ public:
     void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        FrameLoadRequest frameRequest(originDocument());
-        m_submission->populateFrameLoadRequest(frameRequest);
+        FrameLoadRequest frameRequest = m_submission->createFrameLoadRequest(originDocument());
         frameRequest.setReplacesCurrentItem(replacesCurrentItem());
-        frameRequest.setTriggeringEvent(m_submission->event());
-        frameRequest.setForm(m_submission->form());
         maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledFormSubmission, frame, frameRequest, gestureIndicator.get());
         frame->loader().load(frameRequest);
     }

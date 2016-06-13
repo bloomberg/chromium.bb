@@ -13,10 +13,12 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/loader/FrameLoader.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
 
@@ -66,18 +68,22 @@ WindowProxy* RemoteFrame::windowProxy(DOMWrapperWorld& world)
 
 void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool replaceCurrentItem, UserGestureStatus userGestureStatus)
 {
-    // The process where this frame actually lives won't have sufficient information to determine
-    // correct referrer, since it won't have access to the originDocument. Set it now.
-    ResourceRequest request(url);
-    request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.getReferrerPolicy(), url, originDocument.outgoingReferrer()));
-    request.setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
-    client()->navigate(request, replaceCurrentItem);
+    FrameLoadRequest frameRequest(&originDocument, url);
+    frameRequest.setReplacesCurrentItem(replaceCurrentItem);
+    frameRequest.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
+    navigate(frameRequest);
 }
 
 void RemoteFrame::navigate(const FrameLoadRequest& passedRequest)
 {
-    UserGestureStatus gesture = UserGestureIndicator::processingUserGesture() ? UserGestureStatus::Active : UserGestureStatus::None;
-    navigate(*passedRequest.originDocument(), passedRequest.resourceRequest().url(), passedRequest.replacesCurrentItem(), gesture);
+    FrameLoadRequest frameRequest(passedRequest);
+
+    // The process where this frame actually lives won't have sufficient information to determine
+    // correct referrer, since it won't have access to the originDocument. Set it now.
+    FrameLoader::setReferrerForFrameRequest(frameRequest);
+
+    frameRequest.resourceRequest().setHasUserGesture(UserGestureIndicator::processingUserGesture());
+    client()->navigate(frameRequest.resourceRequest(), frameRequest.replacesCurrentItem());
 }
 
 void RemoteFrame::reload(FrameLoadType frameLoadType, ClientRedirectPolicy clientRedirectPolicy)
