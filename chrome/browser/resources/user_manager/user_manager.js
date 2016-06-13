@@ -28,6 +28,12 @@ cr.define('cr.ui', function() {
 
   UserManager.prototype = {
     __proto__: DisplayManager.prototype,
+
+    /**
+     * Indicates whether the user pods page is visible.
+     * @type {boolean}
+     */
+    userPodsPageVisible: true
   };
 
   /**

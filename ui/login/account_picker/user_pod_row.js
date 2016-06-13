@@ -2846,12 +2846,15 @@ cr.define('login', function() {
      * @private
      */
     placePods_: function() {
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      if (isDesktopUserManager && !Oobe.getInstance().userPodsPageVisible)
+        return;
+
       var layout = this.calculateLayout_();
       var columns = this.columns = layout.columns;
       var rows = this.rows = layout.rows;
       var maxPodsNumber = columns * rows;
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
       var margin = isDesktopUserManager ? DESKTOP_MARGIN_BY_COLUMNS[columns] :
                                           MARGIN_BY_COLUMNS[columns];
       this.parentNode.setPreferredSize(

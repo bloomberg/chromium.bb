@@ -39,9 +39,15 @@ cr.define('cr.ui', function() {
     newDesktopUserManager: true,
 
     /**
+     * Indicates whether the user pods page is visible.
+     * @type {boolean}
+     */
+    userPodsPageVisible: true,
+
+    /**
      * @override
      * Overrides clientAreaSize in DisplayManager. When a new profile is created
-     * the #outer-container page may not be visible yet, so user-pods cannot be
+     * the user pods page may not be visible yet, so user-pods cannot be
      * placed correctly. Therefore, we use dimensions of the #animated-pages.
      * @type {{width: number, height: number}}
      */
@@ -53,6 +59,19 @@ cr.define('cr.ui', function() {
       var height = userManagerPages.offsetHeight - MAX_LOGIN_HEADER_BAR_HEIGHT;
       return {width: width, height: height};
     }
+  };
+
+  /**
+   * Listens for the page change event to see if the user pods page is visible.
+   * Updates userPodsPageVisible property accordingly and if the page is visible
+   * re-arranges the user pods.
+   * @param {!Event} event The event containing ID of the selected page.
+   */
+  UserManager.onPageChanged_ = function(event) {
+    var userPodsPageVisible = event.detail.page == 'user-pods-page';
+    cr.ui.UserManager.getInstance().userPodsPageVisible = userPodsPageVisible;
+    if (userPodsPageVisible)
+      $('pod-row').rebuildPods();
   };
 
   /**
@@ -159,3 +178,5 @@ disableTextSelectAndDrag(function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', cr.ui.UserManager.initialize);
+
+document.addEventListener('change-page', cr.ui.UserManager.onPageChanged_);
