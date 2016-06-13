@@ -400,7 +400,8 @@ class SyncStage(generic_stages.BuilderStage):
                    self._build_root)
 
       shutil.copytree(os.path.join(self._run.options.repo_cache, '.repo'),
-                      os.path.join(self._build_root, '.repo'))
+                      os.path.join(self._build_root, '.repo'),
+                      symlinks=True)
 
     self.repo = self.GetRepoRepository()
 

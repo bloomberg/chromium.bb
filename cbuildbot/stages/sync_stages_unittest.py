@@ -160,45 +160,76 @@ class SyncStageRepoCacheTest(
       cmd_args += ['--repo-cache', self.cache_dir]
 
     if cache_populated:
-      osutils.Touch(os.path.join(self.cache_dir, '.repo', 'contents'),
-                    makedirs=True)
+      osutils.Touch(
+          os.path.join(self.cache_dir, '.repo', 'contents'),
+          makedirs=True)
+      osutils.Touch(
+          os.path.join(self.cache_dir, '.repo', 'nested', 'contents'),
+          makedirs=True)
+      os.symlink(
+          'contents',
+          os.path.join(self.cache_dir, '.repo', 'relative_symlink'))
+      os.symlink(
+          '/nonexistent',
+          os.path.join(self.cache_dir, '.repo', 'broken_symlink'))
 
     super(SyncStageRepoCacheTest, self)._Prepare(cmd_args=cmd_args, **kwargs)
     self.sync_stage = sync_stages.SyncStage(self._run)
 
-  def _cacheWasUsed(self):
+  def validateNoCache(self):
     # This file exists only we copied from the repo cache.
-    return os.path.exists(os.path.join(self.build_root, '.repo', 'contents'))
+    self.assertFalse(os.path.exists(
+        os.path.join(self.build_root, '.repo', 'contents')))
+
+  def validateCache(self):
+    # This file exists only we copied from the repo cache.
+    contents = os.path.join(self.cache_dir, '.repo', 'contents')
+    nested = os.path.join(self.cache_dir, '.repo', 'nested', 'contents')
+    relative = os.path.join(self.cache_dir, '.repo', 'relative_symlink')
+    broken = os.path.join(self.cache_dir, '.repo', 'broken_symlink')
+
+    # Assert expected files exist.
+    self.assertTrue(os.path.exists(contents))
+    self.assertTrue(os.path.exists(nested))
+    self.assertTrue(os.path.exists(relative))
+    self.assertFalse(os.path.exists(broken))
+
+    # Assert symlinks are still links.
+    self.assertTrue(os.path.islink(relative))
+    self.assertTrue(os.path.islink(broken))
+
+    # Assert relative symlink is relative to the new location.
+    self.assertEqual(os.path.realpath(relative), contents)
 
   def testInitializeRepoPopulatedNoCache(self):
     """Tests basic SyncStage repo cache initialization code."""
     self._Prepare(root_populated=True, cache_arg=False, cache_populated=False)
     self.sync_stage._InitializeRepo()
-    self.assertFalse(self._cacheWasUsed())
+    self.validateNoCache()
 
   def testInitializeRepoNotPopulatedNoCache(self):
     """Tests basic SyncStage repo cache initialization code."""
     self._Prepare(root_populated=False, cache_arg=False, cache_populated=False)
     self.sync_stage._InitializeRepo()
-    self.assertFalse(self._cacheWasUsed())
+    self.validateNoCache()
 
   def testInitializeRepoPopulatedCache(self):
     """Tests basic SyncStage repo cache initialization code."""
     self._Prepare(root_populated=True, cache_arg=True, cache_populated=True)
     self.sync_stage._InitializeRepo()
-    self.assertFalse(self._cacheWasUsed())
+    self.validateNoCache()
 
   def testInitializeRepoNotPopulatedCache(self):
     """Tests basic SyncStage repo cache initialization code."""
     self._Prepare(root_populated=False, cache_arg=True, cache_populated=True)
     self.sync_stage._InitializeRepo()
-    self.assertTrue(self._cacheWasUsed())
+    self.validateCache()
 
   def testInitializeRepoNotPopulatedEmptyCache(self):
     """Tests basic SyncStage repo cache initialization code."""
     self._Prepare(root_populated=False, cache_arg=True, cache_populated=False)
     self.sync_stage._InitializeRepo()
-    self.assertFalse(self._cacheWasUsed())
+    self.validateNoCache()
 
 class ManifestVersionedSyncStageTest(
     generic_stages_unittest.AbstractStageTestCase):
