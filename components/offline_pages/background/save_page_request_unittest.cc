@@ -33,7 +33,7 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
   ASSERT_EQ(0, request.attempt_count());
 
   base::Time after_creation = creation_time + base::TimeDelta::FromHours(6);
-  ASSERT_EQ(SavePageRequest::Status::kPending,
+  ASSERT_EQ(SavePageRequest::Status::PENDING,
             request.GetStatus(after_creation));
 }
 
@@ -52,11 +52,11 @@ TEST_F(SavePageRequestTest, CreateNotReadyRequest) {
   ASSERT_EQ(0, request.attempt_count());
 
   base::Time not_ready_time = activation_time - base::TimeDelta::FromHours(3);
-  ASSERT_EQ(SavePageRequest::Status::kNotReady,
+  ASSERT_EQ(SavePageRequest::Status::NOT_READY,
             request.GetStatus(not_ready_time));
 
   base::Time ready_time = activation_time + base::TimeDelta::FromHours(3);
-  ASSERT_EQ(SavePageRequest::Status::kPending, request.GetStatus(ready_time));
+  ASSERT_EQ(SavePageRequest::Status::PENDING, request.GetStatus(ready_time));
 }
 
 TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
@@ -79,7 +79,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   ASSERT_EQ(start_time, request.last_attempt_time());
   ASSERT_EQ(1, request.attempt_count());
 
-  ASSERT_EQ(SavePageRequest::Status::kStarted, request.GetStatus(start_time));
+  ASSERT_EQ(SavePageRequest::Status::STARTED, request.GetStatus(start_time));
 
   request.MarkAttemptCompleted();
 
@@ -94,7 +94,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   ASSERT_EQ(base::Time(), request.last_attempt_time());
   ASSERT_EQ(1, request.attempt_count());
 
-  ASSERT_EQ(SavePageRequest::Status::kPending, request.GetStatus(start_time));
+  ASSERT_EQ(SavePageRequest::Status::PENDING, request.GetStatus(start_time));
 }
 
 }  // offline_pages

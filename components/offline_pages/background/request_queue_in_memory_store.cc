@@ -28,10 +28,10 @@ void RequestQueueInMemoryStore::AddOrUpdateRequest(
     const SavePageRequest& request,
     const UpdateCallback& callback) {
   RequestsMap::iterator iter = requests_.find(request.request_id());
-  UpdateStatus status = UpdateStatus::kAdded;
+  UpdateStatus status = UpdateStatus::ADDED;
   if (iter != requests_.end()) {
     requests_.erase(iter);
-    status = UpdateStatus::kUpdated;
+    status = UpdateStatus::UPDATED;
   }
   requests_.insert(std::make_pair(request.request_id(), request));
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

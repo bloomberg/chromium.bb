@@ -17,14 +17,14 @@ namespace offline_pages {
 class SavePageRequest {
  public:
   enum class Status {
-    kNotReady,  // Component requested a page be saved, but not until
+    NOT_READY,  // Component requested a page be saved, but not until
                 // |activation_time_|.
-    kPending,   // Page request is pending, and coordinator can attempt it
+    PENDING,    // Page request is pending, and coordinator can attempt it
                 // when it gets a chance to.
-    kStarted,   // The request is currently being processed.
-    kFailed,    // Page request failed many times and will no longer be
+    STARTED,    // The request is currently being processed.
+    FAILED,     // Page request failed many times and will no longer be
                 // retried.
-    kExpired,   // Save page request expired without being fulfilled.
+    EXPIRED,    // Save page request expired without being fulfilled.
   };
 
   SavePageRequest(int64_t request_id,

@@ -36,9 +36,9 @@ bool operator==(const SavePageRequest& lhs, const SavePageRequest& rhs) {
 class RequestQueueInMemoryStoreTest : public testing::Test {
  public:
   enum class LastResult {
-    kNone,
-    kFalse,
-    kTrue,
+    RESULT_NONE,
+    RESULT_FALSE,
+    RESULT_TRUE,
   };
 
   RequestQueueInMemoryStoreTest();
@@ -82,8 +82,8 @@ class RequestQueueInMemoryStoreTest : public testing::Test {
 };
 
 RequestQueueInMemoryStoreTest::RequestQueueInMemoryStoreTest()
-    : last_result_(LastResult::kNone),
-      last_update_status_(UpdateStatus::kFailed),
+    : last_result_(LastResult::RESULT_NONE),
+      last_update_status_(UpdateStatus::FAILED),
       last_remove_count_(0),
       task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
@@ -97,8 +97,8 @@ void RequestQueueInMemoryStoreTest::PumpLoop() {
 }
 
 void RequestQueueInMemoryStoreTest::ResetResults() {
-  last_result_ = LastResult::kNone;
-  last_update_status_ = UpdateStatus::kFailed;
+  last_result_ = LastResult::RESULT_NONE;
+  last_update_status_ = UpdateStatus::FAILED;
   last_remove_count_ = 0;
   last_requests_.clear();
 }
@@ -106,7 +106,7 @@ void RequestQueueInMemoryStoreTest::ResetResults() {
 void RequestQueueInMemoryStoreTest::GetRequestsDone(
     bool result,
     const std::vector<SavePageRequest>& requests) {
-  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
+  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
   last_requests_ = requests;
 }
 
@@ -115,20 +115,20 @@ void RequestQueueInMemoryStoreTest::AddOrUpdateDone(UpdateStatus status) {
 }
 
 void RequestQueueInMemoryStoreTest::RemoveDone(bool result, int count) {
-  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
+  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
   last_remove_count_ = count;
 }
 
 void RequestQueueInMemoryStoreTest::ResetDone(bool result) {
-  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
+  last_result_ = result ? LastResult::RESULT_TRUE : LastResult::RESULT_FALSE;
 }
 
 TEST_F(RequestQueueInMemoryStoreTest, GetRequestsEmpty) {
   store()->GetRequests(base::Bind(
       &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, last_result());
+  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
   ASSERT_TRUE(last_requests().empty());
 }
 
@@ -139,17 +139,17 @@ TEST_F(RequestQueueInMemoryStoreTest, AddRequest) {
   store()->AddOrUpdateRequest(
       request, base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
                           base::Unretained(this)));
-  ASSERT_EQ(UpdateStatus::kFailed, last_update_status());
+  ASSERT_EQ(UpdateStatus::FAILED, last_update_status());
   PumpLoop();
-  ASSERT_EQ(UpdateStatus::kAdded, last_update_status());
+  ASSERT_EQ(UpdateStatus::ADDED, last_update_status());
 
   // Verifying get reqeust results after a request was added.
   ResetResults();
   store()->GetRequests(base::Bind(
       &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, last_result());
+  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_TRUE(request == last_requests()[0]);
 }
@@ -173,17 +173,17 @@ TEST_F(RequestQueueInMemoryStoreTest, UpdateRequest) {
       updated_request,
       base::Bind(&RequestQueueInMemoryStoreTest::AddOrUpdateDone,
                  base::Unretained(this)));
-  ASSERT_EQ(UpdateStatus::kFailed, last_update_status());
+  ASSERT_EQ(UpdateStatus::FAILED, last_update_status());
   PumpLoop();
-  ASSERT_EQ(UpdateStatus::kUpdated, last_update_status());
+  ASSERT_EQ(UpdateStatus::UPDATED, last_update_status());
 
   // Verifying get reqeust results after a request was updated.
   ResetResults();
   store()->GetRequests(base::Bind(
       &RequestQueueInMemoryStoreTest::GetRequestsDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, last_result());
+  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_TRUE(updated_request == last_requests()[0]);
 }
@@ -202,10 +202,10 @@ TEST_F(RequestQueueInMemoryStoreTest, RemoveRequest) {
   store()->RemoveRequests(request_ids,
                           base::Bind(&RequestQueueInMemoryStoreTest::RemoveDone,
                                      base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   ASSERT_EQ(0, last_remove_count());
   PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, last_result());
+  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
   ASSERT_EQ(1, last_remove_count());
   ASSERT_EQ(0ul, last_requests().size());
   ResetResults();
@@ -214,10 +214,10 @@ TEST_F(RequestQueueInMemoryStoreTest, RemoveRequest) {
   store()->RemoveRequests(request_ids,
                           base::Bind(&RequestQueueInMemoryStoreTest::RemoveDone,
                                      base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   ASSERT_EQ(0, last_remove_count());
   PumpLoop();
-  ASSERT_EQ(LastResult::kFalse, last_result());
+  ASSERT_EQ(LastResult::RESULT_FALSE, last_result());
   ASSERT_EQ(0, last_remove_count());
 }
 
@@ -233,9 +233,9 @@ TEST_F(RequestQueueInMemoryStoreTest, ResetStore) {
 
   store()->Reset(base::Bind(&RequestQueueInMemoryStoreTest::ResetDone,
                             base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, last_result());
+  ASSERT_EQ(LastResult::RESULT_NONE, last_result());
   PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, last_result());
+  ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
   ASSERT_EQ(0ul, last_requests().size());
 }
 

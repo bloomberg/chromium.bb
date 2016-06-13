@@ -24,7 +24,7 @@ SnapshotController::SnapshotController(
     SnapshotController::Client* client)
     : task_runner_(task_runner),
       client_(client),
-      state_(State::kReady),
+      state_(State::READY),
       weak_ptr_factory_(this) {
 }
 
@@ -33,19 +33,19 @@ SnapshotController::~SnapshotController() {}
 void SnapshotController::Reset() {
   // Cancel potentially delayed tasks that relate to the previous 'session'.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  state_ = State::kReady;
+  state_ = State::READY;
 }
 
 void SnapshotController::Stop() {
-  state_ = State::kStopped;
+  state_ = State::STOPPED;
 }
 
 void SnapshotController::PendingSnapshotCompleted() {
   // Unless the controller is "stopped", enable the subsequent snapshots.
   // Stopped state prevents any further snapshots form being started.
-  if (state_ == State::kStopped)
+  if (state_ == State::STOPPED)
     return;
-  state_ = State::kReady;
+  state_ = State::READY;
 }
 
 void SnapshotController::DocumentAvailableInMainFrame() {
@@ -66,9 +66,9 @@ void SnapshotController::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void SnapshotController::MaybeStartSnapshot() {
-  if (state_ != State::kReady)
+  if (state_ != State::READY)
     return;
-  state_ = State::kSnapshotPending;
+  state_ = State::SNAPSHOT_PENDING;
   client_->StartSnapshot();
 }
 

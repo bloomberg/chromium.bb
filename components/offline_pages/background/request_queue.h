@@ -22,22 +22,22 @@ class SavePageRequest;
 class RequestQueue {
  public:
   enum class GetRequestsResult {
-    kSuccess,
-    kStoreFailure,
+    SUCCESS,
+    STORE_FAILURE,
   };
 
   enum class AddRequestResult {
-    kSuccess,
-    kStoreFailure,
-    kRequestQuotaHit,  // Cannot add a request with this namespace, as it has
-                       // reached a quota of active requests.
+    SUCCESS,
+    STORE_FAILURE,
+    REQUEST_QUOTA_HIT,  // Cannot add a request with this namespace, as it has
+                        // reached a quota of active requests.
   };
 
   enum class UpdateRequestResult {
-    kSuccess,
-    kStoreFailure,
-    kRequestDoesNotExist,  // Failed to delete the request because it does not
-                           // exist.
+    SUCCESS,
+    STORE_FAILURE,
+    REQUEST_DOES_NOT_EXIST,  // Failed to delete the request because it does not
+                             // exist.
   };
 
   // Callback used for |GetRequests|.

@@ -25,10 +25,11 @@ namespace offline_pages {
 //   reset so no StartSnapshot calls is made 'cross-session'.
 class SnapshotController {
  public:
-  // kStateReady - listening to input, will start snapshot when needed.
-  // kStateSnapshotPending - snapshot is in progress, don't start another.
-  // kStateStopped - terminal state, no snapshots until reset.
-  enum class State { kReady, kSnapshotPending, kStopped };
+  enum class State {
+    READY,             // Listening to input, will start snapshot when needed.
+    SNAPSHOT_PENDING,  // Snapshot is in progress, don't start another.
+    STOPPED,           // Terminal state, no snapshots until reset.
+  };
 
   // Client of the SnapshotController.
   class  Client {

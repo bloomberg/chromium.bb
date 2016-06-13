@@ -80,9 +80,9 @@ class RequestQueueTest : public testing::Test {
 };
 
 RequestQueueTest::RequestQueueTest()
-    : last_add_result_(AddRequestResult::kStoreFailure),
-      last_remove_result_(UpdateRequestResult::kStoreFailure),
-      last_get_requests_result_(GetRequestsResult::kStoreFailure),
+    : last_add_result_(AddRequestResult::STORE_FAILURE),
+      last_remove_result_(UpdateRequestResult::STORE_FAILURE),
+      last_get_requests_result_(GetRequestsResult::STORE_FAILURE),
       task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
 
@@ -119,7 +119,7 @@ TEST_F(RequestQueueTest, GetRequestsEmpty) {
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(GetRequestsResult::kSuccess, last_get_requests_result());
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(0ul, last_requests().size());
 }
 
@@ -129,14 +129,14 @@ TEST_F(RequestQueueTest, AddRequest) {
   queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
                                           base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(AddRequestResult::kSuccess, last_add_result());
+  ASSERT_EQ(AddRequestResult::SUCCESS, last_add_result());
   ASSERT_TRUE(last_added_request());
   ASSERT_EQ(kRequestId, last_added_request()->request_id());
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(GetRequestsResult::kSuccess, last_get_requests_result());
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
 }
 
@@ -152,12 +152,12 @@ TEST_F(RequestQueueTest, RemoveRequest) {
       kRequestId,
       base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::kSuccess, last_remove_result());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(GetRequestsResult::kSuccess, last_get_requests_result());
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(0ul, last_requests().size());
 }
 
@@ -179,19 +179,19 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(GetRequestsResult::kSuccess, last_get_requests_result());
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(2ul, last_requests().size());
 
   queue()->RemoveRequest(
       request1.request_id(),
       base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::kSuccess, last_remove_result());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(GetRequestsResult::kSuccess, last_get_requests_result());
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_EQ(request2.request_id(), last_requests()[0].request_id());
 }

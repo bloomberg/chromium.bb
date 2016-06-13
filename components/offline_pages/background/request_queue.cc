@@ -18,8 +18,8 @@ void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
                      bool success,
                      const std::vector<SavePageRequest>& requests) {
   RequestQueue::GetRequestsResult result =
-      success ? RequestQueue::GetRequestsResult::kSuccess
-              : RequestQueue::GetRequestsResult::kStoreFailure;
+      success ? RequestQueue::GetRequestsResult::SUCCESS
+              : RequestQueue::GetRequestsResult::STORE_FAILURE;
   // TODO(fgorski): Filter out expired requests based on policy.
   // This may trigger the purging if necessary.
   // Also this may be turned into a method on the request queue or add a policy
@@ -32,9 +32,9 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
                     const SavePageRequest& request,
                     RequestQueueStore::UpdateStatus status) {
   RequestQueue::AddRequestResult result =
-      (status == RequestQueueStore::UpdateStatus::kAdded)
-          ? RequestQueue::AddRequestResult::kSuccess
-          : RequestQueue::AddRequestResult::kStoreFailure;
+      (status == RequestQueueStore::UpdateStatus::ADDED)
+          ? RequestQueue::AddRequestResult::SUCCESS
+          : RequestQueue::AddRequestResult::STORE_FAILURE;
   callback.Run(result, request);
 }
 
@@ -44,8 +44,8 @@ void RemoveRequestDone(const RequestQueue::UpdateRequestCallback& callback,
                        int deleted_requests_count) {
   DCHECK_EQ(1, deleted_requests_count);
   RequestQueue::UpdateRequestResult result =
-      success ? RequestQueue::UpdateRequestResult::kSuccess
-              : RequestQueue::UpdateRequestResult::kStoreFailure;
+      success ? RequestQueue::UpdateRequestResult::SUCCESS
+              : RequestQueue::UpdateRequestResult::STORE_FAILURE;
   callback.Run(result);
 }
 }  // namespace

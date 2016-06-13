@@ -44,20 +44,20 @@ SavePageRequest::~SavePageRequest() {}
 SavePageRequest::Status SavePageRequest::GetStatus(
     const base::Time& now) const {
   if (now < activation_time_)
-    return Status::kNotReady;
+    return Status::NOT_READY;
 
   // TODO(fgorski): enable check once policy available.
   // if (attempt_count_ >= policy.max_attempt_count)
-  // return Status::kFailed;
+  // return Status::FAILED;
 
   // TODO(fgorski): enable check once policy available.
   // if (activation_time_+ policy.page_expiration_interval < now)
-  // return Status::kExpired;
+  // return Status::EXPIRED;
 
   if (creation_time_ < last_attempt_time_)
-    return Status::kStarted;
+    return Status::STARTED;
 
-  return Status::kPending;
+  return Status::PENDING;
 }
 
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {

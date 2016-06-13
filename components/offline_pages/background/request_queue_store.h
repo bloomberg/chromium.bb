@@ -18,9 +18,9 @@ class SavePageRequest;
 class RequestQueueStore {
  public:
   enum class UpdateStatus {
-    kAdded,    // Request was added successfully.
-    kUpdated,  // Request was updated successfully.
-    kFailed,   // Add or update attempt failed.
+    ADDED,    // Request was added successfully.
+    UPDATED,  // Request was updated successfully.
+    FAILED,   // Add or update attempt failed.
   };
 
   typedef base::Callback<void(

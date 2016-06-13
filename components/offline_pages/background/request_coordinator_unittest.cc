@@ -115,7 +115,7 @@ class RequestCoordinatorTest
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
-    : last_get_requests_result_(RequestQueue::GetRequestsResult::kStoreFailure),
+    : last_get_requests_result_(RequestQueue::GetRequestsResult::STORE_FAILURE),
       task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
 
