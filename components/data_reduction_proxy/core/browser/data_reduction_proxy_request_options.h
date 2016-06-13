@@ -131,7 +131,7 @@ class DataReductionProxyRequestOptions {
   void UpdateExperiments();
 
   // Adds the server-side experiment from the field trial.
-  void AddExperimentFromFieldTrial();
+  void AddServerExperimentFromFieldTrial();
 
   // Generates a session ID and credentials suitable for authenticating with
   // the data reduction proxy.

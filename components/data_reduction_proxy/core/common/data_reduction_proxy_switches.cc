@@ -53,6 +53,10 @@ const char kDataReductionProxyLoFiValueSlowConnectionsOnly[] =
 const char kDataReductionProxySecureProxyCheckURL[] =
     "data-reduction-proxy-secure-proxy-check-url";
 
+// Disables server experiments that may be enabled through field trial.
+const char kDataReductionProxyServerExperimentsDisabled[] =
+    "data-reduction-proxy-server-experiments-disabled";
+
 // Starts the secure Data Reduction Proxy in the disabled state until the secure
 // proxy check succeeds.
 const char kDataReductionProxyStartSecureDisabled[] =

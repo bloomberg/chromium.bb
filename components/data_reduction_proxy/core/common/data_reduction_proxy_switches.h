@@ -24,6 +24,7 @@ extern const char kDataReductionProxyLoFiValueCellularOnly[];
 extern const char kDataReductionProxyLoFiValueDisabled[];
 extern const char kDataReductionProxyLoFiValueSlowConnectionsOnly[];
 extern const char kDataReductionProxySecureProxyCheckURL[];
+extern const char kDataReductionProxyServerExperimentsDisabled[];
 extern const char kDataReductionProxyStartSecureDisabled[];
 extern const char kDataReductionProxyWarmupURL[];
 extern const char kEnableDataReductionProxy[];

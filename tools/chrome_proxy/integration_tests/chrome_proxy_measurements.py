@@ -275,6 +275,9 @@ class ChromeProxyLoFi(ChromeProxyValidation):
   def CustomizeBrowserOptions(self, options):
     super(ChromeProxyLoFi, self).CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs('--data-reduction-proxy-lo-fi=always-on')
+    # Disable server experiments such as tamper detection.
+    options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-server-experiments-disabled')
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForLoFi(tab, results)
@@ -303,14 +306,20 @@ class ChromeProxyCacheLoFiDisabled(ChromeProxyValidation):
   def WillStartBrowser(self, platform):
     super(ChromeProxyCacheLoFiDisabled, self).WillStartBrowser(platform)
     if not self._page:
-      # First page load, enable LoFi and chrome proxy.
+      # First page load, enable LoFi and chrome proxy. Disable server
+      # experiments such as tamper detection.
       self.options.AppendExtraBrowserArgs(
             '--data-reduction-proxy-lo-fi=always-on')
+      self.options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-server-experiments-disabled')
       self._is_lo_fi_enabled = True
     else:
-      # Second page load, disable LoFi. Chrome proxy is still enabled.
+      # Second page load, disable LoFi. Chrome proxy is still enabled. Disable
+      # server experiments such as tamper detection.
       self.options.browser_options.extra_browser_args.discard(
             '--data-reduction-proxy-lo-fi=always-on')
+      self.options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-server-experiments-disabled')
       self._is_lo_fi_enabled = False
 
   def WillNavigateToPage(self, page, tab):
@@ -349,9 +358,12 @@ class ChromeProxyCacheProxyDisabled(ChromeProxyValidation):
   def WillStartBrowser(self, platform):
     super(ChromeProxyCacheProxyDisabled, self).WillStartBrowser(platform)
     if not self._page:
-      # First page load, enable LoFi and chrome proxy.
+      # First page load, enable LoFi and chrome proxy. Disable server
+      # experiments such as tamper detection.
       self.options.AppendExtraBrowserArgs(
             '--data-reduction-proxy-lo-fi=always-on')
+      self.options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-server-experiments-disabled')
     else:
       # Second page load, disable chrome proxy. LoFi is still enabled.
       self.DisableChromeProxy()

@@ -104,9 +104,17 @@ bool IsIncludedInLoFiPreviewFieldTrial() {
          0;
 }
 
+bool IsIncludedInServerExperimentsFieldTrial() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             data_reduction_proxy::switches::
+                 kDataReductionProxyServerExperimentsDisabled) &&
+         FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
+                 .find(kDisabled) != 0;
+}
 bool IsIncludedInTamperDetectionExperiment() {
-  return FieldTrialList::FindFullName("DataReductionProxyServerExperiments")
-             .find("TamperDetection_Enabled") == 0;
+  return IsIncludedInServerExperimentsFieldTrial() &&
+         FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
+                 .find("TamperDetection_Enabled") == 0;
 }
 
 bool IsLoFiOnViaFlags() {

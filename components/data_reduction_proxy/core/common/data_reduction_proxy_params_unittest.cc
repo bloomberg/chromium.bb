@@ -193,6 +193,90 @@ TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
   }
 }
 
+TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
+  const struct {
+    std::string test_case;
+    std::string trial_group_value;
+    bool disable_flag_set;
+    bool expected;
+  } tests[] = {
+      {
+          "Field trial not set", "", false, true,
+      },
+      {
+          "Field trial not set, flag set", "", true, false,
+      },
+      {
+          "Enabled", "Enabled", false, true,
+      },
+      {
+          "Enabled via field trial but disabled via flag", "Enabled", true,
+          false,
+      },
+      {
+          "Disabled via field trial", "Disabled", false, false,
+      },
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+    if (!test.trial_group_value.empty()) {
+      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+          "DataReductionProxyServerExperiments", test.trial_group_value));
+    }
+
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    if (test.disable_flag_set) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyServerExperimentsDisabled, "");
+    }
+    EXPECT_EQ(test.expected, params::IsIncludedInServerExperimentsFieldTrial())
+        << test.test_case;
+  }
+}
+
+TEST_F(DataReductionProxyParamsTest, IsTamperDetectionEnabled) {
+  const struct {
+    std::string test_case;
+    std::string trial_group_value;
+    bool disable_flag_set;
+    bool expected;
+  } tests[] = {
+      {
+          "Field trial not set", "", false, false,
+      },
+      {
+          "Field trial not set, flag set", "", true, false,
+      },
+      {
+          "Enabled", "Enabled", false, false,
+      },
+      {
+          "TamperDetection_Enabled but disabled via flag",
+          "TamperDetection_Enabled", true, false,
+      },
+      {
+          "TamperDetection_Enabled", "TamperDetection_Enabled", false, true,
+      },
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+    if (!test.trial_group_value.empty()) {
+      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+          "DataReductionProxyServerExperiments", test.trial_group_value));
+    }
+
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    if (test.disable_flag_set) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyServerExperimentsDisabled, "");
+    }
+    EXPECT_EQ(test.expected, params::IsIncludedInTamperDetectionExperiment())
+        << test.test_case;
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
   struct {
     bool command_line_set;

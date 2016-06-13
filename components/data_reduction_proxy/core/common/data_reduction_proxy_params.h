@@ -70,6 +70,10 @@ bool IsIncludedInLoFiControlFieldTrial();
 // trial.
 bool IsIncludedInLoFiPreviewFieldTrial();
 
+// Returns true if this client is part of the field trial that should enable
+// server experiments for the data reduction proxy.
+bool IsIncludedInServerExperimentsFieldTrial();
+
 // Returns true if this client is part of the tamper detection experiment.
 bool IsIncludedInTamperDetectionExperiment();
 

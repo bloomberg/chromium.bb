@@ -261,17 +261,22 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   const struct {
     std::string field_trial_group;
     std::string command_line_experiment;
+    bool disable_server_experiments_via_flag;
     std::string expected_experiment;
   } tests[] = {
       // Disabled field trial groups.
-      {"disabled_group", std::string(), std::string()},
-      {"disabled_group", kExperimentFoo, kExperimentFoo},
+      {"disabled_group", std::string(), false, std::string()},
+      {"disabled_group", kExperimentFoo, false, kExperimentFoo},
       // Valid field trial groups should pick from field trial.
-      {kFieldTrialGroupFoo, std::string(), kExperimentFoo},
-      {kFieldTrialGroupBar, std::string(), kExperimentBar},
+      {kFieldTrialGroupFoo, std::string(), false, kExperimentFoo},
+      {kFieldTrialGroupBar, std::string(), false, kExperimentBar},
+      {kFieldTrialGroupFoo, std::string(), true, std::string()},
+      {kFieldTrialGroupBar, std::string(), true, std::string()},
       // Experiments from command line switch should override.
-      {kFieldTrialGroupFoo, kExperimentBar, kExperimentBar},
-      {kFieldTrialGroupBar, kExperimentFoo, kExperimentFoo},
+      {kFieldTrialGroupFoo, kExperimentBar, false, kExperimentBar},
+      {kFieldTrialGroupBar, kExperimentFoo, false, kExperimentFoo},
+      {kFieldTrialGroupFoo, kExperimentBar, true, kExperimentBar},
+      {kFieldTrialGroupBar, kExperimentFoo, true, kExperimentFoo},
   };
 
   std::map<std::string, std::string> server_experiment_foo,
@@ -289,9 +294,15 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   for (const auto& test : tests) {
     std::vector<std::string> expected_experiments;
 
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         data_reduction_proxy::switches::kDataReductionProxyExperiment,
         test.command_line_experiment);
+    if (test.disable_server_experiments_via_flag) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyServerExperimentsDisabled, "");
+    }
 
     std::string expected_header;
     base::FieldTrialList field_trial_list(nullptr);

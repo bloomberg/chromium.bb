@@ -143,14 +143,16 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
         experiments_.push_back(experiment_tokenizer.token());
     }
   } else {
-    AddExperimentFromFieldTrial();
+    AddServerExperimentFromFieldTrial();
   }
   RegenerateRequestHeaderValue();
 }
 
-void DataReductionProxyRequestOptions::AddExperimentFromFieldTrial() {
-  std::string server_experiment = variations::GetVariationParamValue(
-      params::GetServerExperimentsFieldTrialName(), "exp");
+void DataReductionProxyRequestOptions::AddServerExperimentFromFieldTrial() {
+  if (!params::IsIncludedInServerExperimentsFieldTrial())
+    return;
+  const std::string server_experiment = variations::GetVariationParamValue(
+      params::GetServerExperimentsFieldTrialName(), kExperimentsOption);
   if (!server_experiment.empty())
     experiments_.push_back(server_experiment);
 }
