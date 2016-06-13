@@ -40,11 +40,6 @@ public interface FirstRunPageDelegate {
     void completeFirstRunExperience();
 
     /**
-     * Notifies that the sign-in dialog is shown.
-     */
-    void onSigninDialogShown();
-
-    /**
      * Notifies that the user refused to sign in (e.g. "NO, THANKS").
      */
     void refuseSignIn();

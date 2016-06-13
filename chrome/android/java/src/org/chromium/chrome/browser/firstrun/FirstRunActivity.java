@@ -17,7 +17,6 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -28,8 +27,6 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninAccessPoint;
-import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -319,13 +316,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         Intent resultData = new Intent();
         resultData.putExtras(mFreProperties);
         finishAllFREActivities(Activity.RESULT_OK, resultData);
-    }
-
-    @Override
-    public void onSigninDialogShown() {
-        RecordUserAction.record("MobileFre.SignInShown");
-        RecordUserAction.record("Signin_Signin_FromStartPage");
-        SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
     }
 
     @Override
