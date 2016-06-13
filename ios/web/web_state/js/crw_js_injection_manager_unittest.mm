@@ -7,9 +7,9 @@
 #include <stddef.h>
 #import <Foundation/Foundation.h>
 
+#import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
-#import "ios/web/test/web_test.h"
 #include "testing/gtest_mac.h"
 
 // Testing class of JsInjectioManager that has no dependencies.
@@ -158,10 +158,10 @@
 namespace web {
 
 // Test fixture to test web controller injection.
-class JsInjectionManagerTest : public web::WebTestWithWebController {
+class JsInjectionManagerTest : public web::WebTestWithWebState {
  protected:
   void SetUp() override {
-    web::WebTestWithWebController::SetUp();
+    web::WebTestWithWebState::SetUp();
     // Loads a dummy page to prepare JavaScript evaluation.
     NSString* const kPageContent = @"<html><body><div></div></body></html>";
     LoadHtml(kPageContent);

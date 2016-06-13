@@ -17,12 +17,13 @@
 #include "base/values.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/web_test.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
-#import "ios/web/test/web_test.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -268,7 +269,7 @@ class WebStateTest : public web::WebTest {
     web_state_->GetNavigationManager()->LoadURLWithParams(params);
 
     // Trigger the load.
-    web_state_->GetWebController().webUsageEnabled = YES;
+    web_state_->SetWebUsageEnabled(true);
     web_state_->GetView();
 
     // Wait until load is completed.

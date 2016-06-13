@@ -57,9 +57,6 @@ class WebTestWithWebState : public WebTest,
   web::WebState* web_state();
   const web::WebState* web_state() const;
 
-  // The web controller for testing.
-  // TODO(crbug.com/619076): Remove this ivar.
-  base::WeakNSObject<CRWWebController> webController_;
   // true if a task has been processed.
   bool processed_a_task_;
 
@@ -74,6 +71,9 @@ class WebTestWithWebState : public WebTest,
   NSString* CreateLoadCheck();
   // The web state for testing.
   std::unique_ptr<WebState> web_state_;
+  // The web controller for testing.
+  // TODO(crbug.com/619076): Remove this ivar.
+  base::WeakNSObject<CRWWebController> webController_;
 };
 
 }  // namespace web

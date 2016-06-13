@@ -6,11 +6,14 @@
 
 #include <memory>
 
+#include "base/message_loop/message_loop.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
+#include "ios/web/public/test/web_test.h"
+#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/test/mojo_test.mojom.h"
-#include "ios/web/test/web_test.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/interface_registry.h"

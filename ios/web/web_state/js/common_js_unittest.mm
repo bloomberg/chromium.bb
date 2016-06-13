@@ -6,7 +6,7 @@
 #include <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#import "ios/web/test/web_test.h"
+#import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -27,7 +27,7 @@ struct TextFieldTestElement {
 namespace web {
 
 // Test fixture to test common.js.
-typedef web::WebTestWithWebController CommonJsTest;
+typedef web::WebTestWithWebState CommonJsTest;
 
 // Tests __gCrWeb.common.isTextField JavaScript API.
 TEST_F(CommonJsTest, IsTestField) {

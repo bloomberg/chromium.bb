@@ -515,7 +515,6 @@
         'test/test_web_thread_bundle.cc',
         'test/web_int_test.h',
         'test/web_int_test.mm',
-        'test/web_test.h',
         'test/web_test_with_web_controller.h',
         'test/web_test_with_web_controller.mm',
         'test/web_test_suite.h',

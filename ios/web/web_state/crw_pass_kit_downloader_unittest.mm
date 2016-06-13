@@ -4,12 +4,12 @@
 
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <memory>
 
 #import "base/mac/scoped_nsobject.h"
-#import "ios/web/test/web_test.h"
+#include "ios/web/public/test/web_test.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"

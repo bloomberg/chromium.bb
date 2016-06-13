@@ -8,7 +8,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/test/web_test.h"
+#include "ios/web/public/test/web_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

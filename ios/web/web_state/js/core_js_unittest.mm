@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#import "ios/web/test/web_test.h"
+#import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -25,7 +25,7 @@ struct TestScriptAndExpectedValue {
 namespace web {
 
 // Test fixture to test core.js.
-class CoreJsTest : public web::WebTestWithWebController {
+class CoreJsTest : public web::WebTestWithWebState {
  protected:
   void ImageTesterHelper(
       NSString* htmlForImage,

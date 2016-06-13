@@ -7,7 +7,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "ios/web/test/web_test.h"
+#include "ios/web/public/test/web_test.h"
 
 namespace web {
 
