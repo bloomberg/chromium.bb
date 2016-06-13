@@ -1411,7 +1411,7 @@
       'tags': ['local-data-access'],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing user data.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> manages its contents.
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
@@ -1433,7 +1433,7 @@
       'tags': [],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> manages its contents.
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 

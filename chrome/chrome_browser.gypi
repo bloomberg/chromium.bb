@@ -1477,6 +1477,8 @@
       'browser/password_manager/password_manager_util_win.h',
       'browser/themes/theme_service_win.cc',
       'browser/themes/theme_service_win.h',
+      'browser/downgrade/user_data_downgrade.cc',
+      'browser/downgrade/user_data_downgrade.h',
     ],
     'chrome_browser_non_win_sources': [
       'browser/profile_resetter/triggered_profile_resetter_stub.cc',

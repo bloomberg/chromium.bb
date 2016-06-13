@@ -1156,6 +1156,7 @@
       '../ui/resources/cursors/zoom_in.cur',
       '../ui/resources/cursors/zoom_out.cur',
       'app/chrome_dll.rc',
+      'browser/downgrade/user_data_downgrade_browsertest.cc',
       'test/data/resource.rc',
     ],
     # Cross-platform (except Mac) views interactive tests.

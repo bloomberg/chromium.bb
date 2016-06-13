@@ -19,9 +19,11 @@
 namespace {
 
 // Checks if the key exists in the given hive and expands any string variables.
-bool LoadUserDataDirPolicyFromRegistry(HKEY hive, base::FilePath* dir) {
+bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
+                                       const char* key_name_str,
+                                       base::FilePath* dir) {
   base::string16 value;
-  base::string16 key_name(base::ASCIIToUTF16(policy::key::kUserDataDir));
+  base::string16 key_name(base::ASCIIToUTF16(key_name_str));
   base::win::RegKey key(hive, policy::kRegistryChromePolicyKey, KEY_READ);
   if (key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *dir = base::FilePath(policy::path_parser::ExpandPathVariables(value));
@@ -147,8 +149,20 @@ base::FilePath::StringType ExpandPathVariables(
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   DCHECK(user_data_dir);
   // Policy from the HKLM hive has precedence over HKCU.
-  if (!LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, user_data_dir))
-    LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, user_data_dir);
+  if (!LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, key::kUserDataDir,
+                                         user_data_dir)) {
+    LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, key::kUserDataDir,
+                                      user_data_dir);
+  }
+}
+
+void CheckDiskCacheDirPolicy(base::FilePath* disk_cache_dir) {
+  DCHECK(disk_cache_dir);
+  if (!LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, key::kDiskCacheDir,
+                                         disk_cache_dir)) {
+    LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, key::kDiskCacheDir,
+                                      disk_cache_dir);
+  }
 }
 
 }  // namespace path_parser

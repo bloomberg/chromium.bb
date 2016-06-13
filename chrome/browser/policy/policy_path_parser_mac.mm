@@ -114,6 +114,12 @@ void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   }
 }
 
+void CheckDiskCacheDirPolicy(base::FilePath* user_data_dir) {
+  // This function is not implemented in Mac because it's only used by the
+  // feature in Windows.
+  NOTREACHED();
+}
+
 }  // namespace path_parser
 
 }  // namespace policy

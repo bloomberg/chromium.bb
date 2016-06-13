@@ -200,6 +200,7 @@
 #include "chrome/browser/chrome_select_file_dialog_factory_win.h"
 #include "chrome/browser/component_updater/caps_installer_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -1772,6 +1773,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+  // Clean up old user data directory and disk cache directory.
+  downgrade::DeleteMovedUserDataSoon();
+#endif
 
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep2Time",
                       base::TimeTicks::Now() - start_time_step2);

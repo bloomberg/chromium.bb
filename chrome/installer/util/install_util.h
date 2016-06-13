@@ -183,6 +183,21 @@ class InstallUtil {
   // Returns a string in the form YYYYMMDD of the current date.
   static base::string16 GetCurrentDate();
 
+  // Returns the highest Chrome version that was installed prior to a downgrade,
+  // or an invalid Version if Chrome was not previously downgraded from a newer
+  // version.
+  static base::Version GetDowngradeVersion(bool system_install,
+                                           const BrowserDistribution* dist);
+
+  // Adds or removes downgrade version registry value. This function should only
+  // be used for Chrome install.
+  static void AddUpdateDowngradeVersionItem(
+      bool system_install,
+      const base::Version* current_version,
+      const base::Version& new_version,
+      const BrowserDistribution* dist,
+      WorkItemList* list);
+
   // A predicate that compares the program portion of a command line with a
   // given file path.  First, the file paths are compared directly.  If they do
   // not match, the filesystem is consulted to determine if the paths reference

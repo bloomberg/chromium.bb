@@ -60,6 +60,7 @@
 #include <malloc.h>
 #include <algorithm>
 #include "base/debug/close_handle_hook_win.h"
+#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/v8_breakpad_support_win.h"
 #include "components/crash/content/app/crashpad.h"
@@ -732,8 +733,17 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 
   // Initialize the user data dir for any process type that needs it.
-  if (chrome::ProcessNeedsProfileDir(process_type))
+  if (chrome::ProcessNeedsProfileDir(process_type)) {
     InitializeUserDataDir();
+#if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+    if (downgrade::IsMSIInstall()) {
+      downgrade::MoveUserDataForFirstRunAfterDowngrade();
+      base::FilePath user_data_dir;
+      if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+        downgrade::UpdateLastVersion(user_data_dir);
+    }
+#endif
+  }
 
   // Register component_updater PathProvider after DIR_USER_DATA overidden by
   // command line flags. Maybe move the chrome PathProvider down here also?

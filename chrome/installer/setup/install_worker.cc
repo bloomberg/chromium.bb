@@ -229,7 +229,7 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const base::FilePath& setup_path,
                                  const Version& new_version,
-                                 bool is_new_install,
+                                 const Version* current_version,
                                  bool add_language_identifier,
                                  WorkItemList* list) {
   const Products& products = installer_state.products();
@@ -239,8 +239,8 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     if (p.is_chrome()) {
       AddOsUpgradeWorkItems(installer_state, setup_path, new_version, p,
                             list);
-      AddFirewallRulesWorkItems(
-          installer_state, p.distribution(), is_new_install, list);
+      AddFirewallRulesWorkItems(installer_state, p.distribution(),
+                                current_version == nullptr, list);
 
 #if defined(GOOGLE_CHROME_BUILD)
       if (!InstallUtil::IsChromeSxSProcess()) {
@@ -250,6 +250,9 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
             new_version, add_language_identifier, list);
       }
 #endif  // GOOGLE_CHROME_BUILD
+      InstallUtil::AddUpdateDowngradeVersionItem(
+          installer_state.system_install(), current_version, new_version,
+          p.distribution(), list);
     }
     if (p.is_chrome_binaries())
       AddQuickEnableChromeFrameWorkItems(installer_state, list);
@@ -1127,13 +1130,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Add any remaining work items that involve special settings for
   // each product.
-  AddProductSpecificWorkItems(original_state,
-                              installer_state,
-                              setup_path,
-                              new_version,
-                              current_version == NULL,
-                              add_language_identifier,
-                              install_list);
+  AddProductSpecificWorkItems(original_state, installer_state, setup_path,
+                              new_version, current_version,
+                              add_language_identifier, install_list);
 
   // Copy over brand, usagestats, and other values.
   AddGoogleUpdateWorkItems(original_state, installer_state, install_list);
