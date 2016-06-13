@@ -1,43 +1,22 @@
-<html>
-    <head>
-        <title>Test that media autoplay should not work if user gesture is required for playback</title>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            if (window.internals)
-                window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+<!DOCTYPE html>
+<title>Test that media autoplay should not work if user gesture is required for playback.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script>
+internals.settings.setMediaPlaybackRequiresUserGesture(true);
+</script>
+<video autoplay></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
+    assert_true(video.paused);
 
-            function testPlay()
-            {
-                failTest("play event should not fire without user gesture.");
-            }
+    video.onplay = t.unreached_func();
 
-            function testPaused()
-            {
-                testExpected("video.paused", true);
-                endTest();
-            }
-
-            function canplaythrough()
-            {
-                 setTimeout(testPaused, 100);
-            }
-
-            function start()
-            {
-                 findMediaElement();
-                 video.src = findMediaFile("video", "content/test");
-                 testExpected("video.paused", true);
-                 waitForEvent('canplaythrough', canplaythrough);
-                 waitForEvent('play', testPlay);
-            }
-        </script>
-    </head>
-
-    <body onload="start()">
-    <p>Test that media autoplay should not work if user gesture is required for playback.</p>
-    <video controls autoplay></video>
-    </body>
-</html>
+    video.oncanplaythrough = t.step_func(function() {
+        setTimeout(t.step_func_done(function() { assert_true(video.paused); }), 100);
+    });
+});
+</script>
