@@ -191,6 +191,9 @@ void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::Use
     case v8::Isolate::kDecimalWithLeadingZeroInStrictMode:
         blinkFeature = UseCounter::V8DecimalWithLeadingZeroInStrictMode;
         break;
+    case v8::Isolate::kLegacyDateParser:
+        blinkFeature = UseCounter::V8LegacyDateParser;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.

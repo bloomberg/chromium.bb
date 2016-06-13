@@ -74904,6 +74904,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1401" label="GetUserMediaLegacy"/>
   <int value="1402" label="GetUserMediaPromise"/>
   <int value="1403" label="CSSFilterFunctionNoArguments"/>
+  <int value="1404" label="V8LegacyDateParser"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

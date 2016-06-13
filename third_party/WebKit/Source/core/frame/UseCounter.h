@@ -1209,6 +1209,7 @@ public:
         GetUserMediaLegacy = 1401,
         GetUserMediaPromise = 1402,
         CSSFilterFunctionNoArguments = 1403,
+        V8LegacyDateParser = 1404,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
