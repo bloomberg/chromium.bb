@@ -1096,18 +1096,6 @@ const std::string& ChromeLauncherControllerImpl::GetAppIDForShelfID(
   return controller ? controller->app_id() : base::EmptyString();
 }
 
-bool ChromeLauncherControllerImpl::GetAppIDForShelfIDConst(
-    ash::ShelfID id,
-    std::string* app_id) const {
-  auto app = id_to_item_controller_map_.find(id);
-  if (app == id_to_item_controller_map_.end()) {
-    return false;
-  } else {
-    *app_id = app->second->app_id();
-    return true;
-  }
-}
-
 void ChromeLauncherControllerImpl::PinAppWithID(const std::string& app_id) {
   if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
     DoPinAppWithID(app_id);

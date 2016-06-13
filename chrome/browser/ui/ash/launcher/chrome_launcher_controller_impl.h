@@ -163,7 +163,6 @@ class ChromeLauncherControllerImpl
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
-  bool GetAppIDForShelfIDConst(ash::ShelfID id, std::string* app_id) const;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;
   void UnpinAppWithID(const std::string& app_id) override;
