@@ -61,7 +61,6 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   class SaveConfirmationView;
   class SignInPromoView;
   class UpdatePendingView;
-  class WebContentMouseHandler;
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             views::View* anchor_view,
@@ -102,7 +101,6 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
 
   views::View* initially_focused_view_;
 
-  // A helper to intercept mouse click events on the web contents.
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);

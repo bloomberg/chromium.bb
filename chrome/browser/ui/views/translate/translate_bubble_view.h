@@ -94,7 +94,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size GetPreferredSize() const override;
 
-  // views::CombboxListener methods.
+  // views::ComboboxListener methods.
   void OnPerformAction(views::Combobox* combobox) override;
 
   // views::LinkListener method.
@@ -125,6 +125,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Returns the current view state.
   TranslateBubbleModel::ViewState GetViewState() const;
+
+ protected:
+  // LocationBarBubbleDelegateView:
+  void CloseBubble() override;
 
  private:
   enum LinkID {
@@ -247,6 +251,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
+
+  std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleView);
 };

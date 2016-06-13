@@ -10,8 +10,42 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_view_host.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
+
+LocationBarBubbleDelegateView::WebContentMouseHandler::WebContentMouseHandler(
+    LocationBarBubbleDelegateView* bubble,
+    content::WebContents* web_contents)
+    : bubble_(bubble), web_contents_(web_contents) {
+  DCHECK(bubble_);
+  DCHECK(web_contents_);
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+      this, web_contents_->GetTopLevelNativeWindow());
+}
+
+LocationBarBubbleDelegateView::WebContentMouseHandler::
+    ~WebContentMouseHandler() {}
+
+void LocationBarBubbleDelegateView::WebContentMouseHandler::OnKeyEvent(
+    ui::KeyEvent* event) {
+  if ((event->key_code() == ui::VKEY_ESCAPE ||
+       web_contents_->GetRenderViewHost()->IsFocusedElementEditable()) &&
+      event->type() == ui::ET_KEY_PRESSED)
+    bubble_->CloseBubble();
+}
+
+void LocationBarBubbleDelegateView::WebContentMouseHandler::OnMouseEvent(
+    ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    bubble_->CloseBubble();
+}
+
+void LocationBarBubbleDelegateView::WebContentMouseHandler::OnTouchEvent(
+    ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    bubble_->CloseBubble();
+}
 
 LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     views::View* anchor_view,

@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/render_view_host.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -29,7 +28,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -610,56 +608,6 @@ void ManagePasswordsBubbleView::SignInPromoView::ButtonPressed(
   parent_->CloseBubble();
 }
 
-// ManagePasswordsBubbleView::WebContentMouseHandler --------------------------
-
-// The class listens for WebContentsView events and notifies the bubble if the
-// view was clicked on or received keystrokes.
-class ManagePasswordsBubbleView::WebContentMouseHandler
-    : public ui::EventHandler {
- public:
-  explicit WebContentMouseHandler(ManagePasswordsBubbleView* bubble);
-
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
-
- private:
-  ManagePasswordsBubbleView* bubble_;
-  std::unique_ptr<views::EventMonitor> event_monitor_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentMouseHandler);
-};
-
-ManagePasswordsBubbleView::WebContentMouseHandler::WebContentMouseHandler(
-    ManagePasswordsBubbleView* bubble)
-    : bubble_(bubble) {
-  content::WebContents* web_contents = bubble_->web_contents();
-  DCHECK(web_contents);
-  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
-      this, web_contents->GetTopLevelNativeWindow());
-}
-
-void ManagePasswordsBubbleView::WebContentMouseHandler::OnKeyEvent(
-    ui::KeyEvent* event) {
-  content::WebContents* web_contents = bubble_->web_contents();
-  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if ((event->key_code() == ui::VKEY_ESCAPE ||
-       rvh->IsFocusedElementEditable()) && event->type() == ui::ET_KEY_PRESSED)
-    bubble_->CloseBubble();
-}
-
-void ManagePasswordsBubbleView::WebContentMouseHandler::OnMouseEvent(
-    ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    bubble_->CloseBubble();
-}
-
-void ManagePasswordsBubbleView::WebContentMouseHandler::OnTouchEvent(
-    ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    bubble_->CloseBubble();
-}
-
 // ManagePasswordsBubbleView::UpdatePendingView -------------------------------
 
 // A view offering the user the ability to update credentials. Contains a
@@ -832,7 +780,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {
-  mouse_handler_.reset(new WebContentMouseHandler(this));
+  mouse_handler_.reset(new WebContentMouseHandler(this, this->web_contents()));
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {

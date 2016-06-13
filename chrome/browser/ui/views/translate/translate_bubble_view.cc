@@ -171,6 +171,11 @@ TranslateBubbleView* TranslateBubbleView::GetCurrentBubble() {
   return translate_bubble_view_;
 }
 
+void TranslateBubbleView::CloseBubble() {
+  mouse_handler_.reset();
+  LocationBarBubbleDelegateView::CloseBubble();
+}
+
 void TranslateBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
@@ -375,6 +380,8 @@ TranslateBubbleView::TranslateBubbleView(
       is_in_incognito_window_(
           web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()) {
   translate_bubble_view_ = this;
+  if (web_contents)  // web_contents can be null in unit_tests.
+    mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));
 }
 
 views::View* TranslateBubbleView::GetCurrentView() const {
