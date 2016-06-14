@@ -968,8 +968,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass ]
 
-crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass ]
-
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
@@ -1637,3 +1635,6 @@ crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 crbug.com/619973 fast/forms/select/listbox-appearance-basic.html [ Failure ]
 crbug.com/619973 fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ Failure ]
 crbug.com/619973 fast/forms/select/menulist-appearance-basic.html [ Failure ]
+
+# Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
+crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
