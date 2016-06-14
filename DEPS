@@ -59,7 +59,7 @@ deps = {
   # Linux syscall support.
   "src/src/third_party/lss":
     "https://chromium.googlesource.com/linux-syscall-support/" +
-      "@9292030109847793f7a6689adac1ddafb412fe14"
+      "@3f6478ac95edf86cd3da300c2c0d34a438f5dbeb",
 }
 
 hooks = [

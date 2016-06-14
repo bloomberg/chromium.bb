@@ -44,7 +44,6 @@
 
 #ifdef __APPLE__
 #define sys_mmap mmap
-#define sys_mmap2 mmap
 #define sys_munmap munmap
 #define MAP_ANONYMOUS MAP_ANON
 #else
@@ -117,14 +116,8 @@ class PageAllocator {
 
  private:
   uint8_t *GetNPages(size_t num_pages) {
-#if defined(__x86_64__) || defined(__aarch64__) || defined(__aarch64__) || \
-    ((defined(__mips__) && _MIPS_SIM == _ABI64))
     void *a = sys_mmap(NULL, page_size_ * num_pages, PROT_READ | PROT_WRITE,
                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#else
-    void *a = sys_mmap2(NULL, page_size_ * num_pages, PROT_READ | PROT_WRITE,
-                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#endif
     if (a == MAP_FAILED)
       return NULL;
 
