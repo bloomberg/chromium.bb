@@ -32,6 +32,7 @@ cr.define('cr.login', function() {
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
   var SAML_REDIRECTION_PATH = 'samlredirect';
+  var BLANK_PAGE_URL = 'about:blank';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -196,7 +197,7 @@ cr.define('cr.login', function() {
    * Reinitializes authentication parameters so that a failed login attempt
    * would not result in an infinite loop.
    */
-  Authenticator.prototype.resetStates_ = function() {
+  Authenticator.prototype.resetStates = function() {
     this.isLoaded_ = false;
     this.email_ = null;
     this.gaiaId_ = null;
@@ -216,13 +217,20 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Resets the webview to the blank page.
+   */
+  Authenticator.prototype.resetWebview = function() {
+    this.webview_.src = BLANK_PAGE_URL;
+  };
+
+  /**
    * Loads the authenticator component with the given parameters.
    * @param {AuthMode} authMode Authorization mode.
    * @param {Object} data Parameters for the authorization flow.
    */
   Authenticator.prototype.load = function(authMode, data) {
     this.authMode = authMode;
-    this.resetStates_();
+    this.resetStates();
     // gaiaUrl parameter is used for testing. Once defined, it is never changed.
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
@@ -270,7 +278,7 @@ cr.define('cr.login', function() {
    * Reloads the authenticator component.
    */
   Authenticator.prototype.reload = function() {
-    this.resetStates_();
+    this.resetStates();
     this.webview_.src = this.reloadUrl_;
     this.isLoaded_ = true;
   };
@@ -703,7 +711,7 @@ cr.define('cr.login', function() {
             gapsCookie: this.newGapsCookie_ || this.gapsCookie_ || '',
           }
         }));
-    this.resetStates_();
+    this.resetStates();
   };
 
   /**
@@ -786,6 +794,8 @@ cr.define('cr.login', function() {
       this.fireReadyEvent_();
       // Focus webview after dispatching event when webview is already visible.
       this.webview_.focus();
+    } else if (currentUrl == BLANK_PAGE_URL) {
+      this.fireReadyEvent_();
     }
   };
 
