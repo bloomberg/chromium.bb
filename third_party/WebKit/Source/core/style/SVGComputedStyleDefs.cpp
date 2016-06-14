@@ -200,7 +200,7 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
         && markerEnd == other.markerEnd;
 }
 
-StyleLayoutData::StyleLayoutData()
+StyleGeometryData::StyleGeometryData()
     : d(SVGComputedStyle::initialD())
     , cx(SVGComputedStyle::initialCx())
     , cy(SVGComputedStyle::initialCy())
@@ -212,8 +212,8 @@ StyleLayoutData::StyleLayoutData()
 {
 }
 
-inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
-    : RefCounted<StyleLayoutData>()
+inline StyleGeometryData::StyleGeometryData(const StyleGeometryData& other)
+    : RefCounted<StyleGeometryData>()
     , d(other.d)
     , cx(other.cx)
     , cy(other.cy)
@@ -225,12 +225,12 @@ inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
 {
 }
 
-PassRefPtr<StyleLayoutData> StyleLayoutData::copy() const
+PassRefPtr<StyleGeometryData> StyleGeometryData::copy() const
 {
-    return adoptRef(new StyleLayoutData(*this));
+    return adoptRef(new StyleGeometryData(*this));
 }
 
-bool StyleLayoutData::operator==(const StyleLayoutData& other) const
+bool StyleGeometryData::operator==(const StyleGeometryData& other) const
 {
     return x == other.x
         && y == other.y

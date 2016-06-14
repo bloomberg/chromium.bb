@@ -119,43 +119,43 @@ public:
     void setPaintOrder(EPaintOrder val) { svg_inherited_flags.paintOrder = (int)val; }
     void setD(PassRefPtr<StylePath> d)
     {
-        if (!(layout->d == d))
-            layout.access()->d = d;
+        if (!(geometry->d == d))
+            geometry.access()->d = d;
     }
     void setCx(const Length& obj)
     {
-        if (!(layout->cx == obj))
-            layout.access()->cx = obj;
+        if (!(geometry->cx == obj))
+            geometry.access()->cx = obj;
     }
     void setCy(const Length& obj)
     {
-        if (!(layout->cy == obj))
-            layout.access()->cy = obj;
+        if (!(geometry->cy == obj))
+            geometry.access()->cy = obj;
     }
     void setX(const Length& obj)
     {
-        if (!(layout->x == obj))
-            layout.access()->x = obj;
+        if (!(geometry->x == obj))
+            geometry.access()->x = obj;
     }
     void setY(const Length& obj)
     {
-        if (!(layout->y == obj))
-            layout.access()->y = obj;
+        if (!(geometry->y == obj))
+            geometry.access()->y = obj;
     }
     void setR(const Length& obj)
     {
-        if (!(layout->r == obj))
-            layout.access()->r = obj;
+        if (!(geometry->r == obj))
+            geometry.access()->r = obj;
     }
     void setRx(const Length& obj)
     {
-        if (!(layout->rx == obj))
-            layout.access()->rx = obj;
+        if (!(geometry->rx == obj))
+            geometry.access()->rx = obj;
     }
     void setRy(const Length& obj)
     {
-        if (!(layout->ry == obj))
-            layout.access()->ry = obj;
+        if (!(geometry->ry == obj))
+            geometry.access()->ry = obj;
     }
     void setFillOpacity(float obj)
     {
@@ -340,14 +340,14 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     const Length& baselineShiftValue() const { return misc->baselineShiftValue; }
-    StylePath* d() const { return layout->d.get(); }
-    const Length& cx() const { return layout->cx; }
-    const Length& cy() const { return layout->cy; }
-    const Length& x() const { return layout->x; }
-    const Length& y() const { return layout->y; }
-    const Length& r() const { return layout->r; }
-    const Length& rx() const { return layout->rx; }
-    const Length& ry() const { return layout->ry; }
+    StylePath* d() const { return geometry->d.get(); }
+    const Length& cx() const { return geometry->cx; }
+    const Length& cy() const { return geometry->cy; }
+    const Length& x() const { return geometry->x; }
+    const Length& y() const { return geometry->y; }
+    const Length& r() const { return geometry->r; }
+    const Length& rx() const { return geometry->rx; }
+    const Length& ry() const { return geometry->ry; }
     const AtomicString& clipperResource() const { return resources->clipper; }
     const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }
@@ -455,7 +455,7 @@ protected:
     // non-inherited attributes
     DataRef<StyleStopData> stops;
     DataRef<StyleMiscData> misc;
-    DataRef<StyleLayoutData> layout;
+    DataRef<StyleGeometryData> geometry;
     DataRef<StyleResourceData> resources;
 
 private:
