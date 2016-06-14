@@ -26,8 +26,6 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
     private final PopupWindow mContainer;
     private int mRawPositionX;
     private int mRawPositionY;
-    private int mPositionX;
-    private int mPositionY;
     private int mStatusBarHeight;
     private View mPasteView;
     private final int mPasteViewLayout;
@@ -57,7 +55,6 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
                 android.R.attr.textEditPasteWindowLayout,
         };
 
-        mPasteView = null;
         TypedArray attrs = mContext.getTheme().obtainStyledAttributes(popupLayoutAttrs);
         mPasteViewLayout = attrs.getResourceId(attrs.getIndex(0), 0);
 
@@ -108,13 +105,8 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
         final int width = contentView.getMeasuredWidth();
         final int height = contentView.getMeasuredHeight();
 
-        mPositionX = (int) (x - width / 2.0f);
-        mPositionY = y - height - mLineOffsetY;
-
-        final int[] coords = new int[2];
-        mParent.getLocationInWindow(coords);
-        coords[0] += mPositionX;
-        coords[1] += mPositionY;
+        int positionX = (int) (x - width / 2.0f);
+        int positionY = y - height - mLineOffsetY;
 
         int minOffsetY = 0;
         if (mParent.getSystemUiVisibility() == View.SYSTEM_UI_FLAG_VISIBLE) {
@@ -122,41 +114,41 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
         }
 
         final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-        if (coords[1] < minOffsetY) {
+        if (positionY < minOffsetY) {
             // Vertical clipping, move under edited line and to the side of insertion cursor
             // TODO bottom clipping in case there is no system bar
-            coords[1] += height;
-            coords[1] += mLineOffsetY;
+            positionY += height;
+            positionY += mLineOffsetY;
 
             // Move to right hand side of insertion cursor by default. TODO RTL text.
             final int handleHalfWidth = mWidthOffsetX / 2;
 
-            if (x + width < screenWidth) {
-                coords[0] += handleHalfWidth + width / 2;
-            } else {
-                coords[0] -= handleHalfWidth + width / 2;
-            }
+            if (x + width < screenWidth) positionX += handleHalfWidth + width / 2;
+            else positionX -= handleHalfWidth + width / 2;
         } else {
             // Horizontal clipping
-            coords[0] = Math.max(0, coords[0]);
-            coords[0] = Math.min(screenWidth - width, coords[0]);
+            positionX = Math.max(0, positionX);
+            positionX = Math.min(screenWidth - width, positionX);
         }
 
+        // Offseting with location in window.
+        final int[] coords = new int[2];
+        mParent.getLocationInWindow(coords);
+        positionX += coords[0];
+        positionY += coords[1];
+
         if (!isShowing()) {
-            mContainer.showAtLocation(mParent, Gravity.NO_GRAVITY, coords[0], coords[1]);
+            mContainer.showAtLocation(mParent, Gravity.NO_GRAVITY, positionX, positionY);
         } else {
-            mContainer.update(coords[0], coords[1], -1, -1);
+            mContainer.update(positionX, positionY, -1, -1);
         }
     }
 
     private void updateContent() {
         if (mPasteView == null) {
-            final int layout = mPasteViewLayout;
-            LayoutInflater inflater =
+            final LayoutInflater inflater =
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            if (inflater != null) {
-                mPasteView = inflater.inflate(layout, null);
-            }
+            if (inflater != null) mPasteView = inflater.inflate(mPasteViewLayout, null);
 
             if (mPasteView == null) {
                 throw new IllegalArgumentException("Unable to inflate TextEdit paste window");
@@ -169,7 +161,6 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
 
             mPasteView.setOnClickListener(this);
         }
-
         mContainer.setContentView(mPasteView);
     }
 
