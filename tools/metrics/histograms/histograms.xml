@@ -19721,6 +19721,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Launch.InvalidIntent" enum="BooleanHit">
   <owner>dfalcantara@chromium.org</owner>
+  <obsolete>
+    Deprecated 2016-06 -- hit rate is neglible.
+  </obsolete>
   <summary>
     Records whether or not an invalid Android Intent was fired to launch Chrome.
     (http://crbug.com/445136)

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.metrics;
 import android.util.Pair;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content_public.browser.WebContents;
@@ -30,7 +31,7 @@ public class LaunchMetrics {
     private abstract static class CachedHistogram {
         private static final List<CachedHistogram> sEvents = new ArrayList<CachedHistogram>();
 
-        protected String mHistogramName;
+        protected final String mHistogramName;
 
         /**
          * @param histogramName Name of the histogram to record.
@@ -48,36 +49,30 @@ public class LaunchMetrics {
      * Caches an action that will be recorded after native side is loaded.
      */
     public static class ActionEvent extends CachedHistogram {
-        private boolean mNeedsToBeRecorded = true;
+        private int mCount;
 
         public ActionEvent(String actionName) {
             super(actionName);
         }
 
-        @Override
-        protected void commitAndClear() {
-            if (mNeedsToBeRecorded) RecordUserAction.record(mHistogramName);
-            mNeedsToBeRecorded = false;
-        }
-    }
-
-    /** Caches whether an event happened. */
-    public static class BooleanEvent extends CachedHistogram {
-        private boolean mIsHit;
-
-        public BooleanEvent(String histogramName) {
-            super(histogramName);
+        public void record() {
+            if (LibraryLoader.isInitialized()) {
+                recordWithNative();
+            } else {
+                mCount++;
+            }
         }
 
-        /** Records that the histogram condition occurred. */
-        public void recordHit() {
-            mIsHit = true;
+        private void recordWithNative() {
+            RecordUserAction.record(mHistogramName);
         }
 
         @Override
         protected void commitAndClear() {
-            RecordHistogram.recordBooleanHistogram(mHistogramName, mIsHit);
-            mIsHit = false;
+            while (mCount > 0) {
+                recordWithNative();
+            }
+            mCount = 0;
         }
     }
 
@@ -90,13 +85,21 @@ public class LaunchMetrics {
         }
 
         public void record(int sample) {
-            mSamples.add(sample);
+            if (LibraryLoader.isInitialized()) {
+                recordWithNative(sample);
+            } else {
+                mSamples.add(sample);
+            }
+        }
+
+        private void recordWithNative(int sample) {
+            RecordHistogram.recordSparseSlowlyHistogram(mHistogramName, sample);
         }
 
         @Override
         protected void commitAndClear() {
             for (Integer sample : mSamples) {
-                RecordHistogram.recordSparseSlowlyHistogram(mHistogramName, sample);
+                recordWithNative(sample);
             }
             mSamples.clear();
         }
@@ -113,13 +116,21 @@ public class LaunchMetrics {
         }
 
         public void record(int sample) {
-            mSamples.add(sample);
+            if (LibraryLoader.isInitialized()) {
+                recordWithNative(sample);
+            } else {
+                mSamples.add(sample);
+            }
+        }
+
+        private void recordWithNative(int sample) {
+            RecordHistogram.recordEnumeratedHistogram(mHistogramName, sample, mMaxValue);
         }
 
         @Override
         protected void commitAndClear() {
             for (Integer sample : mSamples) {
-                RecordHistogram.recordEnumeratedHistogram(mHistogramName, sample, mMaxValue);
+                recordWithNative(sample);
             }
             mSamples.clear();
         }
@@ -136,13 +147,21 @@ public class LaunchMetrics {
         }
 
         public void record(long sample) {
-            mSamples.add(sample);
+            if (LibraryLoader.isInitialized()) {
+                recordWithNative(sample);
+            } else {
+                mSamples.add(sample);
+            }
+        }
+
+        private void recordWithNative(long sample) {
+            RecordHistogram.recordTimesHistogram(mHistogramName, sample, mTimeUnit);
         }
 
         @Override
         protected void commitAndClear() {
             for (Long sample : mSamples) {
-                RecordHistogram.recordTimesHistogram(mHistogramName, sample, mTimeUnit);
+                recordWithNative(sample);
             }
             mSamples.clear();
         }

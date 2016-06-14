@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.externalauth;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -23,8 +20,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.metrics.LaunchMetrics.SparseHistogramSample;
+import org.chromium.chrome.browser.metrics.LaunchMetrics.TimesHistogramSample;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,12 +36,14 @@ public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_GOOGLE_SIGNED = 1 << 0;
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
     private static final String TAG = "ExternalAuthUtils";
-    private static final String CONNECTION_RESULT_HISTOGRAM_NAME =
-            "GooglePlayServices.ConnectionResult";
 
     // Use an AtomicReference since getInstance() can be called from multiple threads.
     private static AtomicReference<ExternalAuthUtils> sInstance =
             new AtomicReference<ExternalAuthUtils>();
+    private final SparseHistogramSample mConnectionResultHistogramSample =
+            new SparseHistogramSample("GooglePlayServices.ConnectionResult");
+    private final TimesHistogramSample mRegistrationTimeHistogramSample = new TimesHistogramSample(
+            "Android.StrictMode.CheckGooglePlayServicesTime", TimeUnit.MILLISECONDS);
 
     /**
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
@@ -169,9 +169,8 @@ public class ExternalAuthUtils {
      * error-handling policy requires UI interaction, it will be run on the UI thread.
      * Subclasses should generally not override this method; instead, they should override the
      * helper methods {@link #checkGooglePlayServicesAvailable(Context)},
-     * {@link #isSuccess(int)}, {@link #describeError(int)}, and
-     * {@link #isUserRecoverableError(int)} instead, which are called in that order (as
-     * necessary) by this method.
+     * {@link #describeError(int)}, and {@link #isUserRecoverableError(int)} instead, which are
+     * called in that order (as necessary) by this method.
      * @param context The current context.
      * @param errorHandler How to handle user-recoverable errors; must be non-null.
      * @return true if and only if Google Play Services can be used
@@ -180,7 +179,7 @@ public class ExternalAuthUtils {
             final Context context, final UserRecoverableErrorHandler errorHandler) {
         final int resultCode = checkGooglePlayServicesAvailable(context);
         recordConnectionResult(resultCode);
-        if (isSuccess(resultCode)) {
+        if (resultCode == ConnectionResult.SUCCESS) {
             return true; // Hooray!
         }
         // resultCode is some kind of error.
@@ -216,9 +215,8 @@ public class ExternalAuthUtils {
      */
     public boolean canUseFirstPartyGooglePlayServices(
             Context context, UserRecoverableErrorHandler userRecoverableErrorHandler) {
-        ExternalAuthUtils authUtils = ExternalAuthUtils.getInstance();
-        return authUtils.canUseGooglePlayServices(context, userRecoverableErrorHandler)
-                && authUtils.isGoogleSigned(context.getPackageManager(), context.getPackageName());
+        return canUseGooglePlayServices(context, userRecoverableErrorHandler)
+                && isGoogleSigned(context.getPackageManager(), context.getPackageName());
     }
 
     /**
@@ -227,31 +225,7 @@ public class ExternalAuthUtils {
      * @param resultCode the result from {@link #checkGooglePlayServicesAvailable(Context)}
      */
     protected void recordConnectionResult(final int resultCode) {
-        try {
-            // Doing it this way avoids a hard dependency on RecordHistogram, which allows the code
-            //  to be tested with simple mocks and junit instead of having an instrumentation test.
-            RecordHistogram.recordSparseSlowlyHistogram(
-                    CONNECTION_RESULT_HISTOGRAM_NAME, resultCode);
-        } catch (UnsatisfiedLinkError error) {
-            // Usually native is loaded when this check is called, but it is not guaranteed. Since
-            // most of the data is better than none of the data and we don't want this to crash in
-            // the case of native not being loaded, intentionally catch and ignore the linker error.
-        }
-    }
-
-    /**
-     * Records the time it took to check for Google Play Services if native is loaded.
-     * @param time The time it took to read state.
-     */
-    private void recordGooglePlayServicesRegistrationTime(long time) {
-        try {
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.CheckGooglePlayServicesTime",
-                    time, TimeUnit.MILLISECONDS);
-        } catch (UnsatisfiedLinkError error) {
-            // Usually native is loaded when this check is called, but it is not guaranteed. Since
-            // most of the data is better than none of the data and we don't want this to crash in
-            // the case of native not being loaded, intentionally catch and ignore the linker error.
-        }
+        mConnectionResultHistogramSample.record(resultCode);
     }
 
     /**
@@ -269,21 +243,11 @@ public class ExternalAuthUtils {
             long time = SystemClock.elapsedRealtime();
             int isAvailable =
                     GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
-            recordGooglePlayServicesRegistrationTime(SystemClock.elapsedRealtime() - time);
+            mRegistrationTimeHistogramSample.record(SystemClock.elapsedRealtime() - time);
             return isAvailable;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-    }
-
-    /**
-     * Invokes whatever external code is necessary to check if the specified result code from
-     * {@link #checkGooglePlayServicesAvailable(Context)} represents success.
-     * @param resultCode The code to check
-     * @return true If the result code represents success.
-     */
-    protected boolean isSuccess(final int resultCode) {
-        return resultCode == ConnectionResult.SUCCESS;
     }
 
     /**
@@ -305,35 +269,5 @@ public class ExternalAuthUtils {
      */
     protected String describeError(final int errorCode) {
         return GoogleApiAvailability.getInstance().getErrorString(errorCode);
-    }
-
-    /**
-     * Invokes an external mechanism to display an error notification for the specified error code
-     * and context. Must be called on the UI thread.
-     * @param errorCode The error code
-     * @param context The current context
-     */
-    public void showErrorNotification(final int errorCode, final Context context) {
-        GoogleApiAvailability.getInstance().showErrorNotification(context, errorCode);
-    }
-
-    /**
-     * Invokes an external mechanism to display a modal error dialog for the specified error code,
-     * using the specified activity to receive the response (if desired) and/or notifying the
-     * specified listener of cancellation.
-     * the parameters
-     * @param errorCode The error code
-     * @param activity see {@link UserRecoverableErrorHandler.ModalDialog#ModalDialog(Activity)}
-     * @param requestCode see {@link UserRecoverableErrorHandler.ModalDialog#getRequestCode()}
-     * @param onCancelListener see
-     *        {@link UserRecoverableErrorHandler.ModalDialog#getOnCancelListener()}
-     */
-    public void showErrorDialog(final int errorCode, final Activity activity, final int requestCode,
-            final OnCancelListener onCancelListener) {
-        final Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(
-                activity, errorCode, requestCode, onCancelListener);
-        if (dialog != null) { // This can happen if errorCode is ConnectionResult.SERVICE_INVALID
-            dialog.show();
-        }
     }
 }

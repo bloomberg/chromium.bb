@@ -16,6 +16,8 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 
+import com.google.android.gms.common.ConnectionResult;
+
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -47,8 +49,8 @@ public class ExternalAuthUtilsTest {
     public void testCanUseGooglePlayServicesSuccess() {
         when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
                      any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
-        when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
-        when(mExternalAuthUtils.isSuccess(ERR)).thenReturn(true); // Not an error.
+        when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(
+                ConnectionResult.SUCCESS);
         assertTrue(mExternalAuthUtils.canUseGooglePlayServices(
                 mContext, mUserRecoverableErrorHandler));
         verifyZeroInteractions(mUserRecoverableErrorHandler);
@@ -58,8 +60,7 @@ public class ExternalAuthUtilsTest {
         // methods, which subclasses are expected to be able to override.
         InOrder inOrder = inOrder(mExternalAuthUtils);
         inOrder.verify(mExternalAuthUtils).checkGooglePlayServicesAvailable(mContext);
-        inOrder.verify(mExternalAuthUtils).recordConnectionResult(ERR);
-        inOrder.verify(mExternalAuthUtils).isSuccess(ERR);
+        inOrder.verify(mExternalAuthUtils).recordConnectionResult(ConnectionResult.SUCCESS);
         inOrder.verify(mExternalAuthUtils, never()).isUserRecoverableError(anyInt());
         inOrder.verify(mExternalAuthUtils, never()).describeError(anyInt());
     }
@@ -70,8 +71,7 @@ public class ExternalAuthUtilsTest {
         when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
                      any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
-        when(mExternalAuthUtils.isSuccess(ERR)).thenReturn(false); // Is an error.
-        when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(false); // Non-recoverable
+        when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(false);  // Non-recoverable
         assertFalse(mExternalAuthUtils.canUseGooglePlayServices(
                 mContext, mUserRecoverableErrorHandler));
         verifyZeroInteractions(mUserRecoverableErrorHandler);
@@ -82,7 +82,6 @@ public class ExternalAuthUtilsTest {
         InOrder inOrder = inOrder(mExternalAuthUtils);
         inOrder.verify(mExternalAuthUtils).checkGooglePlayServicesAvailable(mContext);
         inOrder.verify(mExternalAuthUtils).recordConnectionResult(ERR);
-        inOrder.verify(mExternalAuthUtils).isSuccess(ERR);
         inOrder.verify(mExternalAuthUtils).isUserRecoverableError(ERR);
     }
 
@@ -93,9 +92,8 @@ public class ExternalAuthUtilsTest {
                      any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
         doNothing().when(mUserRecoverableErrorHandler).handleError(mContext, ERR);
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
-        when(mExternalAuthUtils.isSuccess(ERR)).thenReturn(false); // Is an error.
-        when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(true); // Recoverable
-        when(mExternalAuthUtils.describeError(anyInt())).thenReturn("unused"); // For completeness
+        when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(true);  // Recoverable
+        when(mExternalAuthUtils.describeError(anyInt())).thenReturn("unused");  // For completeness
         assertFalse(mExternalAuthUtils.canUseGooglePlayServices(
                 mContext, mUserRecoverableErrorHandler));
 
@@ -105,7 +103,6 @@ public class ExternalAuthUtilsTest {
         InOrder inOrder = inOrder(mExternalAuthUtils, mUserRecoverableErrorHandler);
         inOrder.verify(mExternalAuthUtils).checkGooglePlayServicesAvailable(mContext);
         inOrder.verify(mExternalAuthUtils).recordConnectionResult(ERR);
-        inOrder.verify(mExternalAuthUtils).isSuccess(ERR);
         inOrder.verify(mExternalAuthUtils).isUserRecoverableError(ERR);
         inOrder.verify(mUserRecoverableErrorHandler).handleError(mContext, ERR);
     }
