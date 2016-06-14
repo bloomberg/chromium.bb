@@ -41,6 +41,7 @@ class ArcImeBridgeImpl : public ArcImeBridge,
   void OnTextInputTypeChanged(arc::mojom::TextInputType type) override;
   void OnCursorRectChanged(arc::mojom::CursorRectPtr rect) override;
   void OnCancelComposition() override;
+  void ShowImeIfNeeded() override;
 
  private:
   mojo::Binding<mojom::ImeHost> binding_;

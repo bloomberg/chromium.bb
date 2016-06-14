@@ -133,4 +133,8 @@ void ArcImeBridgeImpl::OnCancelComposition() {
   delegate_->OnCancelComposition();
 }
 
+void ArcImeBridgeImpl::ShowImeIfNeeded() {
+  delegate_->ShowImeIfNeeded();
+}
+
 }  // namespace arc

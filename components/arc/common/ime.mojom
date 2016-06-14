@@ -38,6 +38,7 @@ struct CompositionSegment {
   bool emphasized;
 };
 
+// Next MinVersion: 3
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   OnTextInputTypeChanged(TextInputType type);
@@ -47,6 +48,9 @@ interface ImeHost {
 
   // Notifies Chrome that the current composition is canceled.
   [MinVersion=1] OnCancelComposition();
+
+  // Show virtual keyboard of Chrome OS if needed.
+  [MinVersion=2] ShowImeIfNeeded();
 };
 
 interface ImeInstance {

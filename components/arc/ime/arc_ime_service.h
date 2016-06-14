@@ -63,6 +63,7 @@ class ArcImeService : public ArcService,
   void OnTextInputTypeChanged(ui::TextInputType type) override;
   void OnCursorRectChanged(const gfx::Rect& rect) override;
   void OnCancelComposition() override;
+  void ShowImeIfNeeded() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;

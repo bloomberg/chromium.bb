@@ -31,6 +31,7 @@ class ArcImeBridge {
     virtual void OnTextInputTypeChanged(ui::TextInputType type) = 0;
     virtual void OnCursorRectChanged(const gfx::Rect& rect) = 0;
     virtual void OnCancelComposition() = 0;
+    virtual void ShowImeIfNeeded() = 0;
   };
 
   // Serializes and sends IME related requests through IPCs.
