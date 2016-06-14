@@ -140,11 +140,11 @@ const int kVP8AWebMFileDurationMs = 2734;
 #if !defined(MOJO_RENDERER)
 #if defined(OPUS_FIXED_POINT)
 static const char kOpusEndTrimmingHash_1[] =
-    "-4.57,-5.68,-6.54,-6.29,-4.35,-3.59,";
+    "-4.57,-5.66,-6.52,-6.30,-4.37,-3.61,";
 static const char kOpusEndTrimmingHash_2[] =
-    "-11.93,-11.12,-8.27,-7.10,-7.84,-10.00,";
+    "-11.91,-11.11,-8.27,-7.13,-7.86,-10.00,";
 static const char kOpusEndTrimmingHash_3[] =
-    "-13.32,-14.38,-13.70,-11.69,-10.20,-10.48,";
+    "-13.31,-14.38,-13.70,-11.71,-10.21,-10.49,";
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
