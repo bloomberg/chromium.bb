@@ -15,6 +15,7 @@ let mockImageCaptureReady = define(
           pipe => this.bindToPipe(pipe));
 
       this.capabilities_ = { capabilities: { zoom : { min : 0, max : 10, current : 5 } } };
+      this.settings_ = null;
     }
 
     bindToPipe(pipe) {
@@ -26,6 +27,11 @@ let mockImageCaptureReady = define(
       return Promise.resolve(this.capabilities_);
     }
 
+    setOptions(source_id, settings) {
+      this.settings_ = settings;
+      return Promise.resolve({ success : true });
+    }
+
     takePhoto(source_id) {
       return Promise.resolve({ mime_type : 'image/cat',
                                data : "(,,,)=(^.^)=(,,,)" });
@@ -33,6 +39,10 @@ let mockImageCaptureReady = define(
 
     capabilities() {
       return this.capabilities_.capabilities;
+    }
+
+    options() {
+      return this.settings_;
     }
 
   }

@@ -8,7 +8,7 @@
 </body>
 <script>
 
-// This test verifies that ImageCapture can takePhoto()s, with a mock Mojo
+// This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
 // interface implementation.
 
 async_test(function(t) {
@@ -18,23 +18,27 @@ async_test(function(t) {
   context.fillRect(0, 0, 10, 10);
   var stream = canvas.captureStream();
 
+  var theMock = null;
+  const optionsDict = { zoom : 7 };
   mockImageCaptureReady
     .then(mock => {
+      theMock = mock;
       return new ImageCapture(stream.getVideoTracks()[0]);
     })
     .catch(error => {
       assert_unreached("Error creating MockImageCapture: " + error);
     })
     .then(capturer => {
-      return capturer.takePhoto();
+      return capturer.setOptions(optionsDict);
     })
-    .then(blob => {
-      assert_true(blob.size > 0);
+    .then(function() {
+      assert_equals(1, theMock.options().has_zoom, 'has_zoom must be true');
+      assert_equals(optionsDict.zoom, theMock.options().zoom, 'zoom value');
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error during takePhoto(): " + error);
+      assert_unreached("Error during setOptions(): " + error);
     });
-}, 'exercises the ImageCapture API takePhoto()');
+}, 'exercises the ImageCapture API setOptions()');
 
 </script>

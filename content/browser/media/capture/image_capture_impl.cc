@@ -83,6 +83,16 @@ void ImageCaptureImpl::GetCapabilities(
       media::BindToCurrentLoop(base::Bind(&RunFailedGetCapabilitiesCallback)));
 }
 
+void ImageCaptureImpl::SetOptions(const mojo::String& source_id,
+                                  media::mojom::PhotoSettingsPtr settings,
+                                  const SetOptionsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(mcasas): This is just a stub and needs wiring to VideoCaptureManager
+  // etc, see https://crbug.com/518807.
+  callback.Run(false);
+}
+
 void ImageCaptureImpl::TakePhoto(const mojo::String& source_id,
                                  const TakePhotoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

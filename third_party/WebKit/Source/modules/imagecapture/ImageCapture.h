@@ -18,6 +18,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class PhotoSettings;
 class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not
@@ -46,6 +47,8 @@ public:
 
     ScriptPromise getPhotoCapabilities(ScriptState*, ExceptionState&);
 
+    ScriptPromise setOptions(ScriptState*, const PhotoSettings&, ExceptionState&);
+
     ScriptPromise takePhoto(ScriptState*, ExceptionState&);
 
     ScriptPromise grabFrame(ScriptState*, ExceptionState&);
@@ -56,6 +59,7 @@ private:
     ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
     void onCapabilities(ScriptPromiseResolver*, media::mojom::blink::PhotoCapabilitiesPtr);
+    void onSetOptions(ScriptPromiseResolver*, bool);
     void onTakePhoto(ScriptPromiseResolver*, const String& mimeType, mojo::WTFArray<uint8_t> data);
     void onServiceConnectionError();
 

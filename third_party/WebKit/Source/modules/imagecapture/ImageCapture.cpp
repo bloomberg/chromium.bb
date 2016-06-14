@@ -13,6 +13,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
 #include "modules/imagecapture/PhotoCapabilities.h"
+#include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
@@ -77,8 +78,6 @@ void ImageCapture::contextDestroyed()
 
 ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    DVLOG(1) << __FUNCTION__;
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -96,9 +95,36 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, Excep
     return promise;
 }
 
+ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSettings& photoSettings, ExceptionState& exceptionState)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    if (trackIsInactive(*m_streamTrack)) {
+        resolver->reject(DOMException::create(InvalidStateError, "The associated Track is in an invalid state."));
+        return promise;
+    }
+
+    if (!m_service) {
+        resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+        return promise;
+    }
+
+    m_serviceRequests.add(resolver);
+
+    // TODO(mcasas): should be using a mojo::StructTraits instead.
+    media::mojom::blink::PhotoSettingsPtr settings = media::mojom::blink::PhotoSettings::New();
+    settings->has_zoom = photoSettings.hasZoom();
+    if (settings->has_zoom)
+        settings->zoom = photoSettings.zoom();
+
+    m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), createBaseCallback(bind<bool>(&ImageCapture::onSetOptions, this, resolver)));
+    return promise;
+}
+
+
 ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -169,12 +195,24 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
     if (capabilities.is_null()) {
         resolver->reject(DOMException::create(UnknownError, "platform error"));
     } else {
-        // Should be using a capabilities.To<PhotoCapabilities>()
+        // TODO(mcasas): Should be using a mojo::StructTraits.
         MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
         PhotoCapabilities* caps = PhotoCapabilities::create();
         caps->setZoom(zoom);
         resolver->resolve(caps);
     }
+    m_serviceRequests.remove(resolver);
+}
+
+void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result)
+{
+    if (!m_serviceRequests.contains(resolver))
+        return;
+
+    if (result)
+        resolver->resolve();
+    else
+        resolver->reject(DOMException::create(UnknownError, "setOptions failed"));
     m_serviceRequests.remove(resolver);
 }
 

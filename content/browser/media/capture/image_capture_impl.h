@@ -21,6 +21,10 @@ class ImageCaptureImpl : public media::mojom::ImageCapture {
   void GetCapabilities(const mojo::String& source_id,
                        const GetCapabilitiesCallback& callback) override;
 
+  void SetOptions(const mojo::String& source_id,
+                  media::mojom::PhotoSettingsPtr settings,
+                  const SetOptionsCallback& callback) override;
+
   void TakePhoto(const mojo::String& source_id,
                  const TakePhotoCallback& callback) override;
 
