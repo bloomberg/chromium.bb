@@ -60,7 +60,7 @@
         the subscriber of initial timing parameters.
       </description>
       <arg name="id" type="new_id" interface="zwp_vsync_timing_v1" summary="the new vsync timing interface id"/>
-      <arg name="output" type="object" interface="wl_output" summary="the wl_output object to subscribe for timings of"/>
+      <arg name="output" type="object" interface="wl_output" summary="the wl_output object to subscribe for timings of" allow-null="true"/>
     </request>
   </interface>
 
@@ -89,7 +89,6 @@
         most significant and least significant part, suffixed by "_h" and "_l"
         respectively.
       </description>
-      <arg name="output" type="object" interface="wl_output" summary="updated output"/>
       <arg name="timebase_l" type="uint" summary="new vsync timebase (lower 32 bits)"/>
       <arg name="timebase_h" type="uint" summary="new vsync timebase (upper 32 bits)"/>
       <arg name="interval_l" type="uint" summary="new vsync interval (lower 32 bits)"/>
