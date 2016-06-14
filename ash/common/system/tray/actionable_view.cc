@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/actionable_view.h"
+#include "ash/common/system/tray/actionable_view.h"
 
 #include "ash/common/ash_constants.h"
 #include "ui/accessibility/ax_view_state.h"

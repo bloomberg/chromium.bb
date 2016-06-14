@@ -8,14 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/vpn_delegate.h"
-#include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/tray_popup_label_button.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"

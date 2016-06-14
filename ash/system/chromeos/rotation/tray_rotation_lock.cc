@@ -4,11 +4,11 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
+#include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_item_more.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

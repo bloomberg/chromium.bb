@@ -4,9 +4,9 @@
 
 #include "ash/system/chromeos/audio/audio_detailed_view.h"
 
+#include "ash/common/system/tray/fixed_sized_scroll_view.h"
+#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/system/tray/fixed_sized_scroll_view.h"
-#include "ash/system/tray/hover_highlight_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_strings.h"

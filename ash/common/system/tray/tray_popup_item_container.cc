@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_popup_item_container.h"
+#include "ash/common/system/tray/tray_popup_item_container.h"
 
 #include "ash/common/system/tray/tray_constants.h"
-#include "base/command_line.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"

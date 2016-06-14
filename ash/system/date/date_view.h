@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/system/tray/actionable_view.h"
 #include "ash/system/date/tray_date.h"
-#include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"

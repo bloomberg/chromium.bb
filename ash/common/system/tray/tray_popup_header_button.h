@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
-#define ASH_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
+#define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -39,4 +38,4 @@ class ASH_EXPORT TrayPopupHeaderButton : public views::ToggleImageButton {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_

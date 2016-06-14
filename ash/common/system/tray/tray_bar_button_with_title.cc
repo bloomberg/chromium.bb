@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_bar_button_with_title.h"
+#include "ash/common/system/tray/tray_bar_button_with_title.h"
 
 #include <memory>
 

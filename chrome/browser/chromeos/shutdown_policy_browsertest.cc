@@ -5,12 +5,12 @@
 #include <memory>
 #include <string>
 
+#include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/user/login_status.h"
 #include "base/command_line.h"
 #include "base/location.h"

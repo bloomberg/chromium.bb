@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
-#define ASH_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
+#define ASH_COMMON_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
 
-#include "ash/system/tray/actionable_view.h"
+#include "ash/common/system/tray/actionable_view.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -58,4 +58,4 @@ class TrayItemMore : public ActionableView {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_TRAY_ITEM_MORE_H_

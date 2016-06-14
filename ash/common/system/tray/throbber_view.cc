@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/throbber_view.h"
+#include "ash/common/system/tray/throbber_view.h"
 
 #include "ash/common/system/tray/tray_constants.h"
 #include "grit/ash_resources.h"

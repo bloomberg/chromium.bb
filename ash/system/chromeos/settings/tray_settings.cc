@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/settings/tray_settings.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -12,7 +13,6 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/power_status_view.h"
-#include "ash/system/tray/actionable_view.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"

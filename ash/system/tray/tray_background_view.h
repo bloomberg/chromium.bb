@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/wm/background_animator.h"
-#include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/bubble/tray_bubble_view.h"

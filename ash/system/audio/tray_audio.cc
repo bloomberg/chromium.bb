@@ -8,6 +8,9 @@
 #include <utility>
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/system/tray/actionable_view.h"
+#include "ash/common/system/tray/fixed_sized_scroll_view.h"
+#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/volume_control_delegate.h"
@@ -16,9 +19,6 @@
 #include "ash/shell.h"
 #include "ash/system/audio/tray_audio_delegate.h"
 #include "ash/system/audio/volume_view.h"
-#include "ash/system/tray/actionable_view.h"
-#include "ash/system/tray/fixed_sized_scroll_view.h"
-#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/utf_string_conversions.h"

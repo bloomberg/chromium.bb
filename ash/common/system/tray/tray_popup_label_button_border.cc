@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_popup_label_button_border.h"
+#include "ash/common/system/tray/tray_popup_label_button_border.h"
 
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"

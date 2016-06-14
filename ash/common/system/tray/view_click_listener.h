@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
-#define ASH_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
+#define ASH_COMMON_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
 
 namespace views {
 class View;
@@ -21,4 +21,4 @@ class ViewClickListener {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_

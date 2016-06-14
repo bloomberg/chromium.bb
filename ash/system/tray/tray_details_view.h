@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/tray/special_popup_row.h"
+#include "ash/common/system/tray/special_popup_row.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 

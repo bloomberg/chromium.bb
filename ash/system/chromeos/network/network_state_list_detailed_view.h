@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/system/chromeos/network/network_detailed_view.h"
-#include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

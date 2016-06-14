@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/special_popup_row.h"
+#include "ash/common/system/tray/special_popup_row.h"
 
+#include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/throbber_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/throbber_view.h"
-#include "ash/system/tray/tray_popup_header_button.h"
+#include "ash/common/system/tray/tray_popup_header_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"

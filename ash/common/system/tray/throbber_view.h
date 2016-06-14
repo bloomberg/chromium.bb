@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_THROBBER_VIEW_H_
-#define ASH_SYSTEM_TRAY_THROBBER_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_THROBBER_VIEW_H_
+#define ASH_COMMON_SYSTEM_TRAY_THROBBER_VIEW_H_
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -61,4 +61,4 @@ class ThrobberView : public views::View {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_THROBBER_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_THROBBER_VIEW_H_
