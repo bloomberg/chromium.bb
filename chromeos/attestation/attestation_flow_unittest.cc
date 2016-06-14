@@ -6,7 +6,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
@@ -31,17 +34,17 @@ namespace attestation {
 namespace {
 
 void DBusCallbackFalse(const BoolDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
 void DBusCallbackTrue(const BoolDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
 void DBusCallbackFail(const BoolDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_FAILURE, false));
 }
 
@@ -54,9 +57,8 @@ class FakeDBusData {
   explicit FakeDBusData(const std::string& data) : data_(data) {}
 
   void operator() (const CryptohomeClient::DataMethodCallback& callback) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
   }
 
  private:

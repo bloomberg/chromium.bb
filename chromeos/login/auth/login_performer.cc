@@ -5,13 +5,15 @@
 #include "chromeos/login/auth/login_performer.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/user_names.h"
@@ -81,7 +83,7 @@ void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
   DCHECK(delegate_);
   // After delegate_->OnAuthSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   delegate_->OnAuthSuccess(user_context);
 }
 
