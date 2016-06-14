@@ -22,7 +22,9 @@
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/arc/user_data/arc_user_data_service.h"
 #include "components/arc/window_manager/arc_window_manager_bridge.h"
+#include "components/prefs/pref_member.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
@@ -95,8 +97,12 @@ void ArcServiceManager::AddService(std::unique_ptr<ArcService> service) {
 }
 
 void ArcServiceManager::OnPrimaryUserProfilePrepared(
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    std::unique_ptr<BooleanPrefMember> arc_enabled_pref) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  AddService(base::WrapUnique(new ArcUserDataService(
+      arc_bridge_service(), std::move(arc_enabled_pref), account_id)));
 
   AddService(base::WrapUnique(
       new ArcNotificationManager(arc_bridge_service(), account_id)));

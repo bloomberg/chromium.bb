@@ -590,6 +590,10 @@ void ArcBridgeService::SetState(State state) {
   state_ = state;
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnStateChanged(state_));
+  if (state_ == State::READY)
+    FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeReady());
+  else if (state == State::STOPPED)
+    FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeStopped());
 }
 
 void ArcBridgeService::SetAvailable(bool available) {

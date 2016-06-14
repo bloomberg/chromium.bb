@@ -80,6 +80,8 @@
         'arc/power/arc_power_bridge.h',
         'arc/storage_manager/arc_storage_manager.cc',
         'arc/storage_manager/arc_storage_manager.h',
+        'arc/user_data/arc_user_data_service.cc',
+        'arc/user_data/arc_user_data_service.h',
         'arc/window_manager/arc_window_manager_bridge.cc',
         'arc/window_manager/arc_window_manager_bridge.h',
       ],

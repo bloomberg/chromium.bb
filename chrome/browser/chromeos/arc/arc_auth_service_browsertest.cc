@@ -34,6 +34,7 @@
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
 #include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -174,13 +175,18 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     GetFakeUserManager()->LoginUser(account_id);
 
     // Set up ARC for test profile.
+    std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
+        base::MakeUnique<BooleanPrefMember>();
+    arc_enabled_pref->Init(prefs::kArcEnabled, profile()->GetPrefs());
     ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-        multi_user_util::GetAccountIdFromProfile(profile()));
+        multi_user_util::GetAccountIdFromProfile(profile()),
+        std::move(arc_enabled_pref));
     ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
   }
 
   void TearDownOnMainThread() override {
     ArcAuthService::Get()->Shutdown();
+    ArcServiceManager::Get()->Shutdown();
     profile_.reset();
     user_manager_enabler_.reset();
   }

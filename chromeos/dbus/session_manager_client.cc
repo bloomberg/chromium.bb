@@ -380,6 +380,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void RemoveArcData(const cryptohome::Identification& cryptohome_id) override {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerRemoveArcData);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.id());
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnArcMethod,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerRemoveArcData, ArcCallback()));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     session_manager_proxy_ = bus->GetObjectProxy(
@@ -916,6 +928,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
   void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
     callback.Run(false, base::TimeTicks::Now());
+  }
+
+  void RemoveArcData(const cryptohome::Identification& cryptohome_id) override {
   }
 
  private:

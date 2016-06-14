@@ -11,10 +11,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -56,8 +59,12 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
     if (arc::ArcBridgeService::GetEnabled(
             base::CommandLine::ForCurrentProcess())) {
       DCHECK(arc::ArcServiceManager::Get());
+      std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
+          base::MakeUnique<BooleanPrefMember>();
+      arc_enabled_pref->Init(prefs::kArcEnabled, profile()->GetPrefs());
       arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-          multi_user_util::GetAccountIdFromProfile(profile()));
+          multi_user_util::GetAccountIdFromProfile(profile()),
+          std::move(arc_enabled_pref));
       DCHECK(arc::ArcAuthService::Get());
       arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
     }

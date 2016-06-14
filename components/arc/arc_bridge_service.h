@@ -67,7 +67,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   class Observer {
    public:
     // Called whenever the state of the bridge has changed.
+    // TODO(lchavez): Rename to OnStateChangedForTest
     virtual void OnStateChanged(State state) {}
+    virtual void OnBridgeReady() {}
+    virtual void OnBridgeStopped() {}
 
     // Called whenever ARC's availability has changed for this system.
     virtual void OnAvailableChanged(bool available) {}

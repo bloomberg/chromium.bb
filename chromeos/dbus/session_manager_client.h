@@ -231,6 +231,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // returns false if there is no ARC instance or ARC is not available.
   virtual void GetArcStartTime(const GetArcStartTimeCallback& callback) = 0;
 
+  // Asynchronously removes all ARC user data for the user whose cryptohome is
+  // located by |cryptohome_id|.
+  virtual void RemoveArcData(
+      const cryptohome::Identification& cryptohome_id) = 0;
+
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);
 

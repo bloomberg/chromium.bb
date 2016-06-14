@@ -68,6 +68,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
                         const ArcCallback& callback) override;
   void StopArcInstance(const ArcCallback& callback) override;
   void GetArcStartTime(const GetArcStartTimeCallback& callback) override;
+  void RemoveArcData(const cryptohome::Identification& cryptohome_id) override;
 
   const std::string& device_policy() const;
   void set_device_policy(const std::string& policy_blob);

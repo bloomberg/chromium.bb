@@ -1157,9 +1157,14 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     if (arc::ArcBridgeService::GetEnabled(
             base::CommandLine::ForCurrentProcess())) {
+      const AccountId& account_id =
+          multi_user_util::GetAccountIdFromProfile(profile);
+      std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
+          base::MakeUnique<BooleanPrefMember>();
+      arc_enabled_pref->Init(prefs::kArcEnabled, profile->GetPrefs());
       DCHECK(arc::ArcServiceManager::Get());
       arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-          multi_user_util::GetAccountIdFromProfile(profile));
+          account_id, std::move(arc_enabled_pref));
       arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
       DCHECK(arc_auth_service);
       arc_auth_service->OnPrimaryUserProfilePrepared(profile);

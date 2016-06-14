@@ -13,6 +13,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace arc {
@@ -40,7 +41,9 @@ class ArcServiceManager {
   static ArcServiceManager* Get();
 
   // Called when the main profile is initialized after user logs in.
-  void OnPrimaryUserProfilePrepared(const AccountId& account_id);
+  void OnPrimaryUserProfilePrepared(
+      const AccountId& account_id,
+      std::unique_ptr<BooleanPrefMember> arc_enabled_pref);
 
   // Called once the windowing system (ash) has been started.
   void OnAshStarted();
