@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.69",
+  "version": "8.70",
   "entries": [
     {
       "id": 1,
@@ -311,6 +311,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "init_gl_position_in_vertex_shader"
       ]
@@ -538,6 +539,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "init_vertex_attributes"
       ]
@@ -1033,11 +1035,13 @@ LONG_STRING_CONST(
     },
     {
       "id": 109,
+      "cr_bugs": [449150, 514510],
       "description": "MakeCurrent is slow on Linux with NVIDIA drivers",
       "vendor_id": "0x10de",
       "os": {
         "type": "linux"
       },
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -1159,6 +1163,7 @@ LONG_STRING_CONST(
         "value": "331"
       },
       "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "remove_pow_with_constant_exponent"
       ]
@@ -1292,6 +1297,7 @@ LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "force_cube_complete"
       ]
