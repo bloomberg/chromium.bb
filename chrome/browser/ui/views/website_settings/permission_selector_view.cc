@@ -200,10 +200,8 @@ PermissionCombobox::~PermissionCombobox() {}
 
 void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
   int index = model_->GetCheckedIndex();
-  if (use_default && index == -1) {
-    LOG(ERROR) << "ow!";
+  if (use_default && index == -1)
     index = 0;
-  }
   SetSelectedIndex(index);
 }
 
@@ -347,8 +345,6 @@ void PermissionSelectorView::PermissionChanged(
   // Change the permission icon to reflect the selected setting.
   const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
-
-  LOG(ERROR) << "PermissionChanged";
 
   // Update the menu button text to reflect the new setting.
   if (menu_button_) {
