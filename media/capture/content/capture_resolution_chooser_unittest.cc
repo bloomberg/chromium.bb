@@ -8,7 +8,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/numerics/safe_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using tracked_objects::Location;
@@ -83,19 +82,18 @@ void TestSnappedFrameSizes(CaptureResolutionChooser* chooser,
   }
 
   // Test the "find Nth lower size" logic.
-  for (int skips = 1; skips < 4; ++skips) {
+  for (size_t skips = 1; skips < 4; ++skips) {
     for (size_t i = skips; i < arraysize(kSizes); ++i) {
-      EXPECT_EQ(gfx::Size(kSizes[i][0], kSizes[i][1]),
-                chooser->FindSmallerFrameSize(
-                    base::checked_cast<int>(
-                        gfx::Size(kSizes[i - skips][0], kSizes[i - skips][1])
-                            .GetArea()),
-                    skips));
+      EXPECT_EQ(
+          gfx::Size(kSizes[i][0], kSizes[i][1]),
+          chooser->FindSmallerFrameSize(
+              gfx::Size(kSizes[i - skips][0], kSizes[i - skips][1]).GetArea(),
+              skips));
     }
   }
 
   // Test the "find Nth higher size" logic.
-  for (int skips = 1; skips < 4; ++skips) {
+  for (size_t skips = 1; skips < 4; ++skips) {
     for (size_t i = skips; i < arraysize(kSizes); ++i) {
       EXPECT_EQ(gfx::Size(kSizes[i - skips][0], kSizes[i - skips][1]),
                 chooser->FindLargerFrameSize(

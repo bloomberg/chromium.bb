@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -188,9 +187,9 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
   base::TimeTicks now = base::TimeTicks::Now();
   if (first_ref_time_.is_null())
     first_ref_time_ = now;
-  client_->OnIncomingCapturedData(
-      fake_frame_.get(), base::checked_cast<int>(frame_size), capture_format_,
-      0 /* rotation */, now, now - first_ref_time_);
+  client_->OnIncomingCapturedData(fake_frame_.get(), frame_size,
+                                  capture_format_, 0 /* rotation */, now,
+                                  now - first_ref_time_);
   BeepAndScheduleNextCapture(
       expected_execution_time,
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
@@ -223,8 +222,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
           VideoFrame::PlaneSize(PIXEL_FORMAT_I420, i,
                                 capture_format_.frame_size)
               .GetArea();
-      memcpy(capture_buffer->data(base::checked_cast<int>(i)),
-             fake_frame_.get() + offset, plane_size);
+      memcpy(capture_buffer->data(i), fake_frame_.get() + offset, plane_size);
       offset += plane_size;
     }
   } else {

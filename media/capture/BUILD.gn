@@ -88,7 +88,12 @@ source_set("capture") {
     "//ui/display",
   ]
 
-  configs += [ "//media:media_implementation" ]
+  configs += [
+    "//media:media_implementation",
+
+    # TODO(mcasas): Fix size_t to int truncation warning-treated-as-errors.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   if (is_android) {
     public_deps += [ "video/android" ]
@@ -149,4 +154,7 @@ source_set("unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  # TODO(mcasas): Fix size_t to int truncation warning-treated-as-errors.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }

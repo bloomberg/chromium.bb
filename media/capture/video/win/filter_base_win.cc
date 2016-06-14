@@ -4,8 +4,6 @@
 
 #include "media/capture/video/win/filter_base_win.h"
 
-#include "base/numerics/safe_conversions.h"
-
 #pragma comment(lib, "strmiids.lib")
 
 namespace media {
@@ -40,8 +38,7 @@ class PinEnumerator final : public IEnumPins,
   STDMETHOD(Next)(ULONG count, IPin** pins, ULONG* fetched) override {
     ULONG pins_fetched = 0;
     while (pins_fetched < count && filter_->NoOfPins() > index_) {
-      IPin* pin = filter_->GetPin(base::checked_cast<int>(index_));
-      index_++;
+      IPin* pin = filter_->GetPin(index_++);
       pin->AddRef();
       pins[pins_fetched++] = pin;
     }

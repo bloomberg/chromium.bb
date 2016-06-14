@@ -85,9 +85,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     // TODO(miu): Clients should request exact padding, instead of this
     // memory-wasting hack to make frames that are compatible with all HW
     // encoders.  http://crbug.com/555911
-    coded_size.SetSize(
-        static_cast<int>(base::bits::Align(visible_size.width(), 16u)),
-        static_cast<int>(base::bits::Align(visible_size.height(), 16u)));
+    coded_size.SetSize(base::bits::Align(visible_size.width(), 16),
+                       base::bits::Align(visible_size.height(), 16));
 
     if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
       output_buffer = client_->ResurrectLastOutputBuffer(
