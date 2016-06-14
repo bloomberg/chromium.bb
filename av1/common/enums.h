@@ -20,6 +20,7 @@ extern "C" {
 #endif
 #define MAX_SB_SIZE_LOG2 6
 #define MAX_SB_SIZE (1 << MAX_SB_SIZE_LOG2)
+#define MAX_SB_SQUARE (MAX_SB_SIZE * MAX_SB_SIZE)
 
 #define MI_SIZE_LOG2 3
 #define MI_BLOCK_SIZE_LOG2 (MAX_SB_SIZE_LOG2 - MI_SIZE_LOG2)  // 64 = 2^6
