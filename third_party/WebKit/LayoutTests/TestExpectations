@@ -158,6 +158,8 @@ crbug.com/599917 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-bor
 crbug.com/599917 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-image-profile-match.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 
+crbug.com/619983 [ Win ] svg/repaint/rounded-rect-height-change.html [ Failure ]
+
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
