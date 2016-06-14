@@ -3998,6 +3998,8 @@ translateString ()
 			if(!for_updatePositions(&c, 1, 1, 0))
 				goto failure;
 			src++;
+			/* because we don't call insertEmphasis */
+			pre_src = src;
 			continue;
 		}
 		for_selectRule ();
