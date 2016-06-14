@@ -369,15 +369,18 @@ TEST(TransformOperationsTest, AbsoluteAnimatedPerspectiveBoundsTest)
 {
     TransformOperations fromOps;
     TransformOperations toOps;
-    fromOps.operations().append(PerspectiveTransformOperation::create(10));
-    toOps.operations().append(PerspectiveTransformOperation::create(30));
+    fromOps.operations().append(PerspectiveTransformOperation::create(20));
+    toOps.operations().append(PerspectiveTransformOperation::create(40));
     FloatBox box(0, 0, 0, 10, 10, 10);
     FloatBox bounds;
     toOps.blendedBoundsForBox(box, fromOps, 0, 1, &bounds);
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(0, 0, 0, 15, 15, 15), bounds);
+    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(0, 0, 0, 20, 20, 20), bounds);
 
     fromOps.blendedBoundsForBox(box, toOps, -0.25, 1.25, &bounds);
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-40, -40, -40, 52, 52, 52), bounds);
+    // The perspective range was [20, 40] and blending will extrapolate that to [17, 53].
+    // The cube has w/h/d of 10 and the observer is at 17, so the face closest the observer is 17-10=7.
+    double projectedSize = 10.0 / 7.0 * 17.0;
+    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(0, 0, 0, projectedSize, projectedSize, projectedSize), bounds);
 }
 
 TEST(TransformOperationsTest, EmpiricalAnimatedPerspectiveBoundsTest)
