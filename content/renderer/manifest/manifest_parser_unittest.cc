@@ -716,7 +716,6 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"x 40xx 1x2x3 x42 42xx42\" } ] }");
-    gfx::Size any = gfx::Size(0, 0);
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("found icon with no valid size.",

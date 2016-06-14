@@ -123,7 +123,6 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MAYBE_GestureTest) {
 
 IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, DoubleClickTest) {
   gfx::Rect bounds(0, 0, 5, 5);
-  gfx::Point point = bounds.CenterPoint();
   EXPECT_CALL(mock_delegate_, popup_bounds()).WillRepeatedly(Return(bounds));
 
   ShowView();

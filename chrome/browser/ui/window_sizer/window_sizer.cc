@@ -269,7 +269,6 @@ bool WindowSizer::GetLastActiveWindowBounds(
   if (!state_provider_.get() ||
       !state_provider_->GetLastActiveWindowState(bounds, show_state))
     return false;
-  gfx::Rect last_window_bounds = *bounds;
   bounds->Offset(kWindowTilePixels, kWindowTilePixels);
   AdjustBoundsToBeVisibleOnDisplay(screen_->GetDisplayMatching(*bounds),
                                    gfx::Rect(),

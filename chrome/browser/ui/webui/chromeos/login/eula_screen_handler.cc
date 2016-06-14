@@ -69,7 +69,6 @@ void ShowCreditsDialog(Profile* profile,
                                                   parent_window,
                                                   title_id,
                                                   credits_url);
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
                             IDS_CREDITS_APP_DIALOG_WIDTH_PIXELS),
                         l10n_util::GetLocalizedContentsWidthInPixels(

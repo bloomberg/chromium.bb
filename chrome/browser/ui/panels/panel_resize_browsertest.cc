@@ -357,7 +357,6 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
   ASSERT_EQ(3, detached_collection->num_panels());
 
   gfx::Rect panel1_bounds = panel1->GetBounds();
-  gfx::Rect panel2_bounds = panel2->GetBounds();
   gfx::Rect panel3_bounds = panel3->GetBounds();
 
   // Start resizing panel1, and close panel2 in the process.

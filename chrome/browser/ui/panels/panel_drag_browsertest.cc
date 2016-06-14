@@ -45,7 +45,6 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
                                 const gfx::Point& new_mouse_location) {
     std::unique_ptr<NativePanelTesting> panel_testing(
         CreateNativePanelTesting(panel));
-    gfx::Point mouse_location(panel->GetBounds().origin());
     panel_testing->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
     panel_testing->DragTitlebar(new_mouse_location);
     panel_testing->FinishDragTitlebar();
@@ -121,8 +120,6 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   // |panel2|.
   static gfx::Vector2d GetDragDeltaToUnstackFromBottom(Panel* panel1,
                                                        Panel* panel2) {
-    gfx::Rect bounds1 = panel1->GetBounds();
-    gfx::Rect bounds2 = panel2->GetBounds();
     return gfx::Vector2d(
         0, PanelDragController::GetGluePanelDistanceThresholdForTesting() * 2);
   }
@@ -144,8 +141,6 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   // |panel2|.
   static gfx::Vector2d GetDragDeltaToUnstackFromTop(Panel* panel1,
                                                     Panel* panel2) {
-    gfx::Rect bounds1 = panel1->GetBounds();
-    gfx::Rect bounds2 = panel2->GetBounds();
     return gfx::Vector2d(
         0, -PanelDragController::GetGluePanelDistanceThresholdForTesting() * 2);
   }
@@ -325,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragTwoDockedPanels) {
   EXPECT_EQ(position2, panel1->GetBounds().origin());
   EXPECT_EQ(position1, panel2->GetBounds().origin());
 
-  mouse_location = mouse_location + small_delta;
+  mouse_location += small_delta;
   panel1_testing->DragTitlebar(mouse_location);
   EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
   EXPECT_EQ(position1, panel2->GetBounds().origin());
@@ -608,7 +603,6 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
   gfx::Point position1 = panel1->GetBounds().origin();
   gfx::Point position2 = panel2->GetBounds().origin();
   gfx::Point position3 = panel3->GetBounds().origin();
-  gfx::Point position4 = panel4->GetBounds().origin();
 
   // Test the scenario: drag a panel, close another panel, cancel the drag.
   {
@@ -952,7 +946,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   // Expect that the panel is still docked and only x coordinate of its position
   // is changed.
   gfx::Vector2d drag_delta_to_remain_docked = GetDragDeltaToRemainDocked();
-  mouse_location = mouse_location + drag_delta_to_remain_docked;
+  mouse_location += drag_delta_to_remain_docked;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(1, docked_collection->num_panels());
   ASSERT_EQ(0, detached_collection->num_panels());
@@ -964,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   // Continue dragging up the panel in big offset that triggers the detach.
   // Expect that the panel is previewed as detached.
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
-  mouse_location = mouse_location + drag_delta_to_detach;
+  mouse_location += drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1014,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachAndCancel) {
   // Expect that the panel is still docked and only x coordinate of its position
   // is changed.
   gfx::Vector2d drag_delta_to_remain_docked = GetDragDeltaToRemainDocked();
-  mouse_location = mouse_location + drag_delta_to_remain_docked;
+  mouse_location += drag_delta_to_remain_docked;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(1, docked_collection->num_panels());
   ASSERT_EQ(0, detached_collection->num_panels());
@@ -1026,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachAndCancel) {
   // Continue dragging up the panel in big offset that triggers the detach.
   // Expect that the panel is previewed as detached.
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
-  mouse_location = mouse_location + drag_delta_to_detach;
+  mouse_location += drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1077,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_Attach) {
   // Expect that the panel is still detached.
   gfx::Vector2d drag_delta_to_remain_detached =
       GetDragDeltaToRemainDetached(panel);
-  mouse_location = mouse_location + drag_delta_to_remain_detached;
+  mouse_location += drag_delta_to_remain_detached;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1090,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_Attach) {
   // work area.
   // Expect that the panel is previewed as docked.
   gfx::Vector2d drag_delta_to_attach = GetDragDeltaToAttach(panel);
-  mouse_location = mouse_location + drag_delta_to_attach;
+  mouse_location += drag_delta_to_attach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(1, docked_collection->num_panels());
   ASSERT_EQ(0, detached_collection->num_panels());
@@ -1143,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachAndCancel) {
   // Expect that the panel is still detached.
   gfx::Vector2d drag_delta_to_remain_detached =
       GetDragDeltaToRemainDetached(panel);
-  mouse_location = mouse_location + drag_delta_to_remain_detached;
+  mouse_location += drag_delta_to_remain_detached;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1156,7 +1150,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachAndCancel) {
   // work area.
   // Expect that the panel is previewed as docked.
   gfx::Vector2d drag_delta_to_attach = GetDragDeltaToAttach(panel);
-  mouse_location = mouse_location + drag_delta_to_attach;
+  mouse_location += drag_delta_to_attach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(1, docked_collection->num_panels());
   ASSERT_EQ(0, detached_collection->num_panels());
@@ -1197,7 +1191,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   // Drag up the panel to trigger the detach.
   // Expect that the panel is previewed as detached.
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
-  mouse_location = mouse_location + drag_delta_to_detach;
+  mouse_location += drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1208,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
 
   // Continue dragging down the panel to trigger the re-attach.
   gfx::Vector2d drag_delta_to_reattach = GetDragDeltaToAttach(panel);
-  mouse_location = mouse_location + drag_delta_to_reattach;
+  mouse_location += drag_delta_to_reattach;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(1, docked_collection->num_panels());
   ASSERT_EQ(0, detached_collection->num_panels());
@@ -1218,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
 
   // Continue dragging up the panel to trigger the detach again.
   gfx::Vector2d drag_delta_to_detach_again = GetDragDeltaToDetach();
-  mouse_location = mouse_location + drag_delta_to_detach_again;
+  mouse_location += drag_delta_to_detach_again;
   panel_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, docked_collection->num_panels());
   ASSERT_EQ(1, detached_collection->num_panels());
@@ -1348,7 +1342,6 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
 
   gfx::Point detached_position1 = panel1->GetBounds().origin();
   gfx::Point detached_position2 = panel2->GetBounds().origin();
-  gfx::Point detached_position3 = panel3->GetBounds().origin();
   gfx::Point docked_position4 = panel4->GetBounds().origin();
   gfx::Point docked_position5 = panel5->GetBounds().origin();
   gfx::Point docked_position6 = panel6->GetBounds().origin();
@@ -1555,7 +1548,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   // 4) The width of P2 remains unchanged.
   gfx::Vector2d drag_delta_to_stack =
       GetDragDeltaToStackToBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1572,7 +1565,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   // Expect P1 and P2 become detached.
   gfx::Vector2d drag_delta_to_unstack =
       GetDragDeltaToUnstackFromBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_unstack;
+  mouse_location += drag_delta_to_unstack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
@@ -1589,7 +1582,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   // 3) P2 moves horizontally by the dragging delta.
   // 4) The width of P2 remains unchanged.
   drag_delta_to_stack = GetDragDeltaToStackToBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1604,7 +1597,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   // not move vertically since its top edge already glues to the bottom edge
   // of P1.
   gfx::Vector2d small_delta(1, -1);
-  mouse_location = mouse_location + small_delta;
+  mouse_location += small_delta;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1661,7 +1654,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   // 3) P2 moves horizontally by the dragging delta.
   // 4) The width of both P1 and P2 remains unchanged.
   gfx::Vector2d drag_delta_to_stack = GetDragDeltaToStackToTop(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1679,7 +1672,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   // Expect P1 and P2 become detached.
   gfx::Vector2d drag_delta_to_unstack =
       GetDragDeltaToUnstackFromTop(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_unstack;
+  mouse_location += drag_delta_to_unstack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
@@ -1696,7 +1689,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   // 3) P2 moves horizontally by the dragging delta.
   // 4) The width of both P1 and P2 remains unchanged.
   drag_delta_to_stack = GetDragDeltaToStackToTop(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1711,7 +1704,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   // not move vertically because its bottom edge already glues to the top edge
   // of P1.
   gfx::Vector2d small_delta(1, -1);
-  mouse_location = mouse_location + small_delta;
+  mouse_location += small_delta;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1760,14 +1753,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupAndCancel) {
   std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
-  gfx::Point original_mouse_location = mouse_location;
   panel2_testing->PressLeftMouseButtonTitlebar(mouse_location);
 
   // Drag P2 close to the bottom of P1 to trigger the stacking.
   // Expect that P2 stacks to P1 and P2's width remains unchanged.
   gfx::Vector2d drag_delta_to_stack =
       GetDragDeltaToStackToBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -2210,7 +2202,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupTwoPanelStack) {
   // Expect that P1 and P2 get detached.
   gfx::Vector2d drag_delta_to_unstack =
       GetDragDeltaToUnstackFromBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_unstack;
+  mouse_location += drag_delta_to_unstack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_TRUE(stack->num_panels() == 0);
@@ -2224,7 +2216,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupTwoPanelStack) {
   // Expect P1 and P2 get stacked together.
   gfx::Vector2d drag_delta_to_stack =
       GetDragDeltaToStackToBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_stack;
+  mouse_location += drag_delta_to_stack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(0, detached_collection->num_panels());
   // Note that the empty stack might still exist until the drag ends.
@@ -2240,7 +2232,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupTwoPanelStack) {
   // Drag P2 away from the bottom of P1 to trigger the unstacking again.
   // Expect that P1 and P2 get detached.
   drag_delta_to_unstack = GetDragDeltaToUnstackFromBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_unstack;
+  mouse_location += drag_delta_to_unstack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_TRUE(stack->num_panels() == 0);
@@ -2292,14 +2284,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupAndCancel) {
   std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
-  gfx::Point original_mouse_location = mouse_location;
   panel2_testing->PressLeftMouseButtonTitlebar(mouse_location);
 
   // Drag P2 away from the bottom of P1 to trigger the unstacking.
   // Expect that P1 and P2 get detached.
   gfx::Vector2d drag_delta_to_unstack =
       GetDragDeltaToUnstackFromBottom(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_unstack;
+  mouse_location += drag_delta_to_unstack;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_TRUE(stack->num_panels() == 0);
@@ -2614,7 +2605,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelLeft) {
 
   // Drag P2 close to the left of P1 to trigger the snapping.
   gfx::Vector2d drag_delta_to_snap = GetDragDeltaToSnapToLeft(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_snap;
+  mouse_location += drag_delta_to_snap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2625,7 +2616,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelLeft) {
 
   // Drag P2 a bit away from the left of P1 to trigger the unsnapping.
   gfx::Vector2d drag_delta_to_unsnap = GetDragDeltaToUnsnap(panel1);
-  mouse_location = mouse_location + drag_delta_to_unsnap;
+  mouse_location += drag_delta_to_unsnap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2635,7 +2626,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelLeft) {
 
   // Drag P2 close to the left of P1 to trigger the snapping again.
   drag_delta_to_snap = GetDragDeltaToSnapToLeft(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_snap;
+  mouse_location += drag_delta_to_snap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2647,7 +2638,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelLeft) {
   // Drag P2 vertically with a little bit of horizontal movement should still
   // keep the snapping.
   gfx::Vector2d drag_delta_almost_vertically(2, 20);
-  mouse_location = mouse_location + drag_delta_almost_vertically;
+  mouse_location += drag_delta_almost_vertically;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2690,7 +2681,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelRight) {
 
   // Drag P1 close to the right of P2 to trigger the snapping.
   gfx::Vector2d drag_delta_to_snap = GetDragDeltaToSnapToRight(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_snap;
+  mouse_location += drag_delta_to_snap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2700,7 +2691,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelRight) {
 
   // Drag P2 a bit away from the right of P1 to trigger the unsnapping.
   gfx::Vector2d drag_delta_to_unsnap = GetDragDeltaToUnsnap(panel1);
-  mouse_location = mouse_location + drag_delta_to_unsnap;
+  mouse_location += drag_delta_to_unsnap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2710,7 +2701,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelRight) {
 
   // Drag P2 close to the right of P1 to trigger the snapping again.
   drag_delta_to_snap = GetDragDeltaToSnapToRight(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_snap;
+  mouse_location += drag_delta_to_snap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2721,7 +2712,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelRight) {
   // Drag P2 vertically with a little bit of horizontal movement should still
   // keep the snapping.
   gfx::Vector2d drag_delta_almost_vertically(2, -20);
-  mouse_location = mouse_location + drag_delta_almost_vertically;
+  mouse_location += drag_delta_almost_vertically;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -2759,12 +2750,11 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapAndCancel) {
   std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
-  gfx::Point original_mouse_location = mouse_location;
   panel2_testing->PressLeftMouseButtonTitlebar(mouse_location);
 
   // Drag P2 close to the left of P1 to trigger the snapping.
   gfx::Vector2d drag_delta_to_snap = GetDragDeltaToSnapToLeft(panel2, panel1);
-  mouse_location = mouse_location + drag_delta_to_snap;
+  mouse_location += drag_delta_to_snap;
   panel2_testing->DragTitlebar(mouse_location);
   ASSERT_EQ(2, detached_collection->num_panels());
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());

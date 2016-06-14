@@ -414,7 +414,6 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_90) {
   SkCanvas canvas(AllocBitmap(kWidth, kHeight));
   FillCanvas(&canvas, SK_ColorMAGENTA);
 
-  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
   PaintRotated(cropped_frame(), &canvas,
                gfx::RectF(kWidth / 2, kHeight / 2, kWidth / 2, kHeight / 2),
                kNone, SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_90);

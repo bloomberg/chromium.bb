@@ -84,7 +84,6 @@ void AppBaseWindow::Restore() {
 void AppBaseWindow::SetBounds(const gfx::Rect& bounds) {
   // We constrain the given size to the min/max sizes of the
   // application window.
-  gfx::Rect original_window_bounds = GetBaseWindow()->GetBounds();
   gfx::Insets frame_insets = GetBaseWindow()->GetFrameInsets();
   SizeConstraints constraints(
       SizeConstraints::AddFrameToConstraints(

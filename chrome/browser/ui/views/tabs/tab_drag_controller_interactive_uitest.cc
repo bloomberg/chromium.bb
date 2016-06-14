@@ -2350,7 +2350,6 @@ void PressSecondFingerWhileDetachedStep2(
 // Detaches a tab and while detached presses a second finger.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        DISABLED_PressSecondFingerWhileDetached) {
-  gfx::Rect bounds(browser()->window()->GetBounds());
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());

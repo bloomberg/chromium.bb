@@ -68,9 +68,6 @@ using ::testing::SaveArg;
 namespace media {
 namespace {
 
-static const gfx::Size kCaptureSizes[] = {gfx::Size(640, 480),
-                                          gfx::Size(1280, 720)};
-
 class MockClient : public VideoCaptureDevice::Client {
  public:
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
@@ -332,6 +329,8 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
 }
 
 #if !defined(OS_ANDROID)
+const gfx::Size kCaptureSizes[] = {gfx::Size(640, 480), gfx::Size(1280, 720)};
+
 INSTANTIATE_TEST_CASE_P(VideoCaptureDeviceTests,
                         VideoCaptureDeviceTest,
                         testing::ValuesIn(kCaptureSizes));
