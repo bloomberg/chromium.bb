@@ -7,10 +7,13 @@
 #include <list>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
@@ -623,9 +626,8 @@ class RemoveOnTouchCancelHandler : public TestEventHandler {
 void DelayByLongPressTimeout() {
   ui::GestureProvider::Config config;
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      run_loop.QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
       config.gesture_detector_config.longpress_timeout * 2);
   run_loop.Run();
 }
@@ -633,9 +635,8 @@ void DelayByLongPressTimeout() {
 void DelayByShowPressTimeout() {
   ui::GestureProvider::Config config;
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      run_loop.QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
       config.gesture_detector_config.showpress_timeout * 2);
   run_loop.Run();
 }

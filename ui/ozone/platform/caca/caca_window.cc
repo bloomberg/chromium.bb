@@ -5,9 +5,11 @@
 #include "ui/ozone/platform/caca/caca_window.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -77,10 +79,9 @@ void CacaWindow::TryProcessingEvent() {
   // Caca uses a poll based event retrieval. Since we don't want to block we'd
   // either need to spin up a new thread or just poll. For simplicity just poll
   // for messages.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CacaWindow::TryProcessingEvent,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&CacaWindow::TryProcessingEvent,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(10));
 }
 

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
@@ -456,7 +459,7 @@ void MessageListView::AnimateClearingOneNotification() {
 
   // Schedule to start sliding out next notification after a short delay.
   if (!clearing_all_views_.empty()) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&MessageListView::AnimateClearingOneNotification,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(

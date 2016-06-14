@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -61,10 +63,9 @@ class MouseWatcher::Observer : public ui::EventHandler {
       } else if (!notify_listener_factory_.HasWeakPtrs()) {
         // Mouse moved outside the host's zone, start a timer to notify the
         // listener.
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&Observer::NotifyListener,
-                       notify_listener_factory_.GetWeakPtr()),
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, base::Bind(&Observer::NotifyListener,
+                                  notify_listener_factory_.GetWeakPtr()),
             event_type == MouseWatcherHost::MOUSE_MOVE
                 ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
                 : mouse_watcher_->notify_on_exit_time_);

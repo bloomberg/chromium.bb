@@ -10,7 +10,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -146,7 +149,7 @@ void GLContextCGL::Destroy() {
     if (base::MessageLoop::current() != nullptr) {
       // Delay releasing the pixel format for 10 seconds to reduce the number of
       // unnecessary GPU switches.
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&CGLReleasePixelFormat, discrete_pixelformat_),
           base::TimeDelta::FromSeconds(10));
     } else {

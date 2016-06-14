@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -126,7 +128,7 @@ void InputDispatcher::MatchingMessageFound() {
   UninstallHook(this);
   // At the time we're invoked the event has not actually been processed.
   // Use PostTask to make sure the event has been processed before notifying.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&InputDispatcher::NotifyTask, this));
 }
 
@@ -251,7 +253,7 @@ bool SendMouseMoveImpl(long screen_x,
   ::GetCursorPos(&current_pos);
   if (screen_x == current_pos.x && screen_y == current_pos.y) {
     if (!task.is_null())
-      base::MessageLoop::current()->PostTask(FROM_HERE, task);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
     return true;
   }
 

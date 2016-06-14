@@ -8,6 +8,9 @@
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace chromeos {
@@ -183,11 +186,9 @@ void ImeKeyboardX11::PollUntilChildFinish(const base::ProcessHandle handle) {
   switch (base::GetTerminationStatus(handle, &exit_code)) {
     case base::TERMINATION_STATUS_STILL_RUNNING:
       DVLOG(1) << "PollUntilChildFinish: Try waiting again";
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ImeKeyboardX11::PollUntilChildFinish,
-                     weak_factory_.GetWeakPtr(),
-                     handle),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&ImeKeyboardX11::PollUntilChildFinish,
+                                weak_factory_.GetWeakPtr(), handle),
           base::TimeDelta::FromMilliseconds(kSetLayoutCommandCheckDelayMs));
       return;
 

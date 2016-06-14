@@ -5,7 +5,9 @@
 #include "ui/app_list/views/search_result_container_view.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace app_list {
 
@@ -55,10 +57,9 @@ void SearchResultContainerView::ScheduleUpdate() {
   // When search results are added one by one, each addition generates an update
   // request. Consolidates those update requests into one Update call.
   if (!update_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SearchResultContainerView::DoUpdate,
-                   update_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SearchResultContainerView::DoUpdate,
+                              update_factory_.GetWeakPtr()));
   }
 }
 

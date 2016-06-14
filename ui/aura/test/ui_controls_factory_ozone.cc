@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -173,7 +176,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
     if (!closure.is_null())
-      base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
   }
 
  private:
@@ -186,13 +189,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
   void PostKeyEvent(ui::EventType type, ui::KeyboardCode key_code, int flags) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&UIControlsOzone::PostKeyEventTask,
-                   base::Unretained(this),
-                   type,
-                   key_code,
-                   flags));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&UIControlsOzone::PostKeyEventTask,
+                              base::Unretained(this), type, key_code, flags));
   }
 
   void PostKeyEventTask(ui::EventType type,
@@ -209,7 +208,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                       const gfx::Point& host_location,
                       int flags,
                       int changed_button_flags) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&UIControlsOzone::PostMouseEventTask, base::Unretained(this),
                    type, host_location, flags, changed_button_flags));

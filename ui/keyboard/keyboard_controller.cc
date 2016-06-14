@@ -8,7 +8,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -360,7 +363,7 @@ void KeyboardController::OnTextInputStateChanged(
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.
       keyboard_visible_ = false;
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&KeyboardController::HideKeyboard,
                      weak_factory_.GetWeakPtr(), HIDE_REASON_AUTOMATIC),

@@ -5,6 +5,9 @@
 #include "ui/message_center/views/message_bubble_base.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -42,10 +45,9 @@ void MessageBubbleBase::BubbleViewDestroyed() {
 
 void MessageBubbleBase::ScheduleUpdate() {
   weak_ptr_factory_.InvalidateWeakPtrs();  // Cancel any pending update.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&MessageBubbleBase::UpdateBubbleView,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&MessageBubbleBase::UpdateBubbleView,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUpdateDelayMs));
 }
 

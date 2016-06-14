@@ -4,7 +4,9 @@
 
 #include "ui/events/test/platform_event_waiter.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/platform/platform_event_source.h"
 
 namespace ui {
@@ -23,7 +25,7 @@ PlatformEventWaiter::~PlatformEventWaiter() {
 
 void PlatformEventWaiter::WillProcessEvent(const PlatformEvent& event) {
   if (event_matcher_.Run(event)) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, success_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, success_callback_);
     delete this;
   }
 }

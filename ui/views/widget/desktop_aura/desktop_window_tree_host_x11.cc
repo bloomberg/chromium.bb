@@ -4,19 +4,22 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
+#include <X11/extensions/shape.h>
+#include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/shape.h>
 
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/cursor_client.h"
@@ -345,10 +348,9 @@ void DesktopWindowTreeHostX11::Close() {
     // we don't destroy the window before the callback returned (as the caller
     // may delete ourselves on destroy and the ATL callback would still
     // dereference us when the callback returns).
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&DesktopWindowTreeHostX11::CloseNow,
-                   close_widget_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&DesktopWindowTreeHostX11::CloseNow,
+                              close_widget_factory_.GetWeakPtr()));
   }
 }
 
@@ -1823,7 +1825,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         delayed_resize_task_.Reset(base::Bind(
             &DesktopWindowTreeHostX11::DelayedResize,
             close_widget_factory_.GetWeakPtr(), bounds_in_pixels.size()));
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, delayed_resize_task_.callback());
       }
       break;
