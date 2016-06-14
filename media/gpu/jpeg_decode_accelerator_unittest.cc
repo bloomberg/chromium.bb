@@ -42,8 +42,6 @@
 #endif
 #endif
 
-using media::JpegDecodeAccelerator;
-
 namespace media {
 namespace {
 
@@ -72,7 +70,7 @@ struct TestImageFile {
   // The input content of |filename|.
   std::string data_str;
 
-  media::JpegParseResult parse_result;
+  JpegParseResult parse_result;
   gfx::Size visible_size;
   size_t output_size;
 };
@@ -250,38 +248,30 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id) {
 
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-  media::BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
-                                          image_file->data_str.size());
-  scoped_refptr<media::VideoFrame> out_frame_ =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420,
-          image_file->visible_size,
-          gfx::Rect(image_file->visible_size),
-          image_file->visible_size,
-          static_cast<uint8_t*>(hw_out_shm_->memory()),
-          image_file->output_size,
-          hw_out_shm_->handle(),
-          0,
-          base::TimeDelta());
+  BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
+                                   image_file->data_str.size());
+  scoped_refptr<VideoFrame> out_frame_ = VideoFrame::WrapExternalSharedMemory(
+      PIXEL_FORMAT_I420, image_file->visible_size,
+      gfx::Rect(image_file->visible_size), image_file->visible_size,
+      static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
+      hw_out_shm_->handle(), 0, base::TimeDelta());
   LOG_ASSERT(out_frame_.get());
   decoder_->Decode(bitstream_buffer, out_frame_);
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
-  media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
+  VideoPixelFormat format = PIXEL_FORMAT_I420;
   TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
 
   uint8_t* yplane = static_cast<uint8_t*>(sw_out_shm_->memory());
-  uint8_t* uplane =
-      yplane +
-      media::VideoFrame::PlaneSize(format, media::VideoFrame::kYPlane,
-                                   image_file->visible_size)
-          .GetArea();
-  uint8_t* vplane =
-      uplane +
-      media::VideoFrame::PlaneSize(format, media::VideoFrame::kUPlane,
-                                   image_file->visible_size)
-          .GetArea();
+  uint8_t* uplane = yplane +
+                    VideoFrame::PlaneSize(format, VideoFrame::kYPlane,
+                                          image_file->visible_size)
+                        .GetArea();
+  uint8_t* vplane = uplane +
+                    VideoFrame::PlaneSize(format, VideoFrame::kUPlane,
+                                          image_file->visible_size)
+                        .GetArea();
   int yplane_stride = image_file->visible_size.width();
   int uv_plane_stride = yplane_stride / 2;
 
@@ -370,8 +360,7 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x360_jpeg_file_,
                                             image_data_640x360_black_.get()));
 
-  base::FilePath default_jpeg_file =
-      media::GetTestDataFilePath(kDefaultJpegFilename);
+  base::FilePath default_jpeg_file = GetTestDataFilePath(kDefaultJpegFilename);
   image_data_1280x720_default_.reset(new TestImageFile(kDefaultJpegFilename));
   ASSERT_NO_FATAL_FAILURE(
       ReadTestJpegImage(default_jpeg_file, image_data_1280x720_default_.get()));
@@ -379,15 +368,15 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   image_data_invalid_.reset(new TestImageFile("failure.jpg"));
   image_data_invalid_->data_str.resize(100, 0);
   image_data_invalid_->visible_size.SetSize(1280, 720);
-  image_data_invalid_->output_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, image_data_invalid_->visible_size);
+  image_data_invalid_->output_size = VideoFrame::AllocationSize(
+      PIXEL_FORMAT_I420, image_data_invalid_->visible_size);
 
   // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
   std::vector<base::FilePath::StringType> filenames = base::SplitString(
       user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& filename : filenames) {
-    base::FilePath input_file = media::GetTestDataFilePath(filename);
+    base::FilePath input_file = GetTestDataFilePath(filename);
     TestImageFile* image_data = new TestImageFile(filename);
     ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data));
     image_data_user_.push_back(image_data);
@@ -425,14 +414,14 @@ void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
     TestImageFile* image_data) {
   ASSERT_TRUE(base::ReadFileToString(input_file, &image_data->data_str));
 
-  ASSERT_TRUE(media::ParseJpegPicture(
+  ASSERT_TRUE(ParseJpegPicture(
       reinterpret_cast<const uint8_t*>(image_data->data_str.data()),
       image_data->data_str.size(), &image_data->parse_result));
   image_data->visible_size.SetSize(
       image_data->parse_result.frame_header.visible_width,
       image_data->parse_result.frame_header.visible_height);
-  image_data->output_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, image_data->visible_size);
+  image_data->output_size =
+      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->visible_size);
 }
 
 class JpegDecodeAcceleratorTest : public ::testing::Test {

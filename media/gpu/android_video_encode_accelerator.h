@@ -23,33 +23,30 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
+
 class BitstreamBuffer;
-}  // namespace media
 
-namespace media {
-
-// Android-specific implementation of media::VideoEncodeAccelerator, enabling
+// Android-specific implementation of VideoEncodeAccelerator, enabling
 // hardware-acceleration of video encoding, based on Android's MediaCodec class
 // (http://developer.android.com/reference/android/media/MediaCodec.html).  This
 // class expects to live and be called on a single thread (the GPU process'
 // ChildThread).
 class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
-    : public media::VideoEncodeAccelerator {
+    : public VideoEncodeAccelerator {
  public:
   AndroidVideoEncodeAccelerator();
   ~AndroidVideoEncodeAccelerator() override;
 
-  // media::VideoEncodeAccelerator implementation.
-  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
-      override;
-  bool Initialize(media::VideoPixelFormat format,
+  // VideoEncodeAccelerator implementation.
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
+  bool Initialize(VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   Client* client) override;
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -79,15 +76,14 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
   // error triggers.
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
-  std::unique_ptr<media::VideoCodecBridge> media_codec_;
+  std::unique_ptr<VideoCodecBridge> media_codec_;
 
   // Bitstream buffers waiting to be populated & returned to the client.
-  std::vector<media::BitstreamBuffer> available_bitstream_buffers_;
+  std::vector<BitstreamBuffer> available_bitstream_buffers_;
 
   // Frames waiting to be passed to the codec, queued until an input buffer is
   // available.  Each element is a tuple of <Frame, key_frame, enqueue_time>.
-  typedef std::queue<
-      std::tuple<scoped_refptr<media::VideoFrame>, bool, base::Time>>
+  typedef std::queue<std::tuple<scoped_refptr<VideoFrame>, bool, base::Time>>
       PendingFrames;
   PendingFrames pending_frames_;
 

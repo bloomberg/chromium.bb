@@ -232,10 +232,10 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     return EGL_NO_IMAGE_KHR;
   }
 
-  media::VideoPixelFormat vf_format = V4L2PixFmtToVideoPixelFormat(v4l2_pixfmt);
+  VideoPixelFormat vf_format = V4L2PixFmtToVideoPixelFormat(v4l2_pixfmt);
   // Number of components, as opposed to the number of V4L2 planes, which is
   // just a buffer count.
-  size_t num_planes = media::VideoFrame::NumPlanes(vf_format);
+  size_t num_planes = VideoFrame::NumPlanes(vf_format);
   DCHECK_LE(num_planes, 3u);
   if (num_planes < dmabuf_fds.size()) {
     // It's possible for more than one DRM plane to reside in one V4L2 plane,
@@ -266,15 +266,13 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
     attrs.push_back(plane_offset);
     attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
-    attrs.push_back(
-        media::VideoFrame::RowBytes(plane, vf_format, size.width()));
+    attrs.push_back(VideoFrame::RowBytes(plane, vf_format, size.width()));
 
     if (v4l2_plane + 1 < dmabuf_fds.size()) {
       ++v4l2_plane;
       plane_offset = 0;
     } else {
-      plane_offset +=
-          media::VideoFrame::PlaneSize(vf_format, plane, size).GetArea();
+      plane_offset += VideoFrame::PlaneSize(vf_format, plane, size).GetArea();
     }
   }
 

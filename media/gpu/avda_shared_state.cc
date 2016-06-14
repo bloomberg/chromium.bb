@@ -74,7 +74,7 @@ void AVDASharedState::SetSurfaceTexture(
   DCHECK(surface_);
 }
 
-void AVDASharedState::CodecChanged(media::MediaCodecBridge* codec) {
+void AVDASharedState::CodecChanged(MediaCodecBridge* codec) {
   for (auto& image_kv : codec_images_)
     image_kv.second->CodecChanged(codec);
   release_time_ = base::TimeTicks();
@@ -99,7 +99,7 @@ AVDACodecImage* AVDASharedState::GetImageForPicture(
 }
 
 void AVDASharedState::RenderCodecBufferToSurfaceTexture(
-    media::MediaCodecBridge* codec,
+    MediaCodecBridge* codec,
     int codec_buffer_index) {
   if (!release_time_.is_null())
     WaitForFrameAvailable();

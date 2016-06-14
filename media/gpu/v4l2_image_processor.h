@@ -38,8 +38,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
   // will be called if an error occurs. Return true if the requested
   // configuration is supported.
-  bool Initialize(media::VideoPixelFormat input_format,
-                  media::VideoPixelFormat output_format,
+  bool Initialize(VideoPixelFormat input_format,
+                  VideoPixelFormat output_format,
                   v4l2_memory input_memory_type,
                   gfx::Size input_visible_size,
                   gfx::Size input_allocated_size,
@@ -85,7 +85,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   // stored in |output_buffer_index| output buffer and notified via |cb|. The
   // processor will drop all its references to |frame| after it finishes
   // accessing it.
-  void Process(const scoped_refptr<media::VideoFrame>& frame,
+  void Process(const scoped_refptr<VideoFrame>& frame,
                int output_buffer_index,
                const FrameReadyCB& cb);
 
@@ -99,7 +99,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   struct InputRecord {
     InputRecord();
     ~InputRecord();
-    scoped_refptr<media::VideoFrame> frame;
+    scoped_refptr<VideoFrame> frame;
     bool at_device;
   };
 
@@ -117,7 +117,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   struct JobRecord {
     JobRecord();
     ~JobRecord();
-    scoped_refptr<media::VideoFrame> frame;
+    scoped_refptr<VideoFrame> frame;
     int output_buffer_index;
     FrameReadyCB ready_cb;
   };
@@ -158,8 +158,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   gfx::Size output_visible_size_;
   gfx::Size output_allocated_size_;
 
-  media::VideoPixelFormat input_format_;
-  media::VideoPixelFormat output_format_;
+  VideoPixelFormat input_format_;
+  VideoPixelFormat output_format_;
   v4l2_memory input_memory_type_;
   uint32_t input_format_fourcc_;
   uint32_t output_format_fourcc_;

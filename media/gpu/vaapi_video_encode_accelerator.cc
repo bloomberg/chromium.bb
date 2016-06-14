@@ -91,10 +91,9 @@ static void ReportToUMA(VAVEAEncoderFailure failure) {
 }
 
 struct VaapiVideoEncodeAccelerator::InputFrameRef {
-  InputFrameRef(const scoped_refptr<media::VideoFrame>& frame,
-                bool force_keyframe)
+  InputFrameRef(const scoped_refptr<VideoFrame>& frame, bool force_keyframe)
       : frame(frame), force_keyframe(force_keyframe) {}
-  const scoped_refptr<media::VideoFrame> frame;
+  const scoped_refptr<VideoFrame> frame;
   const bool force_keyframe;
 };
 
@@ -105,7 +104,7 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   const std::unique_ptr<SharedMemoryRegion> shm;
 };
 
-media::VideoEncodeAccelerator::SupportedProfiles
+VideoEncodeAccelerator::SupportedProfiles
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   return VaapiWrapper::GetSupportedEncodeProfiles();
 }
@@ -123,7 +122,7 @@ static unsigned int Log2OfPowerOf2(unsigned int x) {
 }
 
 VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
-    : profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+    : profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       mb_width_(0),
       mb_height_(0),
       output_buffer_byte_size_(0),
@@ -154,9 +153,9 @@ VaapiVideoEncodeAccelerator::~VaapiVideoEncodeAccelerator() {
 }
 
 bool VaapiVideoEncodeAccelerator::Initialize(
-    media::VideoPixelFormat format,
+    VideoPixelFormat format,
     const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
+    VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -164,7 +163,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   DCHECK_EQ(state_, kUninitialized);
 
   DVLOGF(1) << "Initializing VAVEA, input_format: "
-            << media::VideoPixelFormatToString(format)
+            << VideoPixelFormatToString(format)
             << ", input_visible_size: " << input_visible_size.ToString()
             << ", output_profile: " << output_profile
             << ", initial_bitrate: " << initial_bitrate;
@@ -188,9 +187,9 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (format != media::PIXEL_FORMAT_I420) {
+  if (format != PIXEL_FORMAT_I420) {
     DVLOGF(1) << "Unsupported input format: "
-              << media::VideoPixelFormatToString(format);
+              << VideoPixelFormatToString(format);
     return false;
   }
 
@@ -234,7 +233,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask() {
   DCHECK_EQ(state_, kUninitialized);
   DVLOGF(4);
 
-  va_surface_release_cb_ = media::BindToCurrentLoop(
+  va_surface_release_cb_ = BindToCurrentLoop(
       base::Bind(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
                  base::Unretained(this)));
 
@@ -286,11 +285,11 @@ void VaapiVideoEncodeAccelerator::BeginFrame(bool force_keyframe) {
   }
 
   if (current_pic_->frame_num % i_period_ == 0)
-    current_pic_->type = media::H264SliceHeader::kISlice;
+    current_pic_->type = H264SliceHeader::kISlice;
   else
-    current_pic_->type = media::H264SliceHeader::kPSlice;
+    current_pic_->type = H264SliceHeader::kPSlice;
 
-  if (current_pic_->type != media::H264SliceHeader::kBSlice)
+  if (current_pic_->type != H264SliceHeader::kBSlice)
     current_pic_->ref = true;
 
   current_pic_->pic_order_cnt = current_pic_->frame_num * 2;
@@ -477,7 +476,7 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
 
 bool VaapiVideoEncodeAccelerator::SubmitHeadersIfNeeded() {
   DCHECK(current_pic_);
-  if (current_pic_->type != media::H264SliceHeader::kISlice)
+  if (current_pic_->type != H264SliceHeader::kISlice)
     return true;
 
   // Submit PPS.
@@ -520,7 +519,7 @@ bool VaapiVideoEncodeAccelerator::ExecuteEncode() {
 }
 
 bool VaapiVideoEncodeAccelerator::UploadFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<VideoFrame>& frame) {
   return vaapi_wrapper_->UploadVideoFrameToSurface(
       frame, current_encode_job_->input_surface->id());
 }
@@ -560,9 +559,8 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
                  encode_job->keyframe, encode_job->timestamp));
 }
 
-void VaapiVideoEncodeAccelerator::Encode(
-    const scoped_refptr<media::VideoFrame>& frame,
-    bool force_keyframe) {
+void VaapiVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+                                         bool force_keyframe) {
   DVLOGF(3) << "Frame timestamp: " << frame->timestamp().InMilliseconds()
             << " force_keyframe: " << force_keyframe;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -606,7 +604,7 @@ bool VaapiVideoEncodeAccelerator::PrepareNextJob(base::TimeDelta timestamp) {
 }
 
 void VaapiVideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
@@ -658,7 +656,7 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const media::BitstreamBuffer& buffer) {
+    const BitstreamBuffer& buffer) {
   DVLOGF(4) << "id: " << buffer.id();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -770,24 +768,24 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
 }
 
 void VaapiVideoEncodeAccelerator::UpdateSPS() {
-  memset(&current_sps_, 0, sizeof(media::H264SPS));
+  memset(&current_sps_, 0, sizeof(H264SPS));
 
   // Spec A.2 and A.3.
   switch (profile_) {
-    case media::H264PROFILE_BASELINE:
+    case H264PROFILE_BASELINE:
       // Due to crbug.com/345569, we don't distinguish between constrained
       // and non-constrained baseline profiles. Since many codecs can't do
       // non-constrained, and constrained is usually what we mean (and it's a
       // subset of non-constrained), default to it.
-      current_sps_.profile_idc = media::H264SPS::kProfileIDCBaseline;
+      current_sps_.profile_idc = H264SPS::kProfileIDCBaseline;
       current_sps_.constraint_set0_flag = true;
       break;
-    case media::H264PROFILE_MAIN:
-      current_sps_.profile_idc = media::H264SPS::kProfileIDCMain;
+    case H264PROFILE_MAIN:
+      current_sps_.profile_idc = H264SPS::kProfileIDCMain;
       current_sps_.constraint_set1_flag = true;
       break;
-    case media::H264PROFILE_HIGH:
-      current_sps_.profile_idc = media::H264SPS::kProfileIDCHigh;
+    case H264PROFILE_HIGH:
+      current_sps_.profile_idc = H264SPS::kProfileIDCHigh;
       break;
     default:
       NOTIMPLEMENTED();
@@ -842,28 +840,24 @@ void VaapiVideoEncodeAccelerator::UpdateSPS() {
   current_sps_.bit_rate_scale = kBitRateScale;
   current_sps_.cpb_size_scale = kCPBSizeScale;
   current_sps_.bit_rate_value_minus1[0] =
-      (bitrate_ >>
-       (kBitRateScale + media::H264SPS::kBitRateScaleConstantTerm)) -
-      1;
+      (bitrate_ >> (kBitRateScale + H264SPS::kBitRateScaleConstantTerm)) - 1;
   current_sps_.cpb_size_value_minus1[0] =
-      (cpb_size_ >>
-       (kCPBSizeScale + media::H264SPS::kCPBSizeScaleConstantTerm)) -
-      1;
+      (cpb_size_ >> (kCPBSizeScale + H264SPS::kCPBSizeScaleConstantTerm)) - 1;
   current_sps_.cbr_flag[0] = true;
   current_sps_.initial_cpb_removal_delay_length_minus_1 =
-      media::H264SPS::kDefaultInitialCPBRemovalDelayLength - 1;
+      H264SPS::kDefaultInitialCPBRemovalDelayLength - 1;
   current_sps_.cpb_removal_delay_length_minus1 =
-      media::H264SPS::kDefaultInitialCPBRemovalDelayLength - 1;
+      H264SPS::kDefaultInitialCPBRemovalDelayLength - 1;
   current_sps_.dpb_output_delay_length_minus1 =
-      media::H264SPS::kDefaultDPBOutputDelayLength - 1;
-  current_sps_.time_offset_length = media::H264SPS::kDefaultTimeOffsetLength;
+      H264SPS::kDefaultDPBOutputDelayLength - 1;
+  current_sps_.time_offset_length = H264SPS::kDefaultTimeOffsetLength;
   current_sps_.low_delay_hrd_flag = false;
 }
 
 void VaapiVideoEncodeAccelerator::GeneratePackedSPS() {
   packed_sps_.Reset();
 
-  packed_sps_.BeginNALU(media::H264NALU::kSPS, 3);
+  packed_sps_.BeginNALU(H264NALU::kSPS, 3);
 
   packed_sps_.AppendBits(8, current_sps_.profile_idc);
   packed_sps_.AppendBool(current_sps_.constraint_set0_flag);
@@ -876,7 +870,7 @@ void VaapiVideoEncodeAccelerator::GeneratePackedSPS() {
   packed_sps_.AppendBits(8, current_sps_.level_idc);
   packed_sps_.AppendUE(current_sps_.seq_parameter_set_id);
 
-  if (current_sps_.profile_idc == media::H264SPS::kProfileIDCHigh) {
+  if (current_sps_.profile_idc == H264SPS::kProfileIDCHigh) {
     packed_sps_.AppendUE(current_sps_.chroma_format_idc);
     if (current_sps_.chroma_format_idc == 3)
       packed_sps_.AppendBool(current_sps_.separate_colour_plane_flag);
@@ -975,13 +969,13 @@ void VaapiVideoEncodeAccelerator::GeneratePackedSPS() {
 }
 
 void VaapiVideoEncodeAccelerator::UpdatePPS() {
-  memset(&current_pps_, 0, sizeof(media::H264PPS));
+  memset(&current_pps_, 0, sizeof(H264PPS));
 
   current_pps_.seq_parameter_set_id = current_sps_.seq_parameter_set_id;
   current_pps_.pic_parameter_set_id = 0;
 
   current_pps_.entropy_coding_mode_flag =
-      current_sps_.profile_idc >= media::H264SPS::kProfileIDCMain;
+      current_sps_.profile_idc >= H264SPS::kProfileIDCMain;
 
   CHECK_GT(max_ref_idx_l0_size_, 0u);
   current_pps_.num_ref_idx_l0_default_active_minus1 = max_ref_idx_l0_size_ - 1;
@@ -990,13 +984,13 @@ void VaapiVideoEncodeAccelerator::UpdatePPS() {
   current_pps_.pic_init_qp_minus26 = qp_ - 26;
   current_pps_.deblocking_filter_control_present_flag = true;
   current_pps_.transform_8x8_mode_flag =
-      (current_sps_.profile_idc == media::H264SPS::kProfileIDCHigh);
+      (current_sps_.profile_idc == H264SPS::kProfileIDCHigh);
 }
 
 void VaapiVideoEncodeAccelerator::GeneratePackedPPS() {
   packed_pps_.Reset();
 
-  packed_pps_.BeginNALU(media::H264NALU::kPPS, 3);
+  packed_pps_.BeginNALU(H264NALU::kPPS, 3);
 
   packed_pps_.AppendUE(current_pps_.pic_parameter_set_id);
   packed_pps_.AppendUE(current_pps_.seq_parameter_set_id);

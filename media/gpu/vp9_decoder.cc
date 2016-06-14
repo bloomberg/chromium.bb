@@ -19,7 +19,7 @@ VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 VP9Decoder::VP9Decoder(VP9Accelerator* accelerator)
     : state_(kNeedStreamMetadata), accelerator_(accelerator) {
   DCHECK(accelerator_);
-  ref_frames_.resize(media::kVp9NumRefFrames);
+  ref_frames_.resize(kVp9NumRefFrames);
 }
 
 VP9Decoder::~VP9Decoder() {}
@@ -53,17 +53,17 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
   while (1) {
     // Read a new frame header if one is not awaiting decoding already.
     if (!curr_frame_hdr_) {
-      std::unique_ptr<media::Vp9FrameHeader> hdr(new media::Vp9FrameHeader());
-      media::Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
+      std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
+      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
       switch (res) {
-        case media::Vp9Parser::kOk:
+        case Vp9Parser::kOk:
           curr_frame_hdr_.reset(hdr.release());
           break;
 
-        case media::Vp9Parser::kEOStream:
+        case Vp9Parser::kEOStream:
           return kRanOutOfStreamData;
 
-        case media::Vp9Parser::kInvalidStream:
+        case Vp9Parser::kInvalidStream:
           DVLOG(1) << "Error parsing stream";
           SetError();
           return kDecodeError;
@@ -141,7 +141,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 }
 
 void VP9Decoder::RefreshReferenceFrames(const scoped_refptr<VP9Picture>& pic) {
-  for (size_t i = 0; i < media::kVp9NumRefFrames; ++i) {
+  for (size_t i = 0; i < kVp9NumRefFrames; ++i) {
     DCHECK(!pic->frame_hdr->IsKeyframe() || pic->frame_hdr->RefreshFlag(i));
     if (pic->frame_hdr->RefreshFlag(i))
       ref_frames_[i] = pic;
@@ -177,7 +177,7 @@ gfx::Size VP9Decoder::GetPicSize() const {
 size_t VP9Decoder::GetRequiredNumOfPictures() const {
   // kMaxVideoFrames to keep higher level media pipeline populated, +2 for the
   // pictures being parsed and decoded currently.
-  return media::limits::kMaxVideoFrames + media::kVp9NumRefFrames + 2;
+  return limits::kMaxVideoFrames + kVp9NumRefFrames + 2;
 }
 
 }  // namespace media

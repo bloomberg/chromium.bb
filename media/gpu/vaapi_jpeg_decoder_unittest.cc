@@ -43,7 +43,7 @@ class VaapiJpegDecoderTest : public ::testing::Test {
                                     VAProfileJPEGBaseline, report_error_cb);
     ASSERT_TRUE(wrapper_);
 
-    base::FilePath input_file = media::GetTestDataFilePath(kTestFilename);
+    base::FilePath input_file = GetTestDataFilePath(kTestFilename);
 
     ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data_))
         << "failed to read input data from " << input_file.value();
@@ -51,7 +51,7 @@ class VaapiJpegDecoderTest : public ::testing::Test {
 
   void TearDown() override { wrapper_ = nullptr; }
 
-  bool VerifyDecode(const media::JpegParseResult& parse_result,
+  bool VerifyDecode(const JpegParseResult& parse_result,
                     const std::string& md5sum);
 
  protected:
@@ -59,9 +59,8 @@ class VaapiJpegDecoderTest : public ::testing::Test {
   std::string jpeg_data_;
 };
 
-bool VaapiJpegDecoderTest::VerifyDecode(
-    const media::JpegParseResult& parse_result,
-    const std::string& expected_md5sum) {
+bool VaapiJpegDecoderTest::VerifyDecode(const JpegParseResult& parse_result,
+                                        const std::string& expected_md5sum) {
   gfx::Size size(parse_result.frame_header.coded_width,
                  parse_result.frame_header.coded_height);
 
@@ -90,9 +89,8 @@ bool VaapiJpegDecoderTest::VerifyDecode(
   }
   EXPECT_EQ(kI420Fourcc, image.format.fourcc);
 
-  base::StringPiece result(
-      reinterpret_cast<const char*>(mem),
-      media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, size));
+  base::StringPiece result(reinterpret_cast<const char*>(mem),
+                           VideoFrame::AllocationSize(PIXEL_FORMAT_I420, size));
   EXPECT_EQ(expected_md5sum, base::MD5String(result));
 
   wrapper_->ReturnVaImage(&image);
@@ -101,19 +99,19 @@ bool VaapiJpegDecoderTest::VerifyDecode(
 }
 
 TEST_F(VaapiJpegDecoderTest, DecodeSuccess) {
-  media::JpegParseResult parse_result;
-  ASSERT_TRUE(media::ParseJpegPicture(
-      reinterpret_cast<const uint8_t*>(jpeg_data_.data()), jpeg_data_.size(),
-      &parse_result));
+  JpegParseResult parse_result;
+  ASSERT_TRUE(
+      ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
+                       jpeg_data_.size(), &parse_result));
 
   EXPECT_TRUE(VerifyDecode(parse_result, kExpectedMd5Sum));
 }
 
 TEST_F(VaapiJpegDecoderTest, DecodeFail) {
-  media::JpegParseResult parse_result;
-  ASSERT_TRUE(media::ParseJpegPicture(
-      reinterpret_cast<const uint8_t*>(jpeg_data_.data()), jpeg_data_.size(),
-      &parse_result));
+  JpegParseResult parse_result;
+  ASSERT_TRUE(
+      ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
+                       jpeg_data_.size(), &parse_result));
 
   // Not supported by VAAPI.
   parse_result.frame_header.num_components = 1;

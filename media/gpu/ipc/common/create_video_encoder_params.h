@@ -14,9 +14,9 @@ namespace media {
 struct CreateVideoEncoderParams {
   CreateVideoEncoderParams();
   ~CreateVideoEncoderParams();
-  media::VideoPixelFormat input_format;
+  VideoPixelFormat input_format;
   gfx::Size input_visible_size;
-  media::VideoCodecProfile output_profile;
+  VideoCodecProfile output_profile;
   uint32_t initial_bitrate;
   int32_t encoder_route_id;
 };

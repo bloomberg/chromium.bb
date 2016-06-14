@@ -52,7 +52,7 @@ class VaapiPicture;
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator {
  public:
   class VaapiDecodeSurface;
 
@@ -62,11 +62,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   ~VaapiVideoDecodeAccelerator() override;
 
-  // media::VideoDecodeAccelerator implementation.
+  // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
 #if defined(USE_OZONE)
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
@@ -81,8 +80,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
   class VaapiH264Accelerator;
@@ -94,8 +92,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Map the received input buffer into this process' address space and
   // queue it for decode.
-  void MapAndQueueNewInputBuffer(
-      const media::BitstreamBuffer& bitstream_buffer);
+  void MapAndQueueNewInputBuffer(const BitstreamBuffer& bitstream_buffer);
 
   // Get a new input buffer from the queue and set it up in decoder. This will
   // sleep if no input buffers are available. Return true if a new buffer has

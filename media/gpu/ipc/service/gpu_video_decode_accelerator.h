@@ -34,7 +34,7 @@ namespace media {
 class GpuVideoDecodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
-      public media::VideoDecodeAccelerator::Client,
+      public VideoDecodeAccelerator::Client,
       public gpu::GpuCommandBufferStub::DestructionObserver {
  public:
   // Each of the arguments to the constructor must outlive this object.
@@ -54,7 +54,7 @@ class GpuVideoDecodeAccelerator
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // media::VideoDecodeAccelerator::Client implementation.
+  // VideoDecodeAccelerator::Client implementation.
   void NotifyInitializationComplete(bool success) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
@@ -62,11 +62,11 @@ class GpuVideoDecodeAccelerator
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
-  void PictureReady(const media::Picture& picture) override;
+  void PictureReady(const Picture& picture) override;
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;
   void NotifyFlushDone() override;
   void NotifyResetDone() override;
-  void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  void NotifyError(VideoDecodeAccelerator::Error error) override;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
@@ -78,7 +78,7 @@ class GpuVideoDecodeAccelerator
   // one of them succeeds for given |config|. Send the |init_done_msg| when
   // done. filter_ is passed to gpu::GpuCommandBufferStub channel only if the
   // chosen VDA can decode on IO thread.
-  bool Initialize(const media::VideoDecodeAccelerator::Config& config);
+  bool Initialize(const VideoDecodeAccelerator::Config& config);
 
  private:
   class MessageFilter;
@@ -87,10 +87,10 @@ class GpuVideoDecodeAccelerator
   ~GpuVideoDecodeAccelerator() override;
 
   // Handlers for IPC messages.
-  void OnDecode(const media::BitstreamBuffer& bitstream_buffer);
+  void OnDecode(const BitstreamBuffer& bitstream_buffer);
   void OnAssignPictureBuffers(
       const std::vector<int32_t>& buffer_ids,
-      const std::vector<media::PictureBuffer::TextureIds>& texture_ids);
+      const std::vector<PictureBuffer::TextureIds>& texture_ids);
   void OnReusePictureBuffer(int32_t picture_buffer_id);
   void OnFlush();
   void OnReset();
@@ -100,7 +100,7 @@ class GpuVideoDecodeAccelerator
   void OnFilterRemoved();
 
   // Sets the texture to cleared.
-  void SetTextureCleared(const media::Picture& picture);
+  void SetTextureCleared(const Picture& picture);
 
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
@@ -111,7 +111,7 @@ class GpuVideoDecodeAccelerator
   gpu::GpuCommandBufferStub* const stub_;
 
   // The underlying VideoDecodeAccelerator.
-  std::unique_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
+  std::unique_ptr<VideoDecodeAccelerator> video_decode_accelerator_;
 
   // Callback to return current GLContext, if available.
   GetGLContextCallback get_gl_context_cb_;

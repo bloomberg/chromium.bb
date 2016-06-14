@@ -42,7 +42,7 @@ class GpuJpegDecodeAccelerator
 
   void NotifyDecodeStatus(int32_t route_id,
                           int32_t bitstream_buffer_id,
-                          media::JpegDecodeAccelerator::Error error);
+                          JpegDecodeAccelerator::Error error);
 
   // Function to delegate sending to actual sender.
   bool Send(IPC::Message* message) override;
@@ -52,7 +52,7 @@ class GpuJpegDecodeAccelerator
   static bool IsSupported();
 
  private:
-  using CreateJDAFp = std::unique_ptr<media::JpegDecodeAccelerator> (*)(
+  using CreateJDAFp = std::unique_ptr<JpegDecodeAccelerator> (*)(
       const scoped_refptr<base::SingleThreadTaskRunner>&);
 
   class Client;
@@ -60,9 +60,9 @@ class GpuJpegDecodeAccelerator
 
   void ClientRemoved();
 
-  static std::unique_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA(
+  static std::unique_ptr<JpegDecodeAccelerator> CreateV4L2JDA(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  static std::unique_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA(
+  static std::unique_ptr<JpegDecodeAccelerator> CreateVaapiJDA(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // The lifetime of objects of this class is managed by a gpu::GpuChannel. The

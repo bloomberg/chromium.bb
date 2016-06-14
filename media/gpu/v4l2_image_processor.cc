@@ -53,8 +53,8 @@ V4L2ImageProcessor::JobRecord::JobRecord() : output_buffer_index(-1) {}
 V4L2ImageProcessor::JobRecord::~JobRecord() {}
 
 V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
-    : input_format_(media::PIXEL_FORMAT_UNKNOWN),
-      output_format_(media::PIXEL_FORMAT_UNKNOWN),
+    : input_format_(PIXEL_FORMAT_UNKNOWN),
+      output_format_(PIXEL_FORMAT_UNKNOWN),
       input_memory_type_(V4L2_MEMORY_USERPTR),
       input_format_fourcc_(0),
       output_format_fourcc_(0),
@@ -96,8 +96,8 @@ void V4L2ImageProcessor::NotifyErrorOnChildThread(
   error_cb_.Run();
 }
 
-bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
-                                    media::VideoPixelFormat output_format,
+bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
+                                    VideoPixelFormat output_format,
                                     v4l2_memory input_memory_type,
                                     gfx::Size input_visible_size,
                                     gfx::Size input_allocated_size,
@@ -155,9 +155,8 @@ bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
                  base::Unretained(this)));
 
   DVLOG(1) << "V4L2ImageProcessor initialized for "
-           << " input_format:" << media::VideoPixelFormatToString(input_format)
-           << ", output_format:"
-           << media::VideoPixelFormatToString(output_format)
+           << " input_format:" << VideoPixelFormatToString(input_format)
+           << ", output_format:" << VideoPixelFormatToString(output_format)
            << ", input_visible_size: " << input_visible_size.ToString()
            << ", input_allocated_size: " << input_allocated_size_.ToString()
            << ", input_planes_count: " << input_planes_count_
@@ -218,7 +217,7 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t pixelformat,
   return true;
 }
 
-void V4L2ImageProcessor::Process(const scoped_refptr<media::VideoFrame>& frame,
+void V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
                                  int output_buffer_index,
                                  const FrameReadyCB& cb) {
   DVLOG(3) << __func__ << ": ts=" << frame->timestamp().InMilliseconds();
@@ -599,8 +598,8 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   qbuf.length = input_planes_count_;
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused =
-        media::VideoFrame::PlaneSize(input_record.frame->format(), i,
-                                     input_allocated_size_)
+        VideoFrame::PlaneSize(input_record.frame->format(), i,
+                              input_allocated_size_)
             .GetArea();
     qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
     if (input_memory_type_ == V4L2_MEMORY_USERPTR) {

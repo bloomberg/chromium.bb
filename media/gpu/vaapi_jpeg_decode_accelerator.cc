@@ -37,7 +37,7 @@ static void ReportToUMA(VAJDADecoderFailure failure) {
 }
 
 static unsigned int VaSurfaceFormatForJpeg(
-    const media::JpegFrameHeader& frame_header) {
+    const JpegFrameHeader& frame_header) {
   // The range of sampling factor is [1, 4]. Pack them into integer to make the
   // matching code simpler. For example, 0x211 means the sampling factor are 2,
   // 1, 1 for 3 components.
@@ -80,7 +80,7 @@ static unsigned int VaSurfaceFormatForJpeg(
 VaapiJpegDecodeAccelerator::DecodeRequest::DecodeRequest(
     int32_t bitstream_buffer_id,
     std::unique_ptr<SharedMemoryRegion> shm,
-    const scoped_refptr<media::VideoFrame>& video_frame)
+    const scoped_refptr<VideoFrame>& video_frame)
     : bitstream_buffer_id(bitstream_buffer_id),
       shm(std::move(shm)),
       video_frame(video_frame) {}
@@ -153,7 +153,7 @@ bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
 bool VaapiJpegDecodeAccelerator::OutputPicture(
     VASurfaceID va_surface_id,
     int32_t input_buffer_id,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   TRACE_EVENT1("jpeg", "VaapiJpegDecodeAccelerator::OutputPicture",
@@ -191,12 +191,12 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
   size_t src_y_stride = image.pitches[0];
   size_t src_u_stride = image.pitches[1];
   size_t src_v_stride = image.pitches[2];
-  uint8_t* dst_y = video_frame->data(media::VideoFrame::kYPlane);
-  uint8_t* dst_u = video_frame->data(media::VideoFrame::kUPlane);
-  uint8_t* dst_v = video_frame->data(media::VideoFrame::kVPlane);
-  size_t dst_y_stride = video_frame->stride(media::VideoFrame::kYPlane);
-  size_t dst_u_stride = video_frame->stride(media::VideoFrame::kUPlane);
-  size_t dst_v_stride = video_frame->stride(media::VideoFrame::kVPlane);
+  uint8_t* dst_y = video_frame->data(VideoFrame::kYPlane);
+  uint8_t* dst_u = video_frame->data(VideoFrame::kUPlane);
+  uint8_t* dst_v = video_frame->data(VideoFrame::kVPlane);
+  size_t dst_y_stride = video_frame->stride(VideoFrame::kYPlane);
+  size_t dst_u_stride = video_frame->stride(VideoFrame::kUPlane);
+  size_t dst_v_stride = video_frame->stride(VideoFrame::kVPlane);
 
   if (libyuv::I420Copy(src_y, src_y_stride,  // Y
                        src_u, src_u_stride,  // U
@@ -224,8 +224,8 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
 
-  media::JpegParseResult parse_result;
-  if (!media::ParseJpegPicture(
+  JpegParseResult parse_result;
+  if (!ParseJpegPicture(
           reinterpret_cast<const uint8_t*>(request->shm->memory()),
           request->shm->size(), &parse_result)) {
     DLOG(ERROR) << "ParseJpegPicture failed";
@@ -282,8 +282,8 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
 }
 
 void VaapiJpegDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    const BitstreamBuffer& bitstream_buffer,
+    const scoped_refptr<VideoFrame>& video_frame) {
   DVLOG(3) << __func__;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("jpeg", "Decode", "input_id", bitstream_buffer.id());

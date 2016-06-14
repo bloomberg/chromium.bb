@@ -37,7 +37,7 @@ namespace media {
 // IPC coming in from the renderer and passes it to the underlying VEA.
 class GpuVideoEncodeAccelerator
     : public IPC::Listener,
-      public media::VideoEncodeAccelerator::Client,
+      public VideoEncodeAccelerator::Client,
       public gpu::GpuCommandBufferStub::DestructionObserver {
  public:
   GpuVideoEncodeAccelerator(int32_t host_route_id,
@@ -46,15 +46,15 @@ class GpuVideoEncodeAccelerator
 
   // Initialize this accelerator with the given parameters and send
   // |init_done_msg| when complete.
-  bool Initialize(media::VideoPixelFormat input_format,
+  bool Initialize(VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate);
 
   // IPC::Listener implementation
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // media::VideoEncodeAccelerator::Client implementation.
+  // VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
@@ -62,7 +62,7 @@ class GpuVideoEncodeAccelerator
                             size_t payload_size,
                             bool key_frame,
                             base::TimeDelta timestamp) override;
-  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
 
   // gpu::GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
@@ -74,26 +74,26 @@ class GpuVideoEncodeAccelerator
       const gpu::GpuPreferences& gpu_preferences);
 
  private:
-  typedef std::unique_ptr<media::VideoEncodeAccelerator> (*CreateVEAFp)();
+  typedef std::unique_ptr<VideoEncodeAccelerator> (*CreateVEAFp)();
 
   // Return a set of VEA Create function pointers applicable to the current
   // platform.
   static std::vector<CreateVEAFp> CreateVEAFps(
       const gpu::GpuPreferences& gpu_preferences);
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  static std::unique_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
+  static std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA();
 #endif
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  static std::unique_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
+  static std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA();
 #endif
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-  static std::unique_ptr<media::VideoEncodeAccelerator> CreateAndroidVEA();
+  static std::unique_ptr<VideoEncodeAccelerator> CreateAndroidVEA();
 #endif
 #if defined(OS_MACOSX)
-  static std::unique_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
+  static std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
 #endif
 
-  // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
+  // IPC handlers, proxying VideoEncodeAccelerator for the renderer
   // process.
   void OnEncode(const AcceleratedVideoEncoderMsg_Encode_Params& params);
   void OnEncode2(const AcceleratedVideoEncoderMsg_Encode_Params2& params);
@@ -117,16 +117,16 @@ class GpuVideoEncodeAccelerator
   gpu::GpuCommandBufferStub* const stub_;
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder_;
+  std::unique_ptr<VideoEncodeAccelerator> encoder_;
   base::Callback<bool(void)> make_context_current_;
 
   // Video encoding parameters.
-  media::VideoPixelFormat input_format_;
+  VideoPixelFormat input_format_;
   gfx::Size input_visible_size_;
   gfx::Size input_coded_size_;
   size_t output_buffer_size_;
 
-  // Weak pointer for media::VideoFrames that refer back to |this|.
+  // Weak pointer for VideoFrames that refer back to |this|.
   base::WeakPtrFactory<GpuVideoEncodeAccelerator> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoEncodeAccelerator);

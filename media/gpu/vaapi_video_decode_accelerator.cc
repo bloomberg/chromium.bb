@@ -117,16 +117,16 @@ class VaapiVideoDecodeAccelerator::VaapiH264Accelerator
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
 
-  bool SubmitFrameMetadata(const media::H264SPS* sps,
-                           const media::H264PPS* pps,
+  bool SubmitFrameMetadata(const H264SPS* sps,
+                           const H264PPS* pps,
                            const H264DPB& dpb,
                            const H264Picture::Vector& ref_pic_listp0,
                            const H264Picture::Vector& ref_pic_listb0,
                            const H264Picture::Vector& ref_pic_listb1,
                            const scoped_refptr<H264Picture>& pic) override;
 
-  bool SubmitSlice(const media::H264PPS* pps,
-                   const media::H264SliceHeader* slice_hdr,
+  bool SubmitSlice(const H264PPS* pps,
+                   const H264SliceHeader* slice_hdr,
                    const H264Picture::Vector& ref_pic_list0,
                    const H264Picture::Vector& ref_pic_list1,
                    const scoped_refptr<H264Picture>& pic,
@@ -190,7 +190,7 @@ class VaapiVideoDecodeAccelerator::VaapiVP8Accelerator
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
 
   bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,
-                    const media::Vp8FrameHeader* frame_hdr,
+                    const Vp8FrameHeader* frame_hdr,
                     const scoped_refptr<VP8Picture>& last_frame,
                     const scoped_refptr<VP8Picture>& golden_frame,
                     const scoped_refptr<VP8Picture>& alt_frame) override;
@@ -245,8 +245,8 @@ class VaapiVideoDecodeAccelerator::VaapiVP9Accelerator
 
   bool SubmitDecode(
       const scoped_refptr<VP9Picture>& pic,
-      const media::Vp9Segmentation& seg,
-      const media::Vp9LoopFilter& lf,
+      const Vp9Segmentation& seg,
+      const Vp9LoopFilter& lf,
       const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) override;
 
   bool OutputPicture(const scoped_refptr<VP9Picture>& pic) override;
@@ -313,7 +313,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
-  va_surface_release_cb_ = media::BindToCurrentLoop(
+  va_surface_release_cb_ = BindToCurrentLoop(
       base::Bind(&VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
 }
 
@@ -338,7 +338,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  media::VideoCodecProfile profile = config.profile;
+  VideoCodecProfile profile = config.profile;
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
@@ -366,16 +366,14 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     h264_accelerator_.reset(
         new VaapiH264Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new H264Decoder(h264_accelerator_.get()));
-  } else if (profile >= media::VP8PROFILE_MIN &&
-             profile <= media::VP8PROFILE_MAX) {
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     vp8_accelerator_.reset(new VaapiVP8Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
-  } else if (profile >= media::VP9PROFILE_MIN &&
-             profile <= media::VP9PROFILE_MAX) {
+  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     vp9_accelerator_.reset(new VaapiVP9Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new VP9Decoder(vp9_accelerator_.get()));
   } else {
@@ -418,8 +416,8 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // (crbug.com/402760). Passing (0, 0) results in the client using the
   // visible size extracted from the container instead.
   if (client_)
-    client_->PictureReady(media::Picture(output_id, input_id, gfx::Rect(0, 0),
-                                         picture->AllowOverlay()));
+    client_->PictureReady(
+        Picture(output_id, input_id, gfx::Rect(0, 0), picture->AllowOverlay()));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {
@@ -446,7 +444,7 @@ void VaapiVideoDecodeAccelerator::TryOutputSurface() {
 }
 
 void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "MapAndQueueNewInputBuffer", "input_id",
                bitstream_buffer.id());
@@ -697,7 +695,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
@@ -749,7 +747,7 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
 }
 
 void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
@@ -1141,8 +1139,8 @@ static void InitVAPicture(VAPictureH264* va_pic) {
 }
 
 bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitFrameMetadata(
-    const media::H264SPS* sps,
-    const media::H264PPS* pps,
+    const H264SPS* sps,
+    const H264PPS* pps,
     const H264DPB& dpb,
     const H264Picture::Vector& ref_pic_listp0,
     const H264Picture::Vector& ref_pic_listb0,
@@ -1254,8 +1252,8 @@ bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitFrameMetadata(
 }
 
 bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitSlice(
-    const media::H264PPS* pps,
-    const media::H264SliceHeader* slice_hdr,
+    const H264PPS* pps,
+    const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
     const H264Picture::Vector& ref_pic_list1,
     const scoped_refptr<H264Picture>& pic,
@@ -1471,24 +1469,23 @@ VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::CreateVP8Picture() {
 
 bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::SubmitDecode(
     const scoped_refptr<VP8Picture>& pic,
-    const media::Vp8FrameHeader* frame_hdr,
+    const Vp8FrameHeader* frame_hdr,
     const scoped_refptr<VP8Picture>& last_frame,
     const scoped_refptr<VP8Picture>& golden_frame,
     const scoped_refptr<VP8Picture>& alt_frame) {
   VAIQMatrixBufferVP8 iq_matrix_buf;
   memset(&iq_matrix_buf, 0, sizeof(VAIQMatrixBufferVP8));
 
-  const media::Vp8SegmentationHeader& sgmnt_hdr = frame_hdr->segmentation_hdr;
-  const media::Vp8QuantizationHeader& quant_hdr = frame_hdr->quantization_hdr;
-  static_assert(
-      arraysize(iq_matrix_buf.quantization_index) == media::kMaxMBSegments,
-      "incorrect quantization matrix size");
-  for (size_t i = 0; i < media::kMaxMBSegments; ++i) {
+  const Vp8SegmentationHeader& sgmnt_hdr = frame_hdr->segmentation_hdr;
+  const Vp8QuantizationHeader& quant_hdr = frame_hdr->quantization_hdr;
+  static_assert(arraysize(iq_matrix_buf.quantization_index) == kMaxMBSegments,
+                "incorrect quantization matrix size");
+  for (size_t i = 0; i < kMaxMBSegments; ++i) {
     int q = quant_hdr.y_ac_qi;
 
     if (sgmnt_hdr.segmentation_enabled) {
       if (sgmnt_hdr.segment_feature_mode ==
-          media::Vp8SegmentationHeader::FEATURE_MODE_ABSOLUTE)
+          Vp8SegmentationHeader::FEATURE_MODE_ABSOLUTE)
         q = sgmnt_hdr.quantizer_update_value[i];
       else
         q += sgmnt_hdr.quantizer_update_value[i];
@@ -1513,7 +1510,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::SubmitDecode(
   VAProbabilityDataBufferVP8 prob_buf;
   memset(&prob_buf, 0, sizeof(VAProbabilityDataBufferVP8));
 
-  const media::Vp8EntropyHeader& entr_hdr = frame_hdr->entropy_hdr;
+  const Vp8EntropyHeader& entr_hdr = frame_hdr->entropy_hdr;
   ARRAY_MEMCPY_CHECKED(prob_buf.dct_coeff_probs, entr_hdr.coeff_probs);
 
   if (!vaapi_wrapper_->SubmitBuffer(VAProbabilityBufferType,
@@ -1552,7 +1549,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::SubmitDecode(
 
   pic_param.out_of_loop_frame = VA_INVALID_SURFACE;
 
-  const media::Vp8LoopFilterHeader& lf_hdr = frame_hdr->loopfilter_hdr;
+  const Vp8LoopFilterHeader& lf_hdr = frame_hdr->loopfilter_hdr;
 
 #define FHDR_TO_PP_PF(a, b) pic_param.pic_fields.bits.a = (b)
   FHDR_TO_PP_PF(key_frame, frame_hdr->IsKeyframe() ? 0 : 1);
@@ -1581,7 +1578,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::SubmitDecode(
     int lf_level = lf_hdr.level;
     if (sgmnt_hdr.segmentation_enabled) {
       if (sgmnt_hdr.segment_feature_mode ==
-          media::Vp8SegmentationHeader::FEATURE_MODE_ABSOLUTE)
+          Vp8SegmentationHeader::FEATURE_MODE_ABSOLUTE)
         lf_level = sgmnt_hdr.lf_update_value[i];
       else
         lf_level += sgmnt_hdr.lf_update_value[i];
@@ -1694,13 +1691,13 @@ VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::CreateVP9Picture() {
 
 bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
     const scoped_refptr<VP9Picture>& pic,
-    const media::Vp9Segmentation& seg,
-    const media::Vp9LoopFilter& lf,
+    const Vp9Segmentation& seg,
+    const Vp9LoopFilter& lf,
     const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) {
   VADecPictureParameterBufferVP9 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
 
-  const media::Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
+  const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DCHECK(frame_hdr);
 
   if (frame_hdr->profile != 0) {
@@ -1774,19 +1771,18 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   slice_param.slice_data_offset = 0;
   slice_param.slice_data_flag = VA_SLICE_DATA_FLAG_ALL;
 
-  static_assert(arraysize(media::Vp9Segmentation::feature_enabled) ==
+  static_assert(arraysize(Vp9Segmentation::feature_enabled) ==
                     arraysize(slice_param.seg_param),
                 "seg_param array of incorrect size");
   for (size_t i = 0; i < arraysize(slice_param.seg_param); ++i) {
     VASegmentParameterVP9& seg_param = slice_param.seg_param[i];
 #define SEG_TO_SP_SF(a, b) seg_param.segment_flags.fields.a = b
-    SEG_TO_SP_SF(
-        segment_reference_enabled,
-        seg.FeatureEnabled(i, media::Vp9Segmentation::SEG_LVL_REF_FRAME));
+    SEG_TO_SP_SF(segment_reference_enabled,
+                 seg.FeatureEnabled(i, Vp9Segmentation::SEG_LVL_REF_FRAME));
     SEG_TO_SP_SF(segment_reference,
-                 seg.FeatureData(i, media::Vp9Segmentation::SEG_LVL_REF_FRAME));
+                 seg.FeatureData(i, Vp9Segmentation::SEG_LVL_REF_FRAME));
     SEG_TO_SP_SF(segment_reference_skipped,
-                 seg.FeatureEnabled(i, media::Vp9Segmentation::SEG_LVL_SKIP));
+                 seg.FeatureEnabled(i, Vp9Segmentation::SEG_LVL_SKIP));
 #undef SEG_TO_SP_SF
 
     ARRAY_MEMCPY_CHECKED(seg_param.filter_level, lf.lvl[i]);
@@ -1830,7 +1826,7 @@ VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
   return VaapiWrapper::GetSupportedDecodeProfiles();
 }

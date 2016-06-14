@@ -85,7 +85,7 @@ class H264ConfigChangeDetector {
   // we want to honor after we see an IDR slice.
   bool pending_config_changed_;
 
-  std::unique_ptr<media::H264Parser> parser_;
+  std::unique_ptr<H264Parser> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
 };
@@ -95,7 +95,7 @@ class H264ConfigChangeDetector {
 // This class lives on a single thread and DCHECKs that it is never accessed
 // from any other.
 class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator {
  public:
   enum State {
     kUninitialized,  // un-initialized.
@@ -113,11 +113,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       const gpu::GpuPreferences& gpu_preferences);
   ~DXVAVideoDecodeAccelerator() override;
 
-  // media::VideoDecodeAccelerator implementation.
+  // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -128,8 +127,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       override;
   GLenum GetSurfaceInternalFormat() const override;
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
   // Preload dlls required for decoding.
   static void PreSandboxInitialization();
@@ -142,12 +140,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   typedef void* EGLSurface;
 
   // Returns the minimum resolution for the |profile| passed in.
-  static std::pair<int, int> GetMinResolution(
-      const media::VideoCodecProfile profile);
+  static std::pair<int, int> GetMinResolution(const VideoCodecProfile profile);
 
   // Returns the maximum resolution for the |profile| passed in.
-  static std::pair<int, int> GetMaxResolution(
-      const media::VideoCodecProfile profile);
+  static std::pair<int, int> GetMaxResolution(const VideoCodecProfile profile);
 
   // Returns the maximum resolution for H264 video.
   static std::pair<int, int> GetMaxH264Resolution();
@@ -169,7 +165,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   bool CreateDX11DevManager();
 
   // Creates, initializes and sets the media codec types for the decoder.
-  bool InitDecoder(media::VideoCodecProfile profile);
+  bool InitDecoder(VideoCodecProfile profile);
 
   // Validates whether the decoder supports hardware video acceleration.
   bool CheckDecoderDxvaSupport();
@@ -206,7 +202,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   void ProcessPendingSamples();
 
   // Helper function to notify the accelerator client about the error.
-  void StopOnError(media::VideoDecodeAccelerator::Error error);
+  void StopOnError(VideoDecodeAccelerator::Error error);
 
   // Transitions the decoder to the uninitialized state. The decoder will stop
   // accepting requests in this state.
@@ -345,7 +341,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   void ConfigChanged(const Config& config);
 
   // To expose client callbacks from VideoDecodeAccelerator.
-  media::VideoDecodeAccelerator::Client* client_;
+  VideoDecodeAccelerator::Client* client_;
 
   base::win::ScopedComPtr<IMFTransform> decoder_;
   base::win::ScopedComPtr<IMFTransform> video_format_converter_mft_;
@@ -434,7 +430,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   MakeGLContextCurrentCallback make_context_current_cb_;
 
   // Which codec we are decoding with hardware acceleration.
-  media::VideoCodec codec_;
+  VideoCodec codec_;
   // Thread on which the decoder operations like passing input frames,
   // getting output frames are performed. One instance of this thread
   // is created per decoder instance.

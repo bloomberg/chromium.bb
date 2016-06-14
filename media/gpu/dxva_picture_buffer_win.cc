@@ -36,7 +36,7 @@ enum {
 // static
 linked_ptr<DXVAPictureBuffer> DXVAPictureBuffer::Create(
     const DXVAVideoDecodeAccelerator& decoder,
-    const media::PictureBuffer& buffer,
+    const PictureBuffer& buffer,
     EGLConfig egl_config) {
   if (decoder.share_nv12_textures_) {
     linked_ptr<EGLStreamPictureBuffer> picture_buffer(
@@ -84,7 +84,7 @@ bool DXVAPictureBuffer::CopySurfaceComplete(IDirect3DSurface9* src_surface,
   return false;
 }
 
-DXVAPictureBuffer::DXVAPictureBuffer(const media::PictureBuffer& buffer)
+DXVAPictureBuffer::DXVAPictureBuffer(const PictureBuffer& buffer)
     : available_(true), picture_buffer_(buffer) {}
 
 bool DXVAPictureBuffer::BindSampleToTexture(
@@ -284,7 +284,7 @@ bool PbufferPictureBuffer::CopySurfaceComplete(
   return true;
 }
 
-PbufferPictureBuffer::PbufferPictureBuffer(const media::PictureBuffer& buffer)
+PbufferPictureBuffer::PbufferPictureBuffer(const PictureBuffer& buffer)
     : DXVAPictureBuffer(buffer),
       waiting_to_reuse_(false),
       decoding_surface_(NULL),
@@ -320,8 +320,7 @@ bool PbufferPictureBuffer::ReusePictureBuffer() {
   return true;
 }
 
-EGLStreamPictureBuffer::EGLStreamPictureBuffer(
-    const media::PictureBuffer& buffer)
+EGLStreamPictureBuffer::EGLStreamPictureBuffer(const PictureBuffer& buffer)
     : DXVAPictureBuffer(buffer), stream_(nullptr) {}
 
 EGLStreamPictureBuffer::~EGLStreamPictureBuffer() {

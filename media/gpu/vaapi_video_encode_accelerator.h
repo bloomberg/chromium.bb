@@ -28,22 +28,21 @@ namespace media {
 // (http://www.freedesktop.org/wiki/Software/vaapi) for HW-accelerated
 // video encode.
 class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
-    : public media::VideoEncodeAccelerator {
+    : public VideoEncodeAccelerator {
  public:
   VaapiVideoEncodeAccelerator();
   ~VaapiVideoEncodeAccelerator() override;
 
-  // media::VideoEncodeAccelerator implementation.
-  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
-      override;
-  bool Initialize(media::VideoPixelFormat format,
+  // VideoEncodeAccelerator implementation.
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
+  bool Initialize(VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   Client* client) override;
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -95,8 +94,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Tasks for each of the VEA interface calls to be executed on the
   // encoder thread.
   void InitializeTask();
-  void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
-                  bool force_keyframe);
+  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
@@ -136,7 +134,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   bool SubmitHeadersIfNeeded();
 
   // Upload image data from |frame| to the input surface for current job.
-  bool UploadFrame(const scoped_refptr<media::VideoFrame>& frame);
+  bool UploadFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Execute encode in hardware. This does not block and will return before
   // the job is finished.
@@ -162,7 +160,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // Input profile and sizes.
-  media::VideoCodecProfile profile_;
+  VideoCodecProfile profile_;
   gfx::Size visible_size_;
   gfx::Size coded_size_;  // Macroblock-aligned.
   // Width/height in macroblocks.
@@ -213,10 +211,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Current SPS, PPS and their packed versions. Packed versions are their NALUs
   // in AnnexB format *without* emulation prevention three-byte sequences
   // (those will be added by the driver).
-  media::H264SPS current_sps_;
-  media::H264BitstreamBuffer packed_sps_;
-  media::H264PPS current_pps_;
-  media::H264BitstreamBuffer packed_pps_;
+  H264SPS current_sps_;
+  H264BitstreamBuffer packed_sps_;
+  H264PPS current_pps_;
+  H264BitstreamBuffer packed_pps_;
 
   // Picture currently being prepared for encode.
   scoped_refptr<H264Picture> current_pic_;

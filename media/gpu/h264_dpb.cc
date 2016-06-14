@@ -28,7 +28,7 @@ H264Picture::H264Picture()
       frame_num_offset(0),
       frame_num_wrap(0),
       long_term_frame_idx(0),
-      type(media::H264SliceHeader::kPSlice),
+      type(H264SliceHeader::kPSlice),
       nal_ref_idc(0),
       idr(false),
       idr_pic_id(0),

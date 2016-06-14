@@ -35,7 +35,7 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 
 // VideoToolbox.framework implementation of the VideoDecodeAccelerator
 // interface for Mac OS X (currently limited to 10.9+).
-class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
+class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
  public:
   explicit VTVideoDecodeAccelerator(
       const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -45,9 +45,9 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream) override;
+  void Decode(const BitstreamBuffer& bitstream) override;
   void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& pictures) override;
+      const std::vector<PictureBuffer>& pictures) override;
   void ReusePictureBuffer(int32_t picture_id) override;
   void Flush() override;
   void Reset() override;
@@ -62,8 +62,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
               OSStatus status,
               CVImageBufferRef image_buffer);
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
   // Logged to UMA, so never reuse values. Make sure to update
@@ -152,8 +151,8 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   // Compute the |pic_order_cnt| for a frame. Returns true or calls
   // NotifyError() before returning false.
-  bool ComputePicOrderCnt(const media::H264SPS* sps,
-                          const media::H264SliceHeader& slice_hdr,
+  bool ComputePicOrderCnt(const H264SPS* sps,
+                          const H264SliceHeader& slice_hdr,
                           Frame* frame);
 
   // Set up VideoToolbox using the current SPS and PPS. Returns true or calls
@@ -165,7 +164,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool FinishDelayedFrames();
 
   // |frame| is owned by |pending_frames_|.
-  void DecodeTask(const media::BitstreamBuffer&, Frame* frame);
+  void DecodeTask(const BitstreamBuffer&, Frame* frame);
   void DecodeDone(Frame* frame);
 
   //
@@ -196,7 +195,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   MakeGLContextCurrentCallback make_context_current_cb_;
   BindGLImageCallback bind_image_cb_;
 
-  media::VideoDecodeAccelerator::Client* client_;
+  VideoDecodeAccelerator::Client* client_;
   State state_;
 
   // Queue of pending flush tasks. This is used to drop frames when a reset
@@ -245,7 +244,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   VTDecompressionOutputCallbackRecord callback_;
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format_;
   base::ScopedCFTypeRef<VTDecompressionSessionRef> session_;
-  media::H264Parser parser_;
+  H264Parser parser_;
   gfx::Size coded_size_;
 
   int last_sps_id_;
@@ -256,7 +255,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool config_changed_;
   bool waiting_for_idr_;
   bool missing_idr_logged_;
-  media::H264POC poc_;
+  H264POC poc_;
 
   //
   // Shared state (set up and torn down on GPU thread).

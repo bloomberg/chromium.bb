@@ -46,7 +46,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
     // Note that this runs the decode in hardware.
     // Return true if successful.
     virtual bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,
-                              const media::Vp8FrameHeader* frame_hdr,
+                              const Vp8FrameHeader* frame_hdr,
                               const scoped_refptr<VP8Picture>& last_frame,
                               const scoped_refptr<VP8Picture>& golden_frame,
                               const scoped_refptr<VP8Picture>& alt_frame) = 0;
@@ -66,7 +66,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   VP8Decoder(VP8Accelerator* accelerator);
   ~VP8Decoder() override;
 
-  // media::AcceleratedVideoDecoder implementation.
+  // AcceleratedVideoDecoder implementation.
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
   void SetStream(const uint8_t* ptr, size_t size) override;
@@ -87,9 +87,9 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
 
   State state_;
 
-  media::Vp8Parser parser_;
+  Vp8Parser parser_;
 
-  std::unique_ptr<media::Vp8FrameHeader> curr_frame_hdr_;
+  std::unique_ptr<Vp8FrameHeader> curr_frame_hdr_;
   scoped_refptr<VP8Picture> curr_pic_;
   scoped_refptr<VP8Picture> last_frame_;
   scoped_refptr<VP8Picture> golden_frame_;

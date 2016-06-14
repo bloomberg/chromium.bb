@@ -13,13 +13,13 @@
 // This is meant to be used only within AndroidVideoDecoder and the various
 // backing strategies.  |provider| must support PostError.  The varargs
 // can be used for the return value.
-#define RETURN_ON_FAILURE(provider, result, log, error, ...)                \
-  do {                                                                      \
-    if (!(result)) {                                                        \
-      DLOG(ERROR) << log;                                                   \
-      provider->PostError(FROM_HERE, media::VideoDecodeAccelerator::error); \
-      return __VA_ARGS__;                                                   \
-    }                                                                       \
+#define RETURN_ON_FAILURE(provider, result, log, error, ...)         \
+  do {                                                               \
+    if (!(result)) {                                                 \
+      DLOG(ERROR) << log;                                            \
+      provider->PostError(FROM_HERE, VideoDecodeAccelerator::error); \
+      return __VA_ARGS__;                                            \
+    }                                                                \
   } while (0)
 
 // Similar to the above, with some handy boilerplate savings.  The varargs

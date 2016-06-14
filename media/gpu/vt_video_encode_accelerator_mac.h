@@ -20,22 +20,21 @@ namespace media {
 // interface for MacOSX. VideoToolbox makes no guarantees that it is thread
 // safe, so this object is pinned to the thread on which it is constructed.
 class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
-    : public media::VideoEncodeAccelerator {
+    : public VideoEncodeAccelerator {
  public:
   VTVideoEncodeAccelerator();
   ~VTVideoEncodeAccelerator() override;
 
-  // media::VideoEncodeAccelerator implementation.
-  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
-      override;
-  bool Initialize(media::VideoPixelFormat format,
+  // VideoEncodeAccelerator implementation.
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
+  bool Initialize(VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   Client* client) override;
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -55,8 +54,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   struct BitstreamBufferRef;
 
   // Encoding tasks to be run on |encoder_thread_|.
-  void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
-                  bool force_keyframe);
+  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
@@ -67,7 +65,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   void SetAdjustedBitrate(int32_t bitrate);
 
   // Helper function to notify the client of an error on |client_task_runner_|.
-  void NotifyError(media::VideoEncodeAccelerator::Error error);
+  void NotifyError(VideoEncodeAccelerator::Error error);
 
   // Compression session callback function to handle compressed frames.
   static void CompressionCallback(void* encoder_opaque,

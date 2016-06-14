@@ -10,17 +10,15 @@
 #include "media/gpu/vaapi_wrapper.h"
 
 namespace media {
-struct JpegParseResult;
-}  // namespace media
 
-namespace media {
+struct JpegParseResult;
 
 // A JPEG decoder that utilizes VA-API hardware video decode acceleration on
 // Intel systems. Provides functionality to allow plugging VAAPI HW
 // acceleration into the JpegDecodeAccelerator framework.
 //
 // Clients of this class are expected to manage VA surfaces created via
-// VaapiWrapper, parse JPEG picture via media::ParseJpegPicture, and then pass
+// VaapiWrapper, parse JPEG picture via ParseJpegPicture, and then pass
 // them to this class.
 class MEDIA_GPU_EXPORT VaapiJpegDecoder {
  public:
@@ -33,7 +31,7 @@ class MEDIA_GPU_EXPORT VaapiJpegDecoder {
   // |va_surface| should be created with size at least as large as the picture
   // size.
   static bool Decode(VaapiWrapper* vaapi_wrapper,
-                     const media::JpegParseResult& parse_result,
+                     const JpegParseResult& parse_result,
                      VASurfaceID va_surface);
 
  private:

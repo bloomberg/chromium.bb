@@ -63,12 +63,10 @@
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
 #endif
 
-using media::VideoEncodeAccelerator;
-
 namespace media {
 namespace {
 
-const media::VideoPixelFormat kInputFormat = media::PIXEL_FORMAT_I420;
+const VideoPixelFormat kInputFormat = PIXEL_FORMAT_I420;
 
 // The absolute differences between original frame and decoded frame usually
 // ranges aroud 1 ~ 7. So we pick 10 as an extreme value to detect abnormal
@@ -113,7 +111,7 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // - |in_filename| must be an I420 (YUV planar) raw stream
 //   (see http://www.fourcc.org/yuv.php#IYUV).
 // - |width| and |height| are in pixels.
-// - |profile| to encode into (values of media::VideoCodecProfile).
+// - |profile| to encode into (values of VideoCodecProfile).
 // - |out_filename| filename to save the encoded stream to (optional). The
 //   format for H264 is Annex-B byte stream. The format for VP8 is IVF. Output
 //   stream is saved for the simple encode test only. H264 raw stream and IVF
@@ -177,7 +175,7 @@ struct TestStream {
   std::vector<size_t> aligned_plane_size;
 
   std::string out_filename;
-  media::VideoCodecProfile requested_profile;
+  VideoCodecProfile requested_profile;
   unsigned int requested_bitrate;
   unsigned int requested_framerate;
   unsigned int requested_subsequent_bitrate;
@@ -201,12 +199,12 @@ static base::TimeDelta Percentile(
   return sorted_values[index];
 }
 
-static bool IsH264(media::VideoCodecProfile profile) {
-  return profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX;
+static bool IsH264(VideoCodecProfile profile) {
+  return profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX;
 }
 
-static bool IsVP8(media::VideoCodecProfile profile) {
-  return profile >= media::VP8PROFILE_MIN && profile <= media::VP8PROFILE_MAX;
+static bool IsVP8(VideoCodecProfile profile) {
+  return profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX;
 }
 
 // ARM performs CPU cache management with CPU cache line granularity. We thus
@@ -230,7 +228,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
               coded_size == test_stream->coded_size);
   test_stream->coded_size = coded_size;
 
-  size_t num_planes = media::VideoFrame::NumPlanes(kInputFormat);
+  size_t num_planes = VideoFrame::NumPlanes(kInputFormat);
   std::vector<size_t> padding_sizes(num_planes);
   std::vector<size_t> coded_bpl(num_planes);
   std::vector<size_t> visible_bpl(num_planes);
@@ -244,18 +242,17 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   // copied into a row of coded_bpl bytes in the aligned file.
   for (size_t i = 0; i < num_planes; i++) {
     const size_t size =
-        media::VideoFrame::PlaneSize(kInputFormat, i, coded_size).GetArea();
+        VideoFrame::PlaneSize(kInputFormat, i, coded_size).GetArea();
     test_stream->aligned_plane_size.push_back(Align64Bytes(size));
     test_stream->aligned_buffer_size += test_stream->aligned_plane_size.back();
 
-    coded_bpl[i] =
-        media::VideoFrame::RowBytes(i, kInputFormat, coded_size.width());
-    visible_bpl[i] = media::VideoFrame::RowBytes(
-        i, kInputFormat, test_stream->visible_size.width());
-    visible_plane_rows[i] = media::VideoFrame::Rows(
-        i, kInputFormat, test_stream->visible_size.height());
+    coded_bpl[i] = VideoFrame::RowBytes(i, kInputFormat, coded_size.width());
+    visible_bpl[i] = VideoFrame::RowBytes(i, kInputFormat,
+                                          test_stream->visible_size.width());
+    visible_plane_rows[i] =
+        VideoFrame::Rows(i, kInputFormat, test_stream->visible_size.height());
     const size_t padding_rows =
-        media::VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
+        VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
         visible_plane_rows[i];
     padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;
   }
@@ -264,8 +261,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
-  size_t visible_buffer_size = media::VideoFrame::AllocationSize(
-      kInputFormat, test_stream->visible_size);
+  size_t visible_buffer_size =
+      VideoFrame::AllocationSize(kInputFormat, test_stream->visible_size);
   LOG_ASSERT(src_file_size % visible_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
@@ -337,10 +334,9 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
     int profile;
     result = base::StringToInt(fields[3], &profile);
     LOG_ASSERT(result);
-    LOG_ASSERT(profile > media::VIDEO_CODEC_PROFILE_UNKNOWN);
-    LOG_ASSERT(profile <= media::VIDEO_CODEC_PROFILE_MAX);
-    test_stream->requested_profile =
-        static_cast<media::VideoCodecProfile>(profile);
+    LOG_ASSERT(profile > VIDEO_CODEC_PROFILE_UNKNOWN);
+    LOG_ASSERT(profile <= VIDEO_CODEC_PROFILE_MAX);
+    test_stream->requested_profile = static_cast<VideoCodecProfile>(profile);
 
     if (fields.size() >= 5 && !fields[4].empty())
       test_stream->out_filename = fields[4];
@@ -463,7 +459,7 @@ class StreamValidator {
 
   // Provide a StreamValidator instance for the given |profile|.
   static std::unique_ptr<StreamValidator> Create(
-      media::VideoCodecProfile profile,
+      VideoCodecProfile profile,
       const FrameFoundCallback& frame_cb);
 
   // Process and verify contents of a bitstream buffer.
@@ -492,49 +488,49 @@ class H264Validator : public StreamValidator {
   bool seen_pps_;
   bool seen_idr_;
 
-  media::H264Parser h264_parser_;
+  H264Parser h264_parser_;
 };
 
 void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   h264_parser_.SetStream(stream, size);
 
   while (1) {
-    media::H264NALU nalu;
-    media::H264Parser::Result result;
+    H264NALU nalu;
+    H264Parser::Result result;
 
     result = h264_parser_.AdvanceToNextNALU(&nalu);
-    if (result == media::H264Parser::kEOStream)
+    if (result == H264Parser::kEOStream)
       break;
 
-    ASSERT_EQ(media::H264Parser::kOk, result);
+    ASSERT_EQ(H264Parser::kOk, result);
 
     bool keyframe = false;
 
     switch (nalu.nal_unit_type) {
-      case media::H264NALU::kIDRSlice:
+      case H264NALU::kIDRSlice:
         ASSERT_TRUE(seen_sps_);
         ASSERT_TRUE(seen_pps_);
         seen_idr_ = true;
         keyframe = true;
       // fallthrough
-      case media::H264NALU::kNonIDRSlice: {
+      case H264NALU::kNonIDRSlice: {
         ASSERT_TRUE(seen_idr_);
         if (!frame_cb_.Run(keyframe))
           return;
         break;
       }
 
-      case media::H264NALU::kSPS: {
+      case H264NALU::kSPS: {
         int sps_id;
-        ASSERT_EQ(media::H264Parser::kOk, h264_parser_.ParseSPS(&sps_id));
+        ASSERT_EQ(H264Parser::kOk, h264_parser_.ParseSPS(&sps_id));
         seen_sps_ = true;
         break;
       }
 
-      case media::H264NALU::kPPS: {
+      case H264NALU::kPPS: {
         ASSERT_TRUE(seen_sps_);
         int pps_id;
-        ASSERT_EQ(media::H264Parser::kOk, h264_parser_.ParsePPS(&pps_id));
+        ASSERT_EQ(H264Parser::kOk, h264_parser_.ParsePPS(&pps_id));
         seen_pps_ = true;
         break;
       }
@@ -572,7 +568,7 @@ void VP8Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
 
 // static
 std::unique_ptr<StreamValidator> StreamValidator::Create(
-    media::VideoCodecProfile profile,
+    VideoCodecProfile profile,
     const FrameFoundCallback& frame_cb) {
   std::unique_ptr<StreamValidator> validator;
 
@@ -589,44 +585,44 @@ std::unique_ptr<StreamValidator> StreamValidator::Create(
 
 class VideoFrameQualityValidator {
  public:
-  VideoFrameQualityValidator(const media::VideoCodecProfile profile,
+  VideoFrameQualityValidator(const VideoCodecProfile profile,
                              const base::Closure& flush_complete_cb,
                              const base::Closure& decode_error_cb);
   void Initialize(const gfx::Size& coded_size, const gfx::Rect& visible_size);
   // Save original YUV frame to compare it with the decoded frame later.
-  void AddOriginalFrame(scoped_refptr<media::VideoFrame> frame);
-  void AddDecodeBuffer(const scoped_refptr<media::DecoderBuffer>& buffer);
+  void AddOriginalFrame(scoped_refptr<VideoFrame> frame);
+  void AddDecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer);
   // Flush the decoder.
   void Flush();
 
  private:
   void InitializeCB(bool success);
-  void DecodeDone(media::DecodeStatus status);
-  void FlushDone(media::DecodeStatus status);
-  void VerifyOutputFrame(const scoped_refptr<media::VideoFrame>& output_frame);
+  void DecodeDone(DecodeStatus status);
+  void FlushDone(DecodeStatus status);
+  void VerifyOutputFrame(const scoped_refptr<VideoFrame>& output_frame);
   void Decode();
 
   enum State { UNINITIALIZED, INITIALIZED, DECODING, ERROR };
 
-  const media::VideoCodecProfile profile_;
-  std::unique_ptr<media::FFmpegVideoDecoder> decoder_;
-  media::VideoDecoder::DecodeCB decode_cb_;
+  const VideoCodecProfile profile_;
+  std::unique_ptr<FFmpegVideoDecoder> decoder_;
+  VideoDecoder::DecodeCB decode_cb_;
   // Decode callback of an EOS buffer.
-  media::VideoDecoder::DecodeCB eos_decode_cb_;
+  VideoDecoder::DecodeCB eos_decode_cb_;
   // Callback of Flush(). Called after all frames are decoded.
   const base::Closure flush_complete_cb_;
   const base::Closure decode_error_cb_;
   State decoder_state_;
-  std::queue<scoped_refptr<media::VideoFrame>> original_frames_;
-  std::queue<scoped_refptr<media::DecoderBuffer>> decode_buffers_;
+  std::queue<scoped_refptr<VideoFrame>> original_frames_;
+  std::queue<scoped_refptr<DecoderBuffer>> decode_buffers_;
 };
 
 VideoFrameQualityValidator::VideoFrameQualityValidator(
-    const media::VideoCodecProfile profile,
+    const VideoCodecProfile profile,
     const base::Closure& flush_complete_cb,
     const base::Closure& decode_error_cb)
     : profile_(profile),
-      decoder_(new media::FFmpegVideoDecoder()),
+      decoder_(new FFmpegVideoDecoder()),
       decode_cb_(base::Bind(&VideoFrameQualityValidator::DecodeDone,
                             base::Unretained(this))),
       eos_decode_cb_(base::Bind(&VideoFrameQualityValidator::FlushDone,
@@ -640,21 +636,19 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
 
 void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
                                             const gfx::Rect& visible_size) {
-  media::FFmpegGlue::InitializeFFmpeg();
+  FFmpegGlue::InitializeFFmpeg();
 
   gfx::Size natural_size(visible_size.size());
   // The default output format of ffmpeg video decoder is YV12.
-  media::VideoDecoderConfig config;
+  VideoDecoderConfig config;
   if (IsVP8(profile_))
-    config.Initialize(media::kCodecVP8, media::VP8PROFILE_ANY, kInputFormat,
-                      media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(),
-                      media::Unencrypted());
+    config.Initialize(kCodecVP8, VP8PROFILE_ANY, kInputFormat,
+                      COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
+                      natural_size, EmptyExtraData(), Unencrypted());
   else if (IsH264(profile_))
-    config.Initialize(media::kCodecH264, media::H264PROFILE_MAIN, kInputFormat,
-                      media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(),
-                      media::Unencrypted());
+    config.Initialize(kCodecH264, H264PROFILE_MAIN, kInputFormat,
+                      COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
+                      natural_size, EmptyExtraData(), Unencrypted());
   else
     LOG_ASSERT(0) << "Invalid profile " << profile_;
 
@@ -680,12 +674,12 @@ void VideoFrameQualityValidator::InitializeCB(bool success) {
 }
 
 void VideoFrameQualityValidator::AddOriginalFrame(
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<VideoFrame> frame) {
   original_frames_.push(frame);
 }
 
-void VideoFrameQualityValidator::DecodeDone(media::DecodeStatus status) {
-  if (status == media::DecodeStatus::OK) {
+void VideoFrameQualityValidator::DecodeDone(DecodeStatus status) {
+  if (status == DecodeStatus::OK) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {
@@ -695,19 +689,19 @@ void VideoFrameQualityValidator::DecodeDone(media::DecodeStatus status) {
   }
 }
 
-void VideoFrameQualityValidator::FlushDone(media::DecodeStatus status) {
+void VideoFrameQualityValidator::FlushDone(DecodeStatus status) {
   flush_complete_cb_.Run();
 }
 
 void VideoFrameQualityValidator::Flush() {
   if (decoder_state_ != ERROR) {
-    decode_buffers_.push(media::DecoderBuffer::CreateEOSBuffer());
+    decode_buffers_.push(DecoderBuffer::CreateEOSBuffer());
     Decode();
   }
 }
 
 void VideoFrameQualityValidator::AddDecodeBuffer(
-    const scoped_refptr<media::DecoderBuffer>& buffer) {
+    const scoped_refptr<DecoderBuffer>& buffer) {
   if (decoder_state_ != ERROR) {
     decode_buffers_.push(buffer);
     Decode();
@@ -716,7 +710,7 @@ void VideoFrameQualityValidator::AddDecodeBuffer(
 
 void VideoFrameQualityValidator::Decode() {
   if (decoder_state_ == INITIALIZED && !decode_buffers_.empty()) {
-    scoped_refptr<media::DecoderBuffer> next_buffer = decode_buffers_.front();
+    scoped_refptr<DecoderBuffer> next_buffer = decode_buffers_.front();
     decode_buffers_.pop();
     decoder_state_ = DECODING;
     if (next_buffer->end_of_stream())
@@ -727,22 +721,21 @@ void VideoFrameQualityValidator::Decode() {
 }
 
 void VideoFrameQualityValidator::VerifyOutputFrame(
-    const scoped_refptr<media::VideoFrame>& output_frame) {
-  scoped_refptr<media::VideoFrame> original_frame = original_frames_.front();
+    const scoped_refptr<VideoFrame>& output_frame) {
+  scoped_refptr<VideoFrame> original_frame = original_frames_.front();
   original_frames_.pop();
   gfx::Size visible_size = original_frame->visible_rect().size();
 
-  int planes[] = {media::VideoFrame::kYPlane, media::VideoFrame::kUPlane,
-                  media::VideoFrame::kVPlane};
+  int planes[] = {VideoFrame::kYPlane, VideoFrame::kUPlane,
+                  VideoFrame::kVPlane};
   double difference = 0;
   for (int plane : planes) {
     uint8_t* original_plane = original_frame->data(plane);
     uint8_t* output_plane = output_frame->data(plane);
 
-    size_t rows =
-        media::VideoFrame::Rows(plane, kInputFormat, visible_size.height());
+    size_t rows = VideoFrame::Rows(plane, kInputFormat, visible_size.height());
     size_t columns =
-        media::VideoFrame::Columns(plane, kInputFormat, visible_size.width());
+        VideoFrame::Columns(plane, kInputFormat, visible_size.width());
     size_t stride = original_frame->stride(plane);
 
     for (size_t i = 0; i < rows; i++)
@@ -751,7 +744,7 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
                                output_plane[stride * i + j]);
   }
   // Divide the difference by the size of frame.
-  difference /= media::VideoFrame::AllocationSize(kInputFormat, visible_size);
+  difference /= VideoFrame::AllocationSize(kInputFormat, visible_size);
   EXPECT_TRUE(difference <= kDecodeSimilarityThreshold)
       << "differrence = " << difference << "  > decode similarity threshold";
 }
@@ -787,10 +780,10 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Return the number of encoded frames per second.
   double frames_per_second();
 
-  std::unique_ptr<media::VideoEncodeAccelerator> CreateFakeVEA();
-  std::unique_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
-  std::unique_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
-  std::unique_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
+  std::unique_ptr<VideoEncodeAccelerator> CreateFakeVEA();
+  std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA();
+  std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA();
+  std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
 
   void SetState(ClientState new_state);
 
@@ -831,13 +824,13 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   // Create and return a VideoFrame wrapping the data at |position| bytes in the
   // input stream.
-  scoped_refptr<media::VideoFrame> CreateFrame(off_t position);
+  scoped_refptr<VideoFrame> CreateFrame(off_t position);
 
   // Prepare and return a frame wrapping the data at |position| bytes in the
   // input stream, ready to be sent to encoder.
   // The input frame id is returned in |input_id|.
-  scoped_refptr<media::VideoFrame> PrepareInputFrame(off_t position,
-                                                     int32_t* input_id);
+  scoped_refptr<VideoFrame> PrepareInputFrame(off_t position,
+                                              int32_t* input_id);
 
   // Update the parameters according to |mid_stream_bitrate_switch| and
   // |mid_stream_framerate_switch|.
@@ -1025,18 +1018,18 @@ VEAClient::~VEAClient() {
   LOG_ASSERT(!has_encoder());
 }
 
-std::unique_ptr<media::VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
+std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
   if (g_fake_encoder) {
-    encoder.reset(new media::FakeVideoEncodeAccelerator(
+    encoder.reset(new FakeVideoEncodeAccelerator(
         scoped_refptr<base::SingleThreadTaskRunner>(
             base::ThreadTaskRunnerHandle::Get())));
   }
   return encoder;
 }
 
-std::unique_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
+std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
 #if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
                              (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
@@ -1046,16 +1039,16 @@ std::unique_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
   return encoder;
 }
 
-std::unique_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
+std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   encoder.reset(new VaapiVideoEncodeAccelerator());
 #endif
   return encoder;
 }
 
-std::unique_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVTVEA() {
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
+std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateVTVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
 #if defined(OS_MACOSX)
   encoder.reset(new VTVideoEncodeAccelerator());
 #endif
@@ -1066,7 +1059,7 @@ void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
 
-  std::unique_ptr<media::VideoEncodeAccelerator> encoders[] = {
+  std::unique_ptr<VideoEncodeAccelerator> encoders[] = {
       CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA()};
 
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
@@ -1244,7 +1237,7 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
     }
 
     if (quality_validator_) {
-      scoped_refptr<media::DecoderBuffer> buffer(media::DecoderBuffer::CopyFrom(
+      scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
           reinterpret_cast<const uint8_t*>(shm->memory()),
           static_cast<int>(payload_size)));
       quality_validator_->AddDecodeBuffer(buffer);
@@ -1301,7 +1294,7 @@ void VEAClient::InputNoLongerNeededCallback(int32_t input_id) {
     FeedEncoderWithOneInput();
 }
 
-scoped_refptr<media::VideoFrame> VEAClient::CreateFrame(off_t position) {
+scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   uint8_t* frame_data_y =
       reinterpret_cast<uint8_t*>(&test_stream_->aligned_in_file_data[0]) +
       position;
@@ -1309,31 +1302,28 @@ scoped_refptr<media::VideoFrame> VEAClient::CreateFrame(off_t position) {
   uint8_t* frame_data_v = frame_data_u + test_stream_->aligned_plane_size[1];
   CHECK_GT(current_framerate_, 0U);
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapExternalYuvData(
-          kInputFormat, input_coded_size_,
-          gfx::Rect(test_stream_->visible_size), test_stream_->visible_size,
-          input_coded_size_.width(), input_coded_size_.width() / 2,
-          input_coded_size_.width() / 2, frame_data_y, frame_data_u,
-          frame_data_v,
-          base::TimeDelta().FromMilliseconds(
-              next_input_id_ * base::Time::kMillisecondsPerSecond /
-              current_framerate_));
+  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
+      kInputFormat, input_coded_size_, gfx::Rect(test_stream_->visible_size),
+      test_stream_->visible_size, input_coded_size_.width(),
+      input_coded_size_.width() / 2, input_coded_size_.width() / 2,
+      frame_data_y, frame_data_u, frame_data_v,
+      base::TimeDelta().FromMilliseconds(next_input_id_ *
+                                         base::Time::kMillisecondsPerSecond /
+                                         current_framerate_));
   EXPECT_NE(nullptr, video_frame.get());
   return video_frame;
 }
 
-scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(
-    off_t position,
-    int32_t* input_id) {
+scoped_refptr<VideoFrame> VEAClient::PrepareInputFrame(off_t position,
+                                                       int32_t* input_id) {
   CHECK_LE(position + test_stream_->aligned_buffer_size,
            test_stream_->aligned_in_file_data.size());
 
-  scoped_refptr<media::VideoFrame> frame = CreateFrame(position);
+  scoped_refptr<VideoFrame> frame = CreateFrame(position);
   EXPECT_TRUE(frame);
-  frame->AddDestructionObserver(media::BindToCurrentLoop(
-      base::Bind(&VEAClient::InputNoLongerNeededCallback,
-                 base::Unretained(this), next_input_id_)));
+  frame->AddDestructionObserver(
+      BindToCurrentLoop(base::Bind(&VEAClient::InputNoLongerNeededCallback,
+                                   base::Unretained(this), next_input_id_)));
 
   LOG_ASSERT(inputs_at_client_.insert(next_input_id_).second);
 
@@ -1370,7 +1360,7 @@ void VEAClient::FeedEncoderWithOneInput() {
     quality_validator_->AddOriginalFrame(CreateFrame(pos_in_input_stream_));
 
   int32_t input_id;
-  scoped_refptr<media::VideoFrame> video_frame =
+  scoped_refptr<VideoFrame> video_frame =
       PrepareInputFrame(pos_in_input_stream_, &input_id);
   pos_in_input_stream_ += test_stream_->aligned_buffer_size;
 
@@ -1401,8 +1391,8 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   base::SharedMemoryHandle dup_handle;
   LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
 
-  media::BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                          output_buffer_size_);
+  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
+                                   output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
@@ -1521,10 +1511,9 @@ void VEAClient::VerifyStreamProperties() {
 }
 
 void VEAClient::WriteIvfFileHeader() {
-  media::IvfFileHeader header = {};
+  IvfFileHeader header = {};
 
-  memcpy(header.signature, media::kIvfHeaderSignature,
-         sizeof(header.signature));
+  memcpy(header.signature, kIvfHeaderSignature, sizeof(header.signature));
   header.version = 0;
   header.header_size = sizeof(header);
   header.fourcc = 0x30385056;  // VP80
@@ -1543,7 +1532,7 @@ void VEAClient::WriteIvfFileHeader() {
 }
 
 void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
-  media::IvfFrameHeader header = {};
+  IvfFrameHeader header = {};
 
   header.frame_size = frame_size;
   header.timestamp = frame_index;

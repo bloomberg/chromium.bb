@@ -218,11 +218,10 @@ class MediaBufferScopedPointer {
 
 namespace media {
 
-static const media::VideoCodecProfile kSupportedProfiles[] = {
-    media::H264PROFILE_BASELINE, media::H264PROFILE_MAIN,
-    media::H264PROFILE_HIGH,     media::VP8PROFILE_ANY,
-    media::VP9PROFILE_PROFILE0,  media::VP9PROFILE_PROFILE1,
-    media::VP9PROFILE_PROFILE2,  media::VP9PROFILE_PROFILE3};
+static const VideoCodecProfile kSupportedProfiles[] = {
+    H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
+    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1,
+    VP9PROFILE_PROFILE2,  VP9PROFILE_PROFILE3};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
@@ -460,40 +459,40 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
                                             unsigned int size) {
   std::vector<uint8_t> sps;
   std::vector<uint8_t> pps;
-  media::H264NALU nalu;
+  H264NALU nalu;
   bool idr_seen = false;
 
   if (!parser_.get())
-    parser_.reset(new media::H264Parser);
+    parser_.reset(new H264Parser);
 
   parser_->SetStream(stream, size);
   config_changed_ = false;
 
   while (true) {
-    media::H264Parser::Result result = parser_->AdvanceToNextNALU(&nalu);
+    H264Parser::Result result = parser_->AdvanceToNextNALU(&nalu);
 
-    if (result == media::H264Parser::kEOStream)
+    if (result == H264Parser::kEOStream)
       break;
 
-    if (result == media::H264Parser::kUnsupportedStream) {
+    if (result == H264Parser::kUnsupportedStream) {
       DLOG(ERROR) << "Unsupported H.264 stream";
       return false;
     }
 
-    if (result != media::H264Parser::kOk) {
+    if (result != H264Parser::kOk) {
       DLOG(ERROR) << "Failed to parse H.264 stream";
       return false;
     }
 
     switch (nalu.nal_unit_type) {
-      case media::H264NALU::kSPS:
+      case H264NALU::kSPS:
         result = parser_->ParseSPS(&last_sps_id_);
-        if (result == media::H264Parser::kUnsupportedStream) {
+        if (result == H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported SPS";
           return false;
         }
 
-        if (result != media::H264Parser::kOk) {
+        if (result != H264Parser::kOk) {
           DLOG(ERROR) << "Could not parse SPS";
           return false;
         }
@@ -501,20 +500,20 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
         sps.assign(nalu.data, nalu.data + nalu.size);
         break;
 
-      case media::H264NALU::kPPS:
+      case H264NALU::kPPS:
         result = parser_->ParsePPS(&last_pps_id_);
-        if (result == media::H264Parser::kUnsupportedStream) {
+        if (result == H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported PPS";
           return false;
         }
-        if (result != media::H264Parser::kOk) {
+        if (result != H264Parser::kOk) {
           DLOG(ERROR) << "Could not parse PPS";
           return false;
         }
         pps.assign(nalu.data, nalu.data + nalu.size);
         break;
 
-      case media::H264NALU::kIDRSlice:
+      case H264NALU::kIDRSlice:
         idr_seen = true;
         // If we previously detected a configuration change, and see an IDR
         // slice next time around, we need to flag a configuration change.
@@ -582,7 +581,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       sent_drain_message_(false),
       get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
-      codec_(media::kUnknownVideoCodec),
+      codec_(kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
       share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video),
@@ -680,7 +679,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                "Initialize: invalid state: " << state,
                                ILLEGAL_STATE, false);
 
-  media::InitializeMediaFoundation();
+  InitializeMediaFoundation();
 
   RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(config.profile),
                                "Failed to initialize decoder", PLATFORM_FAILURE,
@@ -855,7 +854,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 }
 
 void DXVAVideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::Decode");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
@@ -894,7 +893,7 @@ void DXVAVideoDecodeAccelerator::Decode(
 }
 
 void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   State state = GetState();
@@ -1108,7 +1107,7 @@ GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
   TRACE_EVENT0("gpu,startup",
                "DXVAVideoDecodeAccelerator::GetSupportedProfiles");
@@ -1146,11 +1145,10 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
 
 // static
 std::pair<int, int> DXVAVideoDecodeAccelerator::GetMinResolution(
-    media::VideoCodecProfile profile) {
+    VideoCodecProfile profile) {
   TRACE_EVENT0("gpu,startup", "DXVAVideoDecodeAccelerator::GetMinResolution");
   std::pair<int, int> min_resolution;
-  if (profile >= media::H264PROFILE_BASELINE &&
-      profile <= media::H264PROFILE_HIGH) {
+  if (profile >= H264PROFILE_BASELINE && profile <= H264PROFILE_HIGH) {
     // Windows Media Foundation H.264 decoding does not support decoding videos
     // with any dimension smaller than 48 pixels:
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
@@ -1165,11 +1163,10 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMinResolution(
 
 // static
 std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxResolution(
-    const media::VideoCodecProfile profile) {
+    const VideoCodecProfile profile) {
   TRACE_EVENT0("gpu,startup", "DXVAVideoDecodeAccelerator::GetMaxResolution");
   std::pair<int, int> max_resolution;
-  if (profile >= media::H264PROFILE_BASELINE &&
-      profile <= media::H264PROFILE_HIGH) {
+  if (profile >= H264PROFILE_BASELINE && profile <= H264PROFILE_HIGH) {
     max_resolution = GetMaxH264Resolution();
   } else {
     // TODO(ananta)
@@ -1344,13 +1341,13 @@ bool DXVAVideoDecodeAccelerator::IsLegacyGPU(ID3D11Device* device) {
   return legacy_gpu;
 }
 
-bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
+bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
   HMODULE decoder_dll = NULL;
 
   CLSID clsid = {};
 
   // Profile must fall within the valid range for one of the supported codecs.
-  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     // We mimic the steps CoCreateInstance uses to instantiate the object. This
     // was previously done because it failed inside the sandbox, and now is done
     // as a more minimal approach to avoid other side-effects CCI might have (as
@@ -1370,14 +1367,13 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     base::string16 file_version = version_info->file_version();
     RETURN_ON_FAILURE(file_version.find(L"6.1.7140") == base::string16::npos,
                       "blacklisted version of msmpeg2vdec.dll 6.1.7140", false);
-    codec_ = media::kCodecH264;
+    codec_ = kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
   } else if (enable_accelerated_vpx_decode_ &&
-             (profile == media::VP8PROFILE_ANY ||
-              profile == media::VP9PROFILE_PROFILE0 ||
-              profile == media::VP9PROFILE_PROFILE1 ||
-              profile == media::VP9PROFILE_PROFILE2 ||
-              profile == media::VP9PROFILE_PROFILE3)) {
+             (profile == VP8PROFILE_ANY || profile == VP9PROFILE_PROFILE0 ||
+              profile == VP9PROFILE_PROFILE1 ||
+              profile == VP9PROFILE_PROFILE2 ||
+              profile == VP9PROFILE_PROFILE3)) {
     int program_files_key = base::DIR_PROGRAM_FILES;
     if (base::win::OSInfo::GetInstance()->wow64_status() ==
         base::win::OSInfo::WOW64_ENABLED) {
@@ -1389,12 +1385,12 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
                       "failed to get path for Program Files", false);
 
     dll_path = dll_path.Append(kVPXDecoderDLLPath);
-    if (profile == media::VP8PROFILE_ANY) {
-      codec_ = media::kCodecVP8;
+    if (profile == VP8PROFILE_ANY) {
+      codec_ = kCodecVP8;
       dll_path = dll_path.Append(kVP8DecoderDLLName);
       clsid = CLSID_WebmMfVp8Dec;
     } else {
-      codec_ = media::kCodecVP9;
+      codec_ = kCodecVP9;
       dll_path = dll_path.Append(kVP9DecoderDLLName);
       clsid = CLSID_WebmMfVp9Dec;
     }
@@ -1463,7 +1459,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   hr = attributes->GetUINT32(MF_SA_D3D_AWARE, &dxva);
   RETURN_ON_HR_FAILURE(hr, "Failed to check if decoder supports DXVA", false);
 
-  if (codec_ == media::kCodecH264) {
+  if (codec_ == kCodecH264) {
     hr = attributes->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE);
     RETURN_ON_HR_FAILURE(hr, "Failed to enable DXVA H/W decoding", false);
   }
@@ -1518,11 +1514,11 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
   hr = media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   RETURN_ON_HR_FAILURE(hr, "Failed to set major input type", false);
 
-  if (codec_ == media::kCodecH264) {
+  if (codec_ == kCodecH264) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
-  } else if (codec_ == media::kCodecVP8) {
+  } else if (codec_ == kCodecVP8) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP80);
-  } else if (codec_ == media::kCodecVP9) {
+  } else if (codec_ == kCodecVP9) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP90);
   } else {
     NOTREACHED();
@@ -1575,7 +1571,7 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 
   DVLOG(1) << "Input stream info: ";
   DVLOG(1) << "Max latency: " << input_stream_info_.hnsMaxLatency;
-  if (codec_ == media::kCodecH264) {
+  if (codec_ == kCodecH264) {
     // There should be three flags, one for requiring a whole frame be in a
     // single sample, one for requiring there be one buffer only in a single
     // sample, and one that specifies a fixed sample size. (as in cbSize)
@@ -1592,7 +1588,7 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
   // allocate its own sample.
   DVLOG(1) << "Flags: " << std::hex << std::showbase
            << output_stream_info_.dwFlags;
-  if (codec_ == media::kCodecH264) {
+  if (codec_ == kCodecH264) {
     CHECK_EQ(output_stream_info_.dwFlags, 0x107u);
   }
   DVLOG(1) << "Min buffer size: " << output_stream_info_.cbSize;
@@ -1787,7 +1783,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 }
 
 void DXVAVideoDecodeAccelerator::StopOnError(
-    media::VideoDecodeAccelerator::Error error) {
+    VideoDecodeAccelerator::Error error) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::StopOnError,
@@ -1900,8 +1896,7 @@ void DXVAVideoDecodeAccelerator::NotifyPictureReady(int picture_buffer_id,
   if (GetState() != kUninitialized && client_) {
     // TODO(henryhsu): Use correct visible size instead of (0, 0). We can't use
     // coded size here so use (0, 0) intentionally to have the client choose.
-    media::Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0),
-                           false);
+    Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0), false);
     client_->PictureReady(picture);
   }
 }
@@ -2634,7 +2629,7 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(IMFTransform* transform,
 
 HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
                                                        bool* config_changed) {
-  if (codec_ != media::kCodecH264)
+  if (codec_ != kCodecH264)
     return S_FALSE;
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;

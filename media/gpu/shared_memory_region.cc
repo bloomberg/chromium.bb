@@ -18,9 +18,8 @@ SharedMemoryRegion::SharedMemoryRegion(const base::SharedMemoryHandle& handle,
   DCHECK_GE(offset_, 0) << "Invalid offset: " << offset_;
 }
 
-SharedMemoryRegion::SharedMemoryRegion(
-    const media::BitstreamBuffer& bitstream_buffer,
-    bool read_only)
+SharedMemoryRegion::SharedMemoryRegion(const BitstreamBuffer& bitstream_buffer,
+                                       bool read_only)
     : SharedMemoryRegion(bitstream_buffer.handle(),
                          bitstream_buffer.offset(),
                          bitstream_buffer.size(),

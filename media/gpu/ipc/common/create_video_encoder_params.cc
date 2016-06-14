@@ -9,8 +9,8 @@
 namespace media {
 
 CreateVideoEncoderParams::CreateVideoEncoderParams()
-    : input_format(media::PIXEL_FORMAT_UNKNOWN),
-      output_profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+    : input_format(PIXEL_FORMAT_UNKNOWN),
+      output_profile(VIDEO_CODEC_PROFILE_UNKNOWN),
       initial_bitrate(0),
       encoder_route_id(MSG_ROUTING_NONE) {}
 

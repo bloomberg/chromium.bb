@@ -65,7 +65,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL() {
 MEDIA_GPU_EXPORT gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
     const gpu::GpuPreferences& gpu_preferences) {
-  media::VideoDecodeAccelerator::Capabilities capabilities;
+  VideoDecodeAccelerator::Capabilities capabilities;
   if (gpu_preferences.disable_accelerated_video_decode)
     return gpu::VideoDecodeAcceleratorCapabilities();
 
@@ -80,18 +80,18 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
   capabilities.supported_profiles =
       DXVAVideoDecodeAccelerator::GetSupportedProfiles();
 #elif defined(OS_CHROMEOS)
-  media::VideoDecodeAccelerator::SupportedProfiles vda_profiles;
+  VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if defined(USE_V4L2_CODEC)
   vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
-  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
   vda_profiles = V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles();
-  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
   vda_profiles = VaapiVideoDecodeAccelerator::GetSupportedProfiles();
-  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
 #endif
 #elif defined(OS_MACOSX)
@@ -101,14 +101,14 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
   capabilities =
       AndroidVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
 #endif
-  return media::GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
       capabilities);
 }
 
-MEDIA_GPU_EXPORT std::unique_ptr<media::VideoDecodeAccelerator>
+MEDIA_GPU_EXPORT std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
-    media::VideoDecodeAccelerator::Client* client,
-    const media::VideoDecodeAccelerator::Config& config,
+    VideoDecodeAccelerator::Client* client,
+    const VideoDecodeAccelerator::Config& config,
     const gpu::GpuPreferences& gpu_preferences) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -119,7 +119,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
   // platform. This list is ordered by priority, from most to least preferred,
   // if applicable. This list must be in the same order as the querying order
   // in GetDecoderCapabilities() above.
-  using CreateVDAFp = std::unique_ptr<media::VideoDecodeAccelerator> (
+  using CreateVDAFp = std::unique_ptr<VideoDecodeAccelerator> (
       GpuVideoDecodeAcceleratorFactoryImpl::*)(const gpu::GpuPreferences&)
       const;
   const CreateVDAFp create_vda_fps[] = {
@@ -141,7 +141,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
 #endif
   };
 
-  std::unique_ptr<media::VideoDecodeAccelerator> vda;
+  std::unique_ptr<VideoDecodeAccelerator> vda;
 
   for (const auto& create_vda_function : create_vda_fps) {
     vda = (this->*create_vda_function)(gpu_preferences);
@@ -153,10 +153,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
 }
 
 #if defined(OS_WIN)
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     DVLOG(0) << "Initializing DXVA HW decoder for windows.";
     decoder.reset(new DXVAVideoDecodeAccelerator(
@@ -167,10 +167,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA(
 #endif
 
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2VDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2VideoDecodeAccelerator(
@@ -180,10 +180,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2VDA(
   return decoder;
 }
 
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2SVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2SliceVideoDecodeAccelerator(
@@ -195,10 +195,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2SVDA(
 #endif
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateVaapiVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new VaapiVideoDecodeAccelerator(make_context_current_cb_,
                                                 bind_image_cb_));
   return decoder;
@@ -206,10 +206,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVaapiVDA(
 #endif
 
 #if defined(OS_MACOSX)
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateVTVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(
       new VTVideoDecodeAccelerator(make_context_current_cb_, bind_image_cb_));
   return decoder;
@@ -217,10 +217,10 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVTVDA(
 #endif
 
 #if defined(OS_ANDROID)
-std::unique_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactoryImpl::CreateAndroidVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<media::VideoDecodeAccelerator> decoder;
+  std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new AndroidVideoDecodeAccelerator(make_context_current_cb_,
                                                   get_gles2_decoder_cb_));
   return decoder;

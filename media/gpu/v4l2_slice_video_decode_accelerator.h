@@ -34,7 +34,7 @@ namespace media {
 // decoding functionality and requires userspace to provide support for parsing
 // the input stream and managing decoder state across frames.
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator {
  public:
   class V4L2DecodeSurface;
 
@@ -45,11 +45,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       const MakeGLContextCurrentCallback& make_context_current_cb);
   ~V4L2SliceVideoDecodeAccelerator() override;
 
-  // media::VideoDecodeAccelerator implementation.
+  // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
       const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
@@ -62,8 +61,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
   class V4L2H264Accelerator;
@@ -229,8 +227,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Allocate V4L2 buffers and assign them to |buffers| provided by the client
   // via AssignPictureBuffers() on decoder thread.
-  void AssignPictureBuffersTask(
-      const std::vector<media::PictureBuffer>& buffers);
+  void AssignPictureBuffersTask(const std::vector<PictureBuffer>& buffers);
 
   // Use buffer backed by dmabuf file descriptors in |passed_dmabuf_fds| for the
   // OutputRecord associated with |picture_buffer_id|, taking ownership of the
@@ -307,7 +304,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   const int kFlushBufferId = -2;
 
   // Handler for Decode() on decoder_thread_.
-  void DecodeTask(const media::BitstreamBuffer& bitstream_buffer);
+  void DecodeTask(const BitstreamBuffer& bitstream_buffer);
 
   // Schedule a new DecodeBufferTask if we are decoding.
   void ScheduleDecodeBufferTaskIfNeeded();
@@ -396,7 +393,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Mapping of int index to an output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
 
-  media::VideoCodecProfile video_profile_;
+  VideoCodecProfile video_profile_;
   uint32_t output_format_fourcc_;
   gfx::Size visible_size_;
   gfx::Size coded_size_;

@@ -85,9 +85,8 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // defined(USE_OZONE)
 
-using media::VideoDecodeAccelerator;
-
 namespace media {
+
 namespace {
 
 // Values optionally filled in from flags; see main() below.
@@ -105,7 +104,7 @@ namespace {
 // - |minFPSwithRender| and |minFPSnoRender| are minimum frames/second speeds
 //   expected to be achieved with and without rendering to the screen, resp.
 //   (the latter tests just decode speed).
-// - |profile| is the media::VideoCodecProfile set during Initialization.
+// - |profile| is the VideoCodecProfile set during Initialization.
 // An empty value for a numeric field means "ignore".
 const base::FilePath::CharType* g_test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
@@ -166,7 +165,7 @@ struct TestVideoFile {
         num_fragments(-1),
         min_fps_render(-1),
         min_fps_no_render(-1),
-        profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+        profile(VIDEO_CODEC_PROFILE_UNKNOWN),
         reset_after_frame_num(END_OF_STREAM_RESET) {}
 
   base::FilePath::StringType file_name;
@@ -176,7 +175,7 @@ struct TestVideoFile {
   int num_fragments;
   int min_fps_render;
   int min_fps_no_render;
-  media::VideoCodecProfile profile;
+  VideoCodecProfile profile;
   int reset_after_frame_num;
   std::string data_str;
 };
@@ -288,7 +287,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
   static scoped_refptr<TextureRef> CreatePreallocated(
       uint32_t texture_id,
       const base::Closure& no_longer_needed_cb,
-      media::VideoPixelFormat pixel_format,
+      VideoPixelFormat pixel_format,
       const gfx::Size& size);
 
   gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
@@ -323,13 +322,13 @@ scoped_refptr<TextureRef> TextureRef::Create(
 
 #if defined(USE_OZONE)
 gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
-    media::VideoPixelFormat pixel_format) {
+    VideoPixelFormat pixel_format) {
   switch (pixel_format) {
-    case media::VideoPixelFormat::PIXEL_FORMAT_ARGB:
+    case VideoPixelFormat::PIXEL_FORMAT_ARGB:
       return gfx::BufferFormat::BGRA_8888;
-    case media::VideoPixelFormat::PIXEL_FORMAT_XRGB:
+    case VideoPixelFormat::PIXEL_FORMAT_XRGB:
       return gfx::BufferFormat::BGRX_8888;
-    case media::VideoPixelFormat::PIXEL_FORMAT_NV12:
+    case VideoPixelFormat::PIXEL_FORMAT_NV12:
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     default:
       LOG_ASSERT(false) << "Unknown VideoPixelFormat";
@@ -342,7 +341,7 @@ gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
 scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
     uint32_t texture_id,
     const base::Closure& no_longer_needed_cb,
-    media::VideoPixelFormat pixel_format,
+    VideoPixelFormat pixel_format,
     const gfx::Size& size) {
   scoped_refptr<TextureRef> texture_ref;
 #if defined(USE_OZONE)
@@ -411,7 +410,7 @@ class GLRenderingVDAClient
                        int delete_decoder_state,
                        int frame_width,
                        int frame_height,
-                       media::VideoCodecProfile profile,
+                       VideoCodecProfile profile,
                        int fake_decoder,
                        bool suppress_rendering,
                        int delay_reuse_after_frame_num,
@@ -428,7 +427,7 @@ class GLRenderingVDAClient
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
-  void PictureReady(const media::Picture& picture) override;
+  void PictureReady(const Picture& picture) override;
   // Simple state changes.
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;
   void NotifyFlushDone() override;
@@ -495,7 +494,7 @@ class GLRenderingVDAClient
   int num_decoded_frames_;
   int num_done_bitstream_buffers_;
   base::TimeTicks initialize_done_ticks_;
-  media::VideoCodecProfile profile_;
+  VideoCodecProfile profile_;
   int fake_decoder_;
   GLenum texture_target_;
   VideoPixelFormat pixel_format_;
@@ -552,7 +551,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int delete_decoder_state,
     int frame_width,
     int frame_height,
-    media::VideoCodecProfile profile,
+    VideoCodecProfile profile,
     int fake_decoder,
     bool suppress_rendering,
     int delay_reuse_after_frame_num,
@@ -591,9 +590,8 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     LOG_ASSERT(1 == num_in_flight_decodes_);
 
   // Default to H264 baseline if no profile provided.
-  profile_ = (profile != media::VIDEO_CODEC_PROFILE_UNKNOWN
-                  ? profile
-                  : media::H264PROFILE_BASELINE);
+  profile_ =
+      (profile != VIDEO_CODEC_PROFILE_UNKNOWN ? profile : H264PROFILE_BASELINE);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -623,8 +621,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 
     VideoDecodeAccelerator::Config config(profile_);
     if (g_test_import) {
-      config.output_mode =
-          media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
+      config.output_mode = VideoDecodeAccelerator::Config::OutputMode::IMPORT;
     }
     gpu::GpuPreferences gpu_preferences;
     decoder_ = vda_factory_->CreateVDA(this, config, gpu_preferences);
@@ -652,11 +649,11 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   if (decoder_deleted())
     return;
   LOG_ASSERT(textures_per_buffer == 1u);
-  std::vector<media::PictureBuffer> buffers;
+  std::vector<PictureBuffer> buffers;
 
   requested_num_of_buffers += kExtraPictureBuffers;
-  if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
-    pixel_format = media::PIXEL_FORMAT_ARGB;
+  if (pixel_format == PIXEL_FORMAT_UNKNOWN)
+    pixel_format = PIXEL_FORMAT_ARGB;
 
   LOG_ASSERT((pixel_format_ == PIXEL_FORMAT_UNKNOWN) ||
              (pixel_format_ == pixel_format));
@@ -690,9 +687,9 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
-    media::PictureBuffer::TextureIds ids;
+    PictureBuffer::TextureIds ids;
     ids.push_back(texture_id);
-    buffers.push_back(media::PictureBuffer(picture_buffer_id, dimensions, ids));
+    buffers.push_back(PictureBuffer(picture_buffer_id, dimensions, ids));
   }
   decoder_->AssignPictureBuffers(buffers);
 
@@ -713,7 +710,7 @@ void GLRenderingVDAClient::DismissPictureBuffer(int32_t picture_buffer_id) {
   LOG_ASSERT(1U == active_textures_.erase(picture_buffer_id));
 }
 
-void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
+void GLRenderingVDAClient::PictureReady(const Picture& picture) {
   // We shouldn't be getting pictures delivered after Reset has completed.
   LOG_ASSERT(state_ < CS_RESET);
 
@@ -910,7 +907,7 @@ void GLRenderingVDAClient::DeleteDecoder() {
 
 std::string GLRenderingVDAClient::GetBytesForFirstFragment(size_t start_pos,
                                                            size_t* end_pos) {
-  if (profile_ < media::H264PROFILE_MAX) {
+  if (profile_ < H264PROFILE_MAX) {
     *end_pos = start_pos;
     while (*end_pos + 4 < encoded_data_.size()) {
       if ((encoded_data_[*end_pos + 4] & 0x1f) == 0x7)  // SPS start frame
@@ -921,13 +918,13 @@ std::string GLRenderingVDAClient::GetBytesForFirstFragment(size_t start_pos,
     *end_pos = start_pos;
     return std::string();
   }
-  DCHECK_LE(profile_, media::VP9PROFILE_MAX);
+  DCHECK_LE(profile_, VP9PROFILE_MAX);
   return GetBytesForNextFragment(start_pos, end_pos);
 }
 
 std::string GLRenderingVDAClient::GetBytesForNextFragment(size_t start_pos,
                                                           size_t* end_pos) {
-  if (profile_ < media::H264PROFILE_MAX) {
+  if (profile_ < H264PROFILE_MAX) {
     *end_pos = start_pos;
     GetBytesForNextNALU(*end_pos, end_pos);
     if (start_pos != *end_pos) {
@@ -935,7 +932,7 @@ std::string GLRenderingVDAClient::GetBytesForNextFragment(size_t start_pos,
     }
     return encoded_data_.substr(start_pos, *end_pos - start_pos);
   }
-  DCHECK_LE(profile_, media::VP9PROFILE_MAX);
+  DCHECK_LE(profile_, VP9PROFILE_MAX);
   return GetBytesForNextFrame(start_pos, end_pos);
 }
 
@@ -971,20 +968,19 @@ std::string GLRenderingVDAClient::GetBytesForNextFrame(size_t start_pos,
 
 static bool FragmentHasConfigInfo(const uint8_t* data,
                                   size_t size,
-                                  media::VideoCodecProfile profile) {
-  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
-    media::H264Parser parser;
+                                  VideoCodecProfile profile) {
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
+    H264Parser parser;
     parser.SetStream(data, size);
-    media::H264NALU nalu;
-    media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
-    if (result != media::H264Parser::kOk) {
+    H264NALU nalu;
+    H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    if (result != H264Parser::kOk) {
       // Let the VDA figure out there's something wrong with the stream.
       return false;
     }
 
-    return nalu.nal_unit_type == media::H264NALU::kSPS;
-  } else if (profile >= media::VP8PROFILE_MIN &&
-             profile <= media::VP9PROFILE_MAX) {
+    return nalu.nal_unit_type == H264NALU::kSPS;
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     return (size > 0 && !(data[0] & 0x01));
   }
   // Shouldn't happen at this point.
@@ -1028,8 +1024,8 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   bool result =
       shm.ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle);
   LOG_ASSERT(result);
-  media::BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, dup_handle,
-                                          next_fragment_size);
+  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, dup_handle,
+                                   next_fragment_size);
   decode_start_time_[next_bitstream_buffer_id_] = base::TimeTicks::Now();
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
@@ -1160,7 +1156,7 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
     int profile = -1;
     if (!fields[7].empty())
       LOG_ASSERT(base::StringToInt(fields[7], &profile));
-    video_file->profile = static_cast<media::VideoCodecProfile>(profile);
+    video_file->profile = static_cast<VideoCodecProfile>(profile);
 
     // Read in the video data.
     base::FilePath filepath(video_file->file_name);

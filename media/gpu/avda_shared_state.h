@@ -47,7 +47,7 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   // Iterates over all known codec images and updates the MediaCodec attached to
   // each one.
-  void CodecChanged(media::MediaCodecBridge* codec);
+  void CodecChanged(MediaCodecBridge* codec);
 
   // Methods for finding and updating the AVDACodecImage associated with a given
   // picture buffer id. GetImageForPicture() will return null for unknown ids.
@@ -72,7 +72,7 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   //
   // Some devices do not reliably notify frame availability, so we use a very
   // short deadline of only a few milliseconds to avoid indefinite stalls.
-  void RenderCodecBufferToSurfaceTexture(media::MediaCodecBridge* codec,
+  void RenderCodecBufferToSurfaceTexture(MediaCodecBridge* codec,
                                          int codec_buffer_index);
 
  protected:

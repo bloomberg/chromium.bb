@@ -35,11 +35,10 @@ class MEDIA_GPU_EXPORT V4L2Device
     : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
-  static media::VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
-  static uint32_t VideoPixelFormatToV4L2PixFmt(media::VideoPixelFormat format);
-  static uint32_t VideoCodecProfileToV4L2PixFmt(
-      media::VideoCodecProfile profile,
-      bool slice_based);
+  static VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
+  static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format);
+  static uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
+                                                bool slice_based);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
   // Convert format requirements requested by a V4L2 device to gfx::Size.
   static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
@@ -137,16 +136,15 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Return supported profiles for decoder, including only profiles for given
   // fourcc |pixelformats|.
-  media::VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
+  VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
       const size_t num_formats,
       const uint32_t pixelformats[]);
 
   // Return true if the device supports |profile|, taking into account only
   // fourccs from the given array of |pixelformats| of size |num_formats|.
-  bool SupportsDecodeProfileForV4L2PixelFormats(
-      media::VideoCodecProfile profile,
-      const size_t num_formats,
-      const uint32_t pixelformats[]);
+  bool SupportsDecodeProfileForV4L2PixelFormats(VideoCodecProfile profile,
+                                                const size_t num_formats,
+                                                const uint32_t pixelformats[]);
 
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;

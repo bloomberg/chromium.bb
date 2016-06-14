@@ -223,10 +223,10 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
-  if (dimensions.width() > media::limits::kMaxDimension ||
-      dimensions.height() > media::limits::kMaxDimension ||
-      dimensions.GetArea() > media::limits::kMaxCanvas) {
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+  if (dimensions.width() > limits::kMaxDimension ||
+      dimensions.height() > limits::kMaxDimension ||
+      dimensions.GetArea() > limits::kMaxCanvas) {
+    NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
@@ -252,7 +252,7 @@ void GpuVideoDecodeAccelerator::DismissPictureBuffer(
   uncleared_textures_.erase(picture_buffer_id);
 }
 
-void GpuVideoDecodeAccelerator::PictureReady(const media::Picture& picture) {
+void GpuVideoDecodeAccelerator::PictureReady(const Picture& picture) {
   // VDA may call PictureReady on IO thread. SetTextureCleared should run on
   // the child thread. VDA is responsible to call PictureReady on the child
   // thread when a picture buffer is delivered the first time.
@@ -293,7 +293,7 @@ void GpuVideoDecodeAccelerator::NotifyResetDone() {
 }
 
 void GpuVideoDecodeAccelerator::NotifyError(
-    media::VideoDecodeAccelerator::Error error) {
+    VideoDecodeAccelerator::Error error) {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ErrorNotification(host_route_id_,
                                                                  error))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ErrorNotification) "
@@ -330,7 +330,7 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
 }
 
 bool GpuVideoDecodeAccelerator::Initialize(
-    const media::VideoDecodeAccelerator::Config& config) {
+    const VideoDecodeAccelerator::Config& config) {
   DCHECK(!video_decode_accelerator_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
@@ -379,16 +379,16 @@ bool GpuVideoDecodeAccelerator::Initialize(
 // Runs on IO thread if VDA::TryToSetupDecodeOnSeparateThread() succeeded,
 // otherwise on the main thread.
 void GpuVideoDecodeAccelerator::OnDecode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK(video_decode_accelerator_);
   video_decode_accelerator_->Decode(bitstream_buffer);
 }
 
 void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     const std::vector<int32_t>& buffer_ids,
-    const std::vector<media::PictureBuffer::TextureIds>& texture_ids) {
+    const std::vector<PictureBuffer::TextureIds>& texture_ids) {
   if (buffer_ids.size() != texture_ids.size()) {
-    NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+    NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
     return;
   }
 
@@ -396,22 +396,22 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();
 
-  std::vector<media::PictureBuffer> buffers;
+  std::vector<PictureBuffer> buffers;
   std::vector<std::vector<scoped_refptr<gpu::gles2::TextureRef>>> textures;
   for (uint32_t i = 0; i < buffer_ids.size(); ++i) {
     if (buffer_ids[i] < 0) {
       DLOG(ERROR) << "Buffer id " << buffer_ids[i] << " out of range";
-      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+      NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
     std::vector<scoped_refptr<gpu::gles2::TextureRef>> current_textures;
-    media::PictureBuffer::TextureIds buffer_texture_ids = texture_ids[i];
-    media::PictureBuffer::TextureIds service_ids;
+    PictureBuffer::TextureIds buffer_texture_ids = texture_ids[i];
+    PictureBuffer::TextureIds service_ids;
     if (buffer_texture_ids.size() != textures_per_buffer_) {
       DLOG(ERROR) << "Requested " << textures_per_buffer_
                   << " textures per picture buffer, got "
                   << buffer_texture_ids.size();
-      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+      NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
     for (size_t j = 0; j < textures_per_buffer_; j++) {
@@ -419,14 +419,14 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
           texture_manager->GetTexture(buffer_texture_ids[j]);
       if (!texture_ref) {
         DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];
-        NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+        NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
       gpu::gles2::Texture* info = texture_ref->texture();
       if (info->target() != texture_target_) {
         DLOG(ERROR) << "Texture target mismatch for texture id "
                     << buffer_texture_ids[j];
-        NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+        NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
       if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
@@ -446,7 +446,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
             height != texture_dimensions_.height()) {
           DLOG(ERROR) << "Size mismatch for texture id "
                       << buffer_texture_ids[j];
-          NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+          NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
           return;
         }
 
@@ -463,8 +463,8 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       current_textures.push_back(texture_ref);
     }
     textures.push_back(current_textures);
-    buffers.push_back(media::PictureBuffer(buffer_ids[i], texture_dimensions_,
-                                           service_ids, buffer_texture_ids));
+    buffers.push_back(PictureBuffer(buffer_ids[i], texture_dimensions_,
+                                    service_ids, buffer_texture_ids));
   }
   {
     DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
@@ -501,8 +501,7 @@ void GpuVideoDecodeAccelerator::OnFilterRemoved() {
   filter_removed_.Signal();
 }
 
-void GpuVideoDecodeAccelerator::SetTextureCleared(
-    const media::Picture& picture) {
+void GpuVideoDecodeAccelerator::SetTextureCleared(const Picture& picture) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
   auto it = uncleared_textures_.find(picture.picture_buffer_id());

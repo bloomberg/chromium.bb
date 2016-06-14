@@ -45,15 +45,15 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif
 
-#define POST_ERROR(error_code, error_message)                        \
-  do {                                                               \
-    DLOG(ERROR) << error_message;                                    \
-    PostError(FROM_HERE, media::VideoDecodeAccelerator::error_code); \
+#define POST_ERROR(error_code, error_message)                 \
+  do {                                                        \
+    DLOG(ERROR) << error_message;                             \
+    PostError(FROM_HERE, VideoDecodeAccelerator::error_code); \
   } while (0)
 
 namespace media {
 
-enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
+enum { kNumPictureBuffers = limits::kMaxVideoFrames + 1 };
 
 // Max number of bitstreams notified to the client with
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
@@ -63,18 +63,18 @@ enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 // support others. Advertise support for all H264 profiles and let the
 // MediaCodec fail when decoding if it's not actually supported. It's assumed
 // that consumers won't have software fallback for H264 on Android anyway.
-static const media::VideoCodecProfile kSupportedH264Profiles[] = {
-    media::H264PROFILE_BASELINE,
-    media::H264PROFILE_MAIN,
-    media::H264PROFILE_EXTENDED,
-    media::H264PROFILE_HIGH,
-    media::H264PROFILE_HIGH10PROFILE,
-    media::H264PROFILE_HIGH422PROFILE,
-    media::H264PROFILE_HIGH444PREDICTIVEPROFILE,
-    media::H264PROFILE_SCALABLEBASELINE,
-    media::H264PROFILE_SCALABLEHIGH,
-    media::H264PROFILE_STEREOHIGH,
-    media::H264PROFILE_MULTIVIEWHIGH};
+static const VideoCodecProfile kSupportedH264Profiles[] = {
+    H264PROFILE_BASELINE,
+    H264PROFILE_MAIN,
+    H264PROFILE_EXTENDED,
+    H264PROFILE_HIGH,
+    H264PROFILE_HIGH10PROFILE,
+    H264PROFILE_HIGH422PROFILE,
+    H264PROFILE_HIGH444PREDICTIVEPROFILE,
+    H264PROFILE_SCALABLEBASELINE,
+    H264PROFILE_SCALABLEHIGH,
+    H264PROFILE_STEREOHIGH,
+    H264PROFILE_MULTIVIEWHIGH};
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
 // has no callback mechanism (b/11990118), we must drive it by polling for
@@ -369,7 +369,7 @@ AndroidVideoDecodeAccelerator::CodecConfig::CodecConfig() {}
 AndroidVideoDecodeAccelerator::CodecConfig::~CodecConfig() {}
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
-    const media::BitstreamBuffer& bitstream_buffer)
+    const BitstreamBuffer& bitstream_buffer)
     : buffer(bitstream_buffer) {
   if (buffer.id() != -1)
     memory.reset(new SharedMemoryRegion(buffer, true));
@@ -452,22 +452,22 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (codec_config_->codec_ != media::kCodecVP8 &&
-      codec_config_->codec_ != media::kCodecVP9 &&
-      codec_config_->codec_ != media::kCodecH264) {
+  if (codec_config_->codec_ != kCodecVP8 &&
+      codec_config_->codec_ != kCodecVP9 &&
+      codec_config_->codec_ != kCodecH264) {
     LOG(ERROR) << "Unsupported profile: " << config.profile;
     return false;
   }
 
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
-  if ((codec_config_->codec_ == media::kCodecVP8 ||
-       codec_config_->codec_ == media::kCodecVP9) &&
+  if ((codec_config_->codec_ == kCodecVP8 ||
+       codec_config_->codec_ == kCodecVP9) &&
       !config_.is_encrypted &&
-      media::VideoCodecBridge::IsKnownUnaccelerated(
-          codec_config_->codec_, media::MEDIA_CODEC_DECODER)) {
+      VideoCodecBridge::IsKnownUnaccelerated(codec_config_->codec_,
+                                             MEDIA_CODEC_DECODER)) {
     DVLOG(1) << "Initialization failed: "
-             << (codec_config_->codec_ == media::kCodecVP8 ? "vp8" : "vp9")
+             << (codec_config_->codec_ == kCodecVP8 ? "vp8" : "vp9")
              << " is not hardware accelerated";
     return false;
   }
@@ -604,15 +604,15 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   // That status does not return this buffer back to the pool of
   // available input buffers. We have to reuse it in QueueSecureInputBuffer().
   if (input_buf_index == -1) {
-    media::MediaCodecStatus status =
+    MediaCodecStatus status =
         media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
     switch (status) {
-      case media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+      case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
         return false;
-      case media::MEDIA_CODEC_ERROR:
+      case MEDIA_CODEC_ERROR:
         POST_ERROR(PLATFORM_FAILURE, "Failed to DequeueInputBuffer");
         return false;
-      case media::MEDIA_CODEC_OK:
+      case MEDIA_CODEC_OK:
         break;
       default:
         NOTREACHED() << "Unknown DequeueInputBuffer status " << status;
@@ -622,8 +622,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   DCHECK_NE(input_buf_index, -1);
 
-  media::BitstreamBuffer bitstream_buffer =
-      pending_bitstream_records_.front().buffer;
+  BitstreamBuffer bitstream_buffer = pending_bitstream_records_.front().buffer;
 
   if (bitstream_buffer.id() == -1) {
     pending_bitstream_records_.pop();
@@ -650,7 +649,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   const base::TimeDelta presentation_timestamp =
       bitstream_buffer.presentation_timestamp();
-  DCHECK(presentation_timestamp != media::kNoTimestamp())
+  DCHECK(presentation_timestamp != kNoTimestamp())
       << "Bitstream buffers must have valid presentation timestamps";
 
   // There may already be a bitstream buffer with this timestamp, e.g., VP9 alt
@@ -667,10 +666,9 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
       shm ? static_cast<const uint8_t*>(shm->memory()) : nullptr;
   const std::string& key_id = bitstream_buffer.key_id();
   const std::string& iv = bitstream_buffer.iv();
-  const std::vector<media::SubsampleEntry>& subsamples =
-      bitstream_buffer.subsamples();
+  const std::vector<SubsampleEntry>& subsamples = bitstream_buffer.subsamples();
 
-  media::MediaCodecStatus status;
+  MediaCodecStatus status;
   if (key_id.empty() || iv.empty()) {
     status = media_codec_->QueueInputBuffer(input_buf_index, memory,
                                             bitstream_buffer.size(),
@@ -685,7 +683,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
            << ": Queue(Secure)InputBuffer: pts:" << presentation_timestamp
            << " status:" << status;
 
-  if (status == media::MEDIA_CODEC_NO_KEY) {
+  if (status == MEDIA_CODEC_NO_KEY) {
     // Keep trying to enqueue the same input buffer.
     // The buffer is owned by us (not the MediaCodec) and is filled with data.
     DVLOG(1) << "QueueSecureInputBuffer failed: NO_KEY";
@@ -711,7 +709,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
                  weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 
-  if (status != media::MEDIA_CODEC_OK) {
+  if (status != MEDIA_CODEC_OK) {
     POST_ERROR(PLATFORM_FAILURE, "Failed to QueueInputBuffer: " << status);
     return false;
   }
@@ -740,7 +738,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     size_t size = 0;
 
     TRACE_EVENT_BEGIN0("media", "AVDA::DequeueOutput");
-    media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
+    MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
         NoWaitTimeOut(), &buf_index, &offset, &size, &presentation_timestamp,
         &eos, NULL);
     TRACE_EVENT_END2("media", "AVDA::DequeueOutput", "status", status,
@@ -748,7 +746,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
                      presentation_timestamp.InMilliseconds());
 
     switch (status) {
-      case media::MEDIA_CODEC_ERROR:
+      case MEDIA_CODEC_ERROR:
         // Do not post an error if we are draining for reset and destroy.
         // Instead, run the drain completion task.
         if (IsDrainingForResetOrDestroy()) {
@@ -760,17 +758,17 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         }
         return false;
 
-      case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+      case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
         return false;
 
-      case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
+      case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
         // An OUTPUT_FORMAT_CHANGED is not reported after flush() if the frame
         // size does not change. Therefore we have to keep track on the format
         // even if draining, unless we are draining for destroy.
         if (drain_type_ == DRAIN_FOR_DESTROY)
           return true;  // ignore
 
-        if (media_codec_->GetOutputSize(&size_) != media::MEDIA_CODEC_OK) {
+        if (media_codec_->GetOutputSize(&size_) != MEDIA_CODEC_OK) {
           POST_ERROR(PLATFORM_FAILURE, "GetOutputSize failed.");
           return false;
         }
@@ -797,10 +795,10 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         return true;
       }
 
-      case media::MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
+      case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
         break;
 
-      case media::MEDIA_CODEC_OK:
+      case MEDIA_CODEC_OK:
         DCHECK_GE(buf_index, 0);
         DVLOG(3) << __FUNCTION__ << ": pts:" << presentation_timestamp
                  << " buf_index:" << buf_index << " offset:" << offset
@@ -904,8 +902,8 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   }
 
   const bool allow_overlay = strategy_->ArePicturesOverlayable();
-  media::Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
-                         allow_overlay);
+  Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
+                  allow_overlay);
   picture.set_size_changed(size_changed);
 
   // Notify picture ready before calling UseCodecBufferForPictureBuffer() since
@@ -920,7 +918,7 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
 }
 
 void AndroidVideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we previously deferred a codec restart, take care of it now. This can
@@ -950,7 +948,7 @@ void AndroidVideoDecodeAccelerator::Decode(
 }
 
 void AndroidVideoDecodeAccelerator::DecodeBuffer(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   pending_bitstream_records_.push(BitstreamRecord(bitstream_buffer));
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_records_.size());
@@ -967,7 +965,7 @@ void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
 }
 
 void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(output_picture_buffers_.empty());
   DCHECK(free_picture_ids_.empty());
@@ -1063,13 +1061,13 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   state_ = WAITING_FOR_CODEC;
-  std::unique_ptr<media::VideoCodecBridge> media_codec =
+  std::unique_ptr<VideoCodecBridge> media_codec =
       ConfigureMediaCodecOnAnyThread(codec_config_);
   OnCodecConfigured(std::move(media_codec));
   return !!media_codec_;
 }
 
-std::unique_ptr<media::VideoCodecBridge>
+std::unique_ptr<VideoCodecBridge>
 AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
     scoped_refptr<CodecConfig> codec_config) {
   TRACE_EVENT0("media", "AVDA::ConfigureMediaCodec");
@@ -1081,15 +1079,14 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
   // |needs_protected_surface_| implies encrypted stream.
   DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
 
-  return std::unique_ptr<media::VideoCodecBridge>(
-      media::VideoCodecBridge::CreateDecoder(
-          codec_config->codec_, codec_config->needs_protected_surface_,
-          codec_config->initial_expected_coded_size_,
-          codec_config->surface_.j_surface().obj(), media_crypto, true));
+  return std::unique_ptr<VideoCodecBridge>(VideoCodecBridge::CreateDecoder(
+      codec_config->codec_, codec_config->needs_protected_surface_,
+      codec_config->initial_expected_coded_size_,
+      codec_config->surface_.j_surface().obj(), media_crypto, true));
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
-    std::unique_ptr<media::VideoCodecBridge> media_codec) {
+    std::unique_ptr<VideoCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
 
@@ -1138,7 +1135,7 @@ void AndroidVideoDecodeAccelerator::StartCodecDrain(DrainType drain_type) {
   drain_type_ = drain_type;
 
   if (enqueue_eos)
-    DecodeBuffer(media::BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
+    DecodeBuffer(BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
 bool AndroidVideoDecodeAccelerator::IsDrainingForResetOrDestroy() const {
@@ -1271,7 +1268,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
 
   // Some VP8 files require complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
-  if (media_codec_ && codec_config_->codec_ == media::kCodecVP8) {
+  if (media_codec_ && codec_config_->codec_ == kCodecVP8) {
     // Postpone ResetCodecState() after the drain.
     StartCodecDrain(DRAIN_FOR_RESET);
   } else {
@@ -1303,7 +1300,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
 
   // Some VP8 files require complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
-  if (media_codec_ && codec_config_->codec_ == media::kCodecVP8) {
+  if (media_codec_ && codec_config_->codec_ == kCodecVP8) {
     // Clear pending_bitstream_records_.
     while (!pending_bitstream_records_.empty())
       pending_bitstream_records_.pop();
@@ -1360,7 +1357,7 @@ AndroidVideoDecodeAccelerator::GetGlDecoder() const {
 }
 
 gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
-    const media::PictureBuffer& picture_buffer) {
+    const PictureBuffer& picture_buffer) {
   auto gles_decoder = GetGlDecoder();
   RETURN_ON_FAILURE(this, gles_decoder, "Failed to get GL decoder",
                     ILLEGAL_STATE, nullptr);
@@ -1439,7 +1436,7 @@ void AndroidVideoDecodeAccelerator::OnFrameAvailable() {
 
 void AndroidVideoDecodeAccelerator::PostError(
     const ::tracked_objects::Location& from_here,
-    media::VideoDecodeAccelerator::Error error) {
+    VideoDecodeAccelerator::Error error) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       from_here,
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
@@ -1457,11 +1454,11 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 #else
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
-      media::MojoCdmService::LegacyGetCdm(config_.cdm_id);
+      MojoCdmService::LegacyGetCdm(config_.cdm_id);
   DCHECK(cdm_for_reference_holding_only_);
 
   // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
-  media_drm_bridge_cdm_context_ = static_cast<media::MediaDrmBridgeCdmContext*>(
+  media_drm_bridge_cdm_context_ = static_cast<MediaDrmBridgeCdmContext*>(
       cdm_for_reference_holding_only_->GetCdmContext());
   DCHECK(media_drm_bridge_cdm_context_);
 
@@ -1474,20 +1471,19 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   // called.
   // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
   cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
-      media::BindToCurrentLoop(
-          base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
-                     weak_this_factory_.GetWeakPtr())),
+      BindToCurrentLoop(base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
+                                   weak_this_factory_.GetWeakPtr())),
       base::Bind(&base::DoNothing));
 
   // Deferred initialization will continue in OnMediaCryptoReady().
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(BindToCurrentLoop(
       base::Bind(&AndroidVideoDecodeAccelerator::OnMediaCryptoReady,
                  weak_this_factory_.GetWeakPtr())));
 #endif  // !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
 void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
-    media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
+    MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
     bool needs_protected_surface) {
   DVLOG(1) << __FUNCTION__;
 
@@ -1526,8 +1522,7 @@ void AndroidVideoDecodeAccelerator::NotifyInitializationComplete(bool success) {
     client_->NotifyInitializationComplete(success);
 }
 
-void AndroidVideoDecodeAccelerator::NotifyPictureReady(
-    const media::Picture& picture) {
+void AndroidVideoDecodeAccelerator::NotifyPictureReady(const Picture& picture) {
   if (client_)
     client_->PictureReady(picture);
 }
@@ -1549,7 +1544,7 @@ void AndroidVideoDecodeAccelerator::NotifyResetDone() {
 }
 
 void AndroidVideoDecodeAccelerator::NotifyError(
-    media::VideoDecodeAccelerator::Error error,
+    VideoDecodeAccelerator::Error error,
     int token) {
   DVLOG(1) << __FUNCTION__ << ": error: " << error << " token: " << token
            << " current: " << error_sequence_token_;
@@ -1589,7 +1584,7 @@ bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy(
 }
 
 // static
-media::VideoDecodeAccelerator::Capabilities
+VideoDecodeAccelerator::Capabilities
 AndroidVideoDecodeAccelerator::GetCapabilities(
     const gpu::GpuPreferences& gpu_preferences) {
   Capabilities capabilities;
@@ -1600,9 +1595,9 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   // us to completely drain the decoder before releasing it, which is difficult
   // and time consuming to do while the surface is being destroyed.
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18 &&
-      media::MediaCodecUtil::IsVp8DecoderAvailable()) {
+      MediaCodecUtil::IsVp8DecoderAvailable()) {
     SupportedProfile profile;
-    profile.profile = media::VP8PROFILE_ANY;
+    profile.profile = VP8PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
@@ -1610,12 +1605,12 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     // within the renderer sandbox. However if the content is encrypted, we
     // must use MediaCodec anyways since MediaDrm offers no way to decrypt
     // the buffers and let us use our internal software decoders.
-    profile.encrypted_only = media::VideoCodecBridge::IsKnownUnaccelerated(
-        media::kCodecVP8, media::MEDIA_CODEC_DECODER);
+    profile.encrypted_only =
+        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP8, MEDIA_CODEC_DECODER);
     profiles.push_back(profile);
   }
 
-  if (media::MediaCodecUtil::IsVp9DecoderAvailable()) {
+  if (MediaCodecUtil::IsVp9DecoderAvailable()) {
     SupportedProfile profile;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(3840, 2160);
@@ -1624,15 +1619,15 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     // within the renderer sandbox. However if the content is encrypted, we
     // must use MediaCodec anyways since MediaDrm offers no way to decrypt
     // the buffers and let us use our internal software decoders.
-    profile.encrypted_only = media::VideoCodecBridge::IsKnownUnaccelerated(
-        media::kCodecVP9, media::MEDIA_CODEC_DECODER);
-    profile.profile = media::VP9PROFILE_PROFILE0;
+    profile.encrypted_only =
+        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP9, MEDIA_CODEC_DECODER);
+    profile.profile = VP9PROFILE_PROFILE0;
     profiles.push_back(profile);
-    profile.profile = media::VP9PROFILE_PROFILE1;
+    profile.profile = VP9PROFILE_PROFILE1;
     profiles.push_back(profile);
-    profile.profile = media::VP9PROFILE_PROFILE2;
+    profile.profile = VP9PROFILE_PROFILE2;
     profiles.push_back(profile);
-    profile.profile = media::VP9PROFILE_PROFILE3;
+    profile.profile = VP9PROFILE_PROFILE3;
     profiles.push_back(profile);
   }
 
@@ -1647,13 +1642,13 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profiles.push_back(profile);
   }
 
-  capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
-      SUPPORTS_DEFERRED_INITIALIZATION;
+  capabilities.flags =
+      VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION;
   if (UseDeferredRenderingStrategy(gpu_preferences)) {
-    capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
+    capabilities.flags |= VideoDecodeAccelerator::Capabilities::
         NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
-    if (media::MediaCodecUtil::IsSurfaceViewOutputSupported()) {
-      capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
+    if (MediaCodecUtil::IsSurfaceViewOutputSupported()) {
+      capabilities.flags |= VideoDecodeAccelerator::Capabilities::
           SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
     }
   }

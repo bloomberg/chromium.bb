@@ -59,8 +59,8 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // Return true when successful, false otherwise.
     virtual bool SubmitDecode(
         const scoped_refptr<VP9Picture>& pic,
-        const media::Vp9Segmentation& seg,
-        const media::Vp9LoopFilter& lf,
+        const Vp9Segmentation& seg,
+        const Vp9LoopFilter& lf,
         const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) = 0;
 
     // Schedule output (display) of |pic|.
@@ -82,7 +82,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   VP9Decoder(VP9Accelerator* accelerator);
   ~VP9Decoder() override;
 
-  // media::AcceleratedVideoDecoder implementation.
+  // AcceleratedVideoDecoder implementation.
   void SetStream(const uint8_t* ptr, size_t size) override;
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
@@ -113,7 +113,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   State state_;
 
   // Current frame header to be used in decoding the next picture.
-  std::unique_ptr<media::Vp9FrameHeader> curr_frame_hdr_;
+  std::unique_ptr<Vp9FrameHeader> curr_frame_hdr_;
 
   // Reference frames currently in use.
   std::vector<scoped_refptr<VP9Picture>> ref_frames_;
@@ -121,7 +121,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   // Current coded resolution.
   gfx::Size pic_size_;
 
-  media::Vp9Parser parser_;
+  Vp9Parser parser_;
 
   // VP9Accelerator instance owned by the client.
   VP9Accelerator* accelerator_;

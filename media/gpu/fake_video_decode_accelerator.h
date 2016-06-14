@@ -21,7 +21,7 @@
 namespace media {
 
 class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator {
  public:
   FakeVideoDecodeAccelerator(
       const gfx::Size& size,
@@ -29,9 +29,8 @@ class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
   ~FakeVideoDecodeAccelerator() override;
 
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;

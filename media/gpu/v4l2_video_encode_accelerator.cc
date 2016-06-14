@@ -80,7 +80,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     const scoped_refptr<V4L2Device>& device)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       output_buffer_byte_size_(0),
-      device_input_format_(media::PIXEL_FORMAT_UNKNOWN),
+      device_input_format_(PIXEL_FORMAT_UNKNOWN),
       input_planes_count_(0),
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
@@ -106,14 +106,13 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
   DestroyOutputBuffers();
 }
 
-bool V4L2VideoEncodeAccelerator::Initialize(
-    media::VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
-    Client* client) {
+bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
+                                            const gfx::Size& input_visible_size,
+                                            VideoCodecProfile output_profile,
+                                            uint32_t initial_bitrate,
+                                            Client* client) {
   DVLOG(3) << __func__
-           << ": input_format=" << media::VideoPixelFormatToString(input_format)
+           << ": input_format=" << VideoPixelFormatToString(input_format)
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
@@ -143,7 +142,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 
   if (input_format != device_input_format_) {
     DVLOG(1) << "Input format not supported by the HW, will convert to "
-             << media::VideoPixelFormatToString(device_input_format_);
+             << VideoPixelFormatToString(device_input_format_);
 
     scoped_refptr<V4L2Device> device =
         V4L2Device::Create(V4L2Device::kImageProcessor);
@@ -220,9 +219,8 @@ void V4L2VideoEncodeAccelerator::ImageProcessorError() {
   NOTIFY_ERROR(kPlatformFailureError);
 }
 
-void V4L2VideoEncodeAccelerator::Encode(
-    const scoped_refptr<media::VideoFrame>& frame,
-    bool force_keyframe) {
+void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+                                        bool force_keyframe) {
   DVLOG(3) << "Encode(): force_keyframe=" << force_keyframe;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -251,7 +249,7 @@ void V4L2VideoEncodeAccelerator::Encode(
 }
 
 void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const media::BitstreamBuffer& buffer) {
+    const BitstreamBuffer& buffer) {
   DVLOG(3) << "UseOutputBitstreamBuffer(): id=" << buffer.id();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -319,7 +317,7 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   delete this;
 }
 
-media::VideoEncodeAccelerator::SupportedProfiles
+VideoEncodeAccelerator::SupportedProfiles
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
   SupportedProfile profile;
@@ -335,21 +333,21 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
                                     &profile.max_resolution);
     switch (fmtdesc.pixelformat) {
       case V4L2_PIX_FMT_H264:
-        profile.profile = media::H264PROFILE_MAIN;
+        profile.profile = H264PROFILE_MAIN;
         profiles.push_back(profile);
         break;
       case V4L2_PIX_FMT_VP8:
-        profile.profile = media::VP8PROFILE_ANY;
+        profile.profile = VP8PROFILE_ANY;
         profiles.push_back(profile);
         break;
       case V4L2_PIX_FMT_VP9:
-        profile.profile = media::VP9PROFILE_PROFILE0;
+        profile.profile = VP9PROFILE_PROFILE0;
         profiles.push_back(profile);
-        profile.profile = media::VP9PROFILE_PROFILE1;
+        profile.profile = VP9PROFILE_PROFILE1;
         profiles.push_back(profile);
-        profile.profile = media::VP9PROFILE_PROFILE2;
+        profile.profile = VP9PROFILE_PROFILE2;
         profiles.push_back(profile);
-        profile.profile = media::VP9PROFILE_PROFILE3;
+        profile.profile = VP9PROFILE_PROFILE3;
         profiles.push_back(profile);
         break;
     }
@@ -374,15 +372,14 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
   for (auto& fd : scoped_fds) {
     fds.push_back(fd.get());
   }
-  scoped_refptr<media::VideoFrame> output_frame =
-      media::VideoFrame::WrapExternalDmabufs(
-          device_input_format_, image_processor_->output_allocated_size(),
-          gfx::Rect(visible_size_), visible_size_, fds, timestamp);
+  scoped_refptr<VideoFrame> output_frame = VideoFrame::WrapExternalDmabufs(
+      device_input_format_, image_processor_->output_allocated_size(),
+      gfx::Rect(visible_size_), visible_size_, fds, timestamp);
   if (!output_frame) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }
-  output_frame->AddDestructionObserver(media::BindToCurrentLoop(
+  output_frame->AddDestructionObserver(BindToCurrentLoop(
       base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,
                  weak_this_, output_buffer_index)));
 
@@ -405,7 +402,7 @@ void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
 }
 
 void V4L2VideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DVLOG(3) << "EncodeTask(): force_keyframe=" << force_keyframe;
   DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
@@ -684,7 +681,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DCHECK(!encoder_input_queue_.empty());
 
   // Enqueue an input (VIDEO_OUTPUT) buffer.
-  scoped_refptr<media::VideoFrame> frame = encoder_input_queue_.front();
+  scoped_refptr<VideoFrame> frame = encoder_input_queue_.front();
   const int index = free_input_buffers_.back();
   InputRecord& input_record = input_buffer_map_[index];
   DCHECK(!input_record.at_device);
@@ -703,7 +700,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DCHECK_EQ(device_input_format_, frame->format());
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
-        media::VideoFrame::PlaneSize(frame->format(), i, input_allocated_size_)
+        VideoFrame::PlaneSize(frame->format(), i, input_allocated_size_)
             .GetArea());
 
     switch (input_memory_type_) {
@@ -923,7 +920,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 }
 
 bool V4L2VideoEncodeAccelerator::SetOutputFormat(
-    media::VideoCodecProfile output_profile) {
+    VideoCodecProfile output_profile) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
@@ -957,13 +954,13 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
 }
 
 bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
-    media::VideoPixelFormat input_format) {
+    VideoPixelFormat input_format) {
   DVLOG(3) << "NegotiateInputFormat()";
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
 
-  device_input_format_ = media::PIXEL_FORMAT_UNKNOWN;
+  device_input_format_ = PIXEL_FORMAT_UNKNOWN;
   input_planes_count_ = 0;
 
   uint32_t input_format_fourcc =
@@ -973,7 +970,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     return false;
   }
 
-  size_t input_planes_count = media::VideoFrame::NumPlanes(input_format);
+  size_t input_planes_count = VideoFrame::NumPlanes(input_format);
   DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
 
   // First see if we the device can use the provided input_format directly.
@@ -989,12 +986,12 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     input_format_fourcc = device_->PreferredInputFormat();
     input_format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
-    if (input_format == media::PIXEL_FORMAT_UNKNOWN) {
+    if (input_format == PIXEL_FORMAT_UNKNOWN) {
       LOG(ERROR) << "Unsupported input format" << input_format_fourcc;
       return false;
     }
 
-    input_planes_count = media::VideoFrame::NumPlanes(input_format);
+    input_planes_count = VideoFrame::NumPlanes(input_format);
     DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
 
     // Device might have adjusted parameters, reset them along with the format.
@@ -1022,9 +1019,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   return true;
 }
 
-bool V4L2VideoEncodeAccelerator::SetFormats(
-    media::VideoPixelFormat input_format,
-    media::VideoCodecProfile output_profile) {
+bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
+                                            VideoCodecProfile output_profile) {
   DVLOG(3) << "SetFormats()";
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);

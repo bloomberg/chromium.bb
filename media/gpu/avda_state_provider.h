@@ -31,7 +31,7 @@ class AVDAStateProvider {
   virtual const base::ThreadChecker& ThreadChecker() const = 0;
   virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
   virtual gpu::gles2::TextureRef* GetTextureForPicture(
-      const media::PictureBuffer& picture_buffer) = 0;
+      const PictureBuffer& picture_buffer) = 0;
 
   // Create a SurfaceTexture and attach a new gl texture to it. |*service_id|
   // is set to the created texture id.
@@ -42,7 +42,7 @@ class AVDAStateProvider {
   // This will post NotifyError(), and transition to the error state.
   // It is meant to be called from the RETURN_ON_FAILURE macro.
   virtual void PostError(const ::tracked_objects::Location& from_here,
-                         media::VideoDecodeAccelerator::Error error) = 0;
+                         VideoDecodeAccelerator::Error error) = 0;
 
  protected:
   ~AVDAStateProvider() = default;

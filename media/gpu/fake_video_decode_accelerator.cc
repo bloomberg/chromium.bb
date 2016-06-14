@@ -28,7 +28,7 @@ static const uint32_t kDefaultTextureTarget = GL_TEXTURE_2D;
 // Must also be an even number as otherwise there won't be the same amount of
 // white and black frames.
 static const unsigned int kNumBuffers =
-    media::limits::kMaxVideoFrames + (media::limits::kMaxVideoFrames & 1u);
+    limits::kMaxVideoFrames + (limits::kMaxVideoFrames & 1u);
 
 FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
     const gfx::Size& size,
@@ -45,7 +45,7 @@ FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() {}
 bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  if (config.profile == media::VIDEO_CODEC_PROFILE_UNKNOWN) {
+  if (config.profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
     LOG(ERROR) << "unknown codec profile";
     return false;
   }
@@ -63,7 +63,7 @@ bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
 }
 
 void FakeVideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   // We won't really read from the bitstream_buffer, close the handle.
   if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
     base::SharedMemory::CloseHandle(bitstream_buffer.handle());
@@ -83,7 +83,7 @@ void FakeVideoDecodeAccelerator::Decode(
 
 // Similar to UseOutputBitstreamBuffer for the encode accelerator.
 void FakeVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DCHECK(buffers.size() == kNumBuffers);
   DCHECK(!(buffers.size() % 2));
 
@@ -169,8 +169,8 @@ void FakeVideoDecodeAccelerator::DoPictureReady() {
     int buffer_id = free_output_buffers_.front();
     free_output_buffers_.pop();
 
-    const media::Picture picture = media::Picture(
-        buffer_id, bitstream_id, gfx::Rect(frame_buffer_size_), false);
+    const Picture picture =
+        Picture(buffer_id, bitstream_id, gfx::Rect(frame_buffer_size_), false);
     client_->PictureReady(picture);
     // Bitstream no longer needed.
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);

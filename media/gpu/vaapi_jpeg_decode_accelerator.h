@@ -34,16 +34,16 @@ namespace media {
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
-    : public media::JpegDecodeAccelerator {
+    : public JpegDecodeAccelerator {
  public:
   VaapiJpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~VaapiJpegDecodeAccelerator() override;
 
-  // media::JpegDecodeAccelerator implementation.
-  bool Initialize(media::JpegDecodeAccelerator::Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<media::VideoFrame>& video_frame) override;
+  // JpegDecodeAccelerator implementation.
+  bool Initialize(JpegDecodeAccelerator::Client* client) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer,
+              const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
  private:
@@ -52,12 +52,12 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   struct DecodeRequest {
     DecodeRequest(int32_t bitstream_buffer_id,
                   std::unique_ptr<SharedMemoryRegion> shm,
-                  const scoped_refptr<media::VideoFrame>& video_frame);
+                  const scoped_refptr<VideoFrame>& video_frame);
     ~DecodeRequest();
 
     int32_t bitstream_buffer_id;
     std::unique_ptr<SharedMemoryRegion> shm;
-    scoped_refptr<media::VideoFrame> video_frame;
+    scoped_refptr<VideoFrame> video_frame;
   };
 
   // Notifies the client that an error has occurred and decoding cannot
@@ -74,7 +74,7 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   // client for output.
   bool OutputPicture(VASurfaceID va_surface_id,
                      int32_t input_buffer_id,
-                     const scoped_refptr<media::VideoFrame>& video_frame);
+                     const scoped_refptr<VideoFrame>& video_frame);
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -55,7 +55,7 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
     return kRanOutOfStreamData;
 
   if (!curr_frame_hdr_) {
-    curr_frame_hdr_.reset(new media::Vp8FrameHeader());
+    curr_frame_hdr_.reset(new Vp8FrameHeader());
     if (!parser_.ParseFrame(curr_frame_start_, frame_size_,
                             curr_frame_hdr_.get())) {
       DVLOG(1) << "Error during decode";
@@ -116,12 +116,12 @@ void VP8Decoder::RefreshReferenceFrames() {
     golden_frame_ = curr_pic_;
   } else {
     switch (curr_frame_hdr_->copy_buffer_to_golden) {
-      case media::Vp8FrameHeader::COPY_LAST_TO_GOLDEN:
+      case Vp8FrameHeader::COPY_LAST_TO_GOLDEN:
         DCHECK(last_frame_);
         golden_frame_ = last_frame_;
         break;
 
-      case media::Vp8FrameHeader::COPY_ALT_TO_GOLDEN:
+      case Vp8FrameHeader::COPY_ALT_TO_GOLDEN:
         DCHECK(alt_frame_);
         golden_frame_ = alt_frame_;
         break;
@@ -132,12 +132,12 @@ void VP8Decoder::RefreshReferenceFrames() {
     alt_frame_ = curr_pic_;
   } else {
     switch (curr_frame_hdr_->copy_buffer_to_alternate) {
-      case media::Vp8FrameHeader::COPY_LAST_TO_ALT:
+      case Vp8FrameHeader::COPY_LAST_TO_ALT:
         DCHECK(last_frame_);
         alt_frame_ = last_frame_;
         break;
 
-      case media::Vp8FrameHeader::COPY_GOLDEN_TO_ALT:
+      case Vp8FrameHeader::COPY_GOLDEN_TO_ALT:
         DCHECK(curr_golden);
         alt_frame_ = curr_golden;
         break;
@@ -187,7 +187,7 @@ gfx::Size VP8Decoder::GetPicSize() const {
 
 size_t VP8Decoder::GetRequiredNumOfPictures() const {
   const size_t kVP8NumFramesActive = 4;
-  const size_t kPicsInPipeline = media::limits::kMaxVideoFrames + 2;
+  const size_t kPicsInPipeline = limits::kMaxVideoFrames + 2;
   return kVP8NumFramesActive + kPicsInPipeline;
 }
 

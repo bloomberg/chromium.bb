@@ -53,8 +53,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // is expected to follow this call with one or more SubmitSlice() calls
     // before calling SubmitDecode().
     // Return true if successful.
-    virtual bool SubmitFrameMetadata(const media::H264SPS* sps,
-                                     const media::H264PPS* pps,
+    virtual bool SubmitFrameMetadata(const H264SPS* sps,
+                                     const H264PPS* pps,
                                      const H264DPB& dpb,
                                      const H264Picture::Vector& ref_pic_listp0,
                                      const H264Picture::Vector& ref_pic_listb0,
@@ -70,8 +70,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // This must be called one or more times per frame, before SubmitDecode().
     // Note that |data| does not have to remain valid after this call returns.
     // Return true if successful.
-    virtual bool SubmitSlice(const media::H264PPS* pps,
-                             const media::H264SliceHeader* slice_hdr,
+    virtual bool SubmitSlice(const H264PPS* pps,
+                             const H264SliceHeader* slice_hdr,
                              const H264Picture::Vector& ref_pic_list0,
                              const H264Picture::Vector& ref_pic_list1,
                              const scoped_refptr<H264Picture>& pic,
@@ -103,7 +103,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   H264Decoder(H264Accelerator* accelerator);
   ~H264Decoder() override;
 
-  // media::AcceleratedVideoDecoder implementation.
+  // AcceleratedVideoDecoder implementation.
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
   void SetStream(const uint8_t* ptr, size_t size) override;
@@ -119,7 +119,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // displaying and giving them back. +2 instead of +1 because of subjective
   // smoothness improvement during testing.
   enum {
-    kPicsInPipeline = media::limits::kMaxVideoFrames + 2,
+    kPicsInPipeline = limits::kMaxVideoFrames + 2,
     kMaxNumReqPictures = H264DPB::kDPBMaxSize + kPicsInPipeline,
   };
 
@@ -140,10 +140,10 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   bool ProcessCurrentSlice();
 
   // Return true if we need to start a new picture.
-  bool IsNewPrimaryCodedPicture(const media::H264SliceHeader* slice_hdr) const;
+  bool IsNewPrimaryCodedPicture(const H264SliceHeader* slice_hdr) const;
 
   // Initialize the current picture according to data in |slice_hdr|.
-  bool InitCurrPicture(const media::H264SliceHeader* slice_hdr);
+  bool InitCurrPicture(const H264SliceHeader* slice_hdr);
 
   // Initialize |pic| as a "non-existing" picture (see spec) with |frame_num|,
   // to be used for frame gap concealment.
@@ -157,19 +157,19 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // a picture with |frame_num|.
   void UpdatePicNums(int frame_num);
 
-  bool UpdateMaxNumReorderFrames(const media::H264SPS* sps);
+  bool UpdateMaxNumReorderFrames(const H264SPS* sps);
 
   // Prepare reference picture lists for the current frame.
-  void PrepareRefPicLists(const media::H264SliceHeader* slice_hdr);
+  void PrepareRefPicLists(const H264SliceHeader* slice_hdr);
   // Prepare reference picture lists for the given slice.
-  bool ModifyReferencePicLists(const media::H264SliceHeader* slice_hdr,
+  bool ModifyReferencePicLists(const H264SliceHeader* slice_hdr,
                                H264Picture::Vector* ref_pic_list0,
                                H264Picture::Vector* ref_pic_list1);
 
   // Construct initial reference picture lists for use in decoding of
   // P and B pictures (see 8.2.4 in spec).
-  void ConstructReferencePicListsP(const media::H264SliceHeader* slice_hdr);
-  void ConstructReferencePicListsB(const media::H264SliceHeader* slice_hdr);
+  void ConstructReferencePicListsP(const H264SliceHeader* slice_hdr);
+  void ConstructReferencePicListsB(const H264SliceHeader* slice_hdr);
 
   // Helper functions for reference list construction, per spec.
   int PicNumF(const scoped_refptr<H264Picture>& pic);
@@ -179,7 +179,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // specified in spec (8.2.4).
   //
   // |list| indicates list number and should be either 0 or 1.
-  bool ModifyReferencePicList(const media::H264SliceHeader* slice_hdr,
+  bool ModifyReferencePicList(const H264SliceHeader* slice_hdr,
                               int list,
                               H264Picture::Vector* ref_pic_listx);
 
@@ -195,7 +195,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   bool HandleFrameNumGap(int frame_num);
 
   // Start processing a new frame.
-  bool StartNewFrame(const media::H264SliceHeader* slice_hdr);
+  bool StartNewFrame(const H264SliceHeader* slice_hdr);
 
   // All data for a frame received, process it and decode.
   bool FinishPrevFrameIfPresent();
@@ -225,7 +225,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   State state_;
 
   // Parser in use.
-  media::H264Parser parser_;
+  H264Parser parser_;
 
   // DPB in use.
   H264DPB dpb_;
@@ -261,8 +261,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   int curr_pps_id_;
 
   // Current NALU and slice header being processed.
-  std::unique_ptr<media::H264NALU> curr_nalu_;
-  std::unique_ptr<media::H264SliceHeader> curr_slice_hdr_;
+  std::unique_ptr<H264NALU> curr_nalu_;
+  std::unique_ptr<H264SliceHeader> curr_slice_hdr_;
 
   // Output picture size.
   gfx::Size pic_size_;

@@ -77,16 +77,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // errors to clients via method return values.
   static scoped_refptr<VaapiWrapper> CreateForVideoCodec(
       CodecMode mode,
-      media::VideoCodecProfile profile,
+      VideoCodecProfile profile,
       const base::Closure& report_error_to_uma_cb);
 
   // Return the supported video encode profiles.
-  static media::VideoEncodeAccelerator::SupportedProfiles
-  GetSupportedEncodeProfiles();
+  static VideoEncodeAccelerator::SupportedProfiles GetSupportedEncodeProfiles();
 
   // Return the supported video decode profiles.
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedDecodeProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles();
 
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
@@ -189,7 +187,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   void ReturnVaImage(VAImage* image);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
-  bool UploadVideoFrameToSurface(const scoped_refptr<media::VideoFrame>& frame,
+  bool UploadVideoFrameToSurface(const scoped_refptr<VideoFrame>& frame,
                                  VASurfaceID va_surface_id);
 
   // Create a buffer of |size| bytes to be used as encode output.
@@ -344,7 +342,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Map VideoCodecProfile enum values to VaProfile values. This function
   // includes a workaround for crbug.com/345569. If va_profile is h264 baseline
   // and it is not supported, we try constrained baseline.
-  static VAProfile ProfileToVAProfile(media::VideoCodecProfile profile,
+  static VAProfile ProfileToVAProfile(VideoCodecProfile profile,
                                       CodecMode mode);
 
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for

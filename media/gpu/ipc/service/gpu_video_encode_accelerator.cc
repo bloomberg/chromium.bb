@@ -59,7 +59,7 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
     gpu::GpuCommandBufferStub* stub)
     : host_route_id_(host_route_id),
       stub_(stub),
-      input_format_(media::PIXEL_FORMAT_UNKNOWN),
+      input_format_(PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0),
       weak_this_factory_(this) {
   stub_->AddDestructionObserver(this);
@@ -73,11 +73,10 @@ GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
   DCHECK(!encoder_);
 }
 
-bool GpuVideoEncodeAccelerator::Initialize(
-    media::VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
-    uint32_t initial_bitrate) {
+bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
+                                           const gfx::Size& input_visible_size,
+                                           VideoCodecProfile output_profile,
+                                           uint32_t initial_bitrate) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
            << "input_format=" << input_format
            << ", input_visible_size=" << input_visible_size.ToString()
@@ -91,9 +90,9 @@ bool GpuVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (input_visible_size.width() > media::limits::kMaxDimension ||
-      input_visible_size.height() > media::limits::kMaxDimension ||
-      input_visible_size.GetArea() > media::limits::kMaxCanvas) {
+  if (input_visible_size.width() > limits::kMaxDimension ||
+      input_visible_size.height() > limits::kMaxDimension ||
+      input_visible_size.GetArea() > limits::kMaxCanvas) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
                 << "input_visible_size " << input_visible_size.ToString()
                 << " too large";
@@ -158,7 +157,7 @@ void GpuVideoEncodeAccelerator::BitstreamBufferReady(
 }
 
 void GpuVideoEncodeAccelerator::NotifyError(
-    media::VideoEncodeAccelerator::Error error) {
+    VideoEncodeAccelerator::Error error) {
   Send(new AcceleratedVideoEncoderHostMsg_NotifyError(host_route_id_, error));
 }
 
@@ -174,22 +173,20 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
 gpu::VideoEncodeAcceleratorSupportedProfiles
 GpuVideoEncodeAccelerator::GetSupportedProfiles(
     const gpu::GpuPreferences& gpu_preferences) {
-  media::VideoEncodeAccelerator::SupportedProfiles profiles;
+  VideoEncodeAccelerator::SupportedProfiles profiles;
   std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps =
       CreateVEAFps(gpu_preferences);
 
   for (size_t i = 0; i < create_vea_fps.size(); ++i) {
-    std::unique_ptr<media::VideoEncodeAccelerator> encoder =
-        (*create_vea_fps[i])();
+    std::unique_ptr<VideoEncodeAccelerator> encoder = (*create_vea_fps[i])();
     if (!encoder)
       continue;
-    media::VideoEncodeAccelerator::SupportedProfiles vea_profiles =
+    VideoEncodeAccelerator::SupportedProfiles vea_profiles =
         encoder->GetSupportedProfiles();
-    media::GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(vea_profiles,
-                                                               &profiles);
+    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(vea_profiles,
+                                                        &profiles);
   }
-  return media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
-      profiles);
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(profiles);
 }
 
 // static
@@ -216,9 +213,9 @@ GpuVideoEncodeAccelerator::CreateVEAFps(
 
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 // static
-std::unique_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateV4L2VEA() {
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
@@ -228,27 +225,27 @@ GpuVideoEncodeAccelerator::CreateV4L2VEA() {
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 // static
-std::unique_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVaapiVEA() {
-  return base::WrapUnique<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<VideoEncodeAccelerator>(
       new VaapiVideoEncodeAccelerator());
 }
 #endif
 
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 // static
-std::unique_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateAndroidVEA() {
-  return base::WrapUnique<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<VideoEncodeAccelerator>(
       new AndroidVideoEncodeAccelerator());
 }
 #endif
 
 #if defined(OS_MACOSX)
 // static
-std::unique_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVTVEA() {
-  return base::WrapUnique<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<VideoEncodeAccelerator>(
       new VTVideoEncodeAccelerator());
 }
 #endif
@@ -258,7 +255,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
   DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode: frame_id = "
            << params.frame_id << ", buffer_size=" << params.buffer_size
            << ", force_keyframe=" << params.force_keyframe;
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, input_format_);
+  DCHECK_EQ(PIXEL_FORMAT_I420, input_format_);
 
   // Wrap into a SharedMemory in the beginning, so that |params.buffer_handle|
   // is cleaned properly in case of an early return.
@@ -271,7 +268,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
   if (params.frame_id < 0) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): invalid "
                 << "frame_id=" << params.frame_id;
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
@@ -285,31 +282,30 @@ void GpuVideoEncodeAccelerator::OnEncode(
   if (!map_offset.IsValid() || !map_size.IsValid()) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode():"
                 << " invalid (buffer_offset,buffer_size)";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                 << "could not map frame_id=" << params.frame_id;
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
   uint8_t* shm_memory =
       reinterpret_cast<uint8_t*>(shm->memory()) + aligned_offset;
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          input_format_, input_coded_size_, gfx::Rect(input_visible_size_),
-          input_visible_size_, shm_memory, params.buffer_size,
-          params.buffer_handle, params.buffer_offset, params.timestamp);
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalSharedMemory(
+      input_format_, input_coded_size_, gfx::Rect(input_visible_size_),
+      input_visible_size_, shm_memory, params.buffer_size, params.buffer_handle,
+      params.buffer_offset, params.timestamp);
   if (!frame) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                 << "could not create a frame";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
-  frame->AddDestructionObserver(media::BindToCurrentLoop(base::Bind(
+  frame->AddDestructionObserver(BindToCurrentLoop(base::Bind(
       &GpuVideoEncodeAccelerator::EncodeFrameFinished,
       weak_this_factory_.GetWeakPtr(), params.frame_id, base::Passed(&shm))));
   encoder_->Encode(frame, params.force_keyframe);
@@ -337,17 +333,17 @@ void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
   if (buffer_id < 0) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
                 << "invalid buffer_id=" << buffer_id;
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   if (buffer_size < output_buffer_size_) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
                 << "buffer too small for buffer_id=" << buffer_id;
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   encoder_->UseOutputBitstreamBuffer(
-      media::BitstreamBuffer(buffer_id, buffer_handle, buffer_size));
+      BitstreamBuffer(buffer_id, buffer_handle, buffer_size));
 }
 
 void GpuVideoEncodeAccelerator::OnDestroy() {

@@ -58,7 +58,7 @@ class H264Picture : public base::RefCounted<H264Picture> {
   int frame_num_wrap;
   int long_term_frame_idx;
 
-  media::H264SliceHeader::Type type;
+  H264SliceHeader::Type type;
   int nal_ref_idc;
   bool idr;        // IDR picture?
   int idr_pic_id;  // Valid only if idr == true.
@@ -79,8 +79,7 @@ class H264Picture : public base::RefCounted<H264Picture> {
   // memory management after finishing this picture.
   bool long_term_reference_flag;
   bool adaptive_ref_pic_marking_mode_flag;
-  media::H264DecRefPicMarking
-      ref_pic_marking[media::H264SliceHeader::kRefListSize];
+  H264DecRefPicMarking ref_pic_marking[H264SliceHeader::kRefListSize];
 
   // Position in DPB (i.e. index in DPB).
   int dpb_position;

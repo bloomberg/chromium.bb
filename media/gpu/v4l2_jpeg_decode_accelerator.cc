@@ -113,8 +113,8 @@ V4L2JpegDecodeAccelerator::BufferRecord::BufferRecord()
 V4L2JpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
 
 V4L2JpegDecodeAccelerator::JobRecord::JobRecord(
-    const media::BitstreamBuffer& bitstream_buffer,
-    scoped_refptr<media::VideoFrame> video_frame)
+    const BitstreamBuffer& bitstream_buffer,
+    scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
       shm(bitstream_buffer, true),
       out_frame(video_frame) {}
@@ -226,8 +226,8 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
 }
 
 void V4L2JpegDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    const BitstreamBuffer& bitstream_buffer,
+    const scoped_refptr<VideoFrame>& video_frame) {
   DVLOG(1) << "Decode(): input_id=" << bitstream_buffer.id()
            << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -240,7 +240,7 @@ void V4L2JpegDecodeAccelerator::Decode(
     return;
   }
 
-  if (video_frame->format() != media::PIXEL_FORMAT_I420) {
+  if (video_frame->format() != PIXEL_FORMAT_I420) {
     PostNotifyError(bitstream_buffer.id(), UNSUPPORTED_JPEG);
     return;
   }
@@ -388,8 +388,8 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   DCHECK(!running_jobs_.empty());
   linked_ptr<JobRecord> job_record = running_jobs_.front();
 
-  size_t frame_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, job_record->out_frame->coded_size());
+  size_t frame_size = VideoFrame::AllocationSize(
+      PIXEL_FORMAT_I420, job_record->out_frame->coded_size());
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -413,7 +413,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   DCHECK(output_buffer_map_.empty());
   output_buffer_map_.resize(reqbufs.count);
 
-  media::VideoPixelFormat output_format =
+  VideoPixelFormat output_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
 
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
@@ -427,7 +427,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
 
     DCHECK_GE(buffer.length,
-              media::VideoFrame::AllocationSize(
+              VideoFrame::AllocationSize(
                   output_format,
                   gfx::Size(format.fmt.pix.width, format.fmt.pix.height)));
 
@@ -616,16 +616,16 @@ void V4L2JpegDecodeAccelerator::EnqueueOutput() {
 static bool CopyOutputImage(const uint32_t src_pixelformat,
                             const void* src_addr,
                             const gfx::Size& src_coded_size,
-                            const scoped_refptr<media::VideoFrame>& dst_frame) {
-  media::VideoPixelFormat format =
+                            const scoped_refptr<VideoFrame>& dst_frame) {
+  VideoPixelFormat format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(src_pixelformat);
-  size_t src_size = media::VideoFrame::AllocationSize(format, src_coded_size);
-  uint8_t* dst_y = dst_frame->data(media::VideoFrame::kYPlane);
-  uint8_t* dst_u = dst_frame->data(media::VideoFrame::kUPlane);
-  uint8_t* dst_v = dst_frame->data(media::VideoFrame::kVPlane);
-  size_t dst_y_stride = dst_frame->stride(media::VideoFrame::kYPlane);
-  size_t dst_u_stride = dst_frame->stride(media::VideoFrame::kUPlane);
-  size_t dst_v_stride = dst_frame->stride(media::VideoFrame::kVPlane);
+  size_t src_size = VideoFrame::AllocationSize(format, src_coded_size);
+  uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
+  uint8_t* dst_u = dst_frame->data(VideoFrame::kUPlane);
+  uint8_t* dst_v = dst_frame->data(VideoFrame::kVPlane);
+  size_t dst_y_stride = dst_frame->stride(VideoFrame::kYPlane);
+  size_t dst_u_stride = dst_frame->stride(VideoFrame::kUPlane);
+  size_t dst_v_stride = dst_frame->stride(VideoFrame::kVPlane);
 
   // If the source format is I420, ConvertToI420 will simply copy the frame.
   if (libyuv::ConvertToI420(static_cast<uint8_t*>(const_cast<void*>(src_addr)),
@@ -746,7 +746,7 @@ static bool AddHuffmanTable(const void* input_ptr,
   uint8_t marker1, marker2;
   READ_U8_OR_RETURN_FALSE(reader, &marker1);
   READ_U8_OR_RETURN_FALSE(reader, &marker2);
-  if (marker1 != media::JPEG_MARKER_PREFIX || marker2 != media::JPEG_SOI) {
+  if (marker1 != JPEG_MARKER_PREFIX || marker2 != JPEG_SOI) {
     DLOG(ERROR) << __func__ << ": The input is not a Jpeg";
     return false;
   }
@@ -758,13 +758,13 @@ static bool AddHuffmanTable(const void* input_ptr,
   while (!has_marker_sos && !has_marker_dht) {
     const char* start_addr = reader.ptr();
     READ_U8_OR_RETURN_FALSE(reader, &marker1);
-    if (marker1 != media::JPEG_MARKER_PREFIX) {
+    if (marker1 != JPEG_MARKER_PREFIX) {
       DLOG(ERROR) << __func__ << ": marker1 != 0xFF";
       return false;
     }
     do {
       READ_U8_OR_RETURN_FALSE(reader, &marker2);
-    } while (marker2 == media::JPEG_MARKER_PREFIX);  // skip fill bytes
+    } while (marker2 == JPEG_MARKER_PREFIX);  // skip fill bytes
 
     uint16_t size;
     READ_U16_OR_RETURN_FALSE(reader, &size);
@@ -777,11 +777,11 @@ static bool AddHuffmanTable(const void* input_ptr,
     size -= sizeof(size);
 
     switch (marker2) {
-      case media::JPEG_DHT: {
+      case JPEG_DHT: {
         has_marker_dht = true;
         break;
       }
-      case media::JPEG_SOS: {
+      case JPEG_SOS: {
         if (!has_marker_dht) {
           memcpy(static_cast<uint8_t*>(output_ptr) + current_offset,
                  kDefaultDhtSeg, sizeof(kDefaultDhtSeg));

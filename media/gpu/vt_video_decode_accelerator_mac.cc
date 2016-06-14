@@ -43,16 +43,16 @@ using media_gpu::StubPathMap;
 namespace media {
 
 // Only H.264 with 4:2:0 chroma sampling is supported.
-static const media::VideoCodecProfile kSupportedProfiles[] = {
-    media::H264PROFILE_BASELINE, media::H264PROFILE_MAIN,
-    media::H264PROFILE_EXTENDED, media::H264PROFILE_HIGH,
+static const VideoCodecProfile kSupportedProfiles[] = {
+    H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_EXTENDED,
+    H264PROFILE_HIGH,
     // TODO(hubbe): Try to re-enable this again somehow. Currently it seems
     // that some codecs fail to check the profile during initialization and
     // then fail on the first frame decode, which currently results in a
     // pipeline failure.
-    // media::H264PROFILE_HIGH10PROFILE,
-    media::H264PROFILE_SCALABLEBASELINE, media::H264PROFILE_SCALABLEHIGH,
-    media::H264PROFILE_STEREOHIGH, media::H264PROFILE_MULTIVIEWHIGH,
+    // H264PROFILE_HIGH10PROFILE,
+    H264PROFILE_SCALABLEBASELINE, H264PROFILE_SCALABLEHIGH,
+    H264PROFILE_STEREOHIGH, H264PROFILE_MULTIVIEWHIGH,
 };
 
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
@@ -62,7 +62,7 @@ static const int kNALUHeaderLength = 4;
 // that we can bind decoded frames to. We need enough to satisfy preroll, and
 // enough to avoid unnecessary stalling, but no more than that. The resource
 // requirements are low, as we don't need the textures to be backed by storage.
-static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
+static const int kNumPictureBuffers = limits::kMaxVideoFrames + 1;
 
 // Maximum number of frames to queue for reordering before we stop asking for
 // more. (NotifyEndOfBitstreamBuffer() is called when frames are moved into the
@@ -461,9 +461,8 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   return true;
 }
 
-void VTVideoDecodeAccelerator::DecodeTask(
-    const media::BitstreamBuffer& bitstream,
-    Frame* frame) {
+void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
+                                          Frame* frame) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   // Map the bitstream buffer.
@@ -486,32 +485,32 @@ void VTVideoDecodeAccelerator::DecodeTask(
   std::vector<uint8_t> pps;
   bool has_slice = false;
   size_t data_size = 0;
-  std::vector<media::H264NALU> nalus;
+  std::vector<H264NALU> nalus;
   parser_.SetStream(buf, memory.size());
-  media::H264NALU nalu;
+  H264NALU nalu;
   while (true) {
-    media::H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
-    if (result == media::H264Parser::kEOStream)
+    H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
+    if (result == H264Parser::kEOStream)
       break;
-    if (result == media::H264Parser::kUnsupportedStream) {
+    if (result == H264Parser::kUnsupportedStream) {
       DLOG(ERROR) << "Unsupported H.264 stream";
       NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
       return;
     }
-    if (result != media::H264Parser::kOk) {
+    if (result != H264Parser::kOk) {
       DLOG(ERROR) << "Failed to parse H.264 stream";
       NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
       return;
     }
     switch (nalu.nal_unit_type) {
-      case media::H264NALU::kSPS:
+      case H264NALU::kSPS:
         result = parser_.ParseSPS(&last_sps_id_);
-        if (result == media::H264Parser::kUnsupportedStream) {
+        if (result == H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported SPS";
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
           return;
         }
-        if (result != media::H264Parser::kOk) {
+        if (result != H264Parser::kOk) {
           DLOG(ERROR) << "Could not parse SPS";
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
@@ -520,19 +519,19 @@ void VTVideoDecodeAccelerator::DecodeTask(
         spsext.clear();
         break;
 
-      case media::H264NALU::kSPSExt:
+      case H264NALU::kSPSExt:
         // TODO(sandersd): Check that the previous NALU was an SPS.
         spsext.assign(nalu.data, nalu.data + nalu.size);
         break;
 
-      case media::H264NALU::kPPS:
+      case H264NALU::kPPS:
         result = parser_.ParsePPS(&last_pps_id_);
-        if (result == media::H264Parser::kUnsupportedStream) {
+        if (result == H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported PPS";
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
           return;
         }
-        if (result != media::H264Parser::kOk) {
+        if (result != H264Parser::kOk) {
           DLOG(ERROR) << "Could not parse PPS";
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
@@ -540,16 +539,16 @@ void VTVideoDecodeAccelerator::DecodeTask(
         pps.assign(nalu.data, nalu.data + nalu.size);
         break;
 
-      case media::H264NALU::kSliceDataA:
-      case media::H264NALU::kSliceDataB:
-      case media::H264NALU::kSliceDataC:
-      case media::H264NALU::kNonIDRSlice:
-      case media::H264NALU::kIDRSlice:
+      case H264NALU::kSliceDataA:
+      case H264NALU::kSliceDataB:
+      case H264NALU::kSliceDataC:
+      case H264NALU::kNonIDRSlice:
+      case H264NALU::kIDRSlice:
         // Compute the |pic_order_cnt| for the picture from the first slice.
         if (!has_slice) {
           // Verify that we are not trying to decode a slice without an IDR.
           if (waiting_for_idr_) {
-            if (nalu.nal_unit_type == media::H264NALU::kIDRSlice) {
+            if (nalu.nal_unit_type == H264NALU::kIDRSlice) {
               waiting_for_idr_ = false;
             } else {
               // We can't compute anything yet, bail on this frame.
@@ -558,14 +557,14 @@ void VTVideoDecodeAccelerator::DecodeTask(
             }
           }
 
-          media::H264SliceHeader slice_hdr;
+          H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
-          if (result == media::H264Parser::kUnsupportedStream) {
+          if (result == H264Parser::kUnsupportedStream) {
             DLOG(ERROR) << "Unsupported slice header";
             NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
             return;
           }
-          if (result != media::H264Parser::kOk) {
+          if (result != H264Parser::kOk) {
             DLOG(ERROR) << "Could not parse slice header";
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
@@ -574,8 +573,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
           // TODO(sandersd): Maintain a cache of configurations and reconfigure
           // when a slice references a new config.
           DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
-          const media::H264PPS* pps =
-              parser_.GetPPS(slice_hdr.pic_parameter_set_id);
+          const H264PPS* pps = parser_.GetPPS(slice_hdr.pic_parameter_set_id);
           if (!pps) {
             DLOG(ERROR) << "Mising PPS referenced by slice";
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
@@ -583,7 +581,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
           }
 
           DCHECK_EQ(pps->seq_parameter_set_id, last_sps_id_);
-          const media::H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
+          const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
           if (!sps) {
             DLOG(ERROR) << "Mising SPS referenced by PPS";
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
@@ -596,7 +594,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
             return;
           }
 
-          if (nalu.nal_unit_type == media::H264NALU::kIDRSlice)
+          if (nalu.nal_unit_type == H264NALU::kIDRSlice)
             frame->is_idr = true;
 
           if (sps->vui_parameters_present_flag &&
@@ -709,7 +707,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
   // Copy NALU data into the CMBlockBuffer, inserting length headers.
   size_t offset = 0;
   for (size_t i = 0; i < nalus.size(); i++) {
-    media::H264NALU& nalu = nalus[i];
+    H264NALU& nalu = nalus[i];
     uint32_t header = base::HostToNet32(static_cast<uint32_t>(nalu.size));
     status =
         CMBlockBufferReplaceDataBytes(&header, data, offset, kNALUHeaderLength);
@@ -824,7 +822,7 @@ void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
   ProcessWorkQueues();
 }
 
-void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
+void VTVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   if (bitstream.id() < 0) {
     DLOG(ERROR) << "Invalid bitstream, id: " << bitstream.id();
@@ -843,10 +841,10 @@ void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
 }
 
 void VTVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& pictures) {
+    const std::vector<PictureBuffer>& pictures) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
 
-  for (const media::PictureBuffer& picture : pictures) {
+  for (const PictureBuffer& picture : pictures) {
     DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
@@ -1063,8 +1061,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   // GpuVideoDecoder so that GpuVideoDecoder can use correct visible size in
   // resolution changed. We should find the correct API to get the real
   // coded size and fix it.
-  client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
-                                       gfx::Rect(frame.coded_size), true));
+  client_->PictureReady(Picture(picture_id, frame.bitstream_id,
+                                gfx::Rect(frame.coded_size), true));
   return true;
 }
 
@@ -1134,7 +1132,7 @@ bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 VTVideoDecodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
   for (const auto& supported_profile : kSupportedProfiles) {

@@ -226,15 +226,15 @@ V4L2SliceVideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
 }
 
 struct V4L2SliceVideoDecodeAccelerator::PictureRecord {
-  PictureRecord(bool cleared, const media::Picture& picture);
+  PictureRecord(bool cleared, const Picture& picture);
   ~PictureRecord();
   bool cleared;  // Whether the texture is cleared and safe to render from.
-  media::Picture picture;  // The decoded picture.
+  Picture picture;  // The decoded picture.
 };
 
 V4L2SliceVideoDecodeAccelerator::PictureRecord::PictureRecord(
     bool cleared,
-    const media::Picture& picture)
+    const Picture& picture)
     : cleared(cleared), picture(picture) {}
 
 V4L2SliceVideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
@@ -248,16 +248,16 @@ class V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
 
-  bool SubmitFrameMetadata(const media::H264SPS* sps,
-                           const media::H264PPS* pps,
+  bool SubmitFrameMetadata(const H264SPS* sps,
+                           const H264PPS* pps,
                            const H264DPB& dpb,
                            const H264Picture::Vector& ref_pic_listp0,
                            const H264Picture::Vector& ref_pic_listb0,
                            const H264Picture::Vector& ref_pic_listb1,
                            const scoped_refptr<H264Picture>& pic) override;
 
-  bool SubmitSlice(const media::H264PPS* pps,
-                   const media::H264SliceHeader* slice_hdr,
+  bool SubmitSlice(const H264PPS* pps,
+                   const H264SliceHeader* slice_hdr,
                    const H264Picture::Vector& ref_pic_list0,
                    const H264Picture::Vector& ref_pic_list1,
                    const scoped_refptr<H264Picture>& pic,
@@ -303,7 +303,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
 
   bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,
-                    const media::Vp8FrameHeader* frame_hdr,
+                    const Vp8FrameHeader* frame_hdr,
                     const scoped_refptr<VP8Picture>& last_frame,
                     const scoped_refptr<VP8Picture>& golden_frame,
                     const scoped_refptr<VP8Picture>& alt_frame) override;
@@ -392,7 +392,7 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       input_buffer_queued_count_(0),
       output_streamon_(false),
       output_buffer_queued_count_(0),
-      video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+      video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       output_format_fourcc_(0),
       state_(kUninitialized),
       output_mode_(Config::OutputMode::ALLOCATE),
@@ -470,12 +470,11 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   video_profile_ = config.profile;
 
-  if (video_profile_ >= media::H264PROFILE_MIN &&
-      video_profile_ <= media::H264PROFILE_MAX) {
+  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     h264_accelerator_.reset(new V4L2H264Accelerator(this));
     decoder_.reset(new H264Decoder(h264_accelerator_.get()));
-  } else if (video_profile_ >= media::VP8PROFILE_MIN &&
-             video_profile_ <= media::VP8PROFILE_MAX) {
+  } else if (video_profile_ >= VP8PROFILE_MIN &&
+             video_profile_ <= VP8PROFILE_MAX) {
     vp8_accelerator_.reset(new V4L2VP8Accelerator(this));
     decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
   } else {
@@ -1241,7 +1240,7 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 }
 
 void V4L2SliceVideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DVLOGF(3) << "input_id=" << bitstream_buffer.id()
             << ", size=" << bitstream_buffer.size();
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
@@ -1260,7 +1259,7 @@ void V4L2SliceVideoDecodeAccelerator::Decode(
 }
 
 void V4L2SliceVideoDecodeAccelerator::DecodeTask(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DVLOGF(3) << "input_id=" << bitstream_buffer.id()
             << " size=" << bitstream_buffer.size();
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1495,7 +1494,7 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -1506,7 +1505,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DVLOGF(3);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kAwaitingPictureBuffers);
@@ -2056,8 +2055,8 @@ void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::H264DPBToV4L2DPB(
 }
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
-    const media::H264SPS* sps,
-    const media::H264PPS* pps,
+    const H264SPS* sps,
+    const H264PPS* pps,
     const H264DPB& dpb,
     const H264Picture::Vector& ref_pic_listp0,
     const H264Picture::Vector& ref_pic_listb0,
@@ -2215,8 +2214,8 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
 }
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
-    const media::H264PPS* pps,
-    const media::H264SliceHeader* slice_hdr,
+    const H264PPS* pps,
+    const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
     const H264Picture::Vector& ref_pic_list1,
     const scoped_refptr<H264Picture>& pic,
@@ -2446,7 +2445,7 @@ V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::CreateVP8Picture() {
   } while (0)
 
 static void FillV4L2SegmentationHeader(
-    const media::Vp8SegmentationHeader& vp8_sgmnt_hdr,
+    const Vp8SegmentationHeader& vp8_sgmnt_hdr,
     struct v4l2_vp8_sgmnt_hdr* v4l2_sgmnt_hdr) {
 #define SET_V4L2_SGMNT_HDR_FLAG_IF(cond, flag) \
   v4l2_sgmnt_hdr->flags |= ((vp8_sgmnt_hdr.cond) ? (flag) : 0)
@@ -2468,7 +2467,7 @@ static void FillV4L2SegmentationHeader(
 }
 
 static void FillV4L2LoopfilterHeader(
-    const media::Vp8LoopFilterHeader& vp8_loopfilter_hdr,
+    const Vp8LoopFilterHeader& vp8_loopfilter_hdr,
     struct v4l2_vp8_loopfilter_hdr* v4l2_lf_hdr) {
 #define SET_V4L2_LF_HDR_FLAG_IF(cond, flag) \
   v4l2_lf_hdr->flags |= ((vp8_loopfilter_hdr.cond) ? (flag) : 0)
@@ -2490,7 +2489,7 @@ static void FillV4L2LoopfilterHeader(
 }
 
 static void FillV4L2QuantizationHeader(
-    const media::Vp8QuantizationHeader& vp8_quant_hdr,
+    const Vp8QuantizationHeader& vp8_quant_hdr,
     struct v4l2_vp8_quantization_hdr* v4l2_quant_hdr) {
   v4l2_quant_hdr->y_ac_qi = vp8_quant_hdr.y_ac_qi;
   v4l2_quant_hdr->y_dc_delta = vp8_quant_hdr.y_dc_delta;
@@ -2501,7 +2500,7 @@ static void FillV4L2QuantizationHeader(
 }
 
 static void FillV4L2EntropyHeader(
-    const media::Vp8EntropyHeader& vp8_entropy_hdr,
+    const Vp8EntropyHeader& vp8_entropy_hdr,
     struct v4l2_vp8_entropy_hdr* v4l2_entropy_hdr) {
   ARRAY_MEMCPY_CHECKED(v4l2_entropy_hdr->coeff_probs,
                        vp8_entropy_hdr.coeff_probs);
@@ -2514,7 +2513,7 @@ static void FillV4L2EntropyHeader(
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
     const scoped_refptr<VP8Picture>& pic,
-    const media::Vp8FrameHeader* frame_hdr,
+    const Vp8FrameHeader* frame_hdr,
     const scoped_refptr<VP8Picture>& last_frame,
     const scoped_refptr<VP8Picture>& golden_frame,
     const scoped_refptr<VP8Picture>& alt_frame) {
@@ -2698,8 +2697,8 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   // TODO(posciak): Use visible size from decoder here instead
   // (crbug.com/402760). Passing (0, 0) results in the client using the
   // visible size extracted from the container instead.
-  media::Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
-                         gfx::Rect(0, 0), false);
+  Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
+                  gfx::Rect(0, 0), false);
   DVLOGF(3) << dec_surface->ToString()
             << ", bitstream_id: " << picture.bitstream_buffer_id()
             << ", picture_id: " << picture.picture_buffer_id();
@@ -2742,7 +2741,7 @@ void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
   bool resetting_or_flushing = (decoder_resetting_ || decoder_flushing_);
   while (!pending_picture_ready_.empty()) {
     bool cleared = pending_picture_ready_.front().cleared;
-    const media::Picture& picture = pending_picture_ready_.front().picture;
+    const Picture& picture = pending_picture_ready_.front().picture;
     if (cleared && picture_clearing_count_ == 0) {
       DVLOGF(4) << "Posting picture ready to decode task runner for: "
                 << picture.picture_buffer_id();
@@ -2798,7 +2797,7 @@ bool V4L2SliceVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device)

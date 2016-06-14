@@ -41,22 +41,21 @@ namespace media {
 // format conversion, if the input format requested via Initialize() is not
 // accepted by the hardware codec.
 class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
-    : public media::VideoEncodeAccelerator {
+    : public VideoEncodeAccelerator {
  public:
   explicit V4L2VideoEncodeAccelerator(const scoped_refptr<V4L2Device>& device);
   ~V4L2VideoEncodeAccelerator() override;
 
-  // media::VideoEncodeAccelerator implementation.
-  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
-      override;
-  bool Initialize(media::VideoPixelFormat format,
+  // VideoEncodeAccelerator implementation.
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
+  bool Initialize(VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   Client* client) override;
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -71,7 +70,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     InputRecord();
     ~InputRecord();
     bool at_device;
-    scoped_refptr<media::VideoFrame> frame;
+    scoped_refptr<VideoFrame> frame;
   };
 
   // Record for output buffers.
@@ -87,7 +86,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   struct ImageProcessorInputRecord {
     ImageProcessorInputRecord();
     ~ImageProcessorInputRecord();
-    scoped_refptr<media::VideoFrame> frame;
+    scoped_refptr<VideoFrame> frame;
     bool force_keyframe;
   };
 
@@ -124,8 +123,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Encoding tasks, to be run on encode_thread_.
   //
 
-  void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
-                  bool force_keyframe);
+  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
 
   // Add a BitstreamBuffer to the queue of buffers ready to be used for encoder
   // output.
@@ -178,16 +176,16 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
                                            uint32_t framerate);
 
   // Set up formats and initialize the device for them.
-  bool SetFormats(media::VideoPixelFormat input_format,
-                  media::VideoCodecProfile output_profile);
+  bool SetFormats(VideoPixelFormat input_format,
+                  VideoCodecProfile output_profile);
 
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
   // can later instantiate a V4L2ImageProcessor to convert to it.
-  bool NegotiateInputFormat(media::VideoPixelFormat input_format);
+  bool NegotiateInputFormat(VideoPixelFormat input_format);
 
   // Set up the device to the output format requested in Initialize().
-  bool SetOutputFormat(media::VideoCodecProfile output_profile);
+  bool SetOutputFormat(VideoCodecProfile output_profile);
 
   // Initialize device controls with default values.
   bool InitControls();
@@ -215,7 +213,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t output_buffer_byte_size_;
 
   // Formats for input frames and the output stream.
-  media::VideoPixelFormat device_input_format_;
+  VideoPixelFormat device_input_format_;
   size_t input_planes_count_;
   uint32_t output_format_fourcc_;
 
@@ -235,7 +233,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t stream_header_size_;
 
   // Video frames ready to be encoded.
-  std::queue<scoped_refptr<media::VideoFrame>> encoder_input_queue_;
+  std::queue<scoped_refptr<VideoFrame>> encoder_input_queue_;
 
   // Encoder device.
   scoped_refptr<V4L2Device> device_;

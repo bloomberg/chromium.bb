@@ -28,17 +28,17 @@
 namespace media {
 
 class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
-    : public media::JpegDecodeAccelerator {
+    : public JpegDecodeAccelerator {
  public:
   V4L2JpegDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~V4L2JpegDecodeAccelerator() override;
 
-  // media::JpegDecodeAccelerator implementation.
+  // JpegDecodeAccelerator implementation.
   bool Initialize(Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<media::VideoFrame>& video_frame) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer,
+              const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
  private:
@@ -60,8 +60,8 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
   // the time of submission we may not have one available (and don't need one
   // to submit input to the device).
   struct JobRecord {
-    JobRecord(const media::BitstreamBuffer& bitstream_buffer,
-              scoped_refptr<media::VideoFrame> video_frame);
+    JobRecord(const BitstreamBuffer& bitstream_buffer,
+              scoped_refptr<VideoFrame> video_frame);
     ~JobRecord();
 
     // Input image buffer ID.
@@ -69,7 +69,7 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
     // Memory mapped from |bitstream_buffer|.
     SharedMemoryRegion shm;
     // Output frame buffer.
-    scoped_refptr<media::VideoFrame> out_frame;
+    scoped_refptr<VideoFrame> out_frame;
   };
 
   void EnqueueInput();

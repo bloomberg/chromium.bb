@@ -82,7 +82,7 @@ namespace media {
 
 // VAAPI only support subset of JPEG profiles. This function determines a given
 // parsed JPEG result is supported or not.
-static bool IsVaapiSupportedJpeg(const media::JpegParseResult& jpeg) {
+static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
   if (jpeg.frame_header.visible_width < 1 ||
       jpeg.frame_header.visible_height < 1) {
     DLOG(ERROR) << "width(" << jpeg.frame_header.visible_width
@@ -132,7 +132,7 @@ static bool IsVaapiSupportedJpeg(const media::JpegParseResult& jpeg) {
 }
 
 static void FillPictureParameters(
-    const media::JpegFrameHeader& frame_header,
+    const JpegFrameHeader& frame_header,
     VAPictureParameterBufferJPEGBaseline* pic_param) {
   memset(pic_param, 0, sizeof(*pic_param));
   pic_param->picture_width = frame_header.coded_width;
@@ -150,13 +150,13 @@ static void FillPictureParameters(
   }
 }
 
-static void FillIQMatrix(const media::JpegQuantizationTable* q_table,
+static void FillIQMatrix(const JpegQuantizationTable* q_table,
                          VAIQMatrixBufferJPEGBaseline* iq_matrix) {
   memset(iq_matrix, 0, sizeof(*iq_matrix));
-  static_assert(media::kJpegMaxQuantizationTableNum ==
+  static_assert(kJpegMaxQuantizationTableNum ==
                     arraysize(iq_matrix->load_quantiser_table),
                 "max number of quantization table mismatched");
-  for (size_t i = 0; i < media::kJpegMaxQuantizationTableNum; i++) {
+  for (size_t i = 0; i < kJpegMaxQuantizationTableNum; i++) {
     if (!q_table[i].valid)
       continue;
     iq_matrix->load_quantiser_table[i] = 1;
@@ -168,13 +168,13 @@ static void FillIQMatrix(const media::JpegQuantizationTable* q_table,
   }
 }
 
-static void FillHuffmanTable(const media::JpegHuffmanTable* dc_table,
-                             const media::JpegHuffmanTable* ac_table,
+static void FillHuffmanTable(const JpegHuffmanTable* dc_table,
+                             const JpegHuffmanTable* ac_table,
                              VAHuffmanTableBufferJPEGBaseline* huffman_table) {
   memset(huffman_table, 0, sizeof(*huffman_table));
   // Use default huffman tables if not specified in header.
   bool has_huffman_table = false;
-  for (size_t i = 0; i < media::kJpegMaxHuffmanTableNumBaseline; i++) {
+  for (size_t i = 0; i < kJpegMaxHuffmanTableNumBaseline; i++) {
     if (dc_table[i].valid || ac_table[i].valid) {
       has_huffman_table = true;
       break;
@@ -185,7 +185,7 @@ static void FillHuffmanTable(const media::JpegHuffmanTable* dc_table,
     ac_table = kDefaultAcTable;
   }
 
-  static_assert(media::kJpegMaxHuffmanTableNumBaseline ==
+  static_assert(kJpegMaxHuffmanTableNumBaseline ==
                     arraysize(huffman_table->load_huffman_table),
                 "max number of huffman table mismatched");
   static_assert(sizeof(huffman_table->huffman_table[0].num_dc_codes) ==
@@ -194,7 +194,7 @@ static void FillHuffmanTable(const media::JpegHuffmanTable* dc_table,
   static_assert(sizeof(huffman_table->huffman_table[0].dc_values[0]) ==
                     sizeof(dc_table[0].code_value[0]),
                 "size of huffman table code value mismatch");
-  for (size_t i = 0; i < media::kJpegMaxHuffmanTableNumBaseline; i++) {
+  for (size_t i = 0; i < kJpegMaxHuffmanTableNumBaseline; i++) {
     if (!dc_table[i].valid || !ac_table[i].valid)
       continue;
     huffman_table->load_huffman_table[i] = 1;
@@ -213,7 +213,7 @@ static void FillHuffmanTable(const media::JpegHuffmanTable* dc_table,
 }
 
 static void FillSliceParameters(
-    const media::JpegParseResult& parse_result,
+    const JpegParseResult& parse_result,
     VASliceParameterBufferJPEGBaseline* slice_param) {
   memset(slice_param, 0, sizeof(*slice_param));
   slice_param->slice_data_size = parse_result.data_size;
@@ -246,7 +246,7 @@ static void FillSliceParameters(
 
 // static
 bool VaapiJpegDecoder::Decode(VaapiWrapper* vaapi_wrapper,
-                              const media::JpegParseResult& parse_result,
+                              const JpegParseResult& parse_result,
                               VASurfaceID va_surface) {
   DCHECK_NE(va_surface, VA_INVALID_SURFACE);
   if (!IsVaapiSupportedJpeg(parse_result))

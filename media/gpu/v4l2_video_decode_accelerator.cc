@@ -85,10 +85,10 @@ struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
 };
 
 struct V4L2VideoDecodeAccelerator::PictureRecord {
-  PictureRecord(bool cleared, const media::Picture& picture);
+  PictureRecord(bool cleared, const Picture& picture);
   ~PictureRecord();
   bool cleared;  // Whether the texture is cleared and safe to render from.
-  media::Picture picture;  // The decoded picture.
+  Picture picture;  // The decoded picture.
 };
 
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
@@ -136,9 +136,8 @@ V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord()
 
 V4L2VideoDecodeAccelerator::OutputRecord::~OutputRecord() {}
 
-V4L2VideoDecodeAccelerator::PictureRecord::PictureRecord(
-    bool cleared,
-    const media::Picture& picture)
+V4L2VideoDecodeAccelerator::PictureRecord::PictureRecord(bool cleared,
+                                                         const Picture& picture)
     : cleared(cleared), picture(picture) {}
 
 V4L2VideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
@@ -172,7 +171,7 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       egl_display_(egl_display),
       get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
-      video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+      video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       output_format_fourcc_(0),
       egl_image_format_fourcc_(0),
       egl_image_planes_count_(0),
@@ -272,9 +271,8 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   sub.type = V4L2_EVENT_SOURCE_CHANGE;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_SUBSCRIBE_EVENT, &sub);
 
-  if (video_profile_ >= media::H264PROFILE_MIN &&
-      video_profile_ <= media::H264PROFILE_MAX) {
-    decoder_h264_parser_.reset(new media::H264Parser());
+  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
+    decoder_h264_parser_.reset(new H264Parser());
   }
 
   if (!CreateInputBuffers())
@@ -297,7 +295,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 }
 
 void V4L2VideoDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DVLOG(1) << "Decode(): input_id=" << bitstream_buffer.id()
            << ", size=" << bitstream_buffer.size();
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
@@ -317,7 +315,7 @@ void V4L2VideoDecodeAccelerator::Decode(
 }
 
 void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DVLOG(3) << "AssignPictureBuffers(): buffer_count=" << buffers.size();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -521,7 +519,7 @@ bool V4L2VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device)
@@ -532,7 +530,7 @@ V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
 }
 
 void V4L2VideoDecodeAccelerator::DecodeTask(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DVLOG(3) << "DecodeTask(): input_id=" << bitstream_buffer.id();
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
@@ -696,13 +694,12 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
                                                       size_t size,
                                                       size_t* endpos) {
-  if (video_profile_ >= media::H264PROFILE_MIN &&
-      video_profile_ <= media::H264PROFILE_MAX) {
+  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     // For H264, we need to feed HW one frame at a time.  This is going to take
     // some parsing of our input stream.
     decoder_h264_parser_->SetStream(data, size);
-    media::H264NALU nalu;
-    media::H264Parser::Result result;
+    H264NALU nalu;
+    H264Parser::Result result;
     *endpos = 0;
 
     // Keep on peeking the next NALs while they don't indicate a frame
@@ -710,17 +707,17 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
     for (;;) {
       bool end_of_frame = false;
       result = decoder_h264_parser_->AdvanceToNextNALU(&nalu);
-      if (result == media::H264Parser::kInvalidStream ||
-          result == media::H264Parser::kUnsupportedStream)
+      if (result == H264Parser::kInvalidStream ||
+          result == H264Parser::kUnsupportedStream)
         return false;
-      if (result == media::H264Parser::kEOStream) {
+      if (result == H264Parser::kEOStream) {
         // We've reached the end of the buffer before finding a frame boundary.
         decoder_partial_frame_pending_ = true;
         return true;
       }
       switch (nalu.nal_unit_type) {
-        case media::H264NALU::kNonIDRSlice:
-        case media::H264NALU::kIDRSlice:
+        case H264NALU::kNonIDRSlice:
+        case H264NALU::kIDRSlice:
           if (nalu.size < 1)
             return false;
           // For these two, if the "first_mb_in_slice" field is zero, start a
@@ -733,17 +730,17 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
             break;
           }
           break;
-        case media::H264NALU::kSEIMessage:
-        case media::H264NALU::kSPS:
-        case media::H264NALU::kPPS:
-        case media::H264NALU::kAUD:
-        case media::H264NALU::kEOSeq:
-        case media::H264NALU::kEOStream:
-        case media::H264NALU::kReserved14:
-        case media::H264NALU::kReserved15:
-        case media::H264NALU::kReserved16:
-        case media::H264NALU::kReserved17:
-        case media::H264NALU::kReserved18:
+        case H264NALU::kSEIMessage:
+        case H264NALU::kSPS:
+        case H264NALU::kPPS:
+        case H264NALU::kAUD:
+        case H264NALU::kEOSeq:
+        case H264NALU::kEOStream:
+        case H264NALU::kReserved14:
+        case H264NALU::kReserved15:
+        case H264NALU::kReserved16:
+        case H264NALU::kReserved17:
+        case H264NALU::kReserved18:
           // These unconditionally signal a frame boundary.
           end_of_frame = true;
           break;
@@ -769,8 +766,8 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
     NOTREACHED();
     return false;
   } else {
-    DCHECK_GE(video_profile_, media::VP8PROFILE_MIN);
-    DCHECK_LE(video_profile_, media::VP9PROFILE_MAX);
+    DCHECK_GE(video_profile_, VP8PROFILE_MIN);
+    DCHECK_LE(video_profile_, VP9PROFILE_MAX);
     // For VP8/9, we can just dump the entire buffer.  No fragmentation needed,
     // and we never return a partial frame.
     *endpos = size;
@@ -1176,26 +1173,24 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
         for (auto& fd : output_record.fds) {
           fds.push_back(fd.get());
         }
-        scoped_refptr<media::VideoFrame> frame =
-            media::VideoFrame::WrapExternalDmabufs(
-                V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-                coded_size_, gfx::Rect(visible_size_), visible_size_, fds,
-                base::TimeDelta());
+        scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalDmabufs(
+            V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+            coded_size_, gfx::Rect(visible_size_), visible_size_, fds,
+            base::TimeDelta());
         // Unretained is safe because |this| owns image processor and there will
         // be no callbacks after processor destroys. Also, this class ensures it
         // is safe to post a task from child thread to decoder thread using
         // Unretained.
         image_processor_->Process(
             frame, dqbuf.index,
-            media::BindToCurrentLoop(
+            BindToCurrentLoop(
                 base::Bind(&V4L2VideoDecodeAccelerator::FrameProcessed,
                            base::Unretained(this), bitstream_buffer_id)));
       } else {
         output_record.state = kAtClient;
         decoder_frames_at_client_++;
-        const media::Picture picture(output_record.picture_id,
-                                     bitstream_buffer_id,
-                                     gfx::Rect(visible_size_), false);
+        const Picture picture(output_record.picture_id, bitstream_buffer_id,
+                              gfx::Rect(visible_size_), false);
         pending_picture_ready_.push(
             PictureRecord(output_record.cleared, picture));
         SendPictureReady();
@@ -1486,9 +1481,8 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
     return;
 
   // Reset format-specific bits.
-  if (video_profile_ >= media::H264PROFILE_MIN &&
-      video_profile_ <= media::H264PROFILE_MAX) {
-    decoder_h264_parser_.reset(new media::H264Parser());
+  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
+    decoder_h264_parser_.reset(new H264Parser());
   }
 
   // Jobs drained, we're finished resetting.
@@ -2159,7 +2153,7 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
       (decoder_state_ == kResetting || decoder_flushing_);
   while (pending_picture_ready_.size() > 0) {
     bool cleared = pending_picture_ready_.front().cleared;
-    const media::Picture& picture = pending_picture_ready_.front().picture;
+    const Picture& picture = pending_picture_ready_.front().picture;
     if (cleared && picture_clearing_count_ == 0) {
       // This picture is cleared. It can be posted to a thread different than
       // the main GPU thread to reduce latency. This should be the case after
@@ -2222,8 +2216,8 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(int32_t bitstream_buffer_id,
     output_record.state = kAtClient;
     decoder_frames_at_client_++;
     image_processor_bitstream_buffer_ids_.pop();
-    const media::Picture picture(output_record.picture_id, bitstream_buffer_id,
-                                 gfx::Rect(visible_size_), false);
+    const Picture picture(output_record.picture_id, bitstream_buffer_id,
+                          gfx::Rect(visible_size_), false);
     pending_picture_ready_.push(PictureRecord(output_record.cleared, picture));
     SendPictureReady();
     output_record.cleared = true;

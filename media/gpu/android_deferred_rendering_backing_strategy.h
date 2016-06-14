@@ -49,29 +49,28 @@ class MEDIA_GPU_EXPORT AndroidDeferredRenderingBackingStrategy
   gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(
       int32_t codec_buffer_index,
-      const media::PictureBuffer& picture_buffer) override;
-  void AssignOnePictureBuffer(const media::PictureBuffer&, bool) override;
-  void ReuseOnePictureBuffer(
-      const media::PictureBuffer& picture_buffer) override;
+      const PictureBuffer& picture_buffer) override;
+  void AssignOnePictureBuffer(const PictureBuffer&, bool) override;
+  void ReuseOnePictureBuffer(const PictureBuffer& picture_buffer) override;
   void MaybeRenderEarly() override;
-  void CodecChanged(media::VideoCodecBridge* codec) override;
+  void CodecChanged(VideoCodecBridge* codec) override;
   void ReleaseCodecBuffers(
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
   void OnFrameAvailable() override;
   bool ArePicturesOverlayable() override;
-  void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
+  void UpdatePictureBufferSize(PictureBuffer* picture_buffer,
                                const gfx::Size& new_size) override;
 
  private:
   // Release any codec buffer that is associated with the given picture buffer
   // back to the codec.  It is okay if there is no such buffer.
-  void ReleaseCodecBufferForPicture(const media::PictureBuffer& picture_buffer);
+  void ReleaseCodecBufferForPicture(const PictureBuffer& picture_buffer);
 
   // Sets up the texture references (as found by |picture_buffer|), for the
   // specified |image|. If |image| is null, clears any ref on the texture
   // associated with |picture_buffer|.
   void SetImageForPicture(
-      const media::PictureBuffer& picture_buffer,
+      const PictureBuffer& picture_buffer,
       const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image);
 
   // Make a copy of the SurfaceTexture's front buffer and associate all given
@@ -93,7 +92,7 @@ class MEDIA_GPU_EXPORT AndroidDeferredRenderingBackingStrategy
   // we're not rendering to a SurfaceView.
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
 
-  media::VideoCodecBridge* media_codec_;
+  VideoCodecBridge* media_codec_;
 
   // Picture buffer IDs that are out for display. Stored in order of frames as
   // they are returned from the decoder.

@@ -118,21 +118,21 @@ static const VAConfigAttrib kEncodeVAConfigAttribs[] = {
 };
 
 struct ProfileMap {
-  media::VideoCodecProfile profile;
+  VideoCodecProfile profile;
   VAProfile va_profile;
 };
 
 // A map between VideoCodecProfile and VAProfile.
 static const ProfileMap kProfileMap[] = {
-    {media::H264PROFILE_BASELINE, VAProfileH264Baseline},
-    {media::H264PROFILE_MAIN, VAProfileH264Main},
+    {H264PROFILE_BASELINE, VAProfileH264Baseline},
+    {H264PROFILE_MAIN, VAProfileH264Main},
     // TODO(posciak): See if we can/want support other variants of
-    // media::H264PROFILE_HIGH*.
-    {media::H264PROFILE_HIGH, VAProfileH264High},
-    {media::VP8PROFILE_ANY, VAProfileVP8Version0_3},
+    // H264PROFILE_HIGH*.
+    {H264PROFILE_HIGH, VAProfileH264High},
+    {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     // TODO(servolk): Need to add VP9 profiles 1,2,3 here after rolling
     // third_party/libva to 1.7. crbug.com/598118
-    {media::VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
+    {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
 };
 
 static std::vector<VAConfigAttrib> GetRequiredAttribs(
@@ -205,7 +205,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
 // static
 scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     CodecMode mode,
-    media::VideoCodecProfile profile,
+    VideoCodecProfile profile,
     const base::Closure& report_error_to_uma_cb) {
   VAProfile va_profile = ProfileToVAProfile(profile, mode);
   scoped_refptr<VaapiWrapper> vaapi_wrapper =
@@ -214,9 +214,9 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
 }
 
 // static
-media::VideoEncodeAccelerator::SupportedProfiles
+VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
-  media::VideoEncodeAccelerator::SupportedProfiles profiles;
+  VideoEncodeAccelerator::SupportedProfiles profiles;
   std::vector<ProfileInfo> encode_profile_infos =
       profile_infos_.Get().GetSupportedProfileInfosForCodecMode(kEncode);
 
@@ -226,7 +226,7 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
       continue;
     for (const auto& profile_info : encode_profile_infos) {
       if (profile_info.va_profile == va_profile) {
-        media::VideoEncodeAccelerator::SupportedProfile profile;
+        VideoEncodeAccelerator::SupportedProfile profile;
         profile.profile = kProfileMap[i].profile;
         profile.max_resolution = profile_info.max_resolution;
         profile.max_framerate_numerator = kMaxEncoderFramerate;
@@ -240,9 +240,9 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedDecodeProfiles() {
-  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+  VideoDecodeAccelerator::SupportedProfiles profiles;
   std::vector<ProfileInfo> decode_profile_infos =
       profile_infos_.Get().GetSupportedProfileInfosForCodecMode(kDecode);
 
@@ -252,7 +252,7 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
       continue;
     for (const auto& profile_info : decode_profile_infos) {
       if (profile_info.va_profile == va_profile) {
-        media::VideoDecodeAccelerator::SupportedProfile profile;
+        VideoDecodeAccelerator::SupportedProfile profile;
         profile.profile = kProfileMap[i].profile;
         profile.max_resolution = profile_info.max_resolution;
         profile.min_resolution.SetSize(16, 16);
@@ -284,7 +284,7 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
 }
 
 // static
-VAProfile VaapiWrapper::ProfileToVAProfile(media::VideoCodecProfile profile,
+VAProfile VaapiWrapper::ProfileToVAProfile(VideoCodecProfile profile,
                                            CodecMode mode) {
   VAProfile va_profile = VAProfileNone;
   for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
@@ -295,7 +295,7 @@ VAProfile VaapiWrapper::ProfileToVAProfile(media::VideoCodecProfile profile,
   }
   if (!profile_infos_.Get().IsProfileSupported(mode, va_profile) &&
       va_profile == VAProfileH264Baseline) {
-    // crbug.com/345569: media::ProfileIDToVideoCodecProfile() currently strips
+    // crbug.com/345569: ProfileIDToVideoCodecProfile() currently strips
     // the information whether the profile is constrained or not, so we have no
     // way to know here. Try for baseline first, but if it is not supported,
     // try constrained baseline and hope this is what it actually is
@@ -930,7 +930,7 @@ static void DestroyVAImage(VADisplay va_display, VAImage image) {
 }
 
 bool VaapiWrapper::UploadVideoFrameToSurface(
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
@@ -959,12 +959,9 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   {
     base::AutoUnlock auto_unlock(*va_lock_);
     ret = libyuv::I420ToNV12(
-        frame->data(media::VideoFrame::kYPlane),
-        frame->stride(media::VideoFrame::kYPlane),
-        frame->data(media::VideoFrame::kUPlane),
-        frame->stride(media::VideoFrame::kUPlane),
-        frame->data(media::VideoFrame::kVPlane),
-        frame->stride(media::VideoFrame::kVPlane),
+        frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
+        frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
+        frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
         static_cast<uint8_t*>(image_ptr) + image.offsets[0], image.pitches[0],
         static_cast<uint8_t*>(image_ptr) + image.offsets[1], image.pitches[1],
         image.width, image.height);

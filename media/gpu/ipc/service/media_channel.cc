@@ -37,14 +37,14 @@ class MediaChannelDispatchHelper {
 
   bool Send(IPC::Message* msg) { return channel_->Send(msg); }
 
-  void OnCreateVideoDecoder(const media::VideoDecodeAccelerator::Config& config,
+  void OnCreateVideoDecoder(const VideoDecodeAccelerator::Config& config,
                             int32_t decoder_route_id,
                             IPC::Message* reply_message) {
     channel_->OnCreateVideoDecoder(routing_id_, config, decoder_route_id,
                                    reply_message);
   }
 
-  void OnCreateVideoEncoder(const media::CreateVideoEncoderParams& params,
+  void OnCreateVideoEncoder(const CreateVideoEncoderParams& params,
                             IPC::Message* reply_message) {
     channel_->OnCreateVideoEncoder(routing_id_, params, reply_message);
   }
@@ -95,7 +95,7 @@ void MediaChannel::OnCreateJpegDecoder(int32_t route_id,
 
 void MediaChannel::OnCreateVideoDecoder(
     int32_t command_buffer_route_id,
-    const media::VideoDecodeAccelerator::Config& config,
+    const VideoDecodeAccelerator::Config& config,
     int32_t decoder_route_id,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoDecoder");
@@ -117,10 +117,9 @@ void MediaChannel::OnCreateVideoDecoder(
   // self-delete during destruction of this stub.
 }
 
-void MediaChannel::OnCreateVideoEncoder(
-    int32_t command_buffer_route_id,
-    const media::CreateVideoEncoderParams& params,
-    IPC::Message* reply_message) {
+void MediaChannel::OnCreateVideoEncoder(int32_t command_buffer_route_id,
+                                        const CreateVideoEncoderParams& params,
+                                        IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoEncoder");
   gpu::GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);

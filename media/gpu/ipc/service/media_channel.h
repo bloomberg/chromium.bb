@@ -42,11 +42,11 @@ class MediaChannel : public IPC::Listener, public IPC::Sender {
   // Message handlers.
   void OnCreateJpegDecoder(int32_t route_id, IPC::Message* reply_msg);
   void OnCreateVideoDecoder(int32_t command_buffer_route_id,
-                            const media::VideoDecodeAccelerator::Config& config,
+                            const VideoDecodeAccelerator::Config& config,
                             int32_t route_id,
                             IPC::Message* reply_message);
   void OnCreateVideoEncoder(int32_t command_buffer_route_id,
-                            const media::CreateVideoEncoderParams& params,
+                            const CreateVideoEncoderParams& params,
                             IPC::Message* reply_message);
 
   gpu::GpuChannel* const channel_;

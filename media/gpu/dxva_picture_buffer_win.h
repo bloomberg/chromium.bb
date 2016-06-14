@@ -29,7 +29,7 @@ class DXVAPictureBuffer {
  public:
   static linked_ptr<DXVAPictureBuffer> Create(
       const DXVAVideoDecodeAccelerator& decoder,
-      const media::PictureBuffer& buffer,
+      const PictureBuffer& buffer,
       EGLConfig egl_config);
   virtual ~DXVAPictureBuffer();
 
@@ -62,10 +62,10 @@ class DXVAPictureBuffer {
   virtual bool BindSampleToTexture(base::win::ScopedComPtr<IMFSample> sample);
 
  protected:
-  explicit DXVAPictureBuffer(const media::PictureBuffer& buffer);
+  explicit DXVAPictureBuffer(const PictureBuffer& buffer);
 
   bool available_;
-  media::PictureBuffer picture_buffer_;
+  PictureBuffer picture_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAPictureBuffer);
 };
@@ -73,7 +73,7 @@ class DXVAPictureBuffer {
 // Copies the video result into an RGBA EGL pbuffer.
 class PbufferPictureBuffer : public DXVAPictureBuffer {
  public:
-  explicit PbufferPictureBuffer(const media::PictureBuffer& buffer);
+  explicit PbufferPictureBuffer(const PictureBuffer& buffer);
   ~PbufferPictureBuffer() override;
 
   bool Initialize(const DXVAVideoDecodeAccelerator& decoder,
@@ -130,7 +130,7 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
 // Shares the decoded texture with ANGLE without copying by using an EGL stream.
 class EGLStreamPictureBuffer : public DXVAPictureBuffer {
  public:
-  explicit EGLStreamPictureBuffer(const media::PictureBuffer& buffer);
+  explicit EGLStreamPictureBuffer(const PictureBuffer& buffer);
   ~EGLStreamPictureBuffer() override;
 
   bool Initialize();

@@ -38,40 +38,38 @@ scoped_refptr<V4L2Device> V4L2Device::Create(Type type) {
 }
 
 // static
-media::VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(
-    uint32_t pix_fmt) {
+VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
   switch (pix_fmt) {
     case V4L2_PIX_FMT_NV12:
     case V4L2_PIX_FMT_NV12M:
-      return media::PIXEL_FORMAT_NV12;
+      return PIXEL_FORMAT_NV12;
 
     case V4L2_PIX_FMT_MT21:
-      return media::PIXEL_FORMAT_MT21;
+      return PIXEL_FORMAT_MT21;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:
-      return media::PIXEL_FORMAT_I420;
+      return PIXEL_FORMAT_I420;
 
     case V4L2_PIX_FMT_RGB32:
-      return media::PIXEL_FORMAT_ARGB;
+      return PIXEL_FORMAT_ARGB;
 
     default:
       LOG(FATAL) << "Add more cases as needed";
-      return media::PIXEL_FORMAT_UNKNOWN;
+      return PIXEL_FORMAT_UNKNOWN;
   }
 }
 
 // static
-uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(
-    media::VideoPixelFormat format) {
+uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format) {
   switch (format) {
-    case media::PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV12:
       return V4L2_PIX_FMT_NV12M;
 
-    case media::PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_MT21:
       return V4L2_PIX_FMT_MT21;
 
-    case media::PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_I420:
       return V4L2_PIX_FMT_YUV420M;
 
     default:
@@ -81,22 +79,19 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(
 }
 
 // static
-uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(
-    media::VideoCodecProfile profile,
-    bool slice_based) {
-  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
+uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
+                                                   bool slice_based) {
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     if (slice_based)
       return V4L2_PIX_FMT_H264_SLICE;
     else
       return V4L2_PIX_FMT_H264;
-  } else if (profile >= media::VP8PROFILE_MIN &&
-             profile <= media::VP8PROFILE_MAX) {
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     if (slice_based)
       return V4L2_PIX_FMT_VP8_FRAME;
     else
       return V4L2_PIX_FMT_VP8;
-  } else if (profile >= media::VP9PROFILE_MIN &&
-             profile <= media::VP9PROFILE_MAX) {
+  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     return V4L2_PIX_FMT_VP9;
   } else {
     LOG(FATAL) << "Add more cases as needed";
@@ -128,7 +123,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
 gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   gfx::Size coded_size;
   gfx::Size visible_size;
-  media::VideoPixelFormat frame_format = media::PIXEL_FORMAT_UNKNOWN;
+  VideoPixelFormat frame_format = PIXEL_FORMAT_UNKNOWN;
   size_t bytesperline = 0;
   // Total bytes in the frame.
   size_t sizeimage = 0;
@@ -166,12 +161,12 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   // We need bits per pixel for one component only to calculate
   // coded_width from bytesperline.
   int plane_horiz_bits_per_pixel =
-      media::VideoFrame::PlaneHorizontalBitsPerPixel(frame_format, 0);
+      VideoFrame::PlaneHorizontalBitsPerPixel(frame_format, 0);
 
   // Adding up bpp for each component will give us total bpp for all components.
   int total_bpp = 0;
-  for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame_format); ++i)
-    total_bpp += media::VideoFrame::PlaneBitsPerPixel(frame_format, i);
+  for (size_t i = 0; i < VideoFrame::NumPlanes(frame_format); ++i)
+    total_bpp += VideoFrame::PlaneBitsPerPixel(frame_format, i);
 
   if (sizeimage == 0 || bytesperline == 0 || plane_horiz_bits_per_pixel == 0 ||
       total_bpp == 0 || (bytesperline * 8) % plane_horiz_bits_per_pixel != 0) {
@@ -192,15 +187,14 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   // some drivers (Exynos) like to have some additional alignment that is not a
   // multiple of bytesperline. The best thing we can do is to compensate by
   // aligning to next full row.
-  if (sizeimage > media::VideoFrame::AllocationSize(frame_format, coded_size))
+  if (sizeimage > VideoFrame::AllocationSize(frame_format, coded_size))
     coded_size.SetSize(coded_width, coded_height + 1);
   DVLOG(3) << "coded_size=" << coded_size.ToString();
 
   // Sanity checks. Calculated coded size has to contain given visible size
   // and fulfill buffer byte size requirements.
   DCHECK(gfx::Rect(coded_size).Contains(gfx::Rect(visible_size)));
-  DCHECK_LE(sizeimage,
-            media::VideoFrame::AllocationSize(frame_format, coded_size));
+  DCHECK_LE(sizeimage, VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
 }
@@ -253,12 +247,12 @@ void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
   }
 }
 
-media::VideoDecodeAccelerator::SupportedProfiles
+VideoDecodeAccelerator::SupportedProfiles
 V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
                                        const uint32_t pixelformats[]) {
   DCHECK_EQ(type_, kDecoder);
-  media::VideoDecodeAccelerator::SupportedProfiles profiles;
-  media::VideoDecodeAccelerator::SupportedProfile profile;
+  VideoDecodeAccelerator::SupportedProfiles profiles;
+  VideoDecodeAccelerator::SupportedProfile profile;
   v4l2_fmtdesc fmtdesc;
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -271,17 +265,17 @@ V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
     switch (fmtdesc.pixelformat) {
       case V4L2_PIX_FMT_H264:
       case V4L2_PIX_FMT_H264_SLICE:
-        min_profile = media::H264PROFILE_MIN;
-        max_profile = media::H264PROFILE_MAX;
+        min_profile = H264PROFILE_MIN;
+        max_profile = H264PROFILE_MAX;
         break;
       case V4L2_PIX_FMT_VP8:
       case V4L2_PIX_FMT_VP8_FRAME:
-        min_profile = media::VP8PROFILE_MIN;
-        max_profile = media::VP8PROFILE_MAX;
+        min_profile = VP8PROFILE_MIN;
+        max_profile = VP8PROFILE_MAX;
         break;
       case V4L2_PIX_FMT_VP9:
-        min_profile = media::VP9PROFILE_MIN;
-        max_profile = media::VP9PROFILE_MAX;
+        min_profile = VP9PROFILE_MIN;
+        max_profile = VP9PROFILE_MAX;
         break;
       default:
         NOTREACHED() << "Unhandled pixelformat " << std::hex
@@ -292,7 +286,7 @@ V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
                            &profile.max_resolution);
     for (int media_profile = min_profile; media_profile <= max_profile;
          ++media_profile) {
-      profile.profile = static_cast<media::VideoCodecProfile>(media_profile);
+      profile.profile = static_cast<VideoCodecProfile>(media_profile);
       profiles.push_back(profile);
     }
   }
@@ -300,7 +294,7 @@ V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
 }
 
 bool V4L2Device::SupportsDecodeProfileForV4L2PixelFormats(
-    media::VideoCodecProfile profile,
+    VideoCodecProfile profile,
     const size_t num_formats,
     const uint32_t pixelformats[]) {
   // Get all supported profiles by this device, taking into account only fourccs
@@ -311,7 +305,7 @@ bool V4L2Device::SupportsDecodeProfileForV4L2PixelFormats(
   // Try to find requested profile among the returned supported_profiles.
   const auto iter = std::find_if(
       supported_profiles.begin(), supported_profiles.end(),
-      [profile](const media::VideoDecodeAccelerator::SupportedProfile& p) {
+      [profile](const VideoDecodeAccelerator::SupportedProfile& p) {
         return profile == p.profile;
       });
 

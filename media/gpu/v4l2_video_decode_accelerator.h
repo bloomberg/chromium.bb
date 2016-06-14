@@ -46,11 +46,11 @@ class H264Parser;
 // is waited on with epoll().  There are three threads involved in this class:
 //
 // * The child thread, which is the main GPU process thread which calls the
-//   media::VideoDecodeAccelerator entry points.  Calls from this thread
+//   VideoDecodeAccelerator entry points.  Calls from this thread
 //   generally do not block (with the exception of Initialize() and Destroy()).
 //   They post tasks to the decoder_thread_, which actually services the task
 //   and calls back when complete through the
-//   media::VideoDecodeAccelerator::Client interface.
+//   VideoDecodeAccelerator::Client interface.
 // * The decoder_thread_, owned by this class.  It services API tasks, through
 //   the *Task() routines, as well as V4L2 device events, through
 //   ServiceDeviceTask().  Almost all state modification is done on this thread
@@ -85,7 +85,7 @@ class H264Parser;
 //   buffrers. We cannot drop any frame during resolution change. So V4L2VDA
 //   should destroy output buffers after image processor returns all the frames.
 class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator {
  public:
   V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
@@ -94,12 +94,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
       const scoped_refptr<V4L2Device>& device);
   ~V4L2VideoDecodeAccelerator() override;
 
-  // media::VideoDecodeAccelerator implementation.
+  // VideoDecodeAccelerator implementation.
   // Note: Initialize() and Destroy() are synchronous.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -109,8 +108,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
 
-  static media::VideoDecodeAccelerator::SupportedProfiles
-  GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
   // These are rather subjectively tuned.
@@ -124,9 +122,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p,
     // Number of output buffers to use for each VDA stage above what's required
     // by the decoder (e.g. DPB size, in H264).  We need
-    // media::limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,
+    // limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,
     // and +1 for a frame in transit.
-    kDpbOutputBufferExtraCount = media::limits::kMaxVideoFrames + 1,
+    kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1,
   };
 
   // Internal state of the decoder.
@@ -195,7 +193,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Enqueue a BitstreamBuffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
   // the buffer.
-  void DecodeTask(const media::BitstreamBuffer& bitstream_buffer);
+  void DecodeTask(const BitstreamBuffer& bitstream_buffer);
 
   // Decode from the buffers queued in decoder_input_queue_.  Calls
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
@@ -403,7 +401,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   std::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
-  std::unique_ptr<media::H264Parser> decoder_h264_parser_;
+  std::unique_ptr<H264Parser> decoder_h264_parser_;
   // Set if the decoder has a pending incomplete frame in an input buffer.
   bool decoder_partial_frame_pending_;
 
@@ -479,7 +477,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   MakeGLContextCurrentCallback make_context_current_cb_;
 
   // The codec we'll be decoding for.
-  media::VideoCodecProfile video_profile_;
+  VideoCodecProfile video_profile_;
   // Chosen output format.
   uint32_t output_format_fourcc_;
 
