@@ -121,6 +121,14 @@ int WebAXObject::axID() const
     return m_private->axObjectID();
 }
 
+int WebAXObject::generateAXID() const
+{
+    if (isDetached())
+        return -1;
+
+    return m_private->axObjectCache().platformGenerateAXID();
+}
+
 bool WebAXObject::updateLayoutAndCheckValidity()
 {
     if (!isDetached()) {

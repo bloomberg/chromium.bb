@@ -94,6 +94,10 @@ public:
 
     BLINK_EXPORT int axID() const;
 
+    // Get a new AXID that's not used by any accessibility node in this process, for when the
+    // client needs to insert additional nodes into the accessibility tree.
+    BLINK_EXPORT int generateAXID() const;
+
     // Update layout on the underlying tree, and return true if this object is
     // still valid (not detached). Note that calling this method
     // can cause other WebAXObjects to become invalid, too,
