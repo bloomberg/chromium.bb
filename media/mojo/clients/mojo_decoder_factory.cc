@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_decoder_factory.h"
+#include "media/mojo/clients/mojo_decoder_factory.h"
 
 #include "base/single_thread_task_runner.h"
+#include "media/mojo/clients/mojo_audio_decoder.h"
+#include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
-#include "media/mojo/services/mojo_audio_decoder.h"
-#include "media/mojo/services/mojo_video_decoder.h"
 #include "services/shell/public/cpp/connect.h"
 
 namespace media {

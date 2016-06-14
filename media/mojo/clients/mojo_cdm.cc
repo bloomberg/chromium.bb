@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_cdm.h"
+#include "media/mojo/clients/mojo_cdm.h"
 
 #include <stddef.h>
 
@@ -16,9 +16,9 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
-#include "media/mojo/services/mojo_decryptor.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "url/gurl.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_TYPE_TRAIT_H_
-#define MEDIA_MOJO_SERVICES_MOJO_TYPE_TRAIT_H_
+#ifndef MEDIA_MOJO_COMMON_MOJO_TYPE_TRAIT_H_
+#define MEDIA_MOJO_COMMON_MOJO_TYPE_TRAIT_H_
 
 #include "media/base/media_keys.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -29,4 +29,4 @@ struct MojoTypeTrait<std::string> {
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_TYPE_TRAIT_H_
+#endif  // MEDIA_MOJO_COMMON_MOJO_TYPE_TRAIT_H_

@@ -39,9 +39,9 @@
 #include "url/gurl.h"
 
 #if defined(MOJO_RENDERER)
+#include "media/mojo/clients/mojo_renderer_impl.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "media/mojo/services/mojo_renderer_impl.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/cpp/shell_test.h"
 

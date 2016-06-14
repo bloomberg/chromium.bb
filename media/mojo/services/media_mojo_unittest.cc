@@ -14,12 +14,12 @@
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "services/shell/public/cpp/shell_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

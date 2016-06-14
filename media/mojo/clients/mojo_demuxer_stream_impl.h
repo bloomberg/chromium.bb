@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_DEMUXER_STREAM_IMPL_H_
-#define MEDIA_MOJO_SERVICES_MOJO_DEMUXER_STREAM_IMPL_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -50,4 +50,4 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_DEMUXER_STREAM_IMPL_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_

@@ -239,7 +239,7 @@ source_set("renderer") {
       "//media/mojo/interfaces",
 
       # Defines in mojo_media_config are also pulled in here.
-      "//media/mojo/services:proxy",
+      "//media/mojo/clients",
     ]
   }
 

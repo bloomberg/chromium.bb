@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_cdm_factory.h"
+#include "media/mojo/clients/mojo_cdm_factory.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/mojo/services/mojo_cdm.h"
+#include "media/mojo/clients/mojo_cdm.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
@@ -22,8 +22,7 @@ MojoCdmFactory::MojoCdmFactory(
   DCHECK(interface_provider_);
 }
 
-MojoCdmFactory::~MojoCdmFactory() {
-}
+MojoCdmFactory::~MojoCdmFactory() {}
 
 void MojoCdmFactory::Create(
     const std::string& key_system,

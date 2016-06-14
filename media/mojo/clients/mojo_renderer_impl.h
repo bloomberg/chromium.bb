@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_RENDERER_IMPL_H_
-#define MEDIA_MOJO_SERVICES_MOJO_RENDERER_IMPL_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_
 
 #include <stdint.h>
 
@@ -119,4 +119,4 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_RENDERER_IMPL_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_RENDERER_IMPL_H_

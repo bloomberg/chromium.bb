@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_demuxer_stream_impl.h"
+#include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 
 #include <stdint.h>
 #include <utility>
@@ -24,8 +24,7 @@ MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
       stream_(stream),
       weak_factory_(this) {}
 
-MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {
-}
+MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {}
 
 // This is called when our DemuxerStreamClient has connected itself and is
 // ready to receive messages.  Send an initial config and notify it that
@@ -70,7 +69,7 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
                std::move(video_config));
 }
 
-void MojoDemuxerStreamImpl::Read(const ReadCallback& callback)  {
+void MojoDemuxerStreamImpl::Read(const ReadCallback& callback) {
   stream_->Read(base::Bind(&MojoDemuxerStreamImpl::OnBufferReady,
                            weak_factory_.GetWeakPtr(), callback));
 }

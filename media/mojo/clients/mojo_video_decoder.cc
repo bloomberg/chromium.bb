@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_video_decoder.h"
+#include "media/mojo/clients/mojo_video_decoder.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

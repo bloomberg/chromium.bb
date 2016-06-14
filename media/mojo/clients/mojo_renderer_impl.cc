@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_renderer_impl.h"
+#include "media/mojo/clients/mojo_renderer_impl.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
-#include "media/mojo/services/mojo_demuxer_stream_impl.h"
+#include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/renderers/video_overlay_factory.h"
 
 namespace media {
@@ -226,8 +226,8 @@ void MojoRendererImpl::OnInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
 
-  base::ResetAndReturn(&init_cb_)
-      .Run(success ? PIPELINE_OK : PIPELINE_ERROR_INITIALIZATION_FAILED);
+  base::ResetAndReturn(&init_cb_).Run(
+      success ? PIPELINE_OK : PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
 
 }  // namespace media

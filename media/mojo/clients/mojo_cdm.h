@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_H_
-#define MEDIA_MOJO_SERVICES_MOJO_CDM_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_CDM_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_CDM_H_
 
 #include <stdint.h>
 
@@ -18,8 +18,8 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/media_keys.h"
+#include "media/mojo/common/mojo_type_trait.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "media/mojo/services/mojo_type_trait.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -176,4 +176,4 @@ class MojoCdm : public MediaKeys,
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_CDM_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_CDM_H_

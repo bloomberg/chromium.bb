@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_renderer_factory.h"
+#include "media/mojo/clients/mojo_renderer_factory.h"
 
 #include "base/single_thread_task_runner.h"
-#include "media/mojo/services/mojo_renderer_impl.h"
+#include "media/mojo/clients/mojo_renderer_impl.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -21,8 +21,7 @@ MojoRendererFactory::MojoRendererFactory(
   DCHECK(interface_provider_);
 }
 
-MojoRendererFactory::~MojoRendererFactory() {
-}
+MojoRendererFactory::~MojoRendererFactory() {}
 
 std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,

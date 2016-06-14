@@ -235,17 +235,17 @@
 #endif
 
 #if defined(ENABLE_MOJO_CDM)
-#include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
+#include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_MOJO_RENDERER)
-#include "media/mojo/services/mojo_renderer_factory.h"  // nogncheck
+#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
 #else
 #include "media/renderers/default_renderer_factory.h"
 #endif
 
 #if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_VIDEO_DECODER)
-#include "media/mojo/services/mojo_decoder_factory.h"  // nogncheck
+#include "media/mojo/clients/mojo_decoder_factory.h"  // nogncheck
 #endif
 
 using blink::WebCachePolicy;
