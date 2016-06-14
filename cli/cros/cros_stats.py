@@ -12,6 +12,7 @@ import sys
 from chromite.cbuildbot import constants
 from chromite.lib import build_time_stats
 from chromite.cli import command
+from chromite.lib import commandline
 from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
 from chromite.lib import cros_logging as logging
 
@@ -114,6 +115,8 @@ class StatsCommand(command.CliCommand):
   def Run(self):
     """Run cros build."""
     self.options.Freeze()
+
+    commandline.RunInsideChroot(self)
 
     credentials = self.options.cred_dir
     if not credentials:
