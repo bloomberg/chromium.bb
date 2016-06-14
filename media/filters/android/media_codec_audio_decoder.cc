@@ -108,6 +108,11 @@ MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
 
   if (media_drm_bridge_cdm_context_) {
     DCHECK(cdm_registration_id_);
+
+    // Cancel previously registered callback (if any).
+    media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
+        MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+
     media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
   }
 

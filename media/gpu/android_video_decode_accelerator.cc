@@ -409,6 +409,11 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
     return;
 
   DCHECK(cdm_registration_id_);
+
+  // Cancel previously registered callback (if any).
+  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
+      MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+
   media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
