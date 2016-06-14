@@ -92,7 +92,7 @@ cr.define('login', function() {
                          // the pod itself.
     POD_CUSTOM_ICON: 2,  // Pod custom icon next to password input field.
     HEADER_BAR: 3,       // Buttons on the header bar (Shutdown, Add User).
-    PAD_MENU_ITEM: 4     // User pad menu items (Remove this user).
+    POD_MENU_ITEM: 4     // User pad menu items (User info, Remove user).
   };
 
   /**
@@ -719,18 +719,21 @@ cr.define('login', function() {
       this.actionBoxAreaElement.addEventListener('keydown',
           this.handleActionAreaButtonKeyDown_.bind(this));
 
+      this.actionBoxMenuTitleElement.addEventListener('keydown',
+          this.handleMenuTitleElementKeyDown_.bind(this));
+      this.actionBoxMenuTitleElement.addEventListener('blur',
+          this.handleMenuTitleElementBlur_.bind(this));
+
       this.actionBoxMenuRemoveElement.addEventListener('click',
           this.handleRemoveCommandClick_.bind(this));
       this.actionBoxMenuRemoveElement.addEventListener('keydown',
           this.handleRemoveCommandKeyDown_.bind(this));
       this.actionBoxMenuRemoveElement.addEventListener('blur',
           this.handleRemoveCommandBlur_.bind(this));
-      this.actionBoxRemoveUserWarningButtonElement.addEventListener(
-          'click',
+      this.actionBoxRemoveUserWarningButtonElement.addEventListener('click',
           this.handleRemoveUserConfirmationClick_.bind(this));
-        this.actionBoxRemoveUserWarningButtonElement.addEventListener(
-            'keydown',
-            this.handleRemoveUserConfirmationKeyDown_.bind(this));
+      this.actionBoxRemoveUserWarningButtonElement.addEventListener('keydown',
+          this.handleRemoveUserConfirmationKeyDown_.bind(this));
 
       var pinKeyboard = $('pin-keyboard');
       // The pin keyboard is not present on the md user manager.
@@ -932,15 +935,23 @@ cr.define('login', function() {
 
     /**
      * Gets action box menu.
-     * @type {!HTMLInputElement}
+     * @type {!HTMLDivElement}
      */
     get actionBoxMenu() {
       return this.querySelector('.action-box-menu');
     },
 
     /**
+     * Gets action box menu title (user name and email).
+     * @type {!HTMLDivElement}
+     */
+    get actionBoxMenuTitleElement() {
+      return this.querySelector('.action-box-menu-title');
+    },
+
+    /**
      * Gets action box menu title, user name item.
-     * @type {!HTMLInputElement}
+     * @type {!HTMLSpanElement}
      */
     get actionBoxMenuTitleNameElement() {
       return this.querySelector('.action-box-menu-title-name');
@@ -948,7 +959,7 @@ cr.define('login', function() {
 
     /**
      * Gets action box menu title, user email item.
-     * @type {!HTMLInputElement}
+     * @type {!HTMLSpanElement}
      */
     get actionBoxMenuTitleEmailElement() {
       return this.querySelector('.action-box-menu-title-email');
@@ -1151,6 +1162,10 @@ cr.define('login', function() {
         this.userTypeBubbleElement.classList.remove('bubble-shown');
 
         this.actionBoxAreaElement.classList.add('active');
+
+        // Invisible focus causes ChromeVox to read user name and email.
+        this.actionBoxMenuTitleElement.tabIndex = UserPodTabOrder.POD_MENU_ITEM;
+        this.actionBoxMenuTitleElement.focus();
 
         // If the user pod is on either edge of the screen, then the menu
         // could be displayed partially ofscreen.
@@ -1393,10 +1408,15 @@ cr.define('login', function() {
         case 'Down':
           if (this.isActionBoxMenuActive) {
             this.actionBoxMenuRemoveElement.tabIndex =
-                UserPodTabOrder.PAD_MENU_ITEM;
+                UserPodTabOrder.POD_MENU_ITEM;
             this.actionBoxMenuRemoveElement.focus();
           }
           e.stopPropagation();
+          break;
+        // Ignore these two, so ChromeVox hotkeys don't close the menu before
+        // they can navigate through it.
+        case 'Shift':
+        case 'Win':
           break;
         case 'U+001B':  // Esc
           this.isActionBoxMenuActive = false;
@@ -1409,6 +1429,45 @@ cr.define('login', function() {
           this.isActionBoxMenuActive = false;
           break;
       }
+    },
+
+    /**
+     * Handles a keydown event on menu title.
+     * @param {Event} e KeyDown event.
+     */
+    handleMenuTitleElementKeyDown_: function(e) {
+      if (this.disabled)
+        return;
+
+      if (e.keyIdentifier != 'U+0009' /* TAB */) {
+        this.handleActionAreaButtonKeyDown_(e);
+        return;
+      }
+
+      if (e.shiftKey == false) {
+        if (this.actionBoxMenuRemoveElement.hidden) {
+          this.isActionBoxMenuActive = false;
+        } else {
+          this.actionBoxMenuRemoveElement.tabIndex =
+              UserPodTabOrder.POD_MENU_ITEM;
+          this.actionBoxMenuRemoveElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        this.isActionBoxMenuActive = false;
+        this.focusInput();
+        e.preventDefault();
+      }
+    },
+
+    /**
+     * Handles a blur event on menu title.
+     * @param {Event} e Blur event.
+     */
+    handleMenuTitleElementBlur_: function(e) {
+      if (this.disabled)
+        return;
+      this.actionBoxMenuTitleElement.tabIndex = -1;
     },
 
     /**
@@ -1646,6 +1705,11 @@ cr.define('login', function() {
         case 'Up':
         case 'Down':
           e.stopPropagation();
+          break;
+        // Ignore these two, so ChromeVox hotkeys don't close the menu before
+        // they can navigate through it.
+        case 'Shift':
+        case 'Win':
           break;
         case 'U+001B':  // Esc
           this.actionBoxAreaElement.focus();
