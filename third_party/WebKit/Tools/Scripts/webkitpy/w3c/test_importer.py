@@ -73,7 +73,6 @@ import sys
 
 from webkitpy.common.host import Host
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import convert_for_webkit
@@ -91,21 +90,13 @@ _log = logging.getLogger(__name__)
 def main(_argv, _stdout, _stderr):
     options, args = parse_args()
     host = Host()
-    dir_to_import = host.filesystem.normpath(os.path.abspath(args[0]))
-    if len(args) == 1:
-        top_of_repo = dir_to_import
-    else:
-        top_of_repo = host.filesystem.normpath(os.path.abspath(args[1]))
+    source_repo_path = host.filesystem.normpath(os.path.abspath(args[0]))
 
-    if not host.filesystem.exists(dir_to_import):
-        sys.exit('Directory %s not found!' % dir_to_import)
-    if not host.filesystem.exists(top_of_repo):
-        sys.exit('Repository directory %s not found!' % top_of_repo)
-    if top_of_repo not in dir_to_import:
-        sys.exit('Repository directory %s must be a parent of %s' % (top_of_repo, dir_to_import))
+    if not host.filesystem.exists(source_repo_path):
+        sys.exit('Repository directory %s not found!' % source_repo_path)
 
     configure_logging()
-    test_importer = TestImporter(host, dir_to_import, top_of_repo, options)
+    test_importer = TestImporter(host, source_repo_path, options)
     test_importer.do_import()
 
 
@@ -126,7 +117,7 @@ def configure_logging():
 
 
 def parse_args():
-    parser = optparse.OptionParser(usage='usage: %prog [options] [dir_to_import] [top_of_repo]')
+    parser = optparse.OptionParser(usage='usage: %prog [options] source_repo_path')
     parser.add_option('-n', '--no-overwrite', dest='overwrite', action='store_false', default=True,
                       help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten.')
     parser.add_option('-a', '--all', action='store_true', default=False,
@@ -139,22 +130,16 @@ def parse_args():
                       help='Dryrun only (don\'t actually write any results).')
 
     options, args = parser.parse_args()
-    if len(args) > 2:
-        parser.error('Incorrect number of arguments')
-    elif len(args) == 0:
-        # If no top-of-repo path was given, then assume that the user means to
-        # use the current working directory as the top-of-repo path.
-        # TODO(qyearsley): Remove this behavior, since it's a little confusing.
-        args = (os.getcwd(),)
+    if len(args) != 1:
+        parser.error('Incorrect number of arguments; source repo path is required.')
     return options, args
 
 
 class TestImporter(object):
 
-    def __init__(self, host, dir_to_import, top_of_repo, options):
+    def __init__(self, host, source_repo_path, options):
         self.host = host
-        self.dir_to_import = dir_to_import
-        self.top_of_repo = top_of_repo
+        self.source_repo_path = source_repo_path
         self.options = options
 
         self.filesystem = self.host.filesystem
@@ -162,18 +147,18 @@ class TestImporter(object):
         self._webkit_root = self.webkit_finder.webkit_base()
         self.layout_tests_dir = self.webkit_finder.path_from_webkit_base('LayoutTests')
         self.destination_directory = self.filesystem.normpath(self.filesystem.join(self.layout_tests_dir, options.destination,
-                                                                                   self.filesystem.basename(self.top_of_repo)))
-        self.import_in_place = (self.dir_to_import == self.destination_directory)
-        self.dir_above_repo = self.filesystem.dirname(self.top_of_repo)
+                                                                                   self.filesystem.basename(self.source_repo_path)))
+        self.import_in_place = (self.source_repo_path == self.destination_directory)
+        self.dir_above_repo = self.filesystem.dirname(self.source_repo_path)
 
         self.import_list = []
 
     def do_import(self):
-        _log.info("Importing %s into %s", self.dir_to_import, self.destination_directory)
-        self.find_importable_tests(self.dir_to_import)
+        _log.info("Importing %s into %s", self.source_repo_path, self.destination_directory)
+        self.find_importable_tests()
         self.import_tests()
 
-    def find_importable_tests(self, directory):
+    def find_importable_tests(self):
         """Walks through the source directory to find what tests should be imported.
 
         This function sets self.import_list, which contains information about how many
@@ -181,7 +166,7 @@ class TestImporter(object):
         """
         paths_to_skip = self.find_paths_to_skip()
 
-        for root, dirs, files in self.filesystem.walk(directory):
+        for root, dirs, files in self.filesystem.walk(self.source_repo_path):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
             _log.info('  scanning ' + cur_dir + '...')
             total_tests = 0
@@ -217,7 +202,7 @@ class TestImporter(object):
 
             for filename in files:
                 path_full = self.filesystem.join(root, filename)
-                path_base = path_full.replace(directory + '/', '')
+                path_base = path_full.replace(self.source_repo_path + '/', '')
                 path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if not self.options.dry_run and self.import_in_place:
@@ -335,7 +320,7 @@ class TestImporter(object):
 
             orig_path = dir_to_copy['dirname']
 
-            subpath = self.filesystem.relpath(orig_path, self.top_of_repo)
+            subpath = self.filesystem.relpath(orig_path, self.source_repo_path)
             new_path = self.filesystem.join(self.destination_directory, subpath)
 
             if not self.filesystem.exists(new_path):
@@ -422,5 +407,5 @@ class TestImporter(object):
         Args:
           Absolute path of file to be imported.
         """
-        path_from_repo_base = os.path.relpath(source_path, self.top_of_repo)
+        path_from_repo_base = os.path.relpath(source_path, self.source_repo_path)
         return len(path_from_repo_base) > MAX_PATH_LENGTH
