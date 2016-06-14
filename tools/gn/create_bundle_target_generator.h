@@ -23,9 +23,16 @@ class CreateBundleTargetGenerator : public TargetGenerator {
   void DoRun() override;
 
  private:
-  bool GetBundleDir(const SourceDir& bundle_root_dir,
-                    const base::StringPiece& name,
-                    SourceDir* bundle_dir);
+  bool FillBundleDir(const SourceDir& bundle_root_dir,
+                     const base::StringPiece& name,
+                     SourceDir* bundle_dir);
+
+  bool FillProductType();
+
+  bool FillCodeSigningScript();
+  bool FillCodeSigningSources();
+  bool FillCodeSigningOutputs();
+  bool FillCodeSigningArgs();
 
   DISALLOW_COPY_AND_ASSIGN(CreateBundleTargetGenerator);
 };

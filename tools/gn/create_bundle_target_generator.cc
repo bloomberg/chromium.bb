@@ -4,12 +4,14 @@
 
 #include "tools/gn/create_bundle_target_generator.h"
 
+#include "base/logging.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/substitution_type.h"
 #include "tools/gn/target.h"
 #include "tools/gn/value.h"
+#include "tools/gn/value_extractors.h"
 #include "tools/gn/variables.h"
 
 CreateBundleTargetGenerator::CreateBundleTargetGenerator(
@@ -25,33 +27,36 @@ void CreateBundleTargetGenerator::DoRun() {
   target_->set_output_type(Target::CREATE_BUNDLE);
 
   BundleData& bundle_data = target_->bundle_data();
-  if (!GetBundleDir(SourceDir(),
-                    variables::kBundleRootDir,
-                    &bundle_data.root_dir()))
+  if (!FillBundleDir(SourceDir(), variables::kBundleRootDir,
+                     &bundle_data.root_dir()))
     return;
-  if (!GetBundleDir(bundle_data.root_dir(),
-                    variables::kBundleResourcesDir,
-                    &bundle_data.resources_dir()))
+  if (!FillBundleDir(bundle_data.root_dir(), variables::kBundleResourcesDir,
+                     &bundle_data.resources_dir()))
     return;
-  if (!GetBundleDir(bundle_data.root_dir(),
-                    variables::kBundleExecutableDir,
-                    &bundle_data.executable_dir()))
+  if (!FillBundleDir(bundle_data.root_dir(), variables::kBundleExecutableDir,
+                     &bundle_data.executable_dir()))
     return;
-  if (!GetBundleDir(bundle_data.root_dir(),
-                    variables::kBundlePlugInsDir,
-                    &bundle_data.plugins_dir()))
+  if (!FillBundleDir(bundle_data.root_dir(), variables::kBundlePlugInsDir,
+                     &bundle_data.plugins_dir()))
     return;
 
-  const Value* value = scope_->GetValue(variables::kProductType, true);
-  if (value) {
-    if (!value->VerifyTypeIs(Value::STRING, err_))
-      return;
+  if (!FillProductType())
+    return;
 
-    bundle_data.product_type().assign(value->string_value());
-  }
+  if (!FillCodeSigningScript())
+    return;
+
+  if (!FillCodeSigningSources())
+    return;
+
+  if (!FillCodeSigningOutputs())
+    return;
+
+  if (!FillCodeSigningArgs())
+    return;
 }
 
-bool CreateBundleTargetGenerator::GetBundleDir(
+bool CreateBundleTargetGenerator::FillBundleDir(
     const SourceDir& bundle_root_dir,
     const base::StringPiece& name,
     SourceDir* bundle_dir) {
@@ -76,4 +81,115 @@ bool CreateBundleTargetGenerator::GetBundleDir(
   }
   bundle_dir->SwapValue(&str);
   return true;
+}
+
+bool CreateBundleTargetGenerator::FillProductType() {
+  const Value* value = scope_->GetValue(variables::kProductType, true);
+  if (!value)
+    return true;
+
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return false;
+
+  target_->bundle_data().product_type().assign(value->string_value());
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillCodeSigningScript() {
+  const Value* value = scope_->GetValue(variables::kCodeSigningScript, true);
+  if (!value)
+    return true;
+
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return false;
+
+  SourceFile script_file = scope_->GetSourceDir().ResolveRelativeFile(
+      *value, err_, scope_->settings()->build_settings()->root_path_utf8());
+  if (err_->has_error())
+    return false;
+
+  target_->bundle_data().set_code_signing_script(script_file);
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillCodeSigningSources() {
+  const Value* value = scope_->GetValue(variables::kCodeSigningSources, true);
+  if (!value)
+    return true;
+
+  if (target_->bundle_data().code_signing_script().is_null()) {
+    *err_ = Err(
+        function_call_,
+        "No code signing script."
+        "You must define code_signing_script if you use code_signing_sources.");
+    return false;
+  }
+
+  Target::FileList script_sources;
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &script_sources,
+                                  err_))
+    return false;
+
+  target_->bundle_data().code_signing_sources().swap(script_sources);
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillCodeSigningOutputs() {
+  const Value* value = scope_->GetValue(variables::kCodeSigningOutputs, true);
+  if (!value)
+    return true;
+
+  if (target_->bundle_data().code_signing_script().is_null()) {
+    *err_ = Err(
+        function_call_,
+        "No code signing script."
+        "You must define code_signing_script if you use code_signing_outputs.");
+    return false;
+  }
+
+  if (!value->VerifyTypeIs(Value::LIST, err_))
+    return false;
+
+  SubstitutionList& outputs = target_->bundle_data().code_signing_outputs();
+  if (!outputs.Parse(*value, err_))
+    return false;
+
+  if (outputs.list().empty()) {
+    *err_ =
+        Err(function_call_,
+            "Code signing script has no output."
+            "If you have no outputs, the build system can not tell when your\n"
+            "code signing script needs to be run.");
+    return false;
+  }
+
+  // Validate that outputs are in the output dir.
+  CHECK_EQ(value->list_value().size(), outputs.list().size());
+  for (size_t i = 0; i < value->list_value().size(); ++i) {
+    if (!EnsureSubstitutionIsInOutputDir(outputs.list()[i],
+                                         value->list_value()[i]))
+      return false;
+  }
+
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillCodeSigningArgs() {
+  const Value* value = scope_->GetValue(variables::kCodeSigningArgs, true);
+  if (!value)
+    return true;
+
+  if (target_->bundle_data().code_signing_script().is_null()) {
+    *err_ = Err(
+        function_call_,
+        "No code signing script."
+        "You must define code_signing_script if you use code_signing_args.");
+    return false;
+  }
+
+  if (!value->VerifyTypeIs(Value::LIST, err_))
+    return false;
+
+  return target_->bundle_data().code_signing_args().Parse(*value, err_);
 }

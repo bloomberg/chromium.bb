@@ -648,6 +648,54 @@ const char kCheckIncludes_Help[] =
     "    ...\n"
     "  }\n";
 
+const char kCodeSigningArgs[] = "code_signing_args";
+const char kCodeSigningArgs_HelpShort[] =
+    "code_signing_args: [string list] Arguments passed to code signing script.";
+const char kCodeSigningArgs_Help[] =
+    "code_signing_args: [string list] Arguments passed to code signing "
+        "script.\n"
+    "\n"
+    "  For create_bundle targets, code_signing_args is the list of arguments\n"
+    "  to pass to the code signing script. Typically you would use source\n"
+    "  expansion (see \"gn help source_expansion\") to insert the source file\n"
+    "  names.\n"
+    "\n"
+    "  See also \"gn help create_bundle\".\n";
+
+const char kCodeSigningScript[] = "code_signing_script";
+const char kCodeSigningScript_HelpShort[] =
+    "code_signing_script: [file name] Script for code signing.";
+const char kCodeSigningScript_Help[] =
+    "code_signing_script: [file name] Script for code signing."
+    "\n"
+    "  An absolute or buildfile-relative file name of a Python script to run\n"
+    "  for a create_bundle target to perform code signing step.\n"
+    "\n"
+    "  See also \"gn help create_bundle\".\n";
+
+const char kCodeSigningSources[] = "code_signing_sources";
+const char kCodeSigningSources_HelpShort[] =
+    "code_signing_sources: [file list] Sources for code signing step.";
+const char kCodeSigningSources_Help[] =
+    "code_signing_sources: [file list] Sources for code signing step.\n"
+    "\n"
+    "  A list of files used as input for code signing script step of a\n"
+    "  create_bundle target. Non-absolute paths will be resolved relative to\n"
+    "  the current build file.\n"
+    "\n"
+    "  See also \"gn help create_bundle\".\n";
+
+const char kCodeSigningOutputs[] = "code_signing_outputs";
+const char kCodeSigningOutputs_HelpShort[] =
+    "code_signing_outputs: [file list] Output files for code signing step.";
+const char kCodeSigningOutputs_Help[] =
+    "code_signing_outputs: [file list] Output files for code signing step.\n"
+    "\n"
+    "  Outputs from the code signing step of a create_bundle target. Must\n"
+    "  refer to files in the build directory.\n"
+    "\n"
+    "  See also \"gn help create_bundle\".\n";
+
 const char kCompleteStaticLib[] = "complete_static_lib";
 const char kCompleteStaticLib_HelpShort[] =
     "complete_static_lib: [boolean] Links all deps into a static library.";
@@ -1698,6 +1746,10 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(CflagsObjC)
     INSERT_VARIABLE(CflagsObjCC)
     INSERT_VARIABLE(CheckIncludes)
+    INSERT_VARIABLE(CodeSigningArgs)
+    INSERT_VARIABLE(CodeSigningScript)
+    INSERT_VARIABLE(CodeSigningSources)
+    INSERT_VARIABLE(CodeSigningOutputs)
     INSERT_VARIABLE(CompleteStaticLib)
     INSERT_VARIABLE(Configs)
     INSERT_VARIABLE(Console)

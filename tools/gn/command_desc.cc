@@ -337,7 +337,7 @@ void PrintOutputs(const Target* target, bool display_header) {
     std::vector<SourceFile> output_files;
     target->bundle_data().GetOutputsAsSourceFiles(target->settings(),
                                                   &output_files);
-    PrintFileList(output_files, "", true, false);
+    PrintFileList(output_files, std::string(), true, false);
   } else {
     const SubstitutionList& outputs = target->action_values().outputs();
     if (!outputs.required_types().empty()) {
@@ -355,7 +355,7 @@ void PrintOutputs(const Target* target, bool display_header) {
     std::vector<SourceFile> output_files;
     SubstitutionWriter::ApplyListToSources(target->settings(), outputs,
                                            target->sources(), &output_files);
-    PrintFileList(output_files, "", true, false);
+    PrintFileList(output_files, std::string(), true, false);
   }
 }
 

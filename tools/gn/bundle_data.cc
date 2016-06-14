@@ -8,6 +8,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
 namespace {
@@ -82,6 +83,10 @@ void BundleData::GetSourceFiles(SourceFiles* sources) const {
   }
   sources->insert(sources->end(), asset_catalog_sources_.begin(),
                   asset_catalog_sources_.end());
+  if (!code_signing_script_.is_null()) {
+    sources->insert(sources->end(), code_signing_sources_.begin(),
+                    code_signing_sources_.end());
+  }
 }
 
 void BundleData::GetOutputFiles(const Settings* settings,
@@ -104,6 +109,15 @@ void BundleData::GetOutputsAsSourceFiles(
 
   if (!asset_catalog_sources_.empty())
     outputs_as_source->push_back(GetCompiledAssetCatalogPath());
+
+  if (!code_signing_script_.is_null()) {
+    std::vector<SourceFile> code_signing_output_files;
+    SubstitutionWriter::GetListAsSourceFiles(code_signing_outputs_,
+                                             &code_signing_output_files);
+    outputs_as_source->insert(outputs_as_source->end(),
+                              code_signing_output_files.begin(),
+                              code_signing_output_files.end());
+  }
 
   if (!root_dir_.is_null())
     outputs_as_source->push_back(GetBundleRootDirOutput(settings));

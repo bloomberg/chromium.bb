@@ -1436,12 +1436,32 @@
 
 ```
 
+### **Code signing**
+
+```
+  Some bundle needs to be code signed as part of the build (on iOS all
+  application needs to be code signed to run on a device). The code
+  signature can be configured via the code_signing_script variable.
+
+  If set, code_signing_script is the path of a script that invoked after
+  all files have been moved into the bundle. The script must not change
+  any file in the bundle, but may add new files.
+
+  If code_signing_script is defined, then code_signing_outputs must also
+  be defined and non-empty to inform when the script needs to be re-run.
+  The code_signing_args will be passed as is to the script (so path have
+  to be rebased) and additional inputs may be listed with the variable
+  code_signing_sources.
+
+```
+
 ### **Variables**
 
 ```
   bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
   bundle_plugins_dir*, deps, data_deps, public_deps, visibility,
-  product_type
+  product_type, code_signing_args, code_signing_script,
+  code_signing_sources, code_signing_outputs
   * = required
 
 ```
@@ -1477,25 +1497,26 @@
 
       executable("${app_name}_generate_executable") {
         forward_variables_from(invoker, "*", [
-                                                "output_name",
-                                                "visibility",
-                                               ])
+                                               "output_name",
+                                               "visibility",
+                                             ])
         output_name =
             rebase_path("$gen_path/$app_name", root_build_dir)
       }
 
-      bundle_data("${app_name}_bundle_executable") {
-        deps = [ ":${app_name}_generate_executable" ]
-        sources = [ "$gen_path/$app_name" ]
-        outputs = [ "{{bundle_executable_dir}}/$app_name" ]
+      code_signing =
+          defined(invoker.code_signing) && invoker.code_signing
+
+      if (is_ios && !code_signing) {
+        bundle_data("${app_name}_bundle_executable") {
+          deps = [ ":${app_name}_generate_executable" ]
+          sources = [ "$gen_path/$app_name" ]
+          outputs = [ "{{bundle_executable_dir}}/$app_name" ]
+        }
       }
 
       create_bundle("${app_name}.app") {
         product_type = "com.apple.product-type.application"
-        deps = [
-          ":${app_name}_bundle_executable",
-          ":${app_name}_bundle_info_plist",
-        ]
         if (is_ios) {
           bundle_root_dir = "${root_build_dir}/$target_name"
           bundle_resources_dir = bundle_root_dir
@@ -1507,11 +1528,33 @@
           bundle_executable_dir = bundle_root_dir + "/MacOS"
           bundle_plugins_dir = bundle_root_dir + "/Plugins"
         }
-      }
-
-      group(target_name) {
-        forward_variables_from(invoker, ["visibility"])
-        deps = [ ":${app_name}.app" ]
+        deps = [ ":${app_name}_bundle_info_plist" ]
+        if (is_ios && code_signing) {
+          deps += [ ":${app_name}_generate_executable" ]
+          code_signing_script = "//build/config/ios/codesign.py"
+          code_signing_sources = [
+            invoker.entitlements_path,
+            "$target_gen_dir/$app_name",
+          ]
+          code_signing_outputs = [
+            "$bundle_root_dir/$app_name",
+            "$bundle_root_dir/_CodeSignature/CodeResources",
+            "$bundle_root_dir/embedded.mobileprovision",
+            "$target_gen_dir/$app_name.xcent",
+          ]
+          code_signing_args = [
+            "-i=" + ios_code_signing_identity,
+            "-b=" + rebase_path(
+                "$target_gen_dir/$app_name", root_build_dir),
+            "-e=" + rebase_path(
+                invoker.entitlements_path, root_build_dir),
+            "-e=" + rebase_path(
+                "$target_gen_dir/$app_name.xcent", root_build_dir),
+            rebase_path(bundle_root_dir, root_build_dir),
+          ]
+        } else {
+          deps += [ ":${app_name}_bundle_executable" ]
+        }
       }
     }
   }
@@ -4269,6 +4312,48 @@
     check_includes = false
     ...
   }
+
+
+```
+## **code_signing_args**: [string list] Arguments passed to code signing script.
+
+```
+  For create_bundle targets, code_signing_args is the list of arguments
+  to pass to the code signing script. Typically you would use source
+  expansion (see "gn help source_expansion") to insert the source file
+  names.
+
+  See also "gn help create_bundle".
+
+
+```
+## **code_signing_outputs**: [file list] Output files for code signing step.
+
+```
+  Outputs from the code signing step of a create_bundle target. Must
+  refer to files in the build directory.
+
+  See also "gn help create_bundle".
+
+
+```
+## **code_signing_script**: [file name] Script for code signing.
+```
+  An absolute or buildfile-relative file name of a Python script to run
+  for a create_bundle target to perform code signing step.
+
+  See also "gn help create_bundle".
+
+
+```
+## **code_signing_sources**: [file list] Sources for code signing step.
+
+```
+  A list of files used as input for code signing script step of a
+  create_bundle target. Non-absolute paths will be resolved relative to
+  the current build file.
+
+  See also "gn help create_bundle".
 
 
 ```
