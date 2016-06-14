@@ -105,9 +105,6 @@ struct WebBluetoothRemoteGATTCharacteristic {
   uint32 properties;
 };
 
-// TODO(ortuno): Define Bluetooth Service.
-// https://crbug.com/508771
-
 // Web Bluetooth Interface that Blink can use to perform
 // Bluetooth GATT Operations on Bluetooth Devices.
 interface WebBluetoothService {
