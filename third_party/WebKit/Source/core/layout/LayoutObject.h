@@ -1667,7 +1667,11 @@ private:
     // The passed rect is mutated into the coordinate space of the paint invalidation container.
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
-    LayoutObject* parentCrossingFrameBoundaries() const;
+    // Returns the parent for paint invalidation.
+    // - For LayoutView, returns the owner layout object in the containing frame if any or nullptr;
+    // - For multi-column spanner, returns the spanner placeholder;
+    // - Otherwise returns parent().
+    LayoutObject* paintInvalidationParent() const;
 
     static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 

@@ -604,17 +604,19 @@ PaintLayer* LayoutObject::enclosingLayer() const
         if (current->hasLayer())
             return toLayoutBoxModelObject(current)->layer();
     }
-    // FIXME: we should get rid of detached layout subtrees, at which point this code should
-    // not be reached. crbug.com/411429
+    // TODO(crbug.com/365897): we should get rid of detached layout subtrees, at which point this code should
+    // not be reached.
     return nullptr;
 }
 
 PaintLayer* LayoutObject::paintingLayer() const
 {
-    for (const LayoutObject* current = this; current; current = current->isColumnSpanAll() ? current->containingBlock() : current->parent()) {
+    for (const LayoutObject* current = this; current; current = current->paintInvalidationParent()) {
         if (current->hasLayer() && toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer())
             return toLayoutBoxModelObject(current)->layer();
     }
+    // TODO(crbug.com/365897): we should get rid of detached layout subtrees, at which point this code should
+    // not be reached.
     return nullptr;
 }
 
@@ -2615,9 +2617,13 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool
     return o;
 }
 
-LayoutObject* LayoutObject::parentCrossingFrameBoundaries() const
+LayoutObject* LayoutObject::paintInvalidationParent() const
 {
-    return isLayoutView() ? frame()->ownerLayoutObject() : parent();
+    if (isLayoutView())
+        return frame()->ownerLayoutObject();
+    if (isColumnSpanAll())
+        return spannerPlaceholder();
+    return parent();
 }
 
 bool LayoutObject::isSelectionBorder() const
@@ -3424,7 +3430,7 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 
 inline void LayoutObject::markAncestorsForPaintInvalidation()
 {
-    for (LayoutObject* parent = this->parentCrossingFrameBoundaries(); parent && !parent->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); parent = parent->parentCrossingFrameBoundaries())
+    for (LayoutObject* parent = this->paintInvalidationParent(); parent && !parent->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); parent = parent->paintInvalidationParent())
         parent->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
