@@ -16,6 +16,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/system/update/update_observer.h"
@@ -29,7 +30,6 @@
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/shutdown_policy_observer.h"
-#include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -618,6 +618,10 @@ void SystemTrayDelegateChromeOS::RequestRestartForUpdate() {
   chrome::NotifyAndTerminate(true /* fast path */);
 }
 
+void SystemTrayDelegateChromeOS::RequestShutdown() {
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+}
+
 void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
     ash::BluetoothDeviceList* list) {
   device::BluetoothAdapter::DeviceList devices =
@@ -968,7 +972,7 @@ void SystemTrayDelegateChromeOS::OnSystemClockChanged(
     system::SystemClock* system_clock) {
   const bool use_24_hour_clock = system_clock->ShouldUse24HourClock();
   clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
-  GetSystemTrayNotifier()->NotifyDateFormatChanged();
+  GetWmSystemTrayNotifier()->NotifyDateFormatChanged();
 }
 
 void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {

@@ -8,8 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/login_status.h"
+#include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/date/clock_observer.h"
 #include "base/macros.h"
 
 namespace views {
@@ -26,6 +27,7 @@ namespace tray {
 class TimeView;
 }
 
+// System tray item for the time and date.
 class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
  public:
   enum ClockLayout {

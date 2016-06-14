@@ -11,6 +11,7 @@
 
 namespace ash {
 
+class ClockObserver;
 struct UpdateInfo;
 class UpdateObserver;
 
@@ -24,12 +25,21 @@ class ASH_EXPORT WmSystemTrayNotifier {
   WmSystemTrayNotifier();
   ~WmSystemTrayNotifier();
 
+  void AddClockObserver(ClockObserver* observer);
+  void RemoveClockObserver(ClockObserver* observer);
+
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
+
+  void NotifyRefreshClock();
+  void NotifyDateFormatChanged();
+  void NotifySystemClockTimeUpdated();
+  void NotifySystemClockCanSetTimeChanged(bool can_set_time);
 
   void NotifyUpdateRecommended(const UpdateInfo& info);
 
  private:
+  base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<UpdateObserver> update_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmSystemTrayNotifier);

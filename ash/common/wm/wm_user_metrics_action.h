@@ -14,6 +14,9 @@ enum class WmUserMetricsAction {
   SHELF_ALIGNMENT_SET_BOTTOM,
   SHELF_ALIGNMENT_SET_LEFT,
   SHELF_ALIGNMENT_SET_RIGHT,
+  TRAY_HELP,
+  TRAY_LOCK_SCREEN,
+  TRAY_SHUT_DOWN,
 
   // Thumbnail sized overview of windows triggered by pressing the overview key.
   WINDOW_OVERVIEW,

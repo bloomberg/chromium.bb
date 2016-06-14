@@ -168,6 +168,8 @@ void SystemTrayDelegate::RequestLockScreen() {
 void SystemTrayDelegate::RequestRestartForUpdate() {
 }
 
+void SystemTrayDelegate::RequestShutdown() {}
+
 void SystemTrayDelegate::GetAvailableBluetoothDevices(
     BluetoothDeviceList* list) {
 }

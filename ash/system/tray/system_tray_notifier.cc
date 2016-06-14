@@ -30,14 +30,6 @@ void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
   audio_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
-  clock_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
-  clock_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
   ime_observers_.AddObserver(observer);
 }
@@ -225,28 +217,6 @@ void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
       TracingObserver,
       tracing_observers_,
       OnTracingModeChanged(value));
-}
-
-void SystemTrayNotifier::NotifyRefreshClock() {
-  FOR_EACH_OBSERVER(ClockObserver, clock_observers_, Refresh());
-}
-
-void SystemTrayNotifier::NotifyDateFormatChanged() {
-  FOR_EACH_OBSERVER(ClockObserver,
-                    clock_observers_,
-                    OnDateFormatChanged());
-}
-
-void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
-  FOR_EACH_OBSERVER(ClockObserver,
-                    clock_observers_,
-                    OnSystemClockTimeUpdated());
-}
-
-void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
-  FOR_EACH_OBSERVER(ClockObserver,
-                    clock_observers_,
-                    OnSystemClockCanSetTimeChanged(can_set_time));
 }
 
 void SystemTrayNotifier::NotifyRefreshIME() {

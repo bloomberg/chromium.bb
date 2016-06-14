@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/login_status.h"
 #include "ash/system/chromeos/shutdown_policy_observer.h"
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
@@ -20,6 +20,8 @@ class DateView;
 
 class TrayPopupHeaderButton;
 
+// The system tray bubble view with the date and buttons for help, lock and
+// shutdown.
 class ASH_EXPORT DateDefaultView : public views::View,
                                    public views::ButtonListener,
                                    public ash::ShutdownPolicyObserver {

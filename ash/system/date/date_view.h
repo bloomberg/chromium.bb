@@ -15,6 +15,10 @@
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 
+namespace base {
+class Time;
+}
+
 namespace views {
 class Label;
 }

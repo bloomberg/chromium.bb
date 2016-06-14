@@ -13,7 +13,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
-#include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
 #include "ash/system/tray_accessibility.h"
@@ -52,9 +51,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddAudioObserver(AudioObserver* observer);
   void RemoveAudioObserver(AudioObserver* observer);
-
-  void AddClockObserver(ClockObserver* observer);
-  void RemoveClockObserver(ClockObserver* observer);
 
   void AddIMEObserver(IMEObserver* observer);
   void RemoveIMEObserver(IMEObserver* observer);
@@ -113,10 +109,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyAudioActiveOutputNodeChanged();
   void NotifyAudioActiveInputNodeChanged();
   void NotifyTracingModeChanged(bool value);
-  void NotifyRefreshClock();
-  void NotifyDateFormatChanged();
-  void NotifySystemClockTimeUpdated();
-  void NotifySystemClockCanSetTimeChanged(bool can_set_time);
   void NotifyRefreshIME();
   void NotifyRefreshIMEMenu(bool is_active);
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
@@ -149,7 +141,6 @@ class ASH_EXPORT SystemTrayNotifier {
  private:
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<AudioObserver> audio_observers_;
-  base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LocaleObserver> locale_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;

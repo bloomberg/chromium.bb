@@ -9,11 +9,9 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/system/date/date_view.h"
-#include "ash/wm/lock_state_controller.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -50,12 +48,12 @@ DateDefaultView::DateDefaultView(LoginStatus login)
   view->SetContent(date_view_);
   AddChildView(view);
 
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
+  WmShell* shell = WmShell::Get();
+  const bool adding_user =
+      shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
   if (login == LoginStatus::LOCKED || login == LoginStatus::NOT_LOGGED_IN ||
-      userAddingRunning)
+      adding_user)
     return;
 
   date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
@@ -86,7 +84,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
     view->AddButton(shutdown_button_);
   }
 
-  if (ash::Shell::GetInstance()->session_state_delegate()->CanLockScreen()) {
+  if (shell->GetSessionStateDelegate()->CanLockScreen()) {
     lock_button_ = new TrayPopupHeaderButton(
         this, IDR_AURA_UBER_TRAY_LOCKSCREEN, IDR_AURA_UBER_TRAY_LOCKSCREEN,
         IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
@@ -95,8 +93,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
     view->AddButton(lock_button_);
   }
-  SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* system_tray_delegate = shell->system_tray_delegate();
   system_tray_delegate->AddShutdownPolicyObserver(this);
   system_tray_delegate->ShouldRebootOnShutdown(base::Bind(
       &DateDefaultView::OnShutdownPolicyChanged, weak_factory_.GetWeakPtr()));
@@ -129,16 +126,16 @@ const tray::DateView* DateDefaultView::GetDateView() const {
 
 void DateDefaultView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  Shell* shell = Shell::GetInstance();
-  SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
+  WmShell* shell = WmShell::Get();
+  SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
   if (sender == help_button_) {
-    shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
+    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_HELP);
     tray_delegate->ShowHelp();
   } else if (sender == shutdown_button_) {
-    shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
-    shell->lock_state_controller()->RequestShutdown();
+    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_SHUT_DOWN);
+    tray_delegate->RequestShutdown();
   } else if (sender == lock_button_) {
-    shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
+    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_LOCK_SCREEN);
     tray_delegate->RequestLockScreen();
   } else {
     NOTREACHED();

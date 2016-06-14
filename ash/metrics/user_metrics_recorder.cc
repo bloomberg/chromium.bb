@@ -533,17 +533,8 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_TOUCHSCREEN_TAP_DOWN:
       base::RecordAction(base::UserMetricsAction("Touchscreen_Down"));
       break;
-    case ash::UMA_TRAY_HELP:
-      base::RecordAction(base::UserMetricsAction("Tray_Help"));
-      break;
-    case ash::UMA_TRAY_LOCK_SCREEN:
-      base::RecordAction(base::UserMetricsAction("Tray_LockScreen"));
-      break;
     case ash::UMA_TRAY_OVERVIEW:
       base::RecordAction(base::UserMetricsAction("Tray_Overview"));
-      break;
-    case ash::UMA_TRAY_SHUT_DOWN:
-      base::RecordAction(base::UserMetricsAction("Tray_ShutDown"));
       break;
     case ash::UMA_WINDOW_APP_CLOSE_BUTTON_CLICK:
       base::RecordAction(base::UserMetricsAction("AppCloseButton_Clk"));
@@ -595,6 +586,15 @@ void UserMetricsRecorder::RecordUserMetricsAction(
       break;
     case wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_RIGHT:
       base::RecordAction(base::UserMetricsAction("Shelf_AlignmentSetRight"));
+      break;
+    case wm::WmUserMetricsAction::TRAY_HELP:
+      base::RecordAction(base::UserMetricsAction("Tray_Help"));
+      break;
+    case wm::WmUserMetricsAction::TRAY_LOCK_SCREEN:
+      base::RecordAction(base::UserMetricsAction("Tray_LockScreen"));
+      break;
+    case wm::WmUserMetricsAction::TRAY_SHUT_DOWN:
+      base::RecordAction(base::UserMetricsAction("Tray_ShutDown"));
       break;
     case wm::WmUserMetricsAction::WINDOW_OVERVIEW:
       base::RecordAction(base::UserMetricsAction("WindowSelector_Overview"));

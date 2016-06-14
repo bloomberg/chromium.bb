@@ -114,6 +114,7 @@ class SystemTrayDelegateChromeOS
   void SignOut() override;
   void RequestLockScreen() override;
   void RequestRestartForUpdate() override;
+  void RequestShutdown() override;
   void GetAvailableBluetoothDevices(ash::BluetoothDeviceList* list) override;
   void BluetoothStartDiscovering() override;
   void BluetoothStopDiscovering() override;

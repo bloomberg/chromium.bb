@@ -8,7 +8,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -143,6 +142,8 @@ void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
 void BaseDateTimeView::OnLocaleChanged() {
   UpdateText();
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 DateView::DateView() : action_(TrayDate::NONE) {
   SetLayoutManager(

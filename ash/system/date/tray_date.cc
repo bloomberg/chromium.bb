@@ -6,12 +6,11 @@
 
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/system_clock_observer.h"
@@ -27,11 +26,11 @@ TrayDate::TrayDate(SystemTray* system_tray)
 #if defined(OS_CHROMEOS)
   system_clock_observer_.reset(new SystemClockObserver());
 #endif
-  Shell::GetInstance()->system_tray_notifier()->AddClockObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddClockObserver(this);
 }
 
 TrayDate::~TrayDate() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveClockObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveClockObserver(this);
 }
 
 views::View* TrayDate::GetHelpButtonView() const {

@@ -232,6 +232,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Attempts to restart the system for update.
   virtual void RequestRestartForUpdate();
 
+  // Attempts to shut down the system.
+  virtual void RequestShutdown();
+
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices);
 
