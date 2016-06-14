@@ -14,7 +14,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-if (is_chromeos) {
+if (target_os == "chromeos") {
   pkg_config("libdrm") {
     packages = [ "libdrm" ]
   }
@@ -359,7 +359,7 @@ test("gl_unittests") {
 
   if (use_ozone) {
     sources += [ "gl_image_ozone_native_pixmap_unittest.cc" ]
-    if (is_chromeos && target_cpu != "arm") {
+    if (target_os == "chromeos" && target_cpu != "arm") {
       sources += [ "gl_image_ozone_native_pixmap_drm_unittest.cc" ]
     }
   }
@@ -388,7 +388,7 @@ test("gl_unittests") {
     "//ui/gl/init",
   ]
 
-  if (is_chromeos) {
+  if (target_os == "chromeos") {
     configs += [ ":libdrm" ]
   }
 
