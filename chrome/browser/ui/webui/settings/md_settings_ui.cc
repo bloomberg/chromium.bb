@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
+#include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
@@ -63,6 +64,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(USE_NSS_CERTS)
 
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
+  AddSettingsPageUIHandler(new BrowserLifetimeHandler());
   AddSettingsPageUIHandler(new DownloadsHandler());
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
