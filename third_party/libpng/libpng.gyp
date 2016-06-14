@@ -9,6 +9,12 @@
       'dependencies': [
         '../zlib/zlib.gyp:zlib',
       ],
+      'variables': {
+        # libpng checks that the width is not greater than PNG_SIZE_MAX.
+        # On platforms where size_t is 64-bits, this comparison will always
+        # be false.
+        'clang_warning_flags': [ '-Wno-tautological-constant-out-of-range-compare' ],
+      },
       'sources': [
         'png.c',
         'png.h',
