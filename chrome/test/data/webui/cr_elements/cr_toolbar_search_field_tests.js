@@ -72,16 +72,20 @@ cr.define('cr_toolbar_search_field', function() {
         assertNotEquals(field.$.searchInput, field.root.activeElement);
       });
 
-      test('passes searches correctly', function() {
+      test('notifies on new searches', function() {
         MockInteractions.tap(field);
-        simulateSearch('test');
-        assertEquals('test', field.getValue());
+        simulateSearch('query1');
+        assertEquals('query1', field.getValue());
 
         MockInteractions.tap(field.$.clearSearch);
         assertFalse(field.showingSearch);
         assertEquals('', field.getValue());
 
-        assertEquals(['test', ''].join(), delegate.searches.join());
+        simulateSearch('query2');
+        // Expecting identical query to be ignored.
+        simulateSearch('query2');
+
+        assertEquals(['query1', '', 'query2'].join(), delegate.searches.join());
       });
 
       test('blur does not close field when a search is active', function() {

@@ -38,6 +38,12 @@ var CrSearchFieldBehavior = {
     },
 
     hasSearchText: Boolean,
+
+    /** @private */
+    lastValue_: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -74,9 +80,14 @@ var CrSearchFieldBehavior = {
   },
 
   onSearchTermSearch: function() {
-    this.hasSearchText = this.getValue() != '';
+    var newValue = this.getValue();
+    if (newValue == this.lastValue_)
+      return;
+
+    this.hasSearchText = newValue != '';
     if (this.delegate_)
-      this.delegate_.onSearchTermSearch(this.getValue());
+      this.delegate_.onSearchTermSearch(newValue);
+    this.lastValue_ = newValue;
   },
 
   onSearchTermKeydown: function(e) {

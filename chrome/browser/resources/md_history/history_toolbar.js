@@ -97,11 +97,10 @@ Polymer({
   },
 
   /**
-   * If the search term has changed reload for the new search.
+   * @param {string} searchTerm
    */
   onSearch: function(searchTerm) {
-    if (searchTerm != this.searchTerm)
-      this.searchTerm = searchTerm;
+    this.searchTerm = searchTerm;
   },
 
   attached: function() {
