@@ -72,10 +72,6 @@ void DeviceNetworkConfigurationUpdater::Init() {
     // Apply the roaming setting initially.
     OnDataRoamingSettingChanged();
   }
-
-  // Set up MAC address randomization if we are not enterprise managed.
-  network_device_handler_->SetMACAddressRandomizationEnabled(
-      !connector->IsEnterpriseManaged());
 }
 
 void DeviceNetworkConfigurationUpdater::ImportCertificates(

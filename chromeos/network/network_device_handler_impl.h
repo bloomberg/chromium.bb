@@ -89,8 +89,6 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
 
   void SetCellularAllowRoaming(bool allow_roaming) override;
 
-  void SetMACAddressRandomizationEnabled(bool enabled) override;
-
   void SetWifiTDLSEnabled(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -131,16 +129,12 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   // cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
 
-  // Apply the current value of |mac_addr_randomization_| to wifi devices.
-  void ApplyMACAddressRandomizationToShill();
-
   // Get the DeviceState for the wifi device, if any.
   const DeviceState* GetWifiDeviceState(
       const network_handler::ErrorCallback& error_callback);
 
   NetworkStateHandler* network_state_handler_;
   bool cellular_allow_roaming_;
-  bool mac_addr_randomization_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);
 };
