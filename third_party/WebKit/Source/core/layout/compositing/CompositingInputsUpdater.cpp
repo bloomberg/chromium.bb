@@ -39,7 +39,7 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(const PaintLaye
                 // CSS clip applies to fixed position elements even for ancestors that are not what the
                 // fixed element is positioned with respect to.
                 if (current->hasClip()) {
-                    ASSERT(current->hasLayer());
+                    DCHECK(current->hasLayer());
                     return static_cast<const LayoutBoxModelObject*>(current)->layer();
                 }
             }
@@ -49,8 +49,9 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(const PaintLaye
 
         if (current->hasLayer())
             return static_cast<const LayoutBoxModelObject*>(current)->layer();
-        // Having clip or overflow clip forces the LayoutObject to become a layer.
-        ASSERT(!current->hasClipRelatedProperty());
+        // Having clip or overflow clip forces the LayoutObject to become a layer, except for contains: paint, which may apply to SVG.
+        // SVG (other than LayoutSVGRoot) cannot have PaintLayers.
+        DCHECK(!current->hasClipRelatedProperty() || current->styleRef().containsPaint());
     }
     ASSERT_NOT_REACHED();
     return nullptr;
