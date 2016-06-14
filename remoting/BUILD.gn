@@ -5,12 +5,10 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/util/version.gni")
-import("//remoting/remoting_enable.gni")
-import("//remoting/remoting_options.gni")
 import("//remoting/remoting_version.gni")
+import("//remoting/remoting_enable.gni")
 import("//testing/test.gni")
 
-# TODO(nicholss) Move this and other defines to version.h.in
 # Various remoting targets need this version definition.
 config("version") {
   defines = [ "VERSION=$chrome_version_full" ]
@@ -32,7 +30,8 @@ group("remoting_all") {
     "//remoting/webapp:unit_tests",
   ]
 
-  if ((is_linux && !is_chromeos) || is_win || is_mac) {
+  # TODO(GYP): add is_mac
+  if ((is_linux && !is_chromeos) || is_win) {
     deps += [ "//remoting/webapp" ]
   }
 
@@ -144,90 +143,96 @@ source_set("test_support") {
   }
 }
 
-test("remoting_unittests") {
-  defines = []
-  libs = []
+# TODO(GYP) remoting_unittests on Mac. Needs to be tested.
+if (!is_mac) {
+  test("remoting_unittests") {
+    defines = []
+    libs = []
 
-  configs += [
-    ":version",
+    configs += [
+      ":version",
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  data = [
-    "//net/data/ssl/certificates/ok_cert.pem",
-    "//net/data/ssl/certificates/unittest.key.bin",
-    "//net/data/ssl/certificates/unittest.selfsigned.der",
-  ]
-
-  deps = [
-    ":test_support",
-    "//base",
-    "//google_apis",
-    "//remoting/base:unit_tests",
-    "//remoting/client:unit_tests",
-    "//remoting/protocol:unit_tests",
-    "//remoting/signaling:unit_tests",
-    "//remoting/test:unit_tests",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/webrtc",
-  ]
-
-  if (enable_remoting_host) {
-    deps += [
-      "//remoting/codec:unit_tests",
-      "//remoting/host:unit_tests",
-      "//ui/gfx",
-    ]
-  }
-
-  if (enable_webrtc) {
-    deps += [ "//third_party/libjingle:libjingle_webrtc" ]
-  }
-
-  if (is_android) {
-    deps += [ "//net/android:net_java" ]
-  }
-
-  if (is_win) {
-    defines += [ "_ALT_NO_EXCEPTIONS" ]
-
-    libs += [
-      "rpcrt4.lib",
-      "wtsapi32.lib",
-    ]
-  }
-
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy_component_test_support" ]
-  }
-}
-
-if (enable_remoting_host) {
-  test("remoting_perftests") {
-    sources = [
-      "test/codec_perftest.cc",
-      "test/protocol_perftest.cc",
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      "//build/config/compiler:no_size_t_to_int_warning",
     ]
 
-    configs += [ ":version" ]
+    data = [
+      "//net/data/ssl/certificates/ok_cert.pem",
+      "//net/data/ssl/certificates/unittest.key.bin",
+      "//net/data/ssl/certificates/unittest.selfsigned.der",
+    ]
 
     deps = [
       ":test_support",
       "//base",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//net:test_support",
-      "//remoting/base",
+      "//google_apis",
+      "//remoting/base:unit_tests",
+      "//remoting/client:unit_tests",
+      "//remoting/protocol:unit_tests",
+      "//remoting/signaling:unit_tests",
+      "//remoting/test:unit_tests",
+      "//testing/gmock",
       "//testing/gtest",
-      "//third_party/libjingle",
-      "//third_party/webrtc/modules/desktop_capture",
+      "//third_party/webrtc",
     ]
+
+    if (enable_remoting_host) {
+      deps += [
+        "//remoting/codec:unit_tests",
+        "//remoting/host:unit_tests",
+        "//ui/gfx",
+      ]
+    }
 
     if (enable_webrtc) {
       deps += [ "//third_party/libjingle:libjingle_webrtc" ]
     }
+
+    if (is_android) {
+      deps += [ "//net/android:net_java" ]
+    }
+
+    if (is_win) {
+      defines += [ "_ALT_NO_EXCEPTIONS" ]
+
+      libs += [
+        "rpcrt4.lib",
+        "wtsapi32.lib",
+      ]
+    }
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy:policy_component_test_support" ]
+    }
+  }
+
+  if (enable_remoting_host) {
+    test("remoting_perftests") {
+      sources = [
+        "test/codec_perftest.cc",
+        "test/protocol_perftest.cc",
+      ]
+
+      configs += [ ":version" ]
+
+      deps = [
+        ":test_support",
+        "//base",
+        "//base/test:run_all_unittests",
+        "//base/test:test_support",
+        "//net:test_support",
+        "//remoting/base",
+        "//testing/gtest",
+        "//third_party/libjingle",
+        "//third_party/webrtc/modules/desktop_capture",
+      ]
+
+      if (enable_webrtc) {
+        deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      }
+    }
+  }
+} else {
+  group("remoting_unittests") {
   }
 }

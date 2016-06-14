@@ -23,20 +23,20 @@ _remoting_version_path = rebase_path(_remoting_version_abspath, root_build_dir)
 _remoting_branding_path =
     rebase_path(_remoting_branding_abspath, root_build_dir)
 
-_branding_dictionary_template = "mac_host_bundle = \"@MAC_HOST_BUNDLE_NAME@\" " + "mac_native_messaging_bundle = \"@MAC_NATIVE_MESSAGING_HOST_BUNDLE_NAME@\" " + "mac_remote_assistance_bundle = \"@MAC_REMOTE_ASSISTANCE_HOST_BUNDLE_NAME@\" " + "prefpane_bundle_name = \"@MAC_PREFPANE_BUNDLE_NAME@\" " + "host_bundle_name = \"@MAC_HOST_BUNDLE_NAME@\" "
+prefpane_bundle_name = exec_script(_version_py_abspath,
+                                   [
+                                     "-f",
+                                     _remoting_branding_path,
+                                     "-t \"@MAC_PREFPANE_BUNDLE_NAME@\"",
+                                   ],
+                                   "string",
+                                   remoting_version_files)
 
-_result = exec_script(_version_py_abspath,
-                      [
-                        "-f",
-                        _remoting_branding_path,
-                        "-t",
-                        _branding_dictionary_template,
-                      ],
-                      "scope",
-                      remoting_version_files)
-
-prefpane_bundle_name = _result.prefpane_bundle_name
-host_bundle_name = _result.host_bundle_name
-me2me_host_bundle_name = _result.mac_host_bundle
-native_messaging_host_bundle_name = _result.mac_native_messaging_bundle
-remote_assistance_host_bundle_name = _result.mac_remote_assistance_bundle
+host_bundle_name = exec_script(_version_py_abspath,
+                               [
+                                 "-f",
+                                 _remoting_branding_path,
+                                 "-t \"@MAC_HOST_BUNDLE_NAME@\"",
+                               ],
+                               "string",
+                               remoting_version_files)
