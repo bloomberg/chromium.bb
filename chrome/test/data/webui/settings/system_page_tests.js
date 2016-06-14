@@ -12,7 +12,7 @@ cr.define('settings_system_page', function() {
    * @implements {settings.SystemPageBrowserProxy}
    */
   function TestSystemPageBrowserProxy() {
-    settings.TestBrowserProxy.call(this, ['restartBrowser']);
+    settings.TestBrowserProxy.call(this, []);
   }
 
   TestSystemPageBrowserProxy.prototype = {
@@ -22,26 +22,26 @@ cr.define('settings_system_page', function() {
     changeProxySettings: assertNotReached,
 
     /** @override */
-    restartBrowser: function() {
-      this.methodCalled('restartBrowser');
-    },
-
-    /** @override */
     wasHardwareAccelerationEnabledAtStartup: function() {
       return HARDWARE_ACCELERATION_AT_STARTUP;
     },
   };
 
   suite('SettingsDevicePage', function() {
-    /** @type {settings.TestSystemPageBrowserProxy} */
-    var testBrowserProxy;
+    /** @type {TestSystemPageBrowserProxy} */
+    var systemBrowserProxy;
+
+    /** @type {settings.TestLifetimeBrowserProxy} */
+    var lifetimeBrowserProxy;
 
     /** @type {SettingsSystemPageElement} */
     var systemPage;
 
     setup(function() {
-      testBrowserProxy = new TestSystemPageBrowserProxy;
-      settings.SystemPageBrowserProxyImpl.instance_ = testBrowserProxy;
+      lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
+      settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+      settings.SystemPageBrowserProxyImpl.instance_ =
+          new TestSystemPageBrowserProxy();
 
       systemPage = document.createElement('settings-system-page');
       systemPage.set('prefs', {
@@ -81,7 +81,7 @@ cr.define('settings_system_page', function() {
       expectTrue(!!restart);  // The "RESTART" button should be showing now.
 
       MockInteractions.tap(restart);
-      return testBrowserProxy.whenCalled('restartBrowser');
+      return lifetimeBrowserProxy.whenCalled('restart');
     });
   });
 });

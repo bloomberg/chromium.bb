@@ -35,9 +35,6 @@ class SystemHandler : public SettingsPageUIHandler {
   // Handler for the "changeProxySettings" message. No args.
   void HandleChangeProxySettings(const base::ListValue* /*args*/);
 
-  // Handler for the "restartBrowser" message. No args.
-  void HandleRestartBrowser(const base::ListValue* /*args*/);
-
   DISALLOW_COPY_AND_ASSIGN(SystemHandler);
 };
 

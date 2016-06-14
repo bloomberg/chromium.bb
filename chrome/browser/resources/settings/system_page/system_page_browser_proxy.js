@@ -12,9 +12,6 @@ cr.define('settings', function() {
     /** Allows the user to change native system proxy settings. */
     changeProxySettings: function() {},
 
-    /** Restarts Chrome so "Use hardware acceleration" can take effect. */
-    restartBrowser: function() {},
-
     /**
      * @return {boolean} Whether hardware acceleration was enabled when the user
      *     started Chrome.
@@ -34,11 +31,6 @@ cr.define('settings', function() {
     /** @override */
     changeProxySettings: function() {
       chrome.send('changeProxySettings');
-    },
-
-    /** @override */
-    restartBrowser: function() {
-      chrome.send('restartBrowser');
     },
 
     /** @override */

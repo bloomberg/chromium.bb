@@ -10,7 +10,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/settings_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -31,18 +30,11 @@ void SystemHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("changeProxySettings",
       base::Bind(&SystemHandler::HandleChangeProxySettings,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("restartBrowser",
-      base::Bind(&SystemHandler::HandleRestartBrowser,
-                 base::Unretained(this)));
 }
 
 void SystemHandler::HandleChangeProxySettings(const base::ListValue* /*args*/) {
   base::RecordAction(base::UserMetricsAction("Options_ShowProxySettings"));
   settings_utils::ShowNetworkProxySettings(web_ui()->GetWebContents());
-}
-
-void SystemHandler::HandleRestartBrowser(const base::ListValue* /*args*/) {
-  chrome::AttemptRestart();
 }
 
 }  // namespace settings

@@ -35,6 +35,6 @@ Polymer({
   /** @private */
   onRestartTap_: function() {
     // TODO(dbeam): we should prompt before restarting the browser.
-    settings.SystemPageBrowserProxyImpl.getInstance().restartBrowser();
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 });
