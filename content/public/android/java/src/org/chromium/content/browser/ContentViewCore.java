@@ -406,11 +406,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         boolean super_onKeyUp(int keyCode, KeyEvent event);
 
         /**
-         * @see View#dispatchKeyEventPreIme(KeyEvent)
-         */
-        boolean super_dispatchKeyEventPreIme(KeyEvent event);
-
-        /**
          * @see View#dispatchKeyEvent(KeyEvent)
          */
         boolean super_dispatchKeyEvent(KeyEvent event);
@@ -1693,18 +1688,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             return true;
         }
         return mContainerViewInternals.super_onKeyUp(keyCode, event);
-    }
-
-    /**
-     * @see View#dispatchKeyEventPreIme(KeyEvent)
-     */
-    public boolean dispatchKeyEventPreIme(KeyEvent event) {
-        try {
-            TraceEvent.begin("ContentViewCore.dispatchKeyEventPreIme");
-            return mContainerViewInternals.super_dispatchKeyEventPreIme(event);
-        } finally {
-            TraceEvent.end("ContentViewCore.dispatchKeyEventPreIme");
-        }
     }
 
     /**

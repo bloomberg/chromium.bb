@@ -200,11 +200,6 @@ public class FullScreenView extends FrameLayout {
         }
 
         @Override
-        public boolean super_dispatchKeyEventPreIme(KeyEvent event) {
-            return FullScreenView.super.dispatchKeyEventPreIme(event);
-        }
-
-        @Override
         public boolean super_dispatchKeyEvent(KeyEvent event) {
             return FullScreenView.super.dispatchKeyEvent(event);
         }

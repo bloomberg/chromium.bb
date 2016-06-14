@@ -2213,11 +2213,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         }
 
         @Override
-        public boolean super_dispatchKeyEventPreIme(KeyEvent arg0) {
-            return false;
-        }
-
-        @Override
         public boolean super_dispatchKeyEvent(KeyEvent event) {
             return mWebViewPrivate.super_dispatchKeyEvent(event);
         }

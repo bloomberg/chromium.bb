@@ -482,11 +482,6 @@ public class AwTestContainerView extends FrameLayout {
         }
 
         @Override
-        public boolean super_dispatchKeyEventPreIme(KeyEvent event) {
-            return AwTestContainerView.super.dispatchKeyEventPreIme(event);
-        }
-
-        @Override
         public boolean super_dispatchKeyEvent(KeyEvent event) {
             return AwTestContainerView.super.dispatchKeyEvent(event);
         }

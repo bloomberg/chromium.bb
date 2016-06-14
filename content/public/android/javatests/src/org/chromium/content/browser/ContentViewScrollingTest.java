@@ -45,11 +45,6 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         }
 
         @Override
-        public boolean super_dispatchKeyEventPreIme(KeyEvent event) {
-            return false;
-        }
-
-        @Override
         public boolean super_dispatchKeyEvent(KeyEvent event) {
             return false;
         }
