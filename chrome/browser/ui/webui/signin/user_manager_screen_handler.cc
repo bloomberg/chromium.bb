@@ -140,12 +140,16 @@ extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
 }
 
 bool IsGuestModeEnabled() {
+  if (switches::IsMaterialDesignUserManager())
+    return true;
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
   return service->GetBoolean(prefs::kBrowserGuestModeEnabled);
 }
 
 bool IsAddPersonEnabled() {
+  if (switches::IsMaterialDesignUserManager())
+    return true;
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
   return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
