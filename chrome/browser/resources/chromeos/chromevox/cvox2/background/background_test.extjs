@@ -885,3 +885,24 @@ TEST_F('BackgroundTest', 'NameFromHeadingLink', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'OptionChildIndexCount', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <div role="listbox">
+      <p>Fruits</p>
+      <div role="option">apple</div>
+      <div role="option">banana</div>
+    </div>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('Fruits')
+        .expectSpeech('with 2 items')
+        .expectSpeech('apple')
+        .expectSpeech(' 1 of 2 ')
+        .call(doCmd('nextObject'))
+        .expectSpeech('banana')
+        .expectSpeech(' 2 of 2 ')
+        .replay();
+  });
+});

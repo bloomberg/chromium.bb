@@ -1031,12 +1031,25 @@ Output.prototype = {
           options.annotation.push(token);
           this.append_(buff, node.description, options);
         } else if (token == 'indexInParent') {
-          options.annotation.push(token);
-          this.append_(buff, String(node.indexInParent + 1));
+          if (node.parent) {
+            options.annotation.push(token);
+            var count = 0;
+            for (var i = 0, child; child = node.parent.children[i]; i++) {
+              if (node.role == child.role)
+                count++;
+              if (node === child)
+                break;
+            }
+            this.append_(buff, String(count));
+          }
         } else if (token == 'parentChildCount') {
-          options.annotation.push(token);
-          if (node.parent)
-            this.append_(buff, String(node.parent.children.length));
+          if (node.parent) {
+            options.annotation.push(token);
+            var count = node.parent.children.filter(function(child) {
+              return node.role == child.role;
+            }).length;
+            this.append_(buff, String(count));
+          }
         } else if (token == 'state') {
           options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
