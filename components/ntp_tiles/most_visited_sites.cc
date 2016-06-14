@@ -64,12 +64,12 @@ enum MostVisitedTileType {
 };
 
 // May only be called from blocking thread pool.
-std::unique_ptr<SkBitmap> MaybeFetchLocalThumbnail(
+std::unique_ptr<SkBitmap> TryFetchLocalThumbnail(
     const GURL& url,
     const scoped_refptr<TopSites>& top_sites) {
   scoped_refptr<base::RefCountedMemory> image;
   std::unique_ptr<SkBitmap> bitmap;
-  if (top_sites && top_sites->GetPageThumbnail(url, false, &image))
+  if (top_sites->GetPageThumbnail(url, false, &image))
     bitmap = gfx::JPEGCodec::Decode(image->front(), image->size());
   return bitmap;
 }
@@ -197,6 +197,8 @@ MostVisitedSites::MostVisitedSites(
       blocking_runner_(blocking_pool_->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
+  DCHECK(top_sites_);
+  DCHECK(suggestions_service_);
   supervisor_->SetObserver(this);
 }
 
@@ -222,16 +224,13 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
     received_popular_sites_ = true;
   }
 
-  // TODO(treib): Can |top_sites_| ever be null? If not, remove these checks.
-  if (top_sites_) {
-    // TopSites updates itself after a delay. To ensure up-to-date results,
-    // force an update now.
-    top_sites_->SyncWithHistory();
+  // TopSites updates itself after a delay. To ensure up-to-date results,
+  // force an update now.
+  top_sites_->SyncWithHistory();
 
-    // Register as TopSitesObserver so that we can update ourselves when the
-    // TopSites changes.
-    scoped_observer_.Add(top_sites_.get());
-  }
+  // Register as TopSitesObserver so that we can update ourselves when the
+  // TopSites changes.
+  scoped_observer_.Add(top_sites_.get());
 
   suggestions_subscription_ = suggestions_service_->AddCallback(
       base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
@@ -250,7 +249,7 @@ void MostVisitedSites::GetURLThumbnail(const GURL& url,
 
   base::PostTaskAndReplyWithResult(
       blocking_runner_.get(), FROM_HERE,
-      base::Bind(&MaybeFetchLocalThumbnail, url, top_sites_),
+      base::Bind(&TryFetchLocalThumbnail, url, top_sites_),
       base::Bind(&MostVisitedSites::OnLocalThumbnailFetched,
                  weak_ptr_factory_.GetWeakPtr(), url, callback));
 }
@@ -267,8 +266,7 @@ void MostVisitedSites::OnLocalThumbnailFetched(
 
   // A thumbnail is not locally available for |url|. Make sure it is put in
   // the list to be fetched at the next visit to this site.
-  if (top_sites_)
-    top_sites_->AddForcedURL(url, base::Time::Now());
+  top_sites_->AddForcedURL(url, base::Time::Now());
   // Also fetch a remote thumbnail if possible. PopularSites or the
   // SuggestionsService can supply a thumbnail download URL.
   if (popular_sites_) {
@@ -307,12 +305,10 @@ void MostVisitedSites::OnObtainedThumbnail(bool is_local_thumbnail,
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
                                                  bool add_url) {
   // Always blacklist in the local TopSites.
-  if (top_sites_) {
-    if (add_url)
-      top_sites_->AddBlacklistedURL(url);
-    else
-      top_sites_->RemoveBlacklistedURL(url);
-  }
+  if (add_url)
+    top_sites_->AddBlacklistedURL(url);
+  else
+    top_sites_->RemoveBlacklistedURL(url);
 
   // Only blacklist in the server-side suggestions service if it's active.
   if (mv_source_ == SUGGESTIONS_SERVICE) {
@@ -382,9 +378,6 @@ void MostVisitedSites::BuildCurrentSuggestions() {
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
-  if (!top_sites_)
-    return;
-
   top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -478,7 +471,7 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
 
   for (const auto& whitelist : supervisor_->whitelists()) {
     // Skip blacklisted sites.
-    if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
+    if (top_sites_->IsBlacklisted(whitelist.entry_point))
       continue;
 
     // Skip suggestions already present.
@@ -529,7 +522,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       hosts.insert(suggestion->url.host());
     for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
       // Skip blacklisted sites.
-      if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
+      if (top_sites_->IsBlacklisted(popular_site.url))
         continue;
       std::string host = popular_site.url.host();
       // Skip suggestions already present in personal or whitelists.
