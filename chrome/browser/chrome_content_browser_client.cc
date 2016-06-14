@@ -2784,6 +2784,14 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
   app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
+#if defined(OS_CHROMEOS)
+#if defined(MOJO_SHELL_CLIENT)
+  if (chrome::IsRunningInMash()) {
+    content::MojoShellConnection::Get()->AddEmbeddedShellClient(
+        base::WrapUnique(new chromeos::ChromeInterfaceFactory));
+  }
+#endif  // MOJO_SHELL_CLIENT
+#endif  // OS_CHROMEOS
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
@@ -2914,17 +2922,6 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 #else
   return false;
 #endif
-}
-
-void ChromeContentBrowserClient::AddMojoShellConnectionListeners() {
-#if defined(OS_CHROMEOS)
-#if defined(MOJO_SHELL_CLIENT)
-  if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::Get()->AddListener(
-        base::WrapUnique(new chromeos::ChromeInterfaceFactory));
-  }
-#endif  // MOJO_SHELL_CLIENT
-#endif  // OS_CHROMEOS
 }
 
 void ChromeContentBrowserClient::OverridePageVisibilityState(

@@ -22,7 +22,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/mojo/browser_shell_connection.h"
 #include "content/browser/mojo/constants.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/storage_partition_impl_map.h"
@@ -130,14 +129,15 @@ class BrowserContextShellConnectionHolder
       std::unique_ptr<shell::Connection> connection,
       shell::mojom::ShellClientRequest request)
       : root_connection_(std::move(connection)),
-        shell_connection_(new BrowserShellConnection(std::move(request))) {}
+        shell_connection_(MojoShellConnection::CreateInstance(
+            std::move(request))) {}
   ~BrowserContextShellConnectionHolder() override {}
 
-  BrowserShellConnection* shell_connection() { return shell_connection_.get(); }
+  MojoShellConnection* shell_connection() { return shell_connection_.get(); }
 
  private:
   std::unique_ptr<shell::Connection> root_connection_;
-  std::unique_ptr<BrowserShellConnection> shell_connection_;
+  std::unique_ptr<MojoShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextShellConnectionHolder);
 };
@@ -400,9 +400,9 @@ void BrowserContext::Initialize(
           std::move(shell_client_request));
     browser_context->SetUserData(kMojoShellConnection, connection_holder);
 
-    BrowserShellConnection* connection = connection_holder->shell_connection();
+    MojoShellConnection* connection = connection_holder->shell_connection();
 
-    // New embedded application factories should be added to |connection| here.
+    // New embedded service factories should be added to |connection| here.
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {
@@ -411,7 +411,7 @@ void BrowserContext::Initialize(
           &user_service::CreateUserShellClient,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
-      connection->AddEmbeddedApplication(user_service::kUserServiceName, info);
+      connection->AddEmbeddedService(user_service::kUserServiceName, info);
     }
   }
 }

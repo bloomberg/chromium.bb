@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
+#include "content/common/mojo/embedded_application_runner.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -23,7 +25,7 @@ namespace content {
 namespace {
 
 using MojoShellConnectionPtr =
-    base::ThreadLocalPointer<MojoShellConnectionImpl>;
+    base::ThreadLocalPointer<MojoShellConnection>;
 
 // Env is thread local so that aura may be used on multiple threads.
 base::LazyInstance<MojoShellConnectionPtr>::Leaky lazy_tls_ptr =
@@ -38,6 +40,47 @@ bool IsRunningInMojoShell() {
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnection, public:
+
+// static
+void MojoShellConnection::SetFactoryForTest(Factory* factory) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  mojo_shell_connection_factory = factory;
+}
+
+// static
+MojoShellConnection* MojoShellConnection::Get() {
+  return lazy_tls_ptr.Pointer()->Get();
+}
+
+// static
+void MojoShellConnection::Create(shell::mojom::ShellClientRequest request,
+                                 bool is_external) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  std::unique_ptr<MojoShellConnection> connection(
+      MojoShellConnectionImpl::CreateInstance(std::move(request), is_external));
+  lazy_tls_ptr.Pointer()->Set(connection.release());
+}
+
+// static
+std::unique_ptr<MojoShellConnection> MojoShellConnection::CreateInstance(
+    shell::mojom::ShellClientRequest request) {
+  return MojoShellConnectionImpl::CreateInstance(std::move(request), false);
+}
+
+// static
+void MojoShellConnection::Destroy() {
+  // This joins the shell controller thread.
+  delete Get();
+  lazy_tls_ptr.Pointer()->Set(nullptr);
+}
+
+MojoShellConnection::~MojoShellConnection() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl, public:
 
 // static
 bool MojoShellConnectionImpl::CreateUsingFactory() {
@@ -59,20 +102,14 @@ void MojoShellConnectionImpl::Create() {
 }
 
 // static
-void MojoShellConnection::Create(shell::mojom::ShellClientRequest request,
-                                 bool is_external) {
-  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+std::unique_ptr<MojoShellConnection> MojoShellConnectionImpl::CreateInstance(
+    shell::mojom::ShellClientRequest request,
+    bool is_external) {
   MojoShellConnectionImpl* connection =
       new MojoShellConnectionImpl(is_external);
-  lazy_tls_ptr.Pointer()->Set(connection);
   connection->shell_connection_.reset(
       new shell::ShellConnection(connection, std::move(request)));
-}
-
-// static
-void MojoShellConnection::SetFactoryForTest(Factory* factory) {
-  DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  mojo_shell_connection_factory = factory;
+  return base::WrapUnique(static_cast<MojoShellConnection*>(connection));
 }
 
 // static
@@ -88,23 +125,62 @@ void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
       this, shell::GetShellClientRequestFromCommandLine()));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl, private:
+
 MojoShellConnectionImpl::MojoShellConnectionImpl(bool external)
     : external_(external) {}
+MojoShellConnectionImpl::~MojoShellConnectionImpl() {}
 
-MojoShellConnectionImpl::~MojoShellConnectionImpl() {
-  STLDeleteElements(&listeners_);
-}
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl, shell::ShellClient implementation:
 
 void MojoShellConnectionImpl::Initialize(shell::Connector* connector,
                                          const shell::Identity& identity,
-                                         uint32_t id) {}
+                                         uint32_t id) {
+  for (auto& client : embedded_shell_clients_)
+    client->Initialize(connector, identity, id);
+}
 
 bool MojoShellConnectionImpl::AcceptConnection(shell::Connection* connection) {
-  bool found = false;
-  for (auto listener : listeners_)
-    found |= listener->AcceptConnection(connection);
-  return found;
+  std::string remote_app = connection->GetRemoteIdentity().name();
+  if (remote_app == "mojo:shell") {
+    // Only expose the SCF interface to the shell.
+    connection->AddInterface<shell::mojom::ShellClientFactory>(this);
+    return true;
+  }
+
+  bool accept = false;
+  for (auto& client : embedded_shell_clients_)
+    accept |= client->AcceptConnection(connection);
+
+  // Reject all other connections to this application.
+  return accept;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl,
+//     shell::InterfaceFactory<shell::mojom::ShellClientFactory> implementation:
+
+void MojoShellConnectionImpl::Create(
+    shell::Connection* connection,
+    shell::mojom::ShellClientFactoryRequest request) {
+  factory_bindings_.AddBinding(this, std::move(request));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl, shell::mojom::ShellClientFactory implementation:
+
+void MojoShellConnectionImpl::CreateShellClient(
+    shell::mojom::ShellClientRequest request,
+    const mojo::String& name) {
+  auto it = request_handlers_.find(name);
+  if (it != request_handlers_.end())
+    it->second.Run(std::move(request));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MojoShellConnectionImpl, MojoShellConnection implementation:
 
 shell::Connector* MojoShellConnectionImpl::GetConnector() {
   DCHECK(shell_connection_);
@@ -125,32 +201,28 @@ void MojoShellConnectionImpl::SetConnectionLostClosure(
   shell_connection_->SetConnectionLostClosure(closure);
 }
 
-void MojoShellConnectionImpl::AddListener(std::unique_ptr<Listener> listener) {
-  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener.get()) ==
-         listeners_.end());
-  listeners_.push_back(listener.release());
+void MojoShellConnectionImpl::AddEmbeddedShellClient(
+    std::unique_ptr<shell::ShellClient> shell_client) {
+  embedded_shell_clients_.push_back(std::move(shell_client));
 }
 
-std::unique_ptr<MojoShellConnection::Listener>
-MojoShellConnectionImpl::RemoveListener(Listener* listener) {
-  auto it = std::find(listeners_.begin(), listeners_.end(), listener);
-  DCHECK(it != listeners_.end());
-  listeners_.erase(it);
-  return base::WrapUnique(listener);
+void MojoShellConnectionImpl::AddEmbeddedService(
+    const std::string& name,
+    const MojoApplicationInfo& info) {
+  std::unique_ptr<EmbeddedApplicationRunner> app(
+      new EmbeddedApplicationRunner(name, info));
+  AddShellClientRequestHandler(
+      name, base::Bind(&EmbeddedApplicationRunner::BindShellClientRequest,
+                       base::Unretained(app.get())));
+  auto result = embedded_apps_.insert(std::make_pair(name, std::move(app)));
+  DCHECK(result.second);
 }
 
-// static
-MojoShellConnection* MojoShellConnection::Get() {
-  return lazy_tls_ptr.Pointer()->Get();
+void MojoShellConnectionImpl::AddShellClientRequestHandler(
+    const std::string& name,
+    const ShellClientRequestHandler& handler) {
+  auto result = request_handlers_.insert(std::make_pair(name, handler));
+  DCHECK(result.second);
 }
-
-// static
-void MojoShellConnection::Destroy() {
-  // This joins the shell controller thread.
-  delete Get();
-  lazy_tls_ptr.Pointer()->Set(nullptr);
-}
-
-MojoShellConnection::~MojoShellConnection() {}
 
 }  // namespace content

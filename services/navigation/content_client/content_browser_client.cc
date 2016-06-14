@@ -8,30 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/common/mojo_application_info.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "services/navigation/content_client/browser_main_parts.h"
 #include "services/navigation/navigation.h"
 
 namespace navigation {
-namespace {
-
-class ConnectionListener : public content::MojoShellConnection::Listener {
- public:
-  explicit ConnectionListener(std::unique_ptr<shell::ShellClient> wrapped)
-      : wrapped_(std::move(wrapped)) {}
-
- private:
-  bool AcceptConnection(shell::Connection* connection) override {
-    return wrapped_->AcceptConnection(connection);
-  }
-
-  std::unique_ptr<shell::ShellClient> wrapped_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
-};
-
-}  // namespace
 
 ContentBrowserClient::ContentBrowserClient() {}
 ContentBrowserClient::~ContentBrowserClient() {}
@@ -42,11 +25,10 @@ content::BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
   return browser_main_parts_;
 }
 
-void ContentBrowserClient::AddMojoShellConnectionListeners() {
-  Navigation* navigation = new Navigation;
-  browser_main_parts_->set_navigation(navigation);
-  content::MojoShellConnection::Get()->AddListener(
-      base::WrapUnique(new ConnectionListener(base::WrapUnique(navigation))));
+void ContentBrowserClient::RegisterInProcessMojoApplications(
+    StaticMojoApplicationMap* apps) {
+  content::MojoShellConnection::Get()->AddEmbeddedShellClient(
+      base::WrapUnique(new Navigation));
 }
 
 }  // namespace navigation

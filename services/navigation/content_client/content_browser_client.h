@@ -23,7 +23,8 @@ class ContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  void AddMojoShellConnectionListeners() override;
+  void RegisterInProcessMojoApplications(
+      StaticMojoApplicationMap* apps) override;
 
  private:
   BrowserMainParts* browser_main_parts_ = nullptr;

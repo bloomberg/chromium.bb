@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/mojo/browser_shell_connection.h"
 #include "content/browser/mojo/constants.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
@@ -210,26 +209,6 @@ class MojoShellContext::Proxy {
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 
-// Used to attach an existing ShellClient instance as a listener on the global
-// MojoShellConnection.
-// TODO(rockot): Find a way to get rid of this.
-class ShellConnectionListener : public MojoShellConnection::Listener {
- public:
-  ShellConnectionListener(std::unique_ptr<shell::ShellClient> client)
-      : client_(std::move(client)) {}
-  ~ShellConnectionListener() override {}
-
- private:
-  // MojoShellConnection::Listener:
-  bool AcceptConnection(shell::Connection* connection) override {
-    return client_->AcceptConnection(connection);
-  }
-
-  std::unique_ptr<shell::ShellClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellConnectionListener);
-};
-
 // static
 base::LazyInstance<std::unique_ptr<MojoShellContext::Proxy>>
     MojoShellContext::proxy_ = LAZY_INSTANCE_INITIALIZER;
@@ -271,22 +250,18 @@ MojoShellContext::MojoShellContext() {
         shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName),
         false /* is_external */);
   }
-  GetContentClient()->browser()->AddMojoShellConnectionListeners();
-
-  std::unique_ptr<BrowserShellConnection> browser_shell_connection(
-      new BrowserShellConnection);
 
   ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
   for (const auto& entry : apps)
-    browser_shell_connection->AddEmbeddedApplication(entry.first, entry.second);
+    MojoShellConnection::Get()->AddEmbeddedService(entry.first, entry.second);
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
   GetContentClient()
       ->browser()
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
-    browser_shell_connection->AddShellClientRequestHandler(
+    MojoShellConnection::Get()->AddShellClientRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    true /* use_sandbox */));
@@ -297,22 +272,16 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
-    browser_shell_connection->AddShellClientRequestHandler(
+    MojoShellConnection::Get()->AddShellClientRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    false /* use_sandbox */));
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  browser_shell_connection->AddShellClientRequestHandler(
+  MojoShellConnection::Get()->AddShellClientRequestHandler(
       "mojo:media", base::Bind(&LaunchAppInGpuProcess, "mojo:media"));
 #endif
-
-  // Attach our ShellClientFactory implementation to the global connection.
-  MojoShellConnection* shell_connection = MojoShellConnection::Get();
-  CHECK(shell_connection);
-  shell_connection->AddListener(base::WrapUnique(
-      new ShellConnectionListener(std::move(browser_shell_connection))));
 }
 
 MojoShellContext::~MojoShellContext() {
