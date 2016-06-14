@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 #
 
+import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -26,9 +27,11 @@ static_library("router") {
   if (!is_android) {
     deps += [
       ":mojo_bindings",
-      "//extensions/browser",
       "//mojo/public/cpp/bindings",
     ]
+    if (enable_extensions) {
+      deps += [ "//extensions/browser" ]
+    }
     sources += rebase_path(gypi_values.media_router_non_android_sources,
                            ".",
                            "//chrome/browser/media/router")
@@ -52,10 +55,10 @@ source_set("test_support") {
                         ".",
                         "//chrome/browser/media/router")
   if (!is_android) {
-    deps += [
-      ":mojo_bindings",
-      "//extensions/common",
-    ]
+    deps += [ ":mojo_bindings" ]
+    if (enable_extensions) {
+      deps += [ "//extensions/common" ]
+    }
     sources +=
         rebase_path(gypi_values.media_router_non_android_test_support_sources,
                     ".",
