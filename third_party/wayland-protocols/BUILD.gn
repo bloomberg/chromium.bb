@@ -65,6 +65,27 @@ source_set("viewporter_protocol") {
   public_configs = [ ":viewporter_protocol_config" ]
 }
 
+config("vsync_feedback_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("vsync_feedback_protocol") {
+  sources = [
+    "include/protocol/vsync-feedback-unstable-v1-client-protocol.h",
+    "include/protocol/vsync-feedback-unstable-v1-server-protocol.h",
+    "protocol/vsync-feedback-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":vsync_feedback_protocol_config" ]
+}
+
 config("secure_output_protocol_config") {
   include_dirs = [ "include/protocol" ]
 }
