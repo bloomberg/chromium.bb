@@ -8761,6 +8761,182 @@
             "-chrome_internal"
         ]
     },
+    "glimmer-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "glimmer-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "glimmer-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "glimmer-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "glimmer-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "glimmer-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "glimmer-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "glimmer-cheets"
+        ]
+    },
+    "glimmer-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "glimmer-cheets-release": {
+        "_template": "cheets-release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "glimmer-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "glimmer-cheets"
+                ],
+                "grouped": true,
+                "name": "glimmer-cheets-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "glimmer-cheets"
+                ],
+                "grouped": true,
+                "name": "glimmer-cheets-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "glimmer-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "glimmer-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "glimmer-cheets-tot-chrome-pfq-cheets-informational": {
+        "_template": "chrome-pfq-cheets-informational",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "glimmer-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "glimmer-cheets"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "glimmer-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

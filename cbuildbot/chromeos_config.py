@@ -446,6 +446,7 @@ _x86_internal_release_boards = frozenset([
     'glados',
     'glados-cheets',
     'glimmer',
+    'glimmer-cheets',
     'gnawty',
     'guado',
     'guado_labstation',
@@ -558,6 +559,7 @@ _cheets_boards = frozenset([
     'cyan-cheets',
     'elm-cheets',
     'glados-cheets',
+    'glimmer-cheets',
     'oak-cheets',
     'samus-cheets',
     'smaug-cheets',
@@ -600,6 +602,7 @@ _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
     'elm-cheets',
     'glados-cheets',
+    'glimmer-cheets',
     'oak-cheets',
     'samus-cheets',
     'smaug-cheets',
@@ -672,6 +675,7 @@ _waterfall_config_map = {
         # other
         'amd64-generic-goofy-release',
         'gale-release',
+        'glimmer-cheets-release',
         'lakitu_next-release',
         'nyan_freon-release',
         'smaug-release',
@@ -2544,6 +2548,11 @@ def GetConfig():
   )
 
   site_config.Add(
+      'glimmer-cheets-release', cheets_release,
+      _base_configs['glimmer-cheets'],
+  )
+
+  site_config.Add(
       'oak-cheets-release', cheets_release,
       _base_configs['oak-cheets'],
   )
@@ -2823,7 +2832,10 @@ def GetConfig():
           'sumo',
           'orco',
           'heli',
-      )
+      ),
+      unimportant_boards=(
+          'glimmer-cheets',
+      ),
   )
 
   # daisy-based boards
