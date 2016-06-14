@@ -19,6 +19,7 @@ namespace {
 
 const wchar_t* LAYOUT_US = L"00000409";
 const wchar_t* LAYOUT_FR = L"0000040c";
+const wchar_t* LAYOUT_KO = L"00000412";
 
 struct TestKey {
   // Have to use KeyboardCode instead of DomCode because we don't know the
@@ -284,6 +285,33 @@ TEST_F(PlatformKeyMapTest, NonPrintableKey) {
               DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code,
                                    EF_ALTGR_DOWN | EF_CONTROL_DOWN))
         << key_code << ", " << scan_code;
+  }
+}
+
+TEST_F(PlatformKeyMapTest, KoreanSpecificKeys) {
+  const struct TestCase {
+    KeyboardCode key_code;
+    DomKey key;
+  } kKoreanTestCases[] = {
+      {VKEY_HANGUL, DomKey::HANGUL_MODE}, {VKEY_HANJA, DomKey::HANJA_MODE},
+  };
+
+  // US English should not return values for these keys.
+  HKL us_layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  PlatformKeyMap us_keymap(us_layout);
+  for (const auto& test_case : kKoreanTestCases) {
+    EXPECT_EQ(DomKey::NONE, DomKeyFromNativeImpl(us_keymap, DomCode::NONE,
+                                                 test_case.key_code, EF_NONE))
+        << test_case.key_code;
+  }
+
+  // Korean layout should return specific DomKey.
+  HKL ko_layout = ::LoadKeyboardLayout(LAYOUT_KO, 0);
+  PlatformKeyMap ko_keymap(ko_layout);
+  for (const auto& test_case : kKoreanTestCases) {
+    EXPECT_EQ(test_case.key, DomKeyFromNativeImpl(ko_keymap, DomCode::NONE,
+                                                  test_case.key_code, EF_NONE))
+        << test_case.key_code;
   }
 }
 
