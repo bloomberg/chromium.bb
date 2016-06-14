@@ -8,10 +8,7 @@
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEMP_DIR=$(mktemp -d)
-
-readonly COMPILER_PATH="${SCRIPT_DIR}/compiler/compiler.jar"
 readonly EXTERNS_DIR="${SCRIPT_DIR}/externs"
-
 readonly README="${SCRIPT_DIR}/README.chromium"
 
 cleanup() {
@@ -50,7 +47,8 @@ EOT
 fi
 
 echo "Building Closure Compiler"
-ant jar
+# TODO(dbeam): can we do less here? As in: build a more specific target.
+mvn install -DskipTests=true
 
 if [[ "$?" -ne 0 ]]; then
   echo "Failed to build jar, copying nothing" >&2
@@ -58,7 +56,10 @@ if [[ "$?" -ne 0 ]]; then
   exit 1
 fi
 
-cp build/compiler.jar "${COMPILER_PATH}"
+# TODO(dbeam): this .jar seems to be a bit bigger than the jar previously built
+# by ant. I tried many other jars in target/, but none of them were able to
+# build the runner.jar without issue.
+cp target/closure-compiler-1.0-SNAPSHOT.jar "${SCRIPT_DIR}/compiler/compiler.jar"
 
 echo "Re-building runner.jar"
 "${SCRIPT_DIR}/runner/build_runner_jar.py"
