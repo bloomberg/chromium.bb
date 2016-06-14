@@ -403,11 +403,14 @@ Background.prototype = {
     var dir = Dir.FORWARD;
     var pred = null;
     var predErrorMsg = undefined;
+    var speechProps = {};
     switch (command) {
       case 'nextCharacter':
+        speechProps['phoneticCharacters'] = true;
         current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
         break;
       case 'previousCharacter':
+        speechProps['phoneticCharacters'] = true;
         current = current.move(cursors.Unit.CHARACTER, Dir.BACKWARD);
         break;
       case 'nextWord':
@@ -819,7 +822,7 @@ Background.prototype = {
     }
 
     if (current)
-      this.navigateToRange(current);
+      this.navigateToRange(current, undefined, speechProps);
 
     return false;
   },
@@ -857,10 +860,12 @@ Background.prototype = {
    * Navigate to the given range - it both sets the range and outputs it.
    * @param {!cursors.Range} range The new range.
    * @param {boolean=} opt_focus Focus the range; defaults to true.
+   * @param {Object=} opt_speechProps Speech properties.
    * @private
    */
-  navigateToRange: function(range, opt_focus) {
+  navigateToRange: function(range, opt_focus, opt_speechProps) {
     opt_focus = opt_focus === undefined ? true : opt_focus;
+    opt_speechProps = opt_speechProps || {};
 
     if (opt_focus) {
       // TODO(dtseng): Figure out what it means to focus a range.
@@ -879,10 +884,14 @@ Background.prototype = {
 
     range.select();
 
-    new Output().withRichSpeechAndBraille(
+    var o = new Output().withRichSpeechAndBraille(
         range, prevRange, Output.EventType.NAVIGATE)
-        .withQueueMode(cvox.QueueMode.FLUSH)
-        .go();
+            .withQueueMode(cvox.QueueMode.FLUSH);
+
+    for (var prop in opt_speechProps)
+      o.format('!' + prop);
+
+    o.go();
   },
 
   /**
