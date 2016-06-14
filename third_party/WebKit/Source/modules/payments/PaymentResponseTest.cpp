@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/payments/PaymentCompleter.h"
+#include "modules/payments/PaymentTestHelper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
@@ -58,14 +59,21 @@ private:
 TEST_F(PaymentResponseTest, DataCopiedOver)
 {
     ScriptState::Scope scope(getScriptState());
-    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
+    input->total_amount->currency = "USD";
+    input->total_amount->value = "5.00";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
 
     PaymentResponse output(std::move(input), completeCallback);
 
     EXPECT_EQ("foo", output.methodName());
+
+    CurrencyAmount totalAmount;
+    output.totalAmount(totalAmount);
+    EXPECT_EQ("USD", totalAmount.currency());
+    EXPECT_EQ("5.00", totalAmount.value());
 
     ScriptValue details = output.details(getScriptState(), getExceptionState());
 
@@ -80,7 +88,7 @@ TEST_F(PaymentResponseTest, DataCopiedOver)
 
 TEST_F(PaymentResponseTest, CompleteCalledWithSuccess)
 {
-    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -93,7 +101,7 @@ TEST_F(PaymentResponseTest, CompleteCalledWithSuccess)
 
 TEST_F(PaymentResponseTest, CompleteCalledWithFailure)
 {
-    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;

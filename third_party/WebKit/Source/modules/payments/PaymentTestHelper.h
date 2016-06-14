@@ -9,6 +9,7 @@
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentMethodData.h"
 #include "modules/payments/ShippingOption.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -41,6 +42,8 @@ ShippingOption buildShippingOptionForTest(PaymentTestDataToChange = PaymentTestD
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest();
+
+mojom::blink::PaymentResponsePtr buildPaymentResponseForTest();
 
 } // namespace blink
 

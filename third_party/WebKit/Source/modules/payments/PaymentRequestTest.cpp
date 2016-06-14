@@ -289,7 +289,7 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndEmptyShipp
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
-    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr response = buildPaymentResponseForTest();
 
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
@@ -303,7 +303,7 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndInvalidShi
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
-    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr response = buildPaymentResponseForTest();
     response->shipping_address = mojom::blink::PaymentAddress::New();
 
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
@@ -335,7 +335,7 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShip
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
-    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr response = buildPaymentResponseForTest();
     response->shipping_address = mojom::blink::PaymentAddress::New();
     response->shipping_address->country = "US";
     response->shipping_address->language_code = "en";
@@ -363,7 +363,7 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingFalseAndEmptyShi
     ScriptValue outValue;
     request->show(getScriptState()).then(PaymentResponseFunction::create(getScriptState(), &outValue), MockFunction::expectNoCall(getScriptState()));
 
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
     v8::MicrotasksScope::PerformCheckpoint(getScriptState()->isolate());
     PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(getScriptState()->isolate(), outValue.v8Value());
 
@@ -397,7 +397,7 @@ TEST_F(PaymentRequestTest, CannotCallCompleteTwice)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
     request->complete(getScriptState(), false);
 
     request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
@@ -420,7 +420,7 @@ TEST_F(PaymentRequestTest, RejectCompletePromiseOnError)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
     request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
@@ -433,7 +433,7 @@ TEST_F(PaymentRequestTest, ResolvePromiseOnComplete)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
     request->complete(getScriptState(), true).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
 
@@ -457,7 +457,7 @@ TEST_F(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
     request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
@@ -470,7 +470,7 @@ TEST_F(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), "foo"));
 }

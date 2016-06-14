@@ -32,8 +32,21 @@ struct PaymentAddress {
   string phone;
 };
 
+// The currency amount that the renderer provides to the browser process. The
+// browser shows the amount in UI and forwards it on to the payment app, if it
+// requires the amount.
+struct CurrencyAmount {
+  // ISO 4217 currency code. Three upper case ASCII letters.
+  string currency;
+
+  // ISO 20022 CurrencyAnd30Amount. Up to 30 total digits. Up to 10 fraction
+  // digits. Separated by a dot.
+  string value;
+};
+
 struct PaymentResponse {
   string method_name;
+  CurrencyAmount total_amount;
 
   // Payment method specific JSON string that is built either by the browser or
   // a payment app, for example Android Pay. Browser ensures that the string can
@@ -55,18 +68,6 @@ interface PaymentRequestClient {
   OnPaymentResponse(PaymentResponse response);
   OnError();
   OnComplete();
-};
-
-// The currency amount that the renderer provides to the browser process. The
-// browser shows the amount in UI and forwards it on to the payment app, if it
-// requires the amount.
-struct CurrencyAmount {
-  // ISO 4217 currency code. Three upper case ASCII letters.
-  string currency;
-
-  // ISO 20022 CurrencyAnd30Amount. Up to 30 total digits. Up to 10 fraction
-  // digits. Separated by a dot.
-  string value;
 };
 
 struct PaymentItem {

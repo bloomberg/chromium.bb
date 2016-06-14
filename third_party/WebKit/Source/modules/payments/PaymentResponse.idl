@@ -8,6 +8,7 @@
     RuntimeEnabled=PaymentRequest,
 ] interface PaymentResponse {
     readonly attribute DOMString methodName;
+    readonly attribute CurrencyAmount totalAmount;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
     readonly attribute PaymentAddress? shippingAddress;
 

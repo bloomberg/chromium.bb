@@ -32,9 +32,11 @@ function buy() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete(true)
               .then(function() {
-                print(request.shippingOption + '<br>' +
+                print(
+                    JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +
+                    request.shippingOption + '<br>' +
                     JSON.stringify(
-                        toDictionary(request.shippingAddress), undefined, 2) +
+                        toDictionary(resp.shippingAddress), undefined, 2) +
                     '<br>' + resp.methodName + '<br>' +
                     JSON.stringify(resp.details, undefined, 2));
               })
