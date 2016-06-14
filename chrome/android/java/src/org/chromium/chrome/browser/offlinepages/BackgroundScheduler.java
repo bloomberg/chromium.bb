@@ -49,6 +49,8 @@ public class BackgroundScheduler {
      * Cancel any outstanding GCM Network Manager requests.
      */
     public static void unschedule(Context context) {
-        // TODO(petewil): Take our task off the task queue.
+        // Get the GCM Network Scheduler.
+        GcmNetworkManager gcmNetworkManager = GcmNetworkManager.getInstance(context);
+        gcmNetworkManager.cancelTask(OfflinePageUtils.TASK_TAG, ChromeBackgroundService.class);
     }
 }

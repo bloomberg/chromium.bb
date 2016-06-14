@@ -11,7 +11,7 @@ import android.os.Bundle;
  */
 public class TaskExtrasPacker {
     /** Bundle key for the timestamp in milliseconds when the request started. */
-    public static final String SCHEDULED_TIME_TAG = "Date";
+    public static final String SCHEDULED_TIME_TAG = "ScheduleTime";
 
     /** Puts current time into the input bundle. */
     public static void packTimeInBundle(Bundle bundle) {

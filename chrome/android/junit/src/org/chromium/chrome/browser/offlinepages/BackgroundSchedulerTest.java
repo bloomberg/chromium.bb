@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+
+import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.util.Feature;
@@ -31,6 +35,7 @@ public class BackgroundSchedulerTest {
     @Before
     public void setUp() throws Exception {
         mContext =  Robolectric.application;
+        ShadowGcmNetworkManager.clear();
     }
 
     @Test
@@ -42,12 +47,23 @@ public class BackgroundSchedulerTest {
         // Check with gcmNetworkManagerShadow that schedule got called.
         assertNotNull(ShadowGcmNetworkManager.getScheduledTask());
 
-        // TODO(petewil): Also assert that the date we see is what we expected
+        // Verify details of the scheduled task.
+        Task task = ShadowGcmNetworkManager.getScheduledTask();
+        assertEquals(OfflinePageUtils.TASK_TAG, task.getTag());
+        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(task.getExtras());
+        assertTrue(scheduledTimeMillis > 0L);
     }
 
     @Test
     @Feature({"OfflinePages"})
     public void testUnschedule() {
-        // TODO(petewil): Add this test.
+        BackgroundScheduler scheduler = new BackgroundScheduler();
+        assertNull(ShadowGcmNetworkManager.getScheduledTask());
+        scheduler.schedule(mContext);
+        assertNotNull(ShadowGcmNetworkManager.getScheduledTask());
+
+        assertNull(ShadowGcmNetworkManager.getCanceledTask());
+        scheduler.unschedule(mContext);
+        assertNotNull(ShadowGcmNetworkManager.getCanceledTask());
     }
 }

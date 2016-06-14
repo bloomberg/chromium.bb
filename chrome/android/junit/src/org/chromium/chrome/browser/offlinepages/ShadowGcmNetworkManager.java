@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.Task;
 
 import org.robolectric.annotation.Implementation;
@@ -18,6 +19,7 @@ import org.robolectric.annotation.Implements;
 @Implements(GcmNetworkManager.class)
 public class ShadowGcmNetworkManager {
     private static Task sTask;
+    private static Task sCanceledTask;
 
     @Implementation
     public static void schedule(Task task) {
@@ -25,7 +27,25 @@ public class ShadowGcmNetworkManager {
         sTask = task;
     }
 
+    @Implementation
+    public static void cancelTask(String tag, Class<? extends GcmTaskService> gcmTaskService) {
+        if (sTask != null && sTask.getTag().equals(tag)
+                && sTask.getServiceName().equals(gcmTaskService.getName())) {
+            sCanceledTask = sTask;
+            sTask = null;
+        }
+    }
+
     public static Task getScheduledTask() {
         return sTask;
+    }
+
+    public static Task getCanceledTask() {
+        return sCanceledTask;
+    }
+
+    public static void clear() {
+        sTask = null;
+        sCanceledTask = null;
     }
 }
