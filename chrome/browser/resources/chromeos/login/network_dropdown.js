@@ -64,10 +64,8 @@ cr.define('cr.ui', function() {
         this.selectedItem.classList.remove('hover');
       selectedItem.classList.add('hover');
       this.selectedItem = selectedItem;
-      if (!this.hidden) {
-        this.previousSibling.setAttribute(
-            'aria-activedescendant', selectedItem.id);
-      }
+      if (!this.hidden && !mouseOver)
+        this.setAttribute('aria-activedescendant', selectedItem.id);
       var action = this.scrollAction(selectedItem);
       if (action != 0) {
         selectedItem.scrollIntoView(action < 0);
@@ -101,14 +99,13 @@ cr.define('cr.ui', function() {
       this.appendChild(this.title_ = this.createTitle_());
       var container = new DropDownContainer();
       container.id = this.id + '-dropdown-container';
+      container.tabIndex = 0;
       this.appendChild(container);
 
       this.addEventListener('keydown', this.keyDownHandler_);
 
       this.title_.id = this.id + '-dropdown';
       this.title_.setAttribute('role', 'button');
-      this.title_.setAttribute('aria-haspopup', 'true');
-      this.title_.setAttribute('aria-owns', container.id);
     },
 
     /**
@@ -127,8 +124,10 @@ cr.define('cr.ui', function() {
       this.firstElementChild.hidden = !show;
       this.container.hidden = !show;
       if (show) {
+        this.container.focus();
         this.container.selectItem(this.container.firstItem, false);
       } else {
+        this.title_.focus();
         this.title_.removeAttribute('aria-activedescendant');
       }
 
