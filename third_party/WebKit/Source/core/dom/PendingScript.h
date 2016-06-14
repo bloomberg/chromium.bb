@@ -47,6 +47,7 @@ class ScriptSourceCode;
 // lifetime in order to guarantee that the data buffer will not be purged.
 class CORE_EXPORT PendingScript final : public GarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {
     USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
+    USING_PRE_FINALIZER(PendingScript, dispose);
     WTF_MAKE_NONCOPYABLE(PendingScript);
 public:
     static PendingScript* create(Element*, ScriptResource*);
