@@ -49,6 +49,12 @@ const base::Feature kProtectSyncCredentialOnReauth = {
 const base::Feature kPasswordImportExport = {"password-import-export",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Control whether users can view and copy passwords. This is only used for
+// Android, the desktop version of Chrome always allows users to view
+// passwords.
+const base::Feature kViewPasswords = {"view-passwords",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace password_manager
