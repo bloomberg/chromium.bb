@@ -9,11 +9,10 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/TransformComponent.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
-
-class TransformComponent;
 
 class CORE_EXPORT TransformValue final : public CSSStyleValue, public ValueIterable<TransformComponent*> {
     WTF_MAKE_NONCOPYABLE(TransformValue);
@@ -28,6 +27,8 @@ public:
     {
         return new TransformValue(transformComponents);
     }
+
+    static TransformValue* fromCSSValue(const CSSValue&);
 
     bool is2D() const;
 

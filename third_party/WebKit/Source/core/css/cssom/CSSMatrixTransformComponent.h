@@ -27,6 +27,8 @@ public:
         return new CSSMatrixTransformComponent(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
     }
 
+    static CSSMatrixTransformComponent* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+
     // 2D matrix attributes
     double a() const { return m_matrix->a(); }
     double b() const { return m_matrix->b(); }

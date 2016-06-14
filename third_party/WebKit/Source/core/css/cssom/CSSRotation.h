@@ -24,6 +24,8 @@ public:
         return new CSSRotation(angle, x, y, z);
     }
 
+    static CSSRotation* fromCSSValue(const CSSFunctionValue&) { return nullptr; }
+
     double angle() const { return m_angle; }
     double x() const { return m_x; }
     double y() const { return m_y; }

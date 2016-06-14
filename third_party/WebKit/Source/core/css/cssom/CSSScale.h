@@ -24,6 +24,8 @@ public:
         return new CSSScale(x, y, z);
     }
 
+    static CSSScale* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+
     double x() const { return m_x; }
     double y() const { return m_y; }
     double z() const { return m_z; }

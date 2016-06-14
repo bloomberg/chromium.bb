@@ -39,6 +39,22 @@ private:
 
 } // namespace
 
+TransformValue* TransformValue::fromCSSValue(const CSSValue& cssValue)
+{
+    if (!cssValue.isValueList()) {
+        // TODO(meade): Also need to check the separator here if we care.
+        return nullptr;
+    }
+    HeapVector<Member<TransformComponent>> components;
+    for (const CSSValue* value : toCSSValueList(cssValue)) {
+        TransformComponent* component = TransformComponent::fromCSSValue(*value);
+        if (!component)
+            return nullptr;
+        components.append(component);
+    }
+    return TransformValue::create(components);
+}
+
 ValueIterable<TransformComponent*>::IterationSource* TransformValue::startIteration(ScriptState*, ExceptionState&)
 {
     return new TransformValueIterationSource(this);

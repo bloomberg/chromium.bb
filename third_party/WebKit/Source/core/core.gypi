@@ -1375,6 +1375,7 @@
             'css/cssom/StylePropertyMap.h',
             'css/cssom/StyleValueFactory.cpp',
             'css/cssom/StyleValueFactory.h',
+            'css/cssom/TransformComponent.cpp',
             'css/cssom/TransformComponent.h',
             'css/cssom/TransformValue.cpp',
             'css/cssom/TransformValue.h',

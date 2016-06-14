@@ -19,6 +19,8 @@ public:
         return new CSSSkew(ax, ay);
     }
 
+    static CSSSkew* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+
     double ax() const { return m_ax; }
     double ay() const { return m_ay; }
 

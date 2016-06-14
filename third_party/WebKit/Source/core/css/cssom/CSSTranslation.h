@@ -22,6 +22,8 @@ public:
     }
     static CSSTranslation* create(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z, ExceptionState&);
 
+    static CSSTranslation* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+
     CSSLengthValue* x() const { return m_x; }
     CSSLengthValue* y() const { return m_y; }
     CSSLengthValue* z() const { return m_z; }

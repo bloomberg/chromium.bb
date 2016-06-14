@@ -22,11 +22,7 @@ public:
         Matrix3DType, Rotation3DType, Scale3DType, Translation3DType
     };
 
-    virtual ~TransformComponent() { }
-
-    virtual TransformComponentType type() const = 0;
-
-    bool is2DComponent() const { return is2DComponentType(type()); }
+    static TransformComponent* fromCSSValue(const CSSValue&);
 
     static bool is2DComponentType(TransformComponentType transformType)
     {
@@ -36,6 +32,12 @@ public:
             && transformType != Scale3DType
             && transformType != Translation3DType;
     }
+
+    virtual ~TransformComponent() { }
+
+    virtual TransformComponentType type() const = 0;
+
+    bool is2DComponent() const { return is2DComponentType(type()); }
 
     String cssString() const
     {
@@ -48,7 +50,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
-    TransformComponent() { }
+    TransformComponent() = default;
 };
 
 } // namespace blink

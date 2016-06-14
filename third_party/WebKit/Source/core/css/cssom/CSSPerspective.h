@@ -18,6 +18,7 @@ class CORE_EXPORT CSSPerspective : public TransformComponent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
+    static CSSPerspective* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
 
     // Bindings require a non const return value.
     CSSLengthValue* length() const { return const_cast<CSSLengthValue*>(m_length.get()); }
