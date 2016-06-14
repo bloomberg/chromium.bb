@@ -5,7 +5,6 @@
 #ifndef UI_GFX_GEOMETRY_SIZE_F_H_
 #define UI_GFX_GEOMETRY_SIZE_F_H_
 
-#include <cmath>
 #include <iosfwd>
 #include <string>
 
@@ -20,7 +19,7 @@ class GFX_EXPORT SizeF {
  public:
   SizeF() : width_(0.f), height_(0.f) {}
   SizeF(float width, float height)
-      : width_(fmaxf(0, width)), height_(fmaxf(0, height)) {}
+      : width_(width >= 0 ? width : 0), height_(height >= 0 ? height : 0) {}
   ~SizeF() {}
 
   explicit SizeF(const Size& size)

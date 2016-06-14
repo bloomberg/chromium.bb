@@ -17,27 +17,16 @@ namespace gfx {
 // the camera.
 class GFX_EXPORT BoxF {
  public:
-  BoxF()
-      : width_(0.f),
-        height_(0.f),
-        depth_(0.f) {}
-
+  BoxF() : BoxF(0, 0, 0) {}
   BoxF(float width, float height, float depth)
-      : width_(width < 0 ? 0 : width),
-        height_(height < 0 ? 0 : height),
-        depth_(depth < 0 ? 0 : depth) {}
-
+      : BoxF(0, 0, 0, width, height, depth) {}
   BoxF(float x, float y, float z, float width, float height, float depth)
-      : origin_(x, y, z),
-        width_(width < 0 ? 0 : width),
-        height_(height < 0 ? 0 : height),
-        depth_(depth < 0 ? 0 : depth) {}
-
+      : BoxF(Point3F(x, y, z), width, height, depth) {}
   BoxF(const Point3F& origin, float width, float height, float depth)
       : origin_(origin),
-        width_(width < 0 ? 0 : width),
-        height_(height < 0 ? 0 : height),
-        depth_(depth < 0 ? 0 : depth) {}
+        width_(width >= 0 ? width : 0),
+        height_(height >= 0 ? height : 0),
+        depth_(depth >= 0 ? depth : 0) {}
 
   ~BoxF() {}
 
