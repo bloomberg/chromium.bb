@@ -25,8 +25,15 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
   // worth it.
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::FactoryGetFieldTrial(
-          kFieldTrialName, kTotalProbability, "default", 5000, 1, 1,
-          base::FieldTrial::SESSION_RANDOMIZED, nullptr);
+          kFieldTrialName, kTotalProbability, "default",
+// TODO(maksims): remove architecture check
+// in the future. https://crbug.com/619828
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+          5000,
+#else
+          2038,
+#endif
+          1, 1, base::FieldTrial::SESSION_RANDOMIZED, nullptr);
   trial->AppendGroup(group_name, kTotalProbability);
   return trial;
 }
