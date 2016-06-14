@@ -125,7 +125,7 @@ class PaintAggregator {
   //    InvalidateRect. We need to know this distinction for some operations.
   //
   //  - The paint bounds union is computed on the fly so we don't have to keep
-  //    a rectangle up-to-date as we do different operations.
+  //    a rectangle up to date as we do different operations.
   class InternalPaintUpdate {
    public:
     InternalPaintUpdate();

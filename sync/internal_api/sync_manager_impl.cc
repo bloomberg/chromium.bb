@@ -824,7 +824,7 @@ void SyncManagerImpl::OnSyncCycleEvent(const SyncCycleEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Only send an event if this is due to a cycle ending and this cycle
   // concludes a canonical "sync" process; that is, based on what is known
-  // locally we are "all happy" and up-to-date.  There may be new changes on
+  // locally we are "all happy" and up to date.  There may be new changes on
   // the server, but we'll get them on a subsequent sync.
   //
   // Notifications are sent at the end of every sync cycle, regardless of

@@ -166,7 +166,7 @@ void NinjaActionTargetWriter::WriteSourceRules(
     path_output_.WriteFile(out_, sources[i]);
     if (!input_dep.value().empty()) {
       // Using "|" for the dependencies forces all implicit dependencies to be
-      // fully up-to-date before running the action, and will re-run this
+      // fully up to date before running the action, and will re-run this
       // action if any input dependencies change. This is important because
       // this action may consume the outputs of previous steps.
       out_ << " | ";

@@ -48,7 +48,7 @@ def main(args):
   if os.path.exists(stamp):
     with open(stamp) as s:
       if s.read() == '\n'.join(URLS):
-        print "Chrome OS fonts already up-to-date in %s." % dest_dir
+        print "Chrome OS fonts already up to date in %s." % dest_dir
         return 0
 
   if os.path.isdir(dest_dir):

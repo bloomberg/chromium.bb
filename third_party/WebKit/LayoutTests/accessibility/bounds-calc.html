@@ -227,7 +227,7 @@ test(function(t) {
     // ancestor in the accessibility tree but not in the layout tree.
     //
     // Access both of these accessibility objects first to make sure that
-    // the owned children are up-to-date before running assertions,
+    // the owned children are up to date before running assertions,
     // since aria-owns is processed lazily.
     var axContainer6a = accessibilityController.accessibleElementById("container6a");
     axContainer6a.childrenCount;

@@ -153,7 +153,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     return;
   }
 
-  // Ensure the authorization token is up-to-date before using it.
+  // Ensure the authorization token is up to date before using it.
   [self updateAuthorizationStatus];
   [self updateUI];
 
@@ -176,7 +176,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 }
 
 - (void)onDisable:(id)sender {
-  // Ensure the authorization token is up-to-date before using it.
+  // Ensure the authorization token is up to date before using it.
   [self updateAuthorizationStatus];
   [self updateUI];
   if (!is_pane_unlocked_)

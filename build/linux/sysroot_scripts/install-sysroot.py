@@ -189,7 +189,7 @@ def InstallSysroot(target_arch):
   if os.path.exists(stamp):
     with open(stamp) as s:
       if s.read() == url:
-        print 'Debian Wheezy %s root image already up-to-date: %s' % \
+        print 'Debian Wheezy %s root image already up to date: %s' % \
             (target_arch, sysroot)
         return
 

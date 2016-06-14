@@ -134,7 +134,7 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
     if (!IsVersionNewer(crx->component.version, it->manifest.version)) {
       // The CRX is up to date.
       ChangeItemState(crx, CrxUpdateItem::State::kUpToDate);
-      VLOG(1) << "Component already up-to-date: " << crx->id;
+      VLOG(1) << "Component already up to date: " << crx->id;
       continue;
     }
 

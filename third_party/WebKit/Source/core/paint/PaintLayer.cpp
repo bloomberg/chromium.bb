@@ -1775,7 +1775,7 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
     if (hitTestClippedOutByClipPath(rootLayer, hitTestLocation))
         return nullptr;
 
-    // Ensure our lists and 3d status are up-to-date.
+    // Ensure our lists and 3d status are up to date.
     m_stackingNode->updateLayerListsIfNeeded();
     update3DTransformedDescendantStatus();
 

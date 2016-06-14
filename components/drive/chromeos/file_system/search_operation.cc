@@ -28,7 +28,7 @@ namespace {
 
 // Computes the path of each item in |file_list| returned from the server
 // and stores to |result|, by using |resource_metadata|. If the metadata is not
-// up-to-date and did not contain an item, adds the item to "drive/other" for
+// up to date and did not contain an item, adds the item to "drive/other" for
 // temporally assigning a path.
 FileError ResolveSearchResultOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,

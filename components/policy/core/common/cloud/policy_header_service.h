@@ -23,7 +23,7 @@ namespace policy {
 class PolicyHeaderIOHelper;
 
 // Per-profile service used to generate PolicyHeaderIOHelper objects, and
-// keep them up-to-date as policy changes.
+// keep them up to date as policy changes.
 // TODO(atwilson): Move to components/policy once CloudPolicyStore is moved.
 class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
  public:

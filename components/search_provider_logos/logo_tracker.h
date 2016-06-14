@@ -76,7 +76,7 @@ typedef base::Callback<std::unique_ptr<EncodedLogo>(
     ParseLogoResponse;
 
 // Encodes the fingerprint of the cached logo in the logo URL. This enables the
-// server to verify whether the cached logo is up-to-date.
+// server to verify whether the cached logo is up to date.
 typedef base::Callback<GURL(const GURL& logo_url,
                             const std::string& fingerprint,
                             bool wants_cta,

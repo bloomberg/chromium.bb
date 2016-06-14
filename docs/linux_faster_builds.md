@@ -94,7 +94,7 @@ logical directory (and make sure `CCACHE_BASEDIR` also refers to a physical
 parent).
 
 If you tune ccache correctly, a second working directory that uses a branch
-tracking trunk and is up-to-date with trunk and was gclient sync'ed at about the
+tracking trunk and is up to date with trunk and was gclient sync'ed at about the
 same time should build chrome in about 1/3 the time, and the cache misses as
 reported by `ccache -s` should barely increase.
 

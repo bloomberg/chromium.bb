@@ -297,7 +297,7 @@ void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
 }
 
 PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form) {
-  // There is no good way to check if the password is actually up-to-date, or
+  // There is no good way to check if the password is actually up to date, or
   // at least to check if it was actually changed. Assume it is.
   if (AffiliatedMatchHelper::IsValidAndroidCredential(form))
     ScheduleFindAndUpdateAffiliatedWebLogins(form);

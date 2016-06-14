@@ -132,7 +132,7 @@ class CachingFileSystem(FileSystem):
 
     remaining_paths = set(paths) - set(up_to_date_data.iterkeys())
     if len(remaining_paths) == 0:
-      # Everything was cached and up-to-date.
+      # Everything was cached and up to date.
       return Future(value=up_to_date_data)
 
     def raise_cache_miss(paths):

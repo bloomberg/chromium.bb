@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-// This class keeps the extension API's windowID up-to-date with the current
+// This class keeps the extension API's windowID up to date with the current
 // window of the tab.
 class SessionTabHelper : public content::WebContentsObserver,
                          public content::WebContentsUserData<SessionTabHelper> {

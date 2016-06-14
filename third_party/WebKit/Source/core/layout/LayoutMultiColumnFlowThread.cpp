@@ -379,7 +379,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
 {
     if (LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn) {
         // Layout in progress. We are calculating the set heights as we speak, so the column set range
-        // information is not up-to-date.
+        // information is not up to date.
         while (columnSet->logicalTopInFlowThread() > offset) {
             // Sometimes we have to use a previous set. This happens when we're working with a block
             // that contains a spanner (so that there's a column set both before and after the

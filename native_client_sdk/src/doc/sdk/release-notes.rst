@@ -48,7 +48,7 @@ PNaCl
   browser (version ``Y``).
 * PNaCl's support for use of libstdc++ 4.6 as the C++ standard library is
   deprecated and will be removed in the next release. PNaCl has used libc++
-  (which is much more up-to-date, currently based on LLVM 3.6) as the default
+  (which is much more up to date, currently based on LLVM 3.6) as the default
   since Pepper 33.
 * PNaCl's experimental `Subzero translator`_ is available for x86-32 NaCl in
   Chrome version 43, behind a flag. To give it a try, run Chrome with the

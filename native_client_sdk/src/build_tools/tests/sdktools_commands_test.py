@@ -119,7 +119,7 @@ class TestCommands(SdkToolsTestCase):
     self.assertTrue(re.search('I.*?sdk_tools.*?stable', output, re.MULTILINE))
     # This line is important (it's used by the updater to determine if the
     # sdk_tools bundle needs to be updated), so let's be explicit.
-    self.assertTrue('All installed bundles are up-to-date.')
+    self.assertTrue('All installed bundles are up to date.')
 
   def testListMultiple(self):
     """The list command should display multiple bundles."""
@@ -207,13 +207,13 @@ class TestCommands(SdkToolsTestCase):
         os.path.join(self.basedir, 'nacl_sdk', 'pepper_23', 'dummy.txt')))
 
   def testUpdateNoNewVersion(self):
-    """The update command should do nothing if the bundle is already up-to-date.
+    """The update command should do nothing if the bundle is already up to date.
     """
     self._AddDummyBundle(self.manifest, 'pepper_23')
     self._WriteManifest()
     self._Run(['update', 'pepper_23'])
     output = self._Run(['update', 'pepper_23'])
-    self.assertTrue('is already up-to-date.' in output)
+    self.assertTrue('is already up to date.' in output)
 
   def testUpdateWithNewVersion(self):
     """The update command should update to a new version if it exists."""

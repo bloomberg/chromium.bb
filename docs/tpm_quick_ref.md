@@ -4,7 +4,7 @@ TODO: this page looks very outdated. glossary.md does not exist,
 git.chromium.org does not exist. Delete it?
 
 This page is meant to help keep track of TPM use across the system. It may not
-be up-to-date at any given point, but it's a wiki so you know what to do.
+be up to date at any given point, but it's a wiki so you know what to do.
 
 ## Details
 

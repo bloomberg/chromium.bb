@@ -408,7 +408,7 @@ or within gdb:
 
 If some messages show as unknown, check if the list of IPC message headers in
 [chrome/common/logging_chrome.cc](/chrome/common/logging_chrome.cc) is
-up-to-date. In case this file reference goes out of date, try looking for usage
+up to date. In case this file reference goes out of date, try looking for usage
 of macros like `IPC_MESSAGE_LOG_ENABLED` or `IPC_MESSAGE_MACROS_LOG_ENABLED`.
 
 ## Using valgrind

@@ -336,7 +336,7 @@
 #define GL_RG8_EXT 0x822B
 #endif /* GL_EXT_texture_rg */
 
-// This is from NV_path_rendering, but the Mesa GL header is not up-to-date with
+// This is from NV_path_rendering, but the Mesa GL header is not up to date with
 // the most recent
 // version of the extension. This definition could be removed once glext.h
 // r27498 or later is

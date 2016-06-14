@@ -213,7 +213,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
 
   // The version of the latest invalidation received. This is compared to
   // the invalidation version of policy stored to determine when the
-  // invalidated policy is up-to-date.
+  // invalidated policy is up to date.
   int64_t invalidation_version_;
 
   // The number of invalidations with unknown version received. Since such

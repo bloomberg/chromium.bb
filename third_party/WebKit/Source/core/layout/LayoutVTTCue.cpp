@@ -319,7 +319,7 @@ void LayoutVTTCue::layout()
     // Determine the area covered by the media controls, if any. If the controls
     // are present, they are the next sibling of the text track container, which
     // is our parent. (LayoutMedia ensures that the media controls are laid out
-    // before text tracks, so that the layout is up-to-date here.)
+    // before text tracks, so that the layout is up to date here.)
     ASSERT(parent()->node()->isTextTrackContainer());
     IntRect controlsRect;
     if (LayoutObject* parentSibling = parent()->nextSibling()) {

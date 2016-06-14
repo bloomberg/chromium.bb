@@ -841,7 +841,7 @@ def main():
     if re.search(r'\b(clang|asan|lsan|msan|tsan)=1',
                  os.environ.get('GYP_DEFINES', '')):
       is_clang_required = True
-    # clang previously downloaded, keep it up-to-date.
+    # clang previously downloaded, keep it up to date.
     # If you don't want this, delete third_party/llvm-build on your machine.
     if os.path.isdir(LLVM_BUILD_DIR):
       is_clang_required = True

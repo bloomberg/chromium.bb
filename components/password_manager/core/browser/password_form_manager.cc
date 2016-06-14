@@ -590,7 +590,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   DCHECK_EQ(state_, MATCHING_PHASE);
 
   if (need_to_refetch_) {
-    // The received results are no longer up-to-date, need to re-request.
+    // The received results are no longer up to date, need to re-request.
     state_ = PRE_MATCHING_PHASE;
     FetchDataFromPasswordStore();
     need_to_refetch_ = false;

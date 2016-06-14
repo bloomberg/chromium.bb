@@ -80,7 +80,7 @@ class SyncClient {
   void StartProcessingBacklog();
 
   // Starts checking the existing pinned files to see if these are
-  // up-to-date. If stale files are detected, the local IDs of these files
+  // up to date. If stale files are detected, the local IDs of these files
   // are added and the sync loop is started.
   void StartCheckingExistingPinnedFiles();
 

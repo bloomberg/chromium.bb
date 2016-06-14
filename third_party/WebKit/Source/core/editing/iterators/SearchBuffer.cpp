@@ -422,7 +422,7 @@ static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextItera
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRangeTemplate<Strategy>& inputRange, const String& target, FindOptions options)
 {
-    // CharacterIterator requires layoutObjects to be up-to-date.
+    // CharacterIterator requires layoutObjects to be up to date.
     if (!inputRange.startPosition().inShadowIncludingDocument())
         return EphemeralRangeTemplate<Strategy>();
     DCHECK_EQ(inputRange.startPosition().document(), inputRange.endPosition().document());

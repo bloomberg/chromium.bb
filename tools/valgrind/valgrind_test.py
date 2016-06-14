@@ -286,7 +286,7 @@ class ValgrindTool(BaseTool):
 
     This function will run dsymutil if the .dSYM bundle is missing or if
     it looks like a fake_dsym.  A non-fake dsym that already exists is assumed
-    to be up-to-date.
+    to be up to date.
     """
     test_command = self._args[0]
     dsym_bundle = self._args[0] + '.dSYM'

@@ -684,7 +684,7 @@ void PepperPluginInstanceImpl::Delete() {
 
   // Force-unbind any Graphics. In the case of Graphics2D, if the plugin
   // leaks the graphics 2D, it may actually get cleaned up after our
-  // destruction, so we need its pointers to be up-to-date.
+  // destruction, so we need its pointers to be up to date.
   BindGraphics(pp_instance(), 0);
   container_ = NULL;
 }

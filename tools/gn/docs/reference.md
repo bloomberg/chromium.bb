@@ -4686,7 +4686,7 @@
 
   The problem happens if a file is ever removed because the inputs are
   not listed on the command line to the script. Because the script
-  hasn't changed and all inputs are up-to-date, the script will not
+  hasn't changed and all inputs are up to date, the script will not
   re-run and you will get a stale build. Instead, either list all
   inputs on the command line to the script, or if there are many, create
   a separate list file that the script reads. As long as this file is
@@ -4704,7 +4704,7 @@
   you do not typically need to list them in the inputs section.
 
   Inputs for binary targets will be treated as order-only dependencies,
-  meaning that they will be forced up-to-date before compiling or
+  meaning that they will be forced up to date before compiling or
   any files in the target, but changes in the inputs will not
   necessarily force the target to compile. This is because it is
   expected that the compiler will report the precise list of input

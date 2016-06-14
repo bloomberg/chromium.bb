@@ -81,7 +81,7 @@ static bool IsRewrittenKey(uint32_t code) {
 // unchanged, allowing Alt+RightClick also to be injected, as long as the
 // target application doesn't distinguish between left and right Alt keys.
 //
-// This file must be kept up-to-date with changes to
+// This file must be kept up to date with changes to
 // chrome/browser/chromeos/events/event_rewriter.cc
 
 

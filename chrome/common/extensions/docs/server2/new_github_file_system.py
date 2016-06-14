@@ -126,7 +126,7 @@ class GithubFileSystem(FileSystem):
     self._username, self._password = _LoadCredentials(object_store_creator)
     self._blobstore = blobstore.AppEngineBlobstore()
     self._fetcher = Fetcher(self._repo_url)
-    # Stores whether the github is up-to-date. This will either be True or
+    # Stores whether the github is up to date. This will either be True or
     # empty, the emptiness most likely due to this being a cron run.
     self._up_to_date_cache = object_store_creator.Create(
         GithubFileSystem, category='up-to-date')

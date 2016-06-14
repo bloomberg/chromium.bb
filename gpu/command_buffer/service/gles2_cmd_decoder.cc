@@ -2208,7 +2208,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Most recent generation of the TextureManager.  If this no longer matches
   // the current generation when our context becomes current, then we'll rebind
-  // all the textures to stay up-to-date with Texture::service_id() changes.
+  // all the textures to stay up to date with Texture::service_id() changes.
   uint32_t texture_manager_service_id_generation_;
 
   bool force_shader_name_hashing_for_test;

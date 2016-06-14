@@ -292,7 +292,7 @@ def UpdateBundleIfNeeded(delegate, remote_manifest, local_manifest,
 
       _UpdateBundle(delegate, bundle, local_manifest)
     else:
-      print '%s is already up-to-date.' % (bundle.name,)
+      print '%s is already up to date.' % (bundle.name,)
   else:
     logging.error('Bundle %s does not exist.' % (bundle_name,))
 

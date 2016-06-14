@@ -271,7 +271,7 @@ void NinjaBinaryTargetWriter::Run() {
   WriteCompilerVars(used_types);
 
   // The input dependencies will be an order-only dependency. This will cause
-  // Ninja to make sure the inputs are up-to-date before compiling this source,
+  // Ninja to make sure the inputs are up to date before compiling this source,
   // but changes in the inputs deps won't cause the file to be recompiled.
   //
   // This is important to prevent changes in unrelated actions that are

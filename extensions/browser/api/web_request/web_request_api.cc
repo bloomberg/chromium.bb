@@ -1835,7 +1835,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
                               : RulesRegistryService::kDefaultRulesRegistryID;
 
   RulesRegistryKey rules_key(browser_context, rules_registry_id);
-  // If this check fails, check that the active stages are up-to-date in
+  // If this check fails, check that the active stages are up to date in
   // extensions/browser/api/declarative_webrequest/request_stage.h .
   DCHECK(request_stage & kActiveStages);
 

@@ -659,7 +659,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
     ClipRect damageRect, clipRectToApply;
     layer->clipper().calculateRects(ClipRectsContext(rootLayer, UncachedClipRects), paintRect, layerBounds, damageRect, clipRectToApply);
 
-    // Ensure our lists are up-to-date.
+    // Ensure our lists are up to date.
     layer->stackingNode()->updateLayerListsIfNeeded();
 
     LayoutPoint offsetFromRoot;

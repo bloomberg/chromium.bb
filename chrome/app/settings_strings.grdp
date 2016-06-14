@@ -28,7 +28,7 @@
       Updating your device
     </message>
     <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated ChromiumOS/ChromeOS">
-      Nearly up-to-date! Restart your device to finish updating.
+      Nearly up to date! Restart your device to finish updating.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating ChromiumOS/ChromeOS to a specified channel">
       Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel

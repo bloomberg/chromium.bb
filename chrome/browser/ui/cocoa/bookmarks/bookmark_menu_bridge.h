@@ -142,7 +142,7 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
  private:
   friend class BookmarkMenuBridgeTest;
 
-  // True iff the menu is up-to-date with the actual BookmarkModel.
+  // True iff the menu is up to date with the actual BookmarkModel.
   bool menuIsValid_;
 
   Profile* profile_;  // weak

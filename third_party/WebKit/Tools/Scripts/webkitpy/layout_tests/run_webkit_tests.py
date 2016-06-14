@@ -260,12 +260,12 @@ def parse_args(args):
                 dest="build",
                 action="store_true",
                 default=True,
-                help=("Check to ensure the build is up-to-date (default).")),
+                help=("Check to ensure the build is up to date (default).")),
             optparse.make_option(
                 "--no-build",
                 dest="build",
                 action="store_false",
-                help="Don't check to see if the build is up-to-date."),
+                help="Don't check to see if the build is up to date."),
             optparse.make_option(
                 "--child-processes",
                 help="Number of drivers to run in parallel."),

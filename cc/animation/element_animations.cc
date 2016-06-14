@@ -528,7 +528,7 @@ void ElementAnimations::PushNewAnimationsToImplThread(
             element_animations_impl->ScrollOffsetForAnimation();
       } else {
         // The owning layer isn't yet in the active tree, so the main thread
-        // scroll offset will be up-to-date.
+        // scroll offset will be up to date.
         current_scroll_offset = ScrollOffsetForAnimation();
       }
       animations_[i]->curve()->ToScrollOffsetAnimationCurve()->SetInitialValue(

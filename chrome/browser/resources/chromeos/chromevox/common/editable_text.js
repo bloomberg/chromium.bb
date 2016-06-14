@@ -319,7 +319,7 @@ cvox.ChromeVoxEditableTextArea = function(node, tts) {
   this.multiline = true;
 
   /**
-   * True if the shadow is up-to-date with the current value of this text area.
+   * True if the shadow is up to date with the current value of this text area.
    * @type {boolean}
    * @private
    */

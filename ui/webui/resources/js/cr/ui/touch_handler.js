@@ -681,7 +681,7 @@ cr.define('cr.ui', function() {
         // In most cases, our active touch will be in the 'touches' collection,
         // but we can't assert that because occasionally two touchend events can
         // occur at almost the same time with both having empty 'touches' lists.
-        // I.e., 'touches' seems like it can be a bit more up-to-date than the
+        // I.e., 'touches' seems like it can be a bit more up to date than the
         // current event.
         return;
       }

@@ -215,7 +215,7 @@ check_targets = [
 #      up a directory. The author notices that the script isn't re-run when the
 #      directory is updated, so adds a glob so all the files are listed as
 #      inputs. This seems to work great... until a file is deleted. When a
-#      file is deleted, all the inputs the glob lists will still be up-to-date
+#      file is deleted, all the inputs the glob lists will still be up to date
 #      and no command-lines will have been changed. The action will not be
 #      re-run and the build will be broken. It is possible to get this correct
 #      using glob, and it's possible to mess it up without glob, but globs make

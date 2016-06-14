@@ -362,7 +362,7 @@ void VisitedLinkMaster::AddURL(const GURL& url) {
   if (!table_builder_.get() &&
       !table_is_loading_from_file_ &&
       index != null_hash_) {
-    // Not rebuilding, so we want to keep the file on disk up-to-date.
+    // Not rebuilding, so we want to keep the file on disk up to date.
     if (persist_to_disk_) {
       WriteUsedItemCountToFile();
       WriteHashRangeToFile(index, index);
@@ -380,7 +380,7 @@ void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
       ResizeTableIfNecessary();
   }
 
-  // Keeps the file on disk up-to-date.
+  // Keeps the file on disk up to date.
   if (!table_builder_.get() &&
       !table_is_loading_from_file_ &&
       persist_to_disk_)
@@ -816,7 +816,7 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
   if (signature != kFileSignature)
     return false;
 
-  // Verify the version is up-to-date. As with other read errors, a version
+  // Verify the version is up to date. As with other read errors, a version
   // mistmatch will trigger a rebuild of the database from history, which will
   // have the effect of migrating the database.
   int32_t version;

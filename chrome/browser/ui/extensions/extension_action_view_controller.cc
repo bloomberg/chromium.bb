@@ -144,7 +144,7 @@ void ExtensionActionViewController::HidePopup() {
     // We need to do these actions synchronously (instead of closing and then
     // performing the rest of the cleanup in OnExtensionHostDestroyed()) because
     // the extension host may close asynchronously, and we need to keep the view
-    // delegate up-to-date.
+    // delegate up to date.
     if (popup_host_)
       OnPopupClosed();
   }

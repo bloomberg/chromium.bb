@@ -45,7 +45,7 @@ class CounterNode;
 // common case where there is no CounterNode, LayoutObject also keeps track of
 // whether it has at least one CounterNode in the hasCounterNodeMap bit.
 //
-// Keeping the map up-to-date is the reason why LayoutObjects need to call into
+// Keeping the map up to date is the reason why LayoutObjects need to call into
 // LayoutCounter during their lifetime (see the static functions below).
 class LayoutCounter final : public LayoutText {
 public:

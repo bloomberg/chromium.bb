@@ -59,7 +59,7 @@ class EnterpriseInstallAttributes {
   void Init(const base::FilePath& cache_file);
 
   // Makes sure the local caches for enterprise-related install attributes are
-  // up-to-date with what cryptohome has. This method checks the readiness of
+  // up to date with what cryptohome has. This method checks the readiness of
   // attributes and read them if ready. Actual read will be performed in
   // ReadAttributesIfReady().
   void ReadImmutableAttributes(const base::Closure& callback);

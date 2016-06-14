@@ -498,7 +498,7 @@ class GFX_EXPORT RenderText {
   RenderText();
 
   // NOTE: The value of these accessors may be stale. Please make sure
-  // that these fields are up-to-date before accessing them.
+  // that these fields are up to date before accessing them.
   const base::string16& layout_text() const { return layout_text_; }
   const base::string16& display_text() const { return display_text_; }
   bool text_elided() const { return text_elided_; }

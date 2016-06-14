@@ -372,7 +372,7 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
     // track has a list of cues.
     DCHECK(m_cues && cue->track() == this);
 
-    // Make sure the TextTrackCueList order is up-to-date.
+    // Make sure the TextTrackCueList order is up to date.
     // FIXME: Only need to do this if the change was to any of the timestamps.
     m_cues->updateCueIndex(cue);
 

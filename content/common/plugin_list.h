@@ -75,7 +75,7 @@ class CONTENT_EXPORT PluginList {
   void GetPlugins(std::vector<WebPluginInfo>* plugins);
 
   // Copies the list of plugins into |plugins| without loading them.
-  // Returns true if the list of plugins is up-to-date.
+  // Returns true if the list of plugins is up to date.
   bool GetPluginsNoRefresh(std::vector<WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
@@ -156,7 +156,7 @@ class CONTENT_EXPORT PluginList {
 
   // States whether we will load the plugin list the next time we try to access
   // it, whether we are currently in the process of loading it, or whether we
-  // consider it up-to-date.
+  // consider it up to date.
   LoadingState loading_state_;
 
   // Extra plugin paths that we want to search when loading.

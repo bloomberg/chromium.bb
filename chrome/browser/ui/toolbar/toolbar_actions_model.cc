@@ -750,7 +750,7 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
         std::rotate(current_pos, current_pos + 1, desired_pos + 1);
       else
         std::rotate(desired_pos, current_pos, current_pos + 1);
-      // Notify the observers to keep them up-to-date, unless we're highlighting
+      // Notify the observers to keep them up to date, unless we're highlighting
       // (in which case we're deliberately only showing a subset of actions).
       if (!is_highlighting())
         FOR_EACH_OBSERVER(

@@ -331,7 +331,7 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
   // Checks version file and clear old storage.
   base::FilePath version_filepath = dir.Append("version");
   if (IsCurrentVersion(version_filepath)) {
-    // The version is up-to-date, so there is nothing to do.
+    // The version is up to date, so there is nothing to do.
     return;
   }
   // Delete old directory recursively and create a new directory.

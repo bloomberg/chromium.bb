@@ -181,7 +181,7 @@ final class ClassLoaderPatcher {
             }
         }
         if (numNotChanged > 0) {
-            Log.i(TAG, numNotChanged + " libs already up-to-date.");
+            Log.i(TAG, numNotChanged + " libs already up to date.");
         }
     }
 

@@ -574,12 +574,12 @@ Google Chrome is unable to recover your settings.
       <!-- About Chrome page -->
       <if expr="not chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Google Chrome">
-          Nearly up-to-date! Relaunch Google Chrome to finish updating.
+          Nearly up to date! Relaunch Google Chrome to finish updating.
         </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chrome OS">
-          Nearly up-to-date! Restart your device to finish updating.
+          Nearly up to date! Restart your device to finish updating.
         </message>
       </if>
       <if expr="chromeos">

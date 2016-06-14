@@ -597,7 +597,7 @@ void WizardController::OnNetworkConnected() {
       // Possible cases:
       // 1. EULA was accepted, forced shutdown/reboot during update.
       // 2. EULA was accepted, planned reboot after update.
-      // Make sure that device is up-to-date.
+      // Make sure that device is up to date.
       InitiateOOBEUpdate();
     }
   } else {

@@ -93,7 +93,7 @@ ninja -C out\Debug chrome
 ```
 
 The `update.py` script only needs to be run once per checkout. Clang will be
-kept up-to-date by `gclient runhooks`.
+kept up to date by `gclient runhooks`.
 
 Current brokenness:
 

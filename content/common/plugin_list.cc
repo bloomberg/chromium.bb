@@ -172,7 +172,7 @@ void PluginList::SetPlugins(const std::vector<WebPluginInfo>& plugins) {
   base::AutoLock lock(lock_);
 
   // If we haven't been invalidated in the mean time, mark the plugin list as
-  // up-to-date.
+  // up to date.
   if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
     loading_state_ = LOADING_STATE_UP_TO_DATE;
 

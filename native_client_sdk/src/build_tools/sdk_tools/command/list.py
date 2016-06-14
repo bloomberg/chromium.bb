@@ -15,7 +15,7 @@ def List(remote_manifest, local_manifest, display_revisions):
     _PrintBundle(local_bundle, bundle, needs_update, display_revisions)
 
   if not any_bundles_need_update:
-    print '\nAll installed bundles are up-to-date.'
+    print '\nAll installed bundles are up to date.'
 
   local_only_bundles = set([b.name for b in local_manifest.GetBundles()])
   local_only_bundles -= set([b.name for b in remote_manifest.GetBundles()])

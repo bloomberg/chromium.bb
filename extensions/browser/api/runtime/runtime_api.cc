@@ -174,7 +174,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
   delegate_ = ExtensionsBrowserClient::Get()->CreateRuntimeAPIDelegate(
       browser_context_);
 
-  // Check if registered events are up-to-date. We can only do this once
+  // Check if registered events are up to date. We can only do this once
   // per browser context, since it updates internal state when called.
   dispatch_chrome_updated_event_ =
       ExtensionsBrowserClient::Get()->DidVersionUpdate(browser_context_);

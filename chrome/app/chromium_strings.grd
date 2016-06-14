@@ -573,12 +573,12 @@ Chromium is unable to recover your settings.
       <!-- About Chrome page -->
       <if expr="not chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">
-          Nearly up-to-date! Relaunch Chromium to finish updating.
+          Nearly up to date! Relaunch Chromium to finish updating.
         </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium OS">
-          Nearly up-to-date! Restart your device to finish updating.
+          Nearly up to date! Restart your device to finish updating.
         </message>
       </if>
       <if expr="chromeos">

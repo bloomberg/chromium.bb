@@ -1298,7 +1298,7 @@ void BuildPropertyTreesTopLevelInternal(
   BuildPropertyTreesInternal(root_layer, data_for_recursion, &data_from_child);
   property_trees->needs_rebuild = false;
 
-  // The transform tree is kept up-to-date as it is built, but the
+  // The transform tree is kept up to date as it is built, but the
   // combined_clips stored in the clip tree and the screen_space_opacity and
   // is_drawn in the effect tree aren't computed during tree building.
   property_trees->transform_tree.set_needs_update(false);

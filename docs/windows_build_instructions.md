@@ -74,7 +74,7 @@ GN will produce a file `all.sln` in your build directory. It will internally
 use Ninja to compile while still allowing most IDE functions to work (there is
 no native Visual Studio compilation mode). If you manually run "gen" again you
 will need to resupply this argument, but normally GN will keep the build and
-IDE files up-to-date automatically when you build.
+IDE files up to date automatically when you build.
 
 The generated solution will contain several thousand projects and will be very
 slow to load. Use the `--filters` argument to restrict generating project files

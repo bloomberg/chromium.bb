@@ -141,7 +141,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnTestFinishedInSecondaryRenderer();
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
-  // initialized for the test, 2) kept-up-to-date wrt test flags and 3)
+  // initialized for the test, 2) kept up to date wrt test flags and 3)
   // monitored for crashes.
   void HandleNewRenderFrameHost(RenderFrameHost* frame);
 

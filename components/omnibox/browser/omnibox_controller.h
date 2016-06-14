@@ -32,7 +32,7 @@ class Rect;
 // TODO(beaudoin): Keep on expanding this class so that OmniboxEditModel no
 //     longer needs to hold any reference to AutocompleteController. Also make
 //     this the point of contact between InstantController and OmniboxEditModel.
-//     As the refactor progresses, keep the class comment up-to-date to
+//     As the refactor progresses, keep the class comment up to date to
 //     precisely explain what this class is doing.
 class OmniboxController : public AutocompleteControllerDelegate {
  public:

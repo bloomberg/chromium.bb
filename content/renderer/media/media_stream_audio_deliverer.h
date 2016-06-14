@@ -137,7 +137,7 @@ class MediaStreamAudioDeliverer {
   // |consumers_| on the audio thread.
   std::vector<Consumer*> pending_consumers_;
 
-  // Consumers that are up-to-date on the current audio format and are receiving
+  // Consumers that are up to date on the current audio format and are receiving
   // audio data are placed in this list.
   std::vector<Consumer*> consumers_;
 

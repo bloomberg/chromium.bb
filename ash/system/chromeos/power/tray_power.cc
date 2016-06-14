@@ -172,7 +172,7 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
 }
 
 views::View* TrayPower::CreateDefaultView(LoginStatus status) {
-  // Make sure icon status is up-to-date. (Also triggers stub activation).
+  // Make sure icon status is up to date. (Also triggers stub activation).
   PowerStatus::Get()->RequestStatusUpdate();
   return NULL;
 }

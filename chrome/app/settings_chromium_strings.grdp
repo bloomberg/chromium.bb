@@ -13,7 +13,7 @@
       Updating Chromium
     </message>
     <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">
-      Nearly up-to-date! Relaunch Chromium to finish updating.
+      Nearly up to date! Relaunch Chromium to finish updating.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium)">
       Chromium is up to date.

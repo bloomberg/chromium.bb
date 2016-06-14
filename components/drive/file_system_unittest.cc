@@ -725,7 +725,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   EXPECT_TRUE(ReadDirectorySync(util::GetDriveMyDriveRootPath()));
 
   // SetUpTestFileSystem and FakeDriveService have the same
-  // changestamp (i.e. the local metadata is up-to-date), so no request for
+  // changestamp (i.e. the local metadata is up to date), so no request for
   // new resource list (i.e., call to GetResourceList) should happen.
   EXPECT_EQ(0, fake_drive_service_->file_list_load_count());
 

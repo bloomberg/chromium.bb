@@ -638,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-// Tests that the SecurityStateModel for a WebContents is up-to-date
+// Tests that the SecurityStateModel for a WebContents is up to date
 // when the WebContents is inserted into a Browser's TabStripModel.
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
   ASSERT_TRUE(https_server_.Start());
