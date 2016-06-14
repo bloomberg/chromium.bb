@@ -91,7 +91,7 @@ const float kCardAspectRatio = 4.0f / 3.0f;
 // landscape orientation).
 const int kMinCardsMajor = 3;
 
-const int kOverviewSelectorTransitionMilliseconds = 100;
+const int kOverviewSelectorTransitionMilliseconds = 200;
 
 // The color and opacity of the screen shield in overview.
 const SkColor kShieldColor = SkColorSetARGB(178, 0, 0, 0);

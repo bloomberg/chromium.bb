@@ -309,7 +309,8 @@ void WindowSelectorItem::SetSelected(bool selected) {
       window->GetLayer()->GetAnimator());
   animation_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSelectorFadeInMilliseconds));
-  animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  animation_settings.SetTweenType(selected ? gfx::Tween::LINEAR_OUT_SLOW_IN
+                                           : gfx::Tween::FAST_OUT_LINEAR_IN);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   window->SetOpacity(selected ? 0.0f : 1.0f);
