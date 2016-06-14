@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 namespace {
@@ -98,6 +99,7 @@ void MediaPermissionDispatcher::RequestPermission(
 
   permission_service_->RequestPermission(
       MediaPermissionTypeToPermissionName(type), security_origin.spec(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                  request_id));
 }

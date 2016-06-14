@@ -33,6 +33,7 @@
 #include "core/frame/Settings.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
 #include "wtf/Assertions.h"
@@ -428,6 +429,7 @@ void Geolocation::requestPermission()
     m_permissionService->RequestPermission(
         mojom::blink::PermissionName::GEOLOCATION,
         getExecutionContext()->getSecurityOrigin()->toString(),
+        UserGestureIndicator::processingUserGesture(),
         createBaseCallback(bind<mojom::blink::PermissionStatus>(&Geolocation::onGeolocationPermissionUpdated, this)));
 }
 

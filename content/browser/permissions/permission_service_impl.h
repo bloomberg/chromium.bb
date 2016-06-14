@@ -76,9 +76,11 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
                      const PermissionStatusCallback& callback) override;
   void RequestPermission(blink::mojom::PermissionName permission,
                          const mojo::String& origin,
+                         bool user_gesture,
                          const PermissionStatusCallback& callback) override;
   void RequestPermissions(mojo::Array<blink::mojom::PermissionName> permissions,
                           const mojo::String& origin,
+                          bool user_gesture,
                           const PermissionsStatusCallback& callback) override;
   void RevokePermission(blink::mojom::PermissionName permission,
                         const mojo::String& origin,
