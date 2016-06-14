@@ -246,7 +246,9 @@ const int kThreeHoursInMs = 180 * 60 * 1000;
 const char kURL[] = "http://example.com";
 const char kCookieValue[] = "converted=true";
 // Assigned to Philip J. Fry to fix eventually.
-const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
+// TODO(maksims): use year 3000 when we get rid off the 32-bit
+// versions. https://crbug.com/619828
+const char kCookieOptions[] = ";expires=Wed Jan 01 2038 00:00:00 GMT";
 
 const base::FilePath::CharType kTestExtensionsDir[] =
     FILE_PATH_LITERAL("extensions");
