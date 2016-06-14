@@ -2837,6 +2837,24 @@ TEST_F(GLES2ImplementationTest, DiscardBackbufferCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, ScheduleCALayerInUseQueryCHROMIUM) {
+  GLuint data[1][1] = {{0}};
+  struct Cmds {
+    cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate cmd;
+    GLuint data[1][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 1; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLuint>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(1, &data[0][0]);
+  gl_->ScheduleCALayerInUseQueryCHROMIUM(1, &data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, FlushDriverCachesCHROMIUM) {
   struct Cmds {
     cmds::FlushDriverCachesCHROMIUM cmd;

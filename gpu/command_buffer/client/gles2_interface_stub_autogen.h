@@ -744,6 +744,8 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              GLint sorting_context_id,
                              const GLfloat* transform,
                              GLuint filter) override;
+void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
+                                       const GLuint* textures) override;
 void CommitOverlayPlanesCHROMIUM() override;
 void SwapInterval(GLint interval) override;
 void FlushDriverCachesCHROMIUM() override;

@@ -1872,6 +1872,12 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
+    GLuint n,
+    const GLuint* textures) {
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM() {
   return error::kNoError;
 }

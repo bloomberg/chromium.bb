@@ -3276,6 +3276,27 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
   CheckGLError();
 }
 
+void GLES2Implementation::ScheduleCALayerInUseQueryCHROMIUM(
+    GLsizei count,
+    const GLuint* textures) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glScheduleCALayerInUseQueryCHROMIUM(" << count
+                     << ", " << static_cast<const void*>(textures) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << textures[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glScheduleCALayerInUseQueryCHROMIUM",
+               "count < 0");
+    return;
+  }
+  helper_->ScheduleCALayerInUseQueryCHROMIUMImmediate(count, textures);
+  CheckGLError();
+}
+
 void GLES2Implementation::FlushDriverCachesCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFlushDriverCachesCHROMIUM("

@@ -1051,6 +1051,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoMatrixLoadfCHROMIUM(GLenum matrix_mode, const GLfloat* matrix);
   void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
+  void DoScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
+                                           const GLuint* textures);
 
   // Creates a Program for the given program.
   Program* CreateProgram(GLuint client_id, GLuint service_id) {
@@ -10455,6 +10457,35 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
                        "failed to schedule CALayer");
   }
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoScheduleCALayerInUseQueryCHROMIUM(
+    GLsizei count,
+    const GLuint* textures) {
+  std::vector<gl::GLSurface::CALayerInUseQuery> queries;
+  queries.reserve(count);
+  for (GLsizei i = 0; i < count; ++i) {
+    gl::GLImage* image = nullptr;
+    GLuint texture_id = textures[i];
+    if (texture_id) {
+      TextureRef* ref = texture_manager()->GetTexture(texture_id);
+      if (!ref) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                           "glScheduleCALayerInUseQueryCHROMIUM",
+                           "unknown texture");
+        return;
+      }
+      Texture::ImageState image_state;
+      image = ref->texture()->GetLevelImage(ref->texture()->target(), 0,
+                                            &image_state);
+    }
+    gl::GLSurface::CALayerInUseQuery query;
+    query.image = image;
+    query.texture = texture_id;
+    queries.push_back(query);
+  }
+
+  surface_->ScheduleCALayerInUseQuery(std::move(queries));
 }
 
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(

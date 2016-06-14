@@ -792,6 +792,8 @@ glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                           GLint sorting_context_id,
                           const GLfloat* transform,
                           GLuint filter);
+GL_APICALL void GL_APIENTRY
+glScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures);
 #endif
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     GLuint contents_texture_id,
@@ -805,6 +807,9 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     GLint sorting_context_id,
     const GLfloat* transform,
     GLuint filter);
+typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERINUSEQUERYCHROMIUMPROC)(
+    GLsizei count,
+    const GLuint* textures);
 #endif /* GL_CHROMIUM_schedule_ca_layer */
 
 /* GL_CHROMIUM_sync_query */

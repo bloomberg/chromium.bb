@@ -2168,6 +2168,14 @@ void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
                                transform, filter);
 }
 
+void GLES2TraceImplementation::ScheduleCALayerInUseQueryCHROMIUM(
+    GLsizei count,
+    const GLuint* textures) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::ScheduleCALayerInUseQueryCHROMIUM");
+  gl_->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
+}
+
 void GLES2TraceImplementation::CommitOverlayPlanesCHROMIUM() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CommitOverlayPlanesCHROMIUM");

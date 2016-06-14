@@ -158,6 +158,18 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
   params.scale_factor = scale_factor;
   params.latency_info = std::move(latency_info);
   params.result = gfx::SwapResult::SWAP_ACK;
+
+  // TODO(erikchen): Re-enable this logic alongside the client code that
+  // consumes this response. https://crbug.com/608026.
+  // for (auto& query : io_surface_in_use_queries_) {
+  //   SwapBuffersCompletedIOSurfaceInUseQuery response;
+  //   response.texture = query.texture;
+  //   response.in_use =
+  //       query.io_surface.get() && IOSurfaceIsInUse(query.io_surface.get());
+  //   params.in_use_queries.push_back(std::move(response));
+  // }
+  io_surface_in_use_queries_.clear();
+
   stub_->SendSwapBuffersCompleted(params);
 }
 
@@ -336,6 +348,20 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
                         edge_aa_mask, opacity, filter);
 }
 
+void ImageTransportSurfaceOverlayMac::ScheduleCALayerInUseQuery(
+    std::vector<CALayerInUseQuery> queries) {
+  for (auto& query : queries) {
+    IOSurfaceInUseQuery io_surface_query;
+    io_surface_query.texture = query.texture;
+    if (query.image) {
+      gl::GLImageIOSurface* io_surface_image =
+          static_cast<gl::GLImageIOSurface*>(query.image.get());
+      io_surface_query.io_surface = io_surface_image->io_surface();
+    }
+    io_surface_in_use_queries_.push_back(std::move(io_surface_query));
+  }
+}
+
 bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
   return true;
 }
@@ -370,5 +396,14 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&IOSurfaceContextNoOp, context_on_new_gpu));
 }
+
+ImageTransportSurfaceOverlayMac::IOSurfaceInUseQuery::IOSurfaceInUseQuery() =
+    default;
+ImageTransportSurfaceOverlayMac::IOSurfaceInUseQuery::IOSurfaceInUseQuery(
+    const IOSurfaceInUseQuery&) = default;
+ImageTransportSurfaceOverlayMac::IOSurfaceInUseQuery::IOSurfaceInUseQuery(
+    IOSurfaceInUseQuery&&) = default;
+ImageTransportSurfaceOverlayMac::IOSurfaceInUseQuery::~IOSurfaceInUseQuery() =
+    default;
 
 }  // namespace gpu

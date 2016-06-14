@@ -13649,6 +13649,50 @@ static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 32,
 static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 36,
               "offset of ScheduleCALayerCHROMIUM shm_offset should be 36");
 
+struct ScheduleCALayerInUseQueryCHROMIUMImmediate {
+  typedef ScheduleCALayerInUseQueryCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId = kScheduleCALayerInUseQueryCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 1 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLsizei _count, const GLuint* _textures) {
+    SetHeader(_count);
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLsizei _count, const GLuint* _textures) {
+    static_cast<ValueType*>(cmd)->Init(_count, _textures);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t count;
+};
+
+static_assert(sizeof(ScheduleCALayerInUseQueryCHROMIUMImmediate) == 8,
+              "size of ScheduleCALayerInUseQueryCHROMIUMImmediate should be 8");
+static_assert(
+    offsetof(ScheduleCALayerInUseQueryCHROMIUMImmediate, header) == 0,
+    "offset of ScheduleCALayerInUseQueryCHROMIUMImmediate header should be 0");
+static_assert(
+    offsetof(ScheduleCALayerInUseQueryCHROMIUMImmediate, count) == 4,
+    "offset of ScheduleCALayerInUseQueryCHROMIUMImmediate count should be 4");
+
 struct CommitOverlayPlanesCHROMIUM {
   typedef CommitOverlayPlanesCHROMIUM ValueType;
   static const CommandId kCmdId = kCommitOverlayPlanesCHROMIUM;

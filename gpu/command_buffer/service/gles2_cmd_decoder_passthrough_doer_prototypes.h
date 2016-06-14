@@ -769,6 +769,8 @@ error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* clip_rect,
                                        GLint sorting_context_id,
                                        const GLfloat* transform);
+error::Error DoScheduleCALayerInUseQueryCHROMIUM(GLuint n,
+                                                 const GLuint* textures);
 error::Error DoCommitOverlayPlanesCHROMIUM();
 error::Error DoSwapInterval(GLint interval);
 error::Error DoFlushDriverCachesCHROMIUM();

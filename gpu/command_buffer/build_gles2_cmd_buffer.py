@@ -4423,6 +4423,15 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_schedule_ca_layer',
     'chromium': True,
   },
+  'ScheduleCALayerInUseQueryCHROMIUM': {
+    'type': 'PUTn',
+    'count': 1,
+    'decoder_func': 'DoScheduleCALayerInUseQueryCHROMIUM',
+    'cmd_args': 'GLsizei count, const GLuint* textures',
+    'extension': 'CHROMIUM_schedule_ca_layer',
+    'chromium': True,
+    'unit_test': False,
+  },
   'CommitOverlayPlanesCHROMIUM': {
     'impl_func': False,
     'decoder_func': 'DoCommitOverlayPlanes',

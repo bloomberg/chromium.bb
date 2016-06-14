@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
@@ -149,6 +150,11 @@ bool GLSurface::ScheduleCALayer(GLImage* contents_image,
                                 unsigned filter) {
   NOTIMPLEMENTED();
   return false;
+}
+
+void GLSurface::ScheduleCALayerInUseQuery(
+    std::vector<CALayerInUseQuery> queries) {
+  NOTIMPLEMENTED();
 }
 
 bool GLSurface::IsSurfaceless() const {
@@ -338,5 +344,10 @@ scoped_refptr<GLSurface> InitializeGLSurface(scoped_refptr<GLSurface> surface) {
     return nullptr;
   return surface;
 }
+
+GLSurface::CALayerInUseQuery::CALayerInUseQuery() = default;
+GLSurface::CALayerInUseQuery::CALayerInUseQuery(const CALayerInUseQuery&) =
+    default;
+GLSurface::CALayerInUseQuery::~CALayerInUseQuery() = default;
 
 }  // namespace gl

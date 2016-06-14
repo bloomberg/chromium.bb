@@ -4104,6 +4104,33 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawBuffersEXTImmediate(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleScheduleCALayerInUseQueryCHROMIUMImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate& c =
+      *static_cast<
+          const gles2::cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate*>(
+          cmd_data);
+  (void)c;
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32_t data_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize(count, sizeof(GLuint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* textures =
+      GetImmediateDataAs<const GLuint*>(c, data_size, immediate_data_size);
+  error::Error error = DoScheduleCALayerInUseQueryCHROMIUM(count, textures);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleCommitOverlayPlanesCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {

@@ -1488,6 +1488,10 @@ void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
       edge_aa_mask, bounds_rect, is_clipped, clip_rect, sorting_context_id,
       transform, filter);
 }
+void GL_APIENTRY
+GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
+  gles2::GetGLContext()->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
+}
 void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM() {
   gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM();
 }
@@ -2827,6 +2831,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glScheduleCALayerCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glScheduleCALayerCHROMIUM),
+    },
+    {
+        "glScheduleCALayerInUseQueryCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glScheduleCALayerInUseQueryCHROMIUM),
     },
     {
         "glCommitOverlayPlanesCHROMIUM",

@@ -1016,6 +1016,9 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     GLint /* sorting_context_id */,
     const GLfloat* /* transform */,
     GLuint /* filter */) {}
+void GLES2InterfaceStub::ScheduleCALayerInUseQueryCHROMIUM(
+    GLsizei /* count */,
+    const GLuint* /* textures */) {}
 void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM() {}
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}

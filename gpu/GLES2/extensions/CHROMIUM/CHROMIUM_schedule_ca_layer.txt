@@ -73,6 +73,18 @@ New Procedures and Functions
     <filter> will be used for both minification and magnification filtering. The
     only valid values are GL_LINEAR and GL_NEAREST.
 
+    The command
+
+       glScheduleCALayerInUseQueryCHROMIUM(GLsizei count, GLuint* textures);
+
+    schedules a query at the time of the next call to swap buffers. If the given
+    texture is backed by an IOSurface, then the query checks to see whether the
+    IOSurface is in use by the Window Server. Otherwise, the query returns
+    false. All the results will be returned with the swap ACK in
+    GpuCommandBufferMsg_SwapBuffersCompleted_Params. Clients should not destroy
+    any textures while they are being queried, as the swap ACK will use the
+    original texture id to identify the queried textures.
+
 Errors
 
     None.
@@ -83,6 +95,7 @@ New State
 
 Revision History
 
+    6/13/2016    Add glScheduleCALayerInUseQueryCHROMIUM.
     4/12/2016    Add a parameter to support minification and magnification
                  filtering.
     12/16/2015   Add clipping and edge anti-aliasing.

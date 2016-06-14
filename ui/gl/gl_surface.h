@@ -18,6 +18,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace gfx {
@@ -28,7 +29,6 @@ class VSyncProvider;
 namespace gl {
 
 class GLContext;
-class GLImage;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
@@ -184,6 +184,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                const gfx::Transform& transform,
                                int sorting_content_id,
                                unsigned filter);
+  struct GL_EXPORT CALayerInUseQuery {
+    CALayerInUseQuery();
+    explicit CALayerInUseQuery(const CALayerInUseQuery&);
+    ~CALayerInUseQuery();
+    unsigned texture = 0;
+    scoped_refptr<GLImage> image;
+  };
+  virtual void ScheduleCALayerInUseQuery(
+      std::vector<CALayerInUseQuery> queries);
 
   virtual bool IsSurfaceless() const;
 

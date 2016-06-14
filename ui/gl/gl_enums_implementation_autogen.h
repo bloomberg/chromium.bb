@@ -643,13 +643,16 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x78F2, "GL_READ_WRITE_CHROMIUM",
     },
     {
-        0x78FA, "GL_RGB_YUV_420_CHROMIUM",
+        0x78FA, "GL_RGB_YCRCB_420_CHROMIUM",
     },
     {
         0x78FB, "GL_RGB_YCBCR_422_CHROMIUM",
     },
     {
         0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
+    },
+    {
+        0x78FD, "GL_GPU_MEMORY_BUFFER_ID",
     },
     {
         0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",

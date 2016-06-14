@@ -328,6 +328,8 @@
 #define glScheduleOverlayPlaneCHROMIUM \
   GLES2_GET_FUN(ScheduleOverlayPlaneCHROMIUM)
 #define glScheduleCALayerCHROMIUM GLES2_GET_FUN(ScheduleCALayerCHROMIUM)
+#define glScheduleCALayerInUseQueryCHROMIUM \
+  GLES2_GET_FUN(ScheduleCALayerInUseQueryCHROMIUM)
 #define glCommitOverlayPlanesCHROMIUM GLES2_GET_FUN(CommitOverlayPlanesCHROMIUM)
 #define glSwapInterval GLES2_GET_FUN(SwapInterval)
 #define glFlushDriverCachesCHROMIUM GLES2_GET_FUN(FlushDriverCachesCHROMIUM)

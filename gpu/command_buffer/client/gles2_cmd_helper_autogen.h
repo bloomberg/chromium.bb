@@ -2770,6 +2770,19 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   }
 }
 
+void ScheduleCALayerInUseQueryCHROMIUMImmediate(GLsizei count,
+                                                const GLuint* textures) {
+  const uint32_t size =
+      gles2::cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate::ComputeSize(
+          count);
+  gles2::cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::ScheduleCALayerInUseQueryCHROMIUMImmediate>(size);
+  if (c) {
+    c->Init(count, textures);
+  }
+}
+
 void CommitOverlayPlanesCHROMIUM() {
   gles2::cmds::CommitOverlayPlanesCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CommitOverlayPlanesCHROMIUM>();
