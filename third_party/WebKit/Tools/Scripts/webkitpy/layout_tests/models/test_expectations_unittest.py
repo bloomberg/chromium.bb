@@ -194,7 +194,8 @@ class MiscTests(Base):
         s = self._exp.get_test_set(CRASH)
         self.assertEqual(s, set(['failures/expected/crash.html', 'failures/expected/image_checksum.html']))
 
-    def test_needs_rebaseline_reftest(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_needs_rebaseline_reftest(self):
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(
@@ -263,7 +264,8 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
 expectations:3 A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html"""
             self.assertEqual(str(e), warnings)
 
-    def test_parse_warning(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')

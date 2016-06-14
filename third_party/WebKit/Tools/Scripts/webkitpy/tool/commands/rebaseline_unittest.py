@@ -553,7 +553,8 @@ class TestRebaseline(BaseTestCase):
 
     command_constructor = Rebaseline  # AKA webkit-patch rebaseline
 
-    def test_rebaseline(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline(self):
         self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK Win7')]
 
         self._write("userscripts/first-test.html", "test data")
@@ -571,7 +572,8 @@ class TestRebaseline(BaseTestCase):
                          [[['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
                           [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']]])
 
-    def test_rebaseline_directory(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_directory(self):
         self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK Win7')]
 
         self._write("userscripts/first-test.html", "test data")
@@ -633,7 +635,8 @@ class TestRebaselineExpectations(BaseTestCase):
         abs_path = self.tool.filesystem.join(port.layout_tests_dir(), path)
         self.tool.filesystem.write_text_file(abs_path, contents)
 
-    def test_rebaseline_expectations(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_expectations(self):
         self._zero_out_test_expectations()
 
         self.tool.executive = MockExecutive2()
@@ -694,7 +697,8 @@ class TestRebaselineExpectations(BaseTestCase):
             ],
         ])
 
-    def test_rebaseline_expectations_reftests(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_expectations_reftests(self):
         self._zero_out_test_expectations()
 
         self.tool.executive = MockExecutive2()
@@ -752,7 +756,8 @@ class TestRebaselineExpectations(BaseTestCase):
             ],
         ])
 
-    def test_rebaseline_expectations_noop(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_expectations_noop(self):
         self._zero_out_test_expectations()
 
         oc = OutputCapture()
@@ -780,13 +785,15 @@ class TestRebaselineExpectations(BaseTestCase):
                              {'userscripts/another-test.html': set(['png', 'txt', 'wav'])})
         self.assertEqual(self._read(self.mac_expectations_path), '')
 
-    def test_rebaseline_without_other_expectations(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_without_other_expectations(self):
         self._write("userscripts/another-test.html", "Dummy test contents")
         self._write(self.mac_expectations_path, "Bug(x) userscripts/another-test.html [ Rebaseline ]\n")
         self.assertDictEqual(self.command._tests_to_rebaseline(self.mac_port),
                              {'userscripts/another-test.html': ('png', 'wav', 'txt')})
 
-    def test_rebaseline_test_passes_everywhere(self):
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_test_passes_everywhere(self):
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
