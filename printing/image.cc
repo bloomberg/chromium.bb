@@ -13,31 +13,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "printing/metafile.h"
-#include "printing/pdf_metafile_skia.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace printing {
-
-Image::Image(const base::FilePath& path)
-    : row_length_(0),
-      ignore_alpha_(true) {
-  std::string data;
-  base::ReadFileToString(path, &data);
-  bool success = false;
-  if (path.MatchesExtension(FILE_PATH_LITERAL(".png"))) {
-    success = LoadPng(data);
-  } else if (path.MatchesExtension(FILE_PATH_LITERAL(".emf"))) {
-    success = LoadMetafile(data);
-  } else {
-    DCHECK(false);
-  }
-  if (!success) {
-    size_.SetSize(0, 0);
-    row_length_ = 0;
-    data_.clear();
-  }
-}
 
 Image::Image(const Metafile& metafile)
     : row_length_(0),
@@ -148,15 +127,6 @@ bool Image::LoadPng(const std::string& compressed) {
   size_.SetSize(w, h);
   row_length_ = size_.width() * sizeof(uint32_t);
   return success;
-}
-
-bool Image::LoadMetafile(const std::string& data) {
-  DCHECK(!data.empty());
-  PdfMetafileSkia metafile;
-  if (!metafile.InitFromData(data.data(),
-                             base::checked_cast<uint32_t>(data.size())))
-    return false;
-  return LoadMetafile(metafile);
 }
 
 }  // namespace printing
