@@ -644,6 +644,7 @@ void NodeController::AllocMessage(size_t num_header_bytes,
 
 void NodeController::ForwardMessage(const ports::NodeName& node,
                                     ports::ScopedMessage message) {
+  DCHECK(message);
   if (node == name_) {
     // NOTE: We need to avoid re-entering the Node instance within
     // ForwardMessage. Because ForwardMessage is only ever called

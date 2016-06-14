@@ -1270,6 +1270,7 @@ void Node::MaybeRemoveProxy_Locked(const LockedPort& port,
       ScopedMessage& message = port->send_on_proxy_removal->second;
 
       delegate_->ForwardMessage(to_node, std::move(message));
+      port->send_on_proxy_removal.reset();
     }
   } else {
     DVLOG(2) << "Cannot remove port " << port_name << "@" << name_
