@@ -49,7 +49,7 @@ namespace {
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
 static const int kWindowMargin = 30;
-static const int kWindowMarginMD = 10;
+static const int kWindowMarginMD = 5;
 
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
@@ -57,7 +57,7 @@ static const SkColor kLabelColor = SK_ColorWHITE;
 // TODO(tdanderson): Move this to a central location.
 static const SkColor kCloseButtonColor = SK_ColorWHITE;
 
-// Background label color. Matches background of IDR_AURA_WINDOW_OVERVIEW_CLOSE.
+// Label background color used with Material Design.
 // TODO(varkha): Make background color conform to window header.
 static const SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
@@ -358,6 +358,14 @@ void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
   // filter any of the titles the window had while in the overview session.
   window_label_button_view_->SetText(window->GetTitle());
   UpdateCloseButtonAccessibilityName();
+}
+
+float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
+  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMarginMD);
+  return ScopedTransformOverviewWindow::GetItemScale(
+      GetWindow()->GetTargetBounds().size(), inset_size,
+      GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET),
+      close_button_->GetPreferredSize().height());
 }
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,

@@ -55,7 +55,22 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
   // minimized windows and ensure they are visible.
   void PrepareForOverview();
 
+  // Positions all the windows in rows of equal height scaling each window to
+  // fit that height.
+  // Layout is done in 2 stages maintaining fixed MRU ordering.
+  // 1. Optimal height is determined. In this stage |height| is bisected to find
+  //    maximum height which still allows all the windows to fit.
+  // 2. Row widths are balanced. In this stage the available width is reduced
+  //    until some windows are no longer fitting or until the difference between
+  //    the narrowest and the widest rows starts growing.
+  // Overall this achieves the goals of maximum size for previews (or maximum
+  // row height which is equivalent assuming fixed height), balanced rows and
+  // minimal wasted space.
+  // Optionally animates the windows to their targets when |animate| is true.
+  void PositionWindowsMD(bool animate);
+
   // Positions all the windows in the grid.
+  // Optionally animates the windows to their targets when |animate| is true.
   void PositionWindows(bool animate);
 
   // Updates |selected_index_| according to the specified |direction| and calls
@@ -116,6 +131,22 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
 
   // Moves the selection widget to the targeted window.
   void MoveSelectionWidgetToTarget(bool animate);
+
+  // Attempts to fit all |rects| inside |bounds|. The method ensures that
+  // the |rects| vector has appropriate size and populates it with the values
+  // placing Rects next to each other left-to-right in rows of equal |height|.
+  // While fitting |rects| several metrics are collected that can be used by the
+  // caller. |max_bottom| specifies the bottom that the rects are extending to.
+  // |min_right| and |max_right| report the right bound of the narrowest and the
+  // widest rows respectively. In-values of the |max_bottom|, |min_right| and
+  // |max_right| parameters are ignored and their values are always initialized
+  // inside this method. Returns true on success and false otherwise.
+  bool FitWindowRectsInBounds(const gfx::Rect& bounds,
+                              int height,
+                              std::vector<gfx::Rect>* rects,
+                              int* max_bottom,
+                              int* min_right,
+                              int* max_right);
 
   // Returns the target bounds of the currently selected item.
   const gfx::Rect GetSelectionBounds() const;

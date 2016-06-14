@@ -74,6 +74,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // one time actions such as restoring minimized windows.
   void PrepareForOverview();
 
+  // Calculates and returns an optimal scale ratio. With MD this is only
+  // taking into account |size.height()| as the width can vary. Without MD this
+  // returns the scale that allows the item to fully fit within |size|.
+  float GetItemScale(const gfx::Size& size);
+
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.

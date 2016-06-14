@@ -19,6 +19,7 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 
 using WmWindows = std::vector<ash::WmWindow*>;
@@ -311,6 +312,19 @@ void ScopedTransformOverviewWindow::OnWindowDestroyed() {
   window_ = nullptr;
 }
 
+float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
+                                                  const gfx::Size& target,
+                                                  int top_view_inset,
+                                                  int title_height) {
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
+                              (source.height() - top_view_inset));
+  }
+  return std::min(
+      1.0f, std::min(static_cast<float>(target.width()) / source.width(),
+                     static_cast<float>(target.height()) / source.height()));
+}
+
 gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
     const gfx::Rect& rect,
     const gfx::Rect& bounds,
@@ -319,16 +333,25 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
   DCHECK(!rect.IsEmpty());
   DCHECK_LE(top_view_inset, rect.height());
   DCHECK_LE(title_height, bounds.height());
-  float scale = std::min(
-      1.0f, std::min(static_cast<float>(bounds.width()) / rect.width(),
-                     static_cast<float>((bounds.height() - title_height)) /
-                         (rect.height() - top_view_inset)));
-  return gfx::Rect(
-      bounds.x() + 0.5 * (bounds.width() - scale * rect.width()),
-      bounds.y() + title_height - scale * top_view_inset +
-          0.5 * (bounds.height() -
-                 (title_height + scale * (rect.height() - top_view_inset))),
-      rect.width() * scale, rect.height() * scale);
+  const float scale =
+      GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
+  if (!ash::MaterialDesignController::IsOverviewMaterial()) {
+    return gfx::Rect(
+        bounds.x() + 0.5 * (bounds.width() - scale * rect.width()),
+        bounds.y() + title_height - scale * top_view_inset +
+            0.5 * (bounds.height() -
+                   (title_height + scale * (rect.height() - top_view_inset))),
+        rect.width() * scale, rect.height() * scale);
+  }
+  const int horizontal_offset = gfx::ToFlooredInt(
+      0.5 * (bounds.width() - gfx::ToFlooredInt(scale * rect.width())));
+  const int width = bounds.width() - 2 * horizontal_offset;
+  const int vertical_offset =
+      title_height - gfx::ToCeiledInt(scale * top_view_inset);
+  const int height = std::min(gfx::ToCeiledInt(scale * rect.height()),
+                              bounds.height() - vertical_offset);
+  return gfx::Rect(bounds.x() + horizontal_offset, bounds.y() + vertical_offset,
+                   width, height);
 }
 
 gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(

@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -30,6 +31,14 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
  public:
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
+
+  // Calculates and returns an optimal scale ratio. With MD this is only
+  // taking into account |size.height()| as the width can vary. Without MD this
+  // returns the scale that allows the item to fully fit within |size|.
+  static float GetItemScale(const gfx::Size& source,
+                            const gfx::Size& target,
+                            int top_view_inset,
+                            int title_height);
 
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
