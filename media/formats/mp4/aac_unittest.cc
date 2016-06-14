@@ -11,9 +11,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AllOf;
+using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::StrictMock;
-using ::testing::AllOf;
 
 namespace media {
 
@@ -186,6 +187,7 @@ TEST_F(AACTest, IncorrectProfileTest) {
   std::vector<uint8_t> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
+  EXPECT_MEDIA_LOG(UnsupportedAudioProfileLog("mp4a.40.0"));
   EXPECT_FALSE(Parse(data));
 
   data[0] = 0x08;
