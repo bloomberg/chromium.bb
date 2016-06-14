@@ -969,18 +969,23 @@ class TestExpectations(object):
         return set(suffixes)
 
     @staticmethod
-    def suffixes_for_actual_expectations_string(expectations):
+    # test_result is an instance of webkitpy.common.net.layouttestresults.LayoutTestResult
+    def suffixes_for_test_result(test_result):
         suffixes = set()
-        if 'TEXT' in expectations:
+        actual_results = test_result.actual_results()
+        if 'TEXT' in actual_results:
             suffixes.add('txt')
-        if 'IMAGE' in expectations:
+        if 'IMAGE' in actual_results:
             suffixes.add('png')
-        if 'AUDIO' in expectations:
+        if 'AUDIO' in actual_results:
             suffixes.add('wav')
-        if 'MISSING' in expectations:
-            suffixes.add('txt')
-            suffixes.add('png')
-            suffixes.add('wav')
+        if 'MISSING' in actual_results:
+            if test_result.is_missing_text():
+                suffixes.add('txt')
+            if test_result.is_missing_image():
+                suffixes.add('png')
+            if test_result.is_missing_audio():
+                suffixes.add('wav')
         return suffixes
 
     # FIXME: This constructor does too much work. We should move the actual parsing of

@@ -834,6 +834,75 @@ Bug(foo) fast/dom/prototype-taco.html [ Rebaseline ]
 Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 """)
 
+    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
+    def disabled_test_rebaseline_missing(self):
+        def builder_data():
+            self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "missing-text.html": {
+                    "expected": "PASS",
+                    "actual": "MISSING",
+                    "is_unexpected": true,
+                    "is_missing_text": true
+                },
+                "missing-text-and-image.html": {
+                    "expected": "PASS",
+                    "actual": "MISSING",
+                    "is_unexpected": true,
+                    "is_missing_text": true,
+                    "is_missing_image": true
+                },
+                "missing-image.html": {
+                    "expected": "PASS",
+                    "actual": "MISSING",
+                    "is_unexpected": true,
+                    "is_missing_image": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self._write('fast/dom/missing-text.html', "Dummy test contents")
+        self._write('fast/dom/missing-text-and-image.html', "Dummy test contents")
+        self._write('fast/dom/missing-image.html', "Dummy test contents")
+
+        self.command._tests_to_rebaseline = lambda port: {
+            'fast/dom/missing-text.html': set(['txt', 'png']),
+            'fast/dom/missing-text-and-image.html': set(['txt', 'png']),
+            'fast/dom/missing-image.html': set(['txt', 'png']),
+        }
+
+        self.tool.builders = BuilderList({
+            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
+        })
+        self.command.execute(self.options, [], self.tool)
+
+        print self.tool.executive.calls
+        self.assertEqual(self.tool.executive.calls, [
+            [
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text.html'],
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text-and-image.html'],
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-image.html'],
+            ],
+            [
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text.html'],
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text-and-image.html'],
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
+                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-image.html'],
+            ]
+        ])
+
 
 class TestOptimizeBaselines(BaseTestCase):
     command_constructor = OptimizeBaselines

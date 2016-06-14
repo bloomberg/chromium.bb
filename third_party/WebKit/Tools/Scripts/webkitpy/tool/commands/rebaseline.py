@@ -517,10 +517,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
         if builder_name not in self.builder_data():
             return set()
-        actual_results = self.builder_data()[builder_name].actual_results(test)
-        if not actual_results:
+        test_result = self.builder_data()[builder_name].result_for_test(test)
+        if not test_result:
             return set()
-        return set(existing_suffixes) & TestExpectations.suffixes_for_actual_expectations_string(actual_results)
+        return set(existing_suffixes) & TestExpectations.suffixes_for_test_result(test_result)
 
 
 class RebaselineJson(AbstractParallelRebaselineCommand):

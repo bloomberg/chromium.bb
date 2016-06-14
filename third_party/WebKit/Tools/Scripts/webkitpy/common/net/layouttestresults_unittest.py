@@ -105,6 +105,6 @@ class LayoutTestResultsTest(unittest.TestCase):
 
     def test_actual_results(self):
         results = LayoutTestResults.results_from_string(self.example_full_results_json)
-        self.assertEqual(results.actual_results("fast/dom/prototype-banana.html"), "PASS")
-        self.assertEqual(results.actual_results("fast/dom/prototype-taco.html"), "PASS TEXT")
-        self.assertEqual(results.actual_results("nonexistant.html"), "")
+        self.assertEqual(results.result_for_test("fast/dom/prototype-banana.html").actual_results(), "PASS")
+        self.assertEqual(results.result_for_test("fast/dom/prototype-taco.html").actual_results(), "PASS TEXT")
+        self.assertFalse(results.result_for_test("nonexistant.html"))

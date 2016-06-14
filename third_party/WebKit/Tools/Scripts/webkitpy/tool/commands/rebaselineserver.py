@@ -31,7 +31,7 @@ results directory), provides comparisons of expected and actual results (both
 images and text) and allows one-click rebaselining of tests."""
 
 from webkitpy.common.host import Host
-from webkitpy.common.net.layouttestresults import for_each_test, JSONTestResult
+from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.layout_tests.layout_package import json_results_generator
 from webkitpy.tool.commands.abstractlocalservercommand import AbstractLocalServerCommand
 from webkitpy.tool.servers.rebaselineserver import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
@@ -63,15 +63,15 @@ class RebaselineServer(AbstractLocalServerCommand):
         # FIXME: make the rebaseline server use the hierarchical tree.
         new_tests_subtree = {}
 
-        def gather_baselines_for_test(test_name, result_dict):
-            result = JSONTestResult(test_name, result_dict)
+        def gather_baselines_for_test(result):
             if result.did_pass_or_run_as_expected():
                 return
+            result_dict = result.result_dict()
             result_dict['state'] = STATE_NEEDS_REBASELINE
-            result_dict['baselines'] = get_test_baselines(test_name, self._test_config)
-            new_tests_subtree[test_name] = result_dict
+            result_dict['baselines'] = get_test_baselines(result.test_name(), self._test_config)
+            new_tests_subtree[result.test_name()] = result_dict
 
-        for_each_test(results_json['tests'], gather_baselines_for_test)
+        LayoutTestResults(results_json).for_each_test(gather_baselines_for_test)
         results_json['tests'] = new_tests_subtree
 
     def _prepare_config(self, options, args, tool):

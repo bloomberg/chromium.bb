@@ -29,7 +29,7 @@
 
 from webkitpy.layout_tests.models import test_expectations
 
-from webkitpy.common.net import layouttestresults
+from webkitpy.common.net.layouttestresults import LayoutTestResults
 
 
 TestExpectations = test_expectations.TestExpectations
@@ -95,11 +95,12 @@ class BuildBotPrinter(object):
         def add_to_dict_of_lists(dict, key, value):
             dict.setdefault(key, []).append(value)
 
-        def add_result(test, results, passes=passes, flaky=flaky, regressions=regressions):
-            actual = results['actual'].split(" ")
-            expected = results['expected'].split(" ")
+        def add_result(result):
+            test = result.test_name()
+            actual = result.actual_results().split(" ")
+            expected = result.expected_results().split(" ")
 
-            if 'is_unexpected' not in results or not results['is_unexpected']:
+            if result.did_run_as_expected():
                 # Don't print anything for tests that ran as expected.
                 return
 
@@ -118,7 +119,8 @@ class BuildBotPrinter(object):
             else:
                 add_to_dict_of_lists(regressions, actual[0], test)
 
-        layouttestresults.for_each_test(summarized_results['tests'], add_result)
+        test_results = LayoutTestResults(summarized_results)
+        test_results.for_each_test(add_result)
 
         if len(passes) or len(flaky) or len(regressions):
             self._print("")
@@ -139,9 +141,9 @@ class BuildBotPrinter(object):
                 tests.sort()
 
                 for test in tests:
-                    result = layouttestresults.result_for_test(summarized_results['tests'], test)
-                    actual = result['actual'].split(" ")
-                    expected = result['expected'].split(" ")
+                    result = test_results.result_for_test(test)
+                    actual = result.actual_results().split(" ")
+                    expected = result.expected_results().split(" ")
                     # FIXME: clean this up once the old syntax is gone
                     new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp]
                                              for exp in list(set(actual) | set(expected))]
@@ -156,9 +158,9 @@ class BuildBotPrinter(object):
                 self._print("Regressions: Unexpected %s (%d)" % (descriptions[result_type], len(tests)))
                 tests.sort()
                 for test in tests:
-                    result = layouttestresults.result_for_test(summarized_results['tests'], test)
-                    actual = result['actual'].split(" ")
-                    expected = result['expected'].split(" ")
+                    result = test_results.result_for_test(test)
+                    actual = result.actual_results().split(" ")
+                    expected = result.expected_results().split(" ")
                     new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp] for exp in actual]
                     self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
                 self._print("")
