@@ -440,7 +440,7 @@ TEST_F(PeopleHandlerTest,
   // tell it we're through with the setup progress.
   testing::InSequence seq;
   EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
-  EXPECT_CALL(*mock_pss_, OnSetupInProgressHandleDestroyed());
+  EXPECT_CALL(*mock_pss_, SetSetupInProgress(false));
 
   handler_->CloseSyncSetup();
   EXPECT_EQ(NULL,

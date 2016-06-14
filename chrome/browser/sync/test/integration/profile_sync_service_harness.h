@@ -16,10 +16,6 @@
 class Profile;
 class ProfileSyncService;
 
-namespace sync_driver {
-class SyncSetupInProgressHandle;
-}
-
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
 // profile passed to it on construction and automates certain things like setup
@@ -122,15 +118,15 @@ class ProfileSyncServiceHarness {
   // available), annotated with |message|. Useful for logging.
   std::string GetClientInfoString(const std::string& message) const;
 
-  // Signals that sync setup is complete, and that PSS may begin syncing.
-  void FinishSyncSetup();
-
  private:
   ProfileSyncServiceHarness(
       Profile* profile,
       const std::string& username,
       const std::string& password,
       SigninType signin_type);
+
+  // Signals that sync setup is complete, and that PSS may begin syncing.
+  void FinishSyncSetup();
 
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
@@ -143,9 +139,6 @@ class ProfileSyncServiceHarness {
 
   // ProfileSyncService object associated with |profile_|.
   ProfileSyncService* service_;
-
-  // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

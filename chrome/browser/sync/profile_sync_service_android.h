@@ -19,10 +19,6 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace sync_driver {
-class SyncSetupInProgressHandle;
-}
-
 class Profile;
 class ProfileSyncService;
 
@@ -194,9 +190,6 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
 
   // A reference to the sync service for this profile.
   ProfileSyncService* sync_service_;
-
-  // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   // The class that handles getting, setting, and persisting sync
   // preferences.

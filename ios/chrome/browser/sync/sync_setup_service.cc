@@ -58,7 +58,7 @@ bool SyncSetupService::IsDataTypeEnabled(syncer::ModelType datatype) const {
 
 void SyncSetupService::SetDataTypeEnabled(syncer::ModelType datatype,
                                           bool enabled) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  sync_service_->SetSetupInProgress(true);
   syncer::ModelTypeSet types = GetDataTypes();
   if (enabled)
     types.Put(datatype);
@@ -100,7 +100,7 @@ bool SyncSetupService::IsSyncingAllDataTypes() const {
 }
 
 void SyncSetupService::SetSyncingAllDataTypes(bool sync_all) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  sync_service_->SetSetupInProgress(true);
   if (sync_all && !IsSyncEnabled())
     SetSyncEnabled(true);
   sync_service_->OnUserChoseDatatypes(
@@ -171,7 +171,7 @@ void SyncSetupService::PrepareForFirstSyncSetup() {
   // |PrepareForFirstSyncSetup| should always be called while the user is signed
   // out. At that time, sync setup is not completed.
   DCHECK(!sync_service_->IsFirstSetupComplete());
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  sync_service_->SetSetupInProgress(true);
 }
 
 void SyncSetupService::CommitChanges() {
@@ -183,7 +183,7 @@ void SyncSetupService::CommitChanges() {
     }
   }
 
-  sync_blocker_.reset();
+  sync_service_->SetSetupInProgress(false);
 }
 
 bool SyncSetupService::HasUncommittedChanges() {
@@ -192,7 +192,7 @@ bool SyncSetupService::HasUncommittedChanges() {
 
 void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
     bool sync_enabled) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  sync_service_->SetSetupInProgress(true);
   if (sync_enabled) {
     sync_service_->RequestStart();
   } else {

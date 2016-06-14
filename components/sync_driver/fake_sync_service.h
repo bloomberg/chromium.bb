@@ -45,8 +45,7 @@ class FakeSyncService : public sync_driver::SyncService {
                             syncer::ModelTypeSet chosen_types) override;
   void SetFirstSetupComplete() override;
   bool IsFirstSetupInProgress() const override;
-  std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
-      override;
+  void SetSetupInProgress(bool setup_in_progress) override;
   bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;

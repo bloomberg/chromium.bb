@@ -682,8 +682,7 @@ void SupervisedUserService::SetupSync() {
 void SupervisedUserService::StartSetupSync() {
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
-  sync_blocker_ = ProfileSyncServiceFactory::GetForProfile(profile_)
-                      ->GetSetupInProgressHandle();
+  ProfileSyncServiceFactory::GetForProfile(profile_)->SetSetupInProgress(true);
 }
 
 void SupervisedUserService::FinishSetupSyncWhenReady() {
@@ -713,7 +712,7 @@ void SupervisedUserService::FinishSetupSync() {
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
-  sync_blocker_.reset();
+  service->SetSetupInProgress(false);
   service->SetFirstSetupComplete();
 }
 #endif
