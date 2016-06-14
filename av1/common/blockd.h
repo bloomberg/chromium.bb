@@ -106,9 +106,25 @@ typedef struct {
 #define NONE -1
 #define INTRA_FRAME 0
 #define LAST_FRAME 1
+
+#if CONFIG_EXT_REFS
+
+#define LAST2_FRAME 2
+#define LAST3_FRAME 3
+#define GOLDEN_FRAME 4
+#define BWDREF_FRAME 5
+#define ALTREF_FRAME 6
+#define MAX_REF_FRAMES 7
+#define LAST_REF_FRAMES (LAST3_FRAME - LAST_FRAME + 1)
+
+#else
+
 #define GOLDEN_FRAME 2
 #define ALTREF_FRAME 3
 #define MAX_REF_FRAMES 4
+
+#endif  // CONFIG_EXT_REFS
+
 typedef int8_t MV_REFERENCE_FRAME;
 
 #if CONFIG_REF_MV
