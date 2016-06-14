@@ -49,10 +49,11 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothDevice* device,
       blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) override;
   void disconnect(const blink::WebString& device_id) override;
-  void getPrimaryService(
+  void getPrimaryServices(
       const blink::WebString& device_id,
-      const blink::WebString& service_uuid,
-      blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) override;
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      const blink::WebString& services_uuid,
+      blink::WebBluetoothGetPrimaryServicesCallbacks* callbacks) override;
   void getCharacteristics(
       const blink::WebString& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
@@ -93,11 +94,11 @@ class CONTENT_EXPORT WebBluetoothImpl
       std::unique_ptr<blink::WebBluetoothRemoteGATTServerConnectCallbacks>
           callbacks,
       blink::mojom::WebBluetoothError error);
-  void OnGetPrimaryServiceComplete(
+  void OnGetPrimaryServicesComplete(
       const blink::WebString& device_id,
-      std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks,
+      std::unique_ptr<blink::WebBluetoothGetPrimaryServicesCallbacks> callbacks,
       blink::mojom::WebBluetoothError error,
-      blink::mojom::WebBluetoothRemoteGATTServicePtr service);
+      mojo::Array<blink::mojom::WebBluetoothRemoteGATTServicePtr> services);
   void OnGetCharacteristicsComplete(
       const blink::WebString& service_instance_id,
       std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks,

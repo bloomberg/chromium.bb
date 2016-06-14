@@ -100,10 +100,11 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
       const mojo::String& device_id,
       const RemoteServerConnectCallback& callback) override;
   void RemoteServerDisconnect(const mojo::String& device_id) override;
-  void RemoteServerGetPrimaryService(
+  void RemoteServerGetPrimaryServices(
       const mojo::String& device_id,
-      const base::Optional<device::BluetoothUUID>& service_uuid,
-      const RemoteServerGetPrimaryServiceCallback& callback) override;
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      const base::Optional<device::BluetoothUUID>& services_uuid,
+      const RemoteServerGetPrimaryServicesCallback& callback) override;
   void RemoteServiceGetCharacteristics(
       const mojo::String& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
@@ -130,9 +131,11 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
 
   // Should only be run after the services have been discovered for
   // |device_address|.
-  void RemoteServerGetPrimaryServiceImpl(
-      const base::Optional<device::BluetoothUUID>& service_uuid,
-      const RemoteServerGetPrimaryServiceCallback& callback,
+  void RemoteServerGetPrimaryServicesImpl(
+      const mojo::String& device_id,
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      const base::Optional<device::BluetoothUUID>& services_uuid,
+      const RemoteServerGetPrimaryServicesCallback& callback,
       device::BluetoothDevice* device);
 
   // Callbacks for BluetoothDeviceChooserController::GetDevice.

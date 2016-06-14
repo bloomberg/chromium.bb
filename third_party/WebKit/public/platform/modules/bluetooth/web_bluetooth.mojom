@@ -48,6 +48,7 @@ enum WebBluetoothError {
   CHOOSER_NOT_SHOWN_API_LOCALLY_DISABLED,
   CHOOSER_NOT_SHOWN_USER_DENIED_PERMISSION_TO_SCAN,
   SERVICE_NOT_FOUND,
+  NO_SERVICES_FOUND,
   CHARACTERISTIC_NOT_FOUND,
   NO_CHARACTERISTICS_FOUND,
   // NotSupportedError:
@@ -126,13 +127,16 @@ interface WebBluetoothService {
   // the ref count for that connection.
   RemoteServerDisconnect(string device_id);
 
-  // Returns the first GATT Service with |service_uuid| of a Bluetooth Device
-  // with |device_id|.
-  RemoteServerGetPrimaryService(
+  // If |services_uuid| is present, returns services with |services_uuid|.
+  // Otherwise returns all non-blacklisted services.
+  // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one
+  // service will be returned.
+  RemoteServerGetPrimaryServices(
     string device_id,
-    device.mojom.BluetoothUUID service_uuid) => (
+    WebBluetoothGATTQueryQuantity quantity,
+    device.mojom.BluetoothUUID? services_uuid) => (
       WebBluetoothError error,
-      WebBluetoothRemoteGATTService? service);
+      array<WebBluetoothRemoteGATTService>? services);
 
   // Returns the Characteristics of a GATT Service with |service_instance_id|.
   // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one

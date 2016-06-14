@@ -182,6 +182,23 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
+  // |TwoHeartRateServicesAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Heart Rate UUID (0x180d)
+  //         - Heart Rate UUID (0x180d)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //         - Heart Rate Service - Heart Rate Measurement (0x2a37) & Body
+  //           Sensor Location (0x2a38).
+  //         - Heart Rate Service - Body Sensor Location (0x2a38).
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetTwoHeartRateServicesAdapter();
+
   // |DisconnectingHeartRateAdapter|
   // Inherits from |HeartRateAdapter|
   // Internal Structure:
@@ -422,7 +439,7 @@ class LayoutTestBluetoothAdapterProvider {
 
   // Services
 
-  // |BaseGATTService|
+  // |BaseGATTService|(identifier, device, uuid)
   // Characteristics added:
   // None.
   // Mock Functions:
@@ -432,7 +449,7 @@ class LayoutTestBluetoothAdapterProvider {
   //       Returns a characteristic matching the identifier provided if the
   //       characteristic was added to the mock.
   //   - GetIdentifier:
-  //       Returns: uuid + “ Identifier”
+  //       Returns: identifier
   //   - GetUUID:
   //       Returns: uuid
   //   - IsLocal:
@@ -442,7 +459,8 @@ class LayoutTestBluetoothAdapterProvider {
   //   - GetDevice:
   //       Returns: device
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothGattService>>
-  GetBaseGATTService(device::MockBluetoothDevice* device,
+  GetBaseGATTService(const std::string& identifier,
+                     device::MockBluetoothDevice* device,
                      const std::string& uuid);
 
   // |DeviceInformationService|

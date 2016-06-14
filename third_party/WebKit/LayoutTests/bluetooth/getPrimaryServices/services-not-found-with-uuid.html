@@ -11,7 +11,7 @@ promise_test(() => {
       optionalServices: ['glucose']}))
     .then(device => device.gatt.connect())
     .then(gattServer => assert_promise_rejects_with_message(
-      gattServer.getPrimaryService('glucose'),
+      gattServer.getPrimaryServices('glucose'),
       new DOMException('No Services with specified UUID found in Device.',
                        'NotFoundError')));
 }, 'Request for absent service. Reject with NotFoundError.');

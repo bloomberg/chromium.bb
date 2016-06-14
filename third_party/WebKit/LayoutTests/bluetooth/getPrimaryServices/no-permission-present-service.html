@@ -7,12 +7,10 @@
 promise_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['glucose']}))
+      filters: [{name: 'Heart Rate Device'}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => assert_promise_rejects_with_message(
-      gattServer.getPrimaryService('glucose'),
-      new DOMException('No Services with specified UUID found in Device.',
-                       'NotFoundError')));
-}, 'Request for absent service. Reject with NotFoundError.');
+        gattServer.getPrimaryServices(),
+      new DOMException('No Services found in device.', 'NotFoundError')));
+}, 'Request for present service without permission. Reject with NotFoundError.');
 </script>

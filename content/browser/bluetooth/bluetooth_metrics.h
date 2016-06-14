@@ -23,7 +23,7 @@ struct BluetoothScanFilter;
 
 // General Metrics
 
-// Enumaration of each Web Bluetooth API entry point.
+// Enumeration of each Web Bluetooth API entry point.
 enum class UMAWebBluetoothFunction {
   REQUEST_DEVICE = 0,
   CONNECT_GATT = 1,
@@ -35,6 +35,7 @@ enum class UMAWebBluetoothFunction {
   CHARACTERISTIC_STOP_NOTIFICATIONS = 7,
   REMOTE_GATT_SERVER_DISCONNECT = 8,
   SERVICE_GET_CHARACTERISTICS = 9,
+  GET_PRIMARY_SERVICES = 10,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -44,7 +45,7 @@ enum class UMAWebBluetoothFunction {
 // API.
 void RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction function);
 
-// Enumation for outcomes of querying the bluetooth cache.
+// Enumeration for outcomes of querying the bluetooth cache.
 enum class CacheQueryOutcome {
   SUCCESS = 0,
   BAD_RENDERER = 1,
@@ -77,6 +78,7 @@ enum class UMARequestDeviceOutcome {
   // tools/metrics/histograms/histograms.xml accordingly.
   COUNT
 };
+
 // There should be a call to this function before every
 // Send(BluetoothMsg_RequestDeviceSuccess...) or
 // Send(BluetoothMsg_RequestDeviceError...).
@@ -92,7 +94,8 @@ void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome);
 void RecordRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
 
-// connectGATT() Metrics
+// GattServer.connect() Metrics
+
 enum class UMAConnectGATTOutcome {
   SUCCESS = 0,
   NO_DEVICE = 1,
@@ -116,40 +119,58 @@ enum class UMAConnectGATTOutcome {
   // accordingly.
   COUNT
 };
+
 // There should be a call to this function before every
 // Send(BluetoothMsg_ConnectGATTSuccess) and
 // Send(BluetoothMsg_ConnectGATTError).
 void RecordConnectGATTOutcome(UMAConnectGATTOutcome outcome);
+
 // Records the outcome of the cache query for connectGATT. Should only be called
 // if QueryCacheForDevice fails.
 void RecordConnectGATTOutcome(CacheQueryOutcome outcome);
+
 // Records how long it took for the connection to succeed.
 void RecordConnectGATTTimeSuccess(const base::TimeDelta& duration);
+
 // Records how long it took for the connection to fail.
 void RecordConnectGATTTimeFailed(const base::TimeDelta& duration);
 
-// getPrimaryService() Metrics
+// getPrimaryService() and getPrimaryServices() Metrics
+
 enum class UMAGetPrimaryServiceOutcome {
   SUCCESS = 0,
   NO_DEVICE = 1,
   NOT_FOUND = 2,
+  NO_SERVICES = 3,
   // Note: Add new GetPrimaryService outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.
   COUNT
 };
-// Record the service uuid used when calling getPrimaryService.
-void RecordGetPrimaryServiceService(
-    const base::Optional<device::BluetoothUUID>& service);
-// There should be a call to this function for every call to
-// Send(BluetoothMsg_GetPrimaryServiceSuccess) and
-// Send(BluetoothMsg_GetPrimaryServiceError).
-void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome);
-// Records the outcome of the cache query for getPrimaryService. Should only be
+
+// There should be a call to this function whenever
+// RemoteServerGetPrimaryServicesCallback is run.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE for
+// getPrimaryService.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE for
+// getPrimaryServices.
+void RecordGetPrimaryServicesOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetPrimaryServiceOutcome outcome);
+
+// Records the outcome of the cache query for getPrimaryServices. Should only be
 // called if QueryCacheForDevice fails.
-void RecordGetPrimaryServiceOutcome(CacheQueryOutcome outcome);
+void RecordGetPrimaryServicesOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome);
+
+// Records the UUID of the service used when calling getPrimaryService.
+void RecordGetPrimaryServicesServices(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const base::Optional<device::BluetoothUUID>& service);
 
 // getCharacteristic() and getCharacteristics() Metrics
+
 enum class UMAGetCharacteristicOutcome {
   SUCCESS = 0,
   NO_DEVICE = 1,
@@ -172,11 +193,13 @@ enum class UMAGetCharacteristicOutcome {
 void RecordGetCharacteristicsOutcome(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
     UMAGetCharacteristicOutcome outcome);
+
 // Records the outcome of the cache query for getCharacteristics. Should only be
 // called if QueryCacheForService fails.
 void RecordGetCharacteristicsOutcome(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
     CacheQueryOutcome outcome);
+
 // Records the UUID of the characteristic used when calling getCharacteristic.
 void RecordGetCharacteristicsCharacteristic(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
@@ -226,6 +249,7 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
 // Send(BluetoothMsg_ReadCharacteristicValueSuccess) and
 // Send(BluetoothMsg_ReadCharacteristicValueError).
 void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome error);
+
 // Records the outcome of a cache query for readValue. Should only be called if
 // QueryCacheForCharacteristic fails.
 void RecordCharacteristicReadValueOutcome(CacheQueryOutcome outcome);
@@ -235,6 +259,7 @@ void RecordCharacteristicReadValueOutcome(CacheQueryOutcome outcome);
 // Send(BluetoothMsg_WriteCharacteristicValueSuccess) and
 // Send(BluetoothMsg_WriteCharacteristicValueError).
 void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome error);
+
 // Records the outcome of a cache query for writeValue. Should only be called if
 // QueryCacheForCharacteristic fails.
 void RecordCharacteristicWriteValueOutcome(CacheQueryOutcome outcome);
@@ -244,6 +269,7 @@ void RecordCharacteristicWriteValueOutcome(CacheQueryOutcome outcome);
 // Send(BluetoothMsg_StartNotificationsSuccess) and
 // Send(BluetoothMsg_StopNotificationsError).
 void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome);
+
 // Records the outcome of a cache query for startNotifications. Should only be
 // called if QueryCacheForCharacteristic fails.
 void RecordStartNotificationsOutcome(CacheQueryOutcome outcome);

@@ -133,25 +133,48 @@ void RecordConnectGATTTimeFailed(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Bluetooth.Web.ConnectGATT.TimeFailed", duration);
 }
 
-// getPrimaryService
+// getPrimaryService & getPrimaryServices
 
-void RecordGetPrimaryServiceService(
+void RecordGetPrimaryServicesOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetPrimaryServiceOutcome outcome) {
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetPrimaryService.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
+      return;
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetPrimaryServices.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
+      return;
+  }
+}
+
+void RecordGetPrimaryServicesOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome) {
+  DCHECK(outcome == CacheQueryOutcome::NO_DEVICE);
+  RecordGetPrimaryServicesOutcome(quantity,
+                                  UMAGetPrimaryServiceOutcome::NO_DEVICE);
+}
+
+void RecordGetPrimaryServicesServices(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
     const base::Optional<BluetoothUUID>& service) {
   // TODO(ortuno): Use a macro to histogram strings.
   // http://crbug.com/520284
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetPrimaryService.Services",
-                              HashUUID(service));
-}
-
-void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.Web.GetPrimaryService.Outcome", static_cast<int>(outcome),
-      static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
-}
-
-void RecordGetPrimaryServiceOutcome(CacheQueryOutcome outcome) {
-  DCHECK(outcome == CacheQueryOutcome::NO_DEVICE);
-  RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NO_DEVICE);
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetPrimaryService.Services",
+                                  HashUUID(service));
+      return;
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetPrimaryServices.Services",
+                                  HashUUID(service));
+      return;
+  }
 }
 
 // getCharacteristic & getCharacteristics

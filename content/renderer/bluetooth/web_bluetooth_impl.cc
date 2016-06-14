@@ -62,14 +62,18 @@ void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
       mojo::String::From(device_id));
 }
 
-void WebBluetoothImpl::getPrimaryService(
+void WebBluetoothImpl::getPrimaryServices(
     const blink::WebString& device_id,
-    const blink::WebString& service_uuid,
-    blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
-  GetWebBluetoothService().RemoteServerGetPrimaryService(
-      mojo::String::From(device_id),
-      base::make_optional(device::BluetoothUUID(service_uuid.utf8())),
-      base::Bind(&WebBluetoothImpl::OnGetPrimaryServiceComplete,
+
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const blink::WebString& services_uuid,
+    blink::WebBluetoothGetPrimaryServicesCallbacks* callbacks) {
+  GetWebBluetoothService().RemoteServerGetPrimaryServices(
+      mojo::String::From(device_id), quantity,
+      services_uuid.isEmpty()
+          ? base::nullopt
+          : base::make_optional(device::BluetoothUUID(services_uuid.utf8())),
+      base::Bind(&WebBluetoothImpl::OnGetPrimaryServicesComplete,
                  base::Unretained(this), device_id,
                  base::Passed(base::WrapUnique(callbacks))));
 }
@@ -195,17 +199,23 @@ void WebBluetoothImpl::OnConnectComplete(
   }
 }
 
-void WebBluetoothImpl::OnGetPrimaryServiceComplete(
+void WebBluetoothImpl::OnGetPrimaryServicesComplete(
     const blink::WebString& device_id,
-    std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks,
+    std::unique_ptr<blink::WebBluetoothGetPrimaryServicesCallbacks> callbacks,
     blink::mojom::WebBluetoothError error,
-    blink::mojom::WebBluetoothRemoteGATTServicePtr service) {
+    mojo::Array<blink::mojom::WebBluetoothRemoteGATTServicePtr> services) {
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
-    callbacks->onSuccess(
-        base::WrapUnique(new blink::WebBluetoothRemoteGATTService(
-            blink::WebString::fromUTF8(service->instance_id),
-            blink::WebString::fromUTF8(service->uuid), true /* isPrimary */,
-            device_id)));
+    // TODO(dcheng): This WebVector should use smart pointers.
+    blink::WebVector<blink::WebBluetoothRemoteGATTService*> promise_services(
+        services.size());
+
+    for (size_t i = 0; i < services.size(); i++) {
+      promise_services[i] = new blink::WebBluetoothRemoteGATTService(
+          blink::WebString::fromUTF8(services[i]->instance_id),
+          blink::WebString::fromUTF8(services[i]->uuid), true /* isPrimary */,
+          device_id);
+    }
+    callbacks->onSuccess(promise_services);
   } else {
     callbacks->onError(error);
   }

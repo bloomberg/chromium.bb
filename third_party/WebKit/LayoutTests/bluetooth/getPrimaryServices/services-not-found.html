@@ -5,14 +5,14 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
+  return setBluetoothFakeAdapter('MissingServiceHeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}],
-      optionalServices: ['glucose']}))
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => assert_promise_rejects_with_message(
-      gattServer.getPrimaryService('glucose'),
-      new DOMException('No Services with specified UUID found in Device.',
+      gattServer.getPrimaryServices(),
+      new DOMException('No Services found in device.',
                        'NotFoundError')));
 }, 'Request for absent service. Reject with NotFoundError.');
 </script>

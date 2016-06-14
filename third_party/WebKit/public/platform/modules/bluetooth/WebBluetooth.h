@@ -26,11 +26,11 @@ struct WebRequestDeviceOptions;
 // Success and failure callbacks for requestDevice.
 using WebBluetoothRequestDeviceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothDeviceInit>, const WebBluetoothError&>;
 
-// Success and failure callbacks for connectGATT.
+// Success and failure callbacks for GattServer.connect().
 using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
-// Success and failure callbacks for getPrimaryService.
-using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothRemoteGATTService>, const WebBluetoothError&>;
+// Success and failure callbacks for getPrimaryService(s).
+using WebBluetoothGetPrimaryServicesCallbacks = WebCallbacks<const WebVector<WebBluetoothRemoteGATTService*>&, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristic(s).
 using WebBluetoothGetCharacteristicsCallbacks = WebCallbacks<const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>&, const WebBluetoothError&>;
@@ -62,10 +62,10 @@ public:
         WebBluetoothDevice* device,
         WebBluetoothRemoteGATTServerConnectCallbacks*) {}
     virtual void disconnect(const WebString& deviceId) = 0;
-    virtual void getPrimaryService(const WebString& deviceId,
-        const WebString& serviceUUID,
-        WebBluetoothGetPrimaryServiceCallbacks*) { }
-    // virtual void getPrimaryServices() { }
+    virtual void getPrimaryServices(const WebString& deviceId,
+        mojom::WebBluetoothGATTQueryQuantity,
+        const WebString& servicesUUID,
+        WebBluetoothGetPrimaryServicesCallbacks*) = 0;
 
     // BluetoothRemoteGATTService methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice

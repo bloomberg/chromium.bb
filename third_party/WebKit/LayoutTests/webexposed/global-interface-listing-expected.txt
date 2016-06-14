@@ -369,6 +369,7 @@ interface BluetoothRemoteGATTServer
     method constructor
     method disconnect
     method getPrimaryService
+    method getPrimaryServices
 interface BluetoothRemoteGATTService
     attribute @@toStringTag
     getter isPrimary
