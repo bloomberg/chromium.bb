@@ -9,6 +9,8 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/extensions/features/feature_channel.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -71,11 +73,13 @@ using extensions::Manifest;
 using extensions::SettingsOverrides;
 namespace manifest_keys = extensions::manifest_keys;
 
-class OverrideSettingsTest : public testing::Test {
-};
+TEST(OverrideSettingsTest, ParseManifest) {
+#if defined(OS_MACOSX)
+  // On Mac, this API is limited to trunk.
+  extensions::ScopedCurrentChannel scoped_channel(
+      version_info::Channel::UNKNOWN);
+#endif  // OS_MACOSX
 
-
-TEST_F(OverrideSettingsTest, ParseManifest) {
   std::string manifest(kManifest);
   JSONStringValueDeserializer json(manifest);
   std::string error;
@@ -89,7 +93,7 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
       Extension::NO_FLAGS,
       &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
@@ -118,7 +122,13 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
 #endif
 }
 
-TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
+TEST(OverrideSettingsTest, ParsePrepopulatedId) {
+#if defined(OS_MACOSX)
+  // On Mac, this API is limited to trunk.
+  extensions::ScopedCurrentChannel scoped_channel(
+      version_info::Channel::UNKNOWN);
+#endif  // OS_MACOSX
+
   std::string manifest(kPrepopulatedManifest);
   JSONStringValueDeserializer json(manifest);
   std::string error;
@@ -132,7 +142,7 @@ TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
                         Extension::NO_FLAGS,
                         &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
@@ -151,7 +161,13 @@ TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
 #endif
 }
 
-TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
+TEST(OverrideSettingsTest, ParseBrokenManifest) {
+#if defined(OS_MACOSX)
+  // On Mac, this API is limited to trunk.
+  extensions::ScopedCurrentChannel scoped_channel(
+      version_info::Channel::UNKNOWN);
+#endif  // OS_MACOSX
+
   std::string manifest(kBrokenManifest);
   JSONStringValueDeserializer json(manifest);
   std::string error;
@@ -164,7 +180,7 @@ TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   EXPECT_FALSE(extension.get());
   EXPECT_EQ(
       extensions::ErrorUtils::FormatErrorMessage(

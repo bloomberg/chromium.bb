@@ -28,9 +28,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -598,14 +600,19 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   EXPECT_EQ(0U, dev_mode_extensions.size());
 }
 
-// The feature this is meant to test is only implemented on Windows.
-#if defined(OS_WIN)
+// The feature this is meant to test is only implemented on Windows and Mac.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_SettingsApiControllerTest SettingsApiControllerTest
 #else
 #define MAYBE_SettingsApiControllerTest DISABLED_SettingsApiControllerTest
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
+#if defined(OS_MACOSX)
+  // On Mac, this API is limited to trunk.
+  ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
+#endif  // OS_MACOSX
+
   Init();
 
   for (int i = 0; i < 3; ++i) {
@@ -862,8 +869,8 @@ void SetInstallTime(const std::string& extension_id,
                              new base::StringValue(time_str));
 }
 
-// The feature this is meant to test is only implemented on Windows.
-#if defined(OS_WIN)
+// The feature this is meant to test is only implemented on Windows and Mac.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/397426
 #define MAYBE_ProxyOverriddenControllerTest DISABLED_ProxyOverriddenControllerTest
 #else
@@ -871,6 +878,11 @@ void SetInstallTime(const std::string& extension_id,
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
+#if defined(OS_MACOSX)
+  // On Mac, this API is limited to trunk.
+  ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
+#endif  // OS_MACOSX
+
   Init();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   // Load two extensions overriding proxy and one overriding something

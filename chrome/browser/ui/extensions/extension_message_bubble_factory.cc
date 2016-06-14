@@ -38,7 +38,7 @@ ExtensionMessageBubbleFactory::OverrideForTesting g_override_for_testing =
 const char kEnableDevModeWarningExperimentName[] =
     "ExtensionDeveloperModeWarning";
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 const char kEnableProxyWarningExperimentName[] = "ExtensionProxyWarning";
 #endif
 
@@ -61,7 +61,7 @@ bool EnableSuspiciousExtensionsBubble() {
 }
 
 bool EnableSettingsApiBubble() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return true;
 #else
   return g_override_for_testing ==
@@ -70,7 +70,7 @@ bool EnableSettingsApiBubble() {
 }
 
 bool EnableProxyOverrideBubble() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return true;
 #else
   return g_override_for_testing ==
