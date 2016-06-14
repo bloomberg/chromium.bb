@@ -343,7 +343,7 @@ if (enable_configuration_policy) {
         script,
       ]
       outputs = [
-        "$target_gen_dir/$chrome_mac_bundle_id.plist",
+        "$target_gen_dir/$chrome_mac_bundle_id.manifest",
       ]
 
       args = [
