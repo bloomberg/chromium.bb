@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_WEB_DIALOG_H_
 
 #include <string>
+#include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -22,11 +21,8 @@ class BrowserContext;
 
 namespace chromeos {
 
-class BubbleFrameView;
-
 // Launches web dialog during OOBE/Login with specified URL and title.
-class LoginWebDialog : public ui::WebDialogDelegate,
-                       public content::NotificationObserver {
+class LoginWebDialog : public ui::WebDialogDelegate {
  public:
   // Delegate class to get notifications from the dialog.
   class Delegate {
@@ -36,11 +32,6 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
    protected:
     virtual ~Delegate() {}
-  };
-
-  enum Style {
-    STYLE_GENERIC, // Use generic CreateChromeWindow as a host.
-    STYLE_BUBBLE   // Use chromeos::BubbleWindow as a host.
   };
 
   LoginWebDialog(content::BrowserContext* browser_context,
@@ -57,10 +48,6 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
   // Overrides dialog title.
   void SetDialogTitle(const base::string16& title);
-
-  void set_url(const GURL& url) { url_ = url; }
-
-  bool is_open() const { return is_open_; }
 
   static content::WebContents* GetCurrentWebContents();
 
@@ -87,20 +74,14 @@ class LoginWebDialog : public ui::WebDialogDelegate,
                             content::WebContents** out_new_contents) override;
   bool HandleShouldCreateWebContents() override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
   gfx::NativeWindow parent_window_;
   // Notifications receiver.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   base::string16 title_;
-  GURL url_;
-  content::NotificationRegistrar notification_registrar_;
+  const GURL url_;
   bool is_open_;
 
   // Dialog display size.

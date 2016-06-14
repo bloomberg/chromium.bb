@@ -12,11 +12,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -35,8 +32,8 @@ const double kDefaultHeightRatio = 0.6;
 const double kMinimumWidthRatio = 0.25;
 const double kMinimumHeightRatio = 0.25;
 
-static base::LazyInstance<std::deque<content::WebContents*> >
-    g_web_contents_stack = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::deque<WebContents*>> g_web_contents_stack =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -57,14 +54,12 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       title_(title),
       url_(url),
       is_open_(false) {
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  gfx::Rect screen_bounds(CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
 }
 
-LoginWebDialog::~LoginWebDialog() {
-  delegate_ = NULL;
-}
+LoginWebDialog::~LoginWebDialog() {}
 
 void LoginWebDialog::Show() {
   chrome::ShowWebDialog(parent_window_, browser_context_, this);
@@ -72,7 +67,8 @@ void LoginWebDialog::Show() {
 }
 
 void LoginWebDialog::SetDialogSize(int width, int height) {
-  DCHECK(width >= 0 && height >= 0);
+  DCHECK_GE(width, 0);
+  DCHECK_GE(height, 0);
   width_ = width;
   height_ = height;
 }
@@ -105,7 +101,7 @@ void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 void LoginWebDialog::GetMinimumDialogSize(gfx::Size* size) const {
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  gfx::Rect screen_bounds(CalculateScreenBounds(gfx::Size()));
   size->SetSize(kMinimumWidthRatio * screen_bounds.width(),
                 kMinimumHeightRatio * screen_bounds.height());
 }
@@ -115,11 +111,9 @@ std::string LoginWebDialog::GetDialogArgs() const {
 }
 
 // static.
-content::WebContents* LoginWebDialog::GetCurrentWebContents() {
-  if (!g_web_contents_stack.Pointer()->size())
-    return NULL;
-
-  return g_web_contents_stack.Pointer()->front();
+WebContents* LoginWebDialog::GetCurrentWebContents() {
+  auto& stack = g_web_contents_stack.Get();
+  return stack.empty() ? nullptr : stack.front();
 }
 
 void LoginWebDialog::OnDialogShown(content::WebUI* webui,
@@ -129,7 +123,6 @@ void LoginWebDialog::OnDialogShown(content::WebUI* webui,
 
 void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
   is_open_ = false;
-  notification_registrar_.RemoveAll();
   if (delegate_)
     delegate_->OnDialogClosed();
   delete this;
@@ -139,10 +132,8 @@ void LoginWebDialog::OnCloseContents(WebContents* source,
                                      bool* out_close_dialog) {
   *out_close_dialog = true;
 
-  if (g_web_contents_stack.Pointer()->size() &&
-      source == g_web_contents_stack.Pointer()->front()) {
+  if (GetCurrentWebContents() == source)
     g_web_contents_stack.Pointer()->pop_front();
-  }
   // Else: TODO(pkotwicz): Investigate if the else case should ever be hit.
   // http://crbug.com/419837
 }
@@ -157,10 +148,9 @@ bool LoginWebDialog::HandleContextMenu(
   return true;
 }
 
-bool LoginWebDialog::HandleOpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params,
-    content::WebContents** out_new_contents) {
+bool LoginWebDialog::HandleOpenURLFromTab(WebContents* source,
+                                          const content::OpenURLParams& params,
+                                          WebContents** out_new_contents) {
   // On a login screen, if a missing extension is trying to show in a web
   // dialog, a NetErrorHelper is displayed instead (hence we have a |source|),
   // but there is no browser window associated with it. A helper screen will
@@ -172,14 +162,6 @@ bool LoginWebDialog::HandleOpenURLFromTab(
 
 bool LoginWebDialog::HandleShouldCreateWebContents() {
   return false;
-}
-
-void LoginWebDialog::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
-  // TODO(saintlou): Do we need a throbber for Aura?
-  NOTIMPLEMENTED();
 }
 
 }  // namespace chromeos
