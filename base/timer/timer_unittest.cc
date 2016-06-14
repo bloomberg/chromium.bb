@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,7 +128,7 @@ void RunTest_OneShotTimer_Cancel(base::MessageLoop::Type message_loop_type) {
   OneShotTimerTester* a = new OneShotTimerTester(&did_run_a);
 
   // This should run before the timer expires.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, a);
 
   // Now start the timer.
   a->Start();
@@ -176,7 +177,7 @@ void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type,
   RepeatingTimerTester* a = new RepeatingTimerTester(&did_run_a, delay);
 
   // This should run before the timer expires.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, a);
 
   // Now start the timer.
   a->Start();

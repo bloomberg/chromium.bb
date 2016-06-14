@@ -756,7 +756,7 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
       session_state(std::move(session_state)),
       callback(callback),
       dump_successful(true),
-      callback_task_runner(MessageLoop::current()->task_runner()),
+      callback_task_runner(ThreadTaskRunnerHandle::Get()),
       dump_thread_task_runner(std::move(dump_thread_task_runner)) {
   pending_dump_providers.reserve(dump_providers.size());
   pending_dump_providers.assign(dump_providers.rbegin(), dump_providers.rend());
