@@ -102,12 +102,12 @@ TEST_F(DefaultProviderTest, Observer) {
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(
-                  _, _, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                  _, _, CONTENT_SETTINGS_TYPE_COOKIES, ""));
   provider_.AddObserver(&mock_observer);
   provider_.SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_IMAGES,
+      CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
       new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 

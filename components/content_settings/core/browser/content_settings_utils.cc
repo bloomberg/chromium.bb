@@ -133,10 +133,21 @@ std::unique_ptr<base::Value> ContentSettingToValue(ContentSetting setting) {
 
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules) {
+#if !defined(OS_ANDROID)
   map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES,
       ResourceIdentifier(),
       &(rules->image_rules));
+#else
+  // Android doesn't use image content settings, so ALLOW rule is added for
+  // all origins.
+  rules->image_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  map->is_off_the_record()));
+#endif
   map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
       ResourceIdentifier(),

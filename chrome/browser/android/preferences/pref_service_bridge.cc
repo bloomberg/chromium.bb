@@ -156,12 +156,9 @@ static void SetContentSettingEnabled(JNIEnv* env,
                                      jboolean allow) {
   // Before we migrate functions over to this central function, we must verify
   // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
-  // IMAGES is included to allow migrating the setting back for users who had
-  // disabled images in M44 (see https://crbug.com/505844).
-  // TODO(bauerb): Remove this when the migration code is removed.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES);
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(

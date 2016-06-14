@@ -159,13 +159,7 @@ public final class PrefServiceBridge {
         if (currentVersion < 1) {
             nativeMigrateJavascriptPreference();
         }
-        // Steps 2,3 intentionally skipped.
-        if (currentVersion < 4) {
-            // For a brief period (M44 Beta), it was possible for users to disable images via Site
-            // Settings. Now that this option has been removed, ensure that users are not stuck with
-            // images disabled.
-            setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES, true);
-        }
+        // Steps 2,3,4 intentionally skipped.
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).apply();
     }
 

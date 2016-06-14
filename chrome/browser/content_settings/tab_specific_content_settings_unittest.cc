@@ -51,12 +51,14 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   net::CookieOptions options;
 
   // Check that after initializing, nothing is blocked.
+#if !defined(OS_ANDROID)
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+#endif
+  EXPECT_FALSE(
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(
@@ -75,7 +77,9 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
                                     "A=B",
                                     options,
                                     false);
+#if !defined(OS_ANDROID)
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
+#endif
   content_settings->SetPopupsBlocked(true);
   TabSpecificContentSettings::MicrophoneCameraState
       blocked_microphone_camera_state =
@@ -91,11 +95,13 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
                                                std::string());
 
   // Check that only the respective content types are affected.
+#if !defined(OS_ANDROID)
   EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+#endif
+  EXPECT_FALSE(
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
@@ -122,12 +128,14 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
 
   // Reset blocked content settings.
   content_settings->ClearBlockedContentSettingsExceptForCookies();
+#if !defined(OS_ANDROID)
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+#endif
+  EXPECT_FALSE(
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(
@@ -140,12 +148,14 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
 
   content_settings->ClearCookieSpecificContentSettings();
+#if !defined(OS_ANDROID)
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+#endif
+  EXPECT_FALSE(
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(

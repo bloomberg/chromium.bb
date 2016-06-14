@@ -38,8 +38,13 @@ TEST_F(ContentSettingsRegistryTest, GetPlatformDependent) {
   EXPECT_FALSE(registry()->Get(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
 #endif
 
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  // Images shouldn't be registered on mobile.
+  EXPECT_FALSE(registry()->Get(CONTENT_SETTINGS_TYPE_IMAGES));
+#endif
+
 // Protected media identifier only get registered on android and chromeos.
-#if defined(ANDROID) | defined(OS_CHROMEOS)
+#if defined(ANDROID) || defined(OS_CHROMEOS)
   EXPECT_TRUE(
       registry()->Get(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER));
 #else
@@ -110,7 +115,7 @@ TEST_F(ContentSettingsRegistryTest, Iteration) {
     }
   }
 
-#if defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   EXPECT_FALSE(plugins_found);
 #else
   EXPECT_TRUE(plugins_found);

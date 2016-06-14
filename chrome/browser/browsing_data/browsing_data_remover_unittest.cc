@@ -2479,21 +2479,21 @@ TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
 
   host_content_settings_map->SetContentSettingCustomScope(
       pattern2, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), CONTENT_SETTING_BLOCK);
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetContentSettingCustomScope(
-      pattern, ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_IMAGES,
-      std::string(), CONTENT_SETTING_BLOCK);
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetWebsiteSettingCustomScope(
       pattern2, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
       base::WrapUnique(new base::DictionaryValue()));
 
-  // First, test that we clear only IMAGES (not APP_BANNER), and pattern2.
+  // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_IMAGES,
+      host_content_settings_map, CONTENT_SETTINGS_TYPE_COOKIES,
       base::Bind(&MatchPrimaryPattern, pattern2));
   host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), &host_settings);
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &host_settings);
   // |host_settings| contains default & block.
   EXPECT_EQ(2U, host_settings.size());
   EXPECT_EQ(pattern, host_settings[0].primary_pattern);

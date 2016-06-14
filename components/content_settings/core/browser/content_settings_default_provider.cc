@@ -126,22 +126,31 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_POPUPS))),
       CONTENT_SETTING_NUM_SETTINGS);
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultImagesSetting",
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES))),
       CONTENT_SETTING_NUM_SETTINGS);
   UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.DefaultJavaScriptSetting",
-      IntToContentSetting(prefs_->GetInteger(
-          GetPrefName(CONTENT_SETTINGS_TYPE_JAVASCRIPT))),
-      CONTENT_SETTING_NUM_SETTINGS);
-  UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultPluginsSetting",
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS))),
       CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultMouseCursorSetting",
+      IntToContentSetting(prefs_->GetInteger(
+          GetPrefName(CONTENT_SETTINGS_TYPE_MOUSELOCK))),
+      CONTENT_SETTING_NUM_SETTINGS);
+#endif
+
+#if !defined(OS_IOS)
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultJavaScriptSetting",
+      IntToContentSetting(prefs_->GetInteger(
+          GetPrefName(CONTENT_SETTINGS_TYPE_JAVASCRIPT))),
+      CONTENT_SETTING_NUM_SETTINGS);
+
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultLocationSetting",
       IntToContentSetting(prefs_->GetInteger(
@@ -152,11 +161,7 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS))),
       CONTENT_SETTING_NUM_SETTINGS);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.DefaultMouseCursorSetting",
-      IntToContentSetting(prefs_->GetInteger(
-          GetPrefName(CONTENT_SETTINGS_TYPE_MOUSELOCK))),
-      CONTENT_SETTING_NUM_SETTINGS);
+
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultMediaStreamMicSetting",
       IntToContentSetting(prefs_->GetInteger(

@@ -230,15 +230,22 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
+#if !defined(ENABLE_PLUGINS)
+  // SetPermissionInfo for plugins didn't get called.
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(6);
+#else
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(7);
+#endif
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
                                               CONTENT_SETTING_ALLOW);
+#if defined(ENABLE_PLUGINS)
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_PLUGINS,
                                               CONTENT_SETTING_BLOCK);
+#endif
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                               CONTENT_SETTING_ALLOW);
   website_settings()->OnSitePermissionChanged(
@@ -252,9 +259,11 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+#if defined(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+#endif
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);

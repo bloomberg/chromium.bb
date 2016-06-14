@@ -33,5 +33,5 @@ void MockSettingsObserver::OnContentSettingChanged(
   // deadlock.
   GURL url("http://random-hostname.com/");
   map_->GetContentSetting(
-      url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+      url, url, CONTENT_SETTINGS_TYPE_COOKIES, std::string());
 }
