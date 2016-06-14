@@ -30,6 +30,7 @@ crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compi
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-data-url.html [ Failure ]
 crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure ]
+crbug.com/508726 imported/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure ]
 
 # Pass when run with --enable-wptserve ([Failure] since expectations do not match): (crbug.com/508725)
 crbug.com/508725 imported/wpt/html/browsers/history/the-history-interface/history_pushstate_err.html [ Failure ]
@@ -49,3 +50,12 @@ crbug.com/608457 imported/wpt/webrtc/simplecall.html [ Failure ]
 crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-video-only.html [ Timeout ]
 crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Timeout ]
 crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-add-audio-track.html [ Timeout ]
+
+# These tests timeout with --enable-wptserve enabled
+crbug.com/508734 imported/wpt/html/semantics/document-metadata/the-link-element/link-style-error-01.html [ Timeout ]
+crbug.com/508734 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_button_attribute_mouse-manual.html [ Timeout ]
+crbug.com/508734 imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Timeout ]
+
+# These tests fail with --enable-wptserve due to blocked cross-origin frame (crbug.com/619746)
+crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
+crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
