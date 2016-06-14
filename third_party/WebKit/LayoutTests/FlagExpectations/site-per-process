@@ -83,12 +83,17 @@ http/tests/security/referrer-policy-redirect-link.html [ Timeout ]
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 http/tests/local/drag-over-remote-content.html [ Timeout ]
 
+# https://crbug.com/619662 - Expected console output differences.
+http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+
+# https://crbug.com/616905 - history.back() has different behavior with --site-per-process.
+http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-origin-shared-worker-allowed.html [ Failure Timeout ]
 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure Timeout ]
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
-http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
@@ -101,5 +106,4 @@ http/tests/inspector/extensions-network-redirect.html [ Timeout ]
 http/tests/inspector/extensions-useragent.html [ Timeout ]
 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
-http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 http/tests/serviceworker/http-to-https-redirect-and-register.html [ Timeout ]
