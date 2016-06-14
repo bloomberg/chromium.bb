@@ -144,8 +144,8 @@
   </if>
   <message name="IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL" desc="Message in the message box shown if user asks to open a lot of bookmarks in a folder. The number will never be 1. [ICU Syntax]">
   {TAB_COUNT, plural,
-   one{Are you sure you want to open # tab?}
-   other{Are you sure you want to open # tabs?}
+   =1 {Are you sure you want to open # tab?}
+   other {Are you sure you want to open # tabs?}
   }
   </message>
   <!-- End of Bookmarks Bar Context Menu strings. -->
@@ -227,7 +227,7 @@
   <message name="IDS_BOOKMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder. [ICU Syntax]">
     {NUM_BOOKMARKS, plural,
      =1 {This folder contains a bookmark. Are you sure you want to delete it?}
-     =other {This folder contains # bookmarks. Are you sure you want to delete it?}}
+     other {This folder contains # bookmarks. Are you sure you want to delete it?}}
   </message>
   <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
     Edit folder name
