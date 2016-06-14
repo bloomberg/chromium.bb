@@ -561,6 +561,15 @@
           "ctrlKey": [true]
         }
       }
+    },
+    {
+      "command": "toggleBrailleCaptions",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 66]
+        }
+      }
     }
   ]
 }

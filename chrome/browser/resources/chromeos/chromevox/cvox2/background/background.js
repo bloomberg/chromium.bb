@@ -794,6 +794,10 @@ Background.prototype = {
           url += key + ':%20' + description[key] + '%0a';
         chrome.tabs.create({url: url});
         return false;
+      case 'toggleBrailleCaptions':
+        cvox.BrailleCaptionsBackground.setActive(
+            !cvox.BrailleCaptionsBackground.isEnabled());
+        return false;
       default:
         return true;
     }
