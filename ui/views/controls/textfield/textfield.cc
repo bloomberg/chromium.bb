@@ -363,10 +363,6 @@ void Textfield::InsertOrReplaceText(const base::string16& new_text) {
   SchedulePaint();
 }
 
-base::i18n::TextDirection Textfield::GetTextDirection() const {
-  return GetRenderText()->GetDisplayTextDirection();
-}
-
 base::string16 Textfield::GetSelectedText() const {
   return model_->GetSelectedText();
 }
@@ -1507,6 +1503,10 @@ ui::TextInputType Textfield::GetTextInputType() const {
 
 ui::TextInputMode Textfield::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
+}
+
+base::i18n::TextDirection Textfield::GetTextDirection() const {
+  return GetRenderText()->GetDisplayTextDirection();
 }
 
 int Textfield::GetTextInputFlags() const {

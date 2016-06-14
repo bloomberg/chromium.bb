@@ -88,9 +88,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Inserts |new_text| at the cursor position, replacing any selected text.
   void InsertOrReplaceText(const base::string16& new_text);
 
-  // Returns the text direction.
-  base::i18n::TextDirection GetTextDirection() const;
-
   // Returns the text that is currently selected.
   base::string16 GetSelectedText() const;
 
@@ -288,6 +285,7 @@ class VIEWS_EXPORT Textfield : public View,
   void InsertChar(const ui::KeyEvent& event) override;
   ui::TextInputType GetTextInputType() const override;
   ui::TextInputMode GetTextInputMode() const override;
+  base::i18n::TextDirection GetTextDirection() const override;
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;

@@ -43,6 +43,10 @@ TextInputMode DummyTextInputClient::GetTextInputMode() const {
   return TEXT_INPUT_MODE_DEFAULT;
 }
 
+base::i18n::TextDirection DummyTextInputClient::GetTextDirection() const {
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
 int DummyTextInputClient::GetTextInputFlags() const {
   return 0;
 }

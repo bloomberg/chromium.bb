@@ -234,6 +234,10 @@ ui::TextInputMode ArcImeService::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
+base::i18n::TextDirection ArcImeService::GetTextDirection() const {
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
 int ArcImeService::GetTextInputFlags() const {
   return ui::TEXT_INPUT_FLAG_NONE;
 }

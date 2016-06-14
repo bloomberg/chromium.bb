@@ -64,6 +64,10 @@ ui::TextInputMode PrefixSelector::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
+base::i18n::TextDirection PrefixSelector::GetTextDirection() const {
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
 int PrefixSelector::GetTextInputFlags() const {
   return 0;
 }

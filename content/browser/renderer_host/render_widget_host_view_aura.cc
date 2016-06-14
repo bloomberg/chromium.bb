@@ -1519,6 +1519,11 @@ ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
+base::i18n::TextDirection RenderWidgetHostViewAura::GetTextDirection() const {
+  NOTIMPLEMENTED();
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
 int RenderWidgetHostViewAura::GetTextInputFlags() const {
   if (text_input_manager_ && text_input_manager_->GetTextInputState())
     return text_input_manager_->GetTextInputState()->flags;

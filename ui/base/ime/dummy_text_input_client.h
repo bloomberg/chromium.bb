@@ -28,6 +28,7 @@ class DummyTextInputClient : public TextInputClient {
   void InsertChar(const KeyEvent& event) override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
+  base::i18n::TextDirection GetTextDirection() const override;
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;

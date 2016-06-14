@@ -77,6 +77,7 @@ class ArcImeService : public ArcService,
   // TODO(kinaba): Support each of these methods to the extent possible in
   // Android input method API.
   ui::TextInputMode GetTextInputMode() const override;
+  base::i18n::TextDirection GetTextDirection() const override;
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
