@@ -45,6 +45,24 @@ public class DownloadNotificationServiceTest extends
         }
     }
 
+    private static class MockDownloadResumptionScheduler extends DownloadResumptionScheduler {
+        boolean mScheduled;
+
+        public MockDownloadResumptionScheduler(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void schedule(boolean allowMeteredConnection) {
+            mScheduled = true;
+        }
+
+        @Override
+        public void cancelTask() {
+            mScheduled = false;
+        }
+    }
+
     public DownloadNotificationServiceTest() {
         super(MockDownloadNotificationService.class);
     }
@@ -52,6 +70,16 @@ public class DownloadNotificationServiceTest extends
     @Override
     protected void setupService() {
         super.setupService();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.setupService();
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove(DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
+        editor.apply();
+        super.tearDown();
     }
 
     private void startNotificationService() {
@@ -96,6 +124,51 @@ public class DownloadNotificationServiceTest extends
         startNotificationService();
         assertTrue(getService().isPaused());
         assertTrue(getService().getNotificationIds().isEmpty());
+    }
+
+    /**
+     * Tests that download resumption task is scheduled when notification service is started
+     * without any download action.
+     */
+    @SmallTest
+    @Feature({"Download"})
+    public void testResumptionScheduledWithoutDownloadOperationIntent() throws Exception {
+        MockDownloadResumptionScheduler scheduler = new MockDownloadResumptionScheduler(
+                getSystemContext().getApplicationContext());
+        DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
+        setupService();
+        Set<String> notifications = new HashSet<String>();
+        notifications.add(new DownloadSharedPreferenceEntry(1, true, true,
+                UUID.randomUUID().toString(), "test1").getSharedPreferenceString());
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putStringSet(
+                DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+        editor.apply();
+        startNotificationService();
+        assertTrue(scheduler.mScheduled);
+    }
+
+    /**
+     * Tests that download resumption task is not scheduled when notification service is started
+     * with a download action.
+     */
+    @SmallTest
+    @Feature({"Download"})
+    public void testResumptionNotScheduledWithDownloadOperationIntent() {
+        MockDownloadResumptionScheduler scheduler = new MockDownloadResumptionScheduler(
+                getSystemContext().getApplicationContext());
+        DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
+        setupService();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(getService(), MockDownloadNotificationService.class);
+                intent.setAction(DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL);
+                startService(intent);
+            }
+        });
+        assertFalse(scheduler.mScheduled);
     }
 
     /**

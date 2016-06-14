@@ -53,6 +53,8 @@ public class DownloadNotificationService extends Service {
             "org.chromium.chrome.browser.download.DOWNLOAD_PAUSE";
     static final String ACTION_DOWNLOAD_RESUME =
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
+    public static final String ACTION_DOWNLOAD_RESUME_ALL =
+            "org.chromium.chrome.browser.download.DOWNLOAD_RESUME_ALL";
     static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
     @VisibleForTesting
     static final String PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
@@ -84,8 +86,7 @@ public class DownloadNotificationService extends Service {
         // This funcion is called when Chrome is swiped away from the recent apps
         // drawer. So it doesn't catch all scenarios that chrome can get killed.
         // This will only help Android 4.4.2.
-        pauseAllDownloads();
-        stopSelf();
+        onBrowserKilled();
     }
 
     @Override
@@ -103,18 +104,37 @@ public class DownloadNotificationService extends Service {
         // there are no calls to initialize DownloadManagerService. Pause all the
         // download notifications as download will not progress without chrome.
         if (!DownloadManagerService.hasDownloadManagerService()) {
-            pauseAllDownloads();
-            stopSelf();
+            onBrowserKilled();
         }
         mNextNotificationId = mSharedPrefs.getInt(
                 NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
 
     }
 
+    /**
+     * Called when browser is killed. Schedule a resumption task and pause all the download
+     * notifications.
+     */
+    private void onBrowserKilled() {
+        pauseAllDownloads();
+        if (!mDownloadSharedPreferenceEntries.isEmpty()) {
+            boolean allowMeteredConnection = false;
+            for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
+                if (mDownloadSharedPreferenceEntries.get(i).canDownloadWhileMetered) {
+                    allowMeteredConnection = true;
+                }
+            }
+            DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).schedule(
+                    allowMeteredConnection);
+        }
+        stopSelf();
+    }
+
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
         if (isDownloadOperationIntent(intent)) {
             handleDownloadOperation(intent);
+            DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).cancelTask();
         }
 
         // This should restart the service after Chrome gets killed. However, this
@@ -343,42 +363,52 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
+     * Retrives DownloadSharedPreferenceEntry from a download action intent.
+     * @param intent Intent that contains the download action.
+     */
+    private DownloadSharedPreferenceEntry getDownloadEntryFromIntent(Intent intent) {
+        if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL) return null;
+        String guid = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_GUID);
+        DownloadSharedPreferenceEntry entry = getDownloadSharedPreferenceEntry(guid);
+        if (entry != null) return entry;
+        int notificationId = IntentUtils.safeGetIntExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_NOTIFICATION_ID, -1);
+        String fileName = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+        boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
+        return new DownloadSharedPreferenceEntry(notificationId, true, metered, guid, fileName);
+    }
+
+    /**
      * Helper method to launch the browser process and handle a download operation that is included
      * in the given intent.
      * @param intent Intent with the download operation.
      */
     private void handleDownloadOperation(final Intent intent) {
-        final int notificationId = IntentUtils.safeGetIntExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_NOTIFICATION_ID, -1);
-        final String guid = IntentUtils.safeGetStringExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_GUID);
-        final String fileName = IntentUtils.safeGetStringExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
-        DownloadSharedPreferenceEntry entry = null;
+        final DownloadSharedPreferenceEntry entry = getDownloadEntryFromIntent(intent);
         if (intent.getAction() == ACTION_DOWNLOAD_PAUSE) {
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) {
-                notifyDownloadPaused(guid, false);
+                notifyDownloadPaused(entry.downloadGuid, false);
                 return;
             }
         } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME) {
-            entry = getDownloadSharedPreferenceEntry(guid);
             boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
-            if (entry == null) {
-                entry = new DownloadSharedPreferenceEntry(
-                        notificationId, true, metered, guid, fileName);
-            } else if (!entry.canDownloadWhileMetered) {
+            if (!entry.canDownloadWhileMetered) {
                 // If user manually resumes a download, update the network type if it
                 // is not metered previously.
                 entry.canDownloadWhileMetered = metered;
             }
             // Update the SharedPreference entry.
             addOrReplaceSharedPreferenceEntry(entry);
+        } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL
+                && (mDownloadSharedPreferenceEntries.isEmpty()
+                        || DownloadManagerService.hasDownloadManagerService())) {
+            return;
         }
-        final DownloadItem item = entry == null ? null : entry.buildDownloadItem();
-        final boolean canDownloadWhileMetered =
-                entry == null ? false : entry.canDownloadWhileMetered;
+
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public boolean shouldStartGpuProcess() {
@@ -394,18 +424,22 @@ public class DownloadNotificationService extends Service {
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
                         // SD card, and remove the download ID from the SharedPreferences so we
                         // don't need to restart the browser process. http://crbug.com/579643.
-                        cancelNotification(notificationId, guid);
-                        service.cancelDownload(guid, IntentUtils.safeGetBooleanExtra(
+                        cancelNotification(entry.notificationId, entry.downloadGuid);
+                        service.cancelDownload(entry.downloadGuid, IntentUtils.safeGetBooleanExtra(
                                 intent, EXTRA_NOTIFICATION_DISMISSED, false));
                         break;
                     case ACTION_DOWNLOAD_PAUSE:
-                        service.pauseDownload(guid);
+                        service.pauseDownload(entry.downloadGuid);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
-                        assert item != null;
-                        notifyDownloadProgress(guid, fileName, INVALID_DOWNLOAD_PERCENTAGE, 0, 0,
-                                true, canDownloadWhileMetered);
-                        service.resumeDownload(item, true);
+                        notifyDownloadProgress(entry.downloadGuid, entry.fileName,
+                                INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true,
+                                entry.canDownloadWhileMetered);
+                        service.resumeDownload(entry.buildDownloadItem(), true);
+                        break;
+                    case ACTION_DOWNLOAD_RESUME_ALL:
+                        assert entry == null;
+                        resumeAllPendingDownloads();
                         break;
                     default:
                         Log.e(TAG, "Unrecognized intent action.", intent);
@@ -439,6 +473,7 @@ public class DownloadNotificationService extends Service {
      */
     static boolean isDownloadOperationIntent(Intent intent) {
         if (intent == null) return false;
+        if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) return true;
         if (!ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
                 && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
                 && !ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
