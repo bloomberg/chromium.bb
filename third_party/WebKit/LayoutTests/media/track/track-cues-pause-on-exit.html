@@ -1,86 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that the video is paused after cues that have pause-on-exit flag are processed.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
+<video controls>
+    <track src="captions-webvtt/simple-captions.vtt" default>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var track = document.querySelector("track");
+    track.onload = t.step_func(function() {
+        assert_equals(track.track.cues.length, 4);
+        for (var i = 0; i < track.track.cues.length; ++i) {
+            var cue = track.track.cues[i];
+            if (i % 2 == 0) {
+                cue.pauseOnExit = true;
+                cue.onexit = t.step_func(function(event) {
+                    assert_true(video.paused);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-            var videoCanPlayThrough = false;
-            var trackLoaded = false;
+                    video.play();
 
-            var currentCue;
-            var currentCueNumber = 0;
-
-            function runTests()
-            {
-                if (!trackLoaded || !videoCanPlayThrough)
-                    return;
-
-                testTrack = document.getElementById("testTrack");
-                testExpected("testTrack.track.cues.length", 4);
-
-                consoleWrite("");
-
-                for (var i = 0; i < testTrack.track.cues.length; ++i) {
-                    testTrack.track.cues[i].pauseOnExit = (i % 2 == 0);
-                }
-
-                run("video.play()");
-                testExpected("video.paused", false);
-                consoleWrite("");
-
-                waitForEvent('pause', function() {
-                    waitForEvent('exit', cueExited, false, true, testTrack.track.cues[currentCueNumber]);
+                    if (event.target.id == 2)
+                        t.done();
                 });
             }
-
-            function cueExited(evt)
-            {
-                currentCue = evt.target;
-
-
-                testExpected("currentCue.id", currentCueNumber);
-                testExpected("video.paused", true);
-
-                run("video.play()");
-
-                if (currentCueNumber == 2)
-                    endTest();
-
-                currentCueNumber += 2;
-
-                consoleWrite("");
-            }
-
-            function loaded()
-            {
-                trackLoaded = true;
-
-                runTests();
-            }
-
-            function bodyLoaded()
-            {
-                findMediaElement();
-                video.src = findMediaFile("video", "../content/test");
-            }
-
-            waitForEventOnce('canplaythrough', function() {
-                video.currentTime = 4.00;
-                videoCanPlayThrough = true;
-
-                runTests();
-            });
-
-        </script>
-    </head>
-    <body onload="bodyLoaded()">
-        <p>Tests that the video is paused after cues that have pause-on-exit flag are processed</p>
-        <video controls>
-            <track id="testTrack" src="captions-webvtt/simple-captions.vtt" onload="loaded()" default>
-        </video>
-    </body>
-</html>
+        }
+        video.src = findMediaFile("video", "../content/test");
+        video.currentTime = 4.00;
+        video.play();
+        assert_false(video.paused);
+    });
+});
+</script>
