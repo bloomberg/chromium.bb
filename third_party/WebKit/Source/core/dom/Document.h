@@ -218,6 +218,8 @@ enum CreateElementFlags {
     CreatedByParser = 1 << 0,
     // Synchronous custom elements flag:
     // https://dom.spec.whatwg.org/#concept-create-element
+    // TODO(kojii): Remove these flags, add an option not to queue upgrade, and
+    // let parser/DOM methods to upgrade synchronously when necessary.
     SynchronousCustomElements = 0 << 1,
     AsynchronousCustomElements = 1 << 1,
 

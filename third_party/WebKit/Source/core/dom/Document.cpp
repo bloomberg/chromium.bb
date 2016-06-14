@@ -640,8 +640,11 @@ Element* Document::createElement(const AtomicString& name, ExceptionState& excep
         return nullptr;
     }
 
-    if (isXHTMLDocument() || isHTMLDocument())
+    if (isXHTMLDocument() || isHTMLDocument()) {
+        if (CustomElement::shouldCreateCustomElement(*this, name))
+            return CustomElement::createCustomElementSync(*this, name, exceptionState);
         return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this, 0, CreatedByCreateElement);
+    }
 
     return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
@@ -656,7 +659,7 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
     Element* element;
 
     if (CustomElement::shouldCreateCustomElement(*this, localName)) {
-        element = CustomElement::createCustomElement(*this, localName, CreatedByCreateElement);
+        element = CustomElement::createCustomElementSync(*this, localName, exceptionState);
     } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
     } else {
@@ -692,6 +695,8 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
     if (qName == QualifiedName::null())
         return nullptr;
 
+    if (CustomElement::shouldCreateCustomElement(*this, qName))
+        return CustomElement::createCustomElementSync(*this, qName, exceptionState);
     return createElement(qName, CreatedByCreateElement);
 }
 
@@ -703,7 +708,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
 
     Element* element;
     if (CustomElement::shouldCreateCustomElement(*this, qName))
-        element = CustomElement::createCustomElement(*this, qName, CreatedByCreateElement);
+        element = CustomElement::createCustomElementSync(*this, qName, exceptionState);
     else if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
     else

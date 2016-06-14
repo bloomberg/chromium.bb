@@ -247,6 +247,16 @@ public:
         element->setCustomElementState(CustomElementState::Custom);
         return true;
     }
+
+    HTMLElement* createElementSync(Document&, const QualifiedName&) override
+    {
+        return nullptr;
+    }
+
+    HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) override
+    {
+        return nullptr;
+    }
 };
 
 // Classes which use trace macros cannot be local because of the

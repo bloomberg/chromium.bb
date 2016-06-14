@@ -90,8 +90,12 @@ static void create{{namespace}}FunctionMap()
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
 
     {% if namespace == 'HTML' %}
-    if (CustomElement::shouldCreateCustomElement(document, localName))
-        return CustomElement::createCustomElement(document, localName, flags);
+    if (CustomElement::shouldCreateCustomElement(document, localName)) {
+        QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
+        if (flags & AsynchronousCustomElements)
+            return CustomElement::createCustomElementAsync(document, tagName);
+        return CustomElement::createCustomElementSync(document, tagName);
+    }
     {% endif %}
 
     if (document.registrationContext() && V0CustomElement::isValidName(localName)) {

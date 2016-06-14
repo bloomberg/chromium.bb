@@ -13,8 +13,10 @@
 
 namespace blink {
 
-class ScriptState;
 class Element;
+class ExceptionState;
+class HTMLElement;
+class QualifiedName;
 
 class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition> {
@@ -41,6 +43,10 @@ public:
         return m_constructionStack;
     }
 
+    virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
+    virtual HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) = 0;
+    HTMLElement* createElementAsync(Document&, const QualifiedName&);
+
     void upgrade(Element*);
 
     // TODO(kojii): Change these methods to pure when script-side is implemented.
@@ -61,6 +67,8 @@ public:
 
 protected:
     virtual bool runConstructor(Element*) = 0;
+
+    static void checkConstructorResult(Element*, Document&, const QualifiedName&, ExceptionState&);
 
 private:
     const CustomElementDescriptor m_descriptor;

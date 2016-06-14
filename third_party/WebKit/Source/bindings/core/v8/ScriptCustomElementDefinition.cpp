@@ -13,6 +13,8 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLUnknownElement.h"
 #include "v8.h"
 #include "wtf/Allocator.h"
 
@@ -152,6 +154,67 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
 {
 }
 
+HTMLElement* ScriptCustomElementDefinition::createElementSync(
+    Document& document, const QualifiedName& tagName,
+    ExceptionState& exceptionState)
+{
+    DCHECK(ScriptState::current(m_scriptState->isolate()) == m_scriptState);
+
+    // Create an element
+    // https://dom.spec.whatwg.org/#concept-create-element
+    // 6. If definition is non-null
+    // 6.1. If the synchronous custom elements flag is set:
+    // 6.1.2. Set result to Construct(C). Rethrow any exceptions.
+    Element* element = nullptr;
+    {
+        v8::TryCatch tryCatch(m_scriptState->isolate());
+        element = runConstructor();
+        if (tryCatch.HasCaught()) {
+            exceptionState.rethrowV8Exception(tryCatch.Exception());
+            return nullptr;
+        }
+    }
+
+    // 6.1.3. through 6.1.9.
+    checkConstructorResult(element, document, tagName, exceptionState);
+    if (exceptionState.hadException())
+        return nullptr;
+
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+    return toHTMLElement(element);
+}
+
+HTMLElement* ScriptCustomElementDefinition::createElementSync(
+    Document& document, const QualifiedName& tagName)
+{
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+
+    // When invoked from "create an element for a token":
+    // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+
+    ExceptionState exceptionState(ExceptionState::ConstructionContext,
+        "CustomElement", constructor(), isolate);
+    HTMLElement* element = createElementSync(document, tagName, exceptionState);
+
+    if (exceptionState.hadException() || !element) {
+        // 7. If this step throws an exception, then report the exception, ...
+        {
+            v8::TryCatch tryCatch(isolate);
+            tryCatch.SetVerbose(true);
+            exceptionState.throwIfNeeded();
+        }
+
+        // ...and let element be instead a new element that implements
+        // HTMLUnknownElement, with no attributes, namespace set to given
+        // namespace, namespace prefix set to null, custom element state
+        // "undefined", and node document set to document.
+        element = HTMLUnknownElement::create(tagName, document);
+        element->setCustomElementState(CustomElementState::Undefined);
+    }
+    return element;
+}
+
 // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
 bool ScriptCustomElementDefinition::runConstructor(Element* element)
 {
@@ -165,18 +228,11 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
     v8::TryCatch tryCatch(isolate);
     tryCatch.SetVerbose(true);
 
-    ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-    v8::Local<v8::Value> result;
-    if (!v8Call(V8ScriptRunner::callAsConstructor(
-        isolate,
-        constructor(),
-        executionContext,
-        0,
-        nullptr),
-        result))
+    Element* result = runConstructor();
+    if (!result)
         return false;
 
-    if (V8Element::toImplWithTypeCheck(isolate, result) != element) {
+    if (result != element) {
         V8ThrowException::throwException(
             V8ThrowException::createDOMException(
                 m_scriptState->isolate(),
@@ -189,6 +245,24 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
     }
 
     return true;
+}
+
+Element* ScriptCustomElementDefinition::runConstructor()
+{
+    v8::Isolate* isolate = m_scriptState->isolate();
+    DCHECK(ScriptState::current(isolate) == m_scriptState);
+    ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+    v8::Local<v8::Value> result;
+    if (!v8Call(V8ScriptRunner::callAsConstructor(
+        isolate,
+        constructor(),
+        executionContext,
+        0,
+        nullptr),
+        result)) {
+        return nullptr;
+    }
+    return V8Element::toImplWithTypeCheck(isolate, result);
 }
 
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const

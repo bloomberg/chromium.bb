@@ -37,8 +37,10 @@ public:
     static bool shouldCreateCustomElement(Document&, const AtomicString& localName);
     static bool shouldCreateCustomElement(Document&, const QualifiedName&);
 
-    static HTMLElement* createCustomElement(Document&, const AtomicString& localName, CreateElementFlags);
-    static HTMLElement* createCustomElement(Document&, const QualifiedName&, CreateElementFlags);
+    static HTMLElement* createCustomElementSync(Document&, const AtomicString& localName, ExceptionState&);
+    static HTMLElement* createCustomElementSync(Document&, const QualifiedName&, ExceptionState&);
+    static HTMLElement* createCustomElementSync(Document&, const QualifiedName&);
+    static HTMLElement* createCustomElementAsync(Document&, const QualifiedName&);
 
     static void enqueueConnectedCallback(Element*);
     static void enqueueDisconnectedCallback(Element*);
@@ -46,8 +48,7 @@ public:
         const AtomicString& oldValue, const AtomicString& newValue);
 
 private:
-    static HTMLElement* createCustomElementAsync(Document&, CustomElementDefinition&, const QualifiedName&);
-
+    static HTMLElement* createUndefinedElement(Document&, const QualifiedName&);
 };
 
 } // namespace blink

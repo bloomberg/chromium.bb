@@ -46,6 +46,9 @@ public:
     v8::Local<v8::Object> constructor() const;
     v8::Local<v8::Object> prototype() const;
 
+    HTMLElement* createElementSync(Document&, const QualifiedName&) override;
+    HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) override;
+
 private:
     ScriptCustomElementDefinition(
         ScriptState*,
@@ -60,6 +63,7 @@ private:
     // Implementations of |CustomElementDefinition|
     ScriptValue getConstructorForScript() final;
     bool runConstructor(Element*) override;
+    Element* runConstructor();
 
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;

@@ -84,31 +84,68 @@ bool CustomElement::shouldCreateCustomElement(Document& document, const Qualifie
         && tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
-HTMLElement* CustomElement::createCustomElement(Document& document, const AtomicString& localName, CreateElementFlags flags)
+static CustomElementDefinition* definitionForName(const Document& document, const QualifiedName& name)
 {
-    return createCustomElement(document,
-        QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
-        flags);
+    if (CustomElementsRegistry* registry = CustomElement::registry(document))
+        return registry->definitionForName(name.localName());
+    return nullptr;
 }
 
-HTMLElement* CustomElement::createCustomElement(Document& document, const QualifiedName& tagName, CreateElementFlags flags)
+HTMLElement* CustomElement::createCustomElementSync(Document& document, const AtomicString& localName, ExceptionState& exceptionState)
 {
-    DCHECK(shouldCreateCustomElement(document, tagName));
+    return createCustomElementSync(document,
+        QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
+        exceptionState);
+}
+
+HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName, ExceptionState& exceptionState)
+{
+    CHECK(shouldCreateCustomElement(document, tagName));
 
     // To create an element:
     // https://dom.spec.whatwg.org/#concept-create-element
     // 6. If definition is non-null, then:
+    // 6.1. If the synchronous custom elements flag is set:
+    if (CustomElementDefinition* definition = definitionForName(document, tagName))
+        return definition->createElementSync(document, tagName, exceptionState);
+
+    return createUndefinedElement(document, tagName);
+}
+
+HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName)
+{
+    CHECK(shouldCreateCustomElement(document, tagName));
+
+    // When invoked from "create an element for a token":
+    // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+    // 7. If this step throws an exception, then report the exception,
+    // and let element be instead a new element that implements
+    // HTMLUnknownElement.
+    if (CustomElementDefinition* definition = definitionForName(document, tagName))
+        return definition->createElementSync(document, tagName);
+
+    return createUndefinedElement(document, tagName);
+}
+
+HTMLElement* CustomElement::createCustomElementAsync(Document& document, const QualifiedName& tagName)
+{
+    CHECK(shouldCreateCustomElement(document, tagName));
+
+    // To create an element:
+    // https://dom.spec.whatwg.org/#concept-create-element
+    // 6. If definition is non-null, then:
+    // 6.2. If the synchronous custom elements flag is not set:
+    if (CustomElementDefinition* definition = definitionForName(document, tagName))
+        return definition->createElementAsync(document, tagName);
+
+    return createUndefinedElement(document, tagName);
+}
+
+HTMLElement* CustomElement::createUndefinedElement(Document& document, const QualifiedName& tagName)
+{
+    DCHECK(shouldCreateCustomElement(document, tagName));
+
     HTMLElement* element;
-    if (CustomElementsRegistry* registry = CustomElement::registry(document)) {
-        if (CustomElementDefinition* definition = registry->definitionForName(tagName.localName())) {
-            // 6.2. If the synchronous custom elements flag is not set:
-            if (flags & AsynchronousCustomElements)
-                return createCustomElementAsync(document, *definition, tagName);
-
-            // TODO(kojii): Synchronous mode implementation coming after async.
-        }
-    }
-
     if (V0CustomElement::isValidName(tagName.localName()) && document.registrationContext()) {
         Element* v0element = document.registrationContext()->createCustomTagElement(document, tagName);
         SECURITY_DCHECK(v0element->isHTMLElement());
@@ -119,24 +156,6 @@ HTMLElement* CustomElement::createCustomElement(Document& document, const Qualif
 
     element->setCustomElementState(CustomElementState::Undefined);
 
-    return element;
-}
-
-HTMLElement* CustomElement::createCustomElementAsync(Document& document,
-    CustomElementDefinition& definition, const QualifiedName& tagName)
-{
-    // https://dom.spec.whatwg.org/#concept-create-element
-    // 6. If definition is non-null, then:
-    // 6.2. If the synchronous custom elements flag is not set:
-    // 6.2.1. Set result to a new element that implements the HTMLElement
-    // interface, with no attributes, namespace set to the HTML namespace,
-    // namespace prefix set to prefix, local name set to localName, custom
-    // element state set to "undefined", and node document set to document.
-    HTMLElement* element = HTMLElement::create(tagName, document);
-    element->setCustomElementState(CustomElementState::Undefined);
-    // 6.2.2. Enqueue a custom element upgrade reaction given result and
-    // definition.
-    definition.enqueueUpgradeReaction(element);
     return element;
 }
 
