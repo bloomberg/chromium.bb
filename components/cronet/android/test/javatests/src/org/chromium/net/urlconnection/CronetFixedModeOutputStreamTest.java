@@ -275,14 +275,22 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
-    public void testLargeDataMoreThanNativeBufferSize()
-            throws Exception {
+    public void testJavaBufferSizeLargerThanNativeBufferSize() throws Exception {
         // Set an internal buffer of size larger than the buffer size used
         // in network stack internally.
         // Normal stream uses 16384, QUIC uses 14520, and SPDY uses 16384.
-        CronetFixedModeOutputStream.setDefaultBufferLengthForTesting(17384);
-        testFixedLengthStreamingModeLargeDataWriteOneByte();
-        testFixedLengthStreamingModeLargeData();
+        // Try two different buffer lengths. 17384 will make the last write
+        // smaller than the native buffer length; 18384 will make the last write
+        // bigger than the native buffer length
+        // (largeData.length % 17384 = 9448, largeData.length % 18384 = 16752).
+        int[] bufferLengths = new int[] {17384, 18384};
+        for (int length : bufferLengths) {
+            CronetFixedModeOutputStream.setDefaultBufferLengthForTesting(length);
+            // Run the following three tests with this custom buffer size.
+            testFixedLengthStreamingModeLargeDataWriteOneByte();
+            testFixedLengthStreamingModeLargeData();
+            testOneMassiveWrite();
+        }
     }
 
     @SmallTest

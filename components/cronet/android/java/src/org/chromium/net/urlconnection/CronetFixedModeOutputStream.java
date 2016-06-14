@@ -30,6 +30,20 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
     private final CronetHttpURLConnection mConnection;
     private final MessageLoop mMessageLoop;
     private final long mContentLength;
+    // Internal buffer for holding bytes from the client until the bytes are
+    // copied to the UploadDataSink in UploadDataProvider.read().
+    // CronetFixedModeOutputStream allows client to provide up to
+    // sDefaultBufferLength bytes, and wait for UploadDataProvider.read() to be
+    // called after which point mBuffer is cleared so client can fill in again.
+    // While the client is filling the buffer (via {@code write()}), the buffer's
+    // position points to the next byte to be provided by the client, and limit
+    // points to the end of the buffer. The buffer is flipped before it is
+    // passed to the UploadDataProvider for consuming. Once it is flipped,
+    // buffer position points to the next byte to be copied to the
+    // UploadDataSink, and limit points to the end of data available to be
+    // copied to UploadDataSink. When the UploadDataProvider has provided all
+    // remaining bytes from the buffer to UploadDataSink, it clears the buffer
+    // so client can fill it again.
     private final ByteBuffer mBuffer;
     private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
     private long mBytesWritten;
@@ -60,17 +74,10 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
     @Override
     public void write(int oneByte) throws IOException {
         checkNotExceedContentLength(1);
-        while (mBuffer.position() == mBuffer.limit()) {
-            // Wait until buffer is consumed.
-            mMessageLoop.loop();
-        }
+        ensureBufferHasRemaining();
         mBuffer.put((byte) oneByte);
         mBytesWritten++;
-        if (mBytesWritten == mContentLength) {
-            // Entire post data has been received. Now wait for network stack to
-            // read it.
-            mMessageLoop.loop();
-        }
+        uploadIfComplete();
     }
 
     @Override
@@ -79,25 +86,48 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
             throw new IndexOutOfBoundsException();
         }
         checkNotExceedContentLength(count);
-        if (count == 0) {
-            return;
-        }
         int toSend = count;
         while (toSend > 0) {
-            if (mBuffer.position() == mBuffer.limit()) {
-                // Wait until buffer is consumed.
-                mMessageLoop.loop();
-            }
-            int sent = Math.min(toSend, mBuffer.limit() - mBuffer.position());
+            ensureBufferHasRemaining();
+            int sent = Math.min(toSend, mBuffer.remaining());
             mBuffer.put(buffer, offset + count - toSend, sent);
             toSend -= sent;
         }
         mBytesWritten += count;
+        uploadIfComplete();
+    }
+
+    /**
+     * If {@code mBuffer} is full, wait until it is consumed and there is
+     * space to write more data to it.
+     */
+    private void ensureBufferHasRemaining() throws IOException {
+        if (!mBuffer.hasRemaining()) {
+            uploadBufferInternal();
+        }
+    }
+
+    /**
+     * Waits for the native stack to upload {@code mBuffer}'s contents because
+     * the client has provided all bytes to be uploaded and there is no need to
+     * wait for or expect the client to provide more bytes.
+     */
+    private void uploadIfComplete() throws IOException {
         if (mBytesWritten == mContentLength) {
             // Entire post data has been received. Now wait for network stack to
             // read it.
-            mMessageLoop.loop();
+            uploadBufferInternal();
         }
+    }
+
+    /**
+     * Helper function to upload {@code mBuffer} to the native stack. This
+     * function blocks until {@code mBuffer} is consumed and there is space to
+     * write more data.
+     */
+    private void uploadBufferInternal() throws IOException {
+        mBuffer.flip();
+        mMessageLoop.loop();
     }
 
     /**
@@ -141,25 +171,20 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
 
         @Override
         public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer) {
-            final int availableSpace = byteBuffer.remaining();
-            if (availableSpace < mBuffer.position()) {
-                // byteBuffer does not have enough capacity, so only put a portion
-                // of mBuffer in it.
-                byteBuffer.put(mBuffer.array(), 0, availableSpace);
-                mBuffer.position(availableSpace);
-                // Move remaining buffer to the head of the buffer for use in the
-                // next read call.
-                mBuffer.compact();
-            } else {
-                // byteBuffer has enough capacity to hold the content of mBuffer.
-                mBuffer.flip();
+            if (byteBuffer.remaining() >= mBuffer.remaining()) {
                 byteBuffer.put(mBuffer);
                 // Reuse this buffer.
                 mBuffer.clear();
+                uploadDataSink.onReadSucceeded(false);
                 // Quit message loop so embedder can write more data.
                 mMessageLoop.quit();
+            } else {
+                int oldLimit = mBuffer.limit();
+                mBuffer.limit(mBuffer.position() + byteBuffer.remaining());
+                byteBuffer.put(mBuffer);
+                mBuffer.limit(oldLimit);
+                uploadDataSink.onReadSucceeded(false);
             }
-            uploadDataSink.onReadSucceeded(false);
         }
 
         @Override

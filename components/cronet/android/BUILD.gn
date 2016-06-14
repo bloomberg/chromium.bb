@@ -584,6 +584,7 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/urlconnection/CronetHttpURLStreamHandlerTest.java",
     "test/javatests/src/org/chromium/net/urlconnection/CronetURLStreamHandlerFactoryTest.java",
     "test/javatests/src/org/chromium/net/urlconnection/MessageLoopTest.java",
+    "test/javatests/src/org/chromium/net/urlconnection/QuicUploadTest.java",
     "test/javatests/src/org/chromium/net/urlconnection/TestUtil.java",
     "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
   ]

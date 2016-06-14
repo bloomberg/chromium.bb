@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.http.HttpResponseCache;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 
 import java.io.File;
@@ -590,8 +591,10 @@ public abstract class CronetEngine {
          * can be used to create a MockCertVerifier.
          * @param mockCertVerifier pointer to native MockCertVerifier.
          * @return the builder to facilitate chaining.
+         * @hide
          */
-        Builder setMockCertVerifierForTesting(long mockCertVerifier) {
+        @VisibleForTesting
+        public Builder setMockCertVerifierForTesting(long mockCertVerifier) {
             mMockCertVerifier = mockCertVerifier;
             return this;
         }
