@@ -29,6 +29,19 @@
 #include "compositor.h"
 #include "ivi-layout-export.h"
 
+struct ivi_layout_view {
+	struct wl_list link;	/* ivi_layout::view_list */
+	struct wl_list surf_link;	/*ivi_layout_surface::view_list */
+	struct wl_list pending_link;	/* ivi_layout_layer::pending.view_list */
+	struct wl_list order_link;	/* ivi_layout_layer::order.view_list */
+
+	struct weston_view *view;
+	struct weston_transform transform;
+
+	struct ivi_layout_surface *ivisurf;
+	struct ivi_layout_layer *on_layer;
+};
+
 struct ivi_layout_surface {
 	struct wl_list link;
 	struct wl_signal property_changed;
@@ -36,10 +49,7 @@ struct ivi_layout_surface {
 	uint32_t id_surface;
 
 	struct ivi_layout *layout;
-	struct ivi_layout_layer *on_layer;
 	struct weston_surface *surface;
-
-	struct weston_transform transform;
 
 	struct ivi_layout_surface_properties prop;
 
@@ -52,6 +62,8 @@ struct ivi_layout_surface {
 		struct wl_list link;
 		struct wl_list layer_list;
 	} order;
+
+	struct wl_list view_list;	/* ivi_layout_view::surf_link */
 };
 
 struct ivi_layout_layer {
@@ -66,13 +78,13 @@ struct ivi_layout_layer {
 
 	struct {
 		struct ivi_layout_layer_properties prop;
-		struct wl_list surface_list;
+		struct wl_list view_list;	/* ivi_layout_view::pending_link */
 		struct wl_list link;
 	} pending;
 
 	struct {
 		int dirty;
-		struct wl_list surface_list;
+		struct wl_list view_list;	/* ivi_layout_view::order_link */
 		struct wl_list link;
 	} order;
 
@@ -85,6 +97,7 @@ struct ivi_layout {
 	struct wl_list surface_list;
 	struct wl_list layer_list;
 	struct wl_list screen_list;
+	struct wl_list view_list;	/* ivi_layout_view::link */
 
 	struct {
 		struct wl_signal created;

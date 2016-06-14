@@ -139,20 +139,74 @@ get_layer(struct wl_list *layer_list, uint32_t id_layer)
 	return NULL;
 }
 
-static struct weston_view *
-get_weston_view(struct ivi_layout_surface *ivisurf)
+static bool
+ivi_view_is_rendered(struct ivi_layout_view *view)
 {
-	struct weston_view *view = NULL;
+	return !wl_list_empty(&view->order_link);
+}
+
+static void
+ivi_view_destroy(struct ivi_layout_view *ivi_view)
+{
+	wl_list_remove(&ivi_view->transform.link);
+	wl_list_remove(&ivi_view->link);
+	wl_list_remove(&ivi_view->surf_link);
+	wl_list_remove(&ivi_view->pending_link);
+	wl_list_remove(&ivi_view->order_link);
+
+	weston_view_destroy(ivi_view->view);
+
+	free(ivi_view);
+}
+
+static struct ivi_layout_view*
+ivi_view_create(struct ivi_layout_layer *ivilayer,
+		struct ivi_layout_surface *ivisurf)
+{
+	struct ivi_layout_view *ivi_view;
+
+	ivi_view = calloc(1, sizeof *ivi_view);
+	if (ivi_view == NULL) {
+		weston_log("fails to allocate memory\n");
+		return NULL;
+	}
+
+	ivi_view->view = weston_view_create(ivisurf->surface);
+	if (ivi_view->view == NULL) {
+		weston_log("fails to allocate memory\n");
+		return NULL;
+	}
+
+	weston_matrix_init(&ivi_view->transform.matrix);
+	wl_list_init(&ivi_view->transform.link);
+
+	ivi_view->ivisurf = ivisurf;
+	ivi_view->on_layer = ivilayer;
+	wl_list_insert(&ivilayer->layout->view_list,
+		       &ivi_view->link);
+	wl_list_insert(&ivisurf->view_list,
+		       &ivi_view->surf_link);
+
+	wl_list_init(&ivi_view->pending_link);
+	wl_list_init(&ivi_view->order_link);
+
+	return ivi_view;
+}
+
+static struct ivi_layout_view *
+get_ivi_view(struct ivi_layout_layer *ivilayer,
+		struct ivi_layout_surface *ivisurf)
+{
+	struct ivi_layout_view *ivi_view;
 
 	assert(ivisurf->surface != NULL);
 
-	/* One view per surface */
-	if(wl_list_empty(&ivisurf->surface->views))
-		view = NULL;
-	else
-		view = wl_container_of(ivisurf->surface->views.next, view, surface_link);
+	wl_list_for_each(ivi_view, &ivisurf->view_list, surf_link) {
+		if (ivi_view->on_layer == ivilayer)
+			return ivi_view;
+	}
 
-	return view;
+	return NULL;
 }
 
 static struct ivi_layout_screen *
@@ -176,16 +230,20 @@ void
 ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 {
 	struct ivi_layout *layout = get_instance();
+	struct ivi_layout_view *ivi_view ,*next;
 
 	if (ivisurf == NULL) {
 		weston_log("%s: invalid argument\n", __func__);
 		return;
 	}
 
-	wl_list_remove(&ivisurf->transform.link);
 	wl_list_remove(&ivisurf->pending.link);
 	wl_list_remove(&ivisurf->order.link);
 	wl_list_remove(&ivisurf->link);
+
+	wl_list_for_each_safe(ivi_view, next, &ivisurf->view_list, surf_link) {
+		ivi_view_destroy(ivi_view);
+	}
 
 	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
 
@@ -258,15 +316,13 @@ init_surface_properties(struct ivi_layout_surface_properties *prop)
  */
 static void
 update_opacity(struct ivi_layout_layer *ivilayer,
-	       struct ivi_layout_surface *ivisurf)
+	       struct ivi_layout_surface *ivisurf,
+	       struct weston_view *view)
 {
-	struct weston_view *tmpview = NULL;
 	double layer_alpha = wl_fixed_to_double(ivilayer->prop.opacity);
 	double surf_alpha  = wl_fixed_to_double(ivisurf->prop.opacity);
 
-	tmpview = get_weston_view(ivisurf);
-	assert(tmpview != NULL);
-	tmpview->alpha = layer_alpha * surf_alpha;
+	view->alpha = layer_alpha * surf_alpha;
 }
 
 static void
@@ -563,20 +619,21 @@ calc_surface_to_global_matrix_and_mask_to_weston_surface(
 static void
 update_prop(struct ivi_layout_screen  *iviscrn,
 	    struct ivi_layout_layer *ivilayer,
-	    struct ivi_layout_surface *ivisurf)
+	    struct ivi_layout_view *ivi_view)
 {
-	struct weston_view *tmpview;
+	struct ivi_layout_surface *ivisurf;
 	struct ivi_rectangle r;
 	bool can_calc = true;
+
+	assert(ivi_view->on_layer == ivilayer);
+
+	ivisurf = ivi_view->ivisurf;
 
 	/*In case of no prop change, this just returns*/
 	if (!ivilayer->prop.event_mask && !ivisurf->prop.event_mask)
 		return;
 
-	update_opacity(ivilayer, ivisurf);
-
-	tmpview = get_weston_view(ivisurf);
-	assert(tmpview != NULL);
+	update_opacity(ivilayer, ivisurf, ivi_view->view);
 
 	if (ivisurf->prop.source_width == 0 || ivisurf->prop.source_height == 0) {
 		weston_log("ivi-shell: source rectangle is not yet set by ivi_layout_surface_set_source_rectangle\n");
@@ -589,22 +646,22 @@ update_prop(struct ivi_layout_screen  *iviscrn,
 	}
 
 	if (can_calc) {
-		wl_list_remove(&ivisurf->transform.link);
-		weston_matrix_init(&ivisurf->transform.matrix);
+		wl_list_remove(&ivi_view->transform.link);
+		weston_matrix_init(&ivi_view->transform.matrix);
 
 		calc_surface_to_global_matrix_and_mask_to_weston_surface(
-			iviscrn, ivilayer, ivisurf, &ivisurf->transform.matrix, &r);
+			iviscrn, ivilayer, ivisurf, &ivi_view->transform.matrix, &r);
 
-		weston_view_set_mask(tmpview, r.x, r.y, r.width, r.height);
-		wl_list_insert(&tmpview->geometry.transformation_list,
-			       &ivisurf->transform.link);
+		weston_view_set_mask(ivi_view->view, r.x, r.y, r.width, r.height);
+		wl_list_insert(&ivi_view->view->geometry.transformation_list,
+			       &ivi_view->transform.link);
 
-		weston_view_set_transform_parent(tmpview, NULL);
+		weston_view_set_transform_parent(ivi_view->view, NULL);
 	}
 
 	ivisurf->update_count++;
 
-	weston_view_geometry_dirty(tmpview);
+	weston_view_geometry_dirty(ivi_view->view);
 
 	weston_surface_damage(ivisurf->surface);
 }
@@ -614,7 +671,7 @@ commit_changes(struct ivi_layout *layout)
 {
 	struct ivi_layout_screen  *iviscrn  = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
-	struct ivi_layout_surface *ivisurf  = NULL;
+	struct ivi_layout_view *ivi_view  = NULL;
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
@@ -625,15 +682,15 @@ commit_changes(struct ivi_layout *layout)
 			if (ivilayer->prop.visibility == false)
 				continue;
 
-			wl_list_for_each(ivisurf, &ivilayer->order.surface_list, order.link) {
+			wl_list_for_each(ivi_view, &ivilayer->order.view_list, order_link) {
 				/*
 				 * If ivilayer is invisible, weston_view of ivisurf doesn't
 				 * need to be modified.
 				 */
-				if (ivisurf->prop.visibility == false)
+				if (ivi_view->ivisurf->prop.visibility == false)
 					continue;
 
-				update_prop(iviscrn, ivilayer, ivisurf);
+				update_prop(iviscrn, ivilayer, ivi_view);
 			}
 		}
 	}
@@ -744,9 +801,9 @@ commit_surface_list(struct ivi_layout *layout)
 static void
 commit_layer_list(struct ivi_layout *layout)
 {
+	struct ivi_layout_view *ivi_view = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
-	struct ivi_layout_surface *ivisurf  = NULL;
-	struct ivi_layout_surface *next     = NULL;
+	struct ivi_layout_view *next     = NULL;
 
 	wl_list_for_each(ivilayer, &layout->layer_list, link) {
 		if (ivilayer->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_LAYER_MOVE) {
@@ -765,23 +822,20 @@ commit_layer_list(struct ivi_layout *layout)
 			continue;
 		}
 
-		wl_list_for_each_safe(ivisurf, next, &ivilayer->order.surface_list,
-					 order.link) {
-			ivisurf->on_layer = NULL;
-			wl_list_remove(&ivisurf->order.link);
-			wl_list_init(&ivisurf->order.link);
-			ivisurf->prop.event_mask |= IVI_NOTIFICATION_REMOVE;
+		wl_list_for_each_safe(ivi_view, next, &ivilayer->order.view_list,
+					 order_link) {
+			wl_list_remove(&ivi_view->order_link);
+			wl_list_init(&ivi_view->order_link);
+			ivi_view->ivisurf->prop.event_mask |= IVI_NOTIFICATION_REMOVE;
 		}
 
-		assert(wl_list_empty(&ivilayer->order.surface_list));
+		assert(wl_list_empty(&ivilayer->order.view_list));
 
-		wl_list_for_each(ivisurf, &ivilayer->pending.surface_list,
-					 pending.link) {
-			wl_list_remove(&ivisurf->order.link);
-			wl_list_insert(&ivilayer->order.surface_list,
-				       &ivisurf->order.link);
-			ivisurf->on_layer = ivilayer;
-			ivisurf->prop.event_mask |= IVI_NOTIFICATION_ADD;
+		wl_list_for_each(ivi_view, &ivilayer->pending.view_list,
+					 pending_link) {
+			wl_list_remove(&ivi_view->order_link);
+			wl_list_insert(&ivilayer->order.view_list, &ivi_view->order_link);
+			ivi_view->ivisurf->prop.event_mask |= IVI_NOTIFICATION_ADD;
 		}
 
 		ivilayer->order.dirty = 0;
@@ -794,8 +848,7 @@ commit_screen_list(struct ivi_layout *layout)
 	struct ivi_layout_screen  *iviscrn  = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
 	struct ivi_layout_layer   *next     = NULL;
-	struct ivi_layout_surface *ivisurf  = NULL;
-	struct weston_view *tmpview = NULL;
+	struct ivi_layout_view *ivi_view = NULL;
 
 	/* Clear view list of layout ivi_layer */
 	wl_list_init(&layout->layout_layer.view_list.link);
@@ -830,17 +883,14 @@ commit_screen_list(struct ivi_layout *layout)
 			if (ivilayer->prop.visibility == false)
 				continue;
 
-			wl_list_for_each(ivisurf, &ivilayer->order.surface_list, order.link) {
-				if (ivisurf->prop.visibility == false)
+			wl_list_for_each(ivi_view, &ivilayer->order.view_list, order_link) {
+				if (ivi_view->ivisurf->prop.visibility == false)
 					continue;
 
-				tmpview = get_weston_view(ivisurf);
-				assert(tmpview != NULL);
-
 				weston_layer_entry_insert(&layout->layout_layer.view_list,
-							  &tmpview->layer_link);
+							  &ivi_view->view->layer_link);
 
-				ivisurf->surface->output = iviscrn->output;
+				ivi_view->view->output = iviscrn->output;
 			}
 		}
 	}
@@ -893,29 +943,15 @@ send_prop(struct ivi_layout *layout)
 }
 
 static void
-clear_surface_pending_list(struct ivi_layout_layer *ivilayer)
+clear_view_pending_list(struct ivi_layout_layer *ivilayer)
 {
-	struct ivi_layout_surface *surface_link = NULL;
-	struct ivi_layout_surface *surface_next = NULL;
+	struct ivi_layout_view *view_link = NULL;
+	struct ivi_layout_view *view_next = NULL;
 
-	wl_list_for_each_safe(surface_link, surface_next,
-			      &ivilayer->pending.surface_list, pending.link) {
-		wl_list_remove(&surface_link->pending.link);
-		wl_list_init(&surface_link->pending.link);
-	}
-}
-
-static void
-clear_surface_order_list(struct ivi_layout_layer *ivilayer)
-{
-	struct ivi_layout_surface *surface_link = NULL;
-	struct ivi_layout_surface *surface_next = NULL;
-
-	wl_list_for_each_safe(surface_link, surface_next,
-			      &ivilayer->order.surface_list, order.link) {
-		wl_list_remove(&surface_link->order.link);
-		wl_list_init(&surface_link->order.link);
-		surface_link->on_layer = NULL;
+	wl_list_for_each_safe(view_link, view_next,
+			      &ivilayer->pending.view_list, pending_link) {
+		wl_list_remove(&view_link->pending_link);
+		wl_list_init(&view_link->pending_link);
 	}
 }
 
@@ -1171,6 +1207,7 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 				    int32_t *pLength,
 				    struct ivi_layout_layer ***ppArray)
 {
+	struct ivi_layout_view *ivi_view;
 	int32_t length = 0;
 	int32_t n = 0;
 
@@ -1179,19 +1216,29 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 		return IVI_FAILED;
 	}
 
-	if (ivisurf->on_layer != NULL) {
-		/* the Array must be freed by module which called this function */
-		length = 1;
-		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
+	if (!wl_list_empty(&ivisurf->view_list)) {
+		/* the Array must be free by module which called this function */
+		length = wl_list_length(&ivisurf->view_list);
+		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
 			return IVI_FAILED;
 		}
 
-		(*ppArray)[n++] = ivisurf->on_layer;
+		wl_list_for_each_reverse(ivi_view, &ivisurf->view_list, surf_link) {
+			if (ivi_view_is_rendered(ivi_view))
+				(*ppArray)[n++] = ivi_view->on_layer;
+			else
+				length--;
+		}
 	}
 
 	*pLength = length;
+
+	if (!length) {
+		free(*ppArray);
+		*ppArray = NULL;
+	}
 
 	return IVI_SUCCEEDED;
 }
@@ -1235,7 +1282,7 @@ ivi_layout_get_surfaces_on_layer(struct ivi_layout_layer *ivilayer,
 				 int32_t *pLength,
 				 struct ivi_layout_surface ***ppArray)
 {
-	struct ivi_layout_surface *ivisurf = NULL;
+	struct ivi_layout_view *ivi_view = NULL;
 	int32_t length = 0;
 	int32_t n = 0;
 
@@ -1244,7 +1291,7 @@ ivi_layout_get_surfaces_on_layer(struct ivi_layout_layer *ivilayer,
 		return IVI_FAILED;
 	}
 
-	length = wl_list_length(&ivilayer->order.surface_list);
+	length = wl_list_length(&ivilayer->order.view_list);
 
 	if (length != 0) {
 		/* the Array must be freed by module which called this function */
@@ -1254,8 +1301,8 @@ ivi_layout_get_surfaces_on_layer(struct ivi_layout_layer *ivilayer,
 			return IVI_FAILED;
 		}
 
-		wl_list_for_each(ivisurf, &ivilayer->order.surface_list, order.link) {
-			(*ppArray)[n++] = ivisurf;
+		wl_list_for_each(ivi_view, &ivilayer->order.view_list, order_link) {
+			(*ppArray)[n++] = ivi_view->ivisurf;
 		}
 	}
 
@@ -1291,11 +1338,11 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 
 	init_layer_properties(&ivilayer->prop, width, height);
 
-	wl_list_init(&ivilayer->pending.surface_list);
+	wl_list_init(&ivilayer->pending.view_list);
 	wl_list_init(&ivilayer->pending.link);
 	ivilayer->pending.prop = ivilayer->prop;
 
-	wl_list_init(&ivilayer->order.surface_list);
+	wl_list_init(&ivilayer->order.view_list);
 	wl_list_init(&ivilayer->order.link);
 
 	wl_list_insert(&layout->layer_list, &ivilayer->link);
@@ -1309,6 +1356,7 @@ static void
 ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 {
 	struct ivi_layout *layout = get_instance();
+	struct ivi_layout_view *ivi_view, *next;
 
 	if (ivilayer == NULL) {
 		weston_log("ivi_layout_layer_remove: invalid argument\n");
@@ -1318,10 +1366,13 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	if (--ivilayer->ref_count > 0)
 		return;
 
-	wl_signal_emit(&layout->layer_notification.removed, ivilayer);
+	/*Destroy all ivi_views*/
+	wl_list_for_each_safe(ivi_view, next, &layout->view_list, link) {
+		if (ivi_view->on_layer == ivilayer)
+			ivi_view_destroy(ivi_view);
+	}
 
-	clear_surface_pending_list(ivilayer);
-	clear_surface_order_list(ivilayer);
+	wl_signal_emit(&layout->layer_notification.removed, ivilayer);
 
 	wl_list_remove(&ivilayer->pending.link);
 	wl_list_remove(&ivilayer->order.link);
@@ -1460,18 +1511,24 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  int32_t number)
 {
 	int32_t i = 0;
+	struct ivi_layout_view * ivi_view;
 
 	if (ivilayer == NULL) {
 		weston_log("ivi_layout_layer_set_render_order: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	clear_surface_pending_list(ivilayer);
+	clear_view_pending_list(ivilayer);
 
 	for (i = 0; i < number; i++) {
-		wl_list_remove(&pSurface[i]->pending.link);
-		wl_list_insert(&ivilayer->pending.surface_list,
-				&pSurface[i]->pending.link);
+		ivi_view = get_ivi_view(ivilayer, pSurface[i]);
+		if (!ivi_view)
+			ivi_view = ivi_view_create(ivilayer, pSurface[i]);
+
+		assert(ivi_view != NULL);
+
+		wl_list_remove(&ivi_view->pending_link);
+		wl_list_insert(&ivilayer->pending.view_list, &ivi_view->pending_link);
 	}
 
 	ivilayer->order.dirty = 1;
@@ -1709,16 +1766,21 @@ static int32_t
 ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 			     struct ivi_layout_surface *addsurf)
 {
+	struct ivi_layout_view *ivi_view;
+
 	if (ivilayer == NULL || addsurf == NULL) {
 		weston_log("ivi_layout_layer_add_surface: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	if (addsurf->on_layer == ivilayer)
+	ivi_view = get_ivi_view(ivilayer, addsurf);
+	if (!ivi_view)
+		ivi_view = ivi_view_create(ivilayer, addsurf);
+	else if (ivi_view_is_rendered(ivi_view))
 		return IVI_SUCCEEDED;
 
-	wl_list_remove(&addsurf->pending.link);
-	wl_list_insert(&ivilayer->pending.surface_list, &addsurf->pending.link);
+	wl_list_remove(&ivi_view->pending_link);
+	wl_list_insert(&ivilayer->pending.view_list, &ivi_view->pending_link);
 
 	ivilayer->order.dirty = 1;
 
@@ -1729,15 +1791,20 @@ static void
 ivi_layout_layer_remove_surface(struct ivi_layout_layer *ivilayer,
 				struct ivi_layout_surface *remsurf)
 {
+	struct ivi_layout_view *ivi_view;
+
 	if (ivilayer == NULL || remsurf == NULL) {
 		weston_log("ivi_layout_layer_remove_surface: invalid argument\n");
 		return;
 	}
 
-	wl_list_remove(&remsurf->pending.link);
-	wl_list_init(&remsurf->pending.link);
+	ivi_view = get_ivi_view(ivilayer, remsurf);
+	if (ivi_view) {
+		wl_list_remove(&ivi_view->pending_link);
+		wl_list_init(&ivi_view->pending_link);
 
-	ivilayer->order.dirty = 1;
+		ivilayer->order.dirty = 1;
+	}
 }
 
 static int32_t
@@ -1893,7 +1960,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 {
 	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_surface *ivisurf = NULL;
-	struct weston_view *tmpview = NULL;
 
 	if (wl_surface == NULL) {
 		weston_log("ivi_layout_surface_create: invalid argument\n");
@@ -1920,16 +1986,8 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 
 	ivisurf->surface = wl_surface;
 
-	tmpview = weston_view_create(wl_surface);
-	if (tmpview == NULL) {
-		weston_log("fails to allocate memory\n");
-	}
-
 	ivisurf->surface->width_from_buffer  = 0;
 	ivisurf->surface->height_from_buffer = 0;
-
-	weston_matrix_init(&ivisurf->transform.matrix);
-	wl_list_init(&ivisurf->transform.link);
 
 	init_surface_properties(&ivisurf->prop);
 
@@ -1938,6 +1996,8 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 
 	wl_list_init(&ivisurf->order.link);
 	wl_list_init(&ivisurf->order.layer_list);
+
+	wl_list_init(&ivisurf->view_list);
 
 	wl_list_insert(&layout->surface_list, &ivisurf->link);
 
@@ -1956,6 +2016,7 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 	wl_list_init(&layout->surface_list);
 	wl_list_init(&layout->layer_list);
 	wl_list_init(&layout->screen_list);
+	wl_list_init(&layout->view_list);
 
 	wl_signal_init(&layout->layer_notification.created);
 	wl_signal_init(&layout->layer_notification.removed);
