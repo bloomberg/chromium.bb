@@ -11,8 +11,8 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
-#include "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
+#include "mojo/public/cpp/bindings/tests/pickled_types_blink.h"
+#include "mojo/public/cpp/bindings/tests/pickled_types_chromium.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
@@ -49,6 +49,27 @@ base::Callback<void(const T&)> Fail(const std::string& reason) {
 }
 
 template <typename T>
+void DoExpectEnumResult(T expected, const base::Closure& callback, T actual) {
+  EXPECT_EQ(expected, actual);
+  callback.Run();
+}
+
+template <typename T>
+base::Callback<void(T)> ExpectEnumResult(T t, const base::Closure& callback) {
+  return base::Bind(&DoExpectEnumResult<T>, t, callback);
+}
+
+template <typename T>
+void DoEnumFail(const std::string& reason, T) {
+  EXPECT_TRUE(false) << reason;
+}
+
+template <typename T>
+base::Callback<void(T)> EnumFail(const std::string& reason) {
+  return base::Bind(&DoEnumFail<T>, reason);
+}
+
+template <typename T>
 void ExpectError(InterfacePtr<T>* proxy, const base::Closure& callback) {
   proxy->set_connection_error_handler(callback);
 }
@@ -59,8 +80,13 @@ class ChromiumPicklePasserImpl : public PicklePasser {
   ChromiumPicklePasserImpl() {}
 
   // mojo::test::PicklePasser:
-  void PassPickle(const PickledStructChromium& pickle,
-                  const PassPickleCallback& callback) override {
+  void PassPickledStruct(const PickledStructChromium& pickle,
+                         const PassPickledStructCallback& callback) override {
+    callback.Run(pickle);
+  }
+
+  void PassPickledEnum(PickledEnumChromium pickle,
+                       const PassPickledEnumCallback& callback) override {
     callback.Run(pickle);
   }
 
@@ -87,8 +113,13 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
   BlinkPicklePasserImpl() {}
 
   // mojo::test::blink::PicklePasser:
-  void PassPickle(const PickledStructBlink& pickle,
-                  const PassPickleCallback& callback) override {
+  void PassPickledStruct(const PickledStructBlink& pickle,
+                         const PassPickledStructCallback& callback) override {
+    callback.Run(pickle);
+  }
+
+  void PassPickledEnum(PickledEnumBlink pickle,
+                       const PassPickledEnumCallback& callback) override {
     callback.Run(pickle);
   }
 
@@ -149,16 +180,24 @@ TEST_F(PickleTest, ChromiumProxyToChromiumService) {
   auto chromium_proxy = ConnectToChromiumService();
   {
     base::RunLoop loop;
-    chromium_proxy->PassPickle(
+    chromium_proxy->PassPickledStruct(
         PickledStructChromium(1, 2),
         ExpectResult(PickledStructChromium(1, 2), loop.QuitClosure()));
     loop.Run();
   }
   {
     base::RunLoop loop;
-    chromium_proxy->PassPickle(
+    chromium_proxy->PassPickledStruct(
         PickledStructChromium(4, 5),
         ExpectResult(PickledStructChromium(4, 5), loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    chromium_proxy->PassPickledEnum(
+        PickledEnumChromium::VALUE_1,
+        ExpectEnumResult(PickledEnumChromium::VALUE_1, loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -167,14 +206,14 @@ TEST_F(PickleTest, ChromiumProxyToBlinkService) {
   auto chromium_proxy = ConnectToBlinkService<PicklePasser>();
   {
     base::RunLoop loop;
-    chromium_proxy->PassPickle(
+    chromium_proxy->PassPickledStruct(
         PickledStructChromium(1, 2),
         ExpectResult(PickledStructChromium(1, 2), loop.QuitClosure()));
     loop.Run();
   }
   {
     base::RunLoop loop;
-    chromium_proxy->PassPickle(
+    chromium_proxy->PassPickledStruct(
         PickledStructChromium(4, 5),
         ExpectResult(PickledStructChromium(4, 5), loop.QuitClosure()));
     loop.Run();
@@ -183,9 +222,29 @@ TEST_F(PickleTest, ChromiumProxyToBlinkService) {
   // PickledStructBlink ParamTraits deserializer rejects negative values.
   {
     base::RunLoop loop;
-    chromium_proxy->PassPickle(
+    chromium_proxy->PassPickledStruct(
         PickledStructChromium(-1, -1),
         Fail<PickledStructChromium>("Blink service should reject this."));
+    ExpectError(&chromium_proxy, loop.QuitClosure());
+    loop.Run();
+  }
+
+  chromium_proxy = ConnectToBlinkService<PicklePasser>();
+  {
+    base::RunLoop loop;
+    chromium_proxy->PassPickledEnum(
+        PickledEnumChromium::VALUE_0,
+        ExpectEnumResult(PickledEnumChromium::VALUE_0, loop.QuitClosure()));
+    loop.Run();
+  }
+
+  // The Blink service should drop our connection because the
+  // PickledEnumBlink ParamTraits deserializer rejects this value.
+  {
+    base::RunLoop loop;
+    chromium_proxy->PassPickledEnum(
+        PickledEnumChromium::VALUE_2,
+        EnumFail<PickledEnumChromium>("Blink service should reject this."));
     ExpectError(&chromium_proxy, loop.QuitClosure());
     loop.Run();
   }
@@ -195,9 +254,17 @@ TEST_F(PickleTest, BlinkProxyToBlinkService) {
   auto blink_proxy = ConnectToBlinkService();
   {
     base::RunLoop loop;
-    blink_proxy->PassPickle(
+    blink_proxy->PassPickledStruct(
         PickledStructBlink(1, 1),
         ExpectResult(PickledStructBlink(1, 1), loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    blink_proxy->PassPickledEnum(
+        PickledEnumBlink::VALUE_0,
+        ExpectEnumResult(PickledEnumBlink::VALUE_0, loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -206,9 +273,17 @@ TEST_F(PickleTest, BlinkProxyToChromiumService) {
   auto blink_proxy = ConnectToChromiumService<blink::PicklePasser>();
   {
     base::RunLoop loop;
-    blink_proxy->PassPickle(
+    blink_proxy->PassPickledStruct(
         PickledStructBlink(1, 1),
         ExpectResult(PickledStructBlink(1, 1), loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    blink_proxy->PassPickledEnum(
+        PickledEnumBlink::VALUE_1,
+        ExpectEnumResult(PickledEnumBlink::VALUE_1, loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -292,9 +367,10 @@ TEST_F(PickleTest, PickleArrayArray) {
 TEST_F(PickleTest, PickleContainer) {
   auto proxy = ConnectToChromiumService();
   PickleContainerPtr pickle_container = PickleContainer::New();
-  pickle_container->pickle.set_foo(42);
-  pickle_container->pickle.set_bar(43);
-  pickle_container->pickle.set_baz(44);
+  pickle_container->f_struct.set_foo(42);
+  pickle_container->f_struct.set_bar(43);
+  pickle_container->f_struct.set_baz(44);
+  pickle_container->f_enum = PickledEnumChromium::VALUE_1;
   EXPECT_TRUE(pickle_container.Equals(pickle_container));
   EXPECT_FALSE(pickle_container.Equals(PickleContainer::New()));
   {
@@ -302,9 +378,11 @@ TEST_F(PickleTest, PickleContainer) {
     proxy->PassPickleContainer(std::move(pickle_container),
                                [&](PickleContainerPtr passed) {
                                  ASSERT_FALSE(passed.is_null());
-                                 EXPECT_EQ(42, passed->pickle.foo());
-                                 EXPECT_EQ(43, passed->pickle.bar());
-                                 EXPECT_EQ(0, passed->pickle.baz());
+                                 EXPECT_EQ(42, passed->f_struct.foo());
+                                 EXPECT_EQ(43, passed->f_struct.bar());
+                                 EXPECT_EQ(0, passed->f_struct.baz());
+                                 EXPECT_EQ(PickledEnumChromium::VALUE_1,
+                                           passed->f_enum);
                                  run_loop.Quit();
                                });
     run_loop.Run();

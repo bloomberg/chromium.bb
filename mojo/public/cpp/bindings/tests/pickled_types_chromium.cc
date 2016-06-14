@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
+#include "mojo/public/cpp/bindings/tests/pickled_types_chromium.h"
 
 #include "base/pickle.h"
 
@@ -12,8 +12,7 @@ namespace test {
 PickledStructChromium::PickledStructChromium() {}
 
 PickledStructChromium::PickledStructChromium(int foo, int bar)
-    : foo_(foo), bar_(bar) {
-}
+    : foo_(foo), bar_(bar) {}
 
 PickledStructChromium::~PickledStructChromium() {}
 
@@ -53,5 +52,18 @@ bool ParamTraits<mojo::test::PickledStructChromium>::Read(
   p->set_bar(bar);
   return true;
 }
+
+#include "ipc/param_traits_size_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
+                          mojo::test::PickledEnumChromium::VALUE_2)
+#include "ipc/param_traits_write_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
+                          mojo::test::PickledEnumChromium::VALUE_2)
+#include "ipc/param_traits_read_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
+                          mojo::test::PickledEnumChromium::VALUE_2)
+#include "ipc/param_traits_log_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
+                          mojo::test::PickledEnumChromium::VALUE_2)
 
 }  // namespace IPC

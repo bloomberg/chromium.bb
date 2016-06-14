@@ -99,7 +99,9 @@ def _EnumToDict(enum):
 
   assert isinstance(enum, ast.Enum)
   data = {'name': enum.name,
-          'fields': map(EnumValueToDict, enum.enum_value_list)}
+          'native_only': enum.enum_value_list is None }
+  if not data['native_only']:
+    data.update({'fields': map(EnumValueToDict, enum.enum_value_list)})
   _AddOptional(data, 'attributes', _AttributeListToDict(enum.attribute_list))
   return data
 

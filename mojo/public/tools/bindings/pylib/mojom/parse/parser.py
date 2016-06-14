@@ -345,12 +345,17 @@ class Parser(object):
                        snippet=self._GetSnippet(p.lineno(1)))
     p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
 
-  def p_enum(self, p):
+  def p_enum_1(self, p):
     """enum : attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
                   RBRACE SEMI
             | attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
                   COMMA RBRACE SEMI"""
     p[0] = ast.Enum(p[3], p[1], p[5], filename=self.filename,
+                    lineno=p.lineno(2))
+
+  def p_enum_2(self, p):
+    """enum : attribute_section ENUM NAME SEMI"""
+    p[0] = ast.Enum(p[3], p[1], None, filename=self.filename,
                     lineno=p.lineno(2))
 
   def p_nonempty_enum_value_list_1(self, p):

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
+#include "mojo/public/cpp/bindings/tests/pickled_types_blink.h"
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -50,5 +50,18 @@ bool ParamTraits<mojo::test::PickledStructBlink>::Read(
   p->set_bar(bar);
   return true;
 }
+
+#include "ipc/param_traits_size_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
+                          mojo::test::PickledEnumBlink::VALUE_1)
+#include "ipc/param_traits_write_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
+                          mojo::test::PickledEnumBlink::VALUE_1)
+#include "ipc/param_traits_read_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
+                          mojo::test::PickledEnumBlink::VALUE_1)
+#include "ipc/param_traits_log_macros.h"
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
+                          mojo::test::PickledEnumBlink::VALUE_1)
 
 }  // namespace IPC

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_CHROMIUM_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_CHROMIUM_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_CHROMIUM_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_CHROMIUM_H_
 
 #include <stddef.h>
 
 #include <string>
 
 #include "base/macros.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
 namespace base {
@@ -21,8 +22,11 @@ class PickleSizer;
 namespace mojo {
 namespace test {
 
-// An implementation of a hypothetical PickledStruct type specifically for
-// consumers in the greater Chromium tree.
+// Implementation of types with IPC::ParamTraits for consumers in the greater
+// Chromium tree.
+
+enum class PickledEnumChromium { VALUE_0, VALUE_1, VALUE_2 };
+
 class PickledStructChromium {
  public:
   PickledStructChromium();
@@ -50,8 +54,7 @@ class PickledStructChromium {
   DISALLOW_COPY_AND_ASSIGN(PickledStructChromium);
 };
 
-bool operator==(const PickledStructChromium& a,
-                const PickledStructChromium& b);
+bool operator==(const PickledStructChromium& a, const PickledStructChromium& b);
 
 }  // namespace test
 }  // namespace mojo
@@ -72,4 +75,7 @@ struct ParamTraits<mojo::test::PickledStructChromium> {
 
 }  // namespace IPC
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_CHROMIUM_H_
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
+                          mojo::test::PickledEnumChromium::VALUE_2)
+
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_CHROMIUM_H_

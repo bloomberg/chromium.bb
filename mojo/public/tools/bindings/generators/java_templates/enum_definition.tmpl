@@ -18,12 +18,14 @@ public {{ 'static ' if not top_level }}final class {{enum|name}} {
     private static final boolean IS_EXTENSIBLE = {% if enum.extensible %}true{% else %}false{% endif %};
 
     public static boolean isKnownValue(int value) {
+{%- if enum.fields %}
         switch (value) {
-{%- for enum_field in enum.fields|groupby('numeric_value') %}
+{%-   for enum_field in enum.fields|groupby('numeric_value') %}
             case {{enum_field[0]}}:
-{%- endfor %}
+{%-   endfor %}
                 return true;
         }
+{%- endif %}
         return false;
     }
 

@@ -136,7 +136,8 @@ def IsTypemappedKind(kind):
       GetFullMojomNameForKind(kind) in _current_typemap
 
 def IsNativeOnlyKind(kind):
-  return mojom.IsStructKind(kind) and kind.native_only
+  return (mojom.IsStructKind(kind) or mojom.IsEnumKind(kind)) and \
+      kind.native_only
 
 def GetNativeTypeName(typemapped_kind):
   return _current_typemap[GetFullMojomNameForKind(typemapped_kind)]["typename"]

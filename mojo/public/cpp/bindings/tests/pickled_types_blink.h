@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_BLINK_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_BLINK_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_BLINK_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_BLINK_H_
 
 #include <stddef.h>
 
@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
 namespace base {
@@ -22,9 +23,10 @@ class PickleSizer;
 namespace mojo {
 namespace test {
 
-// An implementation of a hypothetical PickledStruct type specifically for
-// consumers in Blink.
-//
+// Implementation of types with IPC::ParamTraits for consumers in Blink.
+
+enum class PickledEnumBlink { VALUE_0, VALUE_1 };
+
 // To make things slightly more interesting, this variation of the type doesn't
 // support negative values. It'll DCHECK if you try to construct it with any,
 // and it will fail deserialization if negative values are decoded.
@@ -75,4 +77,7 @@ struct ParamTraits<mojo::test::PickledStructBlink> {
 
 }  // namespace IPC
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_BLINK_H_
+IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
+                          mojo::test::PickledEnumBlink::VALUE_1)
+
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_TYPES_BLINK_H_

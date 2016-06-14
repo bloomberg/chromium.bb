@@ -19,12 +19,14 @@ struct {{enum.name}}_Data {
   static bool const kIsExtensible = {% if enum.extensible %}true{% else %}false{% endif %};
 
   static bool IsKnownValue(int32_t value) {
+{%- if enum.fields %}
     switch (value) {
-{%- for enum_field in enum.fields|groupby('numeric_value') %}
+{%-   for enum_field in enum.fields|groupby('numeric_value') %}
       case {{enum_field[0]}}:
-{%- endfor %}
+{%-   endfor %}
         return true;
     }
+{%- endif %}
     return false;
   }
 

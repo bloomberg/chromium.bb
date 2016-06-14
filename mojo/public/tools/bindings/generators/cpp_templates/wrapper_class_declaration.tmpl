@@ -7,7 +7,11 @@ class {{struct.name}} {
 
 {#--- Enums #}
 {%- for enum in struct.enums -%}
+{%-   if enum|is_native_only_kind %}
+  using {{enum.name}} = mojo::NativeEnum;
+{%-   else %}
   {{enum_decl(enum)|indent(2)}}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Constants #}

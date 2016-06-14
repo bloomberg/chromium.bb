@@ -66,7 +66,7 @@ struct NativeStructSerializerImpl {
                           UserType* out,
                           SerializationContext* context) {
     if (!data)
-      return true;
+      return false;
 
     // Construct a temporary base::Pickle view over the array data. Note that
     // the Array_Data is laid out like this:

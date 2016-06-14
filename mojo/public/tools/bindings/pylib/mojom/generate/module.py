@@ -611,6 +611,7 @@ class Enum(Kind):
   def __init__(self, name=None, module=None, attributes=None):
     self.module = module
     self.name = name
+    self.native_only = False
     self.imported_from = None
     if name is not None:
       spec = 'x:' + name

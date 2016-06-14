@@ -4,12 +4,15 @@
 
 mojom = "//mojo/public/interfaces/bindings/tests/test_native_types.mojom"
 public_headers =
-    [ "//mojo/public/cpp/bindings/tests/pickled_struct_chromium.h" ]
+    [ "//mojo/public/cpp/bindings/tests/pickled_types_chromium.h" ]
 sources = [
-  "//mojo/public/cpp/bindings/tests/pickled_struct_chromium.cc",
+  "//mojo/public/cpp/bindings/tests/pickled_types_chromium.cc",
 ]
 deps = [
-  "//ipc:param_traits",
+  "//ipc",
 ]
 
-type_mappings = [ "mojo.test.PickledStruct=mojo::test::PickledStructChromium" ]
+type_mappings = [
+  "mojo.test.PickledEnum=mojo::test::PickledEnumChromium",
+  "mojo.test.PickledStruct=mojo::test::PickledStructChromium"
+]

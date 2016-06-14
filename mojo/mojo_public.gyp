@@ -148,6 +148,8 @@
         'public/cpp/bindings/lib/message_internal.h',
         'public/cpp/bindings/lib/multiplex_router.cc',
         'public/cpp/bindings/lib/multiplex_router.h',
+        'public/cpp/bindings/lib/native_enum_data.h',
+        'public/cpp/bindings/lib/native_enum_serialization.h',
         'public/cpp/bindings/lib/native_struct.cc',
         'public/cpp/bindings/lib/native_struct_data.cc',
         'public/cpp/bindings/lib/native_struct_data.h',
@@ -187,6 +189,7 @@
         'public/cpp/bindings/map_traits_stl.h',
         'public/cpp/bindings/message.h',
         'public/cpp/bindings/message_filter.h',
+        'public/cpp/bindings/native_enum.h',
         'public/cpp/bindings/native_struct.h',
         'public/cpp/bindings/no_interface.h',
         'public/cpp/bindings/scoped_interface_endpoint_handle.h',
@@ -361,9 +364,10 @@
         'mojo_cpp_bindings',
       ],
       'sources': [
-        'public/cpp/bindings/tests/pickled_struct_chromium.cc',
+        'public/cpp/bindings/tests/pickled_types_chromium.cc',
       ],
       'dependencies': [
+        '../ipc/ipc.gyp:ipc',
         'mojo_public_test_interfaces_mojom',
         'mojo_cpp_bindings',
       ],
@@ -490,9 +494,10 @@
             'mojo_cpp_bindings',
           ],
           'sources': [
-            'public/cpp/bindings/tests/pickled_struct_blink.cc',
+            'public/cpp/bindings/tests/pickled_types_blink.cc',
           ],
           'dependencies': [
+            '../ipc/ipc.gyp:ipc',
             'mojo_public_test_interfaces_mojom_blink',
             'mojo_cpp_bindings',
           ],

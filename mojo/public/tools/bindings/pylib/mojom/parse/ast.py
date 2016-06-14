@@ -138,7 +138,7 @@ class Enum(Definition):
 
   def __init__(self, name, attribute_list, enum_value_list, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
-    assert isinstance(enum_value_list, EnumValueList)
+    assert enum_value_list is None or isinstance(enum_value_list, EnumValueList)
     super(Enum, self).__init__(name, **kwargs)
     self.attribute_list = attribute_list
     self.enum_value_list = enum_value_list

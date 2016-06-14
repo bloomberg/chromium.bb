@@ -3,9 +3,15 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/public/interfaces/bindings/tests/test_native_types.mojom"
-public_headers = [ "//mojo/public/cpp/bindings/tests/pickled_struct_blink.h" ]
+public_headers = [ "//mojo/public/cpp/bindings/tests/pickled_types_blink.h" ]
 sources = [
-  "//mojo/public/cpp/bindings/tests/pickled_struct_blink.cc",
+  "//mojo/public/cpp/bindings/tests/pickled_types_blink.cc",
+]
+deps = [
+  "//ipc",
 ]
 
-type_mappings = [ "mojo.test.PickledStruct=mojo::test::PickledStructBlink" ]
+type_mappings = [
+  "mojo.test.PickledEnum=mojo::test::PickledEnumBlink",
+  "mojo.test.PickledStruct=mojo::test::PickledStructBlink"
+]

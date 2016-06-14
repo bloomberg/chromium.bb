@@ -27,7 +27,11 @@ class {{interface.name}} {
 {#--- Enums #}
 {% from "enum_macros.tmpl" import enum_decl -%}
 {%- for enum in interface.enums %}
+{%-   if enum|is_native_only_kind %}
+  using {{enum.name}} = mojo::NativeEnum;
+{%-   else %}
   {{enum_decl(enum)|indent(2)}}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Constants #}

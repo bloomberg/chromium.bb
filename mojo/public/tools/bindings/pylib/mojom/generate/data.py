@@ -405,18 +405,30 @@ def ResolveNumericEnumValues(enum_fields):
 def EnumFromData(module, data, parent_kind):
   enum = mojom.Enum(module=module)
   enum.name = data['name']
+  enum.native_only = data['native_only']
   name = enum.name
   if parent_kind:
     name = parent_kind.name + '.' + name
   enum.spec = 'x:%s.%s' % (module.namespace, name)
   enum.parent_kind = parent_kind
-  enum.fields = map(
-      lambda field: EnumFieldFromData(module, enum, field, parent_kind),
-      data['fields'])
   enum.attributes = data.get('attributes')
-  ResolveNumericEnumValues(enum.fields)
+  if enum.native_only:
+    enum.fields = []
+  else:
+    enum.fields = map(
+        lambda field: EnumFieldFromData(module, enum, field, parent_kind),
+        data['fields'])
+    ResolveNumericEnumValues(enum.fields)
 
   module.kinds[enum.spec] = enum
+
+  # Enforce that a [Native] attribute is set to make native-only enum
+  # declarations more explicit.
+  if enum.native_only:
+    if not enum.attributes or not enum.attributes.get('Native', False):
+      raise Exception("Native-only enum declarations must include a " +
+                      "Native attribute.")
+
   return enum
 
 def ConstantFromData(module, data, parent_kind):
