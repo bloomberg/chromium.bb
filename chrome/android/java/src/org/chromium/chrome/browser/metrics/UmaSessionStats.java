@@ -173,10 +173,12 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
     private void updatePreferences() {
         PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance(mContext);
 
-        // Update cellular experiment preference.
-        boolean cellularExperiment = TextUtils.equals("true",
-                VariationsAssociatedData.getVariationParamValue(
-                        "UMA_EnableCellularLogUpload", "Enabled"));
+        // Update cellular experiment preference. Cellular experiment is ON by default.
+        boolean cellularExperiment = true;
+        if (TextUtils.equals("false", VariationsAssociatedData.getVariationParamValue(
+                                            "UMA_EnableCellularLogUpload", "Enabled"))) {
+            cellularExperiment = false;
+        }
         prefManager.setCellularExperiment(cellularExperiment);
 
         // Migrate to new preferences for cellular experiment.
