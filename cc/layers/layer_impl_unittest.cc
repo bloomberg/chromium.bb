@@ -300,17 +300,11 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       gfx::ScrollOffset(arbitrary_vector2d.x(), arbitrary_vector2d.y())));
 
   // Unrelated functions, always set to new values, always set needs update.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4));
-      layer->NoteLayerPropertyChanged());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true);
                                       layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true);
                                       layer->NoteLayerPropertyChanged());
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5));
-      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetPosition(arbitrary_point_f);
                                       layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->Set3dSortingContextId(1);

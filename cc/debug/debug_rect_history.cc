@@ -147,7 +147,7 @@ void DebugRectHistory::SaveScreenSpaceRects(
                       render_surface->screen_space_transform(),
                       render_surface->content_rect())));
 
-    if (render_surface_layer->replica_layer()) {
+    if (render_surface->HasReplica()) {
       debug_rects_.push_back(
           DebugRect(REPLICA_SCREEN_SPACE_RECT_TYPE,
                     MathUtil::MapEnclosingClippedRect(

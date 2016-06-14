@@ -301,11 +301,11 @@ class OcclusionTrackerTest : public testing::Test {
   void SetReplica(LayerImpl* owning_layer, std::unique_ptr<LayerImpl> layer) {
     // We need to set parent on replica layer for property tree building.
     layer->SetParent(owning_layer);
-    owning_layer->SetReplicaLayer(std::move(layer));
+    owning_layer->test_properties()->SetReplicaLayer(std::move(layer));
   }
 
   void SetMask(LayerImpl* owning_layer, std::unique_ptr<LayerImpl> layer) {
-    owning_layer->SetMaskLayer(std::move(layer));
+    owning_layer->test_properties()->SetMaskLayer(std::move(layer));
   }
 
   bool opaque_layers_;

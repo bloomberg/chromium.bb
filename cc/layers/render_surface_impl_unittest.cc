@@ -81,10 +81,10 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   scale.Scale(2, 2);
   surface->SetTransform(scale);
 
-  surface->SetMaskLayer(
+  surface->test_properties()->SetMaskLayer(
       FakeMaskLayerImpl::Create(impl.host_impl()->active_tree(), 4));
-  surface->mask_layer()->SetDrawsContent(true);
-  surface->mask_layer()->SetBounds(layer_size);
+  surface->test_properties()->mask_layer->SetDrawsContent(true);
+  surface->test_properties()->mask_layer->SetBounds(layer_size);
 
   std::unique_ptr<LayerImpl> child =
       LayerImpl::Create(impl.host_impl()->active_tree(), 5);
@@ -109,7 +109,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(
       render_pass.get(), render_surface_impl->draw_transform(), Occlusion(),
-      SK_ColorBLACK, 1.f, surface_raw->mask_layer(), &append_quads_data,
+      SK_ColorBLACK, 1.f, render_surface_impl->MaskLayer(), &append_quads_data,
       RenderPassId(1, 1));
 
   const RenderPassDrawQuad* quad =

@@ -68,7 +68,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
         target_surface->layer_list(), target_surface,
         target_surface->SurfacePropertyChangedOnlyFromDescendant(),
         target_surface->content_rect(),
-        render_surface_layer_list[index]->mask_layer(),
+        render_surface_layer_list[index]->render_surface()->MaskLayer(),
         render_surface_layer_list[index]->filters());
   }
 
@@ -1199,7 +1199,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
-    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
+    grand_child1->test_properties()->SetReplicaLayer(
+        std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;
     grand_child1->NoteLayerPropertyChanged();
   }
@@ -1254,7 +1255,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   // CASE 3: removing the reflection should cause the entire region including
   //         reflection to damage the target surface.
   ClearDamageForAllSurfaces(root);
-  grand_child1->SetReplicaLayer(nullptr);
+  grand_child1->test_properties()->SetReplicaLayer(nullptr);
   grand_child1->test_properties()->force_render_surface = false;
   grand_child1->NoteLayerPropertyChanged();
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -1290,10 +1291,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
         LayerImpl::Create(host_impl_.active_tree(), 3);
     mask_layer->SetPosition(child->position());
     mask_layer->SetBounds(child->bounds());
-    child->SetMaskLayer(std::move(mask_layer));
+    child->test_properties()->SetMaskLayer(std::move(mask_layer));
     child->test_properties()->force_render_surface = true;
   }
-  LayerImpl* mask_layer = child->mask_layer();
+  LayerImpl* mask_layer = child->test_properties()->mask_layer;
 
   // Add opacity and a grand_child so that the render surface persists even
   // after we remove the mask.
@@ -1354,7 +1355,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Then test mask removal.
   ClearDamageForAllSurfaces(root);
-  child->SetMaskLayer(nullptr);
+  child->test_properties()->SetMaskLayer(nullptr);
   child->NoteLayerPropertyChanged();
   ASSERT_TRUE(child->LayerPropertyChanged());
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -1386,10 +1387,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
-    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
+    grand_child1->test_properties()->SetReplicaLayer(
+        std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;
   }
-  LayerImpl* grand_child1_replica = grand_child1->replica_layer();
+  LayerImpl* grand_child1_replica =
+      grand_child1->test_properties()->replica_layer;
 
   // Set up the mask layer on the replica layer
   {
@@ -1397,9 +1400,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
         LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
     replica_mask_layer->SetBounds(grand_child1->bounds());
-    grand_child1_replica->SetMaskLayer(std::move(replica_mask_layer));
+    grand_child1_replica->test_properties()->SetMaskLayer(
+        std::move(replica_mask_layer));
   }
-  LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();
+  LayerImpl* replica_mask_layer =
+      grand_child1_replica->test_properties()->mask_layer;
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
@@ -1426,7 +1431,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
   //         target surface.
   //
   ClearDamageForAllSurfaces(root);
-  grand_child1_replica->SetMaskLayer(nullptr);
+  grand_child1_replica->test_properties()->SetMaskLayer(nullptr);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
@@ -1468,10 +1473,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     grand_child1_replica->SetTransform(reflection);
     // We need to set parent on replica layer for property tree building.
     grand_child1_replica->SetParent(grand_child1);
-    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
+    grand_child1->test_properties()->SetReplicaLayer(
+        std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;
   }
-  LayerImpl* grand_child1_replica = grand_child1->replica_layer();
+  LayerImpl* grand_child1_replica =
+      grand_child1->test_properties()->replica_layer;
 
   // Set up the mask layer on the replica layer
   {
@@ -1480,9 +1487,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     replica_mask_layer->SetPosition(gfx::PointF());
     // Note: this is not the transform origin being tested.
     replica_mask_layer->SetBounds(grand_child1->bounds());
-    grand_child1_replica->SetMaskLayer(std::move(replica_mask_layer));
+    grand_child1_replica->test_properties()->SetMaskLayer(
+        std::move(replica_mask_layer));
   }
-  LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();
+  LayerImpl* replica_mask_layer =
+      grand_child1_replica->test_properties()->mask_layer;
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);

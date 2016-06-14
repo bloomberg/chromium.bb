@@ -181,7 +181,7 @@ void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
 
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
-  if (finished_target->mask_layer() || surface->draw_opacity() < 1 ||
+  if (surface->MaskLayer() || surface->draw_opacity() < 1 ||
       !finished_target->uses_default_blend_mode() ||
       target_is_only_for_copy_request ||
       finished_target->filters().HasFilterThatAffectsOpacity()) {
@@ -265,7 +265,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
           stack_[last_index].occlusion_from_inside_target,
           old_surface->is_clipped(), old_surface->clip_rect(),
           old_surface->draw_transform());
-  if (old_target->has_replica() && !old_target->replica_has_mask()) {
+  if (old_surface->HasReplica() && !old_surface->HasReplicaMask()) {
     old_occlusion_from_inside_target_in_new_target.Union(
         TransformSurfaceOpaqueRegion(
             stack_[last_index].occlusion_from_inside_target,
@@ -285,7 +285,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
         old_surface->draw_transform());
     unoccluded_surface_rect =
         surface_occlusion.GetUnoccludedContentRect(old_surface->content_rect());
-    if (old_target->has_replica()) {
+    if (old_surface->HasReplica()) {
       Occlusion replica_occlusion = GetCurrentOcclusionForContributingSurface(
           old_surface->replica_draw_transform());
       unoccluded_replica_rect = replica_occlusion.GetUnoccludedContentRect(
@@ -331,7 +331,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
                               new_target,
                               &stack_.back().occlusion_from_outside_target);
 
-  if (!old_target->has_replica())
+  if (!old_surface->HasReplica())
     return;
   ReduceOcclusionBelowSurface(old_target,
                               unoccluded_replica_rect,

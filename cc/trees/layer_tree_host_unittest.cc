@@ -1194,10 +1194,12 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     switch (index_) {
       case 0:
         index_++;
-        EXPECT_FALSE(impl->sync_tree()->root_layer()->mask_layer());
+        EXPECT_FALSE(
+            impl->sync_tree()->root_layer()->render_surface()->MaskLayer());
         break;
       case 1:
-        EXPECT_TRUE(impl->sync_tree()->root_layer()->mask_layer());
+        EXPECT_TRUE(
+            impl->sync_tree()->root_layer()->render_surface()->MaskLayer());
         EndTest();
         break;
     }

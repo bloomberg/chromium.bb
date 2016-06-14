@@ -45,10 +45,6 @@
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
     : parent_(nullptr),
-      mask_layer_id_(-1),
-      mask_layer_(nullptr),
-      replica_layer_id_(-1),
-      replica_layer_(nullptr),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
       test_properties_(nullptr),
@@ -103,12 +99,6 @@ LayerImpl::~LayerImpl() {
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
-
-  // The mask and replica layers should have been removed already.
-  if (mask_layer_)
-    DCHECK(!layer_tree_impl_->RemoveLayer(mask_layer_id_));
-  if (replica_layer_)
-    DCHECK(!layer_tree_impl_->RemoveLayer(replica_layer_id_));
 }
 
 void LayerImpl::AddChild(std::unique_ptr<LayerImpl> child) {
@@ -129,11 +119,6 @@ std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
 
 void LayerImpl::SetParent(LayerImpl* parent) {
   parent_ = parent;
-}
-
-void LayerImpl::ClearLinksToOtherLayers() {
-  mask_layer_ = nullptr;
-  replica_layer_ = nullptr;
 }
 
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
@@ -525,14 +510,6 @@ void LayerImpl::ResetChangeTracking() {
 
   if (render_surface_)
     render_surface_->ResetPropertyChangedFlag();
-
-  if (mask_layer_)
-    mask_layer_->ResetChangeTracking();
-
-  if (replica_layer_) {
-    // This also resets the replica mask, if it exists.
-    replica_layer_->ResetChangeTracking();
-  }
 }
 
 int LayerImpl::num_copy_requests_in_target_subtree() {
@@ -791,65 +768,6 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
   } else {
     NoteLayerPropertyChanged();
   }
-}
-
-void LayerImpl::SetMaskLayer(std::unique_ptr<LayerImpl> mask_layer) {
-  int new_layer_id = mask_layer ? mask_layer->id() : -1;
-
-  if (mask_layer) {
-    DCHECK_EQ(layer_tree_impl(), mask_layer->layer_tree_impl());
-    DCHECK_NE(new_layer_id, mask_layer_id_);
-  } else if (new_layer_id == mask_layer_id_) {
-    return;
-  }
-
-  if (mask_layer_)
-    layer_tree_impl_->RemoveLayer(mask_layer_->id());
-  mask_layer_ = mask_layer.get();
-  if (mask_layer_)
-    layer_tree_impl_->AddLayer(std::move(mask_layer));
-
-  mask_layer_id_ = new_layer_id;
-}
-
-std::unique_ptr<LayerImpl> LayerImpl::TakeMaskLayer() {
-  mask_layer_id_ = -1;
-  std::unique_ptr<LayerImpl> ret;
-  if (mask_layer_)
-    ret = layer_tree_impl_->RemoveLayer(mask_layer_->id());
-  mask_layer_ = nullptr;
-  return ret;
-}
-
-void LayerImpl::SetReplicaLayer(std::unique_ptr<LayerImpl> replica_layer) {
-  int new_layer_id = replica_layer ? replica_layer->id() : -1;
-
-  if (replica_layer) {
-    DCHECK_EQ(layer_tree_impl(), replica_layer->layer_tree_impl());
-    DCHECK_NE(new_layer_id, replica_layer_id_);
-  } else if (new_layer_id == replica_layer_id_) {
-    return;
-  }
-
-  if (replica_layer_)
-    layer_tree_impl_->RemoveLayer(replica_layer_->id());
-  replica_layer_ = replica_layer.get();
-  if (replica_layer_)
-    layer_tree_impl_->AddLayer(std::move(replica_layer));
-
-  replica_layer_id_ = new_layer_id;
-}
-
-std::unique_ptr<LayerImpl> LayerImpl::TakeReplicaLayerForTesting() {
-  replica_layer_id_ = -1;
-  std::unique_ptr<LayerImpl> ret;
-  if (replica_layer_) {
-    if (replica_layer_->mask_layer())
-      replica_layer_->SetMaskLayer(nullptr);
-    ret = layer_tree_impl_->RemoveLayer(replica_layer_->id());
-  }
-  replica_layer_ = nullptr;
-  return ret;
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {
@@ -1169,16 +1087,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     non_fast_scrollable_region_.AsValueInto(state);
     state->EndArray();
   }
-  if (mask_layer_) {
-    state->BeginDictionary("mask_layer");
-    mask_layer_->AsValueInto(state);
-    state->EndDictionary();
-  }
-  if (replica_layer_) {
-    state->BeginDictionary("replica_layer");
-    replica_layer_->AsValueInto(state);
-    state->EndDictionary();
-  }
 
   state->SetBoolean("can_use_lcd_text", CanUseLCDText());
   state->SetBoolean("contents_opaque", contents_opaque());
@@ -1334,9 +1242,7 @@ bool LayerImpl::InsideReplica() const {
   EffectNode* node = effect_tree.Node(effect_tree_index_);
 
   while (node->id > 0) {
-    LayerImpl* target_layer = layer_tree_impl()->LayerById(node->owner_id);
-    DCHECK(target_layer);
-    if (target_layer->has_replica())
+    if (node->data.replica_layer_id != -1)
       return true;
     node = effect_tree.Node(node->data.target_id);
   }

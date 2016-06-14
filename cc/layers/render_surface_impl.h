@@ -17,6 +17,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/trees/occlusion.h"
+#include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -141,6 +142,13 @@ class CC_EXPORT RenderSurfaceImpl {
   int OwningLayerId() const;
   bool HasReplica() const;
   const LayerImpl* ReplicaLayer() const;
+  LayerImpl* ReplicaLayer();
+
+  LayerImpl* MaskLayer();
+  bool HasMask() const;
+
+  LayerImpl* ReplicaMaskLayer();
+  bool HasReplicaMask() const;
 
   bool HasCopyRequest() const;
 
@@ -169,6 +177,8 @@ class CC_EXPORT RenderSurfaceImpl {
  private:
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect CalculateClippedAccumulatedContentRect();
+
+  const EffectNode* OwningEffectNode() const;
 
   LayerImpl* owning_layer_;
 

@@ -35,7 +35,7 @@ class TransformNodeData;
 class TransformCachedNodeData;
 class TransformTreeData;
 class TreeNode;
-}
+}  // namespace proto
 
 class CopyOutputRequest;
 class LayerTreeImpl;
@@ -308,6 +308,9 @@ struct CC_EXPORT EffectNodeData {
   int clip_id;
   // Effect node id of which this effect contributes to.
   int target_id;
+  int mask_layer_id;
+  int replica_layer_id;
+  int replica_mask_layer_id;
 
   bool operator==(const EffectNodeData& other) const;
 
@@ -612,6 +615,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   EffectTree& operator=(const EffectTree& from);
   bool operator==(const EffectTree& other) const;
 
+  void clear();
+
   float EffectiveOpacity(const EffectNode* node) const;
 
   void UpdateEffects(int id);
@@ -625,6 +630,11 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
       std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
   bool HasCopyRequests() const;
   void ClearCopyRequests();
+
+  void AddMaskOrReplicaLayerId(int id);
+  const std::vector<int>& mask_replica_layer_ids() const {
+    return mask_replica_layer_ids_;
+  }
 
   bool ContributesToDrawnSurface(int id);
 
@@ -642,6 +652,10 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // Stores copy requests, keyed by node id.
   std::unordered_multimap<int, std::unique_ptr<CopyOutputRequest>>
       copy_requests_;
+
+  // Unsorted list of all mask, replica, and replica mask layer ids that
+  // effect nodes refer to.
+  std::vector<int> mask_replica_layer_ids_;
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {

@@ -1144,13 +1144,13 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
           host_impl()->pending_tree(), 3, pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
-  pending_layer()->SetMaskLayer(std::move(mask));
+  pending_layer()->test_properties()->SetMaskLayer(std::move(mask));
   pending_layer()->SetHasRenderSurface(true);
   RebuildPropertyTreesOnPendingTree();
   host_impl()->pending_tree()->UpdateDrawProperties(false);
 
-  FakePictureLayerImpl* mask_raw =
-      static_cast<FakePictureLayerImpl*>(pending_layer()->mask_layer());
+  FakePictureLayerImpl* mask_raw = static_cast<FakePictureLayerImpl*>(
+      pending_layer()->test_properties()->mask_layer);
   // We did an UpdateDrawProperties above, which will set a contents scale on
   // the mask layer, so allow us to reset the contents scale.
   mask_raw->ReleaseResources();
@@ -1177,7 +1177,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
-  pending_layer()->SetMaskLayer(std::move(mask_ptr));
+  pending_layer()->test_properties()->SetMaskLayer(std::move(mask_ptr));
   pending_layer()->test_properties()->force_render_surface = true;
 
   RebuildPropertyTreesOnPendingTree();
@@ -1185,8 +1185,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   bool update_lcd_text = false;
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
-  FakePictureLayerImpl* pending_mask =
-      static_cast<FakePictureLayerImpl*>(pending_layer()->mask_layer());
+  FakePictureLayerImpl* pending_mask = static_cast<FakePictureLayerImpl*>(
+      pending_layer()->test_properties()->mask_layer);
 
   EXPECT_EQ(1.f, pending_mask->HighResTiling()->contents_scale());
   EXPECT_EQ(1u, pending_mask->num_tilings());
@@ -1196,8 +1196,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
 
   ActivateTree();
 
-  FakePictureLayerImpl* active_mask =
-      static_cast<FakePictureLayerImpl*>(active_layer()->mask_layer());
+  FakePictureLayerImpl* active_mask = static_cast<FakePictureLayerImpl*>(
+      host_impl()->active_tree()->LayerById(pending_mask->id()));
 
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
@@ -1307,7 +1307,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
-  pending_layer()->SetMaskLayer(std::move(mask_ptr));
+  pending_layer()->test_properties()->SetMaskLayer(std::move(mask_ptr));
   pending_layer()->test_properties()->force_render_surface = true;
 
   RebuildPropertyTreesOnPendingTree();
@@ -1315,8 +1315,8 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   bool update_lcd_text = false;
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
-  FakePictureLayerImpl* pending_mask =
-      static_cast<FakePictureLayerImpl*>(pending_layer()->mask_layer());
+  FakePictureLayerImpl* pending_mask = static_cast<FakePictureLayerImpl*>(
+      pending_layer()->test_properties()->mask_layer);
 
   // Masks are scaled, and do not have a low res tiling.
   EXPECT_EQ(1.3f, pending_mask->HighResTiling()->contents_scale());
@@ -1327,8 +1327,8 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
 
   ActivateTree();
 
-  FakePictureLayerImpl* active_mask =
-      static_cast<FakePictureLayerImpl*>(active_layer()->mask_layer());
+  FakePictureLayerImpl* active_mask = static_cast<FakePictureLayerImpl*>(
+      host_impl()->active_tree()->LayerById(pending_mask->id()));
 
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());

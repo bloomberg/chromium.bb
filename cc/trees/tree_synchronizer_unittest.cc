@@ -96,23 +96,30 @@ void ExpectTreesAreIdentical(Layer* root_layer,
     EXPECT_EQ(layer->non_fast_scrollable_region(),
               layer_impl->non_fast_scrollable_region());
 
-    ASSERT_EQ(!!layer->mask_layer(), !!layer_impl->mask_layer());
+    const EffectTree& effect_tree = tree_impl->property_trees()->effect_tree;
     if (layer->mask_layer()) {
       SCOPED_TRACE("mask_layer");
-      EXPECT_EQ(layer->mask_layer()->id(), layer_impl->mask_layer()->id());
+      int mask_layer_id = layer->mask_layer()->id();
+      EXPECT_TRUE(tree_impl->LayerById(mask_layer_id));
+      EXPECT_EQ(mask_layer_id,
+                effect_tree.Node(layer_impl->effect_tree_index())
+                    ->data.mask_layer_id);
     }
 
-    ASSERT_EQ(!!layer->replica_layer(), !!layer_impl->replica_layer());
     if (layer->replica_layer()) {
       SCOPED_TRACE("replica_layer");
-      EXPECT_EQ(layer->replica_layer()->id(),
-                layer_impl->replica_layer()->id());
-      ASSERT_EQ(!!layer->replica_layer()->mask_layer(),
-                !!layer_impl->replica_layer()->mask_layer());
+      int replica_layer_id = layer->replica_layer()->id();
+      EXPECT_TRUE(tree_impl->LayerById(layer->replica_layer()->id()));
+      EXPECT_EQ(replica_layer_id,
+                effect_tree.Node(layer_impl->effect_tree_index())
+                    ->data.replica_layer_id);
       if (layer->replica_layer()->mask_layer()) {
-        SCOPED_TRACE("mask_layer");
-        EXPECT_EQ(layer->replica_layer()->mask_layer()->id(),
-                  layer_impl->replica_layer()->mask_layer()->id());
+        SCOPED_TRACE("replica_mask_layer");
+        int replica_mask_layer_id = layer->replica_layer()->mask_layer()->id();
+        EXPECT_TRUE(tree_impl->LayerById(replica_mask_layer_id));
+        EXPECT_EQ(replica_mask_layer_id,
+                  effect_tree.Node(layer_impl->effect_tree_index())
+                      ->data.replica_mask_layer_id);
       }
     }
 
@@ -465,33 +472,36 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
       replica_layer_with_mask.get());
 
   host_->SetRootLayer(layer_tree_root);
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreateLayerImplTree();
 
-  TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                     host_->active_tree());
   LayerImpl* layer_impl_tree_root = host_->active_tree()->root_layer();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
   // Remove the mask layer.
   layer_tree_root->children()[0]->SetMaskLayer(NULL);
-  TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                     host_->active_tree());
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreateLayerImplTree();
+
   layer_impl_tree_root = host_->active_tree()->root_layer();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
   // Remove the replica layer.
   layer_tree_root->children()[1]->SetReplicaLayer(NULL);
-  TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                     host_->active_tree());
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreateLayerImplTree();
+
   layer_impl_tree_root = host_->active_tree()->root_layer();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
   // Remove the replica mask.
   replica_layer_with_mask->SetMaskLayer(NULL);
-  TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                     host_->active_tree());
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreateLayerImplTree();
+
   layer_impl_tree_root = host_->active_tree()->root_layer();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());

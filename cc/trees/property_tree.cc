@@ -531,7 +531,10 @@ EffectNodeData::EffectNodeData()
       has_unclipped_descendants(false),
       transform_id(0),
       clip_id(0),
-      target_id(0) {}
+      target_id(0),
+      mask_layer_id(-1),
+      replica_layer_id(-1),
+      replica_mask_layer_id(-1) {}
 
 EffectNodeData::EffectNodeData(const EffectNodeData& other) = default;
 
@@ -551,7 +554,9 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
-         target_id == other.target_id;
+         target_id == other.target_id && mask_layer_id == other.mask_layer_id &&
+         replica_layer_id == other.replica_layer_id &&
+         replica_mask_layer_id == other.replica_mask_layer_id;
 }
 
 void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
@@ -573,6 +578,9 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
   data->set_target_id(target_id);
+  data->set_mask_layer_id(mask_layer_id);
+  data->set_replica_layer_id(replica_layer_id);
+  data->set_replica_mask_layer_id(replica_mask_layer_id);
 }
 
 void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
@@ -595,6 +603,9 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   transform_id = data.transform_id();
   clip_id = data.clip_id();
   target_id = data.target_id();
+  mask_layer_id = data.mask_layer_id();
+  replica_layer_id = data.replica_layer_id();
+  replica_mask_layer_id = data.replica_mask_layer_id();
 }
 
 void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -612,6 +623,9 @@ void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);
+  value->SetInteger("mask_layer_id", mask_layer_id);
+  value->SetInteger("replica_layer_id", replica_layer_id);
+  value->SetInteger("replica_mask_layer_id", replica_mask_layer_id);
 }
 
 ScrollNodeData::ScrollNodeData()
@@ -1432,6 +1446,11 @@ EffectTree::EffectTree() {}
 
 EffectTree::~EffectTree() {}
 
+void EffectTree::clear() {
+  PropertyTree<EffectNode>::clear();
+  mask_replica_layer_ids_.clear();
+}
+
 float EffectTree::EffectiveOpacity(const EffectNode* node) const {
   return node->data.subtree_hidden ? 0.f : node->data.opacity;
 }
@@ -1606,6 +1625,10 @@ void EffectTree::ClearCopyRequests() {
   set_needs_update(true);
 }
 
+void EffectTree::AddMaskOrReplicaLayerId(int id) {
+  mask_replica_layer_ids_.push_back(id);
+}
+
 bool EffectTree::ContributesToDrawnSurface(int id) {
   // All drawn nodes contribute to drawn surface.
   // Exception : Nodes that are hidden and are drawn only for the sake of
@@ -1671,13 +1694,15 @@ void ClipTree::FromProtobuf(
 
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
+  mask_replica_layer_ids_ = from.mask_replica_layer_ids_;
   // copy_requests_ are omitted here, since these need to be moved rather
   // than copied or assigned.
   return *this;
 }
 
 bool EffectTree::operator==(const EffectTree& other) const {
-  return PropertyTree::operator==(other);
+  return PropertyTree::operator==(other) &&
+         mask_replica_layer_ids_ == other.mask_replica_layer_ids_;
 }
 
 void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
@@ -1685,6 +1710,10 @@ void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
   proto->set_property_type(proto::PropertyTree::Effect);
 
   PropertyTree::ToProtobuf(proto);
+  proto::EffectTreeData* data = proto->mutable_effect_tree_data();
+
+  for (auto i : mask_replica_layer_ids_)
+    data->add_mask_replica_layer_ids(i);
 }
 
 void EffectTree::FromProtobuf(
@@ -1694,6 +1723,12 @@ void EffectTree::FromProtobuf(
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Effect);
 
   PropertyTree::FromProtobuf(proto, node_id_to_index_map);
+  const proto::EffectTreeData& data = proto.effect_tree_data();
+
+  DCHECK(mask_replica_layer_ids_.empty());
+  for (int i = 0; i < data.mask_replica_layer_ids_size(); ++i) {
+    mask_replica_layer_ids_.push_back(data.mask_replica_layer_ids(i));
+  }
 }
 
 ScrollTree::ScrollTree()

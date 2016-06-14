@@ -89,7 +89,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 17
+// NEXT ID: 20
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -107,6 +107,9 @@ message EffectNodeData {
   optional int64 transform_id = 9;
   optional int64 clip_id = 10;
   optional int64 target_id = 12;
+  optional int64 mask_layer_id = 17;
+  optional int64 replica_layer_id = 18;
+  optional int64 replica_mask_layer_id = 19;
 }
 
 // Proto for struct ScrollNodeData
@@ -166,6 +169,7 @@ message PropertyTree {
   // of this property tree.
   optional TransformTreeData transform_tree_data = 1000;
   optional ScrollTreeData scroll_tree_data = 1001;
+  optional EffectTreeData effect_tree_data = 1002;
 }
 
 message ScrollOffsetMapEntry {
@@ -190,6 +194,11 @@ message TransformTreeData {
   repeated int64 nodes_affected_by_outer_viewport_bounds_delta = 8
       [packed = true];
   repeated TransformCachedNodeData cached_data = 9;
+}
+
+// Proto for data members of class EffectTree.
+message EffectTreeData {
+  repeated int64 mask_replica_layer_ids = 1 [packed = true];
 }
 
 // Proto for class PropertyTrees.

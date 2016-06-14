@@ -187,6 +187,9 @@ TEST(PropertyTreeSerializationTest, EffectNodeDataSerialization) {
   original.has_render_surface = false;
   original.transform_id = 2;
   original.clip_id = 3;
+  original.mask_layer_id = 6;
+  original.replica_layer_id = 10;
+  original.replica_mask_layer_id = 9;
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
@@ -220,13 +223,19 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   second.owner_id = 6;
   second.data.transform_id = 4;
   second.data.opacity = true;
+  second.data.mask_layer_id = 32;
   EffectNode third;
   third.owner_id = 7;
   third.data.clip_id = 3;
+  third.data.replica_layer_id = 44;
+  third.data.replica_mask_layer_id = 45;
   third.data.has_render_surface = false;
 
   original.Insert(second, 0);
   original.Insert(third, 1);
+  original.AddMaskOrReplicaLayerId(32);
+  original.AddMaskOrReplicaLayerId(44);
+  original.AddMaskOrReplicaLayerId(45);
   original.set_needs_update(true);
 
   proto::PropertyTree proto;

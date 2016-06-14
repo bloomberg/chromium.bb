@@ -213,6 +213,22 @@ static size_t NumUnclippedDescendants(LayerImpl* layer) {
   return layer->test_properties()->num_unclipped_descendants;
 }
 
+static Layer* MaskLayer(Layer* layer) {
+  return layer->mask_layer();
+}
+
+static LayerImpl* MaskLayer(LayerImpl* layer) {
+  return layer->test_properties()->mask_layer;
+}
+
+static Layer* ReplicaLayer(Layer* layer) {
+  return layer->replica_layer();
+}
+
+static LayerImpl* ReplicaLayer(LayerImpl* layer) {
+  return layer->test_properties()->replica_layer;
+}
+
 template <typename LayerType>
 static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
                                      LayerType* layer) {
@@ -232,7 +248,7 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 
 template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || layer->mask_layer();
+  return layer->masks_to_bounds() || MaskLayer(layer);
 }
 
 template <typename LayerType>
@@ -730,12 +746,12 @@ bool ShouldCreateRenderSurface(LayerType* layer,
 
   // If the layer uses a mask and the layer is not a replica layer.
   // TODO(weiliangc): After slimming paint there won't be replica layers.
-  if (layer->mask_layer() && layer->parent()->replica_layer() != layer) {
+  if (MaskLayer(layer) && ReplicaLayer(layer->parent()) != layer) {
     return true;
   }
 
   // If the layer has a reflection.
-  if (layer->replica_layer()) {
+  if (ReplicaLayer(layer)) {
     return true;
   }
 
@@ -882,6 +898,20 @@ bool AddEffectNodeIfNeeded(
   node.data.subtree_hidden = HideLayerAndSubtree(layer);
   node.data.is_currently_animating_opacity = layer->OpacityIsAnimating();
 
+  EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
+  if (MaskLayer(layer)) {
+    node.data.mask_layer_id = MaskLayer(layer)->id();
+    effect_tree.AddMaskOrReplicaLayerId(node.data.mask_layer_id);
+  }
+  if (ReplicaLayer(layer)) {
+    node.data.replica_layer_id = ReplicaLayer(layer)->id();
+    effect_tree.AddMaskOrReplicaLayerId(node.data.replica_layer_id);
+    if (MaskLayer(ReplicaLayer(layer))) {
+      node.data.replica_mask_layer_id = MaskLayer(ReplicaLayer(layer))->id();
+      effect_tree.AddMaskOrReplicaLayerId(node.data.replica_mask_layer_id);
+    }
+  }
+
   if (!is_root) {
     // The effect node's transform id is used only when we create a render
     // surface. So, we can leave the default value when we don't create a render
@@ -904,8 +934,7 @@ bool AddEffectNodeIfNeeded(
     node.data.transform_id = kRootPropertyTreeNodeId;
     node.data.clip_id = kViewportClipTreeNodeId;
   }
-  data_for_children->effect_tree_parent =
-      data_for_children->property_trees->effect_tree.Insert(node, parent_id);
+  data_for_children->effect_tree_parent = effect_tree.Insert(node, parent_id);
   int node_id = data_for_children->effect_tree_parent;
   layer->SetEffectTreeIndex(node_id);
   data_for_children->property_trees->effect_id_to_index_map[layer->id()] =
@@ -914,8 +943,7 @@ bool AddEffectNodeIfNeeded(
   std::vector<std::unique_ptr<CopyOutputRequest>> layer_copy_requests;
   TakeCopyRequests(layer, &layer_copy_requests);
   for (auto& it : layer_copy_requests) {
-    data_for_children->property_trees->effect_tree.AddCopyRequest(
-        node_id, std::move(it));
+    effect_tree.AddCopyRequest(node_id, std::move(it));
   }
   layer_copy_requests.clear();
 
@@ -1128,22 +1156,22 @@ void BuildPropertyTreesInternal(
     }
   }
 
-  if (layer->has_replica()) {
+  if (ReplicaLayer(layer)) {
     DataForRecursionFromChild<LayerType> data_from_child;
-    BuildPropertyTreesInternal(layer->replica_layer(), data_for_children,
+    BuildPropertyTreesInternal(ReplicaLayer(layer), data_for_children,
                                &data_from_child);
     data_to_parent->Merge(data_from_child);
   }
 
-  if (layer->mask_layer()) {
-    layer->mask_layer()->set_property_tree_sequence_number(
+  if (MaskLayer(layer)) {
+    MaskLayer(layer)->set_property_tree_sequence_number(
         data_from_parent.property_trees->sequence_number);
-    layer->mask_layer()->set_offset_to_transform_parent(
+    MaskLayer(layer)->set_offset_to_transform_parent(
         layer->offset_to_transform_parent());
-    layer->mask_layer()->SetTransformTreeIndex(layer->transform_tree_index());
-    layer->mask_layer()->SetClipTreeIndex(layer->clip_tree_index());
-    layer->mask_layer()->SetEffectTreeIndex(layer->effect_tree_index());
-    layer->mask_layer()->SetScrollTreeIndex(layer->scroll_tree_index());
+    MaskLayer(layer)->SetTransformTreeIndex(layer->transform_tree_index());
+    MaskLayer(layer)->SetClipTreeIndex(layer->clip_tree_index());
+    MaskLayer(layer)->SetEffectTreeIndex(layer->effect_tree_index());
+    MaskLayer(layer)->SetScrollTreeIndex(layer->scroll_tree_index());
   }
 
   EffectNode* effect_node = data_for_children.property_trees->effect_tree.Node(

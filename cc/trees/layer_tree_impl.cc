@@ -91,6 +91,7 @@ LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
   DCHECK(!root_layer_);
+  DCHECK(layers_->empty());
 }
 
 void LayerTreeImpl::Shutdown() {
@@ -923,7 +924,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         // Masks are used to draw the contributing surface, so should have
         // the same occlusion as the surface (nothing inside the surface
         // occludes them).
-        if (LayerImpl* mask = it->mask_layer()) {
+        if (LayerImpl* mask = it->render_surface()->MaskLayer()) {
           Occlusion mask_occlusion =
               inside_replica
                   ? Occlusion()
@@ -932,9 +933,10 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
                         it->DrawTransform());
           mask->draw_properties().occlusion_in_content_space = mask_occlusion;
         }
-        if (LayerImpl* replica = it->replica_layer()) {
-          if (LayerImpl* mask = replica->mask_layer())
-            mask->draw_properties().occlusion_in_content_space = Occlusion();
+        if (LayerImpl* replica_mask =
+                it->render_surface()->ReplicaMaskLayer()) {
+          replica_mask->draw_properties().occlusion_in_content_space =
+              Occlusion();
         }
       }
 
@@ -1034,7 +1036,7 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 
 LayerImpl* LayerTreeImpl::LayerById(int id) const {
   LayerImplMap::const_iterator iter = layer_id_map_.find(id);
-  return iter != layer_id_map_.end() ? iter->second : NULL;
+  return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
 void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
@@ -2076,7 +2078,8 @@ void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {
 
 void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
-  for (auto* layer : *this)
+  // Iterate over all layers, including masks and replicas.
+  for (auto& layer : *layers_)
     layer->ResetChangeTracking();
   property_trees_.ResetAllChangeTracking();
 }

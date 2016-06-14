@@ -647,7 +647,7 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
     render_surface->damage_tracker()->UpdateDamageTrackingState(
         render_surface->layer_list(), render_surface,
         render_surface->SurfacePropertyChangedOnlyFromDescendant(),
-        render_surface->content_rect(), render_surface_layer->mask_layer(),
+        render_surface->content_rect(), render_surface->MaskLayer(),
         render_surface_layer->filters());
   }
 }
@@ -697,14 +697,14 @@ static void AppendQuadsForRenderSurfaceLayer(
   const Occlusion& occlusion = surface->occlusion_in_content_space();
   SkColor debug_border_color = surface->GetDebugBorderColor();
   float debug_border_width = surface->GetDebugBorderWidth();
-  LayerImpl* mask_layer = layer->mask_layer();
+  LayerImpl* mask_layer = surface->MaskLayer();
 
   surface->AppendQuads(target_render_pass, draw_transform, occlusion,
                        debug_border_color, debug_border_width, mask_layer,
                        append_quads_data, contributing_render_pass->id);
 
   // Add replica after the surface so that it appears below the surface.
-  if (layer->has_replica()) {
+  if (surface->HasReplica()) {
     const gfx::Transform& replica_draw_transform =
         surface->replica_draw_transform();
     Occlusion replica_occlusion = occlusion.GetOcclusionWithGivenDrawTransform(
@@ -719,7 +719,7 @@ static void AppendQuadsForRenderSurfaceLayer(
     // to draw the layer and its reflection in. For now we only apply a separate
     // reflection mask if the contents don't have a mask of their own.
     LayerImpl* replica_mask_layer =
-        mask_layer ? mask_layer : layer->replica_layer()->mask_layer();
+        surface->HasMask() ? surface->MaskLayer() : surface->ReplicaMaskLayer();
 
     surface->AppendQuads(target_render_pass, replica_draw_transform,
                          replica_occlusion, replica_debug_border_color,

@@ -19,9 +19,13 @@ class CopyOutputRequest;
 class LayerImpl;
 
 struct CC_EXPORT LayerImplTestProperties {
-  LayerImplTestProperties();
+  explicit LayerImplTestProperties(LayerImpl* owning_layer);
   ~LayerImplTestProperties();
 
+  void SetMaskLayer(std::unique_ptr<LayerImpl> mask);
+  void SetReplicaLayer(std::unique_ptr<LayerImpl> replica);
+
+  LayerImpl* owning_layer;
   bool double_sided;
   bool force_render_surface;
   bool is_container_for_fixed_position_layers;
@@ -39,6 +43,8 @@ struct CC_EXPORT LayerImplTestProperties {
   std::unique_ptr<std::set<LayerImpl*>> clip_children;
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
   LayerImplList children;
+  LayerImpl* mask_layer;
+  LayerImpl* replica_layer;
 };
 
 }  // namespace cc

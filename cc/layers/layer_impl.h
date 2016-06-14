@@ -150,22 +150,6 @@ class CC_EXPORT LayerImpl {
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
 
-  void SetMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
-  LayerImpl* mask_layer() { return mask_layer_; }
-  const LayerImpl* mask_layer() const { return mask_layer_; }
-  std::unique_ptr<LayerImpl> TakeMaskLayer();
-
-  void SetReplicaLayer(std::unique_ptr<LayerImpl> replica_layer);
-  LayerImpl* replica_layer() { return replica_layer_; }
-  const LayerImpl* replica_layer() const { return replica_layer_; }
-  std::unique_ptr<LayerImpl> TakeReplicaLayerForTesting();
-
-  bool has_mask() const { return !!mask_layer_; }
-  bool has_replica() const { return !!replica_layer_; }
-  bool replica_has_mask() const {
-    return replica_layer_ && (mask_layer_ || replica_layer_->mask_layer_);
-  }
-
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
   void PopulateSharedQuadState(SharedQuadState* state) const;
@@ -202,7 +186,7 @@ class CC_EXPORT LayerImpl {
 
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)
-      test_properties_.reset(new LayerImplTestProperties());
+      test_properties_.reset(new LayerImplTestProperties(this));
     return test_properties_.get();
   }
 
@@ -500,8 +484,6 @@ class CC_EXPORT LayerImpl {
 
   void NoteLayerPropertyChanged();
 
-  void ClearLinksToOtherLayers();
-
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {
     return has_will_change_transform_hint_;
@@ -537,12 +519,6 @@ class CC_EXPORT LayerImpl {
   // Properties internal to LayerImpl
   LayerImpl* parent_;
 
-  // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
-  // confirm newly assigned layer is still the previous one
-  int mask_layer_id_;
-  LayerImpl* mask_layer_;
-  int replica_layer_id_;  // ditto
-  LayerImpl* replica_layer_;
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;
 

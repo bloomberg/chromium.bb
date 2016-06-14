@@ -789,7 +789,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
                                  false, false);
     // Sanity check the intermediate layer should not clip.
     ASSERT_FALSE(intermediate_layer->masks_to_bounds());
-    ASSERT_FALSE(intermediate_layer->mask_layer());
+    ASSERT_FALSE(intermediate_layer->test_properties()->mask_layer);
 
     // The child of the intermediate_layer is translated so that it does not
     // overlap intermediate_layer at all.  If child is incorrectly clipped, we

@@ -33,13 +33,6 @@ static bool IsRootLayer(const LayerImpl* layer) {
 }
 
 #if DCHECK_IS_ON()
-static LayerImpl* EffectNodeOwner(LayerImpl* layer) {
-  EffectNode* node =
-      layer->layer_tree_impl()->property_trees()->effect_tree.Node(
-          layer->effect_tree_index());
-  return layer->layer_tree_impl()->LayerById(node->owner_id);
-}
-
 static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
   // a render surface, but doesn't have one.
@@ -49,10 +42,13 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
-  if (EffectNodeOwner(layer)->replica_layer() == layer)
+  EffectNode* effect_node =
+      layer->layer_tree_impl()->property_trees()->effect_tree.Node(
+          layer->effect_tree_index());
+  if (effect_node->owner_id != layer->id())
     return;
-  DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
-  DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
+  DCHECK_EQ(effect_node->data.mask_layer_id, -1) << "layer: " << layer->id();
+  DCHECK_EQ(effect_node->data.replica_layer_id, -1) << "layer: " << layer->id();
 }
 
 #endif

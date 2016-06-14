@@ -174,7 +174,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
     RenderSurfaceImpl* surface = child->render_surface();
-    LayerImpl* mask = child->mask_layer();
+    LayerImpl* mask = surface->MaskLayer();
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
@@ -245,7 +245,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    LayerImpl* mask = child->mask_layer();
+    LayerImpl* mask = child->render_surface()->MaskLayer();
 
     gfx::Transform scale;
     scale.Scale(2, 2);
@@ -315,7 +315,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
     RenderSurfaceImpl* surface = child->render_surface();
-    LayerImpl* mask = child->mask_layer();
+    LayerImpl* mask = surface->MaskLayer();
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());

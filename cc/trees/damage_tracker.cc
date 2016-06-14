@@ -390,7 +390,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
           draw_transform, damage_rect_in_local_space);
       target_damage_rect->Union(damage_rect_in_target_space);
 
-      if (layer->replica_layer()) {
+      if (render_surface->HasReplica()) {
         const gfx::Transform& replica_draw_transform =
             render_surface->replica_draw_transform();
         target_damage_rect->Union(MathUtil::MapEnclosingClippedRect(
@@ -401,8 +401,8 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
   // If there was damage on the replica's mask, then the target surface receives
   // that damage as well.
-  if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
-    LayerImpl* replica_mask_layer = layer->replica_layer()->mask_layer();
+  if (render_surface->HasReplicaMask()) {
+    LayerImpl* replica_mask_layer = render_surface->ReplicaMaskLayer();
 
     bool replica_is_new = false;
     LayerRectMapData& data =
