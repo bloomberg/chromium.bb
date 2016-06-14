@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -103,6 +104,18 @@ IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdHistoryHidesHistory) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
   SelectTab();
   EXPECT_TRUE(GetJsBool("$('history').hidden"));
+}
+
+IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdSettingsHidesSettings) {
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      features::kMaterialDesignSettingsFeature.name, "");
+  base::FeatureList::ClearInstanceForTesting();
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
+  SelectTab();
+  EXPECT_TRUE(GetJsBool("$('settings').hidden && $('help').hidden"));
 }
 
 IN_PROC_BROWSER_TEST_F(UberUIBrowserTest,

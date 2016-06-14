@@ -58,6 +58,11 @@ const base::Feature kMaterialDesignHistoryFeature {
   "MaterialDesignHistory", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables or disables the Material Design version of chrome://settings.
+// Also affects chrome://help.
+const base::Feature kMaterialDesignSettingsFeature{
+    "MaterialDesignSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Runtime flag that indicates whether this leak detector should be enabled in
 // the current instance of Chrome.

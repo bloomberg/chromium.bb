@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -135,9 +136,15 @@ void OnUserManagerSystemProfileCreated(
   if (status != Profile::CREATE_STATUS_INITIALIZED || callback.is_null())
     return;
 
+  // Force Material Design user manager on when Material Design settings are on.
+  bool use_material_design_user_manager =
+      switches::IsMaterialDesignUserManager() ||
+      base::FeatureList::IsEnabled(features::kMaterialDesignSettingsFeature);
+
   // Tell the webui which user should be focused.
-  std::string page = switches::IsMaterialDesignUserManager() ?
-      chrome::kChromeUIMdUserManagerUrl : chrome::kChromeUIUserManagerURL;
+  std::string page = use_material_design_user_manager
+                         ? chrome::kChromeUIMdUserManagerUrl
+                         : chrome::kChromeUIUserManagerURL;
 
   if (tutorial_mode == profiles::USER_MANAGER_TUTORIAL_OVERVIEW) {
     page += profiles::kUserManagerDisplayTutorial;

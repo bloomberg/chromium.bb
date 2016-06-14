@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -84,8 +86,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new SystemHandler());
 #endif
 
+  // Host must be derived from the visible URL, since this might be serving
+  // either chrome://settings or chrome://md-settings.
+  const GURL url = web_ui->GetWebContents()->GetVisibleURL();
+  CHECK(url.GetOrigin() == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
+        url.GetOrigin() == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin());
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
+      content::WebUIDataSource::Create(url.host());
 
 #if defined(OS_CHROMEOS)
   chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =

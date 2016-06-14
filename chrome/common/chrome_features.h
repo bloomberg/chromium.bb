@@ -41,6 +41,8 @@ extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 
 extern const base::Feature kMaterialDesignHistoryFeature;
 
+extern const base::Feature kMaterialDesignSettingsFeature;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kRuntimeMemoryLeakDetector;
 #endif  // defined(OS_CHROMEOS)

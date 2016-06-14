@@ -93,20 +93,26 @@ bool WillHandleBrowserAboutURL(GURL* url,
       path = chrome::kChromeUIHistoryHost + url->path();
     }
 #endif
-  // Redirect chrome://settings
+  // Redirect chrome://settings, unless MD settings is enabled.
   } else if (host == chrome::kChromeUISettingsHost) {
     if (::switches::AboutInSettingsEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
+    } else if (base::FeatureList::IsEnabled(
+                   features::kMaterialDesignSettingsFeature)) {
+      return true;  // Prevent further rewriting - this is a valid URL.
     } else {
       host = chrome::kChromeUIUberHost;
       path = chrome::kChromeUISettingsHost + url->path();
     }
-  // Redirect chrome://help
+  // Redirect chrome://help, unless MD settings is enabled.
   } else if (host == chrome::kChromeUIHelpHost) {
     if (::switches::AboutInSettingsEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
       if (url->path().empty() || url->path() == "/")
         path = chrome::kChromeUIHelpHost;
+    } else if (base::FeatureList::IsEnabled(
+                   features::kMaterialDesignSettingsFeature)) {
+      return true;  // Prevent further rewriting - this is a valid URL.
     } else {
       host = chrome::kChromeUIUberHost;
       path = chrome::kChromeUIHelpHost + url->path();

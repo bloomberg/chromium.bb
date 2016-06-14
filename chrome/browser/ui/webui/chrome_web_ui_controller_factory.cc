@@ -419,6 +419,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host() == chrome::kChromeUIHistoryHost) {
     return &NewWebUI<MdHistoryUI>;
   }
+  // Material Design Settings gets its own host, if enabled.
+  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettingsFeature) &&
+      url.host() == chrome::kChromeUISettingsHost) {
+    return &NewWebUI<settings::MdSettingsUI>;
+  }
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   // Settings are implemented with native UI elements on Android.
