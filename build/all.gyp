@@ -38,6 +38,7 @@
         '../ui/accessibility/accessibility.gyp:*',
         '../ui/base/ui_base.gyp:*',
         '../ui/display/display.gyp:display_unittests',
+        '../ui/native_theme/native_theme.gyp:native_theme_unittests',
         '../ui/snapshot/snapshot.gyp:*',
         '../url/url.gyp:*',
       ],
