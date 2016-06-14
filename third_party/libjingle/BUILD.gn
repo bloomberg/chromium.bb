@@ -280,8 +280,6 @@ if (enable_webrtc) {
       "../webrtc/api/peerconnectionfactory.cc",
       "../webrtc/api/peerconnectionfactory.h",
       "../webrtc/api/peerconnectioninterface.h",
-      "../webrtc/api/portallocatorfactory.cc",
-      "../webrtc/api/portallocatorfactory.h",
       "../webrtc/api/remoteaudiosource.cc",
       "../webrtc/api/remoteaudiosource.h",
       "../webrtc/api/rtpreceiver.cc",

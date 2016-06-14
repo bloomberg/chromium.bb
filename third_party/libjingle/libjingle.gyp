@@ -251,8 +251,6 @@
             '<(DEPTH)/third_party/webrtc/api/peerconnectionfactory.cc',
             '<(DEPTH)/third_party/webrtc/api/peerconnectionfactory.h',
             '<(DEPTH)/third_party/webrtc/api/peerconnectioninterface.h',
-            '<(DEPTH)/third_party/webrtc/api/portallocatorfactory.cc',
-            '<(DEPTH)/third_party/webrtc/api/portallocatorfactory.h',
             '<(DEPTH)/third_party/webrtc/api/remoteaudiosource.cc',
             '<(DEPTH)/third_party/webrtc/api/remoteaudiosource.h',
             '<(DEPTH)/third_party/webrtc/api/rtpreceiver.cc',
