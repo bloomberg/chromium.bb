@@ -12,6 +12,7 @@
 #define BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
 
 #import <AppKit/AppKit.h>
+#import <CoreBluetooth/CoreBluetooth.h>
 #import <CoreWLAN/CoreWLAN.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
 #import <IOBluetooth/IOBluetooth.h>
