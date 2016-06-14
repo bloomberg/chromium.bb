@@ -9,7 +9,7 @@
 #include "content/browser/mojo/mojo_application_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/scoped_ipc_support.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -51,7 +51,7 @@ class RenderThreadImplBrowserIPCTestHelper {
   std::unique_ptr<base::Thread> ipc_thread_;
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
   std::unique_ptr<DummyListener> dummy_listener_;
-  std::unique_ptr<IPC::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
   std::string mojo_ipc_token_;
   std::string mojo_application_token_;
