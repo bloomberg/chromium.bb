@@ -1,9 +1,5 @@
-mark@chromium.org
-thakis@chromium.org
-danakj@chromium.org
-thestig@chromium.org
-dcheng@chromium.org
-
+# About src/base:
+#
 # Chromium is a very mature project, most things that are generally useful are
 # already here, and that things not here aren't generally useful.
 #
@@ -16,11 +12,20 @@ dcheng@chromium.org
 # Adding a new logging macro DPVELOG_NE is not more clear than just
 # writing the stuff you want to log in a regular logging statement, even
 # if it makes your calling code longer. Just add it to your own code.
+#
+# If the code in question does not need to be used inside base, but will have
+# multiple consumers across the codebase, consider placing it in a new directory
+# under components/ instead.
 
-per-file *.isolate=maruel@chromium.org
-per-file *.isolate=tandrii@chromium.org
-per-file *.isolate=vadimsh@chromium.org
-per-file security_unittest.cc=jln@chromium.org
+mark@chromium.org
+thakis@chromium.org
+danakj@chromium.org
+thestig@chromium.org
+dcheng@chromium.org
+
+# For Bind/Callback:
+per-file bind*=tzik@chromium.org
+per-file callback*=tzik@chromium.org
 
 # For Android-specific changes:
 per-file *android*=nyquist@chromium.org
@@ -31,3 +36,11 @@ per-file *android*=yfriedman@chromium.org
 # For FeatureList API:
 per-file feature_list*=asvitkine@chromium.org
 per-file feature_list*=isherman@chromium.org
+
+# For bot infrastructure:
+per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
+
+# For TCMalloc tests:
+per-file security_unittest.cc=jln@chromium.org
