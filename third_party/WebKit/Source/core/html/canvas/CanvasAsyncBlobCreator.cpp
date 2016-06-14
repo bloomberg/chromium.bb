@@ -118,7 +118,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
         }
         // We post the below task to check if the above idle task isn't late.
         // There's no risk of concurrency as both tasks are on main thread.
-        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent, this, quality), IdleTaskStartTimeoutDelay);
+        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent, WeakPersistentThisPointer<CanvasAsyncBlobCreator>(this), quality), IdleTaskStartTimeoutDelay);
     } else if (m_mimeType == MimeTypeWebp) {
         BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
         BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, wrapCrossThreadPersistent(this), quality), taskSize);
