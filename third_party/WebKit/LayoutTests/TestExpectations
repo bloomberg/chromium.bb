@@ -87,7 +87,7 @@ crbug.com/599917 [ Mac ] css3/filters/effect-drop-shadow-hw.html [ NeedsManualRe
 crbug.com/599917 [ Mac ] css3/filters/effect-drop-shadow.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] css3/filters/effect-grayscale-hw.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] css3/filters/effect-grayscale.html [ NeedsManualRebaseline ]
-crbug.com/599917 [ Mac ] css3/filters/effect-hue-rotate-hw.html [ NeedsManualRebaseline ]
+crbug.com/599917 css3/filters/effect-hue-rotate-hw.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] css3/filters/effect-hue-rotate.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] css3/filters/effect-invert-hw.html [ NeedsManualRebaseline ]
 crbug.com/599917 [ Mac ] css3/filters/effect-invert.html [ NeedsManualRebaseline ]
@@ -1458,6 +1458,11 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 
 crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
+crbug.com/620141 fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
+crbug.com/620141 paint/invalidation/animated-gif-background.html [ Pass Failure ]
+crbug.com/620141 paint/invalidation/animated-gif.html [ Pass Failure ]
+crbug.com/620141 svg/hixie/perf/005.xml [ Pass Failure ]
+
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
@@ -1631,7 +1636,7 @@ crbug.com/619987 [ Win ] fast/images/paint-subrect-grid.html [ Failure ]
 crbug.com/619987 [ Win ] fast/images/png-color-profile-ignore-gamma.html [ Failure ]
 crbug.com/619987 [ Win ] fast/images/png-suite/test.html [ Failure ]
 crbug.com/619987 [ Win ] fast/images/repaint-subrect-grid.html [ Failure ]
-crbug.com/619987 [ Win ] paint/selection/selection-drag-image-in-iframe.html [ Failure ]
+crbug.com/619987 paint/selection/selection-drag-image-in-iframe.html [ Failure ]
 crbug.com/619987 [ Win ] svg/dynamic-updates/SVGFEBlendElement-dom-in-attr.html [ Failure ]
 crbug.com/619987 [ Win ] svg/dynamic-updates/SVGFEBlendElement-dom-in2-attr.html [ Failure ]
 crbug.com/619987 [ Win ] svg/dynamic-updates/SVGFEBlendElement-dom-mode-attr.html [ Failure ]
