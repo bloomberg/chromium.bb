@@ -19,6 +19,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -368,12 +369,8 @@ void NativeThemeBase::PaintArrow(SkCanvas* gc,
 
 SkPath NativeThemeBase::PathForArrow(const gfx::Rect& rect,
                                      Part direction) const {
-  gfx::Rect bounding_rect(rect);
-  const int padding_width = ceil(rect.width() / 4.f);
-  const int padding_height = ceil(rect.height() / 4.f);
-  bounding_rect.Inset(padding_width, padding_height);
-  const gfx::Point center = bounding_rect.CenterPoint();
-
+  gfx::Rect bounding_rect = BoundingRectForArrow(rect);
+  const gfx::PointF center = gfx::RectF(bounding_rect).CenterPoint();
   SkPath path;
   SkMatrix transform;
   transform.setIdentity();
@@ -385,7 +382,6 @@ SkPath NativeThemeBase::PathForArrow(const gfx::Rect& rect,
     path.close();
     path.offset(0, -arrow_altitude / 2 + 1);
     if (direction == kScrollbarDownArrow) {
-      path.offset(0, -1);
       transform.setScale(1, -1, center.x(), center.y());
     }
   } else {
@@ -396,13 +392,24 @@ SkPath NativeThemeBase::PathForArrow(const gfx::Rect& rect,
     path.close();
     path.offset(arrow_altitude / 2, 0);
     if (direction == kScrollbarLeftArrow) {
-      path.offset(-1, 0);
       transform.setScale(-1, 1, center.x(), center.y());
     }
   }
   path.transform(transform);
 
   return path;
+}
+
+gfx::Rect NativeThemeBase::BoundingRectForArrow(const gfx::Rect& rect) const {
+  const std::pair<int, int> rect_sides =
+      std::minmax(rect.width(), rect.height());
+  const int side_length_inset = 2 * std::ceil(rect_sides.second / 4.f);
+  const int side_length =
+      std::min(rect_sides.first, rect_sides.second - side_length_inset);
+  // When there are an odd number of pixels, put the extra on the top/left.
+  return gfx::Rect(rect.x() + (rect.width() - side_length + 1) / 2,
+                   rect.y() + (rect.height() - side_length + 1) / 2,
+                   side_length, side_length);
 }
 
 void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,

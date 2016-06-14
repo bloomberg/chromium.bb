@@ -170,10 +170,10 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkColor GetArrowColor(State state) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NativeThemeAuraTest, VerticalArrows);
-  FRIEND_TEST_ALL_PREFIXES(NativeThemeAuraTest, HorizontalArrows);
+  friend class NativeThemeAuraTest;
 
   SkPath PathForArrow(const gfx::Rect& rect, Part direction) const;
+  gfx::Rect BoundingRectForArrow(const gfx::Rect& rect) const;
 
   void DrawVertLine(SkCanvas* canvas,
                     int x,
