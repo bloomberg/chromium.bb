@@ -9,6 +9,7 @@
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace cc {
 class ScrollOffsetAnimationCurve;
@@ -25,8 +26,15 @@ public:
         ScrollDurationInverseDelta
     };
 
-    CompositorScrollOffsetAnimationCurve(FloatPoint, ScrollDurationBehavior);
-    CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
+    static PassOwnPtr<CompositorScrollOffsetAnimationCurve> create(FloatPoint targetValue, CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior durationBehavior)
+    {
+        return adoptPtr(new CompositorScrollOffsetAnimationCurve(targetValue, durationBehavior));
+    }
+    static PassOwnPtr<CompositorScrollOffsetAnimationCurve> create(cc::ScrollOffsetAnimationCurve* curve)
+    {
+        return adoptPtr(new CompositorScrollOffsetAnimationCurve(curve));
+    }
+
     ~CompositorScrollOffsetAnimationCurve() override;
 
     void setInitialValue(FloatPoint);
@@ -40,6 +48,9 @@ public:
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
+    CompositorScrollOffsetAnimationCurve(FloatPoint, ScrollDurationBehavior);
+    CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
+
     std::unique_ptr<cc::ScrollOffsetAnimationCurve> m_curve;
 };
 

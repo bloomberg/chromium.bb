@@ -6,10 +6,10 @@
 
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
@@ -25,7 +25,7 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
     , m_implOnlyAnimationTakeover(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
-    m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
+    m_compositorPlayer = CompositorAnimationPlayer::create();
     ASSERT(m_compositorPlayer);
     m_compositorPlayer->setAnimationDelegate(this);
 }

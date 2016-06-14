@@ -10,6 +10,7 @@
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace cc {
@@ -26,7 +27,11 @@ namespace blink {
 class PLATFORM_EXPORT CompositorFloatAnimationCurve : public CompositorAnimationCurve {
     WTF_MAKE_NONCOPYABLE(CompositorFloatAnimationCurve);
 public:
-    CompositorFloatAnimationCurve();
+    static PassOwnPtr<CompositorFloatAnimationCurve> create()
+    {
+        return adoptPtr(new CompositorFloatAnimationCurve());
+    }
+
     ~CompositorFloatAnimationCurve() override;
 
     static PassOwnPtr<CompositorFloatAnimationCurve> CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve>);
@@ -56,6 +61,7 @@ public:
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
+    CompositorFloatAnimationCurve();
     CompositorFloatAnimationCurve(std::unique_ptr<cc::KeyframedFloatAnimationCurve>);
 
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> m_curve;

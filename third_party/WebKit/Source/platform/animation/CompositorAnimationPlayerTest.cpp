@@ -37,14 +37,14 @@ public:
 
 class CompositorAnimationPlayerTestClient : public CompositorAnimationPlayerClient {
 public:
-    CompositorAnimationPlayerTestClient() : m_player(new CompositorAnimationPlayer) {}
+    CompositorAnimationPlayerTestClient() : m_player(CompositorAnimationPlayer::create()) {}
 
     CompositorAnimationPlayer* compositorPlayer() const override
     {
         return m_player.get();
     }
 
-    std::unique_ptr<CompositorAnimationPlayer> m_player;
+    OwnPtr<CompositorAnimationPlayer> m_player;
 };
 
 class CompositorAnimationPlayerTest : public CompositorTest {
@@ -56,7 +56,7 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate)
 {
     std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
-    std::unique_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
+    OwnPtr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
     cc::AnimationPlayer* ccPlayer = player->animationPlayer();
 
     player->setAnimationDelegate(delegate.get());
@@ -76,7 +76,7 @@ TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
 {
     std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
-    std::unique_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
+    OwnPtr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
     scoped_refptr<cc::AnimationPlayer> ccPlayer = player->animationPlayer();
 
     player->setAnimationDelegate(delegate.get());
@@ -92,7 +92,7 @@ TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
 
 TEST_F(CompositorAnimationPlayerTest, CompositorPlayerDeletionDetachesFromCCTimeline)
 {
-    std::unique_ptr<CompositorAnimationTimeline> timeline(new CompositorAnimationTimeline);
+    OwnPtr<CompositorAnimationTimeline> timeline = CompositorAnimationTimeline::create();
     std::unique_ptr<CompositorAnimationPlayerTestClient> client(new CompositorAnimationPlayerTestClient);
 
     scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();

@@ -16,7 +16,7 @@ class CompositorAnimationHostTest : public CompositorTest {
 
 TEST_F(CompositorAnimationHostTest, AnimationHostNullWhenTimelineDetached)
 {
-    OwnPtr<CompositorAnimationTimeline> timeline = adoptPtr(new CompositorAnimationTimeline);
+    OwnPtr<CompositorAnimationTimeline> timeline = CompositorAnimationTimeline::create();
 
     scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();
     EXPECT_FALSE(ccTimeline->animation_host());

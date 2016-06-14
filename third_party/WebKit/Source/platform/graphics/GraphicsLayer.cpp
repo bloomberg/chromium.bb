@@ -36,7 +36,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -1195,16 +1194,16 @@ WebLayer* GraphicsLayer::platformLayer() const
 
 void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
-    OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
-    SkiaImageFilterBuilder::buildFilterOperations(filters, webFilters.get());
-    m_layer->layer()->setFilters(webFilters->asFilterOperations());
+    OwnPtr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
+    SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
+    m_layer->layer()->setFilters(compositorFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
 {
-    OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
-    SkiaImageFilterBuilder::buildFilterOperations(filters, webFilters.get());
-    m_layer->layer()->setBackgroundFilters(webFilters->asFilterOperations());
+    OwnPtr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
+    SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
+    m_layer->layer()->setBackgroundFilters(compositorFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)

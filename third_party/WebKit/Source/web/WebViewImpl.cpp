@@ -112,7 +112,6 @@
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -4332,7 +4331,7 @@ void WebViewImpl::initializeLayerTreeView()
     DCHECK(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
 
     if (Platform::current()->isThreadedAnimationEnabled() && m_layerTreeView) {
-        m_linkHighlightsTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
+        m_linkHighlightsTimeline = CompositorAnimationTimeline::create();
         attachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
     }
 

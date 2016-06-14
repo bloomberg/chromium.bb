@@ -35,7 +35,6 @@
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "platform/EventTracer.h"
 #include "platform/HTTPNames.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/heap/Heap.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
@@ -87,7 +86,6 @@ int main(int argc, char** argv)
     WTF::Partitions::initialize(nullptr);
     WTF::setTimeFunctionsForTesting(dummyCurrentTime);
     WTF::initialize(nullptr);
-    blink::CompositorFactory::initializeDefault();
     int result = 0;
     {
         blink::TestingPlatformSupport::Config platformConfig;
@@ -111,7 +109,6 @@ int main(int argc, char** argv)
         blink::ThreadState::detachMainThread();
         blink::ProcessHeap::shutdown();
     }
-    blink::CompositorFactory::shutdown();
     WTF::shutdown();
     WTF::Partitions::shutdown();
     return result;

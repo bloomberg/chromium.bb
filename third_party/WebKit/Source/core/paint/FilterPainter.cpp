@@ -8,7 +8,6 @@
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -61,7 +60,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     ASSERT(m_layoutObject);
     if (!context.getPaintController().displayItemConstructionIsDisabled()) {
         FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
-        OwnPtr<CompositorFilterOperations> compositorFilterOperations = adoptPtr(CompositorFactory::current().createFilterOperations());
+        OwnPtr<CompositorFilterOperations> compositorFilterOperations = CompositorFilterOperations::create();
         SkiaImageFilterBuilder::buildFilterOperations(filterOperations, compositorFilterOperations.get());
         // FIXME: It's possible to have empty CompositorFilterOperations here even
         // though the SkImageFilter produced above is non-null, since the

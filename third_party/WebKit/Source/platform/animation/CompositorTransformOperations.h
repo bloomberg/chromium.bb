@@ -8,6 +8,7 @@
 #include "cc/animation/transform_operations.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 class SkMatrix44;
 
@@ -16,7 +17,10 @@ namespace blink {
 class PLATFORM_EXPORT CompositorTransformOperations {
     WTF_MAKE_NONCOPYABLE(CompositorTransformOperations);
 public:
-    CompositorTransformOperations();
+    static PassOwnPtr<CompositorTransformOperations> create()
+    {
+        return adoptPtr(new CompositorTransformOperations());
+    }
 
     const cc::TransformOperations& asTransformOperations() const;
 
@@ -36,6 +40,8 @@ public:
     bool isIdentity() const;
 
 private:
+    CompositorTransformOperations();
+
     cc::TransformOperations m_transformOperations;
 };
 

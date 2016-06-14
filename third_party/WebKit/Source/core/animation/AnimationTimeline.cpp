@@ -39,7 +39,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include <algorithm>
@@ -80,7 +79,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
         m_timing = timing;
 
     if (Platform::current()->isThreadedAnimationEnabled())
-        m_compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
+        m_compositorTimeline = CompositorAnimationTimeline::create();
 
     ASSERT(document);
 }

@@ -10,6 +10,7 @@
 #include "platform/animation/CompositorFilterKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace cc {
 class KeyframedFilterAnimationCurve;
@@ -25,7 +26,10 @@ namespace blink {
 class PLATFORM_EXPORT CompositorFilterAnimationCurve : public CompositorAnimationCurve {
     WTF_MAKE_NONCOPYABLE(CompositorFilterAnimationCurve);
 public:
-    CompositorFilterAnimationCurve();
+    static PassOwnPtr<CompositorFilterAnimationCurve> create()
+    {
+        return adoptPtr(new CompositorFilterAnimationCurve());
+    }
     ~CompositorFilterAnimationCurve() override;
 
     void addLinearKeyframe(const CompositorFilterKeyframe&);
@@ -44,6 +48,8 @@ public:
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
+    CompositorFilterAnimationCurve();
+
     std::unique_ptr<cc::KeyframedFilterAnimationCurve> m_curve;
 };
 

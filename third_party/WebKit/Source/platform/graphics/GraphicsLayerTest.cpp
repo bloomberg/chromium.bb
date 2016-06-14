@@ -25,11 +25,12 @@
 #include "platform/graphics/GraphicsLayer.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
-#include "platform/graphics/CompositorFactory.h"
+#include "platform/animation/CompositorTargetProperty.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
@@ -89,7 +90,7 @@ class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
 public:
     AnimationPlayerForTesting()
     {
-        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
+        m_compositorPlayer = CompositorAnimationPlayer::create();
     }
 
     CompositorAnimationPlayer* compositorPlayer() const override
@@ -104,12 +105,12 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 {
     ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
-    OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
+    OwnPtr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
     curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0.0, 0.0), CubicBezierTimingFunction::EaseType::EASE);
-    OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY)));
+    OwnPtr<CompositorAnimation> floatAnimation(CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0));
     int animationId = floatAnimation->id();
 
-    OwnPtr<CompositorAnimationTimeline> compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
+    OwnPtr<CompositorAnimationTimeline> compositorTimeline = CompositorAnimationTimeline::create();
     AnimationPlayerForTesting player;
 
     layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());

@@ -11,6 +11,7 @@
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 class SkImageFilter;
 
@@ -20,7 +21,10 @@ namespace blink {
 class PLATFORM_EXPORT CompositorFilterOperations {
     WTF_MAKE_NONCOPYABLE(CompositorFilterOperations);
 public:
-    CompositorFilterOperations();
+    static PassOwnPtr<CompositorFilterOperations> create()
+    {
+        return adoptPtr(new CompositorFilterOperations());
+    }
 
     const cc::FilterOperations& asFilterOperations() const;
 
@@ -44,6 +48,8 @@ public:
     bool isEmpty() const;
 
 private:
+    CompositorFilterOperations();
+
     cc::FilterOperations m_filterOperations;
 };
 

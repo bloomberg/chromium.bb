@@ -12,6 +12,7 @@
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <memory>
 
@@ -25,7 +26,11 @@ class WebLayer;
 class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
     WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
 public:
-    CompositorAnimationPlayer();
+    static PassOwnPtr<CompositorAnimationPlayer> create()
+    {
+        return adoptPtr(new CompositorAnimationPlayer());
+    }
+
     ~CompositorAnimationPlayer();
 
     cc::AnimationPlayer* animationPlayer() const;
@@ -46,6 +51,8 @@ public:
     void abortAnimation(int animationId);
 
 private:
+    CompositorAnimationPlayer();
+
     // cc::AnimationDelegate implementation.
     void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
     void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;

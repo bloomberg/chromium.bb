@@ -34,7 +34,6 @@
 #include "platform/MemoryCacheDumpProvider.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "public/platform/Platform.h"
@@ -95,15 +94,11 @@ void Platform::initialize(Platform* platform)
         base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches", base::ThreadTaskRunnerHandle::Get());
         base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(MemoryCacheDumpProvider::instance(), "MemoryCache", base::ThreadTaskRunnerHandle::Get());
     }
-
-    CompositorFactory::initializeDefault();
 }
 
 void Platform::shutdown()
 {
     ASSERT(isMainThread());
-    CompositorFactory::shutdown();
-
     if (s_platform->m_mainThread) {
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(FontCacheMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(PartitionAllocMemoryDumpProvider::instance());

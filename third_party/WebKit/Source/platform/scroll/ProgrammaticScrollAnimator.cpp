@@ -7,7 +7,6 @@
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/IntPoint.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
@@ -50,9 +49,9 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
 
     m_startTime = 0.0;
     m_targetOffset = offset;
-    m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
+    m_animationCurve = CompositorScrollOffsetAnimationCurve::create(
         compositorOffsetFromBlinkOffset(m_targetOffset),
-        CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
+        CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased);
 
     m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
@@ -121,7 +120,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
         bool sentToCompositor = false;
 
         if (!m_scrollableArea->shouldScrollOnMainThread()) {
-            OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET));
+            OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
 
             int animationId = animation->id();
             int animationGroupId = animation->group();

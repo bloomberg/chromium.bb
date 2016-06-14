@@ -29,7 +29,11 @@ public:
     using Direction = cc::Animation::Direction;
     using FillMode = cc::Animation::FillMode;
 
-    CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
+    static PassOwnPtr<CompositorAnimation> create(const blink::CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId)
+    {
+        return adoptPtr(new CompositorAnimation(curve, target, animationId, groupId));
+    }
+
     ~CompositorAnimation();
 
     // An id must be unique.
@@ -67,6 +71,8 @@ public:
     PassOwnPtr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
 
 private:
+    CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
+
     std::unique_ptr<cc::Animation> m_animation;
 };
 

@@ -33,7 +33,6 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "platform/TraceEvent.h"
 #include "platform/animation/CompositorAnimation.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -268,10 +267,7 @@ bool ScrollAnimator::sendAnimationToCompositor()
     if (m_scrollableArea->shouldScrollOnMainThread())
         return false;
 
-    OwnPtr<CompositorAnimation> animation = adoptPtr(
-        CompositorFactory::current().createAnimation(
-            *m_animationCurve,
-            CompositorTargetProperty::SCROLL_OFFSET));
+    OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
     // Being here means that either there is an animation that needs
     // to be sent to the compositor, or an animation that needs to
     // be updated (a new scroll event before the previous animation
@@ -296,11 +292,11 @@ bool ScrollAnimator::sendAnimationToCompositor()
 void ScrollAnimator::createAnimationCurve()
 {
     DCHECK(!m_animationCurve);
-    m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
+    m_animationCurve = CompositorScrollOffsetAnimationCurve::create(
         compositorOffsetFromBlinkOffset(m_targetOffset),
         m_lastGranularity == ScrollByPixel ?
             CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
-            CompositorScrollOffsetAnimationCurve::ScrollDurationConstant));
+            CompositorScrollOffsetAnimationCurve::ScrollDurationConstant);
     m_animationCurve->setInitialValue(compositorOffsetFromBlinkOffset(currentPosition()));
 }
 
@@ -425,9 +421,7 @@ void ScrollAnimator::notifyAnimationTakeover(
     FloatPoint targetValue(scrollOffsetAnimationCurve->target_value().x(),
         scrollOffsetAnimationCurve->target_value().y());
     if (willAnimateToOffset(targetValue)) {
-        m_animationCurve = adoptPtr(
-            CompositorFactory::current().createScrollOffsetAnimationCurve(
-                std::move(scrollOffsetAnimationCurve)));
+        m_animationCurve = CompositorScrollOffsetAnimationCurve::create(std::move(scrollOffsetAnimationCurve));
         m_startTime = animationStartTime;
     }
 }

@@ -34,11 +34,12 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/animation/CompositorTargetProperty.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
@@ -85,7 +86,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
 
-    m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
+    m_compositorPlayer = CompositorAnimationPlayer::create();
     DCHECK(m_compositorPlayer);
     m_compositorPlayer->setAnimationDelegate(this);
     if (m_owningWebViewImpl->linkHighlightsTimeline())
@@ -301,7 +302,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
 
     m_contentLayer->layer()->setOpacity(startOpacity);
 
-    OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
+    OwnPtr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
 
     const auto easeType = CubicBezierTimingFunction::EaseType::EASE;
 
@@ -313,7 +314,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
     // For layout tests we don't fade out.
     curve->addCubicBezierKeyframe(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0), easeType);
 
-    OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY));
+    OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0);
 
     m_contentLayer->layer()->setDrawsContent(true);
     m_compositorPlayer->addAnimation(animation.leakPtr());
