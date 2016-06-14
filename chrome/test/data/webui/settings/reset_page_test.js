@@ -26,7 +26,6 @@ cr.define('settings_reset_page', function() {
       'onShowResetProfileDialog',
       'showReportedSettings',
       'onPowerwashDialogShow',
-      'requestFactoryResetRestart',
     ]);
   };
 
@@ -62,11 +61,6 @@ cr.define('settings_reset_page', function() {
     /** @override */
     onPowerwashDialogShow: function() {
       this.methodCalled('onPowerwashDialogShow');
-    },
-
-    /** @override */
-    requestFactoryResetRestart: function() {
-      this.methodCalled('requestFactoryResetRestart');
     },
   };
 
@@ -122,9 +116,21 @@ cr.define('settings_reset_page', function() {
     suite('DialogTests', function() {
       var resetPage = null;
 
+      /** @type {!settings.ResetPageBrowserProxy} */
+      var resetPageBrowserProxy = null;
+
+      /** @type {!settings.LifetimeBrowserProxy} */
+      var lifetimeBrowserProxy = null;
+
       setup(function() {
-        browserProxy = new TestResetBrowserProxy();
-        settings.ResetBrowserProxyImpl.instance_ = browserProxy;
+        if (cr.isChromeOS) {
+          lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
+          settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+        }
+
+        resetPageBrowserProxy = new TestResetBrowserProxy();
+        settings.ResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
+
         PolymerTest.clearBody();
         resetPage = document.createElement('settings-reset-page');
         document.body.appendChild(resetPage);
@@ -138,8 +144,8 @@ cr.define('settings_reset_page', function() {
        * @return {!Promise}
        */
       function testOpenCloseResetProfileDialog(closeDialogFn) {
-        browserProxy.resetResolver('onShowResetProfileDialog');
-        browserProxy.resetResolver('onHideResetProfileDialog');
+        resetPageBrowserProxy.resetResolver('onShowResetProfileDialog');
+        resetPageBrowserProxy.resetResolver('onHideResetProfileDialog');
 
         // Open reset profile dialog.
         MockInteractions.tap(resetPage.$.resetProfile);
@@ -150,18 +156,19 @@ cr.define('settings_reset_page', function() {
               dialog.addEventListener('iron-overlay-closed', resolve);
             });
 
-        return browserProxy.whenCalled('onShowResetProfileDialog').then(
+        return resetPageBrowserProxy.whenCalled(
+            'onShowResetProfileDialog').then(
             function() {
               closeDialogFn(dialog);
               return Promise.all([
                 onDialogClosed,
-                browserProxy.whenCalled('onHideResetProfileDialog'),
+                resetPageBrowserProxy.whenCalled('onHideResetProfileDialog'),
               ]);
             });
       }
 
       // Tests that the reset profile dialog opens and closes correctly and that
-      // browserProxy calls are occurring as expected.
+      // resetPageBrowserProxy calls are occurring as expected.
       test(TestNames.ResetProfileDialogOpenClose, function() {
         return Promise.all([
           // Test case where the 'cancel' button is clicked.
@@ -195,10 +202,12 @@ cr.define('settings_reset_page', function() {
         assertTrue(!!showReportedSettingsLink);
         MockInteractions.tap(showReportedSettingsLink);
 
-        return browserProxy.whenCalled('showReportedSettings').then(function() {
-          MockInteractions.tap(dialog.$.reset);
-          return browserProxy.whenCalled('performResetProfileSettings');
-        });
+        return resetPageBrowserProxy.whenCalled('showReportedSettings').then(
+            function() {
+              MockInteractions.tap(dialog.$.reset);
+              return resetPageBrowserProxy.whenCalled(
+                  'performResetProfileSettings');
+            });
       });
 
       if (cr.isChromeOS) {
@@ -221,7 +230,7 @@ cr.define('settings_reset_page', function() {
           MockInteractions.tap(closeButtonFn(dialog));
           return Promise.all([
               onDialogClosed,
-              browserProxy.whenCalled('onPowerwashDialogShow'),
+              resetPageBrowserProxy.whenCalled('onPowerwashDialogShow'),
           ]);
         }
 
@@ -246,7 +255,7 @@ cr.define('settings_reset_page', function() {
           var dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
           MockInteractions.tap(dialog.$.powerwash);
-          return browserProxy.whenCalled('requestFactoryResetRestart');
+          return lifetimeBrowserProxy.whenCalled('factoryReset');
         });
       }
     });

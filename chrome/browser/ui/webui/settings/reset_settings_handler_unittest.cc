@@ -47,8 +47,8 @@ class MockProfileResetter : public ProfileResetter {
 class TestingResetSettingsHandler : public ResetSettingsHandler {
  public:
   TestingResetSettingsHandler(
-      TestingProfile* profile, bool allow_powerwash, content::WebUI* web_ui)
-      : ResetSettingsHandler(profile, allow_powerwash),
+      TestingProfile* profile, content::WebUI* web_ui)
+      : ResetSettingsHandler(profile),
         resetter_(profile) {
     set_web_ui(web_ui);
   }
@@ -70,7 +70,7 @@ private:
 
 class ResetSettingsHandlerTest : public testing::Test {
  public:
-  ResetSettingsHandlerTest() : handler_(&profile_, false, &web_ui_) {
+  ResetSettingsHandlerTest() : handler_(&profile_, &web_ui_) {
   }
 
   TestingResetSettingsHandler* handler() { return &handler_; }

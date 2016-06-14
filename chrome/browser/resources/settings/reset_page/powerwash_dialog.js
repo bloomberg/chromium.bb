@@ -22,6 +22,6 @@ Polymer({
 
   /** @private */
   onRestartTap_: function() {
-    settings.ResetBrowserProxyImpl.getInstance().requestFactoryResetRestart();
+    settings.LifetimeBrowserProxyImpl.getInstance().factoryReset();
   },
 });

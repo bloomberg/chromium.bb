@@ -46,7 +46,7 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   void OnJavascriptDisallowed() override {}
 
  protected:
-  ResetSettingsHandler(Profile* profile, bool allow_powerwash);
+  explicit ResetSettingsHandler(Profile* profile);
 
   // Overriden in tests to substitute with a test version of ProfileResetter.
   virtual ProfileResetter* GetResetter();
@@ -84,13 +84,6 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
 #if defined(OS_CHROMEOS)
   // Will be called when powerwash dialog is shown.
   void OnShowPowerwashDialog(const base::ListValue* args);
-
-  // Sets a pref indicating that a factory reset is requested and then requests
-  // a restart.
-  void HandleFactoryResetRestart(const base::ListValue* args);
-
-  // Whether factory reset can be performed.
-  bool allow_powerwash_ = false;
 #endif  // defined(OS_CHROMEOS)
 
   Profile* const profile_;

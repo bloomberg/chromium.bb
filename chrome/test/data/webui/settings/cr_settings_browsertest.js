@@ -251,6 +251,7 @@ CrSettingsResetPageTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_browser_proxy.js',
+    'test_lifetime_browser_proxy.js',
     'reset_page_test.js',
   ]),
 };
