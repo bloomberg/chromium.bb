@@ -711,8 +711,13 @@ void ThreadState::performIdleGC(double deadlineSeconds)
     if (gcState() != IdleGCScheduled)
         return;
 
+    if (isGCForbidden()) {
+        // If GC is forbidden at this point, try again.
+        scheduleIdleGC();
+        return;
+    }
+
     double idleDeltaInSeconds = deadlineSeconds - monotonicallyIncreasingTime();
-    TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds", idleDeltaInSeconds, "estimatedMarkingTime", m_heap->heapStats().estimatedMarkingTime());
     if (idleDeltaInSeconds <= m_heap->heapStats().estimatedMarkingTime() && !Platform::current()->currentThread()->scheduler()->canExceedIdleDeadlineIfRequired()) {
         // If marking is estimated to take longer than the deadline and we can't
         // exceed the deadline, then reschedule for the next idle period.
@@ -720,6 +725,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
     }
 
+    TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds", idleDeltaInSeconds, "estimatedMarkingTime", m_heap->heapStats().estimatedMarkingTime());
     ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::IdleGC);
 }
 
