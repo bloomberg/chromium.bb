@@ -510,14 +510,6 @@ bool RecordInfo::NeedsFinalization() {
     if (!does_need_finalization_)
       return does_need_finalization_;
 
-    // Processing a class with a safely-ignorable destructor.
-    NamespaceDecl* ns =
-        dyn_cast<NamespaceDecl>(record_->getDeclContext());
-    if (ns && Config::HasIgnorableDestructor(ns->getName(), name_)) {
-      does_need_finalization_ = kFalse;
-      return does_need_finalization_;
-    }
-
     CXXDestructorDecl* dtor = record_->getDestructor();
     if (dtor && dtor->isUserProvided())
       return does_need_finalization_;
@@ -545,10 +537,7 @@ bool RecordInfo::NeedsFinalization() {
 // - it is allocated on the managed heap,
 // - it is derived from a class that needs tracing, or
 // - it contains fields that need tracing.
-// TODO: Defining NeedsTracing based on whether a class defines a trace method
-// (of the proper signature) over approximates too much. The use of transition
-// types causes some classes to have trace methods without them needing to be
-// traced.
+//
 TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
   if (IsGCAllocated())
     return TracingStatus::Needed();

@@ -57,10 +57,6 @@ class Config {
            IsPersistentGCCollection(name);
   }
 
-  static bool IsRawPtr(const std::string& name) {
-    return name == "RawPtr";
-  }
-
   static bool IsRefPtr(const std::string& name) {
     return name == "RefPtr";
   }
@@ -106,21 +102,9 @@ class Config {
            name == "PersistentHeapHashMap";
   }
 
-  // Following http://crrev.com/369633033 (Blink r177436),
-  // ignore blink::ScriptWrappable's destructor.
-  // TODO: remove when its non-Oilpan destructor is removed.
-  static bool HasIgnorableDestructor(const std::string& ns,
-                                     const std::string& name) {
-    return ns == "blink" && name == "ScriptWrappable";
-  }
-
   // Assumes name is a valid collection name.
   static size_t CollectionDimension(const std::string& name) {
     return (IsHashMap(name) || name == "pair") ? 2 : 1;
-  }
-
-  static bool IsDummyBase(const std::string& name) {
-    return name == "DummyBase";
   }
 
   static bool IsRefCountedBase(const std::string& name) {
@@ -145,7 +129,7 @@ class Config {
   // Returns true of the base classes that do not need a vtable entry for trace
   // because they cannot possibly initiate a GC during construction.
   static bool IsSafePolymorphicBase(const std::string& name) {
-    return IsGCBase(name) || IsDummyBase(name) || IsRefCountedBase(name);
+    return IsGCBase(name) || IsRefCountedBase(name);
   }
 
   static bool IsAnnotated(clang::Decl* decl, const std::string& anno) {
