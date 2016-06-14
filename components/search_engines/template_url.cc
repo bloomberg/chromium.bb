@@ -25,6 +25,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/url_formatter/url_formatter.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -1204,7 +1205,8 @@ TemplateURL::TemplateURL(const TemplateURLData& data)
                        TemplateURLRef::INSTANT),
       image_url_ref_(this, TemplateURLRef::IMAGE),
       new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
-      contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH) {
+      contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH),
+      engine_type_(SEARCH_ENGINE_UNKNOWN) {
   ResizeURLRefVector();
   SetPrepopulateId(data_.prepopulate_id);
 
@@ -1330,6 +1332,17 @@ TemplateURL::Type TemplateURL::GetType() const {
 std::string TemplateURL::GetExtensionId() const {
   DCHECK(extension_info_);
   return extension_info_->extension_id;
+}
+
+SearchEngineType TemplateURL::GetEngineType(
+    const SearchTermsData& search_terms_data) const {
+  if (engine_type_ == SEARCH_ENGINE_UNKNOWN) {
+    const GURL url = GenerateSearchURL(search_terms_data);
+    engine_type_ = url.is_valid() ?
+        TemplateURLPrepopulateData::GetEngineType(url) : SEARCH_ENGINE_OTHER;
+    DCHECK_NE(SEARCH_ENGINE_UNKNOWN, engine_type_);
+  }
+  return engine_type_;
 }
 
 bool TemplateURL::ExtractSearchTermsFromURL(
@@ -1469,6 +1482,7 @@ void TemplateURL::CopyFrom(const TemplateURL& other) {
 
 void TemplateURL::SetURL(const std::string& url) {
   data_.SetURL(url);
+  engine_type_ = SEARCH_ENGINE_UNKNOWN;
   url_ref_->InvalidateCachedValues();
 }
 

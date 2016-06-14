@@ -33,7 +33,6 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/search/search.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -488,9 +487,8 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
   // non-keyword mode.
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
-      (TemplateURLPrepopulateData::GetEngineType(
-           *default_url,
-           client()->GetTemplateURLService()->search_terms_data()) ==
+      (default_url->GetEngineType(
+          client()->GetTemplateURLService()->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE)) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;

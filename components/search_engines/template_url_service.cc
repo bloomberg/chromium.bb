@@ -827,8 +827,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
     UMA_HISTOGRAM_ENUMERATION(
         "Search.DefaultSearchProviderType",
-        TemplateURLPrepopulateData::GetEngineType(
-            *default_search_provider_, search_terms_data()),
+        default_search_provider_->GetEngineType(search_terms_data()),
         SEARCH_ENGINE_MAX);
 
     if (rappor_service_) {

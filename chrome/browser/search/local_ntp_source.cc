@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "grit/browser_resources.h"
@@ -88,8 +87,8 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   return default_provider &&
-      (TemplateURLPrepopulateData::GetEngineType(
-          *default_provider, template_url_service->search_terms_data()) ==
+      (default_provider->GetEngineType(
+          template_url_service->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE);
 }
 

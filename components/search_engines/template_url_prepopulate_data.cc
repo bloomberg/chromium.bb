@@ -21,7 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_data.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
@@ -1125,6 +1125,11 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
   return t_urls;
 }
 
+std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines() {
+  return std::vector<const PrepopulatedEngine*>(std::begin(kAllEngines),
+                                                std::end(kAllEngines));
+}
+
 std::unique_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
     const PrepopulatedEngine& engine) {
   base::ListValue alternate_urls;
@@ -1164,16 +1169,6 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(
     loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
   }
   return default_search_provider;
-}
-
-SearchEngineType GetEngineType(const TemplateURL& url,
-                               const SearchTermsData& search_terms_data) {
-  // By calling ReplaceSearchTerms, we ensure that even TemplateURLs whose URLs
-  // can't be directly inspected (e.g. due to containing {google:baseURL}) can
-  // be converted to GURLs we can look at.
-  GURL gurl(url.url_ref().ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(
-      base::ASCIIToUTF16("x")), search_terms_data));
-  return gurl.is_valid() ? GetEngineType(gurl) : SEARCH_ENGINE_OTHER;
 }
 
 SearchEngineType GetEngineType(const GURL& url) {

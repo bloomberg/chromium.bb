@@ -17,8 +17,6 @@
 
 class GURL;
 class PrefService;
-class SearchTermsData;
-class TemplateURL;
 struct TemplateURLData;
 
 namespace user_prefs {
@@ -45,6 +43,9 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index);
 
+// Returns all prepopulated engines for all locales. Used only by tests.
+std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines();
+
 // Returns a TemplateURLData for the specified prepopulated engine.
 std::unique_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
     const PrepopulatedEngine& engine);
@@ -58,15 +59,6 @@ void ClearPrepopulatedEnginesInPrefs(PrefService* prefs);
 // not used.
 std::unique_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(
     PrefService* prefs);
-
-// Returns the type of the provided engine, or SEARCH_ENGINE_OTHER if no engines
-// match.  This checks the TLD+1 for the most part, but will report the type as
-// SEARCH_ENGINE_GOOGLE for any hostname that causes
-// google_util::IsGoogleHostname() to return true.
-//
-// NOTE: Must be called on the UI thread.
-SearchEngineType GetEngineType(const TemplateURL& template_url,
-                               const SearchTermsData& search_terms_data);
 
 // Like the above, but takes a GURL which is expected to represent a search URL.
 // This may be called on any thread.

@@ -30,8 +30,7 @@ namespace {
 SearchEngineType GetEngineType(const std::string& url) {
   TemplateURLData data;
   data.SetURL(url);
-  return TemplateURLPrepopulateData::GetEngineType(TemplateURL(data),
-                                                   SearchTermsData());
+  return TemplateURL(data).GetEngineType(SearchTermsData());
 }
 
 std::string GetHostFromTemplateURLData(const TemplateURLData& data) {
@@ -252,8 +251,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_FALSE(t_urls[default_index]->contextual_search_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-            TemplateURLPrepopulateData::GetEngineType(
-                TemplateURL(*t_urls[default_index]),
+            TemplateURL(*t_urls[default_index]).GetEngineType(
                 SearchTermsData()));
 }
 
@@ -291,8 +289,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   for (size_t i = 0; i < t_urls[default_index]->alternate_urls.size(); ++i)
     EXPECT_FALSE(t_urls[default_index]->alternate_urls[i].empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-            TemplateURLPrepopulateData::GetEngineType(
-                TemplateURL(*t_urls[default_index]),
+            TemplateURL(*t_urls[default_index]).GetEngineType(
                 SearchTermsData()));
   EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key.empty());
 }
@@ -353,4 +350,17 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kGoogleBaseURL, "http://www.foo.com/");
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE, GetEngineType(foo_url));
+}
+
+TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeForAllPrepopulatedEngines) {
+  using PrepopulatedEngine = TemplateURLPrepopulateData::PrepopulatedEngine;
+  const std::vector<const PrepopulatedEngine*> all_engines =
+      TemplateURLPrepopulateData::GetAllPrepopulatedEngines();
+  for (const PrepopulatedEngine* engine : all_engines) {
+    std::unique_ptr<TemplateURLData> data =
+        TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
+            *engine);
+    EXPECT_EQ(engine->type,
+              TemplateURL(*data).GetEngineType(SearchTermsData()));
+  }
 }

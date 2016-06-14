@@ -48,7 +48,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
@@ -313,8 +312,8 @@ void LogMainFrameMetricsOnUIThread(
         template_url_service->GetDefaultSearchProvider();
     if (!default_provider)
       return;
-    if (TemplateURLPrepopulateData::GetEngineType(
-            *default_provider, template_url_service->search_terms_data()) ==
+    if (default_provider->GetEngineType(
+            template_url_service->search_terms_data()) ==
         SearchEngineType::SEARCH_ENGINE_GOOGLE) {
       if (net_error == net::OK) {
         UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Google.RequestTime2.Success",

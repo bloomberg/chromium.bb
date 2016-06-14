@@ -20,7 +20,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
@@ -317,8 +316,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
   // (currently only the prepopulated Google provider).
   if (template_url == NULL ||
       !template_url->SupportsReplacement(search_terms_data) ||
-      TemplateURLPrepopulateData::GetEngineType(
-          *template_url, search_terms_data) != SEARCH_ENGINE_GOOGLE)
+      template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
     return false;
 
   return true;

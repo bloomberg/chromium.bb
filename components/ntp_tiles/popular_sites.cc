@@ -26,7 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/search_engines/search_engine_type.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
 #include "net/base/load_flags.h"
@@ -65,8 +64,8 @@ std::string GetDefaultSearchEngineCountryCode(
   // search engine is defined by policy.
   if (default_provider) {
     bool is_google_search_engine =
-        TemplateURLPrepopulateData::GetEngineType(
-            *default_provider, template_url_service->search_terms_data()) ==
+        default_provider->GetEngineType(
+            template_url_service->search_terms_data()) ==
         SearchEngineType::SEARCH_ENGINE_GOOGLE;
 
     if (is_google_search_engine) {

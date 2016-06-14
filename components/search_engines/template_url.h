@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
 #include "ui/gfx/geometry/size.h"
@@ -644,6 +645,11 @@ class TemplateURL {
   // OMNIBOX_API_EXTENSION.
   std::string GetExtensionId() const;
 
+  // Returns the type of this search engine, or SEARCH_ENGINE_OTHER if no
+  // engines match.
+  SearchEngineType GetEngineType(
+      const SearchTermsData& search_terms_data) const;
+
   // Use the alternate URLs and the search URL to match the provided |url|
   // and extract |search_terms| from it. Returns false and an empty
   // |search_terms| if no search terms can be matched. The order in which the
@@ -748,6 +754,9 @@ class TemplateURL {
   TemplateURLRef new_tab_url_ref_;
   TemplateURLRef contextual_search_url_ref_;
   std::unique_ptr<AssociatedExtensionInfo> extension_info_;
+
+  // Caches the computed engine type across successive calls to GetEngineType().
+  mutable SearchEngineType engine_type_;
 
   // TODO(sky): Add date last parsed OSD file.
 

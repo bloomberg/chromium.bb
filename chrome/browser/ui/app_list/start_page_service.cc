@@ -36,7 +36,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
@@ -339,8 +338,8 @@ StartPageService::StartPageService(Profile* profile)
     const TemplateURL* default_provider =
         template_url_service->GetDefaultSearchProvider();
     search_engine_is_google_ =
-        TemplateURLPrepopulateData::GetEngineType(
-            *default_provider, template_url_service->search_terms_data()) ==
+        default_provider->GetEngineType(
+            template_url_service->search_terms_data()) ==
         SEARCH_ENGINE_GOOGLE;
   }
 
