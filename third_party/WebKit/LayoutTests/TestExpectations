@@ -1633,3 +1633,7 @@ crbug.com/618399 fast/js/regress/to-int32-boolean.html [ Pass Timeout ]
 
 
 crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
+
+crbug.com/619973 fast/forms/select/listbox-appearance-basic.html [ Failure ]
+crbug.com/619973 fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ Failure ]
+crbug.com/619973 fast/forms/select/menulist-appearance-basic.html [ Failure ]
