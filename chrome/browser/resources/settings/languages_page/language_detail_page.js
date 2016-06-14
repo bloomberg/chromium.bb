@@ -175,6 +175,11 @@ Polymer({
    * @private
    */
   onRestartTap_: function() {
-    chrome.send('restart');
+<if expr="chromeos">
+    settings.LifetimeBrowserProxyImpl.getInstance().logOutAndRestart();
+</if>
+<if expr="not chromeos">
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
+</if>
   },
 });

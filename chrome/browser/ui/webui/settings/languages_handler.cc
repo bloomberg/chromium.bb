@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 
@@ -37,10 +36,6 @@ void LanguagesHandler::RegisterMessages() {
       "setUILanguage",
       base::Bind(&LanguagesHandler::HandleSetUILanguage,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "restart",
-      base::Bind(&LanguagesHandler::HandleRestart,
-                 base::Unretained(this)));
 }
 
 void LanguagesHandler::HandleSetUILanguage(const base::ListValue* args) {
@@ -65,14 +60,6 @@ void LanguagesHandler::HandleSetUILanguage(const base::ListValue* args) {
   }
 #else
   NOTREACHED() << "Attempting to set locale on unsupported platform";
-#endif
-}
-
-void LanguagesHandler::HandleRestart(const base::ListValue* args) {
-#if defined(OS_CHROMEOS)
-  chrome::AttemptUserExit();
-#else
-  chrome::AttemptRestart();
 #endif
 }
 

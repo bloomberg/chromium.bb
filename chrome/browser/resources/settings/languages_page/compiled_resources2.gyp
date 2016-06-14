@@ -23,6 +23,7 @@
     {
       'target_name': 'language_detail_page',
       'dependencies': [
+        '../compiled_resources2.gyp:lifetime_browser_proxy',
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_indicator_behavior',
         '<(DEPTH)/ui/webui/resources/js/chromeos/compiled_resources2.gyp:ui_account_tweaks',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
