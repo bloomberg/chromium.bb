@@ -59,6 +59,7 @@ std::unique_ptr<base::Value> NetLogQuicPacketSentCallback(
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_number",
                   base::Uint64ToString(serialized_packet.packet_number));
+  dict->SetInteger("size", serialized_packet.encrypted_length);
   dict->SetString("sent_time_us",
                   base::Int64ToString(sent_time.ToDebuggingValue()));
   return std::move(dict);
