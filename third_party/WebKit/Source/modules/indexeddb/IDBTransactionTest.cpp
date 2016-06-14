@@ -47,25 +47,12 @@ namespace {
 class IDBTransactionTest : public testing::Test {
 public:
     IDBTransactionTest()
-        : m_scope(v8::Isolate::GetCurrent())
     {
-    }
-
-    void SetUp() override
-    {
-        m_executionContext = Document::create();
-        m_scope.getScriptState()->setExecutionContext(m_executionContext.get());
-    }
-
-    void TearDown() override
-    {
-        m_executionContext->notifyContextDestroyed();
-        m_scope.getScriptState()->setExecutionContext(nullptr);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
     ScriptState* getScriptState() const { return m_scope.getScriptState(); }
-    ExecutionContext* getExecutionContext() { return m_scope.getScriptState()->getExecutionContext(); }
+    ExecutionContext* getExecutionContext() { return m_scope.getExecutionContext(); }
 
     void deactivateNewTransactions()
     {
@@ -74,7 +61,6 @@ public:
 
 private:
     V8TestingScope m_scope;
-    Persistent<ExecutionContext> m_executionContext;
 };
 
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {

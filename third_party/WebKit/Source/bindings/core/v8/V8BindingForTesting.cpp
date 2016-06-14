@@ -4,8 +4,7 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/testing/DummyPageHolder.h"
 
 namespace blink {
 
@@ -33,32 +32,58 @@ void ScriptStateForTesting::setExecutionContext(ExecutionContext* executionConte
     m_executionContext = executionContext;
 }
 
-V8TestingScope::V8TestingScope(v8::Isolate* isolate)
-    : m_handleScope(isolate)
-    , m_contextScope(v8::Context::New(isolate))
-    // We reuse the main world since the main world is guaranteed to be registered to ScriptController.
-    , m_scriptState(ScriptStateForTesting::create(isolate->GetCurrentContext(), &DOMWrapperWorld::mainWorld()))
+V8TestingScope::V8TestingScope()
+    : m_holder(DummyPageHolder::create())
+    , m_handleScope(isolate())
+    , m_contextScope(v8::Context::New(isolate()))
+    , m_scriptStateScope(getScriptState())
 {
-}
-
-V8TestingScope::~V8TestingScope()
-{
-    m_scriptState->disposePerContextData();
 }
 
 ScriptState* V8TestingScope::getScriptState() const
 {
-    return m_scriptState.get();
+    return ScriptState::forMainWorld(m_holder->document().frame());
+}
+
+ExecutionContext* V8TestingScope::getExecutionContext() const
+{
+    return getScriptState()->getExecutionContext();
 }
 
 v8::Isolate* V8TestingScope::isolate() const
 {
-    return m_scriptState->isolate();
+    return getScriptState()->isolate();
 }
 
 v8::Local<v8::Context> V8TestingScope::context() const
 {
-    return m_scriptState->context();
+    return getScriptState()->context();
+}
+
+ExceptionState& V8TestingScope::getExceptionState()
+{
+    return m_exceptionState;
+}
+
+Page& V8TestingScope::page()
+{
+    return m_holder->page();
+}
+
+LocalFrame& V8TestingScope::frame()
+{
+    return m_holder->frame();
+}
+
+Document& V8TestingScope::document()
+{
+    return m_holder->document();
+}
+
+V8TestingScope::~V8TestingScope()
+{
+    if (m_holder->document().frame())
+        getScriptState()->disposePerContextData();
 }
 
 } // namespace blink

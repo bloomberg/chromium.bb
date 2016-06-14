@@ -74,9 +74,7 @@ private:
 class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
-        : m_scope(v8::Isolate::GetCurrent())
     {
-        m_scope.getScriptState()->setExecutionContext(new NullExecutionContext());
     }
 
     ~ScriptPromiseTest()

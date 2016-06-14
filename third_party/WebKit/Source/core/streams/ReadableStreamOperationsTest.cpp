@@ -129,11 +129,8 @@ public:
 class ReadableStreamOperationsTest : public ::testing::Test {
 public:
     ReadableStreamOperationsTest()
-        : m_scope(v8::Isolate::GetCurrent())
-        , m_block(isolate())
-        , m_document(Document::create())
+        : m_block(isolate())
     {
-        getScriptState()->setExecutionContext(m_document.get());
     }
     ~ReadableStreamOperationsTest() override
     {
@@ -173,7 +170,6 @@ public:
 
     V8TestingScope m_scope;
     v8::TryCatch m_block;
-    Persistent<Document> m_document;
 };
 
 TEST_F(ReadableStreamOperationsTest, IsReadableStream)

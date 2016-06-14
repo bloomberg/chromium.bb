@@ -21,36 +21,29 @@ namespace blink {
 class AnimationEffectInputTest : public ::testing::Test {
 protected:
     AnimationEffectInputTest()
-        : pageHolder(DummyPageHolder::create())
-        , element(pageHolder->document().createElement("foo", ASSERT_NO_EXCEPTION))
-        , m_isolate(v8::Isolate::GetCurrent())
-        , m_scope(m_isolate)
+        : element(m_scope.document().createElement("foo", ASSERT_NO_EXCEPTION))
     {
-        pageHolder->document().documentElement()->appendChild(element.get());
+        m_scope.document().documentElement()->appendChild(element.get());
     }
 
-    OwnPtr<DummyPageHolder> pageHolder;
+    V8TestingScope m_scope;
     Persistent<Element> element;
     TrackExceptionState exceptionState;
-    v8::Isolate* m_isolate;
-
-private:
-    V8TestingScope m_scope;
 };
 
 TEST_F(AnimationEffectInputTest, SortedOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_scope.isolate());
 
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe1, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_scope.isolate(), exceptionState));
 
     EffectModel* animationEffect = EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -61,16 +54,16 @@ TEST_F(AnimationEffectInputTest, SortedOffsets)
 TEST_F(AnimationEffectInputTest, UnsortedOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_scope.isolate());
 
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "0px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "1");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "100px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "0");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "width", "0px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "offset", "1");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "width", "100px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "offset", "0");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe1, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_scope.isolate(), exceptionState));
 
     EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
@@ -80,19 +73,19 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
 TEST_F(AnimationEffectInputTest, LooslySorted)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_scope.isolate());
 
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "200px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "width", "0px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "1");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "width", "200px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "width", "0px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe1, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_scope.isolate(), exceptionState));
 
     EffectModel* animationEffect = EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -103,23 +96,23 @@ TEST_F(AnimationEffectInputTest, LooslySorted)
 TEST_F(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe4 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe4 = v8::Object::New(m_scope.isolate());
 
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "height", "100px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0.5");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "height", "150px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "height", "200px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "0");
-    setV8ObjectPropertyAsString(m_isolate, keyframe4, "height", "300px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe4, "offset", "1");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "height", "100px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "offset", "0.5");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "height", "150px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "height", "200px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "offset", "0");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe4, "height", "300px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe4, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe4, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe1, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe4, m_scope.isolate(), exceptionState));
 
     EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
@@ -129,19 +122,19 @@ TEST_F(AnimationEffectInputTest, Invalid)
 {
     // Not loosely sorted by offset, and there exists a keyframe with null offset.
     Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_scope.isolate());
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_scope.isolate());
 
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "0px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "1");
-    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "200px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "width", "100px");
-    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "0");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "width", "0px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe1, "offset", "1");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe2, "width", "200px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "width", "100px");
+    setV8ObjectPropertyAsString(m_scope.isolate(), keyframe3, "offset", "0");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe1, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_scope.isolate(), exceptionState));
 
     EffectInput::convert(element.get(), EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());

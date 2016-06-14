@@ -28,7 +28,6 @@ class ScriptStreamingTest : public ::testing::Test {
 public:
     ScriptStreamingTest()
         : m_loadingTaskRunner(Platform::current()->currentThread()->scheduler()->loadingTaskRunner())
-        , m_scope(v8::Isolate::GetCurrent())
         , m_settings(Settings::create())
         , m_resourceRequest("http://www.streaming-test.com/")
         , m_resource(ScriptResource::create(m_resourceRequest, "UTF-8"))

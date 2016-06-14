@@ -7,8 +7,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/EventTypeNames.h"
-#include "core/testing/DummyPageHolder.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,34 +31,16 @@ public:
     DEFINE_INLINE_TRACE() {}
 };
 
-class PaymentRequestUpdateEventTest : public testing::Test {
-public:
-    PaymentRequestUpdateEventTest()
-        : m_page(DummyPageHolder::create())
-    {
-    }
-
-    ~PaymentRequestUpdateEventTest() override {}
-
-    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExecutionContext* getExecutionContext() { return &m_page->document(); }
-    ExceptionState& getExceptionState() { return m_exceptionState; }
-
-private:
-    OwnPtr<DummyPageHolder> m_page;
-    TrackExceptionState m_exceptionState;
-};
-
-TEST_F(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
     event->setEventPhase(Event::CAPTURING_PHASE);
-    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(getScriptState());
-    event->updateWith(getScriptState(), paymentDetails->promise(), getExceptionState());
-    EXPECT_FALSE(getExceptionState().hadException());
+    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
+    event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
     EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_));
     EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_)).Times(0);
@@ -66,16 +48,16 @@ TEST_F(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
     paymentDetails->resolve("foo");
 }
 
-TEST_F(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled)
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
     event->setEventPhase(Event::CAPTURING_PHASE);
-    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(getScriptState());
-    event->updateWith(getScriptState(), paymentDetails->promise(), getExceptionState());
-    EXPECT_FALSE(getExceptionState().hadException());
+    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
+    event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
     EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_)).Times(0);
     EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_));
@@ -83,40 +65,40 @@ TEST_F(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled)
     paymentDetails->reject("oops");
 }
 
-TEST_F(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching)
+TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     event->setPaymentDetailsUpdater(new MockPaymentUpdater);
 
-    event->updateWith(getScriptState(), ScriptPromiseResolver::create(getScriptState())->promise(), getExceptionState());
+    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
 
-    EXPECT_TRUE(getExceptionState().hadException());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
 }
 
-TEST_F(PaymentRequestUpdateEventTest, CannotUpdateTwice)
+TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
     event->setEventPhase(Event::CAPTURING_PHASE);
-    event->updateWith(getScriptState(), ScriptPromiseResolver::create(getScriptState())->promise(), getExceptionState());
-    EXPECT_FALSE(getExceptionState().hadException());
+    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    event->updateWith(getScriptState(), ScriptPromiseResolver::create(getScriptState())->promise(), getExceptionState());
+    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
 
-    EXPECT_TRUE(getExceptionState().hadException());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
 }
 
-TEST_F(PaymentRequestUpdateEventTest, UpdaterNotRequired)
+TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
 
-    event->updateWith(getScriptState(), ScriptPromiseResolver::create(getScriptState())->promise(), getExceptionState());
+    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
 
-    EXPECT_FALSE(getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
 } // namespace

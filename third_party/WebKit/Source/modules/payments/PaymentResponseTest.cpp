@@ -7,7 +7,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/testing/DummyPageHolder.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,26 +40,9 @@ private:
     ScriptPromise m_dummyPromise;
 };
 
-class PaymentResponseTest : public testing::Test {
-public:
-    PaymentResponseTest()
-        : m_page(DummyPageHolder::create())
-    {
-    }
-
-    ~PaymentResponseTest() override {}
-
-    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExceptionState& getExceptionState() { return m_exceptionState; }
-
-private:
-    OwnPtr<DummyPageHolder> m_page;
-    NonThrowableExceptionState m_exceptionState;
-};
-
-TEST_F(PaymentResponseTest, DataCopiedOver)
+TEST(PaymentResponseTest, DataCopiedOver)
 {
-    ScriptState::Scope scope(getScriptState());
+    V8TestingScope scope;
     mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
     input->total_amount->currency = "USD";
@@ -75,41 +59,43 @@ TEST_F(PaymentResponseTest, DataCopiedOver)
     EXPECT_EQ("USD", totalAmount.currency());
     EXPECT_EQ("5.00", totalAmount.value());
 
-    ScriptValue details = output.details(getScriptState(), getExceptionState());
+    ScriptValue details = output.details(scope.getScriptState(), scope.getExceptionState());
 
-    ASSERT_FALSE(getExceptionState().hadException());
+    ASSERT_FALSE(scope.getExceptionState().hadException());
     ASSERT_TRUE(details.v8Value()->IsObject());
 
-    ScriptValue transactionId(getScriptState(), details.v8Value().As<v8::Object>()->Get(v8String(getScriptState()->isolate(), "transactionId")));
+    ScriptValue transactionId(scope.getScriptState(), details.v8Value().As<v8::Object>()->Get(v8String(scope.getScriptState()->isolate(), "transactionId")));
 
     ASSERT_TRUE(transactionId.v8Value()->IsNumber());
     EXPECT_EQ(123, transactionId.v8Value().As<v8::Number>()->Value());
 }
 
-TEST_F(PaymentResponseTest, CompleteCalledWithSuccess)
+TEST(PaymentResponseTest, CompleteCalledWithSuccess)
 {
+    V8TestingScope scope;
     mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(getScriptState(), true));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), true));
 
-    output.complete(getScriptState(), true);
+    output.complete(scope.getScriptState(), true);
 }
 
-TEST_F(PaymentResponseTest, CompleteCalledWithFailure)
+TEST(PaymentResponseTest, CompleteCalledWithFailure)
 {
+    V8TestingScope scope;
     mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(getScriptState(), false));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), false));
 
-    output.complete(getScriptState(), false);
+    output.complete(scope.getScriptState(), false);
 }
 
 } // namespace

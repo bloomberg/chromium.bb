@@ -20,7 +20,7 @@ namespace {
 
 class ToV8Test : public ::testing::Test {
 public:
-    ToV8Test() : m_scope(v8::Isolate::GetCurrent()) { }
+    ToV8Test() { }
 
     template<typename T>
     void testToV8(const char* expected, T value, const char* path, int lineNumber)

@@ -6,8 +6,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/testing/DummyPageHolder.h"
 #include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,24 +116,17 @@ std::ostream& operator<<(std::ostream& out, DetailsTestCase testCase)
 class PaymentRequestDetailsTest : public testing::TestWithParam<DetailsTestCase> {
 public:
     PaymentRequestDetailsTest()
-        : m_page(DummyPageHolder::create())
     {
-        setSecurityOrigin("https://www.example.com/");
+        m_scope.document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
     }
 
     ~PaymentRequestDetailsTest() override {}
 
-    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExceptionState& getExceptionState() { return m_exceptionState; }
-
-    void setSecurityOrigin(const String& securityOrigin)
-    {
-        m_page->document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), securityOrigin)));
-    }
+    ScriptState* getScriptState() { return m_scope.getScriptState(); }
+    ExceptionState& getExceptionState() { return m_scope.getExceptionState(); }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
-    TrackExceptionState m_exceptionState;
+    V8TestingScope m_scope;
 };
 
 TEST_P(PaymentRequestDetailsTest, ValidatesDetails)

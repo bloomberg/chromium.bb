@@ -49,40 +49,13 @@
 namespace blink {
 namespace {
 
-class IDBRequestTest : public testing::Test {
-public:
-    IDBRequestTest()
-        : m_scope(v8::Isolate::GetCurrent())
-    {
-    }
-
-    void SetUp() override
-    {
-        m_executionContext = new NullExecutionContext();
-        m_scope.getScriptState()->setExecutionContext(m_executionContext.get());
-    }
-
-    void TearDown() override
-    {
-        m_executionContext->notifyContextDestroyed();
-        m_scope.getScriptState()->setExecutionContext(nullptr);
-    }
-
-    v8::Isolate* isolate() const { return m_scope.isolate(); }
-    ScriptState* getScriptState() const { return m_scope.getScriptState(); }
-    ExecutionContext* getExecutionContext() const { return m_scope.getScriptState()->getExecutionContext(); }
-
-private:
-    V8TestingScope m_scope;
-    Persistent<ExecutionContext> m_executionContext;
-};
-
-TEST_F(IDBRequestTest, EventsAfterStopping)
+TEST(IDBRequestTest, EventsAfterStopping)
 {
+    V8TestingScope scope;
     IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(getScriptState(), IDBAny::createUndefined(), transaction);
+    IDBRequest* request = IDBRequest::create(scope.getScriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
-    getExecutionContext()->stopActiveDOMObjects();
+    scope.getExecutionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMException::create(AbortError, "Description goes here."));
@@ -95,10 +68,11 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
 }
 
-TEST_F(IDBRequestTest, AbortErrorAfterAbort)
+TEST(IDBRequestTest, AbortErrorAfterAbort)
 {
+    V8TestingScope scope;
     IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(getScriptState(), IDBAny::createUndefined(), transaction);
+    IDBRequest* request = IDBRequest::create(scope.getScriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
 
     // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
@@ -110,11 +84,12 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 
     // Stop the request lest it be GCed and its destructor
     // finds the object in a pending state (and asserts.)
-    getExecutionContext()->stopActiveDOMObjects();
+    scope.getExecutionContext()->stopActiveDOMObjects();
 }
 
-TEST_F(IDBRequestTest, ConnectionsAfterStopping)
+TEST(IDBRequestTest, ConnectionsAfterStopping)
 {
+    V8TestingScope scope;
     const int64_t transactionId = 1234;
     const int64_t version = 1;
     const int64_t oldVersion = 0;
@@ -127,10 +102,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
             .Times(1);
         EXPECT_CALL(*backend, close())
             .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(getScriptState(), callbacks, transactionId, version);
+        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scope.getScriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        getExecutionContext()->stopActiveDOMObjects();
+        scope.getExecutionContext()->stopActiveDOMObjects();
         request->onUpgradeNeeded(oldVersion, std::move(backend), metadata, WebIDBDataLossNone, String());
     }
 
@@ -138,10 +113,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
         EXPECT_CALL(*backend, close())
             .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(getScriptState(), callbacks, transactionId, version);
+        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scope.getScriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        getExecutionContext()->stopActiveDOMObjects();
+        scope.getExecutionContext()->stopActiveDOMObjects();
         request->onSuccess(std::move(backend), metadata);
     }
 }

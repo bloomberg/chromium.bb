@@ -18,7 +18,7 @@ namespace {
 
 class V8ScriptRunnerTest : public ::testing::Test {
 public:
-    V8ScriptRunnerTest() : m_scope(v8::Isolate::GetCurrent()) { }
+    V8ScriptRunnerTest() { }
     ~V8ScriptRunnerTest() override { }
 
     void SetUp() override

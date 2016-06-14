@@ -17,18 +17,16 @@ namespace blink {
 class AnimationTimingInputTest : public ::testing::Test {
 protected:
     AnimationTimingInputTest()
-        : m_isolate(v8::Isolate::GetCurrent())
-        , m_scope(m_isolate)
     {
     }
 
     Timing applyTimingInputNumber(String timingProperty, double timingPropertyValue, bool& timingConversionSuccess)
     {
-        v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-        setV8ObjectPropertyAsNumber(m_isolate, timingInput, timingProperty, timingPropertyValue);
+        v8::Local<v8::Object> timingInput = v8::Object::New(m_scope.isolate());
+        setV8ObjectPropertyAsNumber(m_scope.isolate(), timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         TrackExceptionState exceptionState;
-        V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
+        V8KeyframeEffectOptions::toImpl(m_scope.isolate(), timingInput, timingInputDictionary, exceptionState);
         Timing result;
         timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState) && !exceptionState.hadException();
         return result;
@@ -36,19 +34,16 @@ protected:
 
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue, bool& timingConversionSuccess)
     {
-        v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-        setV8ObjectPropertyAsString(m_isolate, timingInput, timingProperty, timingPropertyValue);
+        v8::Local<v8::Object> timingInput = v8::Object::New(m_scope.isolate());
+        setV8ObjectPropertyAsString(m_scope.isolate(), timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         TrackExceptionState exceptionState;
-        V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
+        V8KeyframeEffectOptions::toImpl(m_scope.isolate(), timingInput, timingInputDictionary, exceptionState);
         Timing result;
         timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState) && !exceptionState.hadException();
         return result;
     }
 
-    v8::Isolate* m_isolate;
-
-private:
     V8TestingScope m_scope;
 };
 

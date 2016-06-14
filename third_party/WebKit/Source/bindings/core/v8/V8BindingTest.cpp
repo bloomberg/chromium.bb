@@ -16,7 +16,7 @@ namespace {
 
 class V8BindingTest : public ::testing::Test {
 public:
-    V8BindingTest() : m_scope(v8::Isolate::GetCurrent()) { }
+    V8BindingTest() { }
 
     template<typename T> v8::Local<v8::Value> toV8(T value)
     {

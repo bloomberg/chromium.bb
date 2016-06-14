@@ -18,12 +18,12 @@ namespace blink {
 class SerializedScriptValueTest : public ::testing::Test {
 public:
     SerializedScriptValueTest()
-        : m_scope(v8::Isolate::GetCurrent())
     {
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
     v8::Local<v8::Object> creationContext() const { return m_scope.getScriptState()->context()->Global(); }
+    ScriptState* getScriptState() const { return m_scope.getScriptState(); }
 
 protected:
     V8TestingScope m_scope;

@@ -7,9 +7,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/V8PaymentResponse.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/testing/DummyPageHolder.h"
 #include "modules/payments/CurrencyAmount.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentItem.h"
@@ -27,24 +28,22 @@ namespace {
 class PaymentRequestTest : public testing::Test {
 public:
     PaymentRequestTest()
-        : m_page(DummyPageHolder::create())
     {
         setSecurityOrigin("https://www.example.com/");
     }
 
     ~PaymentRequestTest() override {}
 
-    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExceptionState& getExceptionState() { return m_exceptionState; }
+    ScriptState* getScriptState() { return m_scope.getScriptState(); }
+    ExceptionState& getExceptionState() { return m_scope.getExceptionState(); }
 
     void setSecurityOrigin(const String& securityOrigin)
     {
-        m_page->document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), securityOrigin)));
+        m_scope.document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), securityOrigin)));
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
-    TrackExceptionState m_exceptionState;
+    V8TestingScope m_scope;
 };
 
 TEST_F(PaymentRequestTest, NoExceptionWithValidData)
@@ -261,7 +260,6 @@ private:
 
 TEST_F(PaymentRequestTest, CanAbortAfterShow)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -273,7 +271,6 @@ TEST_F(PaymentRequestTest, CanAbortAfterShow)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -284,7 +281,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndEmptyShippingAddressInResponse)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -298,7 +294,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndEmptyShipp
 
 TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndInvalidShippingAddressInResponse)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -313,7 +308,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndInvalidShi
 
 TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingFalseAndShippingAddressExistsInResponse)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(false);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -330,7 +324,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingFalseAndShippingA
 
 TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShippingAddressInResponse)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -354,7 +347,6 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShip
 
 TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingFalseAndEmptyShippingAddressInResponse)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(false);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -372,7 +364,6 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingFalseAndEmptyShi
 
 TEST_F(PaymentRequestTest, OnShippingOptionChange)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -383,7 +374,6 @@ TEST_F(PaymentRequestTest, OnShippingOptionChange)
 
 TEST_F(PaymentRequestTest, CannotCallShowTwice)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
@@ -393,7 +383,6 @@ TEST_F(PaymentRequestTest, CannotCallShowTwice)
 
 TEST_F(PaymentRequestTest, CannotCallCompleteTwice)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
@@ -405,7 +394,6 @@ TEST_F(PaymentRequestTest, CannotCallCompleteTwice)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnError)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -416,7 +404,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnError)
 
 TEST_F(PaymentRequestTest, RejectCompletePromiseOnError)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
@@ -429,7 +416,6 @@ TEST_F(PaymentRequestTest, RejectCompletePromiseOnError)
 
 TEST_F(PaymentRequestTest, ResolvePromiseOnComplete)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState());
@@ -442,7 +428,6 @@ TEST_F(PaymentRequestTest, ResolvePromiseOnComplete)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -453,7 +438,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
 
 TEST_F(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
@@ -466,7 +450,6 @@ TEST_F(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
 
 TEST_F(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
@@ -477,7 +460,6 @@ TEST_F(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -488,7 +470,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate)
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
@@ -500,7 +481,6 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate)
 
 TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShippingOptions)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
     PaymentOptions options;
@@ -524,7 +504,6 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShipp
 
 TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultipleUnselectedShippingOptions)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
@@ -542,7 +521,6 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultiple
 
 TEST_F(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate)
 {
-    ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
     options.setRequestShipping(true);
     PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, getExceptionState());
