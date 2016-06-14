@@ -209,6 +209,9 @@ source_set("unit_tests") {
     "//third_party/leveldatabase",
     "//ui/chromeos/resources",
   ]
+  data = [
+    "//chromeos/test/data/",
+  ]
 }
 
 proto_library("device_policy_proto") {
