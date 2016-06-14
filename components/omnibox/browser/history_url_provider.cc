@@ -584,12 +584,16 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
             destination_url, display_string, client()->GetSchemeClassifier());
     // The what-you-typed match is generally only allowed to be default for
-    // URL inputs.  (It's also allowed to be default for UNKNOWN inputs
-    // where the destination is a known intranet site.  In this case,
-    // |allowed_to_be_default_match| is revised in FixupExactSuggestion().)
+    // URL inputs or when there is no default search provider.  (It's also
+    // allowed to be default for UNKNOWN inputs where the destination is a known
+    // intranet site.  In this case, |allowed_to_be_default_match| is revised in
+    // FixupExactSuggestion().)
+    const bool has_default_search_provider =
+       client()->GetTemplateURLService() &&
+       client()->GetTemplateURLService()->GetDefaultSearchProvider();
     match.allowed_to_be_default_match =
         (input.type() == metrics::OmniboxInputType::URL) ||
-        !OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs();
+        !has_default_search_provider;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
 
@@ -918,36 +922,33 @@ bool HistoryURLProvider::FixupExactSuggestion(
       break;
   }
 
-  if (OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs()) {
-    const GURL& url = params->what_you_typed_match.destination_url;
-    const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-    // If the what-you-typed result looks like a single word (which can be
-    // interpreted as an intranet address) followed by a pound sign ("#"),
-    // leave the score for the url-what-you-typed result as is and also
-    // don't mark it as allowed to be the default match.  It will likely be
-    // outscored by a search query from the SearchProvider or, if not, the
-    // search query default match will in any case--which is allowed to be the
-    // default match--will be reordered to be first.  This test fixes cases
-    // such as "c#" and "c# foo" where the user has visited an intranet site
-    // "c".  We want the search-what-you-typed score to beat the
-    // URL-what-you-typed score in this case.  Most of the below test tries to
-    // make sure that this code does not trigger if the user did anything to
-    // indicate the desired match is a URL.  For instance, "c/# foo" will not
-    // pass the test because that will be classified as input type URL.  The
-    // parsed.CountCharactersBefore() in the test looks for the presence of a
-    // reference fragment in the URL by checking whether the position differs
-    // included the delimiter (pound sign) versus not including the delimiter.
-    // (One cannot simply check url.ref() because it will not distinguish
-    // between the input "c" and the input "c#", both of which will have empty
-    // reference fragments.)
-    if ((type == UNVISITED_INTRANET) &&
-        (params->input.type() != metrics::OmniboxInputType::URL) &&
-        url.username().empty() && url.password().empty() &&
-        url.port().empty() && (url.path() == "/") && url.query().empty() &&
-        (parsed.CountCharactersBefore(url::Parsed::REF, true) !=
-         parsed.CountCharactersBefore(url::Parsed::REF, false))) {
-      return false;
-    }
+  const GURL& url = params->what_you_typed_match.destination_url;
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  // If the what-you-typed result looks like a single word (which can be
+  // interpreted as an intranet address) followed by a pound sign ("#"), leave
+  // the score for the url-what-you-typed result as is and also don't mark it
+  // as allowed to be the default match.  It will likely be outscored by a
+  // search query from the SearchProvider or, if not, the search query default
+  // match will in any case--which is allowed to be the default match--will be
+  // reordered to be first.  This test fixes cases such as "c#" and "c# foo"
+  // where the user has visited an intranet site "c".  We want the search-what-
+  // you-typed score to beat the URL-what-you-typed score in this case.  Most
+  // of the below test tries to make sure that this code does not trigger if
+  // the user did anything to indicate the desired match is a URL.  For
+  // instance, "c/# foo" will not pass the test because that will be classified
+  // as input type URL.  The parsed.CountCharactersBefore() in the test looks
+  // for the presence of a reference fragment in the URL by checking whether
+  // the position differs included the delimiter (pound sign) versus not
+  // including the delimiter.  (One cannot simply check url.ref() because it
+  // will not distinguish between the input "c" and the input "c#", both of
+  // which will have empty reference fragments.)
+  if ((type == UNVISITED_INTRANET) &&
+      (params->input.type() != metrics::OmniboxInputType::URL) &&
+      url.username().empty() && url.password().empty() &&
+      url.port().empty() && (url.path() == "/") && url.query().empty() &&
+      (parsed.CountCharactersBefore(url::Parsed::REF, true) !=
+       parsed.CountCharactersBefore(url::Parsed::REF, false))) {
+    return false;
   }
 
   params->what_you_typed_match.allowed_to_be_default_match = true;

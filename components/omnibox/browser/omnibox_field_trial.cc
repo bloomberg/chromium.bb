@@ -424,12 +424,6 @@ bool OmniboxFieldTrial::HUPSearchDatabase() {
   return value.empty() || (value == "true");
 }
 
-bool OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kPreventUWYTDefaultForNonURLInputsRule) == "true";
-}
-
 bool OmniboxFieldTrial::KeywordRequiresRegistry() {
   const std::string& value = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -519,8 +513,6 @@ const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
 const char OmniboxFieldTrial::kHUPSearchDatabaseRule[] =
     "HUPSearchDatabase";
-const char OmniboxFieldTrial::kPreventUWYTDefaultForNonURLInputsRule[] =
-    "PreventUWYTDefaultForNonURLInputs";
 const char OmniboxFieldTrial::kKeywordRequiresRegistryRule[] =
     "KeywordRequiresRegistry";
 const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
