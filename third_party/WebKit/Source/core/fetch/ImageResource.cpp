@@ -316,6 +316,7 @@ void ImageResource::clear()
 {
     prune();
     clearImage();
+    m_data.clear();
     setEncodedSize(0);
 }
 
