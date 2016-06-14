@@ -1641,7 +1641,7 @@ void Textfield::ExtendSelectionAndDelete(size_t before, size_t after) {
 
 void Textfield::EnsureCaretInRect(const gfx::Rect& rect) {}
 
-bool Textfield::IsEditCommandEnabled(int command_id) {
+bool Textfield::IsEditCommandEnabled(int command_id) const {
   return IsCommandIdEnabled(command_id);
 }
 

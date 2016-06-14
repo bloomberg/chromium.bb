@@ -94,7 +94,7 @@ class ArcImeService : public ArcService,
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override {}
   void EnsureCaretInRect(const gfx::Rect& rect) override {}
-  bool IsEditCommandEnabled(int command_id) override;
+  bool IsEditCommandEnabled(int command_id) const override;
   void SetEditCommandForNextKeyEvent(int command_id) override {}
 
  private:

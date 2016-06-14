@@ -281,7 +281,7 @@ bool ArcImeService::ChangeTextDirectionAndLayoutAlignment(
   return false;
 }
 
-bool ArcImeService::IsEditCommandEnabled(int command_id) {
+bool ArcImeService::IsEditCommandEnabled(int command_id) const {
   return false;
 }
 

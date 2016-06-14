@@ -1682,7 +1682,7 @@ void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
       ConvertRectFromScreen(intersected_rect));
 }
 
-bool RenderWidgetHostViewAura::IsEditCommandEnabled(int command_id) {
+bool RenderWidgetHostViewAura::IsEditCommandEnabled(int command_id) const {
   return false;
 }
 

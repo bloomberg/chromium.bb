@@ -167,7 +167,7 @@ class UI_BASE_IME_EXPORT TextInputClient {
   virtual void EnsureCaretInRect(const gfx::Rect& rect) = 0;
 
   // Returns true if |command_id| is currently allowed to be executed.
-  virtual bool IsEditCommandEnabled(int command_id) = 0;
+  virtual bool IsEditCommandEnabled(int command_id) const = 0;
 
   // Execute the command specified by |command_id| on the next key event.
   // This allows a TextInputClient to be informed of a platform-independent edit

@@ -135,7 +135,7 @@ void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
 void PrefixSelector::EnsureCaretInRect(const gfx::Rect& rect) {
 }
 
-bool PrefixSelector::IsEditCommandEnabled(int command_id) {
+bool PrefixSelector::IsEditCommandEnabled(int command_id) const {
   return false;
 }
 
