@@ -118,7 +118,7 @@ FractionalScrollOffsets
 MediaCapture
 MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=experimental
-MediaConstraints status=experimental
+MediaConstraints status=stable
 MediaDevices status=stable
 MediaDocumentDownloadButton
 MediaGetSettings status=test
