@@ -84,6 +84,8 @@ class HIDDetectionScreen : public HIDDetectionModel,
   void OnInputDeviceRemoved(const std::string& id) override;
 
  private:
+  friend class HIDDetectionScreenTest;
+
   // Types of dialog leaving scenarios for UMA metric.
   enum ContinueScenarioType {
     // Only pointing device detected, user pressed 'Continue'.
