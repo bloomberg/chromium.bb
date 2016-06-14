@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -17,20 +15,19 @@ namespace suggestions {
 
 ImageFetcherImpl::ImageFetcherImpl(
     net::URLRequestContextGetter* url_request_context)
-    : delegate_(nullptr), url_request_context_(url_request_context),
-      image_decoder_(new suggestions::ImageDecoderImpl()),
-      image_data_fetcher_(
-          new image_fetcher::ImageDataFetcher(url_request_context_)) {
-}
+    : delegate_(NULL), url_request_context_(url_request_context) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 
-ImageFetcherImpl::ImageRequest::ImageRequest() {}
+ImageFetcherImpl::ImageRequest::ImageRequest() : fetcher(NULL) {}
+
+ImageFetcherImpl::ImageRequest::ImageRequest(chrome::BitmapFetcher* f)
+    : fetcher(f) {}
 
 ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
     default;
 
-ImageFetcherImpl::ImageRequest::~ImageRequest() { }
+ImageFetcherImpl::ImageRequest::~ImageRequest() { delete fetcher; }
 
 void ImageFetcherImpl::SetImageFetcherDelegate(
     image_fetcher::ImageFetcherDelegate* delegate) {
@@ -46,39 +43,39 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
   // |image_url|, and queue if appropriate.
   ImageRequestMap::iterator it = pending_net_requests_.find(image_url);
   if (it == pending_net_requests_.end()) {
-    ImageRequest request;
+    // |image_url| is not being fetched, so create a request and initiate
+    // the fetch.
+    ImageRequest request(new chrome::BitmapFetcher(image_url, this));
     request.id = id;
     request.callbacks.push_back(callback);
+    request.fetcher->Init(
+        url_request_context_, std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_NORMAL);
+    request.fetcher->Start();
     pending_net_requests_[image_url].swap(&request);
   } else {
     // Request in progress. Register as an interested callback.
     it->second.callbacks.push_back(callback);
   }
-
-  image_data_fetcher_->FetchImageData(
-      image_url,
-      base::Bind(&ImageFetcherImpl::OnImageURLFetched,
-                 base::Unretained(this), image_url));
 }
 
-void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
-                                         const std::string& image_data) {
-  // TODO(markusheintz): Add a method OnImageDataFetched on the delegate and
-  // call that here.
-  image_decoder_->DecodeImage(
-      image_data,
-      base::Bind(&ImageFetcherImpl::OnImageDecoded,
-                 base::Unretained(this), image_url));
-}
-
-void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
-                                      const gfx::Image& image) {
-  // Get request for the given image_url from the request queue.
+void ImageFetcherImpl::OnFetchComplete(const GURL& image_url,
+                                       const SkBitmap* bitmap) {
   ImageRequestMap::iterator image_iter = pending_net_requests_.find(image_url);
   DCHECK(image_iter != pending_net_requests_.end());
+
   ImageRequest* request = &image_iter->second;
 
-  // Run all callbacks
+  // Here |bitmap| could be NULL. In this case an empty image is passed to the
+  // callbacks and delegate. The pointer to the bitmap which is owned by the
+  // BitmapFetcher ceases to exist after this function. The created gfx::Image
+  // shares the pixels with the |bitmap|. The image is passed to the callbacks
+  // and delegate that are run synchronously.
+  gfx::Image image;
+  if (bitmap != nullptr)
+    image = gfx::Image::CreateFrom1xBitmap(*bitmap);
+
   for (const auto& callback : request->callbacks) {
     callback.Run(request->id, image);
   }
