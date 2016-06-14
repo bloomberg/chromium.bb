@@ -571,7 +571,7 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
       type == mojom::BluetoothPropertyType::REMOTE_FRIENDLY_NAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     // TODO(615720): Use the upcoming GetName (was GetDeviceName).
-    btp->set_bdname(
+    btp->set_remote_friendly_name(
         mojo::String::From(base::UTF16ToUTF8(device->GetNameForDisplay())));
     properties.push_back(std::move(btp));
   }
