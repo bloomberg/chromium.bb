@@ -437,10 +437,10 @@ void PaintLayerCompositor::updateIfNeeded()
             GraphicsLayerTreeBuilder().rebuild(*updateRoot, ancestorInfo);
         }
 
-        if (childList.isEmpty())
-            destroyRootLayer();
-        else if (m_rootContentLayer)
+        if (!childList.isEmpty()) {
+            CHECK(m_rootContentLayer && m_compositing);
             m_rootContentLayer->setChildren(childList);
+        }
 
         applyOverlayFullscreenVideoAdjustmentIfNeeded();
     }
