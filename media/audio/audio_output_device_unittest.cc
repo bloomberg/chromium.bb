@@ -17,9 +17,11 @@
 #include "base/sync_socket.h"
 #include "base/task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/sample_rates.h"
+#include "media/base/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +44,7 @@ namespace {
 const char kDefaultDeviceId[] = "";
 const char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
 const char kUnauthorizedDeviceId[] = "unauthorized-device-id";
+const int kAuthTimeoutForTestingMs = 500;
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -99,7 +102,9 @@ class AudioOutputDeviceTest
   void ExpectRenderCallback();
   void WaitUntilRenderCallback();
   void StopAudioDevice();
+  void CreateDevice(const std::string& device_id);
   void SetDevice(const std::string& device_id);
+  void CheckDeviceStatus(OutputDeviceStatus device_status);
 
  protected:
   // Used to clean up TLS pointers that the test(s) will initialize.
@@ -139,11 +144,16 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
   audio_device_ = NULL;
 }
 
-void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
+void AudioOutputDeviceTest::CreateDevice(const std::string& device_id) {
   audio_output_ipc_ = new MockAudioOutputIPC();
-  audio_device_ = new AudioOutputDevice(base::WrapUnique(audio_output_ipc_),
-                                        io_loop_.task_runner(), 0, device_id,
-                                        url::Origin());
+  audio_device_ = new AudioOutputDevice(
+      base::WrapUnique(audio_output_ipc_), io_loop_.task_runner(), 0, device_id,
+      url::Origin(),
+      base::TimeDelta::FromMilliseconds(kAuthTimeoutForTestingMs));
+}
+
+void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
+  CreateDevice(device_id);
   EXPECT_CALL(*audio_output_ipc_,
               RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
   audio_device_->RequestDeviceAuthorization();
@@ -158,6 +168,11 @@ void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
 
   audio_device_->Initialize(default_audio_parameters_,
                             &callback_);
+}
+
+void AudioOutputDeviceTest::CheckDeviceStatus(OutputDeviceStatus status) {
+  DCHECK(!io_loop_.task_runner()->BelongsToCurrentThread());
+  EXPECT_EQ(status, audio_device_->GetOutputDeviceInfo().device_status());
 }
 
 void AudioOutputDeviceTest::ReceiveAuthorization(OutputDeviceStatus status) {
@@ -316,6 +331,37 @@ TEST_P(AudioOutputDeviceTest, UnauthorizedDevice) {
   SetDevice(kUnauthorizedDeviceId);
   StartAudioDevice();
   StopAudioDevice();
+}
+
+TEST_P(AudioOutputDeviceTest, AuthorizationTimedOut) {
+  base::Thread thread("DeviceInfo");
+  thread.Start();
+
+  CreateDevice(kNonDefaultDeviceId);
+  EXPECT_CALL(*audio_output_ipc_,
+              RequestDeviceAuthorization(audio_device_.get(), 0,
+                                         kNonDefaultDeviceId, _));
+  EXPECT_CALL(*audio_output_ipc_, CloseStream());
+
+  // Request authorization; no reply from the browser.
+  audio_device_->RequestDeviceAuthorization();
+
+  media::WaitableMessageLoopEvent event;
+
+  // Request device info on another thread.
+  thread.task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&AudioOutputDeviceTest::CheckDeviceStatus,
+                 base::Unretained(this), OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT),
+      event.GetClosure());
+
+  io_loop_.RunUntilIdle();
+
+  // Runs the loop and waits for |thread| to call event's closure.
+  event.RunAndWait();
+
+  audio_device_->Stop();
+  io_loop_.RunUntilIdle();
 }
 
 INSTANTIATE_TEST_CASE_P(Render, AudioOutputDeviceTest, Values(false));

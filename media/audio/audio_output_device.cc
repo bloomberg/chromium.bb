@@ -12,8 +12,10 @@
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
@@ -52,7 +54,8 @@ AudioOutputDevice::AudioOutputDevice(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     int session_id,
     const std::string& device_id,
-    const url::Origin& security_origin)
+    const url::Origin& security_origin,
+    base::TimeDelta authorization_timeout)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
       ipc_(std::move(ipc)),
@@ -65,7 +68,8 @@ AudioOutputDevice::AudioOutputDevice(
       stopping_hack_(false),
       did_receive_auth_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
-      device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL) {
+      device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL),
+      auth_timeout_(authorization_timeout) {
   CHECK(ipc_);
 
   // The correctness of the code depends on the relative values assigned in the
@@ -156,6 +160,16 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
   state_ = AUTHORIZING;
   ipc_->RequestDeviceAuthorization(this, session_id_, device_id_,
                                    security_origin_);
+
+  // Create the timer on the thread it's used on. It's guaranteed to be
+  // deleted on the same thread since users must call Stop() before deleting
+  // AudioOutputDevice; see ShutDownOnIOThread().
+  auth_timeout_action_.reset(new base::OneShotTimer());
+  auth_timeout_action_->Start(
+      FROM_HERE, auth_timeout_,
+      base::Bind(&AudioOutputDevice::OnDeviceAuthorized, this,
+                 OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT, media::AudioParameters(),
+                 std::string()));
 }
 
 void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
@@ -229,6 +243,9 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   }
   start_on_authorized_ = false;
 
+  // Destoy the timer on the thread it's used on.
+  auth_timeout_action_.reset();
+
   // We can run into an issue where ShutDownOnIOThread is called right after
   // OnStreamCreated is called in cases where Start/Stop are called before we
   // get the OnStreamCreated callback.  To handle that corner case, we call
@@ -285,6 +302,16 @@ void AudioOutputDevice::OnDeviceAuthorized(
     const media::AudioParameters& output_params,
     const std::string& matched_device_id) {
   DCHECK(task_runner()->BelongsToCurrentThread());
+
+  auth_timeout_action_.reset();
+
+  // Do nothing if late authorization is received after timeout.
+  if (state_ == IPC_CLOSED)
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.OutputDeviceAuthorizationTimedOut",
+                        device_status == OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT);
+
   DCHECK_EQ(state_, AUTHORIZING);
 
   // It may happen that a second authorization is received as a result to a

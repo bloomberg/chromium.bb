@@ -4,7 +4,10 @@
 
 #include "content/renderer/media/audio_device_factory.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
+#include "content/common/content_constants_internal.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -20,6 +23,7 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
+const int64_t kMaxAuthorizationTimeoutMs = 4000;
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
@@ -29,7 +33,11 @@ scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
   AudioMessageFilter* const filter = AudioMessageFilter::Get();
   scoped_refptr<media::AudioOutputDevice> device(new media::AudioOutputDevice(
       filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner(),
-      session_id, device_id, security_origin));
+      session_id, device_id, security_origin,
+      // Set authorization request timeout at 80% of renderer hung timeout, but
+      // no more than kMaxAuthorizationTimeout.
+      base::TimeDelta::FromMilliseconds(std::min(kHungRendererDelayMs * 8 / 10,
+                                                 kMaxAuthorizationTimeoutMs))));
   device->RequestDeviceAuthorization();
   return device;
 }

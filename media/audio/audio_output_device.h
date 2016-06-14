@@ -77,6 +77,10 @@
 #include "media/base/media_export.h"
 #include "media/base/output_device_info.h"
 
+namespace base {
+class OneShotTimer;
+}
+
 namespace media {
 
 class MEDIA_EXPORT AudioOutputDevice
@@ -90,7 +94,8 @@ class MEDIA_EXPORT AudioOutputDevice
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin);
+      const url::Origin& security_origin,
+      base::TimeDelta authorization_timeout);
 
   // Request authorization to use the device specified in the constructor.
   void RequestDeviceAuthorization();
@@ -144,6 +149,13 @@ class MEDIA_EXPORT AudioOutputDevice
   void PauseOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
+
+  // Process device authorization result on the IO thread.
+  void ProcessDeviceAuthorizationOnIOThread(
+      OutputDeviceStatus device_status,
+      const media::AudioParameters& output_params,
+      const std::string& matched_device_id,
+      bool timed_out);
 
   // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
@@ -200,6 +212,9 @@ class MEDIA_EXPORT AudioOutputDevice
   base::WaitableEvent did_receive_auth_;
   AudioParameters output_params_;
   OutputDeviceStatus device_status_;
+
+  const base::TimeDelta auth_timeout_;
+  std::unique_ptr<base::OneShotTimer> auth_timeout_action_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };

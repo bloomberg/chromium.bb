@@ -20903,6 +20903,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.OutputDeviceAuthorizationTimedOut"
+    enum="BooleanTimedOut">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Whether audio output device timed out waiting for authorization reply from
+    the browser side.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.RenderFailsWhenBufferSizeChangesMac"
     enum="BooleanChanged">
   <owner>henrika@chromium.org</owner>
