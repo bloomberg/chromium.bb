@@ -33,15 +33,8 @@ const char kWidevineCdmPluginMimeType[] = "application/x-ppapi-widevine-cdm";
 const char kWidevineCdmPluginMimeTypeDescription[] =
     "Widevine Content Decryption Module";
 
-// File name of the CDM on different platforms.
-const char kWidevineCdmFileName[] =
-#if defined(OS_MACOSX)
-    "libwidevinecdm.dylib";
-#elif defined(OS_WIN)
-    "widevinecdm.dll";
-#else  // OS_LINUX, etc.
-    "libwidevinecdm.so";
-#endif
+// Name of the CDM library.
+const char kWidevineCdmLibraryName[] = "widevinecdm";
 
 // File name of the adapter on different platforms.
 const char kWidevineCdmAdapterFileName[] =

@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/files/file_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -80,8 +81,9 @@ void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
 }
 
 // static
-string16 GetNativeLibraryName(StringPiece16 name) {
-  return name.as_string() + ASCIIToUTF16(".dll");
+std::string GetNativeLibraryName(StringPiece name) {
+  DCHECK(IsStringASCII(name));
+  return name.as_string() + ".dll";
 }
 
 }  // namespace base

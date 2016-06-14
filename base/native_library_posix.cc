@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -50,8 +51,9 @@ void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
 }
 
 // static
-string16 GetNativeLibraryName(StringPiece16 name) {
-  return ASCIIToUTF16("lib") + name.as_string() + ASCIIToUTF16(".so");
+std::string GetNativeLibraryName(StringPiece name) {
+  DCHECK(IsStringASCII(name));
+  return "lib" + name.as_string() + ".so";
 }
 
 }  // namespace base

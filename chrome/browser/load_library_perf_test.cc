@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,17 +62,6 @@ void MeasureSizeAndTimeToLoadNativeLibrary(
 
 #if defined(ENABLE_PEPPER_CDMS)
 
-// File name of the ClearKey CDM on different platforms.
-// TODO(xhwang): Consolidate this with external_clear_key_test_helper.cc.
-const char kClearKeyCdmFileName[] =
-#if defined(OS_MACOSX)
-    "libclearkeycdm.dylib";
-#elif defined(OS_WIN)
-    "clearkeycdm.dll";
-#else  // OS_LINUX, etc.
-    "libclearkeycdm.so";
-#endif
-
 void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
                                  const std::string& cdm_name) {
   MeasureSizeAndTimeToLoadNativeLibrary(
@@ -86,7 +76,9 @@ void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
 #if defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
 TEST(LoadCDMPerfTest, Widevine) {
-  MeasureSizeAndTimeToLoadCdm(kWidevineCdmBaseDirectory, kWidevineCdmFileName);
+  MeasureSizeAndTimeToLoadCdm(
+      kWidevineCdmBaseDirectory,
+      base::GetNativeLibraryName(kWidevineCdmLibraryName));
 }
 
 TEST(LoadCDMPerfTest, WidevineAdapter) {
@@ -96,7 +88,9 @@ TEST(LoadCDMPerfTest, WidevineAdapter) {
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 TEST(LoadCDMPerfTest, ExternalClearKey) {
-  MeasureSizeAndTimeToLoadCdm(kClearKeyCdmBaseDirectory, kClearKeyCdmFileName);
+  MeasureSizeAndTimeToLoadCdm(
+      kClearKeyCdmBaseDirectory,
+      base::GetNativeLibraryName(media::kClearKeyCdmLibraryName));
 }
 
 TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {

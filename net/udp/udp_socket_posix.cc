@@ -349,16 +349,15 @@ int UDPSocketPosix::BindToNetwork(
   static SetNetworkForSocket setNetworkForSocket;
   // This is racy, but all racers should come out with the same answer so it
   // shouldn't matter.
-  if (setNetworkForSocket == nullptr) {
+  if (!setNetworkForSocket) {
     // Android's netd client library should always be loaded in our address
     // space as it shims libc functions like connect().
-    base::FilePath file(base::FilePath::FromUTF16Unsafe(
-        base::GetNativeLibraryName(base::ASCIIToUTF16("netd_client"))));
+    base::FilePath file(base::GetNativeLibraryName("netd_client"));
     base::NativeLibrary lib = base::LoadNativeLibrary(file, nullptr);
     setNetworkForSocket = reinterpret_cast<SetNetworkForSocket>(
         base::GetFunctionPointerFromNativeLibrary(lib, "setNetworkForSocket"));
   }
-  if (setNetworkForSocket == nullptr)
+  if (!setNetworkForSocket)
     return ERR_NOT_IMPLEMENTED;
   int rv = setNetworkForSocket(network, socket_);
   // If |network| has since disconnected, |rv| will be ENONET.  Surface this as

@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -228,7 +229,8 @@ void RegisterWidevineCdmWithChrome(
 
   // Also register Widevine with the CdmService.
   const base::FilePath cdm_path =
-      GetPlatformDirectory(cdm_install_dir).AppendASCII(kWidevineCdmFileName);
+      GetPlatformDirectory(cdm_install_dir)
+          .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
   const std::vector<std::string> supported_codecs = base::SplitString(
       codecs, std::string(1, kCdmSupportedCodecsValueDelimiter),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -313,7 +315,8 @@ bool WidevineCdmComponentInstallerTraits::VerifyInstallation(
     const base::FilePath& install_dir) const {
   return IsCompatibleWithChrome(manifest) &&
          base::PathExists(GetPlatformDirectory(install_dir)
-                              .AppendASCII(kWidevineCdmFileName));
+                              .AppendASCII(base::GetNativeLibraryName(
+                                  kWidevineCdmLibraryName)));
 }
 
 // The base directory on Windows looks like:

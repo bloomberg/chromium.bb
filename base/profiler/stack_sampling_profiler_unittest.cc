@@ -85,7 +85,7 @@ using TargetFunction = const void*(*)(WaitableEvent*, WaitableEvent*,
 // SignalAndWaitUntilSignaled() when coordinated with the main thread.
 class TargetThread : public PlatformThread::Delegate {
  public:
-  TargetThread(const StackConfiguration& stack_config);
+  explicit TargetThread(const StackConfiguration& stack_config);
 
   // PlatformThread::Delegate:
   void ThreadMain() override;
@@ -271,9 +271,8 @@ NativeLibrary LoadOtherLibrary() {
   const auto load = [](NativeLibrary* library) {
     FilePath other_library_path;
     ASSERT_TRUE(PathService::Get(DIR_EXE, &other_library_path));
-    other_library_path = other_library_path.Append(FilePath::FromUTF16Unsafe(
-        GetNativeLibraryName(ASCIIToUTF16(
-            "base_profiler_test_support_library"))));
+    other_library_path = other_library_path.AppendASCII(
+        GetNativeLibraryName("base_profiler_test_support_library"));
     NativeLibraryLoadError load_error;
     *library = LoadNativeLibrary(other_library_path, &load_error);
     ASSERT_TRUE(*library) << "error loading " << other_library_path.value()
@@ -417,7 +416,7 @@ std::string FormatSampleForDiagnosticOutput(
     const Sample& sample,
     const std::vector<Module>& modules) {
   std::string output;
-  for (const Frame& frame: sample) {
+  for (const Frame& frame : sample) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
         modules[frame.module_index].filename.AsUTF8Unsafe().c_str());

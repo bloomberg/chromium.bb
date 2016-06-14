@@ -11,6 +11,9 @@
 
 namespace media {
 
+// Name of the ClearKey CDM library.
+extern const char kClearKeyCdmLibraryName[];
+
 // Returns the path of a CDM relative to DIR_COMPONENTS.
 // On platforms where a platform specific path is used, returns
 //   |cdm_base_path|/_platform_specific/<platform>_<arch>

@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
@@ -90,10 +89,11 @@ BASE_EXPORT void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
                                                       StringPiece name);
 
 // Returns the full platform specific name for a native library.
+// |name| must be ASCII.
 // For example:
 // "mylib" returns "mylib.dll" on Windows, "libmylib.so" on Linux,
-// "mylib.dylib" on Mac.
-BASE_EXPORT string16 GetNativeLibraryName(StringPiece16 name);
+// "libmylib.dylib" on Mac.
+BASE_EXPORT std::string GetNativeLibraryName(StringPiece name);
 
 }  // namespace base
 

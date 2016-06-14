@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+#include "base/strings/string_util.h"
+
 namespace base {
 
 std::string NativeLibraryLoadError::ToString() const {
@@ -35,7 +37,8 @@ void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
 }
 
 // static
-string16 GetNativeLibraryName(StringPiece16 name) {
+std::string GetNativeLibraryName(StringPiece name) {
+  DCHECK(IsStringASCII(name));
   return name.as_string();
 }
 

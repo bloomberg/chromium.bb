@@ -47,7 +47,7 @@ NativeLibrary LoadNativeLibrary(const FilePath& library_path,
     if (!dylib) {
       if (error)
         error->message = dlerror();
-      return NULL;
+      return nullptr;
     }
     NativeLibrary native_lib = new NativeLibraryStruct();
     native_lib->type = DYNAMIC_LIB;
@@ -61,10 +61,10 @@ NativeLibrary LoadNativeLibrary(const FilePath& library_path,
       library_path.value().length(),
       true));
   if (!url)
-    return NULL;
+    return nullptr;
   CFBundleRef bundle = CFBundleCreate(kCFAllocatorDefault, url.get());
   if (!bundle)
-    return NULL;
+    return nullptr;
 
   NativeLibrary native_lib = new NativeLibraryStruct();
   native_lib->type = BUNDLE;
@@ -97,7 +97,7 @@ void UnloadNativeLibrary(NativeLibrary library) {
 // static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
                                           StringPiece name) {
-  void* function_pointer = NULL;
+  void* function_pointer = nullptr;
 
   // Get the function pointer using the right API for the type.
   if (library->type == BUNDLE) {
@@ -118,8 +118,9 @@ void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
 }
 
 // static
-string16 GetNativeLibraryName(StringPiece16 name) {
-  return name.as_string() + ASCIIToUTF16(".dylib");
+std::string GetNativeLibraryName(StringPiece name) {
+  DCHECK(IsStringASCII(name));
+  return "lib" + name.as_string() + ".dylib";
 }
 
 }  // namespace base

@@ -9,6 +9,7 @@
 
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
+#include "base/strings/utf_string_conversions.h"
 #endif
 
 namespace base {
@@ -27,8 +28,8 @@ TEST(ScopedNativeLibrary, Basic) {
   const char kFunctionName[] = "DirectDrawCreate";
   NativeLibrary native_library;
   {
-    FilePath path(GetNativeLibraryName(L"ddraw"));
-    native_library = LoadNativeLibrary(path, NULL);
+    FilePath path(FilePath::FromUTF8Unsafe(GetNativeLibraryName("ddraw")));
+    native_library = LoadNativeLibrary(path, nullptr);
     ScopedNativeLibrary library(native_library);
     EXPECT_TRUE(library.is_valid());
     EXPECT_EQ(native_library, library.get());
@@ -39,8 +40,8 @@ TEST(ScopedNativeLibrary, Basic) {
         GetFunctionPointerFromNativeLibrary(native_library, kFunctionName),
         test_function);
   }
-  EXPECT_EQ(NULL,
-            GetFunctionPointerFromNativeLibrary(native_library, kFunctionName));
+  EXPECT_FALSE(
+      GetFunctionPointerFromNativeLibrary(native_library, kFunctionName));
 #endif
 }
 

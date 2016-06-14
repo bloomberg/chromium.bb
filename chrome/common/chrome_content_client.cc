@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_vector.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -117,7 +118,8 @@ bool IsWidevineAvailable(base::FilePath* adapter_path,
   // TODO(jrummell): We should add a new path for DIR_WIDEVINE_CDM and use that
   // to locate the CDM and the CDM adapter.
   if (PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, adapter_path)) {
-    *cdm_path = adapter_path->DirName().AppendASCII(kWidevineCdmFileName);
+    *cdm_path = adapter_path->DirName().AppendASCII(
+        base::GetNativeLibraryName(kWidevineCdmLibraryName));
     if (widevine_cdm_file_check == NOT_CHECKED) {
       widevine_cdm_file_check =
           (base::PathExists(*adapter_path) && base::PathExists(*cdm_path))

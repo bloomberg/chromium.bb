@@ -4,7 +4,6 @@
 
 #include "base/files/file_path.h"
 #include "base/native_library.h"
-#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -28,14 +27,13 @@ TEST(NativeLibraryTest, GetNativeLibraryName) {
 #if defined(OS_IOS)
       "mylib";
 #elif defined(OS_MACOSX)
-      "mylib.dylib";
+      "libmylib.dylib";
 #elif defined(OS_POSIX)
       "libmylib.so";
 #elif defined(OS_WIN)
       "mylib.dll";
 #endif
-  EXPECT_EQ(ASCIIToUTF16(kExpectedName),
-            GetNativeLibraryName(ASCIIToUTF16("mylib")));
+  EXPECT_EQ(kExpectedName, GetNativeLibraryName("mylib"));
 }
 
 }  // namespace base
