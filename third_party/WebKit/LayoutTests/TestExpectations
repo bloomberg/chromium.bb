@@ -1330,15 +1330,6 @@ crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window
 crbug.com/619103 paint/invalidation/animated-gif-background-offscreen.html [ Pass Failure ]
 crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
 
-crbug.com/619103 [ Win7 Retina ] svg/custom/relative-sized-shadow-tree-content.xhtml [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/relative-sized-content.xhtml [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/resource-invalidate-on-target-update.svg [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/marker-viewBox-changes.svg [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/relative-sized-image.xhtml [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/js-late-clipPath-and-object-creation.svg [ Pass Failure ]
-crbug.com/619103 [ Win7 Retina ] svg/custom/js-late-clipPath-creation.svg [ Pass Failure ]
-
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
