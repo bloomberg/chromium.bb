@@ -61,7 +61,10 @@ tests:
   - # Underlines, p. 39
     - Tietoa saa Näkövammaisten Keskusliitosta.
     - ⠠⠞⠊⠑⠞⠕⠁ ⠎⠁⠁ ⠬⠠⠝⠜⠅⠪⠧⠁⠍⠍⠁⠊⠎⠞⠑⠝ ⠬⠠⠅⠑⠎⠅⠥⠎⠇⠊⠊⠞⠕⠎⠞⠁⠄
-    - {typeform: {bold: '           +++++++++++++++++++++++++++++ '}}
+    # if the period is not bold then liblouis assumes that the
+    # emphasis stops inside a word and adds an end emphasis indicator.
+    # For that reason the period is also marked up as bold.
+    - {typeform: {bold: '           ++++++++++++++++++++++++++++++'}}
   - # Bold, p. 39
     - Hän kiinnitti huomiota järjestysluvun taivutukseen sanassa tuhannennen.
     - ⠠⠓⠜⠝ ⠅⠊⠊⠝⠝⠊⠞⠞⠊ ⠓⠥⠕⠍⠊⠕⠞⠁ ⠬⠚⠜⠗⠚⠑⠎⠞⠽⠎⠇⠥⠧⠥⠝ ⠞⠁⠊⠧⠥⠞⠥⠅⠎⠑⠑⠝ ⠎⠁⠝⠁⠎⠎⠁ ⠞⠥⠓⠁⠝⠬⠝⠑⠝⠬⠝⠑⠝⠄
@@ -75,8 +78,11 @@ tests:
   - # Longer emphasized phrase, p. 39
     - Tämä on yli kolmen sanan testi.
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
+    # if the period is not bold then liblouis assumes that the
+    # emphasis stops inside a word and adds an end emphasis indicator.
+    # For that reason the period is also marked up as bold.
     - typeform:
-        underline: '     +++++++++++++++++++++++++ '
+        underline: '     ++++++++++++++++++++++++++'
 
   - # Character additions:
     # Copyright symbol, registered trademark symbol, trademark symbol.
@@ -101,7 +107,7 @@ tests:
     - ⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎
     - typeform:
         italic: '       +++    '
-  - # Emphasis only at the end of a word. Accroding to a Finish
+  - # Emphasis only at the end of a word. According to a Finish
     # braille expert this case is not specified, i.e. whether an
     # indicator is needed if the emphasis ends at word end. So we
     # assume no indicator is needed
