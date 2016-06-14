@@ -10,9 +10,9 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
@@ -75,8 +75,11 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
         weak_ptr_factory_(this) {}
 
   void GetMetricsCallback() {
-    ASSERT_TRUE(base::MessageLoop::current()->is_running());
-    base::MessageLoop::current()->QuitWhenIdle();
+    // Check that the callback runs on the main loop.
+    ASSERT_TRUE(thread_checker_.CalledOnValidThread());
+    ASSERT_TRUE(run_loop_.running());
+
+    run_loop_.QuitWhenIdle();
 
     got_results_ = true;
 
@@ -96,6 +99,8 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   bool expect_unhashed_value_;
   std::unique_ptr<AntiVirusMetricsProvider> provider_;
   content::TestBrowserThreadBundle thread_bundle_;
+  base::RunLoop run_loop_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<AntiVirusMetricsProviderTest> weak_ptr_factory_;
 
  private:
@@ -103,6 +108,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
 };
 
 TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
+  ASSERT_TRUE(thread_checker_.CalledOnValidThread());
   SetFullNamesFeatureEnabled(expect_unhashed_value_);
   // Make sure the I/O is happening on the FILE thread by disallowing it on
   // the main thread.
@@ -110,7 +116,7 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   provider_->GetAntiVirusMetrics(
       base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-  content::RunMessageLoop();
+  content::RunThisRunLoop(&run_loop_);
   EXPECT_TRUE(got_results_);
   base::ThreadRestrictions::SetIOAllowed(previous_value);
 }
