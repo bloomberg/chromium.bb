@@ -103,7 +103,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
     // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
     // fairly arbitrary.
     DEFINE_STATIC_LOCAL(CustomCountHistogram, offlineContextSampleRateHistogram,
-        ("WebAudio.OfflineAudioContext.SampleRate", 3000, 19200, 50));
+        ("WebAudio.OfflineAudioContext.SampleRate", 3000, 192000, 50));
 
     offlineContextChannelCountHistogram.sample(numberOfChannels);
     offlineContextLengthHistogram.count(numberOfFrames);
