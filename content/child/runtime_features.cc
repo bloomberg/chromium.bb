@@ -125,11 +125,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu);
-
-  // There are two bugs in WebGL image chromium.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=581777#c37
-  // TODO(erikchen): When those issues are fixed, reenable this feature.
-  enable_web_gl_image_chromium = false;
 #else
   bool enable_web_gl_image_chromium =
       command_line.HasSwitch(switches::kEnableWebGLImageChromium);
