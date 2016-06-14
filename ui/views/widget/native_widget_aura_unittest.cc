@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -544,7 +544,7 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
   Init(parent.get(), widget.get());
   widget->Show();
   widget->Close();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   widget->GetNativeTheme();  // Shouldn't crash.
 }
 
