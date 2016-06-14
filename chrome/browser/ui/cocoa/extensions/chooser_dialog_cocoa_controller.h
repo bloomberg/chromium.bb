@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 
-@class ChooserContentView;
+@class ChooserContentViewCocoa;
 class ChooserController;
 class ChooserDialogCocoa;
 
@@ -17,7 +17,7 @@ class ChooserDialogCocoa;
 // of the selected option.
 @interface ChooserDialogCocoaController
     : NSViewController<NSTableViewDataSource, NSTableViewDelegate> {
-  base::scoped_nsobject<ChooserContentView> chooserContentView_;
+  base::scoped_nsobject<ChooserContentViewCocoa> chooserContentView_;
   NSTableView* tableView_;   // Weak.
   NSButton* connectButton_;  // Weak.
   NSButton* cancelButton_;   // Weak.
@@ -55,7 +55,7 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
 - (void)onHelpPressed:(id)sender;
 
 // Gets the |chooserContentView_|. For testing only.
-- (ChooserContentView*)chooserContentView;
+- (ChooserContentViewCocoa*)chooserContentView;
 
 @end
 

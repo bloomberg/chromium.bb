@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/chooser_content_view.h"
+#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,7 +36,7 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 }  // namespace
 
-@implementation ChooserContentView
+@implementation ChooserContentViewCocoa
 
 - (instancetype)initWithChooserTitle:(NSString*)chooserTitle {
   // ------------------------------------

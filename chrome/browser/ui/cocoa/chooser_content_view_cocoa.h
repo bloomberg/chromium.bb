@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
 
 // A chooser content view class that user can select an option.
-@interface ChooserContentView : NSView {
+@interface ChooserContentViewCocoa : NSView {
  @private
   base::scoped_nsobject<NSTextField> titleView_;
   base::scoped_nsobject<NSScrollView> scrollView_;
@@ -61,4 +61,4 @@
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_COCOA_CHOOSER_CONTENT_VIEW_COCOA_H_

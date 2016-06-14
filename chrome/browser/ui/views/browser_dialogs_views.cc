@@ -42,8 +42,6 @@ void ChromeDevicePermissionsPrompt::ShowDialog() {
   ShowDialogViews();
 }
 
-// TODO(juncai): Move this to the toolkit-views implementation file of this
-// dialog when it is implemented.
 void ChromeExtensionChooserDialog::ShowDialog(
     ChooserController* chooser_controller) const {
   ShowDialogImpl(chooser_controller);

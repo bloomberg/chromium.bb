@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/chooser_content_view.h"
+#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
@@ -60,7 +60,7 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   std::unique_ptr<ChooserDialogCocoa> chooser_dialog_;
 
   ChooserDialogCocoaController* chooser_dialog_controller_;
-  ChooserContentView* chooser_content_view_;
+  ChooserContentViewCocoa* chooser_content_view_;
   NSTableView* table_view_;
   NSButton* connect_button_;
   NSButton* cancel_button_;

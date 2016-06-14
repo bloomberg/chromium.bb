@@ -18,7 +18,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/chooser_content_view.h"
+#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -46,7 +46,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   ChooserBubbleUiCocoa* bridge_;  // Weak.
   bool buttonPressed_;
 
-  base::scoped_nsobject<ChooserContentView> chooserContentView_;
+  base::scoped_nsobject<ChooserContentViewCocoa> chooserContentView_;
   NSTableView* tableView_;   // Weak.
   NSButton* connectButton_;  // Weak.
   NSButton* cancelButton_;   // Weak.
@@ -168,7 +168,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)show {
-  chooserContentView_.reset([[ChooserContentView alloc]
+  chooserContentView_.reset([[ChooserContentViewCocoa alloc]
       initWithChooserTitle:
           l10n_util::GetNSStringF(
               IDS_CHOOSER_BUBBLE_PROMPT,

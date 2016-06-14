@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller.h"
@@ -64,6 +65,9 @@ void ChooserDialogCocoa::Dismissed() {
 
 void ChromeExtensionChooserDialog::ShowDialog(
     ChooserController* chooser_controller) const {
+  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+    return ChromeExtensionChooserDialog::ShowDialogImpl(chooser_controller);
+
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   if (manager) {

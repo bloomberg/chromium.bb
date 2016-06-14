@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/chooser_content_view.h"
+#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/chooser_controller/chooser_controller.h"
@@ -48,7 +48,7 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
         origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   }
 
-  chooserContentView_.reset([[ChooserContentView alloc]
+  chooserContentView_.reset([[ChooserContentViewCocoa alloc]
       initWithChooserTitle:l10n_util::GetNSStringF(IDS_CHOOSER_BUBBLE_PROMPT,
                                                    chooserTitle)]);
 
@@ -148,7 +148,7 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   chooserController_->OpenHelpCenterUrl();
 }
 
-- (ChooserContentView*)chooserContentView {
+- (ChooserContentViewCocoa*)chooserContentView {
   return chooserContentView_.get();
 }
 
