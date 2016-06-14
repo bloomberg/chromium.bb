@@ -83,7 +83,7 @@ private:
     static void updateScrollbarPaintOffset(const LayoutObject&, const PaintPropertyTreeBuilderContext&);
     static void updateOverflowClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updatePerspective(const LayoutObject&, PaintPropertyTreeBuilderContext&);
-    static void updateSvgLocalTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateSvgLocalToBorderBoxTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateScrollTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateOutOfFlowContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 

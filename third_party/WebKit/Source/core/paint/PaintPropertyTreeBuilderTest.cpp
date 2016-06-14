@@ -417,8 +417,8 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInSVG)
     matrix.rotate(45);
     // SVG's transform origin is baked into the transform.
     matrix.applyTransformOrigin(50, 25, 0);
-    EXPECT_EQ(matrix, rectWith2dTransformProperties->svgLocalTransform()->matrix());
-    EXPECT_EQ(FloatPoint3D(0, 0, 0), rectWith2dTransformProperties->svgLocalTransform()->origin());
+    EXPECT_EQ(matrix, rectWith2dTransformProperties->transform()->matrix());
+    EXPECT_EQ(FloatPoint3D(0, 0, 0), rectWith2dTransformProperties->transform()->origin());
     // SVG does not use paint offset.
     EXPECT_EQ(nullptr, rectWith2dTransformProperties->paintOffsetTranslation());
 }
@@ -445,13 +445,13 @@ TEST_F(PaintPropertyTreeBuilderTest, SVGViewBoxTransform)
     LayoutObject& svgWithViewBox = *document().getElementById("svgWithViewBox")->layoutObject();
     ObjectPaintProperties* svgWithViewBoxProperties = svgWithViewBox.objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), svgWithViewBoxProperties->transform()->matrix());
-    EXPECT_EQ(TransformationMatrix().translate(-50, -50), svgWithViewBoxProperties->svgLocalTransform()->matrix());
-    EXPECT_EQ(svgWithViewBoxProperties->svgLocalTransform()->parent(), svgWithViewBoxProperties->transform());
+    EXPECT_EQ(TransformationMatrix().translate(-50, -50), svgWithViewBoxProperties->svgLocalToBorderBoxTransform()->matrix());
+    EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform()->parent(), svgWithViewBoxProperties->transform());
 
     LayoutObject& rect = *document().getElementById("rect")->layoutObject();
     ObjectPaintProperties* rectProperties = rect.objectPaintProperties();
-    EXPECT_EQ(TransformationMatrix().translate(100, 100), rectProperties->svgLocalTransform()->matrix());
-    EXPECT_EQ(svgWithViewBoxProperties->svgLocalTransform(), rectProperties->svgLocalTransform()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(100, 100), rectProperties->transform()->matrix());
+    EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), rectProperties->transform()->parent());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode)
@@ -462,10 +462,63 @@ TEST_F(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode)
 
     LayoutObject& svg = *document().getElementById("svg")->layoutObject();
     ObjectPaintProperties* svgProperties = svg.objectPaintProperties();
-    // Ensure that a paint offset transform is emitted for SVG, even without a CSS transform.
-    EXPECT_EQ(nullptr, svgProperties->transform());
-    EXPECT_EQ(TransformationMatrix().translate(50, 25), svgProperties->paintOffsetTranslation()->matrix());
-    EXPECT_EQ(document().view()->scrollTranslation(), svgProperties->paintOffsetTranslation()->parent());
+    // Ensure that a paint offset transform is not unnecessarily emitted.
+    EXPECT_EQ(nullptr, svgProperties->paintOffsetTranslation());
+    EXPECT_EQ(TransformationMatrix().translate(50, 25), svgProperties->svgLocalToBorderBoxTransform()->matrix());
+    EXPECT_EQ(document().view()->scrollTranslation(), svgProperties->svgLocalToBorderBoxTransform()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  body { margin: 0px; }"
+        "  svg { margin-left: 2px; margin-top: 3px; transform: translate(5px, 7px); border: 11px solid green; }"
+        "</style>"
+        "<svg id='svg' width='100px' height='100px' viewBox='0 0 13 13'>"
+        "  <rect id='rect' transform='translate(17 19)' />"
+        "</svg>");
+
+    LayoutObject& svg = *document().getElementById("svg")->layoutObject();
+    ObjectPaintProperties* svgProperties = svg.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(2, 3), svgProperties->paintOffsetTranslation()->matrix());
+    EXPECT_EQ(TransformationMatrix().translate(5, 7), svgProperties->transform()->matrix());
+    EXPECT_EQ(TransformationMatrix().translate(11, 11).scale(100.0 / 13.0), svgProperties->svgLocalToBorderBoxTransform()->matrix());
+    EXPECT_EQ(svgProperties->paintOffsetTranslation(), svgProperties->transform()->parent());
+    EXPECT_EQ(svgProperties->transform(), svgProperties->svgLocalToBorderBoxTransform()->parent());
+
+    // Ensure the rect's transform is a child of the local to border box transform.
+    LayoutObject& rect = *document().getElementById("rect")->layoutObject();
+    ObjectPaintProperties* rectProperties = rect.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(17, 19), rectProperties->transform()->matrix());
+    EXPECT_EQ(svgProperties->svgLocalToBorderBoxTransform(), rectProperties->transform()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0px; } </style>"
+        "<svg id='svg' width='100px' height='100px' viewBox='0 0 50 50' style='transform: translate(11px, 11px);'>"
+        "  <svg id='nestedSvg' width='50px' height='50px' viewBox='0 0 5 5'>"
+        "    <rect id='rect' transform='translate(13 13)' />"
+        "  </svg>"
+        "</svg>");
+
+    LayoutObject& svg = *document().getElementById("svg")->layoutObject();
+    ObjectPaintProperties* svgProperties = svg.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(11, 11), svgProperties->transform()->matrix());
+    EXPECT_EQ(TransformationMatrix().scale(2), svgProperties->svgLocalToBorderBoxTransform()->matrix());
+
+    LayoutObject& nestedSvg = *document().getElementById("nestedSvg")->layoutObject();
+    ObjectPaintProperties* nestedSvgProperties = nestedSvg.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().scale(10), nestedSvgProperties->transform()->matrix());
+    EXPECT_EQ(nullptr, nestedSvgProperties->svgLocalToBorderBoxTransform());
+    EXPECT_EQ(svgProperties->svgLocalToBorderBoxTransform(), nestedSvgProperties->transform()->parent());
+
+    LayoutObject& rect = *document().getElementById("rect")->layoutObject();
+    ObjectPaintProperties* rectProperties = rect.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(13, 13), rectProperties->transform()->matrix());
+    EXPECT_EQ(nestedSvgProperties->transform(), rectProperties->transform()->parent());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary)
@@ -511,14 +564,14 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedTransformAncestorAcrossSVGHTMLBoundary
 
     LayoutObject& container = *document().getElementById("container")->layoutObject();
     ObjectPaintProperties* containerProperties = container.objectPaintProperties();
-    EXPECT_EQ(TransformationMatrix().translate(20, 30), containerProperties->svgLocalTransform()->matrix());
-    EXPECT_EQ(svgProperties->transform(), containerProperties->svgLocalTransform()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(20, 30), containerProperties->transform()->matrix());
+    EXPECT_EQ(svgProperties->transform(), containerProperties->transform()->parent());
 
     Element* fixed = document().getElementById("fixed");
     ObjectPaintProperties* fixedProperties = fixed->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(200, 150), fixedProperties->paintOffsetTranslation()->matrix());
     // Ensure the fixed position element is rooted at the nearest transform container.
-    EXPECT_EQ(containerProperties->svgLocalTransform(), fixedProperties->paintOffsetTranslation()->parent());
+    EXPECT_EQ(containerProperties->transform(), fixedProperties->paintOffsetTranslation()->parent());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, ControlClip)

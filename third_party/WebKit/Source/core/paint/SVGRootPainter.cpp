@@ -45,24 +45,16 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 
-    Optional<ScopedPaintChunkProperties> transformPropertyScope;
+    Optional<ScopedPaintChunkProperties> propertyScope;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         const auto* objectProperties = m_layoutSVGRoot.objectPaintProperties();
-        if (objectProperties && objectProperties->svgLocalTransform()) {
+        // If a transform exists, we can rely on a paint layer existing to apply it.
+        DCHECK(!objectProperties || !objectProperties->transform() || m_layoutSVGRoot.hasLayer());
+        if (objectProperties && objectProperties->svgLocalToBorderBoxTransform()) {
             auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
             PaintChunkProperties properties(paintController.currentPaintChunkProperties());
-            properties.transform = objectProperties->svgLocalTransform();
-            transformPropertyScope.emplace(paintController, properties);
-        } else if (objectProperties && objectProperties->paintOffsetTranslation() && !m_layoutSVGRoot.hasLayer()) {
-            // TODO(pdr): Always create an svgLocalTransform and remove this paint offset quirk.
-            // At the HTML->SVG boundary, SVGRoot will have a paint offset transform
-            // paint property but may not have a PaintLayer, so we need to update the
-            // paint properties here since they will not be updated by PaintLayer
-            // (See: PaintPropertyTreeBuilder::createPaintOffsetTranslationIfNeeded).
-            auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
-            PaintChunkProperties properties(paintController.currentPaintChunkProperties());
-            properties.transform = objectProperties->paintOffsetTranslation();
-            transformPropertyScope.emplace(paintController, properties);
+            properties.transform = objectProperties->svgLocalToBorderBoxTransform();
+            propertyScope.emplace(paintController, properties);
         }
     }
 
