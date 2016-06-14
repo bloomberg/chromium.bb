@@ -90,7 +90,7 @@ void DatabaseTracker::addOpenDatabase(Database* database)
     if (!m_openDatabaseMap)
         m_openDatabaseMap = adoptPtr(new DatabaseOriginMap);
 
-    String originString = database->getSecurityOrigin()->toString();
+    String originString = database->getSecurityOrigin()->toRawString();
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
     if (!nameMap) {
         nameMap = new DatabaseNameMap();
@@ -111,7 +111,7 @@ void DatabaseTracker::removeOpenDatabase(Database* database)
 {
     {
         MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-        String originString = database->getSecurityOrigin()->toString();
+        String originString = database->getSecurityOrigin()->toRawString();
         ASSERT(m_openDatabaseMap);
         DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
         if (!nameMap)
@@ -193,7 +193,7 @@ private:
 
 void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin, const String& name)
 {
-    String originString = origin->toString();
+    String originString = origin->toRawString();
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)
         return;
