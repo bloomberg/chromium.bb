@@ -406,9 +406,7 @@ if (!is_android) {
     # TODO(rockot) bug 505926: The chrome_extensions_interactive_uitests target
     # should be deleted and this line removed. See the
     # chrome_extensions_interactive_uitests target for more.
-    if (enable_extensions) {
-      deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
-    }
+    deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
 
     # Runtime dependencies
     data_deps += [
@@ -953,6 +951,7 @@ if (!is_android) {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/browser/resources:extension_resource_demo",
+      "//chrome/common/extensions/api",
       "//chrome/renderer",
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/renderer:test_support",
@@ -971,6 +970,7 @@ if (!is_android) {
       "//crypto:test_support",
       "//device/bluetooth:mocks",
       "//device/serial:test_support",
+      "//extensions/common/api",
       "//google_apis:test_support",
       "//media",
       "//media/base:test_support",
@@ -998,19 +998,11 @@ if (!is_android) {
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
-    if (enable_extensions) {
-      deps += [
-        "//chrome/common/extensions/api",
-        "//extensions/common/api",
-      ]
-    }
 
     # TODO(rockot) bug 505926: The chrome_extensions_browsertests target should
     # be deleted and this line removed. See the chrome_extensions_browsertests
     # target for more.
-    if (enable_extensions) {
-      deps += [ "//extensions:chrome_extensions_browsertests" ]
-    }
+    deps += [ "//extensions:chrome_extensions_browsertests" ]
 
     # Runtime dependencies
     data_deps += [

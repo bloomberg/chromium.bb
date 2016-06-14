@@ -149,6 +149,8 @@ group("both_gn_and_gyp") {
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
       "//chrome/test/chromedriver:chromedriver_unittests",
+      "//extensions:extensions_browsertests",
+      "//extensions:extensions_unittests",
       "//gpu/gles2_conform_support:gles2_conform_test",
       "//gpu/khronos_glcts_support:khronos_glcts_test",
       "//jingle:jingle_unittests",
@@ -246,12 +248,7 @@ group("both_gn_and_gyp") {
   deps += root_extra_deps
 
   if (enable_extensions) {
-    deps += [
-      "//extensions:extensions_browsertests",
-      "//extensions:extensions_unittests",
-      "//extensions/shell:app_shell",
-      "//extensions/shell:app_shell_unittests",
-    ]
+    deps += [ "//extensions/shell:app_shell_unittests" ]
   }
 
   if (enable_media_router) {
@@ -272,18 +269,14 @@ group("both_gn_and_gyp") {
 
   if (use_aura) {
     deps += [
+      "//ash:ash_shell_with_content",
+      "//ash:ash_unittests",
       "//ui/app_list:app_list_unittests",
       "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/aura:aura_unittests",
       "//ui/aura:demo",
       "//ui/wm:wm_unittests",
     ]
-    if (use_ash) {
-      deps += [
-        "//ash:ash_shell_with_content",
-        "//ash:ash_unittests",
-      ]
-    }
   }
 
   if (use_ozone) {
@@ -495,6 +488,10 @@ group("both_gn_and_gyp") {
         "//third_party/leveldatabase:env_chromium_unittests",
         "//third_party/libaddressinput:libaddressinput_unittests",
       ]
+    }
+
+    if (enable_extensions) {
+      deps += [ "//extensions/shell:app_shell" ]
     }
 
     if (enable_nacl) {
