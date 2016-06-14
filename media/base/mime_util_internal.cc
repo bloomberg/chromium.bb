@@ -4,11 +4,13 @@
 
 #include "media/base/mime_util_internal.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/media_features.h"
 
@@ -611,6 +613,11 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
       return true;
 
     case VP9: {
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kReportVp9AsAnUnsupportedMimeType)) {
+        return false;
+      }
+
       // If clear, the unified pipeline can always decode VP9 in software.
       if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
         return true;

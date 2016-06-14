@@ -17,6 +17,10 @@ const char kVideoThreads[] = "video-threads";
 const char kEnableMediaSuspend[] = "enable-media-suspend";
 const char kDisableMediaSuspend[] = "disable-media-suspend";
 
+// Force to report VP9 as an unsupported MIME type.
+const char kReportVp9AsAnUnsupportedMimeType[] =
+    "report-vp9-as-an-unsupported-mime-type";
+
 #if defined(OS_ANDROID)
 // Sets the MediaSource player that uses UI thread for frame processing.
 const char kDisableMediaThreadForMediaPlayback[] =
