@@ -68,6 +68,14 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             "intent://scan/#Intent;scheme=zxing;"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("http://url.myredirector.com/aaa") + ";end";
+    private static final String ENCODED_MARKET_REFERRER =
+            "_placement%3D{placement}%26network%3D{network}%26device%3D{devicemodel}";
+    private static final String INTENT_APP_NOT_INSTALLED_DEFAULT_MARKET_REFERRER =
+            "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;end";
+    private static final String INTENT_APP_NOT_INSTALLED_WITH_MARKET_REFERRER =
+            "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;S."
+            + ExternalNavigationHandler.EXTRA_MARKET_REFERRER + "="
+            + ENCODED_MARKET_REFERRER + ";end";
 
     private static final String PLUS_STREAM_URL = "https://plus.google.com/stream";
     private static final String CALENDAR_URL = "http://www.google.com/calendar";
@@ -242,6 +250,35 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl("wtai://wp/invalid")
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE,
                         IGNORE | INTENT_SANITIZATION_EXCEPTION);
+    }
+
+    @SmallTest
+    public void testRedirectToMarketWithReferrer() {
+        mDelegate.setCanResolveActivity(false);
+
+        checkUrl(INTENT_APP_NOT_INSTALLED_WITH_MARKET_REFERRER)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        assertNotNull(mDelegate.startActivityIntent);
+        Uri uri = mDelegate.startActivityIntent.getData();
+        assertEquals("market", uri.getScheme());
+        assertEquals(Uri.decode(ENCODED_MARKET_REFERRER), uri.getQueryParameter("referrer"));
+    }
+
+
+    @SmallTest
+    public void testRedirectToMarketWithoutReferrer() {
+        mDelegate.setCanResolveActivity(false);
+
+        checkUrl(INTENT_APP_NOT_INSTALLED_DEFAULT_MARKET_REFERRER)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        assertNotNull(mDelegate.startActivityIntent);
+        Uri uri = mDelegate.startActivityIntent.getData();
+        assertEquals("market", uri.getScheme());
+        assertEquals(mDelegate.getPackageName(), uri.getQueryParameter("referrer"));
     }
 
     @SmallTest

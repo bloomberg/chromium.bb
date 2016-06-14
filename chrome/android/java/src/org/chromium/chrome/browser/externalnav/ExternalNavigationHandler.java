@@ -43,7 +43,12 @@ public class ExternalNavigationHandler {
     private static final String SCHEME_SMS = "sms";
 
     @VisibleForTesting
-    public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
+    static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
+
+    // An extra that may be specified on an intent:// URL that contains an encoded value for the
+    // referrer field passed to the market:// URL in the case where the app is not present.
+    @VisibleForTesting
+    static final String EXTRA_MARKET_REFERRER = "market_referrer";
 
     private final ExternalNavigationDelegate mDelegate;
 
@@ -300,10 +305,19 @@ public class ExternalNavigationHandler {
             }
             String packagename = intent.getPackage();
             if (packagename != null) {
+                String marketReferrer =
+                        IntentUtils.safeGetStringExtra(intent, EXTRA_MARKET_REFERRER);
+                if (TextUtils.isEmpty(marketReferrer)) {
+                    marketReferrer = mDelegate.getPackageName();
+                }
                 try {
-                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
-                            "market://details?id=" + packagename
-                            + "&referrer=" + mDelegate.getPackageName()));
+                    Uri marketUri = new Uri.Builder()
+                            .scheme("market")
+                            .authority("details")
+                            .appendQueryParameter("id", packagename)
+                            .appendQueryParameter("referrer", Uri.decode(marketReferrer))
+                            .build();
+                    intent = new Intent(Intent.ACTION_VIEW, marketUri);
                     intent.addCategory(Intent.CATEGORY_BROWSABLE);
                     intent.setPackage("com.android.vending");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
