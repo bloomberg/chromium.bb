@@ -880,12 +880,6 @@
 <translation id="2266168284394154563">重設畫面縮放</translation>
 <translation id="2268190795565177333">範圍：</translation>
 <translation id="2269459857310637791">啟用或停用將金鑰事件 (WM_KEY*) 與字元事件 (WM_CHAR) 合併的功能。</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />隨時隨地存取檔案，甚至可離線存取。<ph name="MARKUP_2" />
-    Google 雲端硬碟中的檔案永遠都是最新版本，並可透過任何裝置存取。<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />檔案安全無虞。<ph name="MARKUP_5" />
-    無論裝置發生任何狀況，您的檔案都安全存放於 Google 雲端硬碟。<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />檔案集中存放，<ph name="MARKUP_8" />
-    方便共用、建立內容並與他人協同合作。<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">與 <ph name="DOMAIN" /> 網域中的任何裝置交換資料</translation>
 <translation id="2270484714375784793">電話號碼</translation>
 <translation id="2270627217422354837">與下列網域中的任何裝置交換資料：<ph name="DOMAINS" /></translation>
@@ -4495,6 +4489,7 @@
 <translation id="7505167922889582512">顯示隱藏的檔案</translation>
 <translation id="7507930499305566459">狀態回應程式憑證</translation>
 <translation id="7508545000531937079">播放投影片</translation>
+<translation id="7511149348717996334">啟用 Material Design 設定</translation>
 <translation id="7511955381719512146">目前使用的 Wi-Fi 網路可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
 <translation id="7513996269498582533">由您指定偵測</translation>
 <translation id="751507702149411736">白俄羅斯語</translation>

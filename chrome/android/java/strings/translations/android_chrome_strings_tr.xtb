@@ -66,6 +66,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1756600373018374892">Sekmelerinize hızlı bir şekilde erişmek için bu düğmeye dokunun.</translation>
 <translation id="1807246157184219062">Açık</translation>
 <translation id="1825719650605518411">İlk Çalıştırma Deneyimi</translation>
+<translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="1832521218263067499">Güvenlik olayları</translation>
 <translation id="1842969606798536927">Ödeme</translation>
@@ -216,6 +217,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3738139272394829648">Dokun ve Ara</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” bitti</translation>
+<translation id="3810973564298564668">Yönet</translation>
 <translation id="3828029223314399057">Yer işaretlerinde ara</translation>
 <translation id="3871171699884605801">Çocuklar için hesapların tarama geçmişi temizlenemez</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
@@ -374,6 +376,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# saat önce}other{# saat önce}}</translation>
 <translation id="5817918615728894473">Eşle</translation>
+<translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5832934273103296195">Genişletildi - Daraltmak için tıklayın</translation>
 <translation id="583891442612896534">Chrome, veri sıkıştırma için Google sunucularına erişemiyor. Veri tasarrufunuz sınırlı olabilir.</translation>
 <translation id="585027516397408832">Veri Tasarrufu etkinleştirildi</translation>
@@ -436,6 +439,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6612358246767739896">Korunan içerik</translation>
 <translation id="6612856669344839356">Yer işaretini kaydet</translation>
 <translation id="6627583120233659107">Klasörü düzenle</translation>
+<translation id="6643016212128521049">Temizle</translation>
 <translation id="6647073004883890710"><ph name="USERNAME" /> adlı kullanıcının bu siteye ait şifresinin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini istiyor musunuz?</translation>
 <translation id="6656545060687952787">Chrome'un cihazları taraması için konuma erişmesi gerekiyor. <ph name="BEGIN_LINK" />İzinleri güncelleyin<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Sekme</translation>
@@ -581,6 +585,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8481940801237642152">Bu siteye bağlantınız gizli bir bağlantı, ancak ağ üzerindeki biri sayfanın görünümünü değiştirebilir.</translation>
+<translation id="8493948351860045254">Yer aç</translation>
 <translation id="8497726226069778601">Burada görülecek bir şey yok… henüz</translation>
 <translation id="8514577642972634246">Gizli moda geç</translation>
 <translation id="8518901949365209398">Bu site düşük bir güvenlik yapılandırması (SHA-1 imzaları) kullandığından bağlantınız gizli olmayabilir.</translation>

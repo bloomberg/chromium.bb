@@ -939,13 +939,6 @@
 <translation id="4347908978527632940">如果設為 true，且使用者是受監管的使用者，其他 Android 應用程式即可透過內容提供者查詢使用者的網路限制。
 
           如果設為 false 或沒有設定，內容提供者將不會傳回任何資訊。</translation>
-<translation id="4349746760316962317">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
-
-      如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如未設定這項政策，系統會使用預設的快取目錄，日後使用者可以自行透過「--disk-cache-dir」命令列標記覆寫這個目錄。</translation>
 <translation id="436581050240847513">回報裝置網路介面</translation>
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
@@ -1100,13 +1093,6 @@
           如果您未設定這項政策，系統就會採取預設動作 (暫停)。
 
           如果您將動作設為暫停，您可另行設定 <ph name="PRODUCT_OS_NAME" /> 是否要在暫停前鎖定螢幕。</translation>
-<translation id="5111712393799006197">設定 <ph name="PRODUCT_NAME" /> 儲存使用者資料時所使用的目錄。
-
-      如果設定這項政策，無論使用者是否指定「--user-data-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如未設定這項政策，系統會使用預設的設定檔路徑，日後使用者可以自行透過「--user-data-dir」命令列標記覆寫這個路徑。</translation>
 <translation id="5130288486815037971">是否在 TLS 中啟用 RC4 加密套件</translation>
 <translation id="5141670636904227950">設定啟用的螢幕放大鏡在登入畫面的預設類型</translation>
 <translation id="5142301680741828703">一律轉譯下列 <ph name="PRODUCT_FRAME_NAME" /> 中的網址模式</translation>

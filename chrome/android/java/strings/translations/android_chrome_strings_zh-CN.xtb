@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">点按此按钮即可快速访问您的标签页。</translation>
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="1825719650605518411">首次运行体验</translation>
+<translation id="1826516787628120939">正在检查</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1832521218263067499">安全事件</translation>
 <translation id="1842969606798536927">付款</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />”已播放完毕</translation>
+<translation id="3810973564298564668">管理</translation>
 <translation id="3828029223314399057">搜索书签</translation>
 <translation id="3871171699884605801">无法清除未成年人帐户的浏览记录</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">权限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
+<translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
 <translation id="585027516397408832">流量节省程序已启用</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6612856669344839356">保存书签</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
+<translation id="6643016212128521049">清除</translation>
 <translation id="6647073004883890710">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 用于登录此网站的密码吗？</translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
+<translation id="8493948351860045254">释放空间</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>

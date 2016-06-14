@@ -1003,13 +1003,6 @@
 <translation id="4347908978527632940">true로 설정되어 있고 사용자가 관리 대상 사용자인 경우 다른 Android 앱에서 콘텐츠 제공업체를 통해 사용자의 웹 제한사항을 검색할 수 있습니다.
 
           false로 설정되어 있거나 설정되어 있지 않은 경우 콘텐츠 제공업체에서 정보를 제공하지 않습니다.</translation>
-<translation id="4349746760316962317"><ph name="PRODUCT_NAME" />이(가) 디스크에 캐시된 파일을 저장하는 데 사용할 디렉토리를 설정합니다.
-
-      이 정책을 설정하면 <ph name="PRODUCT_NAME" />은(는) 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 관계없이 제공된 디렉토리를 사용합니다.
-
-      사용할 수 있는 변수 목록은 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.
-
-      이 정책을 설정하지 않는 경우 기본 캐시 디렉토리가 사용되며 사용자는 '--disk-cache-dir' 명령줄 플래그로 해당 디렉토리를 무시할 수 있습니다.</translation>
 <translation id="436581050240847513">기기 네트워크 인터페이스 보고</translation>
 <translation id="4372704773119750918">기업 사용자가 멀티 프로필에 포함되도록 허용하지 않음(기본 또는 보조)</translation>
 <translation id="4377599627073874279">모든 사이트에서 모든 이미지를 표시하도록 허용</translation>
@@ -1192,13 +1185,6 @@
           이 정책이 설정되어 있지 않으면 기본 작업이 실행되어 일시중지됩니다.
 
           작업이 일시중지되는 경우 일시중지되기 전에 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그거나 잠그지 않도록 별도로 설정할 수 있습니다.</translation>
-<translation id="5111712393799006197"><ph name="PRODUCT_NAME" />이(가) 사용자 데이터 저장에 사용할 디렉토리를 설정합니다.
-
-      정책을 설정하는 경우, <ph name="PRODUCT_NAME" />은(는) 사용자가 '--user-data-dir' 플래그를 지정했는지 여부와 상관없이 제공된 디렉토리를 사용합니다.
-
-      사용할 수 있는 변수 목록은 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.
-
-      이 정책을 설정하지 않는 경우 기본 프로필 경로가 사용되며 사용자는 '--user-data-dir' 명령줄 플래그로 해당 경로를 무시할 수 있습니다.</translation>
 <translation id="5130288486815037971">TLS RC4 암호화 기술이 사용하도록 설정되었는지 여부</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" />에서 다음 URL 패턴을 항상 렌더링</translation>

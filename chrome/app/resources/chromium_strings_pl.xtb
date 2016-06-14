@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">Aby nadal uruchamiać aplikacje, możesz korzystać ze skrótu <ph name="APPS_ICON_IMAGE" /> na pasku zakładek w Chromium.</translation>
 <translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
-<translation id="2673087257647337101">Prawie aktualny. Uruchom ponownie Chromium, by zakończyć aktualizację.</translation>
 <translation id="2685838254101182273">Chromium nie jest już aktualizowany ani nie obsługuje tej wersji systemu operacyjnego.</translation>
 <translation id="2705212601509139398">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i pobierz zgodną przeglądarkę.</translation>
 <translation id="2711502716910134313">Karta Chromium</translation>
@@ -209,7 +208,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8269379391216269538">Pomóż ulepszyć Chromium</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
-<translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8621669128220841554">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Chromium ponownie.</translation>

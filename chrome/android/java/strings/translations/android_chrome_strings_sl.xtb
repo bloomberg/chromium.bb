@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">Dotaknite se tega gumba, če želite hitro dostopati do svojih zavihkov.</translation>
 <translation id="1807246157184219062">Svetlo</translation>
 <translation id="1825719650605518411">Izkušnje ob prvem izvajanju</translation>
+<translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1829244130665387512">Poišči na strani</translation>
 <translation id="1832521218263067499">Varnostni dogodki</translation>
 <translation id="1842969606798536927">Plačilo</translation>
@@ -216,6 +217,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
 <translation id="3809549525127675114">Predvajanje videoposnetka »<ph name="VIDEO_TITLE" />« je končano</translation>
+<translation id="3810973564298564668">Upravljanje</translation>
 <translation id="3828029223314399057">Išči po zaznamkih</translation>
 <translation id="3871171699884605801">Z računom za otroke ni mogoče izbrisati zgodovine brskanja</translation>
 <translation id="3894427358181296146">Dodajanje mape</translation>
@@ -374,6 +376,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Pred # uro}one{Pred # uro}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="5817918615728894473">Seznani</translation>
+<translation id="583281660410589416">Neznano</translation>
 <translation id="5832934273103296195">Razširjeno – kliknite, če želite strniti</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
 <translation id="585027516397408832">Varčevanje s podatki je omogočeno</translation>
@@ -436,6 +439,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6612856669344839356">Shrani zaznamek</translation>
 <translation id="6627583120233659107">Uredi mapo</translation>
+<translation id="6643016212128521049">Počisti</translation>
 <translation id="6647073004883890710">Ali želite, da <ph name="PASSWORD_MANAGER_BRAND" /> posodobi geslo za uporabniško ime <ph name="USERNAME" /> za to spletno mesto?</translation>
 <translation id="6656545060687952787">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK" />Posodobite dovoljenja<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tabulator</translation>
@@ -581,6 +585,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8481940801237642152">Povezava s tem mestom je zasebna, vendar lahko nekdo v omrežju spremeni videz strani.</translation>
+<translation id="8493948351860045254">Sprosti prostor</translation>
 <translation id="8497726226069778601">Nimate česa videti ... Za zdaj.</translation>
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
 <translation id="8518901949365209398">To spletno mesto uporablja šibko varnostno konfiguracijo (podpise SHA-1), zato vaša povezava morda ni zasebna.</translation>

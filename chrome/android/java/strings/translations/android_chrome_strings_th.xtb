@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">แตะปุ่มนี้เพื่อเข้าถึงแท็บอย่างรวดเร็ว</translation>
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="1825719650605518411">ประสบการณ์กับ First Run</translation>
+<translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
 <translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="1842969606798536927">จ่าย</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” เล่นจบแล้ว</translation>
+<translation id="3810973564298564668">จัดการ</translation>
 <translation id="3828029223314399057">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="3871171699884605801">ไม่สามารถล้างประวัติการท่องเว็บด้วยบัญชีของเด็ก</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">การอนุญาต</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ชั่วโมงที่ผ่านมา}other{# ชั่วโมงที่ผ่านมา}}</translation>
 <translation id="5817918615728894473">จับคู่</translation>
+<translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5832934273103296195">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
 <translation id="585027516397408832">เปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6612856669344839356">บันทึกบุ๊กมาร์ก</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
+<translation id="6643016212128521049">ล้าง</translation>
 <translation id="6647073004883890710">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของ <ph name="USERNAME" /> สำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="6656545060687952787">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK" />อัปเดตสิทธิ์<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">แท็บ</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8481940801237642152">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว แต่คนอื่นในเครือข่ายอาจเปลี่ยนลักษณะของหน้าได้</translation>
+<translation id="8493948351860045254">เพิ่มพื้นที่ว่าง</translation>
 <translation id="8497726226069778601">ที่นี่ยังไม่มีอะไรให้ดู… เลย</translation>
 <translation id="8514577642972634246">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="8518901949365209398">ไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่หละหลวม (ลายเซ็นแบบ SHA-1) ดังนั้น การเชื่อมต่อของคุณอาจไม่เป็นส่วนตัว</translation>

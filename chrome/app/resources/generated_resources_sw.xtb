@@ -879,12 +879,6 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kudhibiti mipangilio yake w
 <translation id="2266168284394154563">Weka ukuzaji wa skrini upya</translation>
 <translation id="2268190795565177333">Upeo:</translation>
 <translation id="2269459857310637791">Washa au zima kuunganisha tukio la ufunguo (WM_KEY*) pamoja na tukio la herufi (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Fikia faili kutoka mahali popote, hata nje ya mtandao.<ph name="MARKUP_2" />
-        Faili katika Hifadhi ya Google zimesasishwa na zinapatikana kwenye kifaa chochote.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />Weka faili zako salama.<ph name="MARKUP_5" />
-        Haijalishi kitakachotendekea kifaa chako, faili zako zimehifadhiwa salama katika Hifadhi ya Google.<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />Shiriki, unda na ushirikiane<ph name="MARKUP_8" />
-        kwenye faili na wengine vyote mahali pamoja.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Badilisha data kwa kifaa chochote kwenye kikoa <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Nambari ya simu</translation>
 <translation id="2270627217422354837">Badilisha data kwa kifaa chochote kwenye vikoa: <ph name="DOMAINS" /></translation>
@@ -4498,6 +4492,7 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="7505167922889582512">Onyesha faili zilizofichwa</translation>
 <translation id="7507930499305566459">Cheti cha Jibu la Hali</translation>
 <translation id="7508545000531937079">Onyesho la slaidi</translation>
+<translation id="7511149348717996334">Washa mipangilio ya Usanifu Bora</translation>
 <translation id="7511955381719512146">Wi-Fi unayotumia inaweza kukuhitaji kutembelea <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Tambua kulingana na wewe</translation>
 <translation id="751507702149411736">Kibelarusi</translation>

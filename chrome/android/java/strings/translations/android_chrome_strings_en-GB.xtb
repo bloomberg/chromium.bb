@@ -66,6 +66,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
+<translation id="1826516787628120939">Checking</translation>
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1832521218263067499">Security incidents</translation>
 <translation id="1842969606798536927">Pay</translation>
@@ -216,6 +217,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3809549525127675114">Finished “<ph name="VIDEO_TITLE" />”</translation>
+<translation id="3810973564298564668">Manage</translation>
 <translation id="3828029223314399057">Search bookmarks</translation>
 <translation id="3871171699884605801">Browsing history can’t be cleared with accounts for kids</translation>
 <translation id="3894427358181296146">Add folder</translation>
@@ -374,6 +376,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
+<translation id="583281660410589416">Unknown</translation>
 <translation id="5832934273103296195">Expanded – Click to collapse</translation>
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
 <translation id="585027516397408832">Data Saver enabled</translation>
@@ -436,6 +439,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6612856669344839356">Save bookmark</translation>
 <translation id="6627583120233659107">Edit folder</translation>
+<translation id="6643016212128521049">Clear</translation>
 <translation id="6647073004883890710">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update the password for <ph name="USERNAME" /> for this site?</translation>
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
+<translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>

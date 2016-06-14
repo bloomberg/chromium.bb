@@ -1011,13 +1011,6 @@
 <translation id="4347908978527632940">እውነት ከሆነ እና ተጠቃሚው ክትትል የሚደረግበት ተጠቃሚ ከሆነ ሌሎች የAndroid መተግበሪያዎች በይዘት አቅራቢ በኩል የተጠቃሚውን የድር ገደቦች ምን እንደሆኑ ሊጠይቁ ይችላሉ።
 
           ሐሰት ከሆነ ወይም ካልተዋቀረ የይዘት አቅራቢው ምንም መረጃ አይመልስም።</translation>
-<translation id="4349746760316962317"><ph name="PRODUCT_NAME" /> የመሸጎጫ ፋይሎችን በዲስክ ላይ ለማከማቸት የሚጠቀምበትን ማውጫ ያዋቅራል።
-
-      ይህን መመሪያ ካቀናበሩት ተጠቃሚው የ«--disk-cache-dir» ዕልባቱን ጠቀሰም አልጠቀሰም <ph name="PRODUCT_NAME" /> የተሰጠውን ማውጫ ይጠቀማል።
-
-      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማየት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
-
-       ይህ መመሪያ ሳይቀናበር ከተተወ ነባሪው የመሸጎጫ ማውጫ ስራ ላይ ይውላል፣ እና ተጠቀሚው በ«--disk-cache-dir» ትዕዛዝ መስመር ጠቋሚው ሊሽረው ይችላል።</translation>
 <translation id="436581050240847513">የመሳሪያ አውታረ መረብ በይነ ገጽን ሪፖርት ያድርጉ</translation>
 <translation id="4372704773119750918">የድርጅት ተጠቃሚ የብዝሃ-መገለጫ (ዋናው ወይም ሁለተኛው) አካል እንዲሆን አይፍቀዱ</translation>
 <translation id="4377599627073874279">ሁሉም ጣቢያዎች ሁሉንም ምስሎች እንዲያሳዩ ፍቀድ</translation>
@@ -1200,13 +1193,6 @@
 ይህ መመሪያ ሳይዘጋጅ ሲቀር፣ ነባሪ እርምጃው ይወሰዳል፣ እሱም ማገድ ነው።
 
 እርምጃው ከታገደ፣ <ph name="PRODUCT_OS_NAME" /> ከማገዱ በፊት የማያ ገጹን ለመቆለፍ ወይም ላለመቆለፍ በተናጠል ሊዋቀር ይችላል።</translation>
-<translation id="5111712393799006197"><ph name="PRODUCT_NAME" /> የተጠቃሚ ውሂብ ለማከማቸት የሚጠቀመውን አቃፊ ያዋቅራል።
-
-      ይህንን መምሪያ ካዋቀሩት ተጠቃሚው የ«--user-data-dir» ዕልባቱን ገለጸ አልገለጸ <ph name="PRODUCT_NAME" /> የተሰጠውን አቃፊ ይጠቀማል።
-
-      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማግኘት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
-
-      ይህ መምሪያ ሳይቀናበር ከተተወ ነባሪው የመገለጫ ዱካ ስራ ላይ ይውልና ተጠቃሚው በ«--user-data-dir» ትዕዛዝ መስመር ዕልባቱን በመጠቀም ሊሽረው ይችላል።</translation>
 <translation id="5130288486815037971">በTLS ውስጥ ያሉት የRC4 ስነ መሰውር ጥቅሎች እንደነቁ</translation>
 <translation id="5141670636904227950">ነባሪውን የማጉሊያ አይነት በመግቢያ ገጹ ላይ ያንቁት</translation>
 <translation id="5142301680741828703">በ<ph name="PRODUCT_FRAME_NAME" /> ውስጥ ያሉት የሚከተሉት የዩ አር ኤል ቅጦችን ሁልጊዜ አሳይ</translation>

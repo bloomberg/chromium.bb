@@ -877,11 +877,6 @@
 <translation id="2266168284394154563">重置屏幕缩放</translation>
 <translation id="2268190795565177333">范围：</translation>
 <translation id="2269459857310637791">启用或停用将密钥事件 (WM_KEY*) 与字符事件 (WM_CHAR) 合并的功能。</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />即使离线，也可随时随地访问文件。<ph name="MARKUP_2" />
-    Google云端硬盘上的文件是最新的，并可通过任意设备访问。<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />可确保文件安全。<ph name="MARKUP_5" />
-    无论您的设备出现什么状况，您的文件都会安全地存储在Google云端硬盘上。<ph name="MARKUP_6" />
-    与其他人一起<ph name="MARKUP_7" />共享、创建和协作处理<ph name="MARKUP_8" />文件，尽在Google云端硬盘。<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">与网域 <ph name="DOMAIN" /> 中的任何设备交换数据</translation>
 <translation id="2270484714375784793">电话号码</translation>
 <translation id="2270627217422354837">与下列网域中的任何设备交换数据：<ph name="DOMAINS" /></translation>
@@ -4481,6 +4476,7 @@
 <translation id="7505167922889582512">显示隐藏文件</translation>
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7508545000531937079">幻灯片演示</translation>
+<translation id="7511149348717996334">启用 Material Design 设置</translation>
 <translation id="7511955381719512146">您要使用的 Wi-Fi 网络可能需要您访问 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
 <translation id="7513996269498582533">由您检测</translation>
 <translation id="751507702149411736">白俄罗斯语</translation>

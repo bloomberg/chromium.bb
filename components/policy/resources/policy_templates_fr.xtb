@@ -1017,13 +1017,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4347908978527632940">Si la valeur est définie sur "True" et si l'utilisateur est supervisé, d'autres applications Android peuvent envoyer une requête concernant les restrictions Web de ce dernier via un fournisseur de contenu.
 
           Si la valeur est définie sur "False" ou si elle n'est pas définie, le fournisseur de contenu n'envoie aucune information.</translation>
-<translation id="4349746760316962317">Configure le répertoire que <ph name="PRODUCT_NAME" /> utilise pour stocker les fichiers mis en cache sur le disque.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire fourni, que l'utilisateur ait spécifié l'indicateur "--disk-cache-dir" ou non.
-
-      Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Si vous ne définissez pas cette règle, le répertoire de cache par défaut est utilisé et l'utilisateur est en mesure de le remplacer à l'aide de l'indicateur de ligne de commande "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Générer un rapport sur les interfaces réseau de l'appareil</translation>
 <translation id="4372704773119750918">Ne pas autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils, que ce soit en tant qu'utilisateur principal ou secondaire</translation>
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
@@ -1208,13 +1201,6 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
 
 
           Si la mesure est la mise en veille, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour que l'écran soit verrouillé ou non avant la mise en veille.</translation>
-<translation id="5111712393799006197">Configure le répertoire que <ph name="PRODUCT_NAME" /> utilise pour stocker les données utilisateur.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire fourni, que l'utilisateur ait spécifié l'indicateur "--user-data-dir" ou non.
-
-      Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Si vous ne définissez pas cette règle, le chemin d'accès au profil par défaut est utilisé, et l'utilisateur est en mesure de le remplacer à l'aide de l'indicateur de ligne de commande "--user-data-dir".</translation>
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>

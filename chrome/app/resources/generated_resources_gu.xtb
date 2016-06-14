@@ -877,12 +877,6 @@
 <translation id="2266168284394154563">સ્ક્રીન ઝૂમ ફરીથી સેટ કરો</translation>
 <translation id="2268190795565177333">સ્કોપ્સ:</translation>
 <translation id="2269459857310637791">કી ઇવેન્ટને (WM_KEY*) કેરેક્ટર ઇવેન્ટ (WM_CHAR) સાથે મર્જ કરોને સક્ષમ અથવા અક્ષમ કરો.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />ફાઇલોને ગમે ત્યાંથી ઍક્સેસ કરો, ઓફલાઇનથી પણ.<ph name="MARKUP_2" />
-        Google ડ્રાઇવમાં ફાઇલો અપ-ટૂ-ડેટ છે અને કોઈ ઉપકરણમાંથી ઉપલબ્ધ છે.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />તમારી ફાઇલોને સલામત રાખો.<ph name="MARKUP_5" />
-                        તમારા ઉપકરણને શું થયું છે એનાથી કોઈ ફેર પડતો નથી, તમારી ફાઇલોને સલામત રીતે Google ડ્રાઇવમાં સ્ટોર કરવામાં આવે છે.<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />એક જ સ્થાનમાં ફાઇલો શેર કરો, બનાવો<ph name="MARKUP_8" />
-                     અને અન્ય લોકો સાથે તેના પર સહયોગ કરો.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> ડોમેન્સમાં કોઈપણ ઉપકરણો સાથે ડેટા વિનિમય કરો</translation>
 <translation id="2270484714375784793">ફોન નંબર</translation>
 <translation id="2270627217422354837">આ ડોમેન્સમાં કોઈપણ ઉપકરણ સાથે ડેટા વિનિમય કરો: <ph name="DOMAINS" /></translation>
@@ -4502,6 +4496,7 @@
 <translation id="7505167922889582512">છુપાવેલી ફાઇલો દર્શાવો</translation>
 <translation id="7507930499305566459">પ્રતિસાદકર્તાની સ્થિતિનું પ્રમાણપત્ર</translation>
 <translation id="7508545000531937079">સ્લાઇડશો</translation>
+<translation id="7511149348717996334">સામગ્રી ડિઝાઇન સેટિંગ્સ સક્ષમ કરો</translation>
 <translation id="7511955381719512146">તમે ઉપયોગ કરી રહ્યાં છો તે Wi-Fi ને <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ની મુલાકાત લેવાની જરૂર પડી શકે છે.</translation>
 <translation id="7513996269498582533">તમારા દ્વારા શોધો</translation>
 <translation id="751507702149411736">બેલારુશિયન</translation>

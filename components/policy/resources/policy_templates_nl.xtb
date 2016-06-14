@@ -993,13 +993,6 @@
 <translation id="4347908978527632940">Als beleid 'waar' is en de gebruiker een gebruiker met beperkte rechten is, kunnen andere Android-apps de internetbeperkingen van de gebruiker opvragen via de contentprovider.
 
           Als het beleid 'onwaar' of niet ingesteld is, retourneert de contentprovider geen informatie.</translation>
-<translation id="4349746760316962317">Hiermee configureer je de directory die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
-
-      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven directory, ongeacht of de gebruiker de markering '--disk-cache-dir' heeft ingesteld.
-
-      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
-
-      Als dit beleid niet wordt ingesteld, wordt de standaard cachedirectory gebruikt en kan de gebruiker dit overschrijven met de opdrachtregelmarkering '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
@@ -1178,13 +1171,6 @@
           Als het instellen van dit beleid ongedaan wordt gemaakt, wordt de standaardactie ondernomen, namelijk opschorten.
 
           Als de actie opschorten is, kan <ph name="PRODUCT_OS_NAME" /> afzonderlijk worden geconfigureerd om het scherm wel of niet te vergrendelen vóór het opschorten.</translation>
-<translation id="5111712393799006197">Hiermee configureer je de directory die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
-
-      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering voor '--user-data-dir' heeft ingesteld.
-
-      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
-
-      Als dit beleid niet wordt ingesteld, wordt het standaardprofielpad gebruikt en kan de gebruiker dit overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
 <translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>

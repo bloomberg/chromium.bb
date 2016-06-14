@@ -880,11 +880,6 @@
 <translation id="2266168284394154563">স্ক্রিন জুম পুনরায় সেট করুন</translation>
 <translation id="2268190795565177333">সুযোগগুলি:</translation>
 <translation id="2269459857310637791">কী ইভেন্টকে (WM_KEY *) অক্ষর ইভেন্ট (WM_CHAR) এর সঙ্গে একত্রীকরণ সক্ষম বা অক্ষম করুন।</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />যে কোনো জায়গা থেকে এমনকি অফলাইনে থাকাকালীনও, ফাইলগুলি অ্যাক্সেস করুন৷<ph name="MARKUP_2" />
-Google ড্রাইভের মধ্যে ফাইলগুলি আপ-টু-ডেট আছে এবং যে কোনো ডিভাইস থেকে উপলব্ধ৷<ph name="MARKUP_3" />
- <ph name="MARKUP_4" />আপনার ফাইলগুলিকে নিরাপদ রাখুন৷<ph name="MARKUP_5" />
-আপনার ডিভাইসে কি ঘটেছে তা গুরুত্বপূর্ণ নয়, আপনার ফাইলগুলি Google ড্রাইভে নিরাপদভাবে সঞ্চয় করা হয়েছে৷<ph name="MARKUP_6" />
-ফাইলগুলি অন্যদের সাথে একটি জায়গায় <ph name="MARKUP_7" />ভাগ, তৈরি এবং সহযোগিতা<ph name="MARKUP_8" />করুন৷<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> ডোমেনের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
 <translation id="2270484714375784793">ফোন নম্বর</translation>
 <translation id="2270627217422354837"><ph name="DOMAINS" /> ডোমেনসমূহের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
@@ -4496,6 +4491,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7505167922889582512">লুকানো ফাইলগুলি দেখান</translation>
 <translation id="7507930499305566459">স্থিতি প্রতিক্রিয়া শংসাপত্র</translation>
 <translation id="7508545000531937079">স্লাইডশো</translation>
+<translation id="7511149348717996334">মেটারিয়াল ডিজাইন সেটিংস সক্ষম করুন</translation>
 <translation id="7511955381719512146">আপনি যে ওয়াই-ফাই-টি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />-তে যেতে হতে পারে৷</translation>
 <translation id="7513996269498582533">আপনি সনাক্ত করেছেন</translation>
 <translation id="751507702149411736">বেলারুশীয়</translation>

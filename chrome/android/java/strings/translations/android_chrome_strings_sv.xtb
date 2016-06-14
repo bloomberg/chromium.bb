@@ -66,6 +66,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1756600373018374892">Den här knappen ger snabb tillgång till flikarna.</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1825719650605518411">Första körningen</translation>
+<translation id="1826516787628120939">Kontrollerar</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1832521218263067499">Incidenter som rör säkerheten</translation>
 <translation id="1842969606798536927">Betala</translation>
@@ -216,6 +217,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3809549525127675114">Uppspelningen av <ph name="VIDEO_TITLE" /> har avslutats</translation>
+<translation id="3810973564298564668">Hantera</translation>
 <translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="3871171699884605801">Webbhistoriken kan inte rensas med barnkonton</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -374,6 +376,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5817918615728894473">Koppla</translation>
+<translation id="583281660410589416">Okänd</translation>
 <translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
 <translation id="585027516397408832">Databesparing har aktiverats</translation>
@@ -436,6 +439,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6612856669344839356">Spara bokmärke</translation>
 <translation id="6627583120233659107">Redigera mapp</translation>
+<translation id="6643016212128521049">Rensa</translation>
 <translation id="6647073004883890710">Vill du att <ph name="PASSWORD_MANAGER_BRAND" /> ska uppdatera lösenordet för <ph name="USERNAME" /> på den här webbplatsen?</translation>
 <translation id="6656545060687952787">Chrome behöver platsåtkomst för att söka efter enheter. <ph name="BEGIN_LINK" />Uppdatera behörigheter<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Flik</translation>
@@ -581,6 +585,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
+<translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>

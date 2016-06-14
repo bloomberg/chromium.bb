@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1825719650605518411">تجربة التشغيل لأول مرة</translation>
+<translation id="1826516787628120939">حساب شيكات</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
 <translation id="1842969606798536927">الدفع</translation>
@@ -214,6 +215,7 @@
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3744111561329211289">مزامنة الخلفية</translation>
 <translation id="3809549525127675114">تم الانتهاء من تشغيل "<ph name="VIDEO_TITLE" />"</translation>
+<translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3828029223314399057">بحث في الإشارات المرجعية</translation>
 <translation id="3871171699884605801">يتعذر مسح سجل التصفح بحسابات الأطفال</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
@@ -373,6 +375,7 @@
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
 <translation id="5817918615728894473">إقران</translation>
+<translation id="583281660410589416">غير معروف</translation>
 <translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
 <translation id="585027516397408832">تمكين توفير البيانات</translation>
@@ -435,6 +438,7 @@
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6612856669344839356">حفظ الإشارة المرجعية</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
+<translation id="6643016212128521049">محو</translation>
 <translation id="6647073004883890710">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة المرور لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
@@ -580,6 +584,7 @@
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
+<translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>

@@ -1010,13 +1010,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4347908978527632940">Če je omogočeno in je uporabnik zaščiteni uporabnik, lahko druge aplikacije za Android prek ponudnika vsebine pošljejo poizvedbe o uporabnikovih spletnih omejitvah.
 
           Če ni omogočeno ali ni nastavljeno, ponudnik vsebine ne pošlje podatkov.</translation>
-<translation id="4349746760316962317">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
-
-      Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--disk-cache-dir« ali ne.
-
-      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za shranjevanje predpomnjenih datotek in uporabnik ga bo lahko preglasil z zastavico »--disk-cache-dir« v ukazni vrstici.</translation>
 <translation id="436581050240847513">Poročanje o omrežnih vmesnikih naprave</translation>
 <translation id="4372704773119750918">Ne dovoli uporabnikom v podjetjih, da so del večkratnega profila (primarnega ali sekundarnega)</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
@@ -1199,13 +1192,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, se izvede privzeto dejanje, ki je preklop v stanje pripravljenosti.
 
           Če je dejanje preklop v stanje pripravljenosti, se lahko <ph name="PRODUCT_OS_NAME" /> po navadi ločeno nastavi, da pred preklopom v stanje pripravljenosti zaklene zaslon ali ga ne zaklene.</translation>
-<translation id="5111712393799006197">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje uporabniških podatkov.
-
-      Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--user-data-dir«.
-
-      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Če tega pravilnika ne nastavite, bo uporabljena privzeta pot profila in uporabnik jo bo lahko preglasil z zastavico »--user-data-dir« v ukazni vrstici.</translation>
 <translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME" /></translation>

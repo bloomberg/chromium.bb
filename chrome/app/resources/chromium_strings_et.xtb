@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">Oma rakendustele pääsete edaspidi juurde Chromiumi järjehoidjate ribal oleva otsetee <ph name="APPS_ICON_IMAGE" /> kaudu.</translation>
 <translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
-<translation id="2673087257647337101">Rakendus on peaaegu ajakohane! Värskendamise lõpuleviimiseks taaskäivitage Chromium.</translation>
 <translation id="2685838254101182273">Chromiumi värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
 <translation id="2705212601509139398">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
 <translation id="2711502716910134313">Chromiumi vaheleht</translation>
@@ -211,7 +210,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="8269379391216269538">Aidake muuta Chromiumi paremaks</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
-<translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>

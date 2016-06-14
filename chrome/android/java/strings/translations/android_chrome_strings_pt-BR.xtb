@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">Toque neste botão para acessar rapidamente suas guias.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Tela de apresentação</translation>
+<translation id="1826516787628120939">Em verificação</translation>
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="1842969606798536927">Pagar</translation>
@@ -216,6 +217,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
+<translation id="3810973564298564668">Gerenciar</translation>
 <translation id="3828029223314399057">Pesquisar favoritos</translation>
 <translation id="3871171699884605801">Não é possível limpar o histórico de navegação com contas para crianças</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
@@ -373,6 +375,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hora atrás}one{# horas atrás}other{# horas atrás}}</translation>
 <translation id="5817918615728894473">Parear</translation>
+<translation id="583281660410589416">Desconhecido</translation>
 <translation id="5832934273103296195">Visualização expandida: clique para recolher</translation>
 <translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
 <translation id="585027516397408832">Economia de dados ativada</translation>
@@ -435,6 +438,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6612856669344839356">Salvar favorito</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="6647073004883890710">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize a senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Guia</translation>
@@ -580,6 +584,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>
+<translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="8518901949365209398">Este site usa uma configuração de segurança fraca (assinaturas SHA-1). Portanto sua conexão pode não ser particular.</translation>

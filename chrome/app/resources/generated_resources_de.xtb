@@ -877,12 +877,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2266168284394154563">Zoomeinstellung für den Bildschirm zurücksetzen</translation>
 <translation id="2268190795565177333">Umfang:</translation>
 <translation id="2269459857310637791">Zusammenführen von Schlüsselereignis (WM_KEY*) und Zeichenereignis (WM_CHAR) aktivieren oder deaktivieren.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Greifen Sie überall auf Ihre Dateien zu, auch offline.<ph name="MARKUP_2" />
-    Dateien in Google Drive sind aktuell und auf jedem Gerät verfügbar.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Bewahren Sie Ihre Dateien sicher auf.<ph name="MARKUP_5" />
-    Was auch immer mit Ihrem Gerät passiert, Ihre Dateien sind in Google Drive sicher gespeichert.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Teilen, erstellen und bearbeiten<ph name="MARKUP_8" />
-    Sie Ihre Dateien mit anderen.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Daten mit einem beliebigen Gerät in der Domain "<ph name="DOMAIN" />" austauschen</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2270627217422354837">Daten mit einem beliebigen Gerät in diesen Domains austauschen: <ph name="DOMAINS" /></translation>
@@ -4498,6 +4492,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7505167922889582512">Versteckte Dateien anzeigen</translation>
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="7508545000531937079">Diashow</translation>
+<translation id="7511149348717996334">Material Design-Einstellungen aktivieren</translation>
 <translation id="7511955381719512146">Unter Umständen erfordert das verwendete WLAN, dass Sie <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> aufrufen.</translation>
 <translation id="7513996269498582533">Erkennen (Ihre Auswahl)</translation>
 <translation id="751507702149411736">Weißrussisch</translation>

@@ -66,6 +66,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1756600373018374892">Toque neste botão para aceder rapidamente aos seus separadores.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Experiência de primeira execução</translation>
+<translation id="1826516787628120939">A verificar</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="1842969606798536927">Pagar</translation>
@@ -216,6 +217,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
+<translation id="3810973564298564668">Gerir</translation>
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
 <translation id="3871171699884605801">Não é possível limpar o histórico de navegação nas contas para crianças</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
@@ -374,6 +376,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Há # hora}other{Há # horas}}</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
+<translation id="583281660410589416">Desconhecido</translation>
 <translation id="5832934273103296195">Expandida – clicar para reduzir</translation>
 <translation id="583891442612896534">O Chrome não consegue comunicar com os servidores da Google para a compressão de dados. A poupança de dados pode ser limitada.</translation>
 <translation id="585027516397408832">Poupança de dados ativada</translation>
@@ -436,6 +439,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6612856669344839356">Guardar marcador</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="6647073004883890710">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> atualize a palavra-passe de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
 <translation id="8481940801237642152">A sua ligação a este site é privada, mas alguém na rede pode estar a tentar alterar o aspeto da página.</translation>
+<translation id="8493948351860045254">Libertar espaço</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
 <translation id="8518901949365209398">Este site utiliza uma configuração de segurança fraca (assinaturas SHA-1), pelo que a sua ligação pode não ser privada.</translation>

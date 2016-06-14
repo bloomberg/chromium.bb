@@ -882,12 +882,6 @@
 <translation id="2266168284394154563">화면 확대/축소 재설정</translation>
 <translation id="2268190795565177333">범위:</translation>
 <translation id="2269459857310637791">key 이벤트(WM_KEY*)와 char 이벤트(WM_CHAR) 통합을 사용 또는 사용 중지합니다.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />오프라인을 비롯하여 어디에서나 파일에 액세스하세요.<ph name="MARKUP_2" />
-    Google 드라이브에 있는 파일은 최신 상태이며 모든 기기에서 사용할 수 있습니다.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />파일을 안전하게 보관하세요.<ph name="MARKUP_5" />
-    기기에 어떤 일이 일어나더라도 파일은 Google 드라이브에 안전하게 저장됩니다.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />다른 사용자와 한 곳에서 파일을<ph name="MARKUP_8" />
-    공유하고 만들고 공동작업하세요.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">도메인 <ph name="DOMAIN" />에 있는 모든 기기와 데이터 교환</translation>
 <translation id="2270484714375784793">전화번호</translation>
 <translation id="2270627217422354837">도메인(<ph name="DOMAINS" />)에 있는 모든 기기와 데이터 교환</translation>
@@ -4510,6 +4504,7 @@
 <translation id="7505167922889582512">숨긴 파일 표시</translation>
 <translation id="7507930499305566459">상태 응답자 인증서</translation>
 <translation id="7508545000531937079">슬라이드쇼</translation>
+<translation id="7511149348717996334">머티리얼 디자인 설정 사용</translation>
 <translation id="7511955381719512146">사용 중인 Wi-Fi에서 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> 방문을 요청할 수 있습니다.</translation>
 <translation id="7513996269498582533">사용자가 감지하도록 설정</translation>
 <translation id="751507702149411736">벨로루시어</translation>

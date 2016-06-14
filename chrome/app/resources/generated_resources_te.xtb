@@ -880,12 +880,6 @@
 <translation id="2266168284394154563">స్క్రీన్ జూమ్‌ను రీసెట్ చేయండి</translation>
 <translation id="2268190795565177333">స్కోప్‌లు:</translation>
 <translation id="2269459857310637791">అక్షర ఈవెంట్ (WM_CHAR)తో కీ ఈవెంట్ (WM_KEY*)ని విలీనం చేయడాన్ని ప్రారంభించండి లేదా నిలిపివేయండి.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />ఆఫ్‌లైన్‌లో ఉన్నప్పటికీ ఎక్కడి నుండైనా ఫైల్‌లను ప్రాప్యత చేయండి.<ph name="MARKUP_2" />
-    Google డిస్క్‌లో ఫైల్‌లు తాజాగా ఉంటాయి మరియు ఏ పరికరం నుండైనా అందుబాటులో ఉంటాయి.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />మీ ఫైల్‌లను సురక్షితంగా ఉంచండి.<ph name="MARKUP_5" />
-    మీ పరికరానికి కలిగే ఇబ్బందులతో సంబంధం లేకుండా మీ ఫైల్‌లు Google డిస్క్‌లో సురక్షితంగా నిల్వ చేయబడతాయి.<ph name="MARKUP_6" />
-    ఫైల్‌ల్లో <ph name="MARKUP_7" />భాగస్వామ్యం చేయడం, సృష్టించడం మరియు కలిసి పని చేయడం<ph name="MARKUP_8" />
-    అన్నింటినీ ఇతరులతో ఒకే స్థలంలో చేయండి.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> డొమైన్‌లో ఏ పరికరంతోనైనా డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి</translation>
 <translation id="2270484714375784793">ఫోన్ నంబర్</translation>
 <translation id="2270627217422354837">ఈ డొమైన్‌ల్లో ఏ పరికరంతోనైనా డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి: <ph name="DOMAINS" /></translation>
@@ -4506,6 +4500,7 @@
 <translation id="7505167922889582512">దాచిన ఫైల్‌లను చూపు</translation>
 <translation id="7507930499305566459">స్థితి ప్రతిస్పందన సర్టిఫికెట్</translation>
 <translation id="7508545000531937079">స్లయిడ్ ప్రదర్శన</translation>
+<translation id="7511149348717996334">విశిష్ట రూపకల్పన సెట్టింగ్‌లను ప్రారంభించండి</translation>
 <translation id="7511955381719512146">మీరు ఉపయోగిస్తున్న Wi-Fiకి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="7513996269498582533">మీరు గుర్తించాలి</translation>
 <translation id="751507702149411736">బెలారుషియన్</translation>

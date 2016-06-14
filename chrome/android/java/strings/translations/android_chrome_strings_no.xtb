@@ -66,6 +66,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1756600373018374892">Trykk på denne knappen for å få rask tilgang til fanene dine.</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1825719650605518411">Førsteinntrykk</translation>
+<translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1829244130665387512">Finn på side</translation>
 <translation id="1832521218263067499">Sikkerhetshendelser</translation>
 <translation id="1842969606798536927">Betal</translation>
@@ -216,6 +217,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3809549525127675114"><ph name="VIDEO_TITLE" /> er ferdig</translation>
+<translation id="3810973564298564668">Administrer</translation>
 <translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="3871171699884605801">Nettlesingsloggen kan ikke slettes for barnekontoer</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
@@ -374,6 +376,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{for # time siden}other{for # timer siden}}</translation>
 <translation id="5817918615728894473">Koble sammen</translation>
+<translation id="583281660410589416">Ukjent</translation>
 <translation id="5832934273103296195">Utvidet – klikk for å skjule</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
 <translation id="585027516397408832">Datasparing er slått på</translation>
@@ -436,6 +439,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6612856669344839356">Lagre bokmerket</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
+<translation id="6643016212128521049">Tøm</translation>
 <translation id="6647073004883890710">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for <ph name="USERNAME" /> for dette nettstedet?</translation>
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
+<translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8518901949365209398">Dette nettstedet bruker en svak sikkerhetskonfigurasjon (SHA-1-signaturer). Det kan derfor hende at tilkoblingen mellom deg og nettstedet ikke er privat.</translation>

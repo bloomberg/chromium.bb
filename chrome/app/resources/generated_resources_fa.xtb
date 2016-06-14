@@ -878,12 +878,6 @@
 <translation id="2266168284394154563">بازنشانی بزرگ‌نمایی صفحه</translation>
 <translation id="2268190795565177333">حوزه‌ها:</translation>
 <translation id="2269459857310637791">‏فعال یا غیرفعال کردن ادغام رویداد کلید (WM_KEY*‎) با رویداد نویسه (WM_CHAR)</translation>
-<translation id="2269471294353474737">‏<ph name="MARKUP_1" />به فایل‌ها در هر کجا، حتی به‌صورت آفلاین دسترسی داشته باشید.<ph name="MARKUP_2" />
-        فایل‌های موجود در Google Drive به‌روز هستند و از هر دستگاهی می‌توان به آن‌ها دسترسی داشت.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />فایل‌های خود را ایمن نگه دارید.<ph name="MARKUP_5" />
-        مهم نیست برای دستگاه شما چه اتفاقی می‌افتد، فایل‌های شما در Google Drive به‌صورت امن ذخیره می‌شوند.<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />اشتراک‌گذاری، ایجاد و مشارکت<ph name="MARKUP_8" />
-        با دیگران در فایل‌ها را همه در یک مکان انجام دهید.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">تبادل داده با هر دستگاهی در دامنه <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">شماره تلفن</translation>
 <translation id="2270627217422354837">تباد داده با هر دستگاهی در دامنه‌های: <ph name="DOMAINS" /></translation>
@@ -4503,6 +4497,7 @@
 <translation id="7505167922889582512">نمایش فایل‌های پنهان</translation>
 <translation id="7507930499305566459">گواهی وضعیت پاسخگو</translation>
 <translation id="7508545000531937079">نمایش اسلاید</translation>
+<translation id="7511149348717996334">فعال کردن تنظیمات طراحی سه بعدی</translation>
 <translation id="7511955381719512146">‏شبکه Wi-Fi مورد استفاده‌تان احتمالاً نیاز دارد که به صفحه <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> بروید.</translation>
 <translation id="7513996269498582533">تشخیص توسط شما</translation>
 <translation id="751507702149411736">بلاروسی</translation>

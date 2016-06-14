@@ -881,12 +881,6 @@
 <translation id="2266168284394154563">የማያ ገጽ ማጉላትን ዳግም ያስጀምሩ</translation>
 <translation id="2268190795565177333">ወሰኖች፦</translation>
 <translation id="2269459857310637791">የቁልፍ ክስተቱን (WM_KEY*) ከቁምፊ ክስተት (WM_CHAR) ጋር ማዋሃድን ያንቁ ወይም ያሰናክሉ።</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />ከመስመር ውጪ ሆነውም እንኳ ፋይሎችን ከየትኛውም ቦታ ሆነው ይድረሱባቸው።<ph name="MARKUP_2" />
-        በGoogle Drive ውስጥ ያሉ ፋይሎች የተዘመኑ እና ከማንኛውም መሣሪያ ሊገኙ የሚችሉ ናቸው።<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />የፋይሎችዎን ደህንነት ይጠብቁ።<ph name="MARKUP_5" />
-        መሣሪያዎ ላይ ምንም ነገር ቢከሰት ፋይሎችዎ ደህንነታቸው ተጠብቆ በGoogle Drive ላይ ተከማችተዋል።<ph name="MARKUP_6" />
-        ፋይሎችን በአንድ ቦታ ላይ 
-        <ph name="MARKUP_7" />ያጋሩ፣ ይፍጠሩ እና ያቀናጁ<ph name="MARKUP_8" />።<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">በ<ph name="DOMAIN" /> ጎራ ውስጥ ካለ ማንኛውም መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="2270484714375784793">ስልክ ቁጥር</translation>
 <translation id="2270627217422354837">በጎራዎች ውስጥ ካለ ከማናቸውም መሣሪያ ጋር ውሂብ ተለዋወጥ፦ <ph name="DOMAINS" /></translation>
@@ -4508,6 +4502,7 @@
 <translation id="7505167922889582512">የተደበቁ ፋይሎችን አሳይ</translation>
 <translation id="7507930499305566459">የሁኔታ መላሽ ሰርቲፍኬት</translation>
 <translation id="7508545000531937079">የተንሸራታች ትዕይንት</translation>
+<translation id="7511149348717996334">የቁሳዊ ንድፍ ቅንብሮችን አንቃ</translation>
 <translation id="7511955381719512146">እየተጠቀሙበት ያለው Wi-Fi  <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ን እንዲጎበኙ ሊጠይቅዎት ይችላል።</translation>
 <translation id="7513996269498582533">ይገኝ በእርስዎ</translation>
 <translation id="751507702149411736">ቤላራሻኛ</translation>

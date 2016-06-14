@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">Du har fortsatt tilgang til appene dine via <ph name="APPS_ICON_IMAGE" />-snarveien i bokmerkeraden i Chromium.</translation>
 <translation id="2636877269779209383">Chromium må ha tilgang til kameraet ditt for å kunne dele det med dette nettstedet.</translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
-<translation id="2673087257647337101">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
 <translation id="2685838254101182273">Chromium oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="2705212601509139398">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og laste ned en kompatibel nettleser.</translation>
 <translation id="2711502716910134313">Chromium-fane</translation>
@@ -211,7 +210,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8269379391216269538">Bidra til å gjøre Chromium bedre</translation>
 <translation id="8453117565092476964">Installasjonsarkivet er skadet eller ugyldig. Last ned Chromium på nytt.</translation>
 <translation id="8493179195440786826">Chromium er utdatert</translation>
-<translation id="8551886023433311834">Nesten oppdatert! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="85843667276690461">Få hjelp med å bruke Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – The Chromium Authors. Med enerett.</translation>
 <translation id="8621669128220841554">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Chromium på nytt.</translation>

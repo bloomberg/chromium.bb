@@ -994,13 +994,6 @@
 <translation id="4347908978527632940">Kui see on tõene ja kasutaja on jälgitav kasutaja, siis saavad teised Androidi rakendused sisupakkuja kaudu esitada päringuid kasutaja veebipiirangute kohta.
 
           Kui see on väär või määramata, siis ei saada sisupakkuja teavet.</translation>
-<translation id="4349746760316962317">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu talletatud failide kettale salvestamiseks.
-
-      Kui määrate reegli, kasutab <ph name="PRODUCT_NAME" /> sisestatud kataloogi olenemata sellest, kas kasutaja on määranud märgistuse „--disk-cache-dir” või mitte.
-
-      Saidilt https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables leiate leiate muutujate loendi, mida saate kasutada.
-
-      Kui seda reeglit ei määrata, kasutatakse vahemälu vaikekausta ja kasutaja saab selle alistada käsureamärgistusega „--disk-cache-dir”.</translation>
 <translation id="436581050240847513">Seadme võrguliidestest teatamine</translation>
 <translation id="4372704773119750918">Ärge lubage ettevõtte kasutajal olla osa multiprofiilist (esmane või teisene)</translation>
 <translation id="4377599627073874279">Luba kõikidel saitidel kõikide kujutiste kuvamine</translation>
@@ -1183,13 +1176,6 @@
           Kui reegel on määramata, siis rakendub vaiketoiming, milleks on peatamine.
 
           Kui toiminguks on peatamine, saab operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadistada ekraani enne peatamist lukustama või mitte lukustama.</translation>
-<translation id="5111712393799006197">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab kasutajate andmete salvestamiseks.
-
-      Kui selle reegli määrate, kasutab <ph name="PRODUCT_NAME" /> antud kataloogi olenemata sellest, kas kasutaja on märgistuse „--user-data-dir” määranud või mitte.
-
-      Saidilt http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables leiate loendi muutujatest, mida saate kasutada.
-
-      Kui seda reeglit ei määrata, kasutatakse profiili vaiketeed ja kasutaja saab selle käsureamärgistusega „--user-data-dir” alistada.</translation>
 <translation id="5130288486815037971">Kas RC4 šifreerimiskomplektid TLS-is on lubatud?</translation>
 <translation id="5141670636904227950">Lubage ekraaniluubi vaiketüüp sisselogimisekraanil</translation>
 <translation id="5142301680741828703">Renderda alati rakenduses <ph name="PRODUCT_FRAME_NAME" /> järgmiste URL-ide mustrid</translation>

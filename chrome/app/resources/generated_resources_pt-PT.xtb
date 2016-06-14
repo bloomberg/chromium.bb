@@ -881,12 +881,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2266168284394154563">Repor o zoom do ecrã</translation>
 <translation id="2268190795565177333">Âmbitos:</translation>
 <translation id="2269459857310637791">Ative ou desative a união do evento chave (WM_KEY*) com o evento caráter (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Aceda a ficheiros a partir de qualquer local, mesmo offline.<ph name="MARKUP_2" />
-    Os ficheiros no Google Drive estão atualizados e disponíveis a partir de qualquer dispositivo.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Mantenha os seus ficheiros seguros.<ph name="MARKUP_5" />
-    Independentemente do que acontecer ao seu dispositivo, os seus ficheiros estão armazenados em segurança no Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Partilhe, crie e colabore<ph name="MARKUP_8" />
-    em ficheiros com outras pessoas, tudo num único local.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Trocar dados com qualquer dispositivo do domínio <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Número de telefone</translation>
 <translation id="2270627217422354837">Trocar dados com com qualquer dispositivo nos seguintes domínios: <ph name="DOMAINS" /></translation>
@@ -4506,6 +4500,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7505167922889582512">Mostrar ficheiros ocultos</translation>
 <translation id="7507930499305566459">Certificado do dispositivo de resposta do estado</translation>
 <translation id="7508545000531937079">Apresentação de diapositivos</translation>
+<translation id="7511149348717996334">Ativar as definições do Material Design</translation>
 <translation id="7511955381719512146">A rede Wi-Fi que está a utilizar pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Detetado por si</translation>
 <translation id="751507702149411736">Bielorrusso</translation>

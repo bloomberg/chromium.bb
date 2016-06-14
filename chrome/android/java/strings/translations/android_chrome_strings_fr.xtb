@@ -66,6 +66,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1756600373018374892">Appuyez sur ce bouton pour accéder rapidement à vos onglets.</translation>
 <translation id="1807246157184219062">Clair</translation>
 <translation id="1825719650605518411">Expérience de première utilisation</translation>
+<translation id="1826516787628120939">Vérification en cours…</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
 <translation id="1832521218263067499">Incidents de sécurité</translation>
 <translation id="1842969606798536927">Paiement</translation>
@@ -216,6 +217,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3809549525127675114">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" terminée.</translation>
+<translation id="3810973564298564668">Gérer</translation>
 <translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3871171699884605801">L'historique de navigation des comptes pour enfants ne peut être effacé.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -375,6 +377,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="5817918615728894473">Associer</translation>
+<translation id="583281660410589416">Inconnu</translation>
 <translation id="5832934273103296195">Développé – Cliquer pour réduire</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
 <translation id="585027516397408832">Économiseur de données activé</translation>
@@ -437,6 +440,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6612856669344839356">Enregistrer le favori</translation>
 <translation id="6627583120233659107">Modifier le dossier</translation>
+<translation id="6643016212128521049">Effacer</translation>
 <translation id="6647073004883890710">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> mette à jour le mot de passe de "<ph name="USERNAME" />" pour ce site ?</translation>
 <translation id="6656545060687952787">Chrome doit accéder aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK" />Mettre à jour les autorisations<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Onglet</translation>
@@ -582,6 +586,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
+<translation id="8493948351860045254">Libérer de l'espace</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>

@@ -880,12 +880,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2266168284394154563">Resetați panoramarea ecranului</translation>
 <translation id="2268190795565177333">Domenii:</translation>
 <translation id="2269459857310637791">Activează sau dezactivează îmbinarea evenimentului de cheie (WM_KEY*) cu evenimentul de caracter (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Accesați fișierele de oriunde, chiar și offline.<ph name="MARKUP_2" />
-    Fișierele din Google Drive sunt actualizate și disponibile de pe orice dispozitiv.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Păstrați-vă fișierele în siguranță.<ph name="MARKUP_5" />
-    Indiferent de ceea ce se întâmplă cu dispozitivul dvs., fișierele sunt stocate în siguranță în Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Trimiteți și creați fișiere. Colaborați<ph name="MARKUP_8" />
-    cu alte persoane la realizarea fișierelor. Totul într-un singur loc.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Fă schimb de date cu orice dispozitiv din domeniul <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Număr telefon</translation>
 <translation id="2270627217422354837">Fă schimb de date cu orice dispozitiv din domeniile: <ph name="DOMAINS" /></translation>
@@ -4503,6 +4497,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7505167922889582512">Afișează fișierele ascunse</translation>
 <translation id="7507930499305566459">Certificat de respondent de stare</translation>
 <translation id="7508545000531937079">Slideshow</translation>
+<translation id="7511149348717996334">Activează setările designului material</translation>
 <translation id="7511955381719512146">Rețeaua Wi-Fi pe care o folosești poate solicita accesarea adresei <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Detectat de tine</translation>
 <translation id="751507702149411736">Belarusă</translation>

@@ -1011,13 +1011,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4347908978527632940">If true and the user is a supervised user, then other Android apps can query the user's web restrictions through a content provider.
 
           If false or unset, then the content provider returns no information.</translation>
-<translation id="4349746760316962317">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
-
-      If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not.
-
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
-
-      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.</translation>
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
@@ -1200,13 +1193,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, the default action is taken, which is suspend.
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME" /> can separately be configured to either lock or not lock the screen before suspending.</translation>
-<translation id="5111712393799006197">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing user data.
-
-      If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.
-
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
-
-      If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>

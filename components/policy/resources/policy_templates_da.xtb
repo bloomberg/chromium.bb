@@ -950,13 +950,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="4347908978527632940">Hvis den er sand, og brugeren er en administreret bruger, kan andre Android-apps sende forespørgsler vedrørende brugerens webbegrænsninger via en indholdsudbyder.
 
           Hvis den er falsk, eller den ikke er angivet, returnerer indholdsudbyderen ikke nogen oplysninger.</translation>
-<translation id="4349746760316962317">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at gemme cachelagrede filer på disken.
-
-      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet flaget "--disk-cache-dir" eller ej.
-
-      Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Hvis denne politik ikke angives, anvendes standardcachemappen, og brugeren vil kunne tilsidesætte den med flaget "--disk-cache-dir" på kommandolinjen.</translation>
 <translation id="436581050240847513">Rapportér enhedens netværksgrænseflader</translation>
 <translation id="4372704773119750918">Tillad ikke, at virksomhedsbrugere er en del af en multiprofil (primær eller sekundær)</translation>
 <translation id="4377599627073874279">Tillad alle websites at vise alle billeder</translation>
@@ -1119,12 +1112,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Når denne politik ikke er angivet, foretages standardhandlingen, hvilket er suspendering.
 
           Hvis handlingen er suspendering, kan <ph name="PRODUCT_OS_NAME" /> konfigureres særskilt til enten at låse eller ikke at låse skærmen før suspendering.</translation>
-<translation id="5111712393799006197">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at lagre brugerdata.
-      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet flaget "--user-data-dir" eller ej.
-
-      Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Hvis denne politik ikke angives, anvendes stien til standardprofilen, og brugeren vil kunne tilsidesætte den med flaget "--user-data-dir" på kommandolinjen.</translation>
 <translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="5142301680741828703">Gengiv altid følgende webadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>

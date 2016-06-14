@@ -880,12 +880,6 @@ Quan hàgiu creat un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2266168284394154563">Restableix el zoom de la pantalla</translation>
 <translation id="2268190795565177333">Àmbits:</translation>
 <translation id="2269459857310637791">Permet o restringeix que els esdeveniments "key" (WM_KEY*) i "char" (WM_CHAR) es combinin.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Accediu a fitxers des de qualsevol lloc, fins i tot fora de línia.<ph name="MARKUP_2" />
-    Els fitxers que són a Google Drive estan actualitzats i disponibles des de qualsevol dispositiu.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Manteniu la seguretat dels fitxers.<ph name="MARKUP_5" />
-    Passi el que passi amb el vostre dispositiu, els fitxers s'emmagatzemen amb tota seguretat a Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Compartiu, creeu fitxers i col·laboreu-hi<ph name="MARKUP_8" />
-    amb altres persones; tot en un sol lloc.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Intercanviar dades amb un altre dispositiu del domini <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Número de telèfon</translation>
 <translation id="2270627217422354837">Intercanviar dades amb un altre dispositiu dels dominis <ph name="DOMAINS" /></translation>
@@ -4494,6 +4488,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7505167922889582512">Mostra els fitxers amagats</translation>
 <translation id="7507930499305566459">Certificat de resposta d'estat</translation>
 <translation id="7508545000531937079">Presentació de diapositives</translation>
+<translation id="7511149348717996334">Activa la configuració de material design</translation>
 <translation id="7511955381719512146">És possible que la xarxa Wi-Fi que esteu fent servir requereixi que visiteu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Detectat per l'usuari</translation>
 <translation id="751507702149411736">Bielorús</translation>

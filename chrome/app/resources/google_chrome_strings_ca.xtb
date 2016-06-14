@@ -88,7 +88,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3735758079232443276">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3784527566857328444">Suprimeix de Chrome...</translation>
-<translation id="3836351788193713666">Gairebé esteu al dia! Reinicieu Google Chrome per completar-ne l'actualització.</translation>
 <translation id="3847841918622877581">Google Chrome pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="386202838227397562">Tanqueu totes les finestres de Google Chrome i torneu-ho a provar.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -229,7 +228,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="853189717709780425">Esteu iniciant la sessió amb un compte gestionat i atorgant el control del vostre perfil de Google Chrome a l'administrador corresponent. Les dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Aquestes dades es podran suprimir a través del tauler de control de comptes de Google, però no es podran associar amb un altre compte.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
-<translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
 <translation id="8614913330719544658">Google Chrome no respon. Voleu tornar-lo a iniciar ara?</translation>

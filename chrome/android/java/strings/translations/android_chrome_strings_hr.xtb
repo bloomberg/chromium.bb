@@ -66,6 +66,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1756600373018374892">Dodirnite ovaj gumb da biste brzo pristupili svojim karticama.</translation>
 <translation id="1807246157184219062">Svijetlo</translation>
 <translation id="1825719650605518411">Doživljaj prvog pokretanja</translation>
+<translation id="1826516787628120939">Provjera</translation>
 <translation id="1829244130665387512">Traži na stranici</translation>
 <translation id="1832521218263067499">Sigurnosni incidenti</translation>
 <translation id="1842969606798536927">Plaćanje</translation>
@@ -216,6 +217,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3744111561329211289">Sinkronizacija u pozadini</translation>
 <translation id="3809549525127675114">Videozapis "<ph name="VIDEO_TITLE" />" je završen</translation>
+<translation id="3810973564298564668">Upravljaj</translation>
 <translation id="3828029223314399057">Pretraži oznake</translation>
 <translation id="3871171699884605801">Povijest pregledavanja ne može se ukloniti s računa za djecu</translation>
 <translation id="3894427358181296146">Dodavanje mape</translation>
@@ -374,6 +376,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5804241973901381774">Dozvoljeno</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{prije # sata}one{prije # sata}few{prije # sata}other{prije # sati}}</translation>
 <translation id="5817918615728894473">Upari</translation>
+<translation id="583281660410589416">Nepoznato</translation>
 <translation id="5832934273103296195">Prošireno – kliknite za sažimanje</translation>
 <translation id="583891442612896534">Chrome ne može pristupiti Googleovim poslužiteljima za kompresiju podataka. Ušteda na prijenosu podataka može biti ograničena.</translation>
 <translation id="585027516397408832">Ušteda podataka omogućena</translation>
@@ -436,6 +439,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="6612856669344839356">Spremanje oznake</translation>
 <translation id="6627583120233659107">Uredi mapu</translation>
+<translation id="6643016212128521049">Izbriši</translation>
 <translation id="6647073004883890710">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira zaporku korisnika <ph name="USERNAME" /> za tu web-lokaciju?</translation>
 <translation id="6656545060687952787">Chrome treba pristup lokaciji kako bi skenirao uređaje. <ph name="BEGIN_LINK" />Ažuriraj dopuštenja<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Kartica</translation>
@@ -581,6 +585,7 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433057134996913067">Time ćete se odjaviti s većine web-lokacija.</translation>
 <translation id="8481940801237642152">Veza s tom web-lokacijom privatna je, ali bi netko na mreži mogao izmijeniti izgled stranice.</translation>
+<translation id="8493948351860045254">Oslobodi prostor</translation>
 <translation id="8497726226069778601">Ovdje nema ničega... zasad</translation>
 <translation id="8514577642972634246">Ulaz u anonimni način</translation>
 <translation id="8518901949365209398">Ova web-lokacija upotrebljava slabu sigurnosnu konfiguraciju (SHA-1 potpise), pa vaša veza možda nije privatna.</translation>

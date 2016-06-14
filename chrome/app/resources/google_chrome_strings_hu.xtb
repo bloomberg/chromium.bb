@@ -88,7 +88,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="3735758079232443276">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a Chrome indításakor.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3784527566857328444">Eltávolítás a Chrome-ból…</translation>
-<translation id="3836351788193713666">Már majdnem naprakész! Indítsa újra a Google Chrome-ot a frissítés befejezéséhez.</translation>
 <translation id="3847841918622877581">A Google Chrome internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="386202838227397562">Zárjon be minden Google Chrome-ablakot, és próbálkozzon újra.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -229,7 +228,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="853189717709780425">Felügyelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, ám más fiókhoz nem társíthatja őket.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome Alkalmazásindító Canary</translation>
-<translation id="8551886023433311834">Majdnem naprakész! Indítsa újra a készüléket a frissítés befejezéséhez.</translation>
 <translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
 <translation id="8568392309447938879">Be kell jelentkeznie a Chrome-ba az alkalmazások használatához. Ez lehetővé teszi a Chrome számára, hogy szinkronizálja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait a különböző eszközök között.</translation>
 <translation id="8614913330719544658">A Google Chrome nem válaszol. Újraindítja most?</translation>

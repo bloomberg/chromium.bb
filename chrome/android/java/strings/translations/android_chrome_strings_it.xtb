@@ -66,6 +66,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1756600373018374892">Tocca questo pulsante per accedere velocemente alle tue schede.</translation>
 <translation id="1807246157184219062">Chiaro</translation>
 <translation id="1825719650605518411">Esperienza prima esecuzione</translation>
+<translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1832521218263067499">Incidenti di sicurezza</translation>
 <translation id="1842969606798536927">Paga</translation>
@@ -216,6 +217,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" terminato</translation>
+<translation id="3810973564298564668">Gestisci</translation>
 <translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="3871171699884605801">Impossibile cancellare la cronologia di navigazione con account di minori</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
@@ -374,6 +376,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ora fa}other{# ore fa}}</translation>
 <translation id="5817918615728894473">Accoppia</translation>
+<translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5832934273103296195">Visualizzazione espansa. Fai clic per comprimere</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
 <translation id="585027516397408832">Funzione Risparmio dati attivata</translation>
@@ -436,6 +439,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="6612856669344839356">Salva Preferito</translation>
 <translation id="6627583120233659107">Modifica cartella</translation>
+<translation id="6643016212128521049">Cancella</translation>
 <translation id="6647073004883890710">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito per l'account <ph name="USERNAME" />?</translation>
 <translation id="6656545060687952787">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK" />Aggiorna le autorizzazioni<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">TAB</translation>
@@ -581,6 +585,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8481940801237642152">La tua connessione a questo sito è privata, ma qualcuno in rete potrebbe riuscire a cambiare l'aspetto della pagina.</translation>
+<translation id="8493948351860045254">Libera spazio</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
 <translation id="8518901949365209398">Questo sito utilizza una configurazione di sicurezza poco efficace (firme basate sull'algoritmo SHA-1), pertanto la tua connessione potrebbe non risultare privata.</translation>

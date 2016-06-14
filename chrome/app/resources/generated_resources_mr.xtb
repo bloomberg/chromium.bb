@@ -879,12 +879,6 @@
 <translation id="2266168284394154563">स्क्रीन झूम रीसेट करा</translation>
 <translation id="2268190795565177333">स्कोप:</translation>
 <translation id="2269459857310637791">(WM_CHAR) वर्ण इव्हेंटसह की इव्‍हेंट (WM_KEY*) विलीन करणे सक्षम किंवा अक्षम करा.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />फायलींमध्ये कुठूनही प्रवेश करा, अगदी ऑफलाइन सुद्धा.<ph name="MARKUP_2" />
-    Google ड्राइव्ह मधील फायली अद्ययावत आहेत आणि कोणत्याही डिव्हाइसवरून उपलब्ध होतात.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />आपल्या फायली सुरक्षित ठेवा.<ph name="MARKUP_5" />
-    आपल्या डिव्हाइसवर काय घडते ते महत्त्वाचे नाही, आपल्या फायली Google ड्राइव्ह मध्ये सुरक्षितपणे संचयित केल्या आहेत.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />फायलींवर इतरांसह सर्व एकाच ठिकाणी<ph name="MARKUP_8" />
-    सामायिक करा, तयार करा आणि सहयोग करा.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा</translation>
 <translation id="2270484714375784793">फोन नंबर</translation>
 <translation id="2270627217422354837">डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा: <ph name="DOMAINS" /></translation>
@@ -4500,6 +4494,7 @@
 <translation id="7505167922889582512">लपविलेल्या फायली दर्शवा</translation>
 <translation id="7507930499305566459">स्थिती प्रतिसादकर्ता प्रमाणपत्र</translation>
 <translation id="7508545000531937079">स्लाइडशो</translation>
+<translation id="7511149348717996334">वस्तू डिझाइन सेटिंग्ज सक्षम करा</translation>
 <translation id="7511955381719512146">आपण वापरत असलेल्या Wi-Fi ला आपण <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ला भेट देण्याची आवश्यकता असू शकते.</translation>
 <translation id="7513996269498582533">आपण शोधता</translation>
 <translation id="751507702149411736">बेलारुशियन</translation>

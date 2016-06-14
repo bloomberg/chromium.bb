@@ -66,6 +66,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1756600373018374892">Palieskite šį mygtuką, kad greitai pasiektumėte skirtukus.</translation>
 <translation id="1807246157184219062">Šviesi</translation>
 <translation id="1825719650605518411">Pirmosios paleisties patirtis</translation>
+<translation id="1826516787628120939">Tikrinama</translation>
 <translation id="1829244130665387512">Surasti puslapyje</translation>
 <translation id="1832521218263067499">Su sauga susiję įvykiai</translation>
 <translation id="1842969606798536927">Mokėti</translation>
@@ -216,6 +217,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3744111561329211289">Fono sinchronizavimas</translation>
 <translation id="3809549525127675114">Baigta leisti „<ph name="VIDEO_TITLE" />“</translation>
+<translation id="3810973564298564668">Valdyti</translation>
 <translation id="3828029223314399057">Ieškoti žymėse</translation>
 <translation id="3871171699884605801">Negalima išvalyti vaikų paskyrų naršymo istorijos</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
@@ -375,6 +377,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="5817918615728894473">Susieti</translation>
+<translation id="583281660410589416">Nežinoma</translation>
 <translation id="5832934273103296195">Išskleista – spustelėkite, kad sutrauktumėte</translation>
 <translation id="583891442612896534">„Chrome“ negali pasiekti „Google“ serverių dėl duomenų glaudinimo. Duomenų išsaugojimas gali būti apribotas.</translation>
 <translation id="585027516397408832">Duomenų taupymo priemonė įgalinta</translation>
@@ -437,6 +440,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6612856669344839356">Išsaugoti žymę</translation>
 <translation id="6627583120233659107">Redaguoti aplanką</translation>
+<translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6647073004883890710">Ar norite, kad „<ph name="PASSWORD_MANAGER_BRAND" />“ atnaujintų šios svetainės <ph name="USERNAME" /> slaptažodį?</translation>
 <translation id="6656545060687952787">„Chrome“ reikalinga prieiga prie vietos, kad galėtų nuskaityti įrenginius. <ph name="BEGIN_LINK" />Atnaujinkite leidimus<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Skirtukas</translation>
@@ -523,7 +527,7 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
 <translation id="7634554953375732414">Jūsų ryšys su šia svetaine nėra privatus.</translation>
 <translation id="7638584964844754484">Neteisinga slaptafrazė</translation>
-<translation id="7648422057306047504">Šifruoti slaptažodžius naudojant „Google“ kredencialus</translation>
+<translation id="7648422057306047504">Šifruoti slaptažodžius naudojant „Google“ prisijungimo duomenis</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
 <translation id="7682287625158474539">Pristatymas</translation>
@@ -582,6 +586,7 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8481940801237642152">Jūsų ryšys su šia svetaine privatus, bet gali būti, kad kitas asmuo tinkle gali pakeisti puslapio išvaizdą.</translation>
+<translation id="8493948351860045254">Atlaisvinti vietos</translation>
 <translation id="8497726226069778601">Čia dar nėra nieko, ką galėtumėte peržiūrėti…</translation>
 <translation id="8514577642972634246">Įjungti inkognito režimą</translation>
 <translation id="8518901949365209398">Šioje svetainėje naudojama nesudėtinga saugos konfigūracija („SHA-1“ parašai), todėl ryšys gali nebūti privatus.</translation>

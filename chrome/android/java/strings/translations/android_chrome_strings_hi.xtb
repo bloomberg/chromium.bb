@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">अपने टैब पर तुरंत एक्सेस के लिए यह बटन टैप करें.</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1825719650605518411">पहली बार चलाने का अनुभव</translation>
+<translation id="1826516787628120939">जांच की जा रही है</translation>
 <translation id="1829244130665387512">पृष्ठ में ढूंढें</translation>
 <translation id="1832521218263067499">सुरक्षा संबंधी घटनाएं</translation>
 <translation id="1842969606798536927">भुगतान करें</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” समाप्‍त</translation>
+<translation id="3810973564298564668">प्रबंधित करें</translation>
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
 <translation id="3871171699884605801">ब्राउज़िंग इतिहास को बच्‍चों के खातों से साफ़ नहीं किया जा सकता</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">अनुमतियां</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
 <translation id="5817918615728894473">युग्‍मित करें</translation>
+<translation id="583281660410589416">अज्ञात</translation>
 <translation id="5832934273103296195">विस्तारित - संक्षिप्त करने के लिए क्लिक करें</translation>
 <translation id="583891442612896534">Chrome डेटा संपीड़न के लिए Google के सर्वर तक नहीं पहुंच पा रहा है. आपकी डेटा की बचत सीमित हो सकती हैं.</translation>
 <translation id="585027516397408832">डेटा बचतकर्ता सक्षम किया गया है</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">सुरक्षित सामग्री</translation>
 <translation id="6612856669344839356">बुकमार्क सहेजें</translation>
 <translation id="6627583120233659107">फ़ोल्‍डर संपादित करें</translation>
+<translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6647073004883890710">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए <ph name="USERNAME" /> के पासवर्ड को अपडेट करे?</translation>
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को स्‍थान एक्‍सेस की आवश्‍यकता है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">टैब</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8481940801237642152">इस साइट से आपका कनेक्‍शन निजी है, लेकिन नेटवर्क पर मौजूद कोई व्‍यक्‍ति पृष्‍ठ का रूप बदल सकता है.</translation>
+<translation id="8493948351860045254">स्‍थान खाली करें</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="8514577642972634246">गुप्त मोड में प्रवेश करें</translation>
 <translation id="8518901949365209398">यह साइट कमज़ोर सुरक्षा कॉन्‍फ़िगरेशन (SHA-1 हस्‍ताक्षर) का उपयोग करती है, इसलिए हो सकता है कि आपका कनेक्‍शन निजी ना रहे.</translation>

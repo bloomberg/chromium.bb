@@ -881,12 +881,6 @@ Pēc jauna uzraudzīta lietotāja izveides varat pārvaldīt viņa iestatījumus
 <translation id="2266168284394154563">Atiestatīt ekrāna tālummaiņu</translation>
 <translation id="2268190795565177333">Tvērumi:</translation>
 <translation id="2269459857310637791">Iespējojiet vai atspējojiet atslēgas notikuma (WM_KEY*) apvienošanu ar rakstzīmju notikumu (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Piekļūstiet saviem failiem, atrodoties jebkurā vietā, pat bezsaistē.<ph name="MARKUP_2" />
-    Google diskā esošie faili ir atjaunināti, un tie ir pieejami no jebkuras ierīces.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Glabājiet savus failus drošā vietā.<ph name="MARKUP_5" />
-    Neatkarīgi no tā, kas notiek ar jūsu ierīci, jūsu faili tiek droši glabāti Google diskā.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Koplietojiet un veidojiet failus, kā arī sadarbojieties,<ph name="MARKUP_8" />
-    izmantojot failus kopā ar citiem vienuviet.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">apmainīties datiem ar jebkuru ierīci domēnā <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Tālruņa numurs</translation>
 <translation id="2270627217422354837">apmainīties datiem ar jebkuru ierīci šādos domēnos: <ph name="DOMAINS" /></translation>
@@ -4512,6 +4506,7 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7505167922889582512">Rādīt paslēptos failus</translation>
 <translation id="7507930499305566459">Statusa atbildētāja sertifikāts</translation>
 <translation id="7508545000531937079">Slaidrāde</translation>
+<translation id="7511149348717996334">Materiāla dizaina iestatījumu iespējošana</translation>
 <translation id="7511955381719512146">Iespējams, izmantotajā Wi-Fi tīklā tiks pieprasīts apmeklēt vietni <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Noteicāt jūs</translation>
 <translation id="751507702149411736">Baltkrievu valoda</translation>

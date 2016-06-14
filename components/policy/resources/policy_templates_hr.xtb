@@ -937,13 +937,6 @@
 <translation id="4347908978527632940">Ako se pravilo postavi na "True" i korisnik je nadzirani korisnik, onda druge Androidove aplikacije mogu postaviti upit za korisnikova ograničenja za web putem davatelja sadržaja.
 
           Ako se pravilo postavi na "False" ili se ne postavi, onda davatelj sadržaja neće vraćati nikakve podatke.</translation>
-<translation id="4349746760316962317">Konfigurira direktorij u koji će <ph name="PRODUCT_NAME" /> spremati predmemorirane datoteke na disku.
-
-      Ako postavite to pravilo, preglednik <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij bez obzira je li korisnik naveo oznaku "--disk-cache-dir".
-
-      Popis varijabli koje se mogu upotrijebiti potražite na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ako se to pravilo ne postavi, upotrebljavat će se zadani direktorij za predmemoriju i korisnik će ga moći nadjačati oznakom naredbenog retka "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Izvješća o mrežnim sučeljima uređaja</translation>
 <translation id="4372704773119750918">Ne dopusti poslovnom korisniku da bude dio višestrukog profila (primarnom ili sekundarnom)</translation>
 <translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
@@ -1098,13 +1091,6 @@
           Kada to pravilo nije postavljeno, poduzima se zadana radnja, a to je obustava.
 
           Ako je radnja obustava, <ph name="PRODUCT_OS_NAME" /> je moguće zasebno konfigurirati tako da zaključava ili ne zaključava zaslon prije obustavljanja.</translation>
-<translation id="5111712393799006197">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranjivanje korisničkih podataka.
-
-      Ako postavite to pravilo, preglednik <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij bez obzira je li korisnik naveo oznaku "--user-data-dir".
-
-      Popis varijabli koje se mogu upotrijebiti potražite na http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ako se to pravilo ne postavi, upotrebljavat će se zadani put profila i korisnik će ga moći nadjačati oznakom naredbenog retka "--user-data-dir".</translation>
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
 <translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>

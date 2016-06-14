@@ -880,12 +880,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2266168284394154563">Réinitialiser le zoom</translation>
 <translation id="2268190795565177333">Champs d'application :</translation>
 <translation id="2269459857310637791">Activer ou désactiver la fusion de l'événement "KEY" (WM_KEY*) avec l'événement "CHAR" (WM_CHAR)</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Accédez à vos fichiers où que vous soyez, même hors connexion.<ph name="MARKUP_2" />
-        Les fichiers enregistrés dans Google Drive sont à jour et disponibles depuis n'importe quel appareil.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />Conservez vos fichiers en toute sécurité.<ph name="MARKUP_5" />
-        Peu importe ce qui se passe sur votre appareil, vos fichiers sont stockés en toute sécurité dans Google Drive.<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />Travaillez en groupe, et créez et partagez<ph name="MARKUP_8" />
-        des fichiers depuis une seule et même interface.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Échanger des données avec n'importe quel appareil dans le domaine suivant : "<ph name="DOMAIN" />"</translation>
 <translation id="2270484714375784793">N° de téléphone</translation>
 <translation id="2270627217422354837">Échanger des données avec n'importe quel appareil dans les domaines suivants : "<ph name="DOMAINS" />"</translation>
@@ -4507,6 +4501,7 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7505167922889582512">Afficher les fichiers masqués</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7508545000531937079">Diaporama</translation>
+<translation id="7511149348717996334">Activer les paramètres Material Design</translation>
 <translation id="7511955381719512146">Pour utiliser ce réseau Wi-Fi, il est possible que vous deviez vous rendre sur la page <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Détecté par vous</translation>
 <translation id="751507702149411736">Biélorusse</translation>

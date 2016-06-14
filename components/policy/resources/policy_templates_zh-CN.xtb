@@ -898,13 +898,6 @@
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
           如果设为 false 或未设置，则内容提供方不会返回任何信息。</translation>
-<translation id="4349746760316962317">配置 <ph name="PRODUCT_NAME" /> 将用于在磁盘上存储缓存文件的目录。
-
-      如果您设置了此政策，那么无论用户是否指定了“--disk-cache-dir”，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
-
-      有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果此政策未设置，系统将使用默认的缓存目录，并且用户可以通过“--disk-cache-dir”命令行项覆盖此目录。</translation>
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
@@ -1059,13 +1052,6 @@
           如果未设置此政策，系统会执行默认操作（即暂停）。
 
           如果需要执行的操作是暂停，您还可单独配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
-<translation id="5111712393799006197">配置 <ph name="PRODUCT_NAME" /> 将用于存储用户数据的目录。
-
-      如果您设置了此政策，那么无论用户是否指定了“--user-data-dir”，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
-
-      有关可用变量的列表，请访问 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果此政策未设置，系统将使用默认的个人资料路径，并且用户可以通过“--user-data-dir”命令行项覆盖此路径。</translation>
 <translation id="5130288486815037971">是否在 TLS 中启用 RC4 加密套件</translation>
 <translation id="5141670636904227950">设置登录屏幕上启用的默认放大镜类型</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>

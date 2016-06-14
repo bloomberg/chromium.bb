@@ -940,13 +940,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="4347908978527632940">Ha a felhasználó felügyelt felhasználó, akkor tartalomszolgáltatón keresztül az egyéb Android-alkalmazások lekérdezhetik a felhasználó webkorlátozásait.
 
           Ha hamis, vagy nincs beállítva, akkor a tartalomszolgáltató nem ad vissza információkat.</translation>
-<translation id="4349746760316962317">Beállítja a könyvtárat, amelyet a(z) <ph name="PRODUCT_NAME" /> a gyorsítótárazott fájlok tárolására fog használni a lemezen.
-
-      Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> a megadott könyvtárat fogja használni függetlenül attól, hogy a felhasználó megadta-e a „--disk-cache-dir” jelölőt vagy sem.
-
-      A használható változók listáját lásd a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables címet.
-
-      Ha a házirend beállítatlanul marad, a rendszer az alapértelmezés szerinti gyorsítótárkönyvtárat használja, a felhasználó pedig a „--disk-cache-dir” parancssori jelölővel tudja ezt felülbírálni.</translation>
 <translation id="436581050240847513">Hálózati eszközinterfészek bejelentése</translation>
 <translation id="4372704773119750918">A vállalati felhasználó ne használhassa a többprofilos módot (elsődleges vagy másodlagos)</translation>
 <translation id="4377599627073874279">Az összes kép megjelenítésének engedélyezése valamennyi webhely számára</translation>
@@ -1101,13 +1094,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a házirend nincs beállítva, az alapértelmezett művelet érvényesül, ami a felfüggesztés.
 
           Ha a művelet a felfüggesztés, a(z) <ph name="PRODUCT_OS_NAME" /> külön konfigurálható, hogy a felfüggesztés előtt zárolja-e a képernyőt.</translation>
-<translation id="5111712393799006197">Beállítja a(z) <ph name="PRODUCT_NAME" /> által a felhasználói adatok tárolására szolgáló mappát.
-
-      Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> a megadott mappát fogja használni attól függetlenül, hogy a felhasználó megadta-e a „--user-data-dir” jelölőt vagy sem.
-
-      A használható változók listáját lásd: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ha nincs beállítva ez a házirend, akkor az alkalmazás a profil alapértelmezett elérési útját használja, a felhasználó pedig felül tudja írni ezt a „--user-data-dir” parancssori jelölővel.</translation>
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="5141670636904227950">A bejelentkezési képernyőn engedélyezett alapértelmezett nagyítótípus beállítása</translation>
 <translation id="5142301680741828703">Mindig a <ph name="PRODUCT_FRAME_NAME" /> segítségével jelenítse meg a következő URL-mintákat</translation>

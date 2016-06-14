@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">Use o atalho <ph name="APPS_ICON_IMAGE" /> na barra de favoritos do Chromium para continuar a acessar seus apps.</translation>
 <translation id="2636877269779209383">O Chromium precisa de acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
-<translation id="2673087257647337101">Quase atualizado! Reinicie o Chromium para concluir a atualização.</translation>
 <translation id="2685838254101182273">O Chromium parou de ser atualizado e não oferece mais suporte para esta versão do seu sistema operacional.</translation>
 <translation id="2705212601509139398">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça o download de um navegador compatível.</translation>
 <translation id="2711502716910134313">Guia do Chromium</translation>
@@ -206,7 +205,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8269379391216269538">Ajudar a melhorar o Chromium</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
-<translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>

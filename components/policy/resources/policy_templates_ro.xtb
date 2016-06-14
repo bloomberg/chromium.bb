@@ -956,13 +956,6 @@
 <translation id="4347908978527632940">Dacă este activată, iar utilizatorul este unul monitorizat, alte aplicații Android pot interoga restricțiile web ale utilizatorului printr-un furnizor de conținut.
 
           Dacă este dezactivată sau nu este configurată, furnizorul de conținut nu va returna informații.</translation>
-<translation id="4349746760316962317">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca fișierele din memoria cache pe disc.
-
-      Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--disk-cache-dir”.
-
-      Pentru a vedea o listă cu variabilele care pot fi folosite, accesează https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Dacă această politică nu este configurată, va fi folosit directorul prestabilit pentru memoria cache, iar utilizatorul îl va putea modifica folosind semnalizatorul de linie de comandă „--disk-cache-dir”.</translation>
 <translation id="436581050240847513">Raportează interfețele de rețea pentru dispozitiv</translation>
 <translation id="4372704773119750918">Nu permite ca utilizatorul întreprindere să facă parte din profilul multiplu (principal sau secundar)</translation>
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
@@ -1117,13 +1110,6 @@
           Dacă setarea politicii este anulată, este urmată acțiunea prestabilită, care este suspendarea.
 
           Dacă acțiunea este de suspendare, <ph name="PRODUCT_OS_NAME" /> poate fi configurat separat astfel încât să blocheze sau să nu blocheze ecranul înainte de suspendare.</translation>
-<translation id="5111712393799006197">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca datele utilizatorului.
-
-      Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--user-data-dir”.
-
-     Pentru a vedea o listă cu variabilele care pot fi folosite, accesează https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Dacă această politică nu este configurată, va fi folosită calea prestabilită pentru profil, iar utilizatorul o va putea modifica folosind semnalizatorul de linie de comandă „--user-data-dir”.</translation>
 <translation id="5130288486815037971">Specifică dacă suitele de codificare RC4 din TLS sunt activate</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="5142301680741828703">Redă întotdeauna următoarele șabloane de adrese URL în <ph name="PRODUCT_FRAME_NAME" /></translation>

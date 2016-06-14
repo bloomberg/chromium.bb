@@ -1011,13 +1011,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4347908978527632940">Jei nustatyta „true“ ir naudotojas yra prižiūrimas naudotojas, tada kitos „Android“ programos gali teikti naudotojo žiniatinklio apribojimų užklausas per turinio teikėją.
 
           Jei nustatyta „false“ arba nenustatyta, turinio teikėjas nepateikia jokios informacijos.</translation>
-<translation id="4349746760316962317">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams saugoti diske.
-
-      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas nurodys žymą „--disk-cache-dir“, ar ne.
-
-      Apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
-
-      Jei ši politika nenustatyta, bus naudojamas numatytasis talpyklos katalogas, o naudotojas galės jo nepaisyti nurodydamas komandos eilutės žymą „--disk-cache-dir“.</translation>
 <translation id="436581050240847513">Pateikti įrenginio tinklo sąsajų ataskaitą</translation>
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
@@ -1199,13 +1192,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Kai ši politika nenustatyta, atliekamas nustatytasis veiksmas – laikinas sustabdymas.
 
           Jei veiksmas yra laikinas sustabdymas, „<ph name="PRODUCT_OS_NAME" />“ gali būti atskirai sukonfigūruota užrakinti ekraną prieš laikiną sustabdymą arba jo neužrakinti.</translation>
-<translation id="5111712393799006197">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos naudotojo duomenims saugoti.
-
-      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas nurodė žymą „--user-data-dir“, ar ne.
-
-      Apsilankykite adresu ttps://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
-
-      Jei ši politika nenustatyta, bus naudojamas numatytasis profilio kelias ir naudotojas galės jo nepaisyti naudodamas komandos eilutės žymą „--user-data-dir“.</translation>
 <translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME" />“ visada pateikti šiuos URL šablonus</translation>

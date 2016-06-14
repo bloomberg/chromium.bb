@@ -66,6 +66,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="1756600373018374892">Tik op deze knop om snel toegang tot je tabbladen te krijgen.</translation>
 <translation id="1807246157184219062">Licht</translation>
 <translation id="1825719650605518411">Ervaring bij eerste uitvoering</translation>
+<translation id="1826516787628120939">Controleren</translation>
 <translation id="1829244130665387512">Vinden op pagina</translation>
 <translation id="1832521218263067499">Beveiligingsincidenten</translation>
 <translation id="1842969606798536927">Betalen</translation>
@@ -216,6 +217,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3809549525127675114">'<ph name="VIDEO_TITLE" />' is afgelopen</translation>
+<translation id="3810973564298564668">Beheren</translation>
 <translation id="3828029223314399057">Zoeken in bladwijzers</translation>
 <translation id="3871171699884605801">Browsegeschiedenis kan niet worden verwijderd bij accounts voor kinderen</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
@@ -374,6 +376,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# uur geleden}other{# uur geleden}}</translation>
 <translation id="5817918615728894473">Koppelen</translation>
+<translation id="583281660410589416">Onbekend</translation>
 <translation id="5832934273103296195">Uitgevouwen; klik om samen te vouwen</translation>
 <translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
 <translation id="585027516397408832">Databesparing ingeschakeld</translation>
@@ -436,6 +439,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6612358246767739896">Beveiligde inhoud</translation>
 <translation id="6612856669344839356">Bladwijzer opslaan</translation>
 <translation id="6627583120233659107">Map bewerken</translation>
+<translation id="6643016212128521049">Wissen</translation>
 <translation id="6647073004883890710">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> het wachtwoord voor <ph name="USERNAME" /> updatet voor deze site?</translation>
 <translation id="6656545060687952787">Chrome heeft locatietoegang nodig om naar apparaten te zoeken. <ph name="BEGIN_LINK" />Rechten updaten<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tabblad</translation>
@@ -581,6 +585,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433057134996913067">Hiermee word je uitgelogd van de meeste websites.</translation>
 <translation id="8481940801237642152">Je verbinding met deze site is privé, maar iemand op het netwerk kan mogelijk het uiterlijk van de pagina wijzigen.</translation>
+<translation id="8493948351860045254">Ruimte vrijmaken</translation>
 <translation id="8497726226069778601">Hier is nog niets te zien</translation>
 <translation id="8514577642972634246">Incognitomodus starten</translation>
 <translation id="8518901949365209398">Deze site gebruikt een zwakke beveiligingsconfiguratie (SHA-1-handtekeningen), dus je verbinding is mogelijk niet privé.</translation>

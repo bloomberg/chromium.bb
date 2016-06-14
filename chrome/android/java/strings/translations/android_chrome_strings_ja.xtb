@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">このボタンをタップして簡単にタブに移動できます。</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1825719650605518411">初回実行時のエクスペリエンス</translation>
+<translation id="1826516787628120939">確認中</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1832521218263067499">セキュリティに関する事象</translation>
 <translation id="1842969606798536927">お支払い</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」が終了しました</translation>
+<translation id="3810973564298564668">管理</translation>
 <translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3871171699884605801">子供向けのアカウントで閲覧履歴を消去することはできません</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">権限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5817918615728894473">ペア設定</translation>
+<translation id="583281660410589416">不明</translation>
 <translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
 <translation id="585027516397408832">データセーバーが有効です</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6612856669344839356">ブックマークを保存</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
+<translation id="6643016212128521049">クリア</translation>
 <translation id="6647073004883890710"><ph name="PASSWORD_MANAGER_BRAND" /> に保存されているこのサイトの <ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
+<translation id="8493948351860045254">容量を空ける</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8514577642972634246">シークレット モードを開始</translation>
 <translation id="8518901949365209398">このサイトのセキュリティは弱いため（SHA-1 署名）、接続時にプライバシーが保護されない可能性があります。</translation>

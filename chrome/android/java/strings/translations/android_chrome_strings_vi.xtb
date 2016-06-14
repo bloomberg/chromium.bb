@@ -66,6 +66,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1756600373018374892">Nhấn nút này để truy cập nhanh vào các tab của bạn.</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1825719650605518411">Trải nghiệm lần chạy đầu tiên</translation>
+<translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
 <translation id="1832521218263067499">Sự cố bảo mật</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
@@ -216,6 +217,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
 <translation id="3809549525127675114">Đã phát xong “<ph name="VIDEO_TITLE" />”</translation>
+<translation id="3810973564298564668">Quản lý</translation>
 <translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
 <translation id="3871171699884605801">Không thể xóa lịch sử duyệt web bằng tài khoản dành cho trẻ em</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
@@ -374,6 +376,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5804241973901381774">Giấy phép</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# giờ trước}other{# giờ trước}}</translation>
 <translation id="5817918615728894473">Ghép nối</translation>
+<translation id="583281660410589416">Không xác định</translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
@@ -436,6 +439,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6612856669344839356">Lưu dấu trang</translation>
 <translation id="6627583120233659107">Chỉnh sửa thư mục</translation>
+<translation id="6643016212128521049">Xóa</translation>
 <translation id="6647073004883890710">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8481940801237642152">Kết nối của bạn tới trang web này ở chế độ riêng tư nhưng ai đó trên mạng có thể thay đổi giao diện của trang.</translation>
+<translation id="8493948351860045254">Giải phóng dung lượng</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>

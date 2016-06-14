@@ -66,6 +66,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1756600373018374892">I-tap ang button na ito para sa mabilis na access sa iyong mga tab.</translation>
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1825719650605518411">Unang Karanasan sa Pagtakbo</translation>
+<translation id="1826516787628120939">Sinusuri</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
 <translation id="1832521218263067499">Mga insidenteng nauugnay sa seguridad</translation>
 <translation id="1842969606798536927">Magbayad</translation>
@@ -216,6 +217,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="3738139272394829648">Pindutin upang Hanapin</translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
 <translation id="3809549525127675114">Tapos na ang “<ph name="VIDEO_TITLE" />”</translation>
+<translation id="3810973564298564668">Mamahala</translation>
 <translation id="3828029223314399057">Bookmark sa paghahanap</translation>
 <translation id="3871171699884605801">Hindi maki-clear ang history ng pagba-browse sa mga account para sa mga bata</translation>
 <translation id="3894427358181296146">Magdagdag ng folder</translation>
@@ -374,6 +376,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# oras ang nakalipas}one{# oras ang nakalipas}other{# na oras ang nakalipas}}</translation>
 <translation id="5817918615728894473">Ipares</translation>
+<translation id="583281660410589416">Hindi-alam</translation>
 <translation id="5832934273103296195">Pinalawak - I-click upang i-collapse</translation>
 <translation id="583891442612896534">Hindi magawa ng Chrome na makipag-ugnayan sa mga server ng Google para sa pag-compress ng data. Maaaring limitado lang ang matipid mo sa data.</translation>
 <translation id="585027516397408832">Naka-enable ang Data Saver</translation>
@@ -436,6 +439,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6612856669344839356">I-save ang bookmark</translation>
 <translation id="6627583120233659107">I-edit ang folder</translation>
+<translation id="6643016212128521049">I-clear</translation>
 <translation id="6647073004883890710">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang password para kay <ph name="USERNAME" /> para sa site na ito?</translation>
 <translation id="6656545060687952787">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan at makakita ng mga device. <ph name="BEGIN_LINK" />I-update ang mga pahintulot<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8481940801237642152">Pribado ang iyong koneksyon sa site na ito, ngunit maaaring mabago ng isang tao sa network ang hitsura ng page.</translation>
+<translation id="8493948351860045254">Magbakante ng espasyo</translation>
 <translation id="8497726226069778601">Walang makikita dito... sa ngayon</translation>
 <translation id="8514577642972634246">Pumasok sa mode na incognito</translation>
 <translation id="8518901949365209398">Gumagamit ng mahinang configuration sa seguridad (mga SHA-1 signature) ang site na ito, kaya maaaring hindi pribado ang iyong koneksyon.</translation>

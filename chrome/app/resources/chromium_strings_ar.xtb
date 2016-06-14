@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">‏استخدام الاختصار <ph name="APPS_ICON_IMAGE" /> في شريط الإشارات المرجعية لـ Chromium لمواصلة الدخول إلى تطبيقاتك.</translation>
 <translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
-<translation id="2673087257647337101">‏أوشك الانتهاء من التحديث! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
 <translation id="2685838254101182273">‏توقف تحديث Chromium ولم يعد متوافقًا مع هذا الإصدار من نظام التشغيل.</translation>
 <translation id="2705212601509139398">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame الذي سيصبح غير معتمد قريبًا. يُرجى إزالته وتنزيل متصفح متوافق.</translation>
 <translation id="2711502716910134313">‏علامة تبويب Chromium</translation>
@@ -211,7 +210,6 @@
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
-<translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8621669128220841554">‏أخفق التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء إعادة تنزيل Chromium.</translation>

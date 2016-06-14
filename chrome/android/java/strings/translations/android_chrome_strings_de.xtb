@@ -66,6 +66,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1756600373018374892">Tippen Sie auf diese Schaltfläche, um schnell auf Ihre Tabs zuzugreifen.</translation>
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
+<translation id="1826516787628120939">Überprüfung läuft</translation>
 <translation id="1829244130665387512">Seite durchsuchen</translation>
 <translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="1842969606798536927">Bezahlen</translation>
@@ -216,6 +217,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" vollständig abgespielt</translation>
+<translation id="3810973564298564668">Verwalten</translation>
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="3871171699884605801">Der Browserverlauf kann nicht über ein Kinderkonto gelöscht werden.</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
@@ -374,6 +376,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Vor # Stunde}other{Vor # Stunden}}</translation>
 <translation id="5817918615728894473">Pairing durchführen</translation>
+<translation id="583281660410589416">Unbekannt</translation>
 <translation id="5832934273103296195">Maximiert – zum Minimieren klicken</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
 <translation id="585027516397408832">Datensparmodus aktiviert</translation>
@@ -436,6 +439,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6612856669344839356">Lesezeichen speichern</translation>
 <translation id="6627583120233659107">Ordner bearbeiten</translation>
+<translation id="6643016212128521049">Löschen</translation>
 <translation id="6647073004883890710">Soll <ph name="PASSWORD_MANAGER_BRAND" /> das Passwort für <ph name="USERNAME" /> für diese Website aktualisieren?</translation>
 <translation id="6656545060687952787">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK" />Berechtigungen aktualisieren<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8481940801237642152">Ihre Verbindung zu dieser Website ist privat, möglicherweise ist jedoch jemand im Netzwerk in der Lage, das Aussehen der Seite zu ändern.</translation>
+<translation id="8493948351860045254">Speicherplatz freigeben</translation>
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="8518901949365209398">Diese Website verwendet eine schwache Sicherheitskonfiguration (SHA-1-Signaturen). Daher ist Ihre Verbindung möglicherweise nicht geschützt.</translation>

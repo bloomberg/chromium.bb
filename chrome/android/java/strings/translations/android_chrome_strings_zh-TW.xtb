@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1825719650605518411">初次使用體驗</translation>
+<translation id="1826516787628120939">檢查中</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1832521218263067499">安全性事件</translation>
 <translation id="1842969606798536927">支付</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」已結束</translation>
+<translation id="3810973564298564668">管理</translation>
 <translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3871171699884605801">無法清除兒童專用帳戶的瀏覽紀錄</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">權限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
 <translation id="5817918615728894473">配對</translation>
+<translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
 <translation id="585027516397408832">已啟用 Data Saver</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6612856669344839356">儲存書籤</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
+<translation id="6643016212128521049">清除</translation>
 <translation id="6647073004883890710">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 在這個網站設定的密碼嗎？</translation>
 <translation id="6656545060687952787">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />更新權限<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
+<translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="8518901949365209398">這個網站使用的安全性設定強度不足 (SHA-1 簽名)，因此您的連線可能不是私人連線。</translation>

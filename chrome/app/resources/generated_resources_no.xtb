@@ -877,12 +877,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2266168284394154563">Tilbakestill skjermzooming</translation>
 <translation id="2268190795565177333">Omfang:</translation>
 <translation id="2269459857310637791">Slå på eller av sammenslåing av nøkkelhendelsen (WM_KEY*) med tegnhendelsen (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Tilgang til filer uansett hvor du er, til og med uten nett.<ph name="MARKUP_2" />
-        Filer i Google Disk er oppdatert og tilgjengelige fra hvilken som helst enhet.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />Hold filene dine trygge.<ph name="MARKUP_5" />
-        Uansett hva som skjer med enheten din, er filene dine trygt lagret i Google Disk.<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />Del, skap og samarbeid<ph name="MARKUP_8" />
-        med andre om filer – alt på ett sted.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">utveksle data med en hvilken som helst enhet på domenet <ph name="DOMAIN" />.</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2270627217422354837">Utveksle data med en hvilken som helst enhet på domenene <ph name="DOMAINS" /></translation>
@@ -4487,6 +4481,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7505167922889582512">Vis skjulte filer</translation>
 <translation id="7507930499305566459">Sertifikat for statussvar</translation>
 <translation id="7508545000531937079">Lysbildefremvisning</translation>
+<translation id="7511149348717996334">Slå på innstillingene for «material design»</translation>
 <translation id="7511955381719512146">Det kan hende at Wi-Fi-nettverket du bruker, krever at du besøker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Oppdag (av deg)</translation>
 <translation id="751507702149411736">Hviterussisk</translation>

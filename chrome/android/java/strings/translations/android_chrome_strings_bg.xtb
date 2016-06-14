@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">Докоснете този бутон, за да стигнете бързо до разделите си.</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1825719650605518411">Представяне при първо изпълнение</translation>
+<translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1829244130665387512">Търсене в страницата</translation>
 <translation id="1832521218263067499">Инциденти, свързани със сигурността</translation>
 <translation id="1842969606798536927">Плащане</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3809549525127675114">„<ph name="VIDEO_TITLE" />“ завърши</translation>
+<translation id="3810973564298564668">Управление</translation>
 <translation id="3828029223314399057">Търсене в отметките</translation>
 <translation id="3871171699884605801">Историята на сърфирането в профили за деца не може да се изчиства</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
+<translation id="583281660410589416">Неизвестно</translation>
 <translation id="5832934273103296195">Разгънато – Кликнете за свиване</translation>
 <translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
 <translation id="585027516397408832">Активирахте Икономия на данни</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6612856669344839356">Запазване на отметката</translation>
 <translation id="6627583120233659107">Редактиране на папката</translation>
+<translation id="6643016212128521049">Изчистване</translation>
 <translation id="6647073004883890710">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата за <ph name="USERNAME" /> за този сайт?</translation>
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Раздел</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8481940801237642152">Връзката ви с този сайт е частна, но някой в мрежата може да промени облика на страницата.</translation>
+<translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="8514577642972634246">Влизане в режим „инкогнито“</translation>
 <translation id="8518901949365209398">Този сайт използва слаба защитна конфигурация (подписи, шифровани чрез SHA-1), поради което връзката ви може да не е частна.</translation>

@@ -883,12 +883,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2266168284394154563">I-reset ang pag-zoom sa screen</translation>
 <translation id="2268190795565177333">Mga Saklaw:</translation>
 <translation id="2269459857310637791">I-enable o i-disable ang pagme-merge ng key event (WM_KEY*) sa char event (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Mag-access ng mga file kahit saan, kahit offline.<ph name="MARKUP_2" />
-    Napapanahon ang mga file sa Google Drive at available sa anumang device.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Panatilihing ligtas ang iyong mga file.<ph name="MARKUP_5" />
-    Anuman ang mangyari sa iyong device, ligtas na nakaimbak ang iyong mga file sa Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Magbahagi, gumawa at mag-collaborate<ph name="MARKUP_8" />
-    sa mga file kasama ng iba pa, lahat sa iisang lugar.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Makipagpalit ng data sa device na nasa domain ng <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Numero ng telepono</translation>
 <translation id="2270627217422354837">Makipagpalit ng data sa device na nasa mga domain: <ph name="DOMAINS" /></translation>
@@ -4515,6 +4509,7 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7505167922889582512">Magpakita ng mga natatagong file</translation>
 <translation id="7507930499305566459">Certificate sa Katayuan ng Responder</translation>
 <translation id="7508545000531937079">Slideshow</translation>
+<translation id="7511149348717996334">I-enable ang mga setting ng Material Design</translation>
 <translation id="7511955381719512146">Maaaring hilingin ng Wi-Fi na ginagamit mo na bisitahin mo ang <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Ikaw ang tutukoy</translation>
 <translation id="751507702149411736">Belarusian</translation>

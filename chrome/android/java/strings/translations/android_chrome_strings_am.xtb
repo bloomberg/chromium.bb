@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">ፈጣን የትሮችዎን መዳረሻ ለማግኘት ይህን አዝራር ነካ ያድርጉ።</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
 <translation id="1825719650605518411">የመጀመሪያ የማሄድ ተሞክሮ</translation>
+<translation id="1826516787628120939">በመፈተሸ ላይ</translation>
 <translation id="1829244130665387512">በዚህ ገጽ ውስጥ የተገኘ</translation>
 <translation id="1832521218263067499">የደህንነት ክስተቶች</translation>
 <translation id="1842969606798536927">ይክፈሉ</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
 <translation id="3809549525127675114">«<ph name="VIDEO_TITLE" />» ጨርሷል</translation>
+<translation id="3810973564298564668">አቀናብር</translation>
 <translation id="3828029223314399057">ዕልባቶች ፈልግ</translation>
 <translation id="3871171699884605801">የአሰሳ ታሪክ በህጻናት መለያ ሊጸዳ አይችልም</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{ከ# ሰዓት በፊት}one{ከ# ሰዓቶች በፊት}other{ከ# ሰዓቶች በፊት}}</translation>
 <translation id="5817918615728894473">አጣምር</translation>
+<translation id="583281660410589416">ያልታወቀ </translation>
 <translation id="5832934273103296195">ተዘርግቷል - ለመሰብሰብ ጠቅ ያድርጉ</translation>
 <translation id="583891442612896534">Chrome ለውሂብ እመቃ የGoogle አገልጋዮችን መድረስ አልቻለም። የውሂብ ቁጠባዎችዎ የተገደቡ ሊሆኑ ይችላሉ።</translation>
 <translation id="585027516397408832">ውሂብ ቆጣቢ ነቅቷል</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="6612856669344839356">ዕልባት አስቀምጥ</translation>
 <translation id="6627583120233659107">አቃፊ አርትዕ</translation>
+<translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6647073004883890710"><ph name="PASSWORD_MANAGER_BRAND" /> የዚህ ጣቢያ የ<ph name="USERNAME" /> ይለፍ ቃልን እንዲያዘምን ይፈልጋሉ?</translation>
 <translation id="6656545060687952787">Chrome መሣሪያዎችን ለመቃኘት የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK" />ፍቃዶችን ያዘምኑ<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">ትር</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8433057134996913067">ይህ ከአብዛኛዎቹ የድር ጣቢያዎች ዘግቶ ያስወጣዎታል።</translation>
 <translation id="8481940801237642152">ወደዚህ ጣቢያ ያልዎት ግንኙነት የግልዎ ብቻ ነው፣ ነገር ግን አንድ በአውታረ መረቡ ላይ ያለው ሰው የገጹን መልክ ሊለውጥ ይችላል።</translation>
+<translation id="8493948351860045254">ቦታ አስለቅቅ</translation>
 <translation id="8497726226069778601">እዚህ ምንም የሚታይ ነገር የለም... ገና</translation>
 <translation id="8514577642972634246">ማንነት ወደ ማያሳውቅ ሁነታ ይግቡ</translation>
 <translation id="8518901949365209398">ይህ ጣቢያ ደካማ የደህንነት ውቅረት (SHA-1 ፊርማዎች) እየተጠቀም ነው፣ ስለዚህ የእርስዎ ግንኙነት የግል ላይሆን ይችላል።</translation>

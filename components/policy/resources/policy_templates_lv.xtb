@@ -1000,13 +1000,6 @@
 <translation id="4347908978527632940">Ja ir iestatīta vērtība “true” un lietotājs ir uzraudzīts lietotājs, citas Android lietotnes var nosūtīt vaicājumus par lietotāja tīmekļa ierobežojumiem, izmantojot satura nodrošinātāju.
 
           Ja ir iestatīta vērtība “false” vai vērtība nav iestatīta, satura nodrošinātājs neatgriež nekādu informāciju.</translation>
-<translation id="4349746760316962317">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots kešatmiņā ievietoto failu glabāšanai diskā.
-
-      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--disk-cache-dir”.
-
-      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ja šī politika nav iestatīta, tiek lietots noklusējuma kešatmiņas direktorijs un lietotājs varēs to ignorēt ar komandrindas karodziņu “--disk-cache-dir”.</translation>
 <translation id="436581050240847513">Ziņot par ierīču tīkla saskarnēm</translation>
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
@@ -1189,13 +1182,6 @@
           Ja šīs politikas iestatījums ir noņemts, tiek veikta noklusējuma darbība — darbības apturēšana.
 
           Ja tiek apturēta darbība, operētājsistēmu <ph name="PRODUCT_OS_NAME" /> var atsevišķi konfigurēt, lai pirms darbības apturēšanas tā tiktu vai netiktu bloķēta.</translation>
-<translation id="5111712393799006197">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantots lietotāja datu glabāšanai.
-
-      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--user-data-dir”.
-
-      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ja šī politika nav iestatīta, tiek lietots noklusējuma profila ceļš un lietotājs to var ignorēt, izmantojot komandrindas karodziņu “--user-data-dir”.</translation>
 <translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME" /></translation>

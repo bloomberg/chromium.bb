@@ -876,7 +876,6 @@
 <translation id="2266168284394154563">אפס את המרחק מהתצוגה</translation>
 <translation id="2268190795565177333">טווחים:</translation>
 <translation id="2269459857310637791">‏הפעל או השבת את מיזוג אירוע המפתח (WM_KEY*) עם אירוע התו (WM_CHAR).</translation>
-<translation id="2269471294353474737">‏<ph name="MARKUP_1" />היכנס לקבצים מכל מקום, אפילו כשאינך מחובר לאינטרנט.<ph name="MARKUP_2" /> קבצים ב-Google Drive מעודכנים וזמינים מכל מכשיר.<ph name="MARKUP_3" /> <ph name="MARKUP_4" />שמור את הקבצים שלך במקום בטוח.<ph name="MARKUP_5" /> גם אם יקרה משהו למכשיר שלך, הקבצים שלך שמורים בבטחה ב-Google Drive‏.<ph name="MARKUP_6" /> <ph name="MARKUP_7" />שתף, צור ועבוד במשותף<ph name="MARKUP_8" /> על קבצים עם אנשים נוספים - הכל במקום אחד.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">החלפת נתונים עם כל מכשיר בדומיין <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">מספר טלפון</translation>
 <translation id="2270627217422354837">החלפת נתונים עם כל מכשיר בדומיינים: <ph name="DOMAINS" /></translation>
@@ -4488,6 +4487,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7505167922889582512">הצג קבצים מוסתרים</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
 <translation id="7508545000531937079">מצגת שקופיות</translation>
+<translation id="7511149348717996334">הפעל הגדרות של עיצוב חדשני תלת-ממדי</translation>
 <translation id="7511955381719512146">‏ייתכן שתידרש להיכנס ל-<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> עבור רשת ה-Wi-Fi שבה אתה משתמש.</translation>
 <translation id="7513996269498582533">זיהוי על ידך</translation>
 <translation id="751507702149411736">ביילורוסית</translation>

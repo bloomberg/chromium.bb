@@ -1002,13 +1002,6 @@ politikayı geçersiz kılamaz.
 <translation id="4347908978527632940">Doğru seçeneğine ayarlanırsa ve kullanıcı denetlenen bir kullanıcıysa, diğer Android uygulamaları kullanıcının web kısıtlamalarını bir içerik sağlayıcısı aracılığıyla sorgulayabilir.
 
           Yanlış seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa içerik sağlayıcısı herhangi bir bilgi sağlamaz.</translation>
-<translation id="4349746760316962317"><ph name="PRODUCT_NAME" /> ürününün, önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
-
-      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" işaretini belirtmiş olup olmamasına bakmaksızın, sağlanan dizini kullanır.
-
-      Kullanılabilecek değişkenlerin listesi için  https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
-
-      Bu politika ayarlanmadan bırakılırsa varsayılan önbellek dizini kullanılır ve kullanıcı bu ayarı "--disk-cache-dir" komut satırı işaretiyle geçersiz kılabilir.</translation>
 <translation id="436581050240847513">Cihaz ağ arayüzlerini rapor etme</translation>
 <translation id="4372704773119750918">Kurumsal kullanıcının çok profilli oturumun parçası olmasına izin verme (birincil veya ikincil)</translation>
 <translation id="4377599627073874279">Tüm sitelerin tüm resimleri görüntülemesine izin ver</translation>
@@ -1191,13 +1184,6 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadığında, varsayılan işlem uygulanır ve askıya alınır.
 
           Yapılacak işlem askıya almak olduğunda, <ph name="PRODUCT_OS_NAME" /> askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
-<translation id="5111712393799006197"><ph name="PRODUCT_NAME" /> ürününün, kullanıcı verilerini depolamak için kullanacağı dizini yapılandırır.
-
-      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--user-data-dir" işaretini belirtip belirtmediğine bakmaksızın sağlanan dizini kullanır.
-
-      Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
-
-      Bu politika ayarlanmadan bırakılırsa, varsayılan profil yolu kullanılır ve kullanıcı, "--user-data-dir" komut satırı işaretiyle bu ayarı geçersiz kılabilir.</translation>
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>

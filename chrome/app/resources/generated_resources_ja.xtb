@@ -881,12 +881,6 @@
 <translation id="2266168284394154563">画面のズームをリセット</translation>
 <translation id="2268190795565177333">スコープ:</translation>
 <translation id="2269459857310637791">key イベント（WM_KEY*）と char イベント（WM_CHAR）の統合を有効または無効にする。</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />どこからでも、オフラインでもファイルにアクセスできます。<ph name="MARKUP_2" />
-        Google ドライブのファイルは最新で、どのデバイスからでも利用できます。<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />ファイルの安全を確保できます。<ph name="MARKUP_5" />
-        デバイスに何か問題が起こっても、ファイルは Google ドライブで安全に保存されます。<ph name="MARKUP_6" />
-        <ph name="MARKUP_7" />他のユーザーと一緒に、ファイルの作成、共有、共同作業を<ph name="MARKUP_8" />
-        すべて 1 か所で行うことができます。<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">ドメイン <ph name="DOMAIN" /> 内のデバイスとのデータ交換</translation>
 <translation id="2270484714375784793">電話番号</translation>
 <translation id="2270627217422354837">ドメイン <ph name="DOMAINS" /> の端末とのデータ交換</translation>
@@ -4509,6 +4503,7 @@
 <translation id="7505167922889582512">非表示のファイルを表示</translation>
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="7508545000531937079">スライドショー</translation>
+<translation id="7511149348717996334">マテリアル デザインの設定を有効にする</translation>
 <translation id="7511955381719512146">ご利用の Wi-Fi では、<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> へのアクセスが必要な可能性があります。</translation>
 <translation id="7513996269498582533">ユーザーにより検出</translation>
 <translation id="751507702149411736">ベラルーシ語</translation>

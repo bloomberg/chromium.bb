@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">Используйте эту кнопку для быстрого доступа к вкладкам.</translation>
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="1825719650605518411">Первый запуск</translation>
+<translation id="1826516787628120939">Проверка</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
 <translation id="1832521218263067499">Случаи нарушения безопасности</translation>
 <translation id="1842969606798536927">Оплатить</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3809549525127675114">Воспроизведение видео "<ph name="VIDEO_TITLE" />" завершено</translation>
+<translation id="3810973564298564668">Настроить</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3871171699884605801">Историю просмотров нельзя очистить из детского аккаунта</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
@@ -374,6 +376,7 @@
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>
+<translation id="583281660410589416">Неизвестно</translation>
 <translation id="5832934273103296195">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
 <translation id="585027516397408832">Расширение "Экономия трафика" включено</translation>
@@ -436,6 +439,7 @@
 <translation id="6612358246767739896">Защищенное содержание</translation>
 <translation id="6612856669344839356">Сохранить закладку</translation>
 <translation id="6627583120233659107">Изменить папку</translation>
+<translation id="6643016212128521049">Очистить</translation>
 <translation id="6647073004883890710">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Вкладка</translation>
@@ -581,6 +585,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
+<translation id="8493948351860045254">Освободить место</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="8518901949365209398">Этот сайт шифрует соединение с помощью подписей SHA-1. Поскольку это не самый надежный способ, ваши данные могут быть перехвачены.</translation>

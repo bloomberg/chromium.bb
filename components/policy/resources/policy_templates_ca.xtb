@@ -934,13 +934,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="4347908978527632940">Si la política s'estableix en "true" i l'usuari és un usuari supervisat, altres aplicacions d'Android poden sol·licitar les restriccions web de l'usuari a un proveïdor de contingut.
 
           Si s'estableix en "false" o no s'estableix, el proveïdor de contingut no ofereix informació.</translation>
-<translation id="4349746760316962317">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
-
-      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--disk-cache-dir" o no.
-
-      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
-
-      Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Informe de les interfícies de xarxa del dispositiu</translation>
 <translation id="4372704773119750918">No permetis que l'usuari empresarial formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
@@ -1095,13 +1088,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política no està definida, s'emprèn l'acció predeterminada, que és la suspensió.
 
           Si l'acció és la suspensió, <ph name="PRODUCT_OS_NAME" /> es pot configurar per separat perquè bloquegi o perquè no bloquegi la pantalla abans de la suspensió.</translation>
-<translation id="5111712393799006197">Configura el directori que <ph name="PRODUCT_NAME" /> farà servir per emmagatzemar les dades de l'usuari.
-
-      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--user-data-dir" o no.
-
-      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
-
-      Si no es defineix aquesta política, s'utilitzarà el camí de perfil predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--user-data-dir".</translation>
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>

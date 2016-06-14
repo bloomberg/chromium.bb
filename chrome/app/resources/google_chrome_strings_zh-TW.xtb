@@ -88,7 +88,6 @@
 <translation id="3735758079232443276">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3784527566857328444">從 Chrome 中移除...</translation>
-<translation id="3836351788193713666">即將更新到最新版本！重新啟動 Google Chrome 即可完成更新。</translation>
 <translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -231,7 +230,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 應用程式啟動器 Canary 頻道</translation>
-<translation id="8551886023433311834">即將完成！請重新啟動裝置以完成更新。</translation>
 <translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
 <translation id="8568392309447938879">您必須登入 Chrome 才能使用應用程式。在登入狀態下，Chrome 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>

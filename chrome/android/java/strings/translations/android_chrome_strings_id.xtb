@@ -66,6 +66,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1756600373018374892">Tekan tombol ini untuk akses cepat ke tab Anda.</translation>
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1825719650605518411">Pengalaman Saat Pertama Kali Dijalankan</translation>
+<translation id="1826516787628120939">Memeriksa</translation>
 <translation id="1829244130665387512">Cari pada laman</translation>
 <translation id="1832521218263067499">Insiden keamanan</translation>
 <translation id="1842969606798536927">Bayar</translation>
@@ -216,6 +217,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” selesai</translation>
+<translation id="3810973564298564668">Kelola</translation>
 <translation id="3828029223314399057">Cari bookmark</translation>
 <translation id="3871171699884605801">Riwayat penjelajahan tidak dapat dihapus melalui akun anak</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -374,6 +376,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5804241973901381774">Izin</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5817918615728894473">Sandingkan</translation>
+<translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5832934273103296195">Diperluas - Klik untuk menciutkan</translation>
 <translation id="583891442612896534">Chrome tidak dapat menjangkau server Google untuk mengompresi data. Penyimpanan data Anda mungkin dibatasi.</translation>
 <translation id="585027516397408832">Penghemat Data diaktifkan</translation>
@@ -436,6 +439,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6612856669344839356">Simpan bookmark</translation>
 <translation id="6627583120233659107">Edit folder</translation>
+<translation id="6643016212128521049">Hapus</translation>
 <translation id="6647073004883890710">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi bagi <ph name="USERNAME" /> untuk situs ini?</translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -581,6 +585,7 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8481940801237642152">Sambungan Anda ke situs ini bersifat pribadi, namun seseorang yang berada dalam jaringan Anda mungkin dapat mengubah tampilan laman.</translation>
+<translation id="8493948351860045254">Kosongkan ruang</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
 <translation id="8518901949365209398">Situs ini menggunakan konfigurasi keamanan yang lemah (tanda tangan SHA-1), sehingga sambungan Anda mungkin bukan sambungan pribadi.</translation>

@@ -939,13 +939,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 <translation id="4347908978527632940">Wenn "true" eingestellt ist und der Nutzer ein betreuter Nutzer ist, können andere Android-Apps die Webeinschränkungen des Nutzers über einen Contentanbieter abfragen.
 
           Wenn "false" oder nichts eingestellt ist, gibt der Contentanbieter keine Informationen zurück.</translation>
-<translation id="4349746760316962317">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME" /> verwendet, um zwischengespeicherte Dateien auf der Festplatte zu speichern.
-
-      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer "--disk-cache-dir" angegeben hat.
-
-      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
-
-      Wird diese Richtlinien nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet. Dieses kann dann vom Nutzer mithilfe des Befehlszeilenparameters "--disk-cache-dir" überschrieben werden.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -1100,13 +1093,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Wenn diese Richtlinie nicht festgelegt ist, wird die Standardaktion ausgeführt: Es wird in den Suspend-Modus gewechselt.
 
           Wenn als Aktion der Wechsel in den Suspend-Modus festgelegt ist, kann <ph name="PRODUCT_OS_NAME" /> separat dafür konfiguriert werden, den Bildschirm zu sperren oder nicht zu sperren.</translation>
-<translation id="5111712393799006197">Konfiguriert das Verzeichnis, in dem <ph name="PRODUCT_NAME" /> Nutzerdaten speichert.
-
-      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer "--user-data-dir" angegeben hat.
-
-      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
-
-      Wird diese Richtlinie nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet. Dieses kann dann vom Nutzer mithilfe des Befehlszeilenparameters "--user-data-dir" überschrieben werden.</translation>
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>

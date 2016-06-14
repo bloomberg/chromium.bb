@@ -66,6 +66,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1756600373018374892">Atinge acest buton pentru a accesa rapid filele.</translation>
 <translation id="1807246157184219062">Luminos</translation>
 <translation id="1825719650605518411">Experiența primei rulări</translation>
+<translation id="1826516787628120939">Se verifică</translation>
 <translation id="1829244130665387512">Găsiți în pagină</translation>
 <translation id="1832521218263067499">Incidente privind securitatea</translation>
 <translation id="1842969606798536927">Plătiți</translation>
@@ -216,6 +217,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3744111561329211289">Sincronizare în fundal</translation>
 <translation id="3809549525127675114">Videoclipul „<ph name="VIDEO_TITLE" />” s-a terminat</translation>
+<translation id="3810973564298564668">Gestionează</translation>
 <translation id="3828029223314399057">Căutați în marcaje</translation>
 <translation id="3871171699884605801">Istoricul de navigare nu poate fi golit folosind conturile de copii</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
@@ -374,6 +376,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Acum # oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="5817918615728894473">Asociază</translation>
+<translation id="583281660410589416">Necunoscut</translation>
 <translation id="5832934273103296195">Afișare extinsă – dă clic pentru a restrânge</translation>
 <translation id="583891442612896534">Chrome nu poate să contacteze serverele Google pentru comprimarea datelor. Economiile de date pot fi limitate.</translation>
 <translation id="585027516397408832">Economizorul de date este activat</translation>
@@ -436,6 +439,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6612856669344839356">Salvează marcajul</translation>
 <translation id="6627583120233659107">Editați dosarul</translation>
+<translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6647073004883890710">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să actualizeze parola pentru <ph name="USERNAME" /> de pe acest site?</translation>
 <translation id="6656545060687952787">Chrome necesită accesul la locație pentru a căuta dispozitive. <ph name="BEGIN_LINK" />Actualizează permisiunile<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Filă</translation>
@@ -581,6 +585,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8481940801237642152">Conexiunea la acest site este privată, dar cineva din rețea ar putea să schimbe aspectul paginii.</translation>
+<translation id="8493948351860045254">Eliberează spațiu</translation>
 <translation id="8497726226069778601">Nu este nimic de văzut aici... deocamdată</translation>
 <translation id="8514577642972634246">Intră în modul incognito</translation>
 <translation id="8518901949365209398">Acest site folosește o configurație de securitate slabă (semnături SHA-1), prin urmare, conexiunea poate să nu fie privată.</translation>

@@ -942,13 +942,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4347908978527632940">Se estiver definida como verdadeira e o utilizador for um utilizador supervisionado, outras aplicações Android podem consultar as restrições Web do utilizador através de um fornecedor de conteúdos.
 
           Se estiver definida como falsa ou não estiver definida, o fornecedor de conteúdos não devolve informações.</translation>
-<translation id="4349746760316962317">Configura o diretório utilizado pelo <ph name="PRODUCT_NAME" /> para armazenar ficheiros em cache no disco.
-
-      Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado ou não o sinalizador "--disk-cache-dir".
-
-      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obter uma lista das variáveis que podem ser utilizadas.
-
-      Se deixar esta política por definir, é utilizado o diretório de cache predefinido e o utilizador pode substituí-lo com o sinalizador de linha de comandos "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Comunicar interfaces de rede do dispositivo</translation>
 <translation id="4372704773119750918">Não permitir que o utilizador empresarial faça parte do multiperfil (principal ou secundário)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
@@ -1103,13 +1096,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política não estiver definida, é executada a ação predefinida, ou seja, a suspensão.
 
           Se a ação for suspensa, é possível configurar o <ph name="PRODUCT_OS_NAME" /> separadamente para bloquear ou não o ecrã antes da suspensão.</translation>
-<translation id="5111712393799006197">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar os dados do utilizador.
-
-      Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado ou não o sinalizador "--user-data-dir".
-
-      Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obter uma lista das variáveis que podem ser utilizadas.
-
-      Se deixar esta política por definir, é utilizado o caminho de perfil predefinido e o utilizador pode substituí-lo com o sinalizador de linha de comandos "--user-data-dir".</translation>
 <translation id="5130288486815037971">Determinar se os conjuntos de cifras RC4 no TLS estão ativados</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa predefinida ativada no ecrã de início de sessão</translation>
 <translation id="5142301680741828703">Processar sempre os seguintes padrões de URL no <ph name="PRODUCT_FRAME_NAME" /></translation>

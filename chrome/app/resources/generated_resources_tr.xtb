@@ -881,12 +881,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2266168284394154563">Ekrandaki yakınlaştırmayı sıfırla</translation>
 <translation id="2268190795565177333">Kapsamlar:</translation>
 <translation id="2269459857310637791">Anahtarı etkinliğini (WM_KEY*), karakter etkinliği (WM_CHAR) ile birleştirmeyi etkinleştir veya devre dışı bırak.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Dosyalara istediğiniz yerden, hatta çevrimdışı olarak erişin.<ph name="MARKUP_2" />
-    Google Drive'daki dosyalar günceldir ve her cihazdan kullanılabilir.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Dosyalarınızı güvenli şekilde saklayın.<ph name="MARKUP_5" />
-    Cihazınıza ne olursa olsun, dosyalarınız Google Drive'da güvenli şekilde saklanır.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Tek bir yerden dosyaları oluşturun, başkalarıyla paylaşın ve<ph name="MARKUP_8" />
-    ortak çalışın.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> alan adındaki herhangi bir cihazla veri alışverişi</translation>
 <translation id="2270484714375784793">Telefon numarası</translation>
 <translation id="2270627217422354837">Şu alanlardaki herhangi bir cihazla veri alışverişi: <ph name="DOMAINS" /></translation>
@@ -4507,6 +4501,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7505167922889582512">Gizli dosyaları göster</translation>
 <translation id="7507930499305566459">Durum Yanıtlayıcı Sertifikası</translation>
 <translation id="7508545000531937079">Slayt gösterisi</translation>
+<translation id="7511149348717996334">Malzeme Tasarımı ayarlarını etkinleştir</translation>
 <translation id="7511955381719512146">Kullandığınız kablosuz bağlantı ağı, <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> adresini ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="7513996269498582533">Sizin tarafınızdan algılananlar</translation>
 <translation id="751507702149411736">Beyaz Rusça</translation>

@@ -933,13 +933,6 @@
 <translation id="4347908978527632940">true に設定した場合、監視対象ユーザーについて、他の Android アプリからコンテンツ プロバイダを介してウェブ制限を問い合わせることができます。
 
           false に設定した場合、または未設定の場合、コンテンツ プロバイダから情報は返されません。</translation>
-<translation id="4349746760316962317">キャッシュされたファイルをディスクに保存するときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
-
-      このポリシーを設定した場合は、ユーザーが「--disk-cache-dir」フラグを指定していても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
-
-      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
-
-      このポリシーが未設定の場合は、デフォルトのキャッシュ ディレクトリが使用されます。ユーザーは、「--disk-cache-dir」コマンドライン フラグを使って別のディレクトリを指定することもできます。</translation>
 <translation id="436581050240847513">デバイスのネットワーク インターフェースを報告する</translation>
 <translation id="4372704773119750918">マルチプロフィール（プライマリまたはセカンダリ）への参加を企業ユーザーに許可しない</translation>
 <translation id="4377599627073874279">すべてのサイトに対してすべての画像表示を許可する</translation>
@@ -1094,13 +1087,6 @@
           このポリシーを設定しない場合は、デフォルトの操作（停止）が行われます。
 
           操作が「停止」の場合は、停止の前に画面をロックするかどうか、<ph name="PRODUCT_OS_NAME" /> を別途設定できます。</translation>
-<translation id="5111712393799006197">ユーザーデータを保存するときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
-
-      このポリシーを設定した場合は、ユーザーが「--user-data-dir」フラグを指定していても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
-
-      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
-
-      このポリシーが未設定の場合は、デフォルトのプロフィール パスが使用されます。ユーザーは、「--user-data-dir」コマンドライン フラグを使って別のディレクトリを指定することもできます。</translation>
 <translation id="5130288486815037971">TLS の RC4 暗号スイートを有効にするかどうかを指定する</translation>
 <translation id="5141670636904227950">ログイン画面で有効にする画面拡大鏡のデフォルトのタイプを設定する</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> で次の URL パターンを常に表示する</translation>

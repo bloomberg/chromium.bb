@@ -1011,13 +1011,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="4347908978527632940">Jika benar dan pengguna merupakan pengguna di bawah seliaan, maka apl Android lain boleh mengemukakan pertanyaan berkaitan pengehadan web pengguna melalui penyedia kandungan.
 
           Jika palsu atau tanpa ditetapkan, maka penyedia kandungan tidak mengembalikan sebarang maklumat.</translation>
-<translation id="4349746760316962317">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
-
-      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tanpa mengira sama ada pengguna telah menentukan bendera '--disk-cache-dir' atau tidak.
-
-      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
-
-       Jika dasar ini dibiarkan tanpa ditetapkan, direktori cache lalai akan digunakan dan pengguna akan boleh mengatasinya dengan bendera baris perintah '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Laporkan antara muka rangkaian peranti</translation>
 <translation id="4372704773119750918">Jangan benarkan pengguna perusahaan menjadi sebahagian daripada berbilang profil (utama atau kedua)</translation>
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
@@ -1200,13 +1193,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Apabila dasar ini tidak ditetapkan, tindakan lalai iaitu penggantungan akan diambil.
 
           Jika tindakan penggantungan diambil, <ph name="PRODUCT_OS_NAME" /> boleh dikonfigurasi secara berasingan sama ada kepada mengunci atau tidak mengunci skrin sebelum penggantungan.</translation>
-<translation id="5111712393799006197">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan data pengguna.
-
-      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tidak kira sama ada pengguna telah menetapkan bendera '--user-data-dir' atau tidak.
-
-      Lihat http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, laluan profil lalai akan digunakan dan pengguna akan dapat mengatasinya dengan bendera baris perintah '--user-data-dir'.</translation>
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>

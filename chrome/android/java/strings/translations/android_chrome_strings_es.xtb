@@ -66,6 +66,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1756600373018374892">Toca este botón para acceder rápidamente a tus pestañas.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Primera experiencia de ejecución</translation>
+<translation id="1826516787628120939">Comprobando</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1832521218263067499">Incidentes de seguridad</translation>
 <translation id="1842969606798536927">Pagar</translation>
@@ -216,6 +217,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalizado</translation>
+<translation id="3810973564298564668">Administrar</translation>
 <translation id="3828029223314399057">Buscar marcadores</translation>
 <translation id="3871171699884605801">El historial de navegación no se puede borrar con cuentas infantiles</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
@@ -374,6 +376,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5817918615728894473">Vincular</translation>
+<translation id="583281660410589416">Desconocido</translation>
 <translation id="5832934273103296195">Vista expandida (hacer clic para contraerla)</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para comprimir los datos. El ahorro de datos puede estar limitado.</translation>
 <translation id="585027516397408832">Economizador de datos habilitado</translation>
@@ -436,6 +439,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6612856669344839356">Guardar marcador</translation>
 <translation id="6627583120233659107">Editar carpeta</translation>
+<translation id="6643016212128521049">Eliminar</translation>
 <translation id="6647073004883890710">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice la contraseña de <ph name="USERNAME" /> en este sitio web?</translation>
 <translation id="6656545060687952787">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK" />Actualizar los permisos<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Pestaña</translation>
@@ -581,6 +585,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Con esta opción, tu sesión se cerrará en la mayoría de sitios web.</translation>
 <translation id="8481940801237642152">Tu conexión a este sitio es privada, pero alguien en la red podría cambiar la apariencia de la página.</translation>
+<translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no tienes contenido</translation>
 <translation id="8514577642972634246">Navegar en modo incógnito</translation>
 <translation id="8518901949365209398">En este sitio se utiliza una configuración de seguridad vulnerable (firmas SHA-1), de modo que es posible que tu conexión no sea privada.</translation>

@@ -880,12 +880,6 @@
 <translation id="2266168284394154563">स्क्रीन ज़ूम रीसेट करें</translation>
 <translation id="2268190795565177333">सीमाएं:</translation>
 <translation id="2269459857310637791">कुंजी ईवेंट (WM_KEY*) को वर्ण ईवेंट (WM_CHAR) के साथ मिलाना सक्षम या अक्षम करें.</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />फ़ाइलें हर कहीं से एक्सेस करें, यहां तक कि ऑफ़लाइन भी.<ph name="MARKUP_2" />
-        Google डिस्क में फ़ाइलें अद्यतित रहती हैं और किसी भी डिवाइस से उपलब्ध होती हैं.<ph name="MARKUP_3" />
-        <ph name="MARKUP_4" />अपनी फ़ाइलें सुरक्षित रखें.<ph name="MARKUP_5" />
-        चाहे आपके डिवाइस को कुछ भी हो जाए, आपकी फ़ाइलें Google डिस्क में सुरक्षित रूप से संगृहीत रहती हैं.<ph name="MARKUP_6" />
-        अन्य लोगों के साथ एक ही स्थान पर फ़ाइलें
-        <ph name="MARKUP_7" />साझा करें, बनाएं और सहयोग करें<ph name="MARKUP_8" />.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> डोमेन के किसी भी डिवाइस से डेटा का आदान-प्रदान करें</translation>
 <translation id="2270484714375784793">फ़ोन नंबर</translation>
 <translation id="2270627217422354837">इन डोमेन के किसी भी डिवाइस से डेटा का आदान-प्रदान करें: <ph name="DOMAINS" /></translation>
@@ -4509,6 +4503,7 @@
 <translation id="7505167922889582512">छिपी हुई फ़ाइलें दिखाएं</translation>
 <translation id="7507930499305566459">स्थिति प्रतिसादी प्रमाणपत्र</translation>
 <translation id="7508545000531937079">स्लाइडशो</translation>
+<translation id="7511149348717996334">मटीरियल डिज़ाइन सेटिंग सक्षम करें</translation>
 <translation id="7511955381719512146">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं उसके लिए आपको <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> पर जाने की आवश्‍यकता हो सकती है.</translation>
 <translation id="7513996269498582533">आपके द्वारा पता लगाया गया</translation>
 <translation id="751507702149411736">बेलारूसी</translation>

@@ -880,12 +880,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2266168284394154563">Återställ zoomning på skärmen</translation>
 <translation id="2268190795565177333">Omfång:</translation>
 <translation id="2269459857310637791">Aktivera eller inaktivera sammanfogningen av nyckelhändelsen (WM_KEY*) och teckenhändelsen (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Få åtkomst till filer var som helst – även offline.<ph name="MARKUP_2" />
-    Filer i Google Drive hålls uppdaterade och är tillgängliga från alla enheter.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Se till att dina filer förvaras säkert.<ph name="MARKUP_5" />
-    Oavsett vad som händer med din enhet förvaras filerna säkert i Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Dela, skapa och jobba<ph name="MARKUP_8" />
-    med filer tillsammans med andra på ett och samma ställe.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Utväxla  data med enheter i domänen <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2270627217422354837">Utväxla data med enheter i domänerna <ph name="DOMAINS" /></translation>
@@ -4508,6 +4502,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7505167922889582512">Visa dolda filer</translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7508545000531937079">Bildvisning</translation>
+<translation id="7511149348717996334">Aktivera inställningar för Material Design</translation>
 <translation id="7511955381719512146">Wi-Fi-nätverket du använder kanske kräver att du besöker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Upptäckt av dig</translation>
 <translation id="751507702149411736">vitryska</translation>

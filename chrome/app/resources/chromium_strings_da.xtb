@@ -51,7 +51,6 @@
 <translation id="2595977381794111014">Fortsæt med at bruge dine apps via genvejen for <ph name="APPS_ICON_IMAGE" /> på bogmærkelinjen i Chromium.</translation>
 <translation id="2636877269779209383">Chromium skal have adgang til dit kamera, før det kan deles med dette website.</translation>
 <translation id="2648074677641340862">Der opstod en fejl i operativsystemet under installationen. Download Chromium igen.</translation>
-<translation id="2673087257647337101">Næsten opdateret! Genstart Chromium for at afslutte opdateringen</translation>
 <translation id="2685838254101182273">Chromium er holdt op med at opdatere og understøtter ikke længere denne version af dit operativsystem.</translation>
 <translation id="2705212601509139398">Dette website anvender Chromium Frame-pluginnet, som snart ikke længere understøttes. Afinstaller det, og download en kompatibel browser.</translation>
 <translation id="2711502716910134313">Fanen Chromium</translation>
@@ -211,7 +210,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8269379391216269538">Hjælp med at gøre Chromium bedre</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="8493179195440786826">Chromium er forældet</translation>
-<translation id="8551886023433311834">Den er næsten opdateret. Genstart din enhed for at fuldføre opdateringen.</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="8621669128220841554">Installationen mislykkedes på grund af en uspecificeret fejl. Download Chromium igen.</translation>

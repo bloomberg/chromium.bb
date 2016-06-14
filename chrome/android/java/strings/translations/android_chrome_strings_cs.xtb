@@ -66,6 +66,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1756600373018374892">Klepnutím na toto tlačítko získáte rychle přístup ke svým kartám.</translation>
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="1825719650605518411">Zkušenosti při prvním spuštění</translation>
+<translation id="1826516787628120939">Probíhá kontrola</translation>
 <translation id="1829244130665387512">Najít na stránce</translation>
 <translation id="1832521218263067499">Narušení zabezpečení</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
@@ -216,6 +217,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3744111561329211289">Synchronizace na pozadí</translation>
 <translation id="3809549525127675114">Dokončeno přehrávání videa <ph name="VIDEO_TITLE" /></translation>
+<translation id="3810973564298564668">Spravovat</translation>
 <translation id="3828029223314399057">Hledat v záložkách</translation>
 <translation id="3871171699884605801">Pomocí účtů pro děti historii procházení vymazat nelze.</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
@@ -374,6 +376,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{před # hodinou}few{před # hodinami}many{před # hodiny}other{před # hodinami}}</translation>
 <translation id="5817918615728894473">Spárovat</translation>
+<translation id="583281660410589416">Neznámé</translation>
 <translation id="5832934273103296195">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
 <translation id="585027516397408832">Spořič dat je aktivní</translation>
@@ -436,6 +439,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6612358246767739896">Chráněný obsah</translation>
 <translation id="6612856669344839356">Uložit záložku</translation>
 <translation id="6627583120233659107">Upravit složku</translation>
+<translation id="6643016212128521049">Vymazat</translation>
 <translation id="6647073004883890710">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo uživatele <ph name="USERNAME" /> pro tento web?</translation>
 <translation id="6656545060687952787">K vyhledání zařízení Chrome potřebuje přístup k informacím o poloze. <ph name="BEGIN_LINK" />Aktualizovat oprávnění<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Karta</translation>
@@ -581,6 +585,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8481940801237642152">Spojení s tímto webem je soukromé, avšak některý uživatel v síti může být schopen změnit vzhled stránky.</translation>
+<translation id="8493948351860045254">Uvolnit místo</translation>
 <translation id="8497726226069778601">Zatím tu nic není...</translation>
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="8518901949365209398">Tento web používá slabou konfiguraci zabezpečení (podpisy SHA-1). Připojení proto nemusí být soukromé.</translation>

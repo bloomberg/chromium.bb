@@ -987,14 +987,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4347908978527632940">Ikiwa ndivyo na mtumiaji ni anayesimamiwa, basi programu nyingine za Android zinaweza kudadisi vikwazo vya wavuti vya mtumiaji kupitia kwa mtoa huduma za maudhui.
 
           Ikiwa sivyo au haijawekwa mtoa huduma za maudhui hatarudisha maelezo yoyote.</translation>
-<translation id="4349746760316962317">Hupangilia saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi faili zilizoakibishwa kwenye diski.
-
-
-      Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha alamisho ya '--disk-cache-dir' au la.
-
-      Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-upate orodha ya vigezo ambavyo vinaweza kutumiwa.
-
-      Sera hii ikiachwa bila kuwekwa saraka chaguo-msingi ya akiba itatumiwa na mtumiaji ataweza kuibatilisha kwa kutumia alamisho amri ya mstari wa '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Ripoti violesura vya mtandao wa kifaa</translation>
 <translation id="4372704773119750918">Usiruhusu mtumiaji wa biashara kuwa sehemu ya wasifu nyingi (ya msingi au ya pili)</translation>
 <translation id="4377599627073874279">Ruhusu tovuti zote kuonyesha picha zote</translation>
@@ -1171,13 +1163,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
           Sera hii ikiondolewa, kitendo chaguo-msingi kitachukuliwa, ambacho ni kusimamisha.
 
           Kama kitendo ni kusimamisha, <ph name="PRODUCT_OS_NAME" /> inaweza kusanidi kando ifunge au isifunge skrini kabla ya kusimamisha.</translation>
-<translation id="5111712393799006197">Hupangilia saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kwa kuhifadhi data ya mtumiaji.
-
-      Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha alamisho ya '--user-data-dir' au la.
-
-      Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables kwa orodha ya vigezo vinavyoweza kutumiwa.
-
-      Ikiwa sera hii itasalia bila kuwekwa kijia chaguo-msingi cha wasifu kitatumiwa na mtumiaji ataweza kuifuta kwa alamisho amri ya mstari wa '--user-data-dir'.</translation>
 <translation id="5130288486815037971">Ikiwa mipangilio ya kriptografia ya RC4 katika TLS imewashwa</translation>
 <translation id="5141670636904227950">Weka aina ya kikuza skrini cha msingi kama kimewashwa kwenye skrini ya kuingia katika skrini</translation>
 <translation id="5142301680741828703">Onyesha ruwaza zifuatazo za URL mara kwa mara katika <ph name="PRODUCT_FRAME_NAME" /></translation>

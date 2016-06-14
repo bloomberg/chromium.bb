@@ -881,12 +881,6 @@ Kui olete loonud uue jälgitava kasutaja, saate tema seadeid mis tahes ajal ja s
 <translation id="2266168284394154563">Lähtesta ekraani suum</translation>
 <translation id="2268190795565177333">Ulatused:</translation>
 <translation id="2269459857310637791">Võtme sündmuse (WM_KEY*) ühendamise lubamine või keelamine tähemärgi sündmusega (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Pääsete failidele juurde kõikjalt, ka võrguühenduseta.<ph name="MARKUP_2" />
-    Google Drive'i failid on ajakohased ja saadaval kõigis seadmetes.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Hoidke oma faile turvaliselt.<ph name="MARKUP_5" />
-    Teie failid on Google Drive'is turvaliselt talletatud sellest olenemata, mis teie seadmega juhtub.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Jagage ja looge faile ning tehke teistega koostööd<ph name="MARKUP_8" />
-    ühes kohas.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Vaheta andmeid mis tahes seadmega domeenis <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Telefoninumber</translation>
 <translation id="2270627217422354837">Vaheta andmeid mis tahes seadmega domeenides <ph name="DOMAINS" /></translation>
@@ -4509,6 +4503,7 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7505167922889582512">Kuva peidetud failid</translation>
 <translation id="7507930499305566459">Olekuvastaja sertifikaat</translation>
 <translation id="7508545000531937079">Slaidiseanss</translation>
+<translation id="7511149348717996334">Materiaalse disaini seadete lubamine</translation>
 <translation id="7511955381719512146">WiFi-võrk, mida kasutate, võib nõuda veebilehe <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> külastamist.</translation>
 <translation id="7513996269498582533">Teie määrasite, et tuleb tuvastada</translation>
 <translation id="751507702149411736">valgevene keel</translation>

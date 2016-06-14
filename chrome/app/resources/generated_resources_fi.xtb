@@ -880,12 +880,6 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2266168284394154563">Nollaa zoomaus</translation>
 <translation id="2268190795565177333">Laajuudet:</translation>
 <translation id="2269459857310637791">Ottaa käyttöön tai poistaa käytöstä näppäintapahtuman (WM_KEY*) yhdistämisen merkkitapahtumaan (WM_CHAR).</translation>
-<translation id="2269471294353474737"><ph name="MARKUP_1" />Käytä tiedostojasi missä vain, jopa offline-tilassa.<ph name="MARKUP_2" />
-    Google Drivessa tiedostot ovat ajan tasalla ja käytettävissä kaikilla laitteillasi.<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />Turvaa tiedostosi.<ph name="MARKUP_5" />
-    Vaikka laitteellesi sattuisi jotain, tiedostosi ovat turvassa Google Drivessa.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Jaa, luo ja työstä<ph name="MARKUP_8" />
-     tiedostoja muiden käyttäjien kanssa yhdessä paikassa.<ph name="MARKUP_9" /></translation>
 <translation id="2270450558902169558">Vaihtaa tietoja minkä tahansa verkkotunnusta <ph name="DOMAIN" /> käyttävän laitteen kanssa.</translation>
 <translation id="2270484714375784793">Puhelinnumero</translation>
 <translation id="2270627217422354837">Vaihtaa tietoja minkä tahansa seuraavia verkkotunnuksia käyttävien laitteiden kanssa: <ph name="DOMAINS" />.</translation>
@@ -4494,6 +4488,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7505167922889582512">Näytä piilotetut tiedostot</translation>
 <translation id="7507930499305566459">Tilavastausvarmenne</translation>
 <translation id="7508545000531937079">Diaesitys</translation>
+<translation id="7511149348717996334">Ota käyttöön material design -asetukset.</translation>
 <translation id="7511955381719512146">Käyttämäsi Wi-Fi saattaa edellyttää vierailua osoitteessa <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Sinun tunnistamasi</translation>
 <translation id="751507702149411736">valkovenäjä</translation>

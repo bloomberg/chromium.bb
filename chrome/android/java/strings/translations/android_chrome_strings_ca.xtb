@@ -66,6 +66,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1756600373018374892">Toqueu aquest botó per accedir ràpidament a les vostres pestanyes.</translation>
 <translation id="1807246157184219062">Clar</translation>
 <translation id="1825719650605518411">Experiència de primera execució</translation>
+<translation id="1826516787628120939">S'està comprovant</translation>
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
 <translation id="1832521218263067499">Incidències de seguretat</translation>
 <translation id="1842969606798536927">Pagament</translation>
@@ -216,6 +217,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalitzat</translation>
+<translation id="3810973564298564668">Gestiona</translation>
 <translation id="3828029223314399057">Cerca adreces d'interès</translation>
 <translation id="3871171699884605801">L'historial de navegació no es pot esborrar amb un compte infantil</translation>
 <translation id="3894427358181296146">Afegiu una carpeta</translation>
@@ -374,6 +376,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{fa # hora}other{fa # hores}}</translation>
 <translation id="5817918615728894473">Vincula</translation>
+<translation id="583281660410589416">Desconegut</translation>
 <translation id="5832934273103296195">Vista ampliada (feu clic per reduir-la)</translation>
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
 <translation id="585027516397408832">Economitzador de dades està activat</translation>
@@ -436,6 +439,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6612856669344839356">Desa l’adreça d'interès</translation>
 <translation id="6627583120233659107">Edita la carpeta</translation>
+<translation id="6643016212128521049">Esborra</translation>
 <translation id="6647073004883890710">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la contrasenya de l'usuari <ph name="USERNAME" /> per a aquest lloc?</translation>
 <translation id="6656545060687952787">Chrome necessita tenir accés a la ubicació per poder cercar dispositius. <ph name="BEGIN_LINK" />Actualitza els permisos<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Pestanya</translation>
@@ -581,6 +585,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433057134996913067">Amb aquesta acció es tancarà la sessió a la majoria de llocs web.</translation>
 <translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
+<translation id="8493948351860045254">Allibera espai</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
 <translation id="8518901949365209398">Aquest lloc fa servir una configuració de seguretat dèbil (signatures SHA-1), de manera que és possible que la vostra connexió no sigui privada.</translation>

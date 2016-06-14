@@ -66,6 +66,7 @@
 <translation id="1756600373018374892">برای دسترسی سریع به برگه‌هایتان، روی این دکمه ضربه بزنید.</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1825719650605518411">اولین تجربه اجرا</translation>
+<translation id="1826516787628120939">در حال بررسی</translation>
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1832521218263067499">حوادث امنیتی</translation>
 <translation id="1842969606798536927">پرداخت</translation>
@@ -216,6 +217,7 @@
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3809549525127675114">«<ph name="VIDEO_TITLE" />» به پایان رسید</translation>
+<translation id="3810973564298564668">مدیریت</translation>
 <translation id="3828029223314399057">جستجوی نشانک‌ها</translation>
 <translation id="3871171699884605801">با حساب‌های مخصوص کودکان نمی‌توان سابقه مرور را پاک کرد</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
@@ -373,6 +375,7 @@
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
+<translation id="583281660410589416">ناشناس</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. شاید ذخیره داده‌هایتان محدود باشد.</translation>
 <translation id="585027516397408832">صرفه‌جویی داده فعال است</translation>
@@ -435,6 +438,7 @@
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6612856669344839356">ذخیره نشانک</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
+<translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6647073004883890710">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه <ph name="USERNAME" /> را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -580,6 +584,7 @@
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
+<translation id="8493948351860045254">آزاد کردن فضا</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8518901949365209398">‏این سایت از یک پیکربندی امنیتی ضعیف (امضاهای SHA-1) استفاده می‌کند، بنابراین ممکن است اتصال شما خصوصی نباشد.</translation>

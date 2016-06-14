@@ -66,6 +66,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1756600373018374892">Käytä välilehtiäsi kätevästi napauttamalla tätä painiketta.</translation>
 <translation id="1807246157184219062">Vaalea</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
+<translation id="1826516787628120939">Tarkistetaan</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
 <translation id="1832521218263067499">Tietoturvatapaukset</translation>
 <translation id="1842969606798536927">Maksa</translation>
@@ -216,6 +217,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
 <translation id="3809549525127675114"><ph name="VIDEO_TITLE" /> päättyi</translation>
+<translation id="3810973564298564668">Hallinnoi</translation>
 <translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="3871171699884605801">Lasten tileillä ei voi tyhjentää selaushistoriaa.</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
@@ -374,6 +376,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5804241973901381774">Käyttöluvat</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# tunti sitten}other{# tuntia sitten}}</translation>
 <translation id="5817918615728894473">Muodosta laitepari</translation>
+<translation id="583281660410589416">Tuntematon</translation>
 <translation id="5832934273103296195">Laajennettu – tiivistä klikkaamalla</translation>
 <translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
 <translation id="585027516397408832">Data Saver käytössä</translation>
@@ -436,6 +439,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6612856669344839356">Tallenna kirjanmerkki</translation>
 <translation id="6627583120233659107">Muokkaa kansiota</translation>
+<translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6647073004883890710">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tilin <ph name="USERNAME" /> salasanan tällä sivustolla?</translation>
 <translation id="6656545060687952787">Chrome tarvitsee sijaintitietojen käyttöoikeuden hakeakseen laitteita. <ph name="BEGIN_LINK" />Päivitä käyttöoikeudet<ph name="END_LINK" />.</translation>
 <translation id="6659594942844771486">Välilehti</translation>
@@ -581,6 +585,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433057134996913067">Sinut kirjataan ulos useimmilta verkkosivustoilta.</translation>
 <translation id="8481940801237642152">Sivustoon on muodostettu salattu yhteys, mutta verkon käyttäjät voivat päästä muokkaamaan sivun ulkoasua.</translation>
+<translation id="8493948351860045254">Vapauta tilaa</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="8514577642972634246">Siirry incognito-tilaan</translation>
 <translation id="8518901949365209398">Sivusto käyttää heikkoa suojausta (SHA-1-allekirjoitukset), joten yhteytesi ei välttämättä ole täysin turvallinen.</translation>
