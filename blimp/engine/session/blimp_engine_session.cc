@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
@@ -28,6 +29,8 @@
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
+#include "blimp/net/blob_channel/blob_channel_sender_impl.h"
+#include "blimp/net/blob_channel/helium_blob_sender_delegate.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/common.h"
 #include "blimp/net/engine_authentication_handler.h"
@@ -223,10 +226,18 @@ BlimpEngineSession::BlimpEngineSession(
                                       QuitCurrentMessageLoopClosure())) {
   DCHECK(engine_config_);
   DCHECK(settings_manager_);
-  screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
-                                     gfx::Size(kDefaultDisplayWidth,
-                                               kDefaultDisplayHeight));
+
+  screen_->UpdateDisplayScaleAndSize(
+      kDefaultScaleFactor,
+      gfx::Size(kDefaultDisplayWidth, kDefaultDisplayHeight));
   render_widget_feature_.SetDelegate(kDummyTabId, this);
+
+  std::unique_ptr<HeliumBlobSenderDelegate> helium_blob_delegate(
+      new HeliumBlobSenderDelegate);
+  blob_delegate_ = helium_blob_delegate.get();
+  blob_channel_sender_ = base::WrapUnique(
+      new BlobChannelSenderImpl(base::WrapUnique(new InMemoryBlobCache),
+                                std::move(helium_blob_delegate)));
 }
 
 BlimpEngineSession::~BlimpEngineSession() {
@@ -313,6 +324,9 @@ void BlimpEngineSession::RegisterFeatures() {
   render_widget_feature_.set_ime_message_sender(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
                                             &render_widget_feature_));
+  blob_delegate_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
+                                            blob_delegate_));
 
   // The Settings feature does not need an outgoing message processor, since we
   // don't send any messages to the client right now.
@@ -500,7 +514,7 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
       params.should_replace_current_entry;
   load_url_params.is_renderer_initiated = params.is_renderer_initiated;
   load_url_params.override_user_agent =
-    content::NavigationController::UA_OVERRIDE_TRUE;
+      content::NavigationController::UA_OVERRIDE_TRUE;
 
   source->GetController().LoadURLWithParams(load_url_params);
   return source;

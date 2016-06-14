@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
-#include "blimp/client/feature/compositor/client_image_serialization_processor.h"
+#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 
@@ -27,7 +27,6 @@ BlimpCompositorManager::BlimpCompositorManager(
     : visible_(false),
       window_(gfx::kNullAcceleratedWidget),
       gpu_memory_buffer_manager_(new BlimpGpuMemoryBufferManager),
-      image_serialization_processor_(new ClientImageSerializationProcessor),
       active_compositor_(nullptr),
       render_widget_feature_(render_widget_feature),
       client_(client) {
@@ -183,7 +182,7 @@ BlimpCompositorManager::GetGpuMemoryBufferManager() {
 
 cc::ImageSerializationProcessor*
 BlimpCompositorManager::GetImageSerializationProcessor() {
-  return image_serialization_processor_.get();
+  return BlobImageSerializationProcessor::current();
 }
 
 void BlimpCompositorManager::SendWebGestureEvent(

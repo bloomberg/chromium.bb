@@ -25,6 +25,7 @@ source_set("session") {
   ]
 
   deps = [
+    ":compositor",
     "//base",
     "//blimp/common",
     "//blimp/common/proto",
@@ -44,15 +45,16 @@ source_set("client") {
   ]
 
   public_deps = [
-    ":compositor",
     ":session",
     ":switches",
     "//components/safe_json",
     "//components/url_formatter",
+    "//skia",
     "//ui/events",
   ]
 
   deps = [
+    ":compositor",
     "//base",
     "//blimp/common",
     "//blimp/common/proto",
@@ -203,8 +205,8 @@ source_set("compositor") {
     "feature/compositor/blimp_layer_tree_settings.h",
     "feature/compositor/blimp_output_surface.cc",
     "feature/compositor/blimp_output_surface.h",
-    "feature/compositor/client_image_serialization_processor.cc",
-    "feature/compositor/client_image_serialization_processor.h",
+    "feature/compositor/blob_image_serialization_processor.cc",
+    "feature/compositor/blob_image_serialization_processor.h",
     "feature/compositor/decoding_image_generator.cc",
     "feature/compositor/decoding_image_generator.h",
   ]
@@ -234,6 +236,7 @@ source_set("compositor") {
   public_deps = [
     ":feature",
     "//blimp/common/proto",
+    "//skia",
   ]
 }
 
@@ -286,6 +289,7 @@ if (is_linux && !is_chromeos && use_x11) {
     deps = [
       ":client",
       "//base",
+      "//blimp/client:compositor",
       "//blimp/net",
       "//net",
 
@@ -464,6 +468,7 @@ if (is_android) {
       ":client",
       ":jni_headers",
       "//base",
+      "//blimp/client:compositor",
       "//blimp/common",
       "//blimp/common/proto",
       "//blimp/net",

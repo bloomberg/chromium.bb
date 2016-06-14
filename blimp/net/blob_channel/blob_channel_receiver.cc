@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/common/blob_cache/blob_cache.h"
+#include "blimp/common/blob_cache/id_util.h"
 
 namespace blimp {
 namespace {
@@ -56,7 +57,7 @@ BlobChannelReceiverImpl::BlobChannelReceiverImpl(
 BlobChannelReceiverImpl::~BlobChannelReceiverImpl() {}
 
 BlobDataPtr BlobChannelReceiverImpl::Get(const BlobId& id) {
-  DVLOG(2) << "Get blob: " << id;
+  DVLOG(2) << "Get blob: " << BlobIdToString(id);
 
   base::AutoLock lock(cache_lock_);
   return cache_->Get(id);
@@ -64,7 +65,8 @@ BlobDataPtr BlobChannelReceiverImpl::Get(const BlobId& id) {
 
 void BlobChannelReceiverImpl::OnBlobReceived(const BlobId& id,
                                              BlobDataPtr data) {
-  DVLOG(2) << "Blob received: " << id;
+  DVLOG(2) << "Blob received: " << BlobIdToString(id)
+           << ", size: " << data->data.size();
 
   base::AutoLock lock(cache_lock_);
   cache_->Put(id, data);

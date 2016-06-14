@@ -52,9 +52,9 @@ class BLIMP_NET_EXPORT BrowserConnectionHandler
   // ConnectionErrorObserver implementation.
   void OnConnectionError(int error) override;
 
- private:
   void DropCurrentConnection();
 
+ private:
   // Routes incoming messages to the relevant feature-specific handlers.
   std::unique_ptr<BlimpMessageDemultiplexer> demultiplexer_;
 

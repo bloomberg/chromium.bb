@@ -16,6 +16,4 @@ message BlobCacheImageMetadata {
   optional bytes id = 1;
   optional int32 width = 2;
   optional int32 height = 3;
-  // TODO(nyquist): Remove |payload| after incorporation of BlobChannel.
-  optional bytes payload = 4;
 }

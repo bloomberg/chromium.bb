@@ -12,12 +12,13 @@
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
 #include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "blimp/net/blob_channel/blob_channel_sender_impl.h"
 
 namespace blimp {
 
 // Sends blob messages as Helium messages to a BlimpMessageProcessor.
 class BLIMP_NET_EXPORT HeliumBlobSenderDelegate
-    : public BlobChannelSender::Delegate,
+    : public BlobChannelSenderImpl::Delegate,
       public BlimpMessageProcessor {
  public:
   HeliumBlobSenderDelegate();
@@ -29,7 +30,7 @@ class BLIMP_NET_EXPORT HeliumBlobSenderDelegate
     outgoing_processor_ = std::move(processor);
   }
 
-  // BlobSender::Delegate implementation.
+  // BlobChannelSenderImpl::Delegate implementation.
   void DeliverBlob(const BlobId& id, BlobDataPtr data) override;
 
  private:

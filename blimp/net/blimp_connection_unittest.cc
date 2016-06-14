@@ -158,8 +158,7 @@ TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
-  sender->ProcessMessage(CreateInputMessage(),
-                         complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(), complete_cb_1.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, complete_cb_1.WaitForResult());
 }

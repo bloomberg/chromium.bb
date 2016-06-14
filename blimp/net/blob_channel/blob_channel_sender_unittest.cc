@@ -7,7 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "blimp/common/blob_cache/mock_blob_cache.h"
-#include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "blimp/net/blob_channel/blob_channel_sender_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +31,7 @@ MATCHER_P(BlobDataEqual, expected, "") {
   return expected->data == arg->data;
 }
 
-class MockSenderDelegate : public BlobChannelSender::Delegate {
+class MockSenderDelegate : public BlobChannelSenderImpl::Delegate {
  public:
   MockSenderDelegate() {}
   ~MockSenderDelegate() override {}
@@ -44,8 +44,9 @@ class BlobChannelSenderTest : public testing::Test {
   BlobChannelSenderTest()
       : mock_delegate_(new testing::StrictMock<MockSenderDelegate>),
         mock_cache_(new testing::StrictMock<MockBlobCache>),
-        blob_sender_(new BlobChannelSender(base::WrapUnique(mock_cache_),
-                                           base::WrapUnique(mock_delegate_))) {}
+        blob_sender_(
+            new BlobChannelSenderImpl(base::WrapUnique(mock_cache_),
+                                      base::WrapUnique(mock_delegate_))) {}
   ~BlobChannelSenderTest() override {}
 
   testing::StrictMock<MockSenderDelegate>* mock_delegate_;

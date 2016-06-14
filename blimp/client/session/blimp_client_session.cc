@@ -18,9 +18,12 @@
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
+#include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
+#include "blimp/net/blob_channel/blob_channel_receiver.h"
+#include "blimp/net/blob_channel/helium_blob_receiver_delegate.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/client_connection_manager.h"
 #include "blimp/net/common.h"
@@ -85,6 +88,8 @@ class ClientNetworkComponents : public ConnectionHandler,
   void ConnectWithAssignment(const Assignment& assignment);
 
   BrowserConnectionHandler* GetBrowserConnectionHandler();
+
+  void DropCurrentConnection();
 
  private:
   // ConnectionHandler implementation.
@@ -152,6 +157,10 @@ ClientNetworkComponents::GetBrowserConnectionHandler() {
   return connection_handler_.get();
 }
 
+void ClientNetworkComponents::DropCurrentConnection() {
+  connection_handler_->DropCurrentConnection();
+}
+
 void ClientNetworkComponents::HandleConnection(
     std::unique_ptr<BlimpConnection> connection) {
   VLOG(1) << "Connection established.";
@@ -189,7 +198,16 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
   assignment_source_.reset(new AssignmentSource(
       assigner_endpoint, io_thread_.task_runner(), io_thread_.task_runner()));
 
+  std::unique_ptr<HeliumBlobReceiverDelegate> blob_delegate(
+      new HeliumBlobReceiverDelegate);
+  blob_delegate_ = blob_delegate.get();
+  blob_receiver_ = BlobChannelReceiver::Create(
+      base::WrapUnique(new InMemoryBlobCache), std::move(blob_delegate));
+
   RegisterFeatures();
+
+  blob_image_processor_.set_blob_receiver(blob_receiver_.get());
+  blob_image_processor_.set_error_delegate(this);
 
   // Initialize must only be posted after the RegisterFeature calls have
   // completed.
@@ -251,6 +269,8 @@ void BlimpClientSession::RegisterFeatures() {
   settings_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
                                             settings_feature_.get()));
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
+                                        blob_delegate_);
 
   // Client will not send send any RenderWidget messages, so don't save the
   // outgoing BlimpMessageProcessor in the RenderWidgetFeature.
@@ -269,6 +289,12 @@ void BlimpClientSession::RegisterFeatures() {
 void BlimpClientSession::OnConnected() {}
 
 void BlimpClientSession::OnDisconnected(int result) {}
+
+void BlimpClientSession::OnImageDecodeError() {
+  io_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ClientNetworkComponents::DropCurrentConnection,
+                            base::Unretained(net_components_.get())));
+}
 
 TabControlFeature* BlimpClientSession::GetTabControlFeature() const {
   return tab_control_feature_.get();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "blimp/net/blob_channel/blob_channel_sender_impl.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "blimp/common/blob_cache/blob_cache.h"
@@ -10,16 +10,16 @@
 
 namespace blimp {
 
-BlobChannelSender::BlobChannelSender(std::unique_ptr<BlobCache> cache,
-                                     std::unique_ptr<Delegate> delegate)
+BlobChannelSenderImpl::BlobChannelSenderImpl(std::unique_ptr<BlobCache> cache,
+                                             std::unique_ptr<Delegate> delegate)
     : cache_(std::move(cache)), delegate_(std::move(delegate)) {
   DCHECK(cache_);
   DCHECK(delegate_);
 }
 
-BlobChannelSender::~BlobChannelSender() {}
+BlobChannelSenderImpl::~BlobChannelSenderImpl() {}
 
-void BlobChannelSender::PutBlob(const BlobId& id, BlobDataPtr data) {
+void BlobChannelSenderImpl::PutBlob(const BlobId& id, BlobDataPtr data) {
   DCHECK(data);
   DCHECK(!id.empty());
 
@@ -31,7 +31,7 @@ void BlobChannelSender::PutBlob(const BlobId& id, BlobDataPtr data) {
   cache_->Put(id, data);
 }
 
-void BlobChannelSender::DeliverBlob(const BlobId& id) {
+void BlobChannelSenderImpl::DeliverBlob(const BlobId& id) {
   if (!cache_->Contains(id)) {
     DLOG(FATAL) << "Attempted to push unknown blob: " << BlobIdToString(id);
     return;

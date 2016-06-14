@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "blimp/client/feature/compositor/blimp_image_decoder.h"
+#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/proto/blob_cache.pb.h"
 #include "third_party/libwebp/webp/decode.h"
 #include "third_party/libwebp/webp/demux.h"
@@ -34,7 +35,10 @@ DecodingImageGenerator::DecodingImageGenerator(const SkImageInfo info,
                                                const void* data,
                                                size_t size)
     : SkImageGenerator(info) {
-  BlimpImageDecoder(data, size, &decoded_bitmap_);
+  if (!BlobImageSerializationProcessor::current()->GetAndDecodeBlob(
+          data, size, &decoded_bitmap_)) {
+    DLOG(FATAL) << "GetAndDecodeBlob() failed.";
+  }
 }
 
 DecodingImageGenerator::~DecodingImageGenerator() {}

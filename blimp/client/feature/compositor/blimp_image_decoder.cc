@@ -17,14 +17,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blimp {
-namespace {
-
-// TODO(nyquist): Make this not be infinite size.
-static base::LazyInstance<InMemoryBlobCache> g_blob_cache =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 namespace client {
 
 bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
@@ -37,46 +29,9 @@ bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
     return false;
   }
 
-  BlobCacheImageMetadata deserialized;
-  int signed_size = base::checked_cast<int>(input_size);
-  if (!deserialized.ParseFromArray(input, signed_size)) {
-    LOG(WARNING) << "Failed to parse BlobCacheImageMetadata";
-    return false;
-  }
-
-  if (!IsValidBlobId(BlobId(deserialized.id()))) {
-    LOG(WARNING) << "Length of ID is not correct "
-                 << deserialized.id().length();
-    return false;
-  }
-  std::string hex_id = BlobIdToString(deserialized.id());
-
-  // Declared here to still be in scope while decoding WebP data.
-  BlobDataPtr cached;
-
-  // Set to true if the client already has the data in its cache. If it does not
-  // keeping |found_in_cache| as false will trigger caching the input in the
-  // end of this function.
-  bool found_in_cache = false;
-
-  // Used later to decode the image and is initialized either based on a cached
-  // item or from the |payload| of the proto.
   WebPData webp_data;
-
-  if (g_blob_cache.Get().Contains(deserialized.id())) {
-    // The image was found in the cache, so decode using cached data.
-    cached = g_blob_cache.Get().Get(deserialized.id());
-    webp_data.bytes = reinterpret_cast<const uint8_t*>(cached->data.data());
-    webp_data.size = cached->data.size();
-    DVLOG(2) << "Found id " << hex_id << " with size = " << webp_data.size;
-    found_in_cache = true;
-  } else {
-    // The image was not found in the cache, so decode using the payload.
-    DCHECK(deserialized.has_payload());
-    webp_data.bytes =
-        reinterpret_cast<const uint8_t*>(deserialized.payload().c_str());
-    webp_data.size = deserialized.payload().size();
-  }
+  webp_data.bytes = reinterpret_cast<const uint8_t*>(input);
+  webp_data.size = input_size;
 
   // Read WebP feature information into |config.input|, which is a
   // WebPBitstreamFeatures. It contains information such as width, height and
@@ -124,14 +79,6 @@ bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   if (!success) {
     LOG(WARNING) << "Failed to decode WebP data.";
     return false;
-  }
-
-  if (!found_in_cache) {
-    DVLOG(2) << "Inserting image to cache with id: " << hex_id
-             << " size: " << webp_data.size;
-    BlobDataPtr to_cache(new BlobData(std::string(
-        reinterpret_cast<const char*>(webp_data.bytes), webp_data.size)));
-    g_blob_cache.Get().Put(deserialized.id(), std::move(to_cache));
   }
 
   return true;

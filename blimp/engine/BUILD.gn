@@ -66,7 +66,7 @@ source_set("app") {
     ":app_permissions",
     ":app_settings",
     ":app_ui",
-    ":blob_channel",
+    ":blob_channel_service",
     ":common",
     ":crash",
     ":renderer",
@@ -286,15 +286,18 @@ source_set("renderer") {
   sources = [
     "renderer/blimp_content_renderer_client.cc",
     "renderer/blimp_content_renderer_client.h",
+    "renderer/blob_channel_sender_proxy.cc",
+    "renderer/blob_channel_sender_proxy.h",
     "renderer/engine_image_serialization_processor.cc",
     "renderer/engine_image_serialization_processor.h",
   ]
 
   deps = [
-    ":blob_channel_mojo",
+    ":blob_channel_service",
     "//base",
     "//blimp/common",
     "//blimp/common/proto",
+    "//blimp/net",
     "//cc",
     "//components/web_cache/renderer",
     "//content/public/common",
@@ -338,12 +341,15 @@ source_set("session") {
 }
 
 # Implements the browser portions of the Mojo bridge to BlobChannel.
-source_set("blob_channel") {
+source_set("blob_channel_service") {
   sources = [
     "mojo/blob_channel_service.cc",
     "mojo/blob_channel_service.h",
   ]
   deps = [
+    "//blimp/net",
+  ]
+  public_deps = [
     ":blob_channel_mojo",
   ]
 }
@@ -442,6 +448,7 @@ source_set("feature_unit_tests") {
     "//blimp/engine:app_settings",
     "//blimp/net",
     "//blimp/net:test_support",
+    "//content",
     "//content/public/browser",
     "//net",
     "//net:test_support",

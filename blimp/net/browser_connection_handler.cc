@@ -63,7 +63,10 @@ void BrowserConnectionHandler::OnConnectionError(int error) {
 }
 
 void BrowserConnectionHandler::DropCurrentConnection() {
-  DCHECK(connection_);
+  if (!connection_) {
+    return;
+  }
+
   output_buffer_->SetOutputProcessor(nullptr);
   connection_.reset();
 }

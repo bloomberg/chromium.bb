@@ -6,7 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
-#include "blimp/client/feature/compositor/client_image_serialization_processor.h"
+#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +33,7 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
     return &gpu_memory_buffer_manager_;
   }
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override {
-    return &image_serialization_processor_;
+    return BlobImageSerializationProcessor::current();
   }
   void DidCompleteSwapBuffers() override {}
   void DidCommitAndDrawFrame() override {}
@@ -56,7 +56,10 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   base::Thread compositor_thread_;
   BlimpTaskGraphRunner task_graph_runner_;
   BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  ClientImageSerializationProcessor image_serialization_processor_;
+  BlobImageSerializationProcessor serialization_processor_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockBlimpCompositorClient);
 };
 
 class BlimpCompositorForTesting : public BlimpCompositor {

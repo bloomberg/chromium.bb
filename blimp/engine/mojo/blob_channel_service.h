@@ -9,26 +9,36 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace blimp {
+
+class BlobChannelSender;
+
 namespace engine {
 
 // Service for processing BlobChannel requests from the renderer.
 // Runs on the browser process.
 class BlobChannelService : public mojom::BlobChannel {
  public:
-  // Creates a BlobChannel bound to the connection specified by |request|.
-  explicit BlobChannelService(mojom::BlobChannelRequest request);
   ~BlobChannelService() override;
 
   // Factory method called by Mojo.
-  static void Create(mojo::InterfaceRequest<mojom::BlobChannel> request);
+  static void Create(BlobChannelSender* blob_channel_sender,
+                     mojo::InterfaceRequest<mojom::BlobChannel> request);
 
  private:
+  // Creates a BlobChannel bound to the connection specified by |request|.
+  // |blob_channel_sender| must outlive the Mojo connection.
+  BlobChannelService(BlobChannelSender* blob_channel_sender,
+                     mojom::BlobChannelRequest request);
+
   // BlobChannel implementation.
-  void Put(const mojo::String& id, mojo::Array<uint8_t> data) override;
-  void Push(const mojo::String& id) override;
+  void PutBlob(const mojo::String& id, const mojo::String& data) override;
+  void DeliverBlob(const mojo::String& id) override;
 
   // Binds |this| and its object lifetime to a Mojo connection.
   mojo::StrongBinding<mojom::BlobChannel> binding_;
+
+  // Sender object which will receive the blobs passed over the Mojo service.
+  BlobChannelSender* blob_channel_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobChannelService);
 };

@@ -60,6 +60,10 @@ SettingsManager* BlimpBrowserMainParts::GetSettingsManager() {
   return settings_manager_.get();
 }
 
+BlobChannelSender* BlimpBrowserMainParts::GetBlobChannelSender() {
+  return engine_session_->blob_channel_sender();
+}
+
 BlimpEngineSession* BlimpBrowserMainParts::GetBlimpEngineSession() {
   return engine_session_.get();
 }

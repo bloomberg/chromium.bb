@@ -20,6 +20,9 @@ struct MainFunctionParams;
 }
 
 namespace blimp {
+
+class BlobChannelSender;
+
 namespace engine {
 
 class BlimpBrowserContext;
@@ -39,6 +42,7 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
 
   BlimpBrowserContext* GetBrowserContext();
   SettingsManager* GetSettingsManager();
+  BlobChannelSender* GetBlobChannelSender();
   BlimpEngineSession* GetBlimpEngineSession();
 
  private:

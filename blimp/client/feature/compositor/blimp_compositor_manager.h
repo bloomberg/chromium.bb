@@ -5,16 +5,17 @@
 #ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
 #define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
+#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "cc/trees/layer_tree_settings.h"
 
 namespace blimp {
 namespace client {
-
-class ClientImageSerializationProcessor;
 
 class BlimpCompositorManagerClient {
  public:
@@ -92,10 +93,6 @@ class BlimpCompositorManager
   std::unique_ptr<cc::LayerTreeSettings> settings_;
 
   std::unique_ptr<BlimpGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-
-  // Provides the functionality to deserialize images in SkPicture.
-  std::unique_ptr<ClientImageSerializationProcessor>
-      image_serialization_processor_;
 
   // A map of render_widget_ids to the BlimpCompositor instance.
   typedef std::map<int, std::unique_ptr<BlimpCompositor>> CompositorMap;

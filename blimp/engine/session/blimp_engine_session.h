@@ -54,6 +54,9 @@ namespace blimp {
 class BlimpConnection;
 class BlimpMessage;
 class BlimpMessageThreadPipe;
+class BlobCache;
+class BlobChannelSender;
+class HeliumBlobSenderDelegate;
 class ThreadPipeManager;
 class SettingsManager;
 
@@ -87,6 +90,10 @@ class BlimpEngineSession
   void Initialize();
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
+
+  BlobChannelSender* blob_channel_sender() {
+    return blob_channel_sender_.get();
+  }
 
   // Gets Engine's listening port. Invokes callback with the allocated port.
   void GetEnginePortForTesting(const GetPortCallback& callback);
@@ -189,6 +196,13 @@ class BlimpEngineSession
   // Handles all incoming and outgoing messages related to RenderWidget,
   // including INPUT, COMPOSITOR and RENDER_WIDGET messages.
   EngineRenderWidgetFeature render_widget_feature_;
+
+  // Sends outgoing blob data as BlimpMessages.
+  HeliumBlobSenderDelegate* blob_delegate_;
+
+  // Receives image data from the renderer and sends it to the client via
+  // |blob_delegate_|.
+  std::unique_ptr<BlobChannelSender> blob_channel_sender_;
 
   // Container for connection manager, authentication handler, and
   // browser connection handler. The components run on the I/O thread, and

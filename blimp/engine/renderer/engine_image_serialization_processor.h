@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "blimp/common/blimp_common_export.h"
+#include "blimp/common/blob_cache/id_util.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
 #include "cc/proto/image_serialization_processor.h"
+#include "third_party/libwebp/webp/encode.h"
 #include "third_party/skia/include/core/SkPicture.h"
-
-class SkPixelSerializer;
+#include "third_party/skia/include/core/SkPixelSerializer.h"
 
 namespace content {
 class RenderFrame;
@@ -22,22 +24,36 @@ class RenderFrame;
 namespace blimp {
 namespace engine {
 
+class BlobChannelSenderProxy;
+
 // EngineImageSerializationProcessor provides functionality to serialize and
 // deserialize Skia images.
 class BLIMP_COMMON_EXPORT EngineImageSerializationProcessor
-    : public cc::ImageSerializationProcessor {
+    : public cc::ImageSerializationProcessor,
+      public SkPixelSerializer {
  public:
   explicit EngineImageSerializationProcessor(
-      mojom::BlobChannelPtr blob_channel);
-  ~EngineImageSerializationProcessor();
+      std::unique_ptr<BlobChannelSenderProxy> blob_channel);
+  ~EngineImageSerializationProcessor() override;
 
   // cc::ImageSerializationProcessor implementation.
   SkPixelSerializer* GetPixelSerializer() override;
   SkPicture::InstallPixelRefProc GetPixelDeserializer() override;
 
+  // SkPixelSerializer implementation.
+  bool onUseEncodedData(const void* data, size_t len) override;
+  SkData* onEncode(const SkPixmap& pixmap) override;
+
  private:
+  scoped_refptr<BlobData> EncodeImageAsBlob(const SkPixmap& pixmap);
+
   std::unique_ptr<SkPixelSerializer> pixel_serializer_;
-  mojom::BlobChannelPtr blob_channel_;
+
+  // Sends image data as blobs to the browser process.
+  std::unique_ptr<BlobChannelSenderProxy> blob_channel_;
+
+  // Reusable output buffer for image encoding.
+  WebPMemoryWriter writer_state_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineImageSerializationProcessor);
 };
