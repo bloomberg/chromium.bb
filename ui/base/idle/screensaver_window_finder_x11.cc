@@ -4,6 +4,8 @@
 
 #include "ui/base/idle/screensaver_window_finder_x11.h"
 
+#include <X11/extensions/scrnsaver.h>
+
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
@@ -14,6 +16,32 @@ ScreensaverWindowFinder::ScreensaverWindowFinder()
 }
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
+  XScreenSaverInfo info;
+  XDisplay* display = gfx::GetXDisplay();
+  XID root = DefaultRootWindow(display);
+  static int xss_event_base;
+  static int xss_error_base;
+  static bool have_xss =
+      XScreenSaverQueryExtension(display, &xss_event_base, &xss_error_base);
+  if (have_xss && XScreenSaverQueryInfo(display, root, &info) &&
+      info.state == ScreenSaverOn) {
+    return true;
+  }
+
+  // Ironically, xscreensaver does not conform to the XScreenSaver protocol, so
+  // info.state == ScreenSaverOff or info.state == ScreenSaverDisabled does not
+  // necessarily mean that a screensaver is not active, so add a special check
+  // for xscreensaver.
+  static XAtom lock_atom = GetAtom("LOCK");
+  std::vector<int> atom_properties;
+  if (GetIntArrayProperty(root, "_SCREENSAVER_STATUS", &atom_properties) &&
+      atom_properties.size() > 0) {
+    if (atom_properties[0] == static_cast<int>(lock_atom)) {
+      return true;
+    }
+  }
+
+  // Also check the top level windows to see if any of them are screensavers.
   gfx::X11ErrorTracker err_tracker;
   ScreensaverWindowFinder finder;
   ui::EnumerateTopLevelWindows(&finder);
