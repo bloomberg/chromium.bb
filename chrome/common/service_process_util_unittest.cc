@@ -14,6 +14,7 @@
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
 #if !defined(OS_MACOSX)
@@ -227,8 +228,8 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestReadyFalse) {
 }
 
 MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
+  base::PlatformThread::SetName("ServiceProcessStateTestShutdownMainThread");
   base::MessageLoop message_loop;
-  message_loop.set_thread_name("ServiceProcessStateTestShutdownMainThread");
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
   base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   EXPECT_TRUE(io_thread_.StartWithOptions(options));

@@ -979,4 +979,20 @@ TEST(MessageLoopTest, DeleteUnboundLoop) {
   EXPECT_EQ(loop.task_runner(), ThreadTaskRunnerHandle::Get());
 }
 
+TEST(MessageLoopTest, ThreadName) {
+  {
+    std::string kThreadName("foo");
+    MessageLoop loop;
+    PlatformThread::SetName(kThreadName);
+    EXPECT_EQ(kThreadName, loop.GetThreadName());
+  }
+
+  {
+    std::string kThreadName("bar");
+    base::Thread thread(kThreadName);
+    ASSERT_TRUE(thread.StartAndWaitForTesting());
+    EXPECT_EQ(kThreadName, thread.message_loop()->GetThreadName());
+  }
+}
+
 }  // namespace base

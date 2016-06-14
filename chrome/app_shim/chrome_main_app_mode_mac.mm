@@ -647,7 +647,6 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
 
   AppShimController controller;
   base::MessageLoopForUI main_message_loop;
-  main_message_loop.set_thread_name("MainThread");
   base::PlatformThread::SetName("CrAppShimMain");
 
   // In tests, launching Chrome does nothing, and we won't get a ping response,

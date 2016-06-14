@@ -188,7 +188,6 @@ void AutoThread::ThreadMain() {
   // Complete the initialization of our AutoThread object.
   base::PlatformThread::SetName(name_);
   ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
-  message_loop.set_thread_name(name_);
 
   // Return an AutoThreadTaskRunner that will cleanly quit this thread when
   // no more references to it remain.

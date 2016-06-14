@@ -33,6 +33,12 @@ const char* const g_web_thread_names[WebThread::ID_COUNT] = {
     "Web_IOThread",                // IO
 };
 
+static const char* GetThreadName(WebThread::ID thread) {
+  if (WebThread::UI <= thread && thread < WebThread::ID_COUNT)
+    return g_web_thread_names[thread];
+  return "Unknown Thread";
+}
+
 // An implementation of SingleThreadTaskRunner to be used in conjunction
 // with WebThread.
 class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
@@ -110,12 +116,12 @@ base::LazyInstance<WebThreadGlobals>::Leaky g_globals =
 }  // namespace
 
 WebThreadImpl::WebThreadImpl(ID identifier)
-    : Thread(g_web_thread_names[identifier]), identifier_(identifier) {
+    : Thread(GetThreadName(identifier)), identifier_(identifier) {
   Initialize();
 }
 
 WebThreadImpl::WebThreadImpl(ID identifier, base::MessageLoop* message_loop)
-    : Thread(message_loop->thread_name()), identifier_(identifier) {
+    : Thread(GetThreadName(identifier)), identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
 }
@@ -371,22 +377,12 @@ bool WebThread::CurrentlyOn(ID identifier) {
              base::MessageLoop::current();
 }
 
-static const char* GetThreadName(WebThread::ID thread) {
-  if (WebThread::UI <= thread && thread < WebThread::ID_COUNT)
-    return g_web_thread_names[thread];
-  return "Unknown Thread";
-}
-
 // static
 std::string WebThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
-  const base::MessageLoop* message_loop = base::MessageLoop::current();
-  ID actual_web_thread;
-  const char* actual_name = "Unknown Thread";
-  if (message_loop && !message_loop->thread_name().empty()) {
-    actual_name = message_loop->thread_name().c_str();
-  } else if (GetCurrentThreadIdentifier(&actual_web_thread)) {
-    actual_name = GetThreadName(actual_web_thread);
-  }
+  std::string actual_name = base::PlatformThread::GetName();
+  if (actual_name.empty())
+    actual_name = "Unknown Thread";
+
   std::string result = "Must be called on ";
   result += GetThreadName(expected);
   result += "; actually called on ";

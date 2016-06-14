@@ -21,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -214,8 +215,8 @@ typedef base::Callback<void(MockServiceIPCServer* server)>
 // service process. Any non-zero return value will be printed out and can help
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
+  base::PlatformThread::SetName("Main Thread");
   base::MessageLoopForUI main_message_loop;
-  main_message_loop.set_thread_name("Main Thread");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 

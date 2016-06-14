@@ -27,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -231,8 +232,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 #endif  // BUILDFLAG(ENABLE_KASKO)
 
   // Run a UI message loop on the main thread.
+  base::PlatformThread::SetName("WatcherMainThread");
   base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
-  msg_loop.set_thread_name("WatcherMainThread");
 
   base::RunLoop run_loop;
   BrowserMonitor monitor(registry_path, &run_loop);

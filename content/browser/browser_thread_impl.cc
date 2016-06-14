@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -39,6 +40,14 @@ static const char* const g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO
 };
+
+static const char* GetThreadName(BrowserThread::ID thread) {
+  if (BrowserThread::UI < thread && thread < BrowserThread::ID_COUNT)
+    return g_browser_thread_names[thread];
+  if (thread == BrowserThread::UI)
+    return "Chrome_UIThread";
+  return "Unknown Thread";
+}
 
 // An implementation of SingleThreadTaskRunner to be used in conjunction
 // with BrowserThread.
@@ -120,14 +129,13 @@ base::LazyInstance<BrowserThreadGlobals>::Leaky
 }  // namespace
 
 BrowserThreadImpl::BrowserThreadImpl(ID identifier)
-    : Thread(g_browser_thread_names[identifier]),
-      identifier_(identifier) {
+    : Thread(GetThreadName(identifier)), identifier_(identifier) {
   Initialize();
 }
 
 BrowserThreadImpl::BrowserThreadImpl(ID identifier,
                                      base::MessageLoop* message_loop)
-    : Thread(message_loop->thread_name()), identifier_(identifier) {
+    : Thread(GetThreadName(identifier)), identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
 }
@@ -417,24 +425,12 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
              base::MessageLoop::current();
 }
 
-static const char* GetThreadName(BrowserThread::ID thread) {
-  if (BrowserThread::UI < thread && thread < BrowserThread::ID_COUNT)
-    return g_browser_thread_names[thread];
-  if (thread == BrowserThread::UI)
-    return "Chrome_UIThread";
-  return "Unknown Thread";
-}
-
 // static
 std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
-  const base::MessageLoop* message_loop = base::MessageLoop::current();
-  ID actual_browser_thread;
-  const char* actual_name = "Unknown Thread";
-  if (message_loop && !message_loop->thread_name().empty()) {
-    actual_name = message_loop->thread_name().c_str();
-  } else if (GetCurrentThreadIdentifier(&actual_browser_thread)) {
-    actual_name = GetThreadName(actual_browser_thread);
-  }
+  std::string actual_name = base::PlatformThread::GetName();
+  if (actual_name.empty())
+    actual_name = "Unknown Thread";
+
   std::string result = "Must be called on ";
   result += GetThreadName(expected);
   result += "; actually called on ";

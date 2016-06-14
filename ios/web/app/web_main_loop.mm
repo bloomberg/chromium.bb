@@ -254,11 +254,7 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 void WebMainLoop::InitializeMainThread() {
-  const char* kThreadName = "CrWebMain";
-  base::PlatformThread::SetName(kThreadName);
-  if (main_message_loop_) {
-    main_message_loop_->set_thread_name(kThreadName);
-  }
+  base::PlatformThread::SetName("CrWebMain");
 
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(

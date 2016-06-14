@@ -17,8 +17,8 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   // cookies should go through the browser process.
   net::URLRequest::SetDefaultCookiePolicyToBlock();
 
+  base::PlatformThread::SetName("CrServiceMain");
   base::MessageLoopForUI main_message_loop;
-  main_message_loop.set_thread_name("MainThread");
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {
     base::debug::WaitForDebugger(60, true);
   }
@@ -26,7 +26,6 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   VLOG(1) << "Service process launched: "
           << parameters.command_line.GetCommandLineString();
 
-  base::PlatformThread::SetName("CrServiceMain");
   base::StatisticsRecorder::Initialize();
 
   // If there is already a service process running, quit now.

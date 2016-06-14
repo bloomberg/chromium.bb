@@ -1144,10 +1144,7 @@ void BrowserMainLoop::StopStartupTracingTimer() {
 
 void BrowserMainLoop::InitializeMainThread() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread");
-  static const char kThreadName[] = "CrBrowserMain";
-  base::PlatformThread::SetName(kThreadName);
-  if (main_message_loop_)
-    main_message_loop_->set_thread_name(kThreadName);
+  base::PlatformThread::SetName("CrBrowserMain");
 
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(

@@ -1044,7 +1044,7 @@ void TraceLog::OnFlushTimeout(int generation, bool discard_events) {
     for (hash_set<MessageLoop*>::const_iterator it =
              thread_message_loops_.begin();
          it != thread_message_loops_.end(); ++it) {
-      LOG(WARNING) << "Thread: " << (*it)->thread_name();
+      LOG(WARNING) << "Thread: " << (*it)->GetThreadName();
     }
   }
   FinishFlush(generation, discard_events);
