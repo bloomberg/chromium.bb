@@ -509,7 +509,8 @@ void ShelfButton::UpdateBar() {
     Shelf* shelf = shelf_view_->shelf();
     gfx::ImageSkia image;
     if (ash::MaterialDesignController::IsShelfMaterial()) {
-      gfx::Size size(kShelfButtonSize, kShelfSize);
+      gfx::Size size(GetShelfConstant(SHELF_BUTTON_SIZE),
+                     GetShelfConstant(SHELF_SIZE));
       gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
       PaintIndicatorOnCanvas(&canvas, size);
       image = gfx::ImageSkia(canvas.ExtractImageRep());

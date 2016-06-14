@@ -22,7 +22,8 @@ extern const int kBubblePaddingHorizontalSide;
 extern const int kBubblePaddingVerticalBottom;
 extern const int kBubblePaddingVerticalSide;
 
-extern const int kPaddingFromEdgeOfShelf;
+extern const int kAdjustBackgroundPadding;
+
 extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
 
 extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
@@ -76,8 +77,22 @@ extern const int kTrayNotificationContentsWidth;
 extern const int kTrayAvatarCornerRadius;
 extern const int kTrayAvatarSize;
 
-extern const int kTraySpacing;
+extern const int kMessageCenterBubblePadding;
 extern const int kShelfItemHeight;
+
+// TODO(tdanderson): Update all button background to 32 by 32 in Chrome OS MD.
+// All tray background are sized 32 by 32 in Chrome OS MD.
+extern const int kShelfItemSizeMD;
+
+enum TrayConstant {
+  // Padding between items in the status tray area.
+  TRAY_SPACING,
+
+  // Padding between the edge of shelf and the item in status tray area.
+  TRAY_PADDING_FROM_EDGE_OF_SHELF,
+};
+
+int GetTrayConstant(TrayConstant constant);
 
 namespace test {
 const int kSettingsTrayItemViewId = 10000;

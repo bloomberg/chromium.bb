@@ -276,15 +276,13 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
     if (new_state == SHELF_VISIBLE) {
       // Let clicks at the very top of the shelf through so windows can be
       // resized with the bottom-right corner and bottom edge.
-      mouse_insets = GetInsetsForAlignment(
-          ShelfLayoutManager::kWorkspaceAreaVisibleInset,
-          shelf_->GetAlignment());
+      mouse_insets = GetInsetsForAlignment(kWorkspaceAreaVisibleInset,
+                                           shelf_->GetAlignment());
     } else if (new_state == SHELF_AUTO_HIDE) {
       // Extend the touch hit target out a bit to allow users to drag shelf out
       // while hidden.
-      touch_insets = GetInsetsForAlignment(
-          -ShelfLayoutManager::kWorkspaceAreaAutoHideInset,
-          shelf_->GetAlignment());
+      touch_insets = GetInsetsForAlignment(-kWorkspaceAreaAutoHideInset,
+                                           shelf_->GetAlignment());
     }
 
     set_mouse_extend(mouse_insets);

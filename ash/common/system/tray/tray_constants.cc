@@ -4,6 +4,8 @@
 
 #include "ash/common/system/tray/tray_constants.h"
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
@@ -20,7 +22,8 @@ const int kBubblePaddingHorizontalSide = 10;
 const int kBubblePaddingVerticalBottom = 3;
 const int kBubblePaddingVerticalSide = 15;
 
-const int kPaddingFromEdgeOfShelf = 3;
+// Padding used to adjust the size of status tray dark background.
+const int kAdjustBackgroundPadding = 3;
 
 // Top inset of system tray bubble for bottom anchor alignment.
 const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
@@ -80,7 +83,28 @@ const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
 const int kTrayAvatarCornerRadius = 2;
 const int kTrayAvatarSize = 32;
 
-const int kTraySpacing = 4;
+const int kMessageCenterBubblePadding = 4;
 const int kShelfItemHeight = 38;
+
+// Items are 32 by 32 in the new Chrome OS MD requirements.
+const int kShelfItemSizeMD = 32;
+
+int GetTrayConstant(TrayConstant constant) {
+  const int kTraySpacing[] = {4, 8, 8};
+  const int kTrayPaddingFromEdgeOfShelf[] = {3, 8, 8};
+
+  const int mode = MaterialDesignController::GetMode();
+  DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
+         mode <= MaterialDesignController::MATERIAL_EXPERIMENTAL);
+
+  switch (constant) {
+    case TRAY_SPACING:
+      return kTraySpacing[mode];
+    case TRAY_PADDING_FROM_EDGE_OF_SHELF:
+      return kTrayPaddingFromEdgeOfShelf[mode];
+  }
+  NOTREACHED();
+  return 0;
+}
 
 }  // namespace ash

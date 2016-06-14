@@ -200,8 +200,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("100,20 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  // Maximized area on primary display has 47px (ash::kShelfSize) inset at the
-  // bottom.
+  // Maximized area on primary display has 47px for non-md and 48px for md
+  // (defined in ash::SHELF_SIZE) inset at the bottom.
 
   // First clear fullscreen status, since both fullscreen and maximized windows
   // share the same desktop workspace, which cancels the shelf status.

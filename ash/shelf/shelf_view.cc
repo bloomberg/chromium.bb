@@ -821,8 +821,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
 
   int x = 0;
   int y = 0;
-  int button_size = kShelfButtonSize;
-  int button_spacing = kShelfButtonSpacing;
+  int button_size = GetShelfConstant(SHELF_BUTTON_SIZE);
+  int button_spacing = GetShelfConstant(SHELF_BUTTON_SPACING);
 
   int w = shelf_->PrimaryAxisValue(button_size, width());
   int h = shelf_->PrimaryAxisValue(height(), button_size);
@@ -1422,9 +1422,9 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
 
     if (shelf_->IsHorizontalAlignment()) {
       preferred_size = gfx::Size(last_button_bounds.right() + leading_inset_,
-                                 kShelfSize);
+                                 GetShelfConstant(SHELF_SIZE));
     } else {
-      preferred_size = gfx::Size(kShelfSize,
+      preferred_size = gfx::Size(GetShelfConstant(SHELF_SIZE),
                                  last_button_bounds.bottom() + leading_inset_);
     }
   }
@@ -1474,6 +1474,7 @@ int ShelfView::CancelDrag(int modified_index) {
 gfx::Size ShelfView::GetPreferredSize() const {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
+  const int shelf_size = GetShelfConstant(SHELF_SIZE);
 
   int last_button_index = is_overflow_mode() ?
       last_visible_index_ : view_model_->view_size() - 1;
@@ -1490,14 +1491,14 @@ gfx::Size ShelfView::GetPreferredSize() const {
     last_button_index--;
 
   const gfx::Rect last_button_bounds =
-      last_button_index  >= first_visible_index_ ?
-          view_model_->ideal_bounds(last_button_index) :
-          gfx::Rect(gfx::Size(kShelfSize, kShelfSize));
+      last_button_index >= first_visible_index_
+          ? view_model_->ideal_bounds(last_button_index)
+          : gfx::Rect(gfx::Size(shelf_size, shelf_size));
 
   if (shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right() + leading_inset_, kShelfSize);
+    return gfx::Size(last_button_bounds.right() + leading_inset_, shelf_size);
 
-  return gfx::Size(kShelfSize, last_button_bounds.bottom() + leading_inset_);
+  return gfx::Size(shelf_size, last_button_bounds.bottom() + leading_inset_);
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

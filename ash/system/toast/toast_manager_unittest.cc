@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -206,7 +207,7 @@ TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
 
   EXPECT_TRUE(toast_bounds.Intersects(shelf->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
-  EXPECT_EQ(root_bounds.bottom() - ShelfLayoutManager::kAutoHideSize - 5,
+  EXPECT_EQ(root_bounds.bottom() - kShelfAutoHideSize - 5,
             toast_bounds.bottom());
 }
 

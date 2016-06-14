@@ -111,11 +111,11 @@ gfx::Size ShelfViewTestAPI::GetPreferredSize() {
 }
 
 int ShelfViewTestAPI::GetButtonSize() {
-  return kShelfButtonSize;
+  return GetShelfConstant(SHELF_BUTTON_SIZE);
 }
 
 int ShelfViewTestAPI::GetButtonSpacing() {
-  return kShelfButtonSpacing;
+  return GetShelfConstant(SHELF_BUTTON_SPACING);
 }
 
 void ShelfViewTestAPI::ButtonPressed(views::Button* sender,

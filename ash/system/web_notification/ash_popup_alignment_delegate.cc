@@ -62,7 +62,7 @@ void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
   // should be reduced by the height of shelf's shown height.
   if (shelf_->visibility_state() == SHELF_AUTO_HIDE &&
       shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
-    system_tray_height_ -= kShelfSize - ShelfLayoutManager::kAutoHideSize;
+    system_tray_height_ -= GetShelfConstant(SHELF_SIZE) - kShelfAutoHideSize;
   }
 
   if (system_tray_height_ > 0)

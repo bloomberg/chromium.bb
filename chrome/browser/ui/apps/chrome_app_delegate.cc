@@ -282,7 +282,7 @@ bool ChromeAppDelegate::CheckMediaAccessPermission(
 
 int ChromeAppDelegate::PreferredIconSize() {
 #if defined(USE_ASH)
-  return ash::kShelfSize;
+  return ash::GetShelfConstant(ash::SHELF_SIZE);
 #else
   return extension_misc::EXTENSION_ICON_SMALL;
 #endif

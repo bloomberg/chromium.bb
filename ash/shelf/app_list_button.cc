@@ -7,6 +7,8 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -34,7 +36,8 @@ AppListButton::AppListButton(ShelfView* shelf_view)
       app_list::switches::IsExperimentalAppListEnabled()
           ? l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE)
           : l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
-  SetSize(gfx::Size(kShelfSize, kShelfSize));
+  SetSize(
+      gfx::Size(GetShelfConstant(SHELF_SIZE), GetShelfConstant(SHELF_SIZE)));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
                       kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
@@ -126,19 +129,39 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
 
   ShelfAlignment alignment = shelf_view_->shelf()->alignment();
   background_bounds.set_size(background_image->size());
-  if (alignment == SHELF_ALIGNMENT_LEFT) {
-    background_bounds.set_x(contents_bounds.width() -
-        ShelfLayoutManager::kShelfItemInset - background_image->width());
-    background_bounds.set_y(contents_bounds.y() +
-        (contents_bounds.height() - background_image->height()) / 2);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    background_bounds.set_x(ShelfLayoutManager::kShelfItemInset);
-    background_bounds.set_y(contents_bounds.y() +
-        (contents_bounds.height() - background_image->height()) / 2);
+
+  if (MaterialDesignController::IsShelfMaterial()) {
+    if (shelf_view_->shelf()->IsHorizontalAlignment()) {
+      background_bounds.set_x(
+          contents_bounds.x() +
+          (contents_bounds.width() - background_image->width()) / 2);
+      background_bounds.set_y(
+          (contents_bounds.height() - background_image->height()) / 2);
+    } else {
+      background_bounds.set_x(
+          (contents_bounds.height() - background_image->height()) / 2);
+      background_bounds.set_y(
+          contents_bounds.y() +
+          (contents_bounds.width() - background_image->width()) / 2);
+    }
   } else {
-    background_bounds.set_y(ShelfLayoutManager::kShelfItemInset);
-    background_bounds.set_x(contents_bounds.x() +
-        (contents_bounds.width() - background_image->width()) / 2);
+    if (alignment == SHELF_ALIGNMENT_LEFT) {
+      background_bounds.set_x(contents_bounds.width() - kShelfItemInset -
+                              background_image->width());
+      background_bounds.set_y(
+          contents_bounds.y() +
+          (contents_bounds.height() - background_image->height()) / 2);
+    } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
+      background_bounds.set_x(kShelfItemInset);
+      background_bounds.set_y(
+          contents_bounds.y() +
+          (contents_bounds.height() - background_image->height()) / 2);
+    } else {  // SHELF_ALIGNMENT_BOTTOM
+      background_bounds.set_y(kShelfItemInset);
+      background_bounds.set_x(
+          contents_bounds.x() +
+          (contents_bounds.width() - background_image->width()) / 2);
+    }
   }
 
   foreground_bounds.set_size(foreground_image.size());

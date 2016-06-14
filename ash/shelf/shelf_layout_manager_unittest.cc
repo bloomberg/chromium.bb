@@ -8,6 +8,7 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/window_state.h"
@@ -855,9 +856,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   // LayoutShelf() forces the animation to completion, at which point the
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
-  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
@@ -872,7 +873,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   layout_manager->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - layout_manager->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
@@ -883,7 +884,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   SetState(layout_manager, SHELF_AUTO_HIDE);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   layout_manager->LayoutShelf();
-  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   // Drag mouse to bottom of screen.
@@ -1025,7 +1026,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   // LayoutShelf() forces the animation to completion, at which point the
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
-  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   aura::Window* lock_container = Shell::GetContainer(
@@ -1702,9 +1703,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
-      display.GetWorkAreaInsets().left());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize, display.work_area().x());
+  EXPECT_EQ(kShelfAutoHideSize, display.GetWorkAreaInsets().left());
+  EXPECT_EQ(kShelfAutoHideSize, display.work_area().x());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
@@ -1730,10 +1730,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
-      display.GetWorkAreaInsets().right());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
-      display.bounds().right() - display.work_area().right());
+  EXPECT_EQ(kShelfAutoHideSize, display.GetWorkAreaInsets().right());
+  EXPECT_EQ(kShelfAutoHideSize,
+            display.bounds().right() - display.work_area().right());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {

@@ -8,6 +8,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -127,29 +128,38 @@ int OverflowButton::NonMaterialBackgroundImageId() {
 gfx::Rect OverflowButton::CalculateButtonBounds() {
   ShelfAlignment alignment = shelf_->alignment();
   gfx::Rect bounds(GetContentsBounds());
-  if (!MaterialDesignController::IsShelfMaterial()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (MaterialDesignController::IsShelfMaterial()) {
+    if (shelf_->IsHorizontalAlignment()) {
+      bounds = gfx::Rect((bounds.x() + (bounds.width() - kShelfItemSizeMD) / 2),
+                         bounds.y() + (bounds.height() - kShelfItemSizeMD) / 2,
+                         kShelfItemSizeMD, kShelfItemSizeMD);
+    } else {
+      bounds =
+          gfx::Rect(bounds.x() + ((bounds.height() - kShelfItemSizeMD) / 2),
+                    bounds.y() + (bounds.width() - kShelfItemSizeMD) / 2,
+                    kShelfItemSizeMD, kShelfItemSizeMD);
+    }
+  } else {
     const gfx::ImageSkia* background =
         rb.GetImageNamed(NonMaterialBackgroundImageId()).ToImageSkia();
     if (alignment == SHELF_ALIGNMENT_LEFT) {
-      bounds = gfx::Rect(
-          bounds.right() - background->width() -
-              ShelfLayoutManager::kShelfItemInset,
-          bounds.y() + (bounds.height() - background->height()) / 2,
-          background->width(), background->height());
+      bounds =
+          gfx::Rect(bounds.right() - background->width() - kShelfItemInset,
+                    bounds.y() + (bounds.height() - background->height()) / 2,
+                    background->width(), background->height());
     } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-      bounds = gfx::Rect(
-          bounds.x() + ShelfLayoutManager::kShelfItemInset,
-          bounds.y() + (bounds.height() - background->height()) / 2,
-          background->width(), background->height());
+      bounds =
+          gfx::Rect(bounds.x() + kShelfItemInset,
+                    bounds.y() + (bounds.height() - background->height()) / 2,
+                    background->width(), background->height());
     } else {
-      bounds = gfx::Rect(
-          bounds.x() + (bounds.width() - background->width()) / 2,
-          bounds.y() + ShelfLayoutManager::kShelfItemInset,
-          background->width(), background->height());
+      bounds =
+          gfx::Rect(bounds.x() + (bounds.width() - background->width()) / 2,
+                    bounds.y() + kShelfItemInset, background->width(),
+                    background->height());
     }
   }
-
   return bounds;
 }
 

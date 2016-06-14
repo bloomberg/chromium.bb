@@ -55,6 +55,11 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
  private:
   void UpdateWidgetSize();
 
+  // Sets a border on |child|. If |extend_border_to_edge| is true, then an extra
+  // wide border is added to extend the view's hit region to the edge of the
+  // screen.
+  void SetBorderOnChild(views::View* child, bool extend_border_to_edge);
+
   const FocusCycler* focus_cycler_for_testing_;
   ShelfAlignment alignment_;
 

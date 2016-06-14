@@ -858,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   EXPECT_TRUE(app_item_controller->image_set_by_controller());
   EXPECT_TRUE(panel_item_controller->image_set_by_controller());
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
-  EXPECT_EQ(ash::kShelfSize, app_item.image.height());
+  EXPECT_EQ(ash::GetShelfConstant(ash::SHELF_SIZE), app_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
 }
 

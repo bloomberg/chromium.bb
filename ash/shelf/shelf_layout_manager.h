@@ -69,20 +69,6 @@ class ASH_EXPORT ShelfLayoutManager
       public SnapToPixelLayoutManager,
       public SessionStateObserver {
  public:
-  // We reserve a small area on the edge of the workspace area to ensure that
-  // the resize handle at the edge of the window can be hit.
-  static const int kWorkspaceAreaVisibleInset;
-
-  // When autohidden we extend the touch hit target onto the screen so that the
-  // user can drag the shelf out.
-  static const int kWorkspaceAreaAutoHideInset;
-
-  // Size of the shelf when auto-hidden.
-  static const int kAutoHideSize;
-
-  // Inset between the inner edge of the shelf (towards centre of screen), and
-  // the shelf items, notifications, status area etc.
-  static const int kShelfItemInset;
 
   explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
   ~ShelfLayoutManager() override;

@@ -212,32 +212,21 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
     PreferredSizeChanged();
 }
 
+// TODO(tdanderson): Adjust TrayContainer borders according to the material
+// design specs. See crbug.com/617295.
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
-  if (IsHorizontalAlignment(alignment_)) {
-    SetBorder(views::Border::CreateEmptyBorder(
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf));
+  views::BoxLayout::Orientation orientation =
+      IsHorizontalAlignment(alignment_) ? views::BoxLayout::kHorizontal
+                                        : views::BoxLayout::kVertical;
+  SetBorder(views::Border::CreateEmptyBorder(
+      kAdjustBackgroundPadding, kAdjustBackgroundPadding,
+      kAdjustBackgroundPadding, kAdjustBackgroundPadding));
 
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-    layout->SetDefaultFlex(1);
-    views::View::SetLayoutManager(layout);
-  } else {
-    SetBorder(views::Border::CreateEmptyBorder(
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf,
-        kPaddingFromEdgeOfShelf));
-
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-    layout->SetDefaultFlex(1);
-    views::View::SetLayoutManager(layout);
-  }
+  views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
+  layout->SetDefaultFlex(1);
+  views::View::SetLayoutManager(layout);
   PreferredSizeChanged();
 }
 
@@ -271,7 +260,6 @@ TrayBackgroundView::~TrayBackgroundView() {
 
 void TrayBackgroundView::Initialize() {
   GetWidget()->AddObserver(widget_observer_.get());
-  SetTrayBorder();
 }
 
 // static
@@ -400,36 +388,7 @@ ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
   shelf_alignment_ = alignment;
-  SetTrayBorder();
   tray_container_->SetAlignment(alignment);
-}
-
-void TrayBackgroundView::SetTrayBorder() {
-  views::View* parent = status_area_widget_->status_area_widget_delegate();
-  // Tray views are laid out right-to-left or bottom-to-top
-  bool on_edge = (this == parent->child_at(0));
-  int left_edge, top_edge, right_edge, bottom_edge;
-  if (IsHorizontalAlignment(shelf_alignment())) {
-    top_edge = ShelfLayoutManager::kShelfItemInset;
-    left_edge = 0;
-    bottom_edge = kShelfSize -
-        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
-    right_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-    top_edge = 0;
-    left_edge = kShelfSize -
-        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
-    bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-    right_edge = ShelfLayoutManager::kShelfItemInset;
-  } else { // SHELF_ALIGNMENT_RIGHT
-    top_edge = 0;
-    left_edge = ShelfLayoutManager::kShelfItemInset;
-    bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-    right_edge = kShelfSize -
-        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
-  }
-  SetBorder(views::Border::CreateEmptyBorder(
-      top_edge, left_edge, bottom_edge, right_edge));
 }
 
 void TrayBackgroundView::OnImplicitAnimationsCompleted() {

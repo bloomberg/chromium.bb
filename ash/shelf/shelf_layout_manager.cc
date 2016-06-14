@@ -87,18 +87,6 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 }  // namespace
 
-// static
-const int ShelfLayoutManager::kWorkspaceAreaVisibleInset = 2;
-
-// static
-const int ShelfLayoutManager::kWorkspaceAreaAutoHideInset = 5;
-
-// static
-const int ShelfLayoutManager::kAutoHideSize = 3;
-
-// static
-const int ShelfLayoutManager::kShelfItemInset = 3;
-
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 
 // Notifies ShelfLayoutManager any time the mouse moves. Not used on mash.
@@ -279,12 +267,13 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
+  const int shelf_size = GetShelfConstant(SHELF_SIZE);
   gfx::Rect rect(
       ScreenUtil::GetDisplayBoundsInParent(shelf_widget_->GetNativeView()));
   return SelectValueForShelfAlignment(
-      gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
-      gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
-      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize,
+      gfx::Rect(rect.x(), rect.bottom() - shelf_size, rect.width(), shelf_size),
+      gfx::Rect(rect.x(), rect.y(), shelf_size, rect.height()),
+      gfx::Rect(rect.right() - shelf_size, rect.y(), shelf_size,
                 rect.height()));
 }
 
@@ -778,13 +767,13 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(const State& state,
                                                TargetBounds* target_bounds) {
-  int shelf_size = kShelfSize;
+  int shelf_size = GetShelfConstant(SHELF_SIZE);
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
     // Auto-hidden shelf always starts with the default size. If a gesture-drag
     // is in progress, then the call to UpdateTargetBoundsForGesture() below
     // takes care of setting the height properly.
-    shelf_size = kAutoHideSize;
+    shelf_size = kShelfAutoHideSize;
   } else if (state.visibility_state == SHELF_HIDDEN ||
              (!keyboard_bounds_.IsEmpty() &&
               !keyboard::IsKeyboardOverscrollEnabled())) {
@@ -811,9 +800,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   gfx::Size status_size(
       shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (IsHorizontalAlignment())
-    status_size.set_height(kShelfSize);
+    status_size.set_height(GetShelfConstant(SHELF_SIZE));
   else
-    status_size.set_width(kShelfSize);
+    status_size.set_width(GetShelfConstant(SHELF_SIZE));
 
   gfx::Point status_origin = SelectValueForShelfAlignment(
       gfx::Point(0, 0),
@@ -897,7 +886,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region = kShelfSize - kAutoHideSize;
+    resistance_free_region = GetShelfConstant(SHELF_SIZE) - kShelfAutoHideSize;
   }
 
   bool resist = SelectValueForShelfAlignment(
@@ -920,7 +909,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   if (horizontal) {
     // Move and size the shelf with the gesture.
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
-    shelf_height = std::max(shelf_height, kAutoHideSize);
+    shelf_height = std::max(shelf_height, kShelfAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
     if (IsHorizontalAlignment()) {
       target_bounds->shelf_bounds_in_root.set_y(
@@ -936,19 +925,20 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       shelf_width -= translate;
     else
       shelf_width += translate;
-    shelf_width = std::max(shelf_width, kAutoHideSize);
+    shelf_width = std::max(shelf_width, kShelfAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_width(shelf_width);
     if (right_aligned) {
       target_bounds->shelf_bounds_in_root.set_x(
           available_bounds.right() - shelf_width);
     }
 
-    if (right_aligned)
+    if (right_aligned) {
       target_bounds->status_bounds_in_shelf.set_x(0);
-    else
+    } else {
       target_bounds->status_bounds_in_shelf.set_x(
           target_bounds->shelf_bounds_in_root.width() -
-          kShelfSize);
+          GetShelfConstant(SHELF_SIZE));
+    }
   }
 }
 
@@ -1130,7 +1120,7 @@ int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {
   if (state.visibility_state == SHELF_VISIBLE)
     return size;
   if (state.visibility_state == SHELF_AUTO_HIDE)
-    return kAutoHideSize;
+    return kShelfAutoHideSize;
   return 0;
 }
 

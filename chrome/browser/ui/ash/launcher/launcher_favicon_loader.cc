@@ -21,10 +21,9 @@ const int kMaxBitmapSize = 256;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FaviconRawBitmapHandler fetchs all bitmaps with the 'icon' (or 'shortcut
-// icon')
-// link tag, storing the one that best matches ash::kShelfSize.
-// These icon bitmaps are not resized and are not cached beyond the lifetime
-// of the class. Bitmaps larger than kMaxBitmapSize are ignored.
+// icon') link tag, storing the one that best matches ash::SHELF_SIZE. These
+// icon bitmaps are not resized and are not cached beyond the lifetime of the
+// class. Bitmaps larger than kMaxBitmapSize are ignored.
 
 class FaviconRawBitmapHandler : public content::WebContentsObserver {
  public:
@@ -145,7 +144,7 @@ void FaviconRawBitmapHandler::AddFavicon(const GURL& image_url,
   if (new_bitmap.height() > kMaxBitmapSize ||
       new_bitmap.width() > kMaxBitmapSize)
     return;
-  if (new_bitmap.height() < ash::kShelfSize)
+  if (new_bitmap.height() < ash::GetShelfConstant(ash::SHELF_SIZE))
     return;
   if (!bitmap_.isNull()) {
     // We want the smallest icon that is large enough.

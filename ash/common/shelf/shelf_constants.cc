@@ -10,15 +10,19 @@
 namespace ash {
 
 const int kInvalidImageResourceID = -1;
-const int kShelfSize = 47;
-const int kShelfButtonSpacing = 10;
-const int kShelfButtonSize = 44;
 const int kTimeToSwitchBackgroundMs = 1000;
+const int kWorkspaceAreaVisibleInset = 2;
+const int kWorkspaceAreaAutoHideInset = 5;
+const int kShelfAutoHideSize = 3;
+const int kShelfItemInset = 3;
 const SkColor kShelfBaseColor = SK_ColorBLACK;
 const SkColor kShelfIconColor = SK_ColorWHITE;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfBackgroundAlpha[] = {204, 153, 153};
+  const int kShelfSize[] = {47, 48, 48};
+  const int kShelfButtonSpacing[] = {10, 16, 16};
+  const int kShelfButtonSize[] = {44, 48, 48};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
@@ -27,6 +31,12 @@ int GetShelfConstant(ShelfConstant shelf_constant) {
   switch (shelf_constant) {
     case SHELF_BACKGROUND_ALPHA:
       return kShelfBackgroundAlpha[mode];
+    case SHELF_SIZE:
+      return kShelfSize[mode];
+    case SHELF_BUTTON_SPACING:
+      return kShelfButtonSpacing[mode];
+    case SHELF_BUTTON_SIZE:
+      return kShelfButtonSize[mode];
   }
   NOTREACHED();
   return 0;
