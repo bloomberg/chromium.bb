@@ -6,8 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 @interface WindowedNSNotificationObserver ()
 - (void)onNotification:(NSNotification*)notification;
@@ -69,7 +72,7 @@
   while (notificationCount_ < minimumCount) {
     const int oldCount = notificationCount_;
     base::RunLoop runLoop;
-    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, runLoop.QuitClosure(), TestTimeouts::action_timeout());
     runLoop_ = &runLoop;
     runLoop.Run();

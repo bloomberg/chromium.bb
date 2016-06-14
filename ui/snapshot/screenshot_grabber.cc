@@ -12,10 +12,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
@@ -192,7 +195,7 @@ void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(
       &ScreenshotGrabber::NotifyScreenshotCompleted, factory_.GetWeakPtr()));
   client_->PrepareFileAndRunOnBlockingPool(
       screenshot_path, blocking_task_runner_,
-      base::Bind(&SaveScreenshot, base::MessageLoop::current()->task_runner(),
+      base::Bind(&SaveScreenshot, base::ThreadTaskRunnerHandle::Get(),
                  notification_callback, screenshot_path, png_data));
 }
 
