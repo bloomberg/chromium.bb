@@ -1,0 +1,15 @@
+Test Automation Following setValueCurveAtTime Automations
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS setValueCurve(..., 0, 0.01).linearRampToValueAtTime(2, 0.02): value at time 0.01 is 0.3 within a relative error of 3.9737e-8.
+PASS setValueCurve(..., 0, 0.0100390625).linearRampToValueAtTime(2, 0.02): value at time 0.010078125 is 0.3066666666666668 within a relative error of 1.8141e-8.
+PASS setValueCurve(..., 0, 0.01).exponentialRampToValueAtTime(2, 0.02): value at time 0.01 is 0.3 within a relative error of 3.9737e-8.
+PASS setValueCurve(..., 0, 0.0100390625).exponentialRampToValueAtTime(2, 0.02): value at time 0.010078125 is 0.30224022883150364 within a relative error of 2.0312e-8.
+PASS setValueCurve(..., 0, 0.01).setTargetAtTime(2, 0.02, 0.01): value at time 0.01 is 0.30000000000000004 within a relative error of 1.5895e-7.
+PASS setValueCurve(..., 0, 0.0100390625).setTargetAtTime(2, 0.02, 0.01): value at time 0.010078125 is 0.30662767190080054 within a relative error of 1.3278e-7.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

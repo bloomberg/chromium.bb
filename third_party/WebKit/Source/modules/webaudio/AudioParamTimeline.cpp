@@ -225,6 +225,11 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
     }
 
     insertEvent(ParamEvent::createSetValueCurveEvent(curve, time, duration), exceptionState);
+
+    // Insert a setValueAtTime event too to establish an event so that all
+    // following events will process from the end of the curve instead of the
+    // beginning.
+    insertEvent(ParamEvent::createSetValueEvent(curve->data()[curve->length() - 1], time + duration), exceptionState);
 }
 
 void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& exceptionState)
@@ -431,6 +436,19 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         ParamEvent* nextEvent = i < n - 1 ? &(m_events[i + 1]) : 0;
 
         // Wait until we get a more recent event.
+        //
+        // WARNING: due to round-off it might happen that nextEvent->time() is
+        // just larger than currentFrame/sampleRate.  This means that we will end
+        // up running the |event| again.  The code below had better be prepared
+        // for this case!  What should happen is the fillToFrame should be 0 so
+        // that while the event is actually run again, nothing actually gets
+        // computed, and we move on to the next event.
+        //
+        // An example of this case is setValueCurveAtTime.  The time at which
+        // setValueCurveAtTime ends (and the setValueAtTime begins) might be
+        // just past currentTime/sampleRate.  Then setValueCurveAtTime will be
+        // processed again before advancing to setValueAtTime.  The number of
+        // frames to be processed should be zero in this case.
         if (nextEvent && nextEvent->time() < currentFrame / sampleRate) {
             // But if the current event is a SetValue event and the event time is between
             // currentFrame - 1 and curentFrame (in time). we don't want to skip it.  If we do skip
@@ -875,7 +893,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                         values[writeIndex] = value;
 
                     // Re-adjust current time
-                    currentFrame = nextEventFillToFrame;
+                    currentFrame += nextEventFillToFrame;
 
                     break;
                 }
