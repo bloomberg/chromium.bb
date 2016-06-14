@@ -58250,6 +58250,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UMA.ComputeCurrentSigninStatus"
     enum="ComputeCurrentSigninStatus">
+  <obsolete>
+    Deprecated as of Jun 2016. The histogram was added for debugging purpose and
+    is not needed anymore.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>yiyaoliu@chromium.org</owner>
   <summary>
@@ -58660,6 +58664,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.ProfilesCount.AfterErase">
+  <obsolete>
+    Deprecated as of Jun 2016. The histogram was added for debugging purpose and
+    is not needed anymore.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>yiyaoliu@chromium.org</owner>
   <summary>
@@ -67632,6 +67640,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="ComputeCurrentSigninStatus" type="int">
+  <obsolete>
+    Deprecated as of Jun 2016. The enum was added for debugging purpose and is
+    not needed anymore.
+  </obsolete>
   <int value="0" label="Tried to compute current signin status."/>
   <int value="1" label="Error: No profiles found."/>
   <int value="2" label="No opened browser found."/>
