@@ -45,6 +45,8 @@ if (current_os == target_os && current_cpu == target_cpu &&
     sysroot = "//build/linux/debian_wheezy_mips-sysroot"
   } else if (current_cpu == "arm") {
     sysroot = "//build/linux/debian_wheezy_arm-sysroot"
+  } else if (current_cpu == "arm64") {
+    sysroot = "//build/linux/debian_jessie_arm64-sysroot"
   } else {
     # Any other builds don't use a sysroot.
     sysroot = ""

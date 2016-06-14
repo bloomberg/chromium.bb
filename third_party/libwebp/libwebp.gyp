@@ -181,7 +181,7 @@
               'cflags!': [ '-mfpu=vfpv3-d16' ],
               'cflags': [ '-mfpu=neon' ],
             }],
-            ['target_arch == "arm64"', {
+            ['target_arch == "arm64" and clang != 1', {
               # avoid an ICE with gcc-4.9: b/15574841
               'cflags': [ '-frename-registers' ],
             }],

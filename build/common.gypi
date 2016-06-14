@@ -312,6 +312,9 @@
               ['target_arch=="arm"', {
                 'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_arm-sysroot',
               }],
+              ['target_arch=="arm64"', {
+                'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_jessie_arm64-sysroot',
+              }],
               ['target_arch=="x64"', {
                 'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_amd64-sysroot',
               }],
@@ -1896,6 +1899,14 @@
       }],
       ['OS=="linux"', {
         'clang%': 1,
+        'conditions': [
+          ['target_arch=="arm64"', {
+            # Temporarily disable nacl and tcmalloc on arm64 linux to get
+            # rid of compilation errors.
+            'disable_nacl%': 1,
+            'use_allocator%': 'none',
+          }],
+        ],
       }],  # OS=="mac"
       ['OS=="mac"', {
         'conditions': [
@@ -4102,6 +4113,14 @@
                        '-fstack-protector',  # stack protector is always enabled on arm64.
                     ],
                   }],
+                  ['clang==1 and arm_arch!="" and OS!="android"', {
+                    'cflags': [
+                      '-target aarch64-linux-gnu',
+                     ],
+                     'ldflags': [
+                       '-target aarch64-linux-gnu',
+                     ],
+                 }],
                 ],
               }],
             ],

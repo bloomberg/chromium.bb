@@ -21,6 +21,8 @@ Local changes:
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
  * Added an explicit cast to short in yuv_sse2.c
+ * Disabled "-frename-registers" flag for ARM64 linux build as clang(3.9.0)
+   build fails with error - unsupported flag.
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   Revert patch d1c359e: fix shared object build with -fvisibility=hidden

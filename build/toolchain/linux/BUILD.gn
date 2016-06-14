@@ -11,6 +11,12 @@ clang_toolchain("clang_arm") {
   toolprefix = "arm-linux-gnueabihf-"
 }
 
+clang_toolchain("clang_arm64") {
+  toolchain_cpu = "arm64"
+  toolchain_os = "linux"
+  toolprefix = "aarch64-linux-gnu-"
+}
+
 gcc_toolchain("arm") {
   toolprefix = "arm-linux-gnueabihf-"
 
