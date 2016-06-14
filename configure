@@ -256,6 +256,8 @@ EXPERIMENT_LIST="
     ext_interp
     motion_var
     ext_refs
+    ext_compound
+    supertx
 "
 CONFIG_LIST="
     dependency_tracking
