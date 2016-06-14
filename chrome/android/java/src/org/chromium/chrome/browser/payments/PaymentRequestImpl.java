@@ -304,8 +304,17 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        mUI.updateOrderSummarySection(mUiShoppingCart);
-        mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, mUiShippingOptions);
+        if (mUiShippingOptions.isEmpty() && mShippingAddressesSection.getSelectedItem() != null) {
+            mShippingAddressesSection.getSelectedItem().setInvalid();
+            mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
+        }
+
+        if (mPaymentInformationCallback != null) {
+            providePaymentInformation();
+        } else {
+            mUI.updateOrderSummarySection(mUiShoppingCart);
+            mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, mUiShippingOptions);
+        }
     }
 
     /**
@@ -469,15 +478,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                provideDefaultPaymentInformation();
+                providePaymentInformation();
             }
         });
     }
 
-    private void provideDefaultPaymentInformation() {
-        mPaymentInformationCallback.onResult(new PaymentInformation(
-                mUiShoppingCart.getTotal(), mShippingAddressesSection.getSelectedItem(),
-                mUiShippingOptions.getSelectedItem(), mPaymentMethodsSection.getSelectedItem()));
+    private void providePaymentInformation() {
+        mPaymentInformationCallback.onResult(new PaymentInformation(mUiShoppingCart,
+                mShippingAddressesSection, mUiShippingOptions, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
     }
 
@@ -510,14 +518,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    public void onSectionOptionChanged(
-            @PaymentRequestUI.DataType int optionType, PaymentOption option) {
+    public boolean onSectionOptionChanged(@PaymentRequestUI.DataType int optionType,
+            PaymentOption option, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-            // This may update the line items and/or the shipping options.
             assert option instanceof AutofillAddress;
             mShippingAddressesSection.setSelectedItem(option);
             if (mMerchantNeedsShippingAddress) {
+                mPaymentInformationCallback = callback;
+                // This updates the line items and the shipping options asynchronously.
                 mClient.onShippingAddressChange(((AutofillAddress) option).toPaymentAddress());
+                return true;
             }
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
             // This may update the line items.
@@ -527,6 +537,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             assert option instanceof PaymentInstrument;
             mPaymentMethodsSection.setSelectedItem(option);
         }
+        return false;
     }
 
 
@@ -619,7 +630,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     PaymentRequestUI.TYPE_PAYMENT_METHODS, 0, mPendingInstruments);
             mPendingInstruments.clear();
 
-            if (mPaymentInformationCallback != null) provideDefaultPaymentInformation();
+            if (mPaymentInformationCallback != null) providePaymentInformation();
         }
     }
 

@@ -18,6 +18,7 @@ public class PaymentOption {
     private final String mLabel;
     private final String mSublabel;
     private final int mIcon;
+    private boolean mIsValid = true;
 
     /**
      * Constructs a payment option.
@@ -62,5 +63,22 @@ public class PaymentOption {
      */
     public int getDrawableIconId() {
         return mIcon;
+    }
+
+    /**
+     * Marks this option as invalid. For example, this can be a shipping address that's not served
+     * by the merchant.
+     */
+    public void setInvalid() {
+        mIsValid = false;
+    }
+
+    /**
+     * Returns whether this option is valid.
+     *
+     * @return True if this option is valid.
+     */
+    public boolean isValid() {
+        return mIsValid;
     }
 }

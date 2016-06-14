@@ -20,6 +20,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -85,6 +86,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         /** Returns any additional text that needs to be displayed. */
         @Nullable String getAdditionalText(OptionSection section);
+
+        /** Returns true if the additional text should be stylized as a warning instead of info. */
+        boolean isAdditionalTextDisplayingWarning(OptionSection section);
     }
 
     /** Normal mode: White background, displays the item assuming the user accepts it as is. */
@@ -95,6 +99,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
     /** Focused mode: Gray background, more padding, no edit chevron. */
     static final int DISPLAY_MODE_FOCUSED = 2;
+
+    /** Checking mode: Gray background, spinner overlay hides everything except the title. */
+    static final int DISPLAY_MODE_CHECKING = 3;
 
     protected final SectionDelegate mDelegate;
     protected final int mLargeSpacing;
@@ -163,8 +170,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
      */
     public void setDisplayMode(int displayMode) {
         mDisplayMode = displayMode;
-        setBackgroundColor(
-                displayMode == DISPLAY_MODE_FOCUSED ? mFocusedBackgroundColor : Color.WHITE);
+        boolean isExpanded =
+                displayMode == DISPLAY_MODE_FOCUSED || displayMode == DISPLAY_MODE_CHECKING;
+        setBackgroundColor(isExpanded ? mFocusedBackgroundColor : Color.WHITE);
         updateLogoVisibility();
         mChevronView.setVisibility(displayMode == DISPLAY_MODE_EXPANDABLE ? VISIBLE : GONE);
 
@@ -173,8 +181,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         for (int i = 0; i < mMainSection.getChildCount(); i++) {
             if (mMainSection.getChildAt(i).getVisibility() == VISIBLE) numVisibleMainViews += 1;
         }
-        boolean isTitleMarginNecessary =
-                numVisibleMainViews > 1 && displayMode == DISPLAY_MODE_FOCUSED;
+        boolean isTitleMarginNecessary = numVisibleMainViews > 1 && isExpanded;
         ((ViewGroup.MarginLayoutParams) mTitleView.getLayoutParams()).bottomMargin =
                 isTitleMarginNecessary ? mVerticalSpacing : 0;
     }
@@ -216,9 +223,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
     protected abstract void createMainSectionContent(LinearLayout mainSectionLayout);
 
     /**
-     * Sets whether or not the summary text can be displayed.
+     * Sets whether the summary text can be displayed.
      *
-     * @param isAllowed Whether or not do display the summary text.
+     * @param isAllowed Whether to display the summary text.
      */
     protected void setIsSummaryAllowed(boolean isAllowed) {
         mIsSummaryAllowed = isAllowed;
@@ -523,9 +530,10 @@ public abstract class PaymentRequestSection extends LinearLayout {
             public OptionRow(
                     GridLayout parent, int rowIndex, PaymentOption item, boolean isSelected) {
                 boolean iconExists = item != null && item.getDrawableIconId() != 0;
+                boolean isEnabled = item != null && item.isValid();
                 mOption = item;
-                mButton = createButton(parent, rowIndex, isSelected);
-                mLabel = createLabel(parent, rowIndex, iconExists);
+                mButton = createButton(parent, rowIndex, isSelected, isEnabled);
+                mLabel = createLabel(parent, rowIndex, iconExists, isEnabled);
                 mIcon = iconExists ? createIcon(parent, rowIndex) : null;
             }
 
@@ -545,7 +553,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 mLabel.setText(stringId);
             }
 
-            private View createButton(GridLayout parent, int rowIndex, boolean isSelected) {
+            private View createButton(
+                    GridLayout parent, int rowIndex, boolean isSelected, boolean isEnabled) {
                 Context context = parent.getContext();
                 View view;
 
@@ -561,7 +570,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 } else {
                     // Show a radio button indicating whether the PaymentOption is selected.
                     RadioButton button = new RadioButton(context);
-                    button.setChecked(isSelected);
+                    button.setChecked(isSelected && isEnabled);
+                    button.setEnabled(isEnabled);
                     view = button;
                 }
 
@@ -577,7 +587,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 return view;
             }
 
-            private TextView createLabel(GridLayout parent, int rowIndex, boolean iconExists) {
+            private TextView createLabel(
+                    GridLayout parent, int rowIndex, boolean iconExists, boolean isEnabled) {
                 Context context = parent.getContext();
                 Resources resources = context.getResources();
 
@@ -596,9 +607,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
                     labelView.setTypeface(Typeface.create(typeface, textStyle));
                 } else {
                     // Show the string representing the PaymentOption.
-                    ApiCompatibilityUtils.setTextAppearance(
-                            labelView, R.style.PaymentsUiSectionDefaultText);
+                    ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
+                                    ? R.style.PaymentsUiSectionDefaultText
+                                    : R.style.PaymentsUiSectionDisabledText);
                     labelView.setText(convertOptionToString(mOption));
+                    labelView.setEnabled(isEnabled);
                 }
 
                 // The label spans two columns if no icon exists.  Setting the view width to 0
@@ -651,6 +664,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Layout containing all the {@link OptionRow}s. */
         private GridLayout mOptionLayout;
 
+        /** A spinner to show when the user selection is being checked. */
+        private ProgressBar mCheckingProgress;
+
+        /** A message to show when the user selection is being checked. */
+        private TextView mCheckingMessage;
+
         /**
          * Constructs an OptionSection.
          *
@@ -702,8 +721,19 @@ public abstract class PaymentRequestSection extends LinearLayout {
             Context context = mainSectionLayout.getContext();
 
             mDescriptionView = new TextView(getContext());
-            ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, R.style.PaymentsUiSectionDescriptiveText);
+
+            mCheckingProgress = new ProgressBar(getContext());
+            mainSectionLayout.addView(mCheckingProgress, new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mCheckingProgress.setVisibility(GONE);
+
+            mCheckingMessage = new TextView(getContext());
+            mCheckingMessage.setText(
+                    getContext().getString(R.string.payments_shipping_address_checking));
+            mCheckingMessage.setTextAlignment(TEXT_ALIGNMENT_CENTER);
+            mainSectionLayout.addView(mCheckingMessage, new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mCheckingMessage.setVisibility(GONE);
 
             mOptionLayout = new GridLayout(context);
             mOptionLayout.setColumnCount(3);
@@ -725,10 +755,20 @@ public abstract class PaymentRequestSection extends LinearLayout {
             if (displayMode == DISPLAY_MODE_FOCUSED) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(VISIBLE);
+                mCheckingProgress.setVisibility(GONE);
+                mCheckingMessage.setVisibility(GONE);
                 setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
+            } else if (displayMode == DISPLAY_MODE_CHECKING) {
+                setIsSummaryAllowed(false);
+                mOptionLayout.setVisibility(GONE);
+                mCheckingProgress.setVisibility(VISIBLE);
+                mCheckingMessage.setVisibility(VISIBLE);
+                setDescriptionVisibility(false);
             } else {
                 setIsSummaryAllowed(true);
                 mOptionLayout.setVisibility(GONE);
+                mCheckingProgress.setVisibility(GONE);
+                mCheckingMessage.setVisibility(GONE);
                 setDescriptionVisibility(false);
             }
         }
@@ -771,6 +811,10 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
             mDescriptionView.setText(mDelegate.getAdditionalText(this));
             setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDescriptionView, mDelegate.isAdditionalTextDisplayingWarning(this)
+                            ? R.style.PaymentsUiSectionWarningText
+                            : R.style.PaymentsUiSectionDescriptiveText);
 
             mOptionLayout.removeAllViews();
             mOptionRows.clear();

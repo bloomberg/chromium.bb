@@ -22,6 +22,11 @@ public class SectionInformation {
      */
     public static final int NO_SELECTION = -1;
 
+    /**
+     * This value indicates that user selection is invalid in this section.
+     */
+    public static final int INVALID_SELECTION = -2;
+
     @PaymentRequestUI.DataType private final int mDataType;
     private final ArrayList<PaymentOption> mItems;
     private int mSelectedItem;
@@ -100,8 +105,8 @@ public class SectionInformation {
     /**
      * Sets the currently selected item by index.
      *
-     * @param index The index of the currently selected item, or NO_SELECTION if a selection has not
-     *              yet been made.
+     * @param index The index of the currently selected item, NO_SELECTION if a selection has not
+     *              yet been made, or INVALID_SELECTION if an invalid selection has been made.
      */
     public void setSelectedItemIndex(int index) {
         mSelectedItem = index;
@@ -126,8 +131,8 @@ public class SectionInformation {
     /**
      * Returns the index of the selected item.
      *
-     * @return The index of the currently selected item, or NO_SELECTION if a selection has not yet
-     * been made.
+     * @return The index of the currently selected item, NO_SELECTION if a selection has not yet
+     *         been made, or INVALID_SELECTION if an invalid selection has been made.
      */
     public int getSelectedItemIndex() {
         return mSelectedItem;

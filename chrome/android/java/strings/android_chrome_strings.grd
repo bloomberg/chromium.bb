@@ -2510,6 +2510,12 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods.">
         Select a shipping address to check shipping methods.
       </message>
+      <message name="IDS_PAYMENTS_SHIPPING_ADDRESS_CHECKING" desc="Text explaining that the shipping address is being checked and verified.">
+        Checking
+      </message>
+      <message name="IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS" desc="Text implying that a user needs to pick a different shipping address, because the currently selected address is not supported.">
+        Unsupported shipping address. Select a different adddress.
+      </message>
 
       <!-- Migration strings -->
       <message name="IDS_TAB_SWITCHER_CALLOUT_HEADER" desc="Header for the Tab Switcher callout.">
