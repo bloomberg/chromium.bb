@@ -3460,8 +3460,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int_mv single_newmv[MAX_REF_FRAMES] = { { 0 } };
   InterpFilter single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
   int single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
-  static const int flag_list[4] = { 0, AOM_LAST_FLAG, AOM_GOLD_FLAG,
-                                    AOM_ALT_FLAG };
+  static const int flag_list[REFS_PER_FRAME + 1] = {
+    0, AOM_LAST_FLAG, AOM_GOLD_FLAG, AOM_ALT_FLAG
+  };
   int64_t best_rd = best_rd_so_far;
   int64_t best_pred_diff[REFERENCE_MODES];
   int64_t best_pred_rd[REFERENCE_MODES];
@@ -4523,8 +4524,9 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
   int comp_pred, i;
   int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES];
   struct buf_2d yv12_mb[4][MAX_MB_PLANE];
-  static const int flag_list[4] = { 0, AOM_LAST_FLAG, AOM_GOLD_FLAG,
-                                    AOM_ALT_FLAG };
+  static const int flag_list[REFS_PER_FRAME + 1] = {
+    0, AOM_LAST_FLAG, AOM_GOLD_FLAG, AOM_ALT_FLAG
+  };
   int64_t best_rd = best_rd_so_far;
   int64_t best_yrd = best_rd_so_far;  // FIXME(rbultje) more precise
   int64_t best_pred_diff[REFERENCE_MODES];
