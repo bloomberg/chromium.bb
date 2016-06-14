@@ -56,9 +56,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // consider analyzing. Virtual so that it can be overriden during testing.
   virtual bool ShouldAnalyzeDocument() const;
 
-  // RenderFrameObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   // Use to force enable during testing.
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
@@ -77,6 +74,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
 
   // RenderFrameObserver:
+  bool OnMessageReceived(const IPC::Message& message) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void OnDestruct() override;

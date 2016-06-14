@@ -20,9 +20,6 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
                               PasswordAutofillAgent* password_agent);
   ~TestPasswordGenerationAgent() override;
 
-  // content::RenderFrameObserver implementation:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   // PasswordGenreationAgent implementation:
   // Always return true to allow loading of data URLs.
   bool ShouldAnalyzeDocument() const override;

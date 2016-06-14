@@ -22,7 +22,7 @@ void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
   form.origin =
       GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str));
   AutofillMsg_FormNotBlacklisted msg(0, form);
-  generation_agent->OnMessageReceived(msg);
+  static_cast<IPC::Listener*>(generation_agent)->OnMessageReceived(msg);
 }
 
 // Sends a message that the |form_index| form on the page is valid for
@@ -44,7 +44,7 @@ void SetAccountCreationFormsDetectedMessage(
   forms.push_back(autofill::PasswordFormGenerationData{
       form_data.name, form_data.action, form_data.fields[field_index]});
   AutofillMsg_FoundFormsEligibleForGeneration msg(0, forms);
-  generation_agent->OnMessageReceived(msg);
+  static_cast<IPC::Listener*>(generation_agent)->OnMessageReceived(msg);
 }
 
 }  // namespace autofill

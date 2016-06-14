@@ -242,7 +242,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
     AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
-    static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+    static_cast<IPC::Listener*>(password_autofill_agent_)
         ->OnMessageReceived(msg);
   }
 
@@ -1864,7 +1864,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   base::string16 password = base::ASCIIToUTF16("NewPass22");
   AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-  password_generation_->OnMessageReceived(msg);
+  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
 
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSendSubmitEvent(username_element_.form());

@@ -15,11 +15,6 @@ TestPasswordGenerationAgent::TestPasswordGenerationAgent(
 
 TestPasswordGenerationAgent::~TestPasswordGenerationAgent() {}
 
-bool TestPasswordGenerationAgent::OnMessageReceived(
-    const IPC::Message& message) {
-  return PasswordGenerationAgent::OnMessageReceived(message);
-}
-
 bool TestPasswordGenerationAgent::ShouldAnalyzeDocument() const {
   return true;
 }

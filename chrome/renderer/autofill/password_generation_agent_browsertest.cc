@@ -75,7 +75,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   void ShowGenerationPopUpManually(const char* element_id) {
     FocusField(element_id);
     AutofillMsg_UserTriggeredGeneratePassword msg(0);
-    password_generation_->OnMessageReceived(msg);
+    static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
   }
 
  private:
@@ -265,7 +265,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
 
   base::string16 password = base::ASCIIToUTF16("random_password");
   AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-  password_generation_->OnMessageReceived(msg);
+  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
 
   // Password fields are filled out and set as being autofilled.
   EXPECT_EQ(password, first_password_element.value());
@@ -312,7 +312,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
 
   base::string16 password = base::ASCIIToUTF16("random_password");
   AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-  password_generation_->OnMessageReceived(msg);
+  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
 
   // Passwords start out the same.
   EXPECT_EQ(password, first_password_element.value());
@@ -627,7 +627,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
 
     base::string16 password = base::ASCIIToUTF16("random_password");
     AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-    password_generation_->OnMessageReceived(msg);
+    static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
     EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
         AutofillHostMsg_PresaveGeneratedPassword::ID));
     render_thread_->sink().ClearMessages();
