@@ -1096,8 +1096,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     public boolean handleBackPressed() {
-        RecordUserAction.record("SystemBack");
-
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 

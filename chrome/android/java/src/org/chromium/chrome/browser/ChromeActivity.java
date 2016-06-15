@@ -1391,28 +1391,30 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public final void onBackPressed() {
+        RecordUserAction.record("SystemBack");
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
-            boolean layoutConsumed = layoutManager != null && layoutManager.onBackPressed();
-            if (layoutConsumed || mContextualSearchManager != null
-                    && mContextualSearchManager.onBackPressed()) {
-                RecordUserAction.record("SystemBack");
-                return;
-            }
+            if (layoutManager != null && layoutManager.onBackPressed()) return;
         }
-        if (!isSelectActionBarShowing() && handleBackPressed()) {
+
+        ContentViewCore contentViewCore = getContentViewCore();
+        if (contentViewCore != null && contentViewCore.isSelectActionBarShowing()) {
+            contentViewCore.clearSelection();
             return;
         }
-        // This will close the select action bar if it is showing, otherwise close the activity.
+
+        if (mContextualSearchManager != null && mContextualSearchManager.onBackPressed()) return;
+
+        if (handleBackPressed()) return;
+
         super.onBackPressed();
     }
 
-    private boolean isSelectActionBarShowing() {
+
+    private ContentViewCore getContentViewCore() {
         Tab tab = getActivityTab();
-        if (tab == null) return false;
-        ContentViewCore contentViewCore = tab.getContentViewCore();
-        if (contentViewCore == null) return false;
-        return contentViewCore.isSelectActionBarShowing();
+        if (tab == null) return null;
+        return tab.getContentViewCore();
     }
 
     @Override
