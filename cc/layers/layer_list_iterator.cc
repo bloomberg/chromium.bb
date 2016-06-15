@@ -9,10 +9,17 @@
 
 namespace cc {
 
+static Layer* Parent(Layer* layer) {
+  return layer->parent();
+}
+
+static LayerImpl* Parent(LayerImpl* layer) {
+  return layer->test_properties()->parent;
+}
 template <typename LayerType>
 LayerListIterator<LayerType>::LayerListIterator(LayerType* root_layer)
     : current_layer_(root_layer) {
-  DCHECK(!root_layer || !root_layer->parent());
+  DCHECK(!root_layer || !Parent(root_layer));
   list_indices_.push_back(0);
 }
 
@@ -52,8 +59,8 @@ LayerListIterator<LayerType>& LayerListIterator<LayerType>::operator++() {
     return *this;
   }
 
-  for (LayerType* parent = current_layer_->parent(); parent;
-       parent = parent->parent()) {
+  for (LayerType* parent = Parent(current_layer_); parent;
+       parent = Parent(parent)) {
     // We now try and advance in some list of siblings.
     // case 2: Advance to a sibling.
     if (list_indices_.back() + 1 < Children(parent).size()) {
@@ -91,16 +98,16 @@ operator++() {
   // case 1: we're the leftmost sibling.
   if (!list_indices().back()) {
     list_indices().pop_back();
-    this->current_layer_ = current_layer()->parent();
+    this->current_layer_ = Parent(current_layer());
     return *this;
   }
 
   // case 2: we're not the leftmost sibling. In this case, we want to move one
   // sibling over, and then descend to the rightmost descendant in that subtree.
-  CHECK(current_layer()->parent());
+  CHECK(Parent(current_layer()));
   --list_indices().back();
   this->current_layer_ =
-      ChildAt(current_layer()->parent(), list_indices().back());
+      ChildAt(Parent(current_layer()), list_indices().back());
   DescendToRightmostInSubtree();
   return *this;
 }

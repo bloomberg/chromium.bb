@@ -102,10 +102,8 @@ class CC_EXPORT LayerImpl {
   bool IsActive() const;
 
   // Tree structure.
-  LayerImpl* parent() { return parent_; }
   void AddChild(std::unique_ptr<LayerImpl> child);
   std::unique_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
-  void SetParent(LayerImpl* parent);
 
   void DistributeScroll(ScrollState* scroll_state);
   void ApplyScroll(ScrollState* scroll_state);
@@ -515,9 +513,6 @@ class CC_EXPORT LayerImpl {
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
   virtual const char* LayerTypeAsString() const;
-
-  // Properties internal to LayerImpl
-  LayerImpl* parent_;
 
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;

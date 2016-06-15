@@ -1472,7 +1472,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
     // We need to set parent on replica layer for property tree building.
-    grand_child1_replica->SetParent(grand_child1);
+    grand_child1_replica->test_properties()->parent = grand_child1;
     grand_child1->test_properties()->SetReplicaLayer(
         std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;

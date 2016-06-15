@@ -260,6 +260,14 @@ static int GetScrollParentId(const DataForRecursion<LayerType>& data,
   return id;
 }
 
+static Layer* Parent(Layer* layer) {
+  return layer->parent();
+}
+
+static LayerImpl* Parent(LayerImpl* layer) {
+  return layer->test_properties()->parent;
+}
+
 template <typename LayerType>
 void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                          LayerType* layer,
@@ -269,7 +277,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
   int parent_id = parent->id;
 
-  bool is_root = !layer->parent();
+  bool is_root = !Parent(layer);
 
   // Whether we have an ancestor clip that we might need to apply.
   bool ancestor_clips_subtree = is_root || parent->data.layers_are_clipped;
@@ -373,8 +381,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 
 template <typename LayerType>
 static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
-  return layer->parent()
-             ? layer->parent()->sorting_context_id() !=
+  return Parent(layer)
+             ? Parent(layer)->sorting_context_id() !=
                    layer->sorting_context_id()
              : layer->Is3dSorted();
 }
@@ -409,7 +417,7 @@ bool AddTransformNodeIfNeeded(
     LayerType* layer,
     bool created_render_surface,
     DataForRecursion<LayerType>* data_for_children) {
-  const bool is_root = !layer->parent();
+  const bool is_root = !Parent(layer);
   const bool is_page_scale_layer = layer == data_from_ancestor.page_scale_layer;
   const bool is_overscroll_elasticity_layer =
       layer == data_from_ancestor.overscroll_elasticity_layer;
@@ -436,7 +444,7 @@ bool AddTransformNodeIfNeeded(
   // target.
   const bool scroll_child_has_different_target =
       ScrollParent(layer) &&
-      layer->parent()->effect_tree_index() !=
+      Parent(layer)->effect_tree_index() !=
           ScrollParent(layer)->effect_tree_index();
 
   const bool is_at_boundary_of_3d_rendering_context =
@@ -460,7 +468,7 @@ bool AddTransformNodeIfNeeded(
   gfx::Vector2dF source_offset;
   if (transform_parent) {
     if (ScrollParent(layer)) {
-      LayerType* source = layer->parent();
+      LayerType* source = Parent(layer);
       source_offset += source->offset_to_transform_parent();
       source_index = source->transform_tree_index();
     } else if (!is_fixed) {
@@ -482,7 +490,7 @@ bool AddTransformNodeIfNeeded(
     if (is_scrollable) {
       DCHECK(!is_root);
       DCHECK(layer->transform().IsIdentity());
-      data_for_children->transform_fixed_parent = layer->parent();
+      data_for_children->transform_fixed_parent = Parent(layer);
     } else {
       data_for_children->transform_fixed_parent = layer;
     }
@@ -670,9 +678,8 @@ static inline bool ForceRenderSurface(LayerImpl* layer) {
 
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return layer->Is3dSorted() && layer->parent() &&
-         layer->parent()->Is3dSorted() &&
-         (layer->parent()->sorting_context_id() == layer->sorting_context_id());
+  return layer->Is3dSorted() && Parent(layer) && Parent(layer)->Is3dSorted() &&
+         (Parent(layer)->sorting_context_id() == layer->sorting_context_id());
 }
 
 static inline bool IsRootForIsolatedGroup(Layer* layer) {
@@ -740,13 +747,13 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   const bool preserves_2d_axis_alignment =
       (current_transform * layer->transform()).Preserves2dAxisAlignment() &&
       axis_aligned && layer->AnimationsPreserveAxisAlignment();
-  const bool is_root = !layer->parent();
+  const bool is_root = !Parent(layer);
   if (is_root)
     return true;
 
   // If the layer uses a mask and the layer is not a replica layer.
   // TODO(weiliangc): After slimming paint there won't be replica layers.
-  if (MaskLayer(layer) && ReplicaLayer(layer->parent()) != layer) {
+  if (MaskLayer(layer) && ReplicaLayer(Parent(layer)) != layer) {
     return true;
   }
 
@@ -858,7 +865,7 @@ bool AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
-  const bool is_root = !layer->parent();
+  const bool is_root = !Parent(layer);
   const bool has_transparency = EffectiveOpacity(layer) != 1.f;
   const bool has_potential_opacity_animation =
       HasPotentialOpacityAnimation(layer);
@@ -962,7 +969,7 @@ void AddScrollNodeIfNeeded(
     DataForRecursion<LayerType>* data_for_children) {
   int parent_id = GetScrollParentId(data_from_ancestor, layer);
 
-  bool is_root = !layer->parent();
+  bool is_root = !Parent(layer);
   bool scrollable = layer->scrollable();
   bool contains_non_fast_scrollable_region =
       !layer->non_fast_scrollable_region().IsEmpty();
@@ -1044,12 +1051,12 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
       IsAtBoundaryOf3dRenderingContext(layer);
   if (layer->use_parent_backface_visibility()) {
     DCHECK(!is_at_boundary_of_3d_rendering_context);
-    DCHECK(layer->parent());
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
+    DCHECK(Parent(layer));
+    DCHECK(!Parent(layer)->use_parent_backface_visibility());
     layer->SetUseLocalTransformForBackfaceVisibility(
-        layer->parent()->use_local_transform_for_backface_visibility());
+        Parent(layer)->use_local_transform_for_backface_visibility());
     layer->SetShouldCheckBackfaceVisibility(
-        layer->parent()->should_check_backface_visibility());
+        Parent(layer)->should_check_backface_visibility());
   } else {
     // The current W3C spec on CSS transforms says that backface visibility
     // should be determined differently depending on whether the layer is in a
@@ -1145,11 +1152,11 @@ void BuildPropertyTreesInternal(
     for (LayerType* scroll_child : *ScrollChildren(layer)) {
       DCHECK_EQ(ScrollParent(scroll_child), layer);
       DataForRecursionFromChild<LayerType> data_from_child;
-      DCHECK(scroll_child->parent());
+      DCHECK(Parent(scroll_child));
       data_for_children.effect_tree_parent =
-          scroll_child->parent()->effect_tree_index();
+          Parent(scroll_child)->effect_tree_index();
       data_for_children.render_target =
-          scroll_child->parent()->effect_tree_index();
+          Parent(scroll_child)->effect_tree_index();
       BuildPropertyTreesInternal(scroll_child, data_for_children,
                                  &data_from_child);
       data_to_parent->Merge(data_from_child);

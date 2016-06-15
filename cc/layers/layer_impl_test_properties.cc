@@ -24,7 +24,8 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       mask_layer(nullptr),
-      replica_layer(nullptr) {}
+      replica_layer(nullptr),
+      parent(nullptr) {}
 
 LayerImplTestProperties::~LayerImplTestProperties() {}
 
@@ -44,7 +45,7 @@ void LayerImplTestProperties::SetReplicaLayer(
   }
   replica_layer = replica.get();
   if (replica) {
-    replica->SetParent(owning_layer);
+    replica->test_properties()->parent = owning_layer;
     owning_layer->layer_tree_impl()->AddLayer(std::move(replica));
   }
 }

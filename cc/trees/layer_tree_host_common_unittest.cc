@@ -347,7 +347,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   host_impl.active_tree()->SetRootLayer(std::move(root));
 
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
-                                 scroll_layer->parent());
+                                 scroll_layer->test_properties()->parent);
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
   expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x() *
@@ -370,7 +370,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                true, false, false);
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
-                                 scroll_layer->parent());
+                                 scroll_layer->test_properties()->parent);
   expected_transform.MakeIdentity();
   expected_transform.Translate(
       MathUtil::Round(kTranslateX * page_scale * kDeviceScale +
@@ -387,12 +387,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   // Test that page scale is updated even when we don't rebuild property trees.
   page_scale = 1.888f;
   root_layer->layer_tree_impl()->SetViewportLayersFromIds(
-      Layer::INVALID_ID, scroll_layer->parent()->id(), Layer::INVALID_ID,
-      Layer::INVALID_ID);
+      Layer::INVALID_ID, scroll_layer->test_properties()->parent->id(),
+      Layer::INVALID_ID, Layer::INVALID_ID);
   root_layer->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale);
   EXPECT_FALSE(root_layer->layer_tree_impl()->property_trees()->needs_rebuild);
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
-                                 scroll_layer->parent());
+                                 scroll_layer->test_properties()->parent);
 
   expected_transform.MakeIdentity();
   expected_transform.Translate(
@@ -813,8 +813,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
                                gfx::Size(), true, false, false);
 
   // We need to set parent on replica layers for property tree building.
-  replica_of_rs1->SetParent(render_surface1);
-  replica_of_rs2->SetParent(render_surface2);
+  replica_of_rs1->test_properties()->parent = render_surface1;
+  replica_of_rs2->test_properties()->parent = render_surface2;
   render_surface1->test_properties()->SetReplicaLayer(
       std::move(replica_of_rs1));
   render_surface2->test_properties()->SetReplicaLayer(
@@ -4932,7 +4932,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
                                gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
                                true, false);
   // We need to set parent on replica layer for property tree building.
-  replica->SetParent(child);
+  replica->test_properties()->parent = child;
   child->test_properties()->SetReplicaLayer(std::move(replica));
 
   // This layer should end up in the same surface as child, with the same draw
@@ -9727,7 +9727,7 @@ TEST_F(LayerTreeHostCommonTest, ReplicaMaskLayerDrawProperties) {
   child->test_properties()->SetReplicaLayer(
       LayerImpl::Create(root->layer_tree_impl(), 100));
   LayerImpl* replica = child->test_properties()->replica_layer;
-  replica->SetParent(child);
+  replica->test_properties()->parent = child;
   replica->test_properties()->SetMaskLayer(
       LayerImpl::Create(root->layer_tree_impl(), 200));
   LayerImpl* replica_mask = replica->test_properties()->mask_layer;

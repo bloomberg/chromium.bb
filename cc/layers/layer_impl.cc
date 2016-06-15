@@ -44,8 +44,7 @@
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
-    : parent_(nullptr),
-      layer_id_(id),
+    : layer_id_(id),
       layer_tree_impl_(tree_impl),
       test_properties_(nullptr),
       scroll_clip_layer_id_(Layer::INVALID_ID),
@@ -102,7 +101,7 @@ LayerImpl::~LayerImpl() {
 }
 
 void LayerImpl::AddChild(std::unique_ptr<LayerImpl> child) {
-  child->SetParent(this);
+  child->test_properties()->parent = this;
   DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
   test_properties()->children.push_back(child.get());
   layer_tree_impl_->AddLayer(std::move(child));
@@ -115,10 +114,6 @@ std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
     test_properties()->children.erase(it);
   layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(child->id());
   return layer_tree_impl_->RemoveLayer(child->id());
-}
-
-void LayerImpl::SetParent(LayerImpl* parent) {
-  parent_ = parent;
 }
 
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {

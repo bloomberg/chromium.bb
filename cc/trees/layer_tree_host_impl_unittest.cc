@@ -371,11 +371,14 @@ class LayerTreeHostImplTest : public testing::Test,
     content_layer->SetBounds(content_size);
     host_impl_->OuterViewportScrollLayer()->SetBounds(content_size);
 
-    LayerImpl* outer_clip = host_impl_->OuterViewportScrollLayer()->parent();
+    LayerImpl* outer_clip =
+        host_impl_->OuterViewportScrollLayer()->test_properties()->parent;
     outer_clip->SetBounds(viewport_size);
 
-    LayerImpl* inner_clip_layer =
-        host_impl_->InnerViewportScrollLayer()->parent()->parent();
+    LayerImpl* inner_clip_layer = host_impl_->InnerViewportScrollLayer()
+                                      ->test_properties()
+                                      ->parent->test_properties()
+                                      ->parent;
     inner_clip_layer->SetBounds(viewport_size);
     host_impl_->InnerViewportScrollLayer()->SetBounds(viewport_size);
     host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -1224,7 +1227,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
   LayerImpl* overflow = scroll_layer->test_properties()->children[0];
   overflow->SetBounds(overflow_size);
-  overflow->SetScrollClipLayer(scroll_layer->parent()->parent()->id());
+  overflow->SetScrollClipLayer(
+      scroll_layer->test_properties()->parent->test_properties()->parent->id());
   overflow->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(overflow->id(),
@@ -1480,7 +1484,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   did_request_next_frame_ = false;
 
   // Destroy layer, unregister animation target (element).
-  child->SetParent(nullptr);
+  child->test_properties()->parent = nullptr;
   root->RemoveChildForTesting(child);
   child = nullptr;
 
@@ -4314,8 +4318,10 @@ TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
   host_impl_->DidChangeTopControlsPosition();
 
   // Now that top controls have moved, expect the clip to resize.
-  LayerImpl* inner_clip_ptr =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  LayerImpl* inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                                  ->test_properties()
+                                  ->parent->test_properties()
+                                  ->parent;
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
 }
 
@@ -4342,14 +4348,19 @@ TEST_F(LayerTreeHostImplTopControlsTest, ApplyDeltaOnTreeActivation) {
                                                          top_controls_height_);
 
   host_impl_->DidChangeTopControlsPosition();
-  LayerImpl* inner_clip_ptr =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  LayerImpl* inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                                  ->test_properties()
+                                  ->parent->test_properties()
+                                  ->parent;
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
 
   host_impl_->ActivateSyncTree();
 
-  inner_clip_ptr = host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                       ->test_properties()
+                       ->parent->test_properties()
+                       ->parent;
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
 
@@ -4382,8 +4393,10 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
   host_impl_->active_tree()->SetCurrentTopControlsShownRatio(0.f);
 
   host_impl_->DidChangeTopControlsPosition();
-  LayerImpl* inner_clip_ptr =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  LayerImpl* inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                                  ->test_properties()
+                                  ->parent->test_properties()
+                                  ->parent;
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
 
@@ -4393,8 +4406,10 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
 
   host_impl_->ActivateSyncTree();
 
-  inner_clip_ptr =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                       ->test_properties()
+                       ->parent->test_properties()
+                       ->parent;
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
 
   // The total bounds should remain unchanged since the bounds delta should
@@ -4612,8 +4627,10 @@ TEST_F(LayerTreeHostImplTopControlsTest,
   host_impl_->top_controls_manager()->ScrollEnd();
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
   // Now that top controls have moved, expect the clip to resize.
-  LayerImpl* inner_clip_ptr =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  LayerImpl* inner_clip_ptr = host_impl_->InnerViewportScrollLayer()
+                                  ->test_properties()
+                                  ->parent->test_properties()
+                                  ->parent;
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
 
   host_impl_->ScrollEnd(EndState().get());
@@ -4882,8 +4899,10 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   SetupScrollAndContentsLayers(viewport_size);
 
   // Setup the layers so that the outer viewport is scrollable.
-  host_impl_->active_tree()->InnerViewportScrollLayer()->parent()->SetBounds(
-      viewport_size);
+  host_impl_->active_tree()
+      ->InnerViewportScrollLayer()
+      ->test_properties()
+      ->parent->SetBounds(viewport_size);
   host_impl_->active_tree()->OuterViewportScrollLayer()->SetBounds(
       gfx::Size(40, 40));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
@@ -4928,8 +4947,10 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   SetupScrollAndContentsLayers(viewport_size);
 
   // Setup the layers so that the outer viewport is scrollable.
-  host_impl_->active_tree()->InnerViewportScrollLayer()->parent()->SetBounds(
-      viewport_size);
+  host_impl_->active_tree()
+      ->InnerViewportScrollLayer()
+      ->test_properties()
+      ->parent->SetBounds(viewport_size);
   host_impl_->active_tree()->OuterViewportScrollLayer()->SetBounds(
       gfx::Size(40, 40));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
@@ -5579,7 +5600,7 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   int scale = 2;
   gfx::Transform scale_transform;
   scale_transform.Scale(scale, scale);
-  scroll_layer->parent()->SetTransform(scale_transform);
+  scroll_layer->test_properties()->parent->SetTransform(scale_transform);
 
   gfx::Size surface_size(50, 50);
   host_impl_->SetViewportSize(surface_size);
@@ -5704,7 +5725,8 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   TestInputHandlerClient scroll_watcher;
   host_impl_->SetViewportSize(gfx::Size(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  LayerImpl* clip_layer = scroll_layer->parent()->parent();
+  LayerImpl* clip_layer =
+      scroll_layer->test_properties()->parent->test_properties()->parent;
   SetNeedsRebuildPropertyTrees();
   clip_layer->SetBounds(gfx::Size(10, 20));
   RebuildPropertyTrees();
@@ -5815,7 +5837,8 @@ TEST_F(LayerTreeHostImplTest,
        ExternalRootLayerScrollOffsetDelegationReflectedInNextDraw) {
   host_impl_->SetViewportSize(gfx::Size(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  LayerImpl* clip_layer = scroll_layer->parent()->parent();
+  LayerImpl* clip_layer =
+      scroll_layer->test_properties()->parent->test_properties()->parent;
   clip_layer->SetBounds(gfx::Size(10, 20));
   scroll_layer->SetDrawsContent(true);
 
@@ -6087,7 +6110,8 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   CreateHostImpl(settings, CreateOutputSurface());
 
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(50, 50));
-  LayerImpl* clip_layer = scroll_layer->parent()->parent();
+  LayerImpl* clip_layer =
+      scroll_layer->test_properties()->parent->test_properties()->parent;
   clip_layer->SetBounds(gfx::Size(50, 50));
   SetNeedsRebuildPropertyTrees();
   RebuildPropertyTrees();

@@ -45,6 +45,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerImplList children;
   LayerImpl* mask_layer;
   LayerImpl* replica_layer;
+  LayerImpl* parent;
 };
 
 }  // namespace cc
