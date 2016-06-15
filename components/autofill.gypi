@@ -554,6 +554,8 @@
             'autofill/content/renderer/form_autofill_util.h',
             'autofill/content/renderer/form_cache.cc',
             'autofill/content/renderer/form_cache.h',
+            'autofill/content/renderer/form_classifier.cc',
+            'autofill/content/renderer/form_classifier.h',
             'autofill/content/renderer/page_click_listener.h',
             'autofill/content/renderer/page_click_tracker.cc',
             'autofill/content/renderer/page_click_tracker.h',
