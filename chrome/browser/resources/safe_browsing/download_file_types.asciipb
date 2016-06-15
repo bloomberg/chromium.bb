@@ -9,7 +9,7 @@
 ## Top level settings
 ##
 
-version_id: 2
+version_id: 3
 sampled_ping_probability: 0.0
 default_file_type {
   uma_value: 18
