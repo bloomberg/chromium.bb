@@ -1056,6 +1056,9 @@ void LocalDOMWindow::setName(const AtomicString& name)
     if (!isCurrentlyDisplayedInFrame())
         return;
 
+    if (name == frame()->tree().name())
+        return;
+
     frame()->tree().setName(name);
     ASSERT(frame()->loader().client());
     frame()->loader().client()->didChangeName(name, frame()->tree().uniqueName());
