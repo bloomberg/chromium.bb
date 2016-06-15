@@ -94,7 +94,7 @@ FormDataNewMethods status=stable
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 GeometryInterfaces status=test
-GetUserMedia depends_on=MediaDevices, status=experimental
+GetUserMedia depends_on=MediaDevices, status=stable
 GlobalCacheStorage status=stable
 HiResEventTimeStamp status=stable
 ImageCapture status=experimental

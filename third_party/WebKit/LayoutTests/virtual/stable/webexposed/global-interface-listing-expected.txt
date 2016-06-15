@@ -3091,6 +3091,7 @@ interface MediaDevices : EventTarget
     method constructor
     method enumerateDevices
     method getSupportedConstraints
+    method getUserMedia
 interface MediaElementAudioSourceNode : AudioSourceNode
     attribute @@toStringTag
     getter mediaElement
@@ -3382,6 +3383,7 @@ interface Navigator
     method constructor
     method getBattery
     method getGamepads
+    method getUserMedia
     method javaEnabled
     method registerProtocolHandler
     method requestMIDIAccess
