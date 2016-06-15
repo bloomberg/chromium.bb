@@ -97,16 +97,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'DragAndDropTest.testElementInDiv',
 ]
 
-_REVISION_NEGATIVE_FILTER['52'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381
-    # Since branch point is being tested on bot, tests still fails
-    # on v52 in spite of the fix. But it would NOT fail for users
-    # in production because fix was merged into v52 branch
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=616224.
-    'AlertsTest.*',
-    'FormHandlingTest.handleFormWithJavascriptAction',
-]
-
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373

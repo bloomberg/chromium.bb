@@ -68,17 +68,6 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
 ]
-_VERSION_SPECIFIC_FILTER['52'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381
-    # Since branch point is being tested on bot, tests still fails
-    # on v52 in spite of the fix. But it would NOT fail for users
-    # in production because fix was merged into v52 branch
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=616224.
-    'ChromeDriverTest.testCanClickAlertInIframes',
-    'ChromeDriverTest.testAlert',
-    'ChromeDriverTest.testClickElementAfterNavigation',
-    'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
-]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
