@@ -33,16 +33,16 @@ static bool frameIsValid(const SkBitmap& frameBitmap)
     return frameBitmap.colorType() == kN32_SkColorType;
 }
 
-static PassOwnPtr<uint8_t[]> copySkImageData(SkImage* input, SkImageInfo info)
+static PassOwnPtr<uint8_t[]> copySkImageData(SkImage* input, const SkImageInfo& info)
 {
     OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[input->width() * input->height() * info.bytesPerPixel()]);
     input->readPixels(info, dstPixels.get(), input->width() * info.bytesPerPixel(), 0, 0);
     return dstPixels;
 }
 
-static PassRefPtr<SkImage> newSkImageFromRaster(SkImageInfo info, PassOwnPtr<uint8_t[]> imagePixels, int imageRowBytes)
+static PassRefPtr<SkImage> newSkImageFromRaster(const SkImageInfo& info, PassOwnPtr<uint8_t[]> imagePixels, int imageRowBytes)
 {
-    return adoptRef(SkImage::NewFromRaster(info, imagePixels.leakPtr(), imageRowBytes,
+    return fromSkSp(SkImage::MakeFromRaster(SkPixmap(info, imagePixels.leakPtr(), imageRowBytes),
         [](const void* pixels, void*)
         {
             delete[] static_cast<const uint8_t*>(pixels);
@@ -108,7 +108,7 @@ PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> 
     SkBitmap bitmap = frame->bitmap();
     if (!frameIsValid(bitmap))
         return nullptr;
-    return adoptRef(SkImage::NewFromBitmap(bitmap));
+    return fromSkSp(SkImage::MakeFromBitmap(bitmap));
 }
 
 // The parameter imageFormat indicates whether the first parameter "image" is unpremultiplied or not.
@@ -145,9 +145,9 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     }
 
     if (cropRect == srcRect) {
-        if (flipY)
-            return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
         RefPtr<SkImage> croppedSkImage = fromSkSp(skiaImage->makeSubset(srcRect));
+        if (flipY)
+            return StaticBitmapImage::create(flipSkImageVertically(croppedSkImage.get(), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
         // Special case: The first parameter image is unpremul but we need to turn it into premul.
         if (premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
             return StaticBitmapImage::create(unPremulSkImageToPremul(croppedSkImage.get()));
@@ -160,7 +160,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     if (!surface)
         return nullptr;
     if (srcRect.isEmpty())
-        return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
+        return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
 
     SkScalar dstLeft = std::min(0, -cropRect.x());
     SkScalar dstTop = std::min(0, -cropRect.y());
@@ -169,10 +169,10 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     if (cropRect.y() < 0)
         dstTop = -cropRect.y();
     surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
+    skiaImage = fromSkSp(surface->makeImageSnapshot());
     if (flipY)
-        skiaImage = flipSkImageVertically(surface->newImageSnapshot(), PremultiplyAlpha);
-    else
-        skiaImage = adoptRef(surface->newImageSnapshot());
+        skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
+
     if (premultiplyAlpha) {
         if (imageFormat == PremultiplyAlpha)
             return StaticBitmapImage::create(unPremulSkImageToPremul(skiaImage.get()));
@@ -200,7 +200,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     if (!skImage->isTextureBacked() && !skImage->peekPixels(&pixmap)) {
         sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(skImage->width(), skImage->height());
         surface->getCanvas()->drawImage(skImage.get(), 0, 0);
-        m_image = StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
+        m_image = StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
     }
     m_image->setOriginClean(!image->wouldTaintOrigin(document->getSecurityOrigin()));
     m_image->setPremultiplied(premultiplyAlpha);
@@ -279,7 +279,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         int dstPixelBytesPerRow = info.bytesPerPixel() * cropRect.width();
         if (cropRect == IntRect(IntPoint(), data->size())) {
             swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, flipY);
-            m_image = StaticBitmapImage::create(adoptRef(SkImage::NewRasterCopy(info, srcAddr, dstPixelBytesPerRow)));
+            m_image = StaticBitmapImage::create(fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, srcAddr, dstPixelBytesPerRow))));
             // restore the original ImageData
             swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, flipY);
         } else {
