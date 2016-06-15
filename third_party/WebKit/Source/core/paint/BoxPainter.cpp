@@ -53,7 +53,7 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
 
 LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& adjustedPaintOffset)
 {
-    LayoutRect bounds = m_layoutBox.visualOverflowRect();
+    LayoutRect bounds = m_layoutBox.selfVisualOverflowRect();
     bounds.moveBy(adjustedPaintOffset);
     return bounds;
 }

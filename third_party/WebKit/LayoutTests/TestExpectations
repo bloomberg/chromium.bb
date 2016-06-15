@@ -322,6 +322,8 @@ crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-pic
 crbug.com/593567 [ Debug ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 
+crbug.com/619366 [ Mac ] fast/forms/select/menulist-no-overflow.html [ NeedsManualRebaseline ]
+
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-empty.html [ Failure ]
 crbug.com/484632 [ Win7 ] transforms/2d/zoom-menulist.html [ Failure ]
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ Failure ]
@@ -1318,10 +1320,6 @@ crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-s
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
 crbug.com/619103 compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
-crbug.com/619103 fast/repaint/align-self-overflow-change.html [ Crash Timeout ]
-crbug.com/619103 fast/repaint/justify-self-overflow-change.html [ Crash Timeout ]
-crbug.com/619103 fast/repaint/mix-blend-mode-separate-stacking-context.html [ Crash Timeout ]
-crbug.com/619103 paint/invalidation/invalidate-descendants-when-receiving-paint-layer.html [ Crash Timeout ]
 crbug.com/619103 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
 crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
 crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
