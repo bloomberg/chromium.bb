@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 101: Oscillator.frequency.exponentialRampToValue value 24050 outside nominal range [0, 22050]; value will be clamped.
+CONSOLE WARNING: line 101: Oscillator.frequency.exponentialRampToValue value 24050 outside nominal range [-22050, 22050]; value will be clamped.
 Test Builtin Oscillator PeriodicWave Tables
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -333,7 +333,9 @@ bool OscillatorHandler::propagatesSilence() const
 OscillatorNode::OscillatorNode(AbstractAudioContext& context)
     : AudioScheduledSourceNode(context)
     // Use musical pitch standard A440 as a default.
-    , m_frequency(AudioParam::create(context, ParamTypeOscillatorFrequency, 440, 0, context.sampleRate() / 2))
+    , m_frequency(AudioParam::create(context, ParamTypeOscillatorFrequency, 440,
+        - context.sampleRate() / 2,
+        context.sampleRate() / 2))
     // Default to no detuning.
     , m_detune(AudioParam::create(context, ParamTypeOscillatorDetune, 0))
 {

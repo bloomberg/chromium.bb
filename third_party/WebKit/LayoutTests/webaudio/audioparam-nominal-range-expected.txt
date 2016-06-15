@@ -13,8 +13,8 @@ CONSOLE WARNING: line 386: DynamicsCompressor.release.value -1 outside nominal r
 CONSOLE WARNING: line 395: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 386: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
 CONSOLE WARNING: line 395: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 386: Oscillator.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 395: Oscillator.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 386: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 395: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
 CONSOLE WARNING: line 438: 'AudioListener.dopplerFactor' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
 CONSOLE WARNING: line 438: 'AudioListener.speedOfSound' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
 CONSOLE WARNING: line 315: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
@@ -147,13 +147,13 @@ PASS BiquadFilterNode.gain.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS BiquadFilterNode.gain.maxValue is read-only.
 PASS Nominal ranges for AudioParam(s) of BiquadFilterNode are correct.
 
-PASS OscillatorNode.frequency.minValue is equal to 0.
+PASS OscillatorNode.frequency.minValue is equal to -24000.
 PASS OscillatorNode.frequency.maxValue is equal to 24000.
 PASS OscillatorNode.frequency.minValue = Math.PI is not equal to 3.141592653589793.
 PASS OscillatorNode.frequency.minValue is read-only.
 PASS OscillatorNode.frequency.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS OscillatorNode.frequency.maxValue is read-only.
-PASS Set OscillatorNode.frequency.value = -1 is equal to 0.
+PASS Set OscillatorNode.frequency.value = -48001 is equal to -24000.
 PASS Set OscillatorNode.frequency.value = 48001 is equal to 24000.
 PASS OscillatorNode.frequency was correctly clipped to lie within the nominal range.
 PASS OscillatorNode.detune.minValue is equal to -3.4028234663852886e+38.
