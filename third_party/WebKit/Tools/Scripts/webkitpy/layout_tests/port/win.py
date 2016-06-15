@@ -155,8 +155,8 @@ class WinPort(base.Port):
             self._crash_service.stop()
             self._crash_service = None
 
-    def setup_environ_for_server(self, server_name=None):
-        env = super(WinPort, self).setup_environ_for_server(server_name)
+    def setup_environ_for_server(self):
+        env = super(WinPort, self).setup_environ_for_server()
 
         # FIXME: This is a temporary hack to get the cr-win bot online until
         # someone from the cr-win port can take a look.

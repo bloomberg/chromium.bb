@@ -129,7 +129,7 @@ class MockDRTPort(object):
     def _make_wdiff_available(self):
         self.__delegate._wdiff_available = True
 
-    def setup_environ_for_server(self, server_name):
+    def setup_environ_for_server(self):
         env = self.__delegate.setup_environ_for_server()
         # We need to propagate PATH down so the python code can find the checkout.
         env['PATH'] = os.environ['PATH']

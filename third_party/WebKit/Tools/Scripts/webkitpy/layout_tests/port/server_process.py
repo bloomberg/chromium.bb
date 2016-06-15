@@ -81,7 +81,7 @@ class ServerProcess(object):
     as necessary to keep issuing commands."""
 
     def __init__(self, port_obj, name, cmd, env=None, universal_newlines=False, treat_no_data_as_crash=False,
-                 logging=False):
+                 more_logging=False):
         self._port = port_obj
         self._name = name  # Should be the command name (e.g. content_shell, image_diff)
         self._cmd = cmd
@@ -90,7 +90,7 @@ class ServerProcess(object):
         # Don't set if there will be binary data or the data must be ASCII encoded.
         self._universal_newlines = universal_newlines
         self._treat_no_data_as_crash = treat_no_data_as_crash
-        self._logging = logging
+        self._logging = more_logging
         self._host = self._port.host
         self._pid = None
         self._reset()
