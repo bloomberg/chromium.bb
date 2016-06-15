@@ -240,20 +240,20 @@ class Optional {
  private:
   void Init(const T& value) {
     DCHECK(storage_.is_null_);
-    new (storage_.buffer_.template data_as<T>()) T(value);
+    new (storage_.buffer_.void_data()) T(value);
     storage_.is_null_ = false;
   }
 
   void Init(T&& value) {
     DCHECK(storage_.is_null_);
-    new (storage_.buffer_.template data_as<T>()) T(std::move(value));
+    new (storage_.buffer_.void_data()) T(std::move(value));
     storage_.is_null_ = false;
   }
 
   template <class... Args>
   void Init(Args&&... args) {
     DCHECK(storage_.is_null_);
-    new (storage_.buffer_.template data_as<T>()) T(std::forward<Args>(args)...);
+    new (storage_.buffer_.void_data()) T(std::forward<Args>(args)...);
     storage_.is_null_ = false;
   }
 
