@@ -3298,7 +3298,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   BOOL isOpenInNewTabNavigation =
       !_webStateImpl->GetNavigationManager()->GetItemCount();
   BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
-  if (isPossibleLinkClick || isOpenInNewTabNavigation) {
+  if (isPossibleLinkClick || isOpenInNewTabNavigation ||
+      [self currentTransition] == ui::PAGE_TRANSITION_AUTO_BOOKMARK) {
     // Check If the URL is handled by a native app.
     if ([self urlTriggersNativeAppLaunch:requestURL
                                sourceURL:[self currentNavigationURL]
