@@ -20,12 +20,12 @@ namespace content {
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
-    const std::string& salt,
+    const ResourceContext::SaltCallback& salt_callback,
     MediaStreamManager* media_stream_manager,
     bool use_fake_ui)
     : BrowserMessageFilter(MediaStreamMsgStart),
       render_process_id_(render_process_id),
-      salt_(salt),
+      salt_callback_(salt_callback),
       media_stream_manager_(media_stream_manager),
       use_fake_ui_(use_fake_ui),
       weak_factory_(this) {}
@@ -167,8 +167,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     return;
 
   media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_frame_id, salt_, page_request_id,
-      controls, security_origin, user_gesture);
+      this, render_process_id_, render_frame_id, salt_callback_,
+      page_request_id, controls, security_origin, user_gesture);
 }
 
 void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_frame_id,
@@ -203,8 +203,8 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
     return;
 
   media_stream_manager_->EnumerateDevices(
-      this, render_process_id_, render_frame_id, salt_, page_request_id, type,
-      security_origin);
+      this, render_process_id_, render_frame_id, salt_callback_,
+      page_request_id, type, security_origin);
 }
 
 void MediaStreamDispatcherHost::OnCancelEnumerateDevices(
@@ -230,9 +230,9 @@ void MediaStreamDispatcherHost::OnOpenDevice(
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_, security_origin))
     return;
 
-  media_stream_manager_->OpenDevice(this, render_process_id_, render_frame_id,
-                                    salt_, page_request_id, device_id, type,
-                                    security_origin);
+  media_stream_manager_->OpenDevice(
+      this, render_process_id_, render_frame_id, salt_callback_,
+      page_request_id, device_id, type, security_origin);
 }
 
 void MediaStreamDispatcherHost::OnCloseDevice(

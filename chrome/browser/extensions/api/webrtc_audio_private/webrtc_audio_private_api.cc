@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -210,7 +209,9 @@ void WebrtcAudioPrivateFunction::InitDeviceIDSalt() {
   device_id_salt_ = GetProfile()->GetResourceContext()->GetMediaDeviceIDSalt();
 }
 
-std::string WebrtcAudioPrivateFunction::device_id_salt() const {
+const content::ResourceContext::SaltCallback&
+WebrtcAudioPrivateFunction::device_id_salt() const {
+  DCHECK(!device_id_salt_.is_null());
   return device_id_salt_;
 }
 

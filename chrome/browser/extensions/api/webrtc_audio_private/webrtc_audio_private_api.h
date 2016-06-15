@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
@@ -98,10 +96,10 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
 
   // Callable from any thread. Must previously have called
   // |InitDeviceIDSalt()|.
-  std::string device_id_salt() const;
+  const content::ResourceContext::SaltCallback& device_id_salt() const;
 
  private:
-  std::string device_id_salt_;
+  content::ResourceContext::SaltCallback device_id_salt_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcAudioPrivateFunction);
 };
