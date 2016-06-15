@@ -76,14 +76,19 @@ table_files = \
 	en-GB-g2.ctb \
 	en-in-g1.ctb \
 	en-ueb-chardefs.uti \
+	en-ueb-chardefs.uti.bak \
 	en-ueb-g1.ctb \
+	en-ueb-g1.ctb.bak \
 	en-ueb-g2.ctb \
+	en-ueb-g2.ctb.bak \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
 	en-us-compbrl.ctb \
 	en-us-g1.ctb \
+	en-us-g1.ctb.bak \
 	en-us-g2.ctb \
+	en-us-g2.ctb.bak \
 	en-us-interline.ctb \
 	en-us-mathtext.ctb \
 	eo-g1.ctb \
@@ -98,6 +103,7 @@ table_files = \
 	et.ctb \
 	et-g0.utb \
 	ethio-g1.ctb \
+	ethio-g1.ctb.bak \
 	eurodefs.cti \
 	fi1.ctb \
 	fi2.ctb \
@@ -159,12 +165,15 @@ table_files = \
 	ko-2006.cti \
 	ko-2006-g1.ctb \
 	ko-2006-g2.ctb \
+	ko-2006-g2.ctb.bak \
 	ko-chars.cti \
 	ko.cti \
 	ko-g1.ctb \
 	ko-g1-rules.cti \
 	ko-g2.ctb \
+	ko-g2.ctb.bak \
 	ko-g2-rules.cti \
+	ko-g2-rules.cti.bak \
 	kok.ctb \
 	kru.ctb \
 	ks-in-g1.utb \
@@ -192,11 +201,17 @@ table_files = \
 	nemeth.ctb \
 	nemethdefs.cti \
 	nemeth_edit.ctb \
+	nl-BE-chardefs.cti \
+	nl-BE-chardefs.cti.bak \
 	nl-BE.dis \
 	nl-BE-g0.utb \
+	nl-BE-g1.ctb \
+	nl-BE-g1.ctb.bak \
 	nl-chardefs.uti \
 	nl-g0.utb \
+	nl-NL-chardefs.cti \
 	nl-NL-g0.utb \
+	nl-NL-g1.ctb \
 	nl-NL-old-g0.utb \
 	nl-old-g0.utb \
 	no-no-8dot.utb \
@@ -247,6 +262,7 @@ table_files = \
 	ta.ctb \
 	tamil.cti \
 	ta-ta-g1.ctb \
+	ta-ta-g1.ctb.bak \
 	te-in-g1.utb \
 	telugu.cti \
 	text_nabcc.dis \
@@ -267,6 +283,7 @@ table_files = \
 	vi-g1.ctb \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
+	wiskunde-translation.cti \
 	zh-hk.ctb \
 	zh-tw.ctb 
 
