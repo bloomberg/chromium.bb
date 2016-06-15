@@ -147,13 +147,13 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     if (cropRect == srcRect) {
         if (flipY)
             return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
-        SkImage* croppedSkImage = skiaImage->newSubset(srcRect);
+        RefPtr<SkImage> croppedSkImage = fromSkSp(skiaImage->makeSubset(srcRect));
         // Special case: The first parameter image is unpremul but we need to turn it into premul.
         if (premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
-            return StaticBitmapImage::create(unPremulSkImageToPremul(croppedSkImage));
+            return StaticBitmapImage::create(unPremulSkImageToPremul(croppedSkImage.get()));
         // Call preroll to trigger image decoding.
         croppedSkImage->preroll();
-        return StaticBitmapImage::create(adoptRef(croppedSkImage));
+        return StaticBitmapImage::create(croppedSkImage.release());
     }
 
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(cropRect.width(), cropRect.height());
