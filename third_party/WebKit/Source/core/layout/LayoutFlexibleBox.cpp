@@ -1395,16 +1395,14 @@ LayoutUnit LayoutFlexibleBox::staticCrossAxisPositionForPositionedChild(const La
 
 LayoutUnit LayoutFlexibleBox::staticInlinePositionForPositionedChild(const LayoutBox& child)
 {
-    LayoutUnit staticInlineOffset = flowAwareBorderStart() + flowAwarePaddingStart();
-    return staticInlineOffset + (isColumnFlow() ?
+    return startOffsetForContent() + (isColumnFlow() ?
         staticCrossAxisPositionForPositionedChild(child) :
         staticMainAxisPositionForPositionedChild(child));
 }
 
 LayoutUnit LayoutFlexibleBox::staticBlockPositionForPositionedChild(const LayoutBox& child)
 {
-    LayoutUnit staticBlockOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
-    return staticBlockOffset + (isColumnFlow() ?
+    return borderAndPaddingBefore() + (isColumnFlow() ?
         staticMainAxisPositionForPositionedChild(child) :
         staticCrossAxisPositionForPositionedChild(child));
 }
