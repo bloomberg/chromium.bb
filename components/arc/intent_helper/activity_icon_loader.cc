@@ -22,7 +22,7 @@ namespace arc {
 namespace {
 
 const size_t kSmallIconSizeInDip = 16;
-const size_t kLargeIconSizeInDip = 48;
+const size_t kLargeIconSizeInDip = 20;
 const size_t kMaxIconSizeInPx = 200;
 
 const int kMinInstanceVersion = 3;  // see intent_helper.mojom
@@ -60,8 +60,8 @@ ui::ScaleFactor GetSupportedScaleFactor() {
 }  // namespace
 
 ActivityIconLoader::Icons::Icons(const gfx::Image& icon16,
-                                 const gfx::Image& icon48)
-    : icon16(icon16), icon48(icon48) {}
+                                 const gfx::Image& icon20)
+    : icon16(icon16), icon20(icon20) {}
 
 ActivityIconLoader::ActivityName::ActivityName(const std::string& package_name,
                                                const std::string& activity_name)

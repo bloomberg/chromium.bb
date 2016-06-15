@@ -25,9 +25,9 @@ namespace arc {
 class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
  public:
   struct Icons {
-    Icons(const gfx::Image& icon16, const gfx::Image& icon48);
+    Icons(const gfx::Image& icon16, const gfx::Image& icon20);
     const gfx::Image icon16;  // 16 dip
-    const gfx::Image icon48;  // 48 dip
+    const gfx::Image icon20;  // 20 dip
   };
 
   struct ActivityName {
