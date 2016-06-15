@@ -31,8 +31,6 @@ namespace downgrade {
 
 namespace {
 
-bool g_is_browser_test = false;
-
 // Return the disk cache dir override value if exists or empty path for default
 // disk cache dir.
 base::FilePath GetDiskCacheDir() {
@@ -172,18 +170,11 @@ base::Version GetLastVersion(const base::FilePath& user_data_dir) {
 void DeleteMovedUserDataSoon() {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  if (g_is_browser_test) {
-    // Delete task will always be posted and executed for browser test.
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
-  } else {
-    content::BrowserThread::PostAfterStartupTask(
-        FROM_HERE, content::BrowserThread::GetBlockingPool()
-                       ->GetTaskRunnerWithShutdownBehavior(
-                           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
-        base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
-  }
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, content::BrowserThread::GetBlockingPool()
+                     ->GetTaskRunnerWithShutdownBehavior(
+                         base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
 }
 
 bool IsMSIInstall() {
@@ -198,10 +189,6 @@ bool IsMSIInstall() {
          key.ReadValueDW(google_update::kRegMSIField, &is_msi) ==
              ERROR_SUCCESS &&
          is_msi != 0;
-}
-
-void SetSimulateDowngradeForTest(bool is_browser_test) {
-  g_is_browser_test = is_browser_test;
 }
 
 }  // namespace downgrade

@@ -1774,11 +1774,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-  // Clean up old user data directory and disk cache directory.
-  downgrade::DeleteMovedUserDataSoon();
-#endif
-
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep2Time",
                       base::TimeTicks::Now() - start_time_step2);
 
@@ -1849,6 +1844,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     delete parameters().ui_task;
     run_message_loop_ = false;
   }
+
+#if defined(OS_WIN)
+  // Clean up old user data directory and disk cache directory.
+  downgrade::DeleteMovedUserDataSoon();
+#endif
+
 #if defined(OS_ANDROID)
   // We never run the C++ main loop on Android, since the UI thread message
   // loop is controlled by the OS, so this is as close as we can get to

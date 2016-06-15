@@ -23,7 +23,6 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
  protected:
   // content::BrowserTestBase:
   void SetUpInProcessBrowserTestFixture() override {
-    SetSimulateDowngradeForTest(true);
     HKEY root = HKEY_CURRENT_USER;
     registry_override_manager_.OverrideRegistry(root);
     key_.Create(root,
@@ -41,17 +40,18 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
     std::string last_version = GetNextChromeVersion();
     base::WriteFile(last_version_file_path_, last_version.c_str(),
                     last_version.size());
+
+    moved_user_data_dir_ =
+        base::FilePath(user_data_dir_.value() + FILE_PATH_LITERAL(" (1)"))
+            .AddExtension(kDowngradeDeleteSuffix);
+
     return true;
   }
 
   // content::BrowserTestBase:
   // Verify the renamed user data directory has been deleted.
   void TearDownInProcessBrowserTestFixture() override {
-    const base::FilePath::StringType index_suffix = FILE_PATH_LITERAL(" (1)");
-    ASSERT_FALSE(base::DirectoryExists(
-        base::FilePath(user_data_dir_.value() + index_suffix)
-            .AddExtension(kDowngradeDeleteSuffix)));
-    SetSimulateDowngradeForTest(false);
+    ASSERT_FALSE(base::DirectoryExists(moved_user_data_dir_));
     key_.Close();
   }
 
@@ -64,6 +64,7 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
   // only when a reset does not take place.
   base::FilePath other_file_;
   base::FilePath user_data_dir_;
+  base::FilePath moved_user_data_dir_;
   base::win::RegKey key_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
@@ -77,6 +78,17 @@ class UserDataDowngradeBrowserCopyAndCleanTest
     key_.WriteValue(L"DowngradeVersion",
                     base::ASCIIToUTF16(GetNextChromeVersion()).c_str());
     key_.WriteValue(google_update::kRegMSIField, 1);
+  }
+
+  // InProcessBrowserTest:
+  // Verify the content of renamed user data directory.
+  void RunTestOnMainThreadLoop() override {
+    ASSERT_TRUE(base::DirectoryExists(moved_user_data_dir_));
+    ASSERT_TRUE(
+        base::PathExists(moved_user_data_dir_.Append(other_file_.BaseName())));
+    EXPECT_EQ(GetNextChromeVersion(),
+              GetLastVersion(moved_user_data_dir_).GetString());
+    InProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 };
 
@@ -93,18 +105,16 @@ class UserDataDowngradeBrowserNoResetTest
 class UserDataDowngradeBrowserNoMSITest
     : public UserDataDowngradeBrowserTestBase {
  protected:
-  // content::BrowserTestBase:
-  void SetUpInProcessBrowserTestFixture() override {
-    UserDataDowngradeBrowserTestBase::SetUpInProcessBrowserTestFixture();
-  }
-
   // InProcessBrowserTest:
-  bool SetUpUserDataDirectory() override { return true; }
+  bool SetUpUserDataDirectory() override {
+    return CreateTemporaryFileInDir(user_data_dir_, &other_file_);
+  }
 };
 
 // Verify the user data directory has been renamed and created again after
 // downgrade.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
   ASSERT_FALSE(base::PathExists(other_file_));
 }
@@ -118,6 +128,7 @@ IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoResetTest, Test) {
 // Verify the "Last Version" file won't be created for non-msi install.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoMSITest, Test) {
   ASSERT_FALSE(base::PathExists(last_version_file_path_));
+  ASSERT_TRUE(base::PathExists(other_file_));
 }
 
 }  // namespace downgrade

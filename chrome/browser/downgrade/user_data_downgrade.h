@@ -38,12 +38,6 @@ void DeleteMovedUserDataSoon();
 // Returns true if Chrome is installed by MSI.
 bool IsMSIInstall();
 
-// Changes the behavior of the above functions to simulate a downgrade for use
-// in tests. MoveUserDataForFirstRunAfterDowngrade will no longer rely on
-// registry and DeleteMovedUserDataSoon will always post task into blocking
-// pool for brower test.
-void SetSimulateDowngradeForTest(bool is_browser_test);
-
 }  // namespace downgrade
 
 #endif  // CHROME_BROWSER_DOWNGRADE_USER_DATA_DOWNGRADE_H_
