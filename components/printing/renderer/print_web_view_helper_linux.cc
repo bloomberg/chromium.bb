@@ -45,7 +45,7 @@ namespace printing {
 #if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count) {
-  PdfMetafileSkia metafile;
+  PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;

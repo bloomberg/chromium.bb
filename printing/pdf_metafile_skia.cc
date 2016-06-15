@@ -10,6 +10,9 @@
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
+// Note that headers in third_party/skia/src are fragile.  This is
+// an experimental, fragile, and diagnostic-only document type.
+#include "third_party/skia/src/utils/SkMultiPictureDocument.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -92,6 +95,7 @@ struct PdfMetafileSkiaData {
   // meaningful for a vector canvas as for a raster canvas.
   float scale_factor_;
   SkSize size_;
+  SkiaDocumentType type_;
 
 #if defined(OS_MACOSX)
   PdfMetafileCg pdf_cg_;
@@ -126,6 +130,7 @@ void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   float inverse_scale = 1.0 / scale_factor;
   SkCanvas* canvas = data_->recorder_.beginRecording(
       inverse_scale * page_size.width(), inverse_scale * page_size.height());
+  // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
   if (content_area != gfx::Rect(page_size)) {
     canvas->scale(inverse_scale, inverse_scale);
     SkRect sk_content_area = gfx::RectToSkRect(content_area);
@@ -140,7 +145,6 @@ void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   // canvas->getTotalMatrix() returns a value that ignores the scale
   // factor.  We store the scale factor and re-apply it later.
   // http://crbug.com/469656
-  // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
 }
 
 SkCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
@@ -157,9 +161,8 @@ bool PdfMetafileSkia::FinishPage() {
 
   sk_sp<SkPicture> pic = data_->recorder_.finishRecordingAsPicture();
   if (data_->scale_factor_ != 1.0f) {
-    SkCanvas* canvas =
-        data_->recorder_.beginRecording(data_->size_.width(),
-                                        data_->size_.height());
+    SkCanvas* canvas = data_->recorder_.beginRecording(data_->size_.width(),
+                                                       data_->size_.height());
     canvas->scale(data_->scale_factor_, data_->scale_factor_);
     canvas->drawPicture(pic);
     pic = data_->recorder_.finishRecordingAsPicture();
@@ -177,9 +180,15 @@ bool PdfMetafileSkia::FinishDocument() {
     FinishPage();
 
   SkDynamicMemoryWStream stream;
-  // TODO(halcanary): support more document types (XPS, a sequence of display
-  // lists).
-  sk_sp<SkDocument> doc = MakePdfDocument(&stream);
+  sk_sp<SkDocument> doc;
+  switch (data_->type_) {
+    case PDF_SKIA_DOCUMENT_TYPE:
+      doc = MakePdfDocument(&stream);
+      break;
+    case MSKP_SKIA_DOCUMENT_TYPE:
+      doc = SkMakeMultiPictureDocument(&stream);
+      break;
+  }
 
   for (const Page& page : data_->pages_) {
     SkCanvas* canvas = doc->beginPage(page.size_.width(), page.size_.height());
@@ -287,13 +296,16 @@ bool PdfMetafileSkia::SaveTo(base::File* file) const {
   return true;
 }
 
-PdfMetafileSkia::PdfMetafileSkia() : data_(new PdfMetafileSkiaData) {
+PdfMetafileSkia::PdfMetafileSkia(SkiaDocumentType type)
+    : data_(new PdfMetafileSkiaData) {
+  data_->type_ = type;
 }
 
-std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
+std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage(
+    SkiaDocumentType type) {
   // If we only ever need the metafile for the last page, should we
   // only keep a handle on one SkPicture?
-  std::unique_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
+  std::unique_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia(type));
 
   if (data_->pages_.size() == 0)
     return metafile;

@@ -20,20 +20,20 @@
 
 class SkCanvas;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-namespace base {
-struct FileDescriptor;
-}
-#endif
-
 namespace printing {
+
+enum SkiaDocumentType {
+  PDF_SKIA_DOCUMENT_TYPE,
+  // MSKP is an experimental, fragile, and diagnostic-only document type.
+  MSKP_SKIA_DOCUMENT_TYPE,
+};
 
 struct PdfMetafileSkiaData;
 
 // This class uses Skia graphics library to generate a PDF document.
 class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
  public:
-  PdfMetafileSkia();
+  explicit PdfMetafileSkia(SkiaDocumentType type);
   ~PdfMetafileSkia() override;
 
   // Metafile methods.
@@ -68,7 +68,8 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   bool SaveTo(base::File* file) const override;
 
   // Return a new metafile containing just the current page in draft mode.
-  std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
+  std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage(
+      SkiaDocumentType type);
 
   // This method calls StartPage and then returns an appropriate
   // PlatformCanvas implementation bound to the context created by

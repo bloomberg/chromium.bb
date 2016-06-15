@@ -24,7 +24,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
   std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
 
-  PdfMetafileSkia metafile;
+  PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
   PrintMsg_PrintPage_Params page_params;
