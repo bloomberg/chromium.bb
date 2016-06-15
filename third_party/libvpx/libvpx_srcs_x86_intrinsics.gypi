@@ -15,7 +15,6 @@
       'sources': [
         '<(libvpx_source)/vp8/common/x86/idct_blk_mmx.c',
         '<(libvpx_source)/vp8/encoder/x86/vp8_enc_stubs_mmx.c',
-        '<(libvpx_source)/vpx_dsp/x86/variance_mmx.c',
       ],
       'cflags': [ '-mmmx', ],
       'xcode_settings': { 'OTHER_CFLAGS': [ '-mmmx' ] },
@@ -93,6 +92,24 @@
           },
         }],
       ],
+    },
+    {
+      'target_name': 'libvpx_intrinsics_avx',
+      'type': 'static_library',
+      'include_dirs': [
+        'source/config/<(OS_CATEGORY)/<(target_arch_full)',
+        '<(libvpx_source)',
+      ],
+      'sources': [
+        '<(libvpx_source)/vp9/encoder/x86/vp9_diamond_search_sad_avx.c',
+      ],
+      'cflags': [ '-mavx', ],
+      'xcode_settings': { 'OTHER_CFLAGS': [ '-mavx' ] },
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'EnableEnhancedInstructionSet': '3', # /arch:AVX
+        },
+      },
     },
     {
       'target_name': 'libvpx_intrinsics_avx2',

@@ -159,8 +159,7 @@
                 #'libvpx_intrinsics_sse3',
                 'libvpx_intrinsics_ssse3',
                 'libvpx_intrinsics_sse4_1',
-                # Currently no avx intrinsic functions
-                #'libvpx_intrinsics_avx',
+                'libvpx_intrinsics_avx',
                 'libvpx_intrinsics_avx2',
               ],
             }],
@@ -182,8 +181,7 @@
                     #'libvpx_intrinsics_sse3',
                     'libvpx_intrinsics_ssse3',
                     'libvpx_intrinsics_sse4_1',
-                    # Currently no avx intrinsic functions
-                    #'libvpx_intrinsics_avx',
+                    'libvpx_intrinsics_avx',
                     'libvpx_intrinsics_avx2',
                   ],
                 }],
