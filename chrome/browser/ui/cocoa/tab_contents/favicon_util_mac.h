@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_FAVICON_UTIL_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_FAVICON_UTIL_MAC_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 @class NSImage;
 
 namespace content {
@@ -15,8 +17,10 @@ namespace mac {
 
 // Returns an autoreleased favicon for a given WebContents. If |contents|
 // is NULL or there's no favicon for the NavigationEntry, this will return the
-// default image.
-NSImage* FaviconForWebContents(content::WebContents* contents);
+// default image. The color parameter is only used for the default vector image
+// in Material design.
+NSImage* FaviconForWebContents(content::WebContents* contents,
+                               SkColor color = SK_ColorBLACK);
 
 }  // namespace mac
 

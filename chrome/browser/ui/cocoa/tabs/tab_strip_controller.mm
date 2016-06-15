@@ -1505,7 +1505,12 @@ private:
     if (icon)
       image = skia::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    image = mac::FaviconForWebContents(contents);
+    TabController* tab = [tabArray_ firstObject];
+    NSColor* titleColor = [[tab tabView] titleColor];
+    NSColor* deviceColor =
+        [titleColor colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+    image = mac::FaviconForWebContents(
+        contents, skia::NSDeviceColorToSkColor(deviceColor));
   }
 
   // Either we don't have a valid favicon or there was some issue converting it
