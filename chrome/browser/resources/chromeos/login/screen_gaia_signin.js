@@ -557,13 +557,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadAuthExtension: function(data) {
-      // Redirect the webview to the blank page in order to stop the SAML IdP
-      // page from working in a background (see crbug.com/613245).
-      if (this.screenMode_ == ScreenMode.DEFAULT &&
-          data.screenMode != ScreenMode.DEFAULT) {
-        this.gaiaAuthHost_.resetWebview();
-      }
-
       this.screenMode = data.screenMode;
       this.email = '';
       this.authCompleted_ = false;
@@ -930,7 +923,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     reset: function(takeFocus, forceOnline) {
       // Reload and show the sign-in UI if needed.
-      this.gaiaAuthHost_.resetStates();
+      this.gaiaAuthHost_.resetStates_();
       if (takeFocus) {
         if (!forceOnline && this.isOffline()) {
           // Show 'Cancel' button to allow user to return to the main screen
