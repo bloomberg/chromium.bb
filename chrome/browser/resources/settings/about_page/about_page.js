@@ -50,7 +50,10 @@ Polymer({
   },
 
   /** @private {?settings.AboutPageBrowserProxy} */
-  browserProxy_: null,
+  aboutBrowserProxy_: null,
+
+  /** @private {?settings.LifetimeBrowserProxy} */
+  lifetimeBrowserProxy_: null,
 
   /**
    * @type {string} Selector to get the sections.
@@ -61,8 +64,11 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
-    this.browserProxy_.pageReady();
+    this.aboutBrowserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
+    this.aboutBrowserProxy_.pageReady();
+
+    this.lifetimeBrowserProxy_ =
+        settings.LifetimeBrowserProxyImpl.getInstance();
 
 <if expr="chromeos">
     this.addEventListener('target-channel-changed', function(e) {
@@ -70,8 +76,8 @@ Polymer({
     }.bind(this));
 
     Promise.all([
-      this.browserProxy_.getCurrentChannel(),
-      this.browserProxy_.getTargetChannel(),
+      this.aboutBrowserProxy_.getCurrentChannel(),
+      this.aboutBrowserProxy_.getTargetChannel(),
     ]).then(function(channels) {
       this.currentChannel_ = channels[0];
       this.targetChannel_ = channels[1];
@@ -79,7 +85,7 @@ Polymer({
       this.startListening_();
     }.bind(this));
 
-    this.browserProxy_.getRegulatoryInfo().then(function(info) {
+    this.aboutBrowserProxy_.getRegulatoryInfo().then(function(info) {
       this.regulatoryInfo_ = info;
     }.bind(this));
 </if>
@@ -95,7 +101,7 @@ Polymer({
     this.addWebUIListener(
         'update-status-changed',
         this.onUpdateStatusChanged_.bind(this));
-    this.browserProxy_.refreshUpdateStatus();
+    this.aboutBrowserProxy_.refreshUpdateStatus();
   },
 
   /**
@@ -112,12 +118,12 @@ Polymer({
 
   /** @private */
   onHelpTap_: function() {
-    this.browserProxy_.openHelpPage();
+    this.aboutBrowserProxy_.openHelpPage();
   },
 
   /** @private */
   onRelaunchTap_: function() {
-    this.browserProxy_.relaunchNow();
+    this.lifetimeBrowserProxy_.relaunch();
   },
 
   /**
@@ -253,7 +259,7 @@ Polymer({
 
   /** @private */
   onRelaunchAndPowerwashTap_: function() {
-    // TODO(dpapad): Implement this.
+    this.lifetimeBrowserProxy_.factoryReset();
   },
 
   /**
@@ -268,7 +274,7 @@ Polymer({
   /** @private */
   onCheckUpdatesTap_: function() {
     this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
-    this.browserProxy_.requestUpdate();
+    this.aboutBrowserProxy_.requestUpdate();
   },
 
   /**
@@ -292,7 +298,7 @@ Polymer({
 <if expr="_google_chrome">
   /** @private */
   onReportIssueTap_: function() {
-    this.browserProxy_.openFeedbackDialog();
+    this.aboutBrowserProxy_.openFeedbackDialog();
   },
 </if>
 });

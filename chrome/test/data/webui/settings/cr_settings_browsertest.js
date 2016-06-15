@@ -139,6 +139,7 @@ CrSettingsAboutPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_browser_proxy.js',
+    'test_lifetime_browser_proxy.js',
     'about_page_tests.js',
   ]),
 };

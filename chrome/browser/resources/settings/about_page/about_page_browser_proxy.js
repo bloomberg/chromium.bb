@@ -108,11 +108,6 @@ cr.define('settings', function() {
      */
     refreshUpdateStatus: function() {},
 
-    /**
-     * Relaunches the browser.
-     */
-    relaunchNow: function() {},
-
     /** Opens the help page. */
     openHelpPage: function() {},
 
@@ -165,11 +160,6 @@ cr.define('settings', function() {
     /** @override */
     refreshUpdateStatus: function() {
       chrome.send('refreshUpdateStatus');
-    },
-
-    /** @override */
-    relaunchNow: function() {
-      chrome.send('relaunchNow');
     },
 
     /** @override */

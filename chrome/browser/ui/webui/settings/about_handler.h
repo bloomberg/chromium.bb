@@ -81,9 +81,6 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void PromoteUpdater(const base::ListValue* args);
 #endif
 
-  // Relaunches the browser. |args| must be empty.
-  void HandleRelaunchNow(const base::ListValue* args);
-
   // Opens the feedback dialog. |args| must be empty.
   void HandleOpenFeedbackDialog(const base::ListValue* args);
 

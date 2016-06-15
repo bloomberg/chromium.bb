@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -329,9 +328,6 @@ void AboutHandler::RegisterMessages() {
       base::Bind(&AboutHandler::HandleRefreshUpdateStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "relaunchNow",
-      base::Bind(&AboutHandler::HandleRelaunchNow, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "openFeedbackDialog", base::Bind(&AboutHandler::HandleOpenFeedbackDialog,
                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -457,11 +453,6 @@ void AboutHandler::PromoteUpdater(const base::ListValue* args) {
   version_updater_->PromoteUpdater();
 }
 #endif
-
-void AboutHandler::HandleRelaunchNow(const base::ListValue* args) {
-  DCHECK(args->empty());
-  chrome::AttemptRelaunch();
-}
 
 void AboutHandler::HandleOpenFeedbackDialog(const base::ListValue* args) {
   DCHECK(args->empty());
