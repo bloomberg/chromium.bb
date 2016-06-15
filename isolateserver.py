@@ -5,10 +5,11 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.8'
+__version__ = '0.4.9'
 
 import base64
 import functools
+import errno
 import logging
 import optparse
 import os
@@ -19,8 +20,6 @@ import tempfile
 import threading
 import time
 import types
-import urllib
-import urlparse
 import zlib
 
 from third_party import colorama
@@ -114,6 +113,10 @@ class Error(Exception):
 class Aborted(Error):
   """Operation aborted."""
   pass
+
+
+class AlreadyExists(Error):
+  """File already exists."""
 
 
 def file_read(path, chunk_size=isolated_format.DISK_FILE_CHUNK, offset=0):
@@ -221,8 +224,12 @@ def create_symlinks(base_directory, files):
       logging.warning('Ignoring symlink %s', filepath)
       continue
     outfile = os.path.join(base_directory, filepath)
-    # os.symlink() doesn't exist on Windows.
-    os.symlink(properties['l'], outfile)  # pylint: disable=E1101
+    try:
+      os.symlink(properties['l'], outfile)  # pylint: disable=E1101
+    except OSError as e:
+      if e.errno == errno.EEXIST:
+        raise AlreadyExists('File %s already exists.' % outfile)
+      raise
 
 
 def is_valid_file(path, size):
@@ -1967,8 +1974,10 @@ def fetch_isolated(isolated_hash, storage, cache, outdir):
 
           # Link corresponding files to a fetched item in cache.
           for filepath, props in remaining.pop(digest):
-            cache.hardlink(
-                digest, os.path.join(outdir, filepath), props.get('m'))
+            dest = os.path.join(outdir, filepath)
+            if os.path.exists(dest):
+              raise AlreadyExists('File %s already exists' % dest)
+            cache.hardlink(digest, dest, props.get('m'))
 
           # Report progress.
           duration = time.time() - last_update

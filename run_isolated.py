@@ -16,21 +16,15 @@ The local cache can safely be deleted.
 Any ${EXECUTABLE_SUFFIX} on the command line will be replaced with ".exe" string
 on Windows and "" on other platforms.
 
-If at least one CIPD package was specified, any ${CIPD_PATH} on the command line
-will be replaced by location of a temporary directory that contains installed
-packages.
-
 Any ${ISOLATED_OUTDIR} on the command line will be replaced by the location of a
 temporary directory upon execution of the command specified in the .isolated
 file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 import base64
-import contextlib
-import hashlib
 import logging
 import optparse
 import os
@@ -55,7 +49,6 @@ import isolateserver
 
 
 ISOLATED_OUTDIR_PARAMETER = '${ISOLATED_OUTDIR}'
-CIPD_PATH_PARAMETER = '${CIPD_PATH}'
 EXECUTABLE_SUFFIX_PARAMETER = '${EXECUTABLE_SUFFIX}'
 SWARMING_BOT_FILE_PARAMETER = '${SWARMING_BOT_FILE}'
 
@@ -154,7 +147,7 @@ def change_tree_read_only(rootdir, read_only):
         (rootdir, read_only, read_only))
 
 
-def process_command(command, out_dir, cipd_path, bot_file):
+def process_command(command, out_dir, bot_file):
   """Replaces variables in a command line.
 
   Raises:
@@ -164,27 +157,22 @@ def process_command(command, out_dir, cipd_path, bot_file):
   def fix(arg):
     arg = arg.replace(EXECUTABLE_SUFFIX_PARAMETER, cipd.EXECUTABLE_SUFFIX)
     replace_slash = False
-    if CIPD_PATH_PARAMETER in arg:
-      if not cipd_path:
-        raise ValueError('cipd_path is requested in command, but not provided')
-      arg = arg.replace(CIPD_PATH_PARAMETER, cipd_path)
-      replace_slash = True
     if ISOLATED_OUTDIR_PARAMETER in arg:
       if not out_dir:
         raise ValueError('out_dir is requested in command, but not provided')
       arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
       replace_slash = True
+    if SWARMING_BOT_FILE_PARAMETER in arg:
+      if bot_file:
+        arg = arg.replace(SWARMING_BOT_FILE_PARAMETER, bot_file)
+        replace_slash = True
+      else:
+        logging.warning('SWARMING_BOT_FILE_PARAMETER found in command, but no '
+                        'bot_file specified. Leaving parameter unchanged.')
     if replace_slash:
       # Replace slashes only if parameters are present
       # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
       arg = arg.replace('/', os.sep)
-    if SWARMING_BOT_FILE_PARAMETER in arg:
-      if bot_file:
-        arg = arg.replace(SWARMING_BOT_FILE_PARAMETER, bot_file)
-        arg = arg.replace('/', os.sep)
-      else:
-        logging.warning('SWARMING_BOT_FILE_PARAMETER found in command, but no '
-                        'bot_file specified. Leaving paramater unchanged.')
     return arg
 
   return [fix(arg) for arg in command]
@@ -349,7 +337,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 def map_and_run(
     command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-    hard_timeout, grace_period, bot_file, extra_args, cipd_path, cipd_stats):
+    hard_timeout, grace_period, bot_file, extra_args, install_packages_fn):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -385,8 +373,6 @@ def map_and_run(
     'outputs_ref': None,
     'version': 5,
   }
-  if cipd_stats:
-    result['stats']['cipd'] = cipd_stats
 
   if root_dir:
     file_path.ensure_tree(root_dir, 0700)
@@ -398,6 +384,10 @@ def map_and_run(
   cwd = run_dir
 
   try:
+    cipd_stats = install_packages_fn(run_dir)
+    if cipd_stats:
+      result['stats']['cipd'] = cipd_stats
+
     if isolated_hash:
       isolated_stats = result['stats'].setdefault('isolated', {})
       bundle, isolated_stats['download'] = fetch_and_measure(
@@ -421,7 +411,7 @@ def map_and_run(
       command = bundle.command + extra_args
 
     command = tools.fix_python_path(command)
-    command = process_command(command, out_dir, cipd_path, bot_file)
+    command = process_command(command, out_dir, bot_file)
     file_path.ensure_command_has_abs_path(command, cwd)
 
     sys.stdout.flush()
@@ -432,8 +422,8 @@ def map_and_run(
     finally:
       result['duration'] = max(time.time() - start, 0)
   except Exception as e:
-    # An internal error occured. Report accordingly so the swarming task will be
-    # retried automatically.
+    # An internal error occurred. Report accordingly so the swarming task will
+    # be retried automatically.
     logging.exception('internal failure: %s', e)
     result['internal_failure'] = str(e)
     on_error.report(None)
@@ -495,7 +485,7 @@ def map_and_run(
 def run_tha_test(
     command, isolated_hash, storage, cache, leak_temp_dir, result_json,
     root_dir, hard_timeout, grace_period, bot_file, extra_args,
-    cipd_path, cipd_stats):
+    install_packages_fn):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -525,16 +515,14 @@ def run_tha_test(
                    for later examination.
     result_json: file path to dump result metadata into. If set, the process
                  exit code is always 0 unless an internal error occurred.
-    root_dir: directory to the path to use to create the temporary directory. If
+    root_dir: path to the directory to use to create the temporary directory. If
               not specified, a random temporary directory is created.
     hard_timeout: kills the process if it lasts more than this amount of
                   seconds.
     grace_period: number of seconds to wait between SIGTERM and SIGKILL.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file. Ignored if isolate_hash is empty.
-    cipd_path: value for CIPD_PATH_PARAMETER. If empty, command or extra_args
-               must not use CIPD_PATH_PARAMETER.
-    cipd_stats: CIPD stats to include in the metadata written to result_json.
+    install_packages_fn: function (dir) => cipd_stats. Installs packages.
 
   Returns:
     Process exit code that should be used.
@@ -554,14 +542,12 @@ def run_tha_test(
       'outputs_ref': None,
       'version': 5,
     }
-    if cipd_stats:
-      result['stats'] = {'cipd': cipd_stats}
     tools.write_json(result_json, result, dense=True)
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
       command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-      hard_timeout, grace_period, bot_file, extra_args, cipd_path, cipd_stats)
+      hard_timeout, grace_period, bot_file, extra_args, install_packages_fn)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -587,68 +573,60 @@ def run_tha_test(
   return result['exit_code'] or int(bool(result['internal_failure']))
 
 
-@contextlib.contextmanager
-def ensure_packages(
-    site_root, packages, service_url, client_package, cache_dir=None,
-    timeout=None):
-  """Returns a context manager that installs packages into site_root.
-
-  Creates/recreates site_root dir and install packages before yielding.
-  After yielding deletes site_root dir.
+def install_packages(
+    run_dir, package_list_file, service_url, client_package_name,
+    client_version, cache_dir=None, timeout=None):
+  """Installs packages. Returns stats.
 
   Args:
-    site_root (str): where to install the packages.
-    packages (list of str): list of package to ensure.
-      Package format is same as for "--cipd-package" option.
+    run_dir (str): root of installation.
+    package_list_file (str): path to a file with a list of packages to install.
     service_url (str): CIPD server url, e.g.
       "https://chrome-infra-packages.appspot.com."
-    client_package (str): CIPD package of CIPD client.
-      Format is same as for "--cipd-package" option.
+    client_package_name (str): CIPD package name of CIPD client.
+    client_version (str): Version of CIPD client.
     cache_dir (str): where to keep cache of cipd clients, packages and tags.
     timeout: max duration in seconds that this function can take.
-
-  Yields:
-    CIPD stats as dict.
   """
   assert cache_dir
+  if not package_list_file:
+    return None
+
   timeoutfn = tools.sliding_timeout(timeout)
-  if not packages:
-    yield
-    return
-
   start = time.time()
-
   cache_dir = os.path.abspath(cache_dir)
 
-  # Get CIPD client.
-  client_package_name, client_version = cipd.parse_package(client_package)
+  run_dir = os.path.abspath(run_dir)
+  package_list = cipd.parse_package_list_file(package_list_file)
+
   get_client_start = time.time()
   client_manager = cipd.get_client(
       service_url, client_package_name, client_version, cache_dir,
       timeout=timeoutfn())
   with client_manager as client:
     get_client_duration = time.time() - get_client_start
-    # Create site_root, install packages, yield, delete site_root.
-    if fs.isdir(site_root):
-      file_path.rmtree(site_root)
-    file_path.ensure_tree(site_root, 0770)
-    try:
+    for path, packages in package_list.iteritems():
+      site_root = os.path.abspath(os.path.join(run_dir, path))
+      if not site_root.startswith(run_dir):
+        raise cipd.Error('Invalid CIPD package path "%s"' % path)
+
+      # Do not clean site_root before installation because it may contain other
+      # site roots.
+      file_path.ensure_tree(site_root, 0770)
       client.ensure(
           site_root, packages,
           cache_dir=os.path.join(cache_dir, 'cipd_internal'),
           timeout=timeoutfn())
-
-      total_duration = time.time() - start
-      logging.info(
-          'Installing CIPD client and packages took %d seconds', total_duration)
-
       file_path.make_tree_files_read_only(site_root)
-      yield {
-        'duration': total_duration,
-        'get_client_duration': get_client_duration,
-      }
-    finally:
-      file_path.rmtree(site_root)
+
+  total_duration = time.time() - start
+  logging.info(
+      'Installing CIPD client and packages took %d seconds', total_duration)
+
+  return {
+    'duration': total_duration,
+    'get_client_duration': get_client_duration,
+  }
 
 
 def create_option_parser():
@@ -730,47 +708,35 @@ def main(args):
       parser.error(
         '%s in args requires --isolate-server' % ISOLATED_OUTDIR_PARAMETER)
 
+  if options.root_dir:
+    options.root_dir = unicode(os.path.abspath(options.root_dir))
   if options.json:
     options.json = unicode(os.path.abspath(options.json))
 
   cipd.validate_cipd_options(parser, options)
 
-  root_dir = options.root_dir
-  if root_dir:
-    root_dir = unicode(os.path.abspath(root_dir))
-    file_path.ensure_tree(root_dir, 0700)
-  else:
-    root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
-
-  cipd_path = None
-  if not options.cipd_package:
-    if CIPD_PATH_PARAMETER in args:
-      parser.error('%s in args requires --cipd-package' % CIPD_PATH_PARAMETER)
-  else:
-    cipd_path = make_temp_dir(u'cipd_site_root', root_dir)
+  install_packages_fn = lambda run_dir: install_packages(
+      run_dir, options.cipd_package_list, options.cipd_server,
+      options.cipd_client_package, options.cipd_client_version,
+      cache_dir=options.cipd_cache)
 
   try:
-    with ensure_packages(
-        cipd_path, options.cipd_package, options.cipd_server,
-        options.cipd_client_package, options.cipd_cache) as cipd_stats:
-      command = [] if options.isolated else args
-      if options.isolate_server:
-        storage = isolateserver.get_storage(
-            options.isolate_server, options.namespace)
-        with storage:
-          # Hashing schemes used by |storage| and |cache| MUST match.
-          assert storage.hash_algo == cache.hash_algo
-          return run_tha_test(
-              command, options.isolated, storage, cache, options.leak_temp_dir,
-              options.json, root_dir, options.hard_timeout,
-              options.grace_period, options.bot_file, args,
-              cipd_path, cipd_stats)
-      else:
+    command = [] if options.isolated else args
+    if options.isolate_server:
+      storage = isolateserver.get_storage(
+          options.isolate_server, options.namespace)
+      with storage:
+        # Hashing schemes used by |storage| and |cache| MUST match.
+        assert storage.hash_algo == cache.hash_algo
         return run_tha_test(
-            command, options.isolated, None, cache, options.leak_temp_dir,
-            options.json, root_dir, options.hard_timeout,
-            options.grace_period, options.bot_file, args,
-            cipd_path, cipd_stats)
+            command, options.isolated, storage, cache, options.leak_temp_dir,
+            options.json, options.root_dir, options.hard_timeout,
+            options.grace_period, options.bot_file, args, install_packages_fn)
+    else:
+      return run_tha_test(
+          command, options.isolated, None, cache, options.leak_temp_dir,
+          options.json, options.root_dir, options.hard_timeout,
+          options.grace_period, options.bot_file, args, install_packages_fn)
   except cipd.Error as ex:
     print >> sys.stderr, ex.message
     return 1

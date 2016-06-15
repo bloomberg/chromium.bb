@@ -4,9 +4,11 @@
 
 """Fetches CIPD client and installs packages."""
 
-__version__ = '0.1'
+__version__ = '0.2'
 
+import collections
 import contextlib
+import json
 import hashlib
 import logging
 import optparse
@@ -38,23 +40,32 @@ def add_cipd_options(parser):
   group = optparse.OptionGroup(parser, 'CIPD')
   group.add_option(
       '--cipd-server',
-      help='URL of the CIPD server. Only relevant with --cipd-package.')
+      help='URL of the CIPD server. Only relevant with --cipd-package-list.')
   group.add_option(
       '--cipd-client-package',
-      help='Package of CIPD client. See --cipd-package for format. '
-           'Only relevant with --cipd-package. '
+      help='Package name of CIPD client with optional parameters described in '
+           '--cipd-package-list help. '
+           'Only relevant with --cipd-package-list. '
            'Default: "%default"',
-      default='infra/tools/cipd/${platform}:latest')
+      default='infra/tools/cipd/${platform}')
   group.add_option(
-      '--cipd-package',
-      help='CIPD package to install. '
-           'Format: "<package name template>:<version>". '
-           'Package name template is a CIPD package name with optional '
-           '${platform} and/or ${os_ver} parameters. '
+      '--cipd-client-version',
+      help='Version of CIPD client. '
+           'Only relevant with --cipd-package-list. '
+           'Default: "%default"',
+      default='latest')
+  group.add_option(
+      '--cipd-package-list',
+      help='Path to file that contains the list of CIPD packages to install. '
+           'It should be a JSON object with property "packages" which is a list'
+           'of package JSON objects. Each package must have "package_name" and '
+           '"version" properties, and may have "path" property. '
+           '"package_name" may have ${platform} and/or ${os_ver} parameters. '
            '${platform} will be expanded to "<os>-<architecture>" and '
            '${os_ver} will be expanded to OS version name. '
-           'This option can be specified more than once.',
-      action='append')
+           '"path" is destination directory relative to run_dir, '
+           'defaults to ".".'
+  )
   group.add_option(
       '--cipd-cache',
       help='CIPD cache directory, separate from isolate cache. '
@@ -66,25 +77,17 @@ def add_cipd_options(parser):
 
 def validate_cipd_options(parser, options):
   """Calls parser.error on first found error among cipd options."""
-  if not options.cipd_package:
+  if not options.cipd_package_list:
     return
-  for p in options.cipd_package:
-    try:
-      parse_package(p)
-    except ValueError as ex:
-      parser.error('Invalid cipd package %r: %s' % (p, ex))
-
   if not options.cipd_server:
-    parser.error('--cipd-package requires non-empty --cipd-server')
+    parser.error('--cipd-package-list requires non-empty --cipd-server')
 
   if not options.cipd_client_package:
-    parser.error('--cipd-package requires non-empty --cipd-client-package')
-  try:
-    parse_package(options.cipd_client_package)
-  except ValueError as ex:
     parser.error(
-        'Invalid cipd client package %r: %s' %
-        (options.cipd_client_package, ex))
+        '--cipd-package-list requires non-empty --cipd-client-package')
+  if not options.cipd_client_version:
+    parser.error(
+        '--cipd-package-list requires non-empty --cipd-client-version')
 
 
 class CipdClient(object):
@@ -109,7 +112,7 @@ class CipdClient(object):
 
     Args:
       site_root (str): where to install packages.
-      packages (str): list of packages to install, parsable by parse_pacakge().
+      packages: list of (package_template, version) tuples.
       cache_dir (str): if set, cache dir for cipd binary own cache.
         Typically contains packages and tags.
       tmp_dir (str): if not None, dir for temp files.
@@ -125,8 +128,7 @@ class CipdClient(object):
         dir=tmp_dir, prefix=u'cipd-ensure-list-', suffix='.txt')
     try:
       try:
-        for p in packages:
-          pkg, version = parse_package(p)
+        for pkg, version in packages:
           pkg = render_package_name_template(pkg)
           os.write(list_file_handle, '%s %s\n' % (pkg, version))
       finally:
@@ -234,23 +236,6 @@ def render_package_name_template(template):
       .lower()  # Package names are always lower case
       .replace('${platform}', get_platform())
       .replace('${os_ver}', get_os_ver()))
-
-
-def parse_package(package):
-  """Parses a package in --cipd-package format.
-
-  Returns:
-    (package_name_template, version) tuple.
-
-  Raises:
-    ValueError if package name or version is not specified.
-  """
-  if not package:
-    raise ValueError('package is not specified')
-  parts = package.split(':', 1)
-  if len(parts) != 2:
-    raise ValueError('version is not specified')
-  return tuple(parts)
 
 
 def _check_response(res, fmt, *args):
@@ -399,3 +384,29 @@ def get_client(
     instance_cache.hardlink(instance_id, binary_path, 0511)  # -r-x--x--x
 
     yield CipdClient(binary_path)
+
+
+def parse_package_list_file(path):
+  """Returns a map {site_root_path: [(package, version)]} read from file.
+
+  Slashes in site_root_path are replaced with os.path.sep.
+  """
+  with open(path) as f:
+    try:
+      parsed = json.load(f)
+    except ValueError as ex:
+      raise Error('Invalid package list file: %s' % ex)
+
+  packages = collections.defaultdict(list)
+  for package in parsed.get('packages') or []:
+    path = package.get('path') or '.'
+    path = path.replace('/', os.path.sep)
+
+    name = package.get('package_name')
+    if not name:
+      raise Error('Invalid package list file: package name is not specified')
+    version = package.get('version')
+    if not version:
+      raise Error('Invalid package list file: package version is not specified')
+    packages[path].append((name, version))
+  return packages
