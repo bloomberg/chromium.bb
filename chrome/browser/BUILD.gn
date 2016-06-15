@@ -80,9 +80,9 @@ if (is_desktop_linux) {
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient. However, on
-# x64 official builds the static library will be too large (> 32-bits) so use
-# source sets in that case.
-if (is_mac || (current_cpu == "x64" && is_official_build)) {
+# Windows official builds the static library will be too large (> 32-bits) so
+# use source sets in that case.
+if (is_mac || (is_win && is_official_build)) {
   # TODO(brettw) bug 618797: Remove the mac condition. On Mac making this
   # target a static_library causes a crash on startup and the browser_tests all
   # fail. My guess is this is due to a required static initializer not being
