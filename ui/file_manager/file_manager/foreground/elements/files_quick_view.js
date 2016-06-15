@@ -6,10 +6,18 @@ var FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
+    filePath: String, // TODO(oka): Fill filePath. Show it on toolbar.
     image: String,
     video: String,
     videoPoster: String,
     audio: String,
+
+    // metadata-box-active-changed event is fired on attribute change.
+    metadataBoxActive: {
+      value: true,
+      type: Boolean,
+      notify: true,
+    }
   },
 
   listeners: {
@@ -53,4 +61,8 @@ var FilesQuickView = Polymer({
     // Update ['opened'] to .opened.
     return (/** @type{Object} */ (this.$.dialog))['opened'];
   },
+
+  getFilesMetadataBox: function() {
+    return this.$['metadata-box'];
+  }
 });

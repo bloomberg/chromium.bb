@@ -100,6 +100,13 @@ function FileManager() {
   this.providersModel_ = null;
 
   /**
+   * Model for quick view.
+   * @type {QuickViewModel}
+   * @private
+   */
+  this.quickViewModel_ = null;
+
+  /**
    * Controller for actions for current selection.
    * @private {ActionsController}
    */
@@ -259,6 +266,12 @@ function FileManager() {
    * @private
    */
   this.quickViewController_ = null;
+
+  /**
+   * @type {MetadataBoxController}
+   * @private
+   */
+  this.metadataBoxController_ = null;
 
   // --------------------------------------------------------------------------
   // DOM elements.
@@ -516,16 +529,20 @@ FileManager.prototype = /** @struct */ {
         this.backgroundPage_.background.driveSyncHandler,
         this.selectionHandler_, assert(this.ui_));
 
+    this.quickViewModel_ = new QuickViewModel();
     /**@private {!FilesQuickView} */
-    var quickView =/** @type {!FilesQuickView} */
+    var quickView = /** @type {!FilesQuickView} */
         (queryRequiredElement('#quick-view'));
     chrome.commandLinePrivate.hasSwitch(
         'disable-files-quick-view', function(disabled) {
           if (!disabled) {
             this.quickViewController_ = new QuickViewController(
-                quickView,
-                assert(this.metadataModel_), assert(this.selectionHandler_),
-                assert(this.ui_.listContainer));
+                quickView, assert(this.metadataModel_),
+                assert(this.selectionHandler_), assert(this.ui_.listContainer),
+                assert(this.quickViewModel_));
+            this.metadataBoxController_ = new MetadataBoxController(
+                this.metadataModel_, quickView.getFilesMetadataBox(), quickView,
+                this.quickViewModel_);
           }
         }.bind(this));
 

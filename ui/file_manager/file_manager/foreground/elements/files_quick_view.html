@@ -4,7 +4,12 @@
 -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="files_metadata_box.html">
+<link rel="import" href="icons.html">
 
 <dom-module id="files-quick-view">
   <style>
@@ -12,40 +17,61 @@
       display: block;
     }
     paper-dialog {
-      height: 100%;
-      width: 100%;
       background: black;
+      height: 100%;
       margin: 10px;
+      width: 100%;
     }
     img, video, audio {
-      position: absolute;
-      top: 0;
       bottom: 0;
       left: 0;
-      right: 0;
       margin: auto;
-      max-width: 100%;
       max-height: 100%;
+      max-width: 100%;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    #toolbar {
+      --paper-toolbar-background: rgba(0, 0, 0, 0.5);
+      color: white;
+      margin: 0;
+      z-index: 1;
+    }
+    #metadata-box[hidden] {
+      display: none;
     }
   </style>
   <template>
     <paper-dialog id="dialog">
-      <template is="dom-if" if="[[image]]">
+      <paper-toolbar id="toolbar">
+        [[filePath]]
+         <paper-button>
+           <iron-icon icon="files:open-in-new" id="open"></iron-icon>
+         </paper-button>
+         <paper-button toggles active="{{metadataBoxActive}}">
+           <iron-icon  icon="files:info-outline" id="info"></iron-icon>
+         </paper-button>
+         <paper-button>
+           <iron-icon icon="files:close" id="close"></iron-icon>
+         </paper-button>
+      </paper-toolbar>
+      <template class="content" is="dom-if" if="[[image]]">
         <div>
           <img src="[[image]]"/>
         </div>
       </template>
-      <template is="dom-if" if="[[video]]">
+      <template class="content" is="dom-if" if="[[video]]">
         <div>
           <video controls autoplay src="[[video]]" poster="[[videoPoster]]"/>
         </div>
       </template>
-      <template is="dom-if" if="[[audio]]">
+      <template class="content" is="dom-if" if="[[audio]]">
         <div>
           <audio autoplay controls src="[[audio]]"/>
         </div>
       </template>
-      <!-- TODO(oka): Add open and info buttons. -->
+      <files-metadata-box id="metadata-box" hidden="{{!metadataBoxActive}}"></file-metadata-box>
     </paper-dialog>
   </template>
 </dom-module>

@@ -9,11 +9,12 @@
  * @param {!MetadataModel} metadataModel File system metadata.
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!ListContainer} listContainer
+ * @param {!QuickViewModel} quickViewModel
  *
  * @constructor
  */
 function QuickViewController(
-    quickView, metadataModel, selectionHandler, listContainer) {
+    quickView, metadataModel, selectionHandler, listContainer, quickViewModel) {
   /**
    * @type {!FilesQuickView}
    * @private
@@ -21,12 +22,10 @@ function QuickViewController(
   this.quickView_ = quickView;
 
   /**
-   * Selected entries.
-   *
-   * @type {!Array<FileEntry>}
+   * @type{!QuickViewModel}
    * @private
    */
-  this.entries_ = [];
+  this.quickViewModel_ = quickViewModel;
 
   /**
    * @type {!MetadataModel}
@@ -39,6 +38,14 @@ function QuickViewController(
    * @private
    */
   this.listContainer_ = listContainer;
+
+  /**
+   * Current selection of selectionHandler.
+   *
+   * @type {!Array<!FileEntry>}
+   * @private
+   */
+  this.entries_ = [];
 
   selectionHandler.addEventListener(
       FileSelectionHandler.EventType.CHANGE,
@@ -94,12 +101,15 @@ QuickViewController.prototype.display_ = function() {
 /**
  * Update quick view on file selection change.
  *
+ * @param {!Event} event an Event whose target is FileSelectionHandler.
  * @private
  */
 QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
   this.entries_ = event.target.selection.entries;
   if (this.quickView_.isOpened()) {
     assert(this.entries_.length > 0);
+    var entry = this.entries_[0];
+    this.quickViewModel_.setSelectedEntry(entry);
     this.display_();
   }
 };
@@ -113,8 +123,11 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
 QuickViewController.prototype.updateQuickView_ = function() {
   assert(this.entries_.length > 0);
   // TODO(oka): Support multi-selection.
+  this.quickViewModel_.setSelectedEntry(this.entries_[0]);
 
-  var entry = (/** @type {!FileEntry} */ (this.entries_[0]));
+  var entry =
+      (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
+  assert(entry);
   return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
       .then(this.onMetadataLoaded_.bind(this, entry));
 };

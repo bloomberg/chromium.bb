@@ -1,0 +1,30 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+-->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="files-metadata-box">
+  <style>
+    :host {
+      display: block;
+    }
+    #box {
+      background: white;
+      overflow: auto;
+      position: absolute;
+    }
+  </style>
+  <template>
+    <div id="box">
+      <!-- TODO(oka): use paper-card -->
+      <div>
+        size: [[size]]<br>
+        modificationTime: [[modificationTime]]
+      </div>
+    </div>
+  </template>
+</dom-module>
+
+<script src="files_metadata_box.js"></script>

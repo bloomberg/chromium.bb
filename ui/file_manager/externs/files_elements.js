@@ -48,3 +48,10 @@ FilesToast.prototype.hide = function() {};
  * @extends {PolymerElement}
  */
 function FilesQuickView() {}
+
+/**
+ * @constructor
+ * @struct
+ * @extends {PolymerElement}
+ */
+function FilesMetadataBox() {}
