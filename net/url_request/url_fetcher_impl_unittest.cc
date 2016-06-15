@@ -1521,7 +1521,7 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPS) {
             delegate.fetcher()->GetStatus().status());
   EXPECT_EQ(ERR_ABORTED, delegate.fetcher()->GetStatus().error());
   EXPECT_EQ(-1, delegate.fetcher()->GetResponseCode());
-  EXPECT_TRUE(delegate.fetcher()->GetCookies().empty());
+  EXPECT_FALSE(delegate.fetcher()->GetResponseHeaders());
   std::string data;
   EXPECT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_TRUE(data.empty());

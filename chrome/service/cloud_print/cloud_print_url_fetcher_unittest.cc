@@ -100,7 +100,6 @@ class CloudPrintURLFetcherTest : public testing::Test,
       const GURL& url,
       const net::URLRequestStatus& status,
       int response_code,
-      const net::ResponseCookies& cookies,
       const std::string& data) override;
 
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override {
@@ -152,7 +151,6 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
       const GURL& url,
       const net::URLRequestStatus& status,
       int response_code,
-      const net::ResponseCookies& cookies,
       const std::string& data) override;
 
   CloudPrintURLFetcher::ResponseAction HandleRawData(
@@ -235,7 +233,6 @@ CloudPrintURLFetcherTest::HandleRawResponse(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   EXPECT_TRUE(status.is_success());
   EXPECT_EQ(200, response_code);  // HTTP OK
@@ -249,7 +246,6 @@ CloudPrintURLFetcherBasicTest::HandleRawResponse(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   EXPECT_TRUE(status.is_success());
   EXPECT_EQ(200, response_code);  // HTTP OK

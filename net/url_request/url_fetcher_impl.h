@@ -89,7 +89,6 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   const GURL& GetURL() const override;
   const URLRequestStatus& GetStatus() const override;
   int GetResponseCode() const override;
-  const ResponseCookies& GetCookies() const override;
   void ReceivedContentWasMalformed() override;
   bool GetResponseAsString(std::string* out_response_string) const override;
   bool GetResponseAsFilePath(bool take_ownership,

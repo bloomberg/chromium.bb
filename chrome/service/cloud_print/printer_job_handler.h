@@ -121,7 +121,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       const GURL& url,
       const net::URLRequestStatus& status,
       int response_code,
-      const net::ResponseCookies& cookies,
       const std::string& data) override;
   CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,

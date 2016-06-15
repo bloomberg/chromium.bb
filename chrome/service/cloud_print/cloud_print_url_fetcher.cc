@@ -106,7 +106,6 @@ CloudPrintURLFetcher::Delegate::HandleRawResponse(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   return CONTINUE_PROCESSING;
 }
@@ -175,7 +174,6 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       source->GetURL(),
       source->GetStatus(),
       source->GetResponseCode(),
-      source->GetCookies(),
       data);
 
   // If we get auth error, notify delegate and check if it wants to proceed.

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -51,6 +52,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -477,11 +479,12 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
       const std::string& cookie_string) {
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
-    net::ResponseCookies cookies;
-    cookies.push_back(cookie_string);
+    scoped_refptr<net::HttpResponseHeaders> reponse_headers =
+        new net::HttpResponseHeaders("");
+    reponse_headers->AddCookie(cookie_string);
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(net::HTTP_OK);
-    fetcher->set_cookies(cookies);
+    fetcher->set_response_headers(reponse_headers);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 

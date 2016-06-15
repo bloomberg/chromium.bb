@@ -27,7 +27,6 @@ class MockFetcher : public net::TestURLFetcher {
   MockFetcher(const GURL& url,
               const net::URLRequestStatus& status,
               int response_code,
-              const net::ResponseCookies& cookies,
               const std::string& results,
               net::URLFetcher::RequestType request_type,
               net::URLFetcherDelegate* d);

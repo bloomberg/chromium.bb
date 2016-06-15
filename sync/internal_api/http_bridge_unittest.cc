@@ -157,15 +157,12 @@ class ShuntedHttpBridge : public HttpBridge {
 
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
-    // We return no cookies and a dummy content response.
-    net::ResponseCookies cookies;
-
+    // We return a dummy content response.
     std::string response_content = "success!";
     net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
     scoped_refptr<net::HttpResponseHeaders> response_headers(
         new net::HttpResponseHeaders(""));
     fetcher.set_response_code(200);
-    fetcher.set_cookies(cookies);
     fetcher.SetResponseString(response_content);
     fetcher.set_response_headers(response_headers);
     OnURLFetchComplete(&fetcher);
@@ -435,11 +432,9 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   // a reference to the bridge to mimic URLFetcher's handling of the delegate.
   net::URLFetcherDelegate* delegate =
       static_cast<net::URLFetcherDelegate*>(bridge_for_race_test());
-  net::ResponseCookies cookies;
   std::string response_content = "success!";
   net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
   fetcher.set_response_code(200);
-  fetcher.set_cookies(cookies);
   fetcher.SetResponseString(response_content);
   ASSERT_TRUE(io_thread()->task_runner()->PostTask(
       FROM_HERE,

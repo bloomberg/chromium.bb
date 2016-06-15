@@ -73,7 +73,6 @@ class CloudPrintURLFetcher
         const GURL& url,
         const net::URLRequestStatus& status,
         int response_code,
-        const net::ResponseCookies& cookies,
         const std::string& data);
 
     // This will be invoked only if HandleRawResponse returns

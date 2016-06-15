@@ -47,7 +47,6 @@ namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
-typedef std::vector<std::string> ResponseCookies;
 }  // namespace net
 
 namespace safe_browsing {
@@ -191,7 +190,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
                              const GURL& url,
                              const net::URLRequestStatus& status,
                              int response_code,
-                             const net::ResponseCookies& cookies,
                              const std::string& data);
 
   // Called by OnURLFetchComplete to handle the server response from
@@ -200,7 +198,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
                             const GURL& url,
                             const net::URLRequestStatus& status,
                             int response_code,
-                            const net::ResponseCookies& cookies,
                             const std::string& data);
 
   // Invalidate cache results which are no longer useful.

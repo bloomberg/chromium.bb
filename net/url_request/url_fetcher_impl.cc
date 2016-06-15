@@ -187,10 +187,6 @@ int URLFetcherImpl::GetResponseCode() const {
   return core_->GetResponseCode();
 }
 
-const ResponseCookies& URLFetcherImpl::GetCookies() const {
-  return core_->GetCookies();
-}
-
 void URLFetcherImpl::ReceivedContentWasMalformed() {
   core_->ReceivedContentWasMalformed();
 }

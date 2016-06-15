@@ -59,11 +59,6 @@ class URLRequestContext;
 class URLRequestJob;
 class X509Certificate;
 
-// This stores the values of the Set-Cookie headers received during the request.
-// Each item in the vector corresponds to a Set-Cookie: line received,
-// excluding the "Set-Cookie:" part.
-typedef std::vector<std::string> ResponseCookies;
-
 //-----------------------------------------------------------------------------
 // A class  representing the asynchronous load of a data stream from an URL.
 //
@@ -492,12 +487,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Returns true and fills in |endpoint| if the endpoint is available; returns
   // false and leaves |endpoint| unchanged if it is unavailable.
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
-
-  // Returns the cookie values included in the response, if the request is one
-  // that can have cookies.  Returns true if the request is a cookie-bearing
-  // type, false otherwise.  This method may only be called once the
-  // delegate's OnResponseStarted method has been called.
-  bool GetResponseCookies(ResponseCookies* cookies);
 
   // Get the mime type.  This method may only be called once the delegate's
   // OnResponseStarted method has been called.

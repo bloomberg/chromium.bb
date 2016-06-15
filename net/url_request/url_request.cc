@@ -388,11 +388,6 @@ bool URLRequest::GetRemoteEndpoint(IPEndPoint* endpoint) const {
   return job_->GetRemoteEndpoint(endpoint);
 }
 
-bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
-  DCHECK(job_.get());
-  return job_->GetResponseCookies(cookies);
-}
-
 void URLRequest::GetMimeType(string* mime_type) const {
   DCHECK(job_.get());
   job_->GetMimeType(mime_type);

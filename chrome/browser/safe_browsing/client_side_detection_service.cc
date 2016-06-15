@@ -206,14 +206,12 @@ void ClientSideDetectionService::OnURLFetchComplete(
   source->GetResponseAsString(&data);
 
   if (client_phishing_reports_.find(source) != client_phishing_reports_.end()) {
-    HandlePhishingVerdict(
-        source, source->GetURL(), source->GetStatus(),
-        source->GetResponseCode(), source->GetCookies(), data);
+    HandlePhishingVerdict(source, source->GetURL(), source->GetStatus(),
+                          source->GetResponseCode(), data);
   } else if (client_malware_reports_.find(source) !=
              client_malware_reports_.end()) {
-    HandleMalwareVerdict(
-        source, source->GetURL(), source->GetStatus(),
-        source->GetResponseCode(), source->GetCookies(), data);
+    HandleMalwareVerdict(source, source->GetURL(), source->GetStatus(),
+                         source->GetResponseCode(), data);
   } else {
     NOTREACHED();
   }
@@ -370,7 +368,6 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   ClientPhishingResponse response;
   std::unique_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
@@ -397,7 +394,6 @@ void ClientSideDetectionService::HandleMalwareVerdict(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   if (status.is_success()) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(

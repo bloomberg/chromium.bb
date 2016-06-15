@@ -168,7 +168,6 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   // Handles the URL request response.
   void HandleResponse(const net::URLRequestStatus& status,
                       int response_code,
-                      const net::ResponseCookies& cookies,
                       const std::string& data);
 
   // Gets the URL to contact.
@@ -243,7 +242,6 @@ void DeviceManagementRequestJobImpl::Run() {
 void DeviceManagementRequestJobImpl::HandleResponse(
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   if (status.status() != net::URLRequestStatus::SUCCESS) {
     LOG(WARNING) << "DMServer request failed, status: " << status.status()
@@ -557,8 +555,7 @@ void DeviceManagementService::OnURLFetchComplete(
   } else {
     std::string data;
     source->GetResponseAsString(&data);
-    job->HandleResponse(source->GetStatus(), source->GetResponseCode(),
-                        source->GetCookies(), data);
+    job->HandleResponse(source->GetStatus(), source->GetResponseCode(), data);
   }
   delete source;
 }

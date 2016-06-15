@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -44,6 +45,7 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -240,10 +242,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       fetcher = PrepareOAuthFetcher(gaia_urls->client_login_to_oauth2_url());
       if (!fetcher)
         return NULL;
-      net::ResponseCookies cookies;
-      cookies.push_back(kOAuthCodeCookie);
 
-      fetcher->set_cookies(cookies);
+      scoped_refptr<net::HttpResponseHeaders> reponse_headers =
+          new net::HttpResponseHeaders("");
+      reponse_headers->AddCookie(kOAuthCodeCookie);
+      fetcher->set_response_headers(reponse_headers);
       fetcher->delegate()->OnURLFetchComplete(fetcher);
 
       // Issue the refresh token.

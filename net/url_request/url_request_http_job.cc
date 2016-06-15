@@ -1206,17 +1206,6 @@ bool URLRequestHttpJob::GetRemoteEndpoint(IPEndPoint* endpoint) const {
   return transaction_->GetRemoteEndpoint(endpoint);
 }
 
-bool URLRequestHttpJob::GetResponseCookies(std::vector<std::string>* cookies) {
-  DCHECK(transaction_.get());
-
-  if (!response_info_)
-    return false;
-
-  cookies->clear();
-  FetchResponseCookies(cookies);
-  return true;
-}
-
 int URLRequestHttpJob::GetResponseCode() const {
   DCHECK(transaction_.get());
 

@@ -34,7 +34,6 @@ class URLFetcherDelegate;
 class URLFetcherResponseWriter;
 class URLRequestContextGetter;
 class URLRequestStatus;
-typedef std::vector<std::string> ResponseCookies;
 
 // To use this class, create an instance with the desired URL and a pointer to
 // the object to be notified when the URL has been loaded:
@@ -315,9 +314,6 @@ class NET_EXPORT URLFetcher {
   // The http response code received. Will return RESPONSE_CODE_INVALID
   // if an error prevented any response from being received.
   virtual int GetResponseCode() const = 0;
-
-  // Cookies received.
-  virtual const ResponseCookies& GetCookies() const = 0;
 
   // Reports that the received content was malformed.
   virtual void ReceivedContentWasMalformed() = 0;

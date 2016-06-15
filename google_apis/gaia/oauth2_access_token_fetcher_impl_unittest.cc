@@ -28,7 +28,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using net::ResponseCookies;
 using net::ScopedURLFetcherFactory;
 using net::TestURLFetcher;
 using net::URLFetcher;

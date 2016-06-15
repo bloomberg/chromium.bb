@@ -135,7 +135,6 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const net::ResponseCookies& cookies,
     const std::string& data) {
   // 415 (Unsupported media type) error while fetching data from the server
   // means data conversion error. Stop fetching process and mark job as error.

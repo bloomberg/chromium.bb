@@ -139,12 +139,6 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // false and leaves |endpoint| unchanged if it is unavailable.
   virtual bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
 
-  // Returns the cookie values included in the response, if applicable.
-  // Returns true if applicable.
-  // NOTE: This removes the cookies from the job, so it will only return
-  //       useful results once per job.
-  virtual bool GetResponseCookies(std::vector<std::string>* cookies);
-
   // Populates the network error details of the most recent origin that the
   // network stack makes the request to.
   virtual void PopulateNetErrorDetails(NetErrorDetails* details) const;

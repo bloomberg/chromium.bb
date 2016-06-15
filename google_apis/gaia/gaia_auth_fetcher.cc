@@ -72,6 +72,19 @@ bool ExtractOAuth2TokenPairResponse(const std::string& data,
   return true;
 }
 
+void GetCookiesFromResponse(const net::HttpResponseHeaders* headers,
+                            net::ResponseCookies* cookies) {
+  if (!headers)
+    return;
+
+  std::string value;
+  size_t iter = 0;
+  while (headers->EnumerateHeader(&iter, "Set-Cookie", &value)) {
+    if (!value.empty())
+      cookies->push_back(value);
+  }
+}
+
 const char kListIdpServiceRequested[] = "list_idp";
 const char kGetTokenResponseRequested[] = "get_token";
 
@@ -944,8 +957,9 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DVLOG(2) << "data: " << data << "\n";
 #endif
 
-  DispatchFetchedRequest(url, data, source->GetCookies(), status,
-                         response_code);
+  net::ResponseCookies cookies;
+  GetCookiesFromResponse(source->GetResponseHeaders(), &cookies);
+  DispatchFetchedRequest(url, data, cookies, status, response_code);
 }
 
 void GaiaAuthFetcher::DispatchFetchedRequest(

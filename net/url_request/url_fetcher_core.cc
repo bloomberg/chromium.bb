@@ -348,10 +348,6 @@ int URLFetcherCore::GetResponseCode() const {
   return response_code_;
 }
 
-const ResponseCookies& URLFetcherCore::GetCookies() const {
-  return cookies_;
-}
-
 void URLFetcherCore::ReceivedContentWasMalformed() {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (network_task_runner_.get()) {
@@ -472,8 +468,6 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   } while (request_->Read(buffer_.get(), kBufferSize, &bytes_read));
 
   const URLRequestStatus status = request_->status();
-  if (status.is_success())
-    request_->GetResponseCookies(&cookies_);
 
   // See comments re: HEAD requests in ReadResponse().
   if (!status.is_io_pending() || request_type_ == URLFetcher::HEAD) {

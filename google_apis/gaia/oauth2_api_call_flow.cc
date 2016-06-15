@@ -15,7 +15,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-using net::ResponseCookies;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;

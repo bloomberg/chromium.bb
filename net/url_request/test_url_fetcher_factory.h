@@ -149,7 +149,6 @@ class TestURLFetcher : public URLFetcher {
   const GURL& GetURL() const override;
   const URLRequestStatus& GetStatus() const override;
   int GetResponseCode() const override;
-  const ResponseCookies& GetCookies() const override;
   void ReceivedContentWasMalformed() override;
   // Override response access functions to return fake data.
   bool GetResponseAsString(std::string* out_response_string) const override;
@@ -187,7 +186,6 @@ class TestURLFetcher : public URLFetcher {
   void set_response_code(int response_code) {
     fake_response_code_ = response_code;
   }
-  void set_cookies(const ResponseCookies& c) { fake_cookies_ = c; }
   void set_was_fetched_via_proxy(bool flag);
   void set_was_cached(bool flag);
   void set_response_headers(scoped_refptr<HttpResponseHeaders> headers);
@@ -225,7 +223,6 @@ class TestURLFetcher : public URLFetcher {
   GURL fake_url_;
   URLRequestStatus fake_status_;
   int fake_response_code_;
-  ResponseCookies fake_cookies_;
   ResponseDestinationType fake_response_destination_;
   std::string fake_response_string_;
   base::FilePath fake_response_file_path_;

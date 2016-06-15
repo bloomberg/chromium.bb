@@ -257,10 +257,6 @@ int TestURLFetcher::GetResponseCode() const {
   return fake_response_code_;
 }
 
-const ResponseCookies& TestURLFetcher::GetCookies() const {
-  return fake_cookies_;
-}
-
 void TestURLFetcher::ReceivedContentWasMalformed() {
 }
 

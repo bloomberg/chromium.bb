@@ -119,7 +119,6 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   const GURL& GetURL() const;
   const URLRequestStatus& GetStatus() const;
   int GetResponseCode() const;
-  const ResponseCookies& GetCookies() const;
   int64_t GetReceivedResponseContentLength() const;
   int64_t GetTotalReceivedBytes() const;
   // Reports that the received content was malformed (i.e. failed parsing
@@ -250,7 +249,6 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   // The user data to add to each newly-created URLRequest.
   const void* url_request_data_key_;
   URLFetcher::CreateDataCallback url_request_create_data_callback_;
-  ResponseCookies cookies_;          // Response cookies
   HttpRequestHeaders extra_request_headers_;
   scoped_refptr<HttpResponseHeaders> response_headers_;
   bool was_fetched_via_proxy_;
