@@ -201,7 +201,12 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
   CHECK(adapter_);
 }
 
-BluetoothDeviceChooserController::~BluetoothDeviceChooserController() {}
+BluetoothDeviceChooserController::~BluetoothDeviceChooserController() {
+  if (chooser_) {
+    DCHECK(!error_callback_.is_null());
+    error_callback_.Run(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+  }
+}
 
 void BluetoothDeviceChooserController::GetDevice(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
