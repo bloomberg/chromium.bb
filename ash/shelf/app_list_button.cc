@@ -28,6 +28,9 @@
 
 namespace ash {
 
+// Radius of the app list button circular background.
+const int kAppListButtonBackgroundRadius = 16;
+
 AppListButton::AppListButton(ShelfView* shelf_view)
     : views::ImageButton(shelf_view),
       draw_background_as_active_(false),
@@ -104,83 +107,125 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
 void AppListButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
-
-  int background_image_id = 0;
-  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
-      draw_background_as_active_) {
-    background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
-  } else {
-    if (shelf_view_->shelf()->shelf_widget()->GetDimsShelf())
-      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
-    else
-      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
-  }
-
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* background_image =
-      rb.GetImageNamed(background_image_id).ToImageSkia();
+
   const gfx::ImageSkia& foreground_image =
       MaterialDesignController::IsShelfMaterial()
           ? CreateVectorIcon(gfx::VectorIconId::SHELF_APPLIST, kShelfIconColor)
           : *rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
 
-  gfx::Rect contents_bounds = GetContentsBounds();
-  gfx::Rect background_bounds, foreground_bounds;
-
-  ShelfAlignment alignment = shelf_view_->shelf()->alignment();
-  background_bounds.set_size(background_image->size());
-
-  if (MaterialDesignController::IsShelfMaterial()) {
-    if (shelf_view_->shelf()->IsHorizontalAlignment()) {
-      background_bounds.set_x(
-          contents_bounds.x() +
-          (contents_bounds.width() - background_image->width()) / 2);
-      background_bounds.set_y(
-          (contents_bounds.height() - background_image->height()) / 2);
-    } else {
-      background_bounds.set_x(
-          (contents_bounds.height() - background_image->height()) / 2);
-      background_bounds.set_y(
-          contents_bounds.y() +
-          (contents_bounds.width() - background_image->width()) / 2);
-    }
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    PaintBackgroundMD(canvas);
+    PaintForegroundMD(canvas, foreground_image);
   } else {
-    if (alignment == SHELF_ALIGNMENT_LEFT) {
-      background_bounds.set_x(contents_bounds.width() - kShelfItemInset -
-                              background_image->width());
-      background_bounds.set_y(
-          contents_bounds.y() +
-          (contents_bounds.height() - background_image->height()) / 2);
-    } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-      background_bounds.set_x(kShelfItemInset);
-      background_bounds.set_y(
-          contents_bounds.y() +
-          (contents_bounds.height() - background_image->height()) / 2);
-    } else {  // SHELF_ALIGNMENT_BOTTOM
-      background_bounds.set_y(kShelfItemInset);
-      background_bounds.set_x(
-          contents_bounds.x() +
-          (contents_bounds.width() - background_image->width()) / 2);
+    PaintAppListButton(canvas, foreground_image);
+  }
+
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
+}
+
+void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
+  SkPaint paint;
+  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setStyle(SkPaint::kFill_Style);
+
+  // TODO(mohsen): Do not paint a blue background color once the material
+  // design ripple has been added. See crbug.com/612567.
+  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
+      draw_background_as_active_) {
+    paint.setColor(SK_ColorBLUE);
+  } else if (shelf_view_->shelf()->shelf_widget()->GetDimsShelf()) {
+    paint.setColor(SK_ColorTRANSPARENT);
+  } else {
+    paint.setColor(
+        SkColorSetA(kShelfBaseColor, GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
+  }
+
+  // Paint the circular background of AppList button.
+  gfx::Rect contents_bounds = GetContentsBounds();
+  if (IsHorizontalAlignment(shelf_view_->shelf()->alignment())) {
+    canvas->DrawCircle(
+        gfx::Point(contents_bounds.width() / 2, contents_bounds.height() / 2),
+        kAppListButtonBackgroundRadius, paint);
+  } else {
+    canvas->DrawCircle(
+        gfx::Point(contents_bounds.height() / 2, contents_bounds.width() / 2),
+        kAppListButtonBackgroundRadius, paint);
+  }
+}
+
+void AppListButton::PaintForegroundMD(gfx::Canvas* canvas,
+                                      const gfx::ImageSkia& foreground_image) {
+  gfx::Rect foreground_bounds(foreground_image.size());
+  gfx::Rect contents_bounds = GetContentsBounds();
+
+  if (IsHorizontalAlignment(shelf_view_->shelf()->alignment())) {
+    foreground_bounds.set_x(
+        (contents_bounds.width() - foreground_bounds.width()) / 2);
+    foreground_bounds.set_y(
+        (contents_bounds.height() - foreground_bounds.height()) / 2);
+  } else {
+    foreground_bounds.set_x(
+        (contents_bounds.height() - foreground_bounds.height()) / 2);
+    foreground_bounds.set_y(
+        (contents_bounds.width() - foreground_bounds.width()) / 2);
+  }
+  canvas->DrawImageInt(foreground_image, foreground_bounds.x(),
+                       foreground_bounds.y());
+}
+
+void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
+                                       const gfx::ImageSkia& foreground_image) {
+  int background_image_id = 0;
+
+  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
+      draw_background_as_active_) {
+    background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
+  } else {
+    if (shelf_view_->shelf()->shelf_widget()->GetDimsShelf()) {
+      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
+    } else {
+      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
     }
   }
 
-  foreground_bounds.set_size(foreground_image.size());
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia background_image =
+      *rb.GetImageNamed(background_image_id).ToImageSkia();
+  gfx::Rect background_bounds(background_image.size());
+  ShelfAlignment alignment = shelf_view_->shelf()->alignment();
+  gfx::Rect contents_bounds = GetContentsBounds();
 
-  foreground_bounds.set_x(background_bounds.x() +
-      std::max(0,
-          (background_bounds.width() - foreground_bounds.width()) / 2));
-  foreground_bounds.set_y(background_bounds.y() +
-      std::max(0,
-          (background_bounds.height() - foreground_bounds.height()) / 2));
+  if (alignment == SHELF_ALIGNMENT_LEFT) {
+    background_bounds.set_x(contents_bounds.width() - kShelfItemInset -
+                            background_image.width());
+    background_bounds.set_y(
+        contents_bounds.y() +
+        (contents_bounds.height() - background_image.height()) / 2);
+  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
+    background_bounds.set_x(kShelfItemInset);
+    background_bounds.set_y(
+        contents_bounds.y() +
+        (contents_bounds.height() - background_image.height()) / 2);
+  } else {
+    background_bounds.set_y(kShelfItemInset);
+    background_bounds.set_x(
+        contents_bounds.x() +
+        (contents_bounds.width() - background_image.width()) / 2);
+  }
 
-  canvas->DrawImageInt(*background_image,
-                       background_bounds.x(),
+  canvas->DrawImageInt(background_image, background_bounds.x(),
                        background_bounds.y());
-  canvas->DrawImageInt(foreground_image,
-                       foreground_bounds.x(),
+  gfx::Rect foreground_bounds(foreground_image.size());
+  foreground_bounds.set_x(
+      background_bounds.x() +
+      std::max(0, (background_bounds.width() - foreground_bounds.width()) / 2));
+  foreground_bounds.set_y(
+      background_bounds.y() +
+      std::max(0,
+               (background_bounds.height() - foreground_bounds.height()) / 2));
+  canvas->DrawImageInt(foreground_image, foreground_bounds.x(),
                        foreground_bounds.y());
-
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 void AppListButton::GetAccessibleState(ui::AXViewState* state) {

@@ -35,6 +35,16 @@ class AppListButton : public views::ImageButton {
   // Toggles the active state for painting the background and schedules a paint.
   void SetDrawBackgroundAsActive(bool draw_background_as_active);
 
+  // Helper functions to paint the background and foreground of the AppList
+  // button in Chrome OS MD.
+  void PaintBackgroundMD(gfx::Canvas* canvas);
+  void PaintForegroundMD(gfx::Canvas* canvas,
+                         const gfx::ImageSkia& foreground_image);
+
+  // Helper function to paint the AppList button in Chrome OS non-MD.
+  void PaintAppListButton(gfx::Canvas* canvas,
+                          const gfx::ImageSkia& foreground_image);
+
   // True if the background should render as active, regardless of the state of
   // the application list.
   bool draw_background_as_active_;
