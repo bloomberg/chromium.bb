@@ -522,6 +522,14 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     with open(self.ResumeFilePath()) as resume_input:
       self.assertEqual(EXPECTED_RESUME_FILE_CONTENT, resume_input.read())
 
+  def testImpossibleTasks(self):
+    self.assertEqual(1, self.Execute(['-f', r'^a$', '-e', r'^c$']))
+    self.assertListEqual([], self.task_execution_history)
+
+    self.assertEqual(0, self.Execute(
+        ['-f', r'^a$', '-e', r'^c$', '-e', r'^b$']))
+    self.assertListEqual(['b'], self.task_execution_history)
+
 
 if __name__ == '__main__':
   unittest.main()

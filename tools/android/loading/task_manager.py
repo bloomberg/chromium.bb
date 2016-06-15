@@ -343,7 +343,7 @@ def CommandLineParser():
   """
   parser = argparse.ArgumentParser(add_help=False)
   parser.add_argument('-d', '--dry-run', action='store_true',
-                      help='Only prints the deps of tasks to build.')
+                      help='Only prints the tasks to build.')
   parser.add_argument('-e', '--to-execute', metavar='REGEX', type=str,
                       action='append', dest='run_regexes', default=[],
                       help='Regex selecting tasks to execute.')
@@ -381,13 +381,27 @@ def _SelectTasksFromCommandLineRegexes(args, default_final_tasks):
 
   # Lists parents of |final_tasks| to freeze.
   frozen_tasks = set()
+  impossible_tasks = set()
   if frozen_regexes:
-    for task in GenerateScenario(final_tasks, frozen_tasks=set()):
+    complete_scenario = GenerateScenario(final_tasks, frozen_tasks=set())
+    dependents_per_task = GenerateDependentSetPerTask(complete_scenario)
+    def MarkTaskAsImpossible(task):
+      if task in impossible_tasks:
+        return
+      impossible_tasks.add(task)
+      for dependent in dependents_per_task[task]:
+        MarkTaskAsImpossible(dependent)
+
+    for task in complete_scenario:
       for regex in frozen_regexes:
         if regex.search(task.name):
-          frozen_tasks.add(task)
+          if os.path.exists(task.path):
+            frozen_tasks.add(task)
+          else:
+            MarkTaskAsImpossible(task)
           break
-  return final_tasks, frozen_tasks
+
+  return [t for t in final_tasks if t not in impossible_tasks], frozen_tasks
 
 
 class _ResumingFileBuilder(object):
@@ -463,8 +477,7 @@ def ExecuteWithCommandLine(args, default_final_tasks):
   # Use the build scenario.
   if args.dry_run:
     for task in scenario:
-      print '{}:{}'.format(
-          task.name, ' '.join([' \\\n  ' + d.name for d in task._dependencies]))
+      print task.name
     return 0
 
   # Run the Scenario while saving intermediate state to be able to resume later.
