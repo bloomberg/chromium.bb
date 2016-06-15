@@ -1,11 +1,29 @@
                               Fontconfig
              Font configuration and customization library
-                      Version 2.11.95 (2.12 RC5)
-                              2016-04-06
+                             Version 2.12
+                              2016-06-15
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.12
+
+Akira TAGOH (8):
+      Modernize fc-blanks.py
+      Update URL
+      Bug 95477 - FcAtomicLock fails when SELinux denies link() syscall with EACCES
+      45-latin.conf: Add some Windows fonts to categorize them properly
+      Correct one for the previous change
+      Bug 95481 - Build fails on Android due to broken lconv struct
+      Add the static raw data to generate fcblanks.h
+      Remove unused code
+
+Erik de Castro Lopo (1):
+      Fix a couple of minor memory leaks
+
+Petr Filipsky (1):
+      Fix memory leak in FcDirCacheLock
 
 2.11.95 (2.12 RC5)
 
