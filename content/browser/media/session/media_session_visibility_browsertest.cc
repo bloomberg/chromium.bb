@@ -260,9 +260,11 @@ class MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide :
 INCLUDE_TEST_FROM_BASE_CLASS(
     MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
     TestSessionSuspendedWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
-    TestSessionActiveWhenHiddenWhilePlaying)
+
+// Disabled pending crbug.com/619096.
+//INCLUDE_TEST_FROM_BASE_CLASS(
+//    MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
+//    TestSessionActiveWhenHiddenWhilePlaying)
 
 #endif  // defined(OS_ANDROID)
 
