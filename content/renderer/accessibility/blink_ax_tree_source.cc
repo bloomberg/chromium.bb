@@ -133,20 +133,22 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
   return false;
 }
 
-bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
+AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
+  AXContentTreeData tree_data;
+
   blink::WebDocument document = BlinkAXTreeSource::GetMainDocument();
   const blink::WebAXObject& root = GetRoot();
 
-  tree_data->doctype = "html";
-  tree_data->loaded = root.isLoaded();
-  tree_data->loading_progress = root.estimatedLoadingProgress();
-  tree_data->mimetype = document.isXHTMLDocument() ? "text/xhtml" : "text/html";
-  tree_data->title = document.title().utf8();
-  tree_data->url = document.url().string().utf8();
+  tree_data.doctype = "html";
+  tree_data.loaded = root.isLoaded();
+  tree_data.loading_progress = root.estimatedLoadingProgress();
+  tree_data.mimetype = document.isXHTMLDocument() ? "text/xhtml" : "text/html";
+  tree_data.title = document.title().utf8();
+  tree_data.url = document.url().string().utf8();
 
   WebAXObject focus = document.focusedAccessibilityObject();
   if (!focus.isNull())
-    tree_data->focus_id = focus.axID();
+    tree_data.focus_id = focus.axID();
 
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
@@ -155,22 +157,22 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
       anchor_offset >= 0 && focus_offset >= 0) {
     int32_t anchor_id = anchor_object.axID();
     int32_t focus_id = focus_object.axID();
-    tree_data->sel_anchor_object_id = anchor_id;
-    tree_data->sel_anchor_offset = anchor_offset;
-    tree_data->sel_focus_object_id = focus_id;
-    tree_data->sel_focus_offset = focus_offset;
+    tree_data.sel_anchor_object_id = anchor_id;
+    tree_data.sel_anchor_offset = anchor_offset;
+    tree_data.sel_focus_object_id = focus_id;
+    tree_data.sel_focus_offset = focus_offset;
   }
 
   // Get the tree ID for this frame and the parent frame.
   WebLocalFrame* web_frame = document.frame();
   if (web_frame) {
     RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
-    tree_data->routing_id = render_frame->GetRoutingID();
+    tree_data.routing_id = render_frame->GetRoutingID();
 
     // Get the tree ID for the parent frame.
     blink::WebFrame* parent_web_frame = web_frame->parent();
     if (parent_web_frame) {
-      tree_data->parent_routing_id =
+      tree_data.parent_routing_id =
           GetRoutingIdForFrameOrProxy(parent_web_frame);
     }
   }

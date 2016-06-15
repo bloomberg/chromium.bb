@@ -201,10 +201,7 @@ class AXTreeSourceWithInvalidId
   ~AXTreeSourceWithInvalidId() override {}
 
   // AXTreeSource implementation.
-  bool GetTreeData(AXTreeData* data) const override {
-    *data = AXTreeData();
-    return true;
-  }
+  AXTreeData GetTreeData() const override { return AXTreeData(); }
   AXNode* GetRoot() const override { return tree_->root(); }
   AXNode* GetFromId(int32_t id) const override { return tree_->GetFromId(id); }
   int32_t GetId(const AXNode* node) const override { return node->id(); }
