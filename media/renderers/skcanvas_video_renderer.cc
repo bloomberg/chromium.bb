@@ -85,10 +85,9 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
 sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     const VideoFrame* video_frame,
     const Context3D& context_3d) {
-  // Support only TEXTURE_YUV_420.
   DCHECK(video_frame->HasTextures());
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
-  DCHECK_EQ(3u, media::VideoFrame::NumPlanes(video_frame->format()));
+  DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
+         video_frame->format() == PIXEL_FORMAT_NV12);
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
   DCHECK(gl);
@@ -142,9 +141,16 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   else if (CheckColorSpace(video_frame, media::COLOR_SPACE_HD_REC709))
     color_space = kRec709_SkYUVColorSpace;
 
-  sk_sp<SkImage> img = SkImage::MakeFromYUVTexturesCopy(
-      context_3d.gr_context, color_space, handles, yuvSizes,
-      kTopLeft_GrSurfaceOrigin);
+  sk_sp<SkImage> img;
+  if (video_frame->format() == PIXEL_FORMAT_NV12) {
+    img = SkImage::MakeFromNV12TexturesCopy(context_3d.gr_context, color_space,
+                                            handles, yuvSizes,
+                                            kTopLeft_GrSurfaceOrigin);
+  } else {
+    img = SkImage::MakeFromYUVTexturesCopy(context_3d.gr_context, color_space,
+                                           handles, yuvSizes,
+                                           kTopLeft_GrSurfaceOrigin);
+  }
   for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
        ++i) {
     gl->DeleteTextures(1, &source_textures[i].fID);
@@ -363,7 +369,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     if (video_frame->HasTextures()) {
       DCHECK(context_3d.gr_context);
       DCHECK(gl);
-      if (media::VideoFrame::NumPlanes(video_frame->format()) == 3) {
+      if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
         last_image_ =
             NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d);
       } else {
