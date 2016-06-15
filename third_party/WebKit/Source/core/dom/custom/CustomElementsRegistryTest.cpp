@@ -267,6 +267,9 @@ public:
     LogUpgradeDefinition(const CustomElementDescriptor& descriptor)
         : TestCustomElementDefinition(descriptor)
     {
+        m_observedAttributes.add("attr1");
+        m_observedAttributes.add("attr2");
+        m_observedAttributes.add(HTMLNames::contenteditableAttr.localName());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -308,7 +311,6 @@ public:
 
     bool hasConnectedCallback() const override { return true; }
     bool hasDisconnectedCallback() const override { return true; }
-    bool hasAttributeChangedCallback(const QualifiedName&) const override { return true; }
 
     void runConnectedCallback(Element* element) override
     {

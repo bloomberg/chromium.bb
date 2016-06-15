@@ -9,7 +9,10 @@
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "platform/heap/Handle.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -23,6 +26,8 @@ class CORE_EXPORT CustomElementDefinition
     WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
 public:
     CustomElementDefinition(const CustomElementDescriptor&);
+    CustomElementDefinition(const CustomElementDescriptor&,
+        const HashSet<AtomicString>&);
     virtual ~CustomElementDefinition();
 
     DECLARE_VIRTUAL_TRACE();
@@ -49,15 +54,14 @@ public:
 
     void upgrade(Element*);
 
-    // TODO(kojii): Change these methods to pure when script-side is implemented.
-    virtual bool hasConnectedCallback() const { return true; }
-    virtual bool hasDisconnectedCallback() const { return true; }
-    virtual bool hasAttributeChangedCallback(const QualifiedName&) const { return true; }
+    virtual bool hasConnectedCallback() const = 0;
+    virtual bool hasDisconnectedCallback() const = 0;
+    bool hasAttributeChangedCallback(const QualifiedName&);
 
-    virtual void runConnectedCallback(Element*) {}
-    virtual void runDisconnectedCallback(Element*) {}
+    virtual void runConnectedCallback(Element*) = 0;
+    virtual void runDisconnectedCallback(Element*) = 0;
     virtual void runAttributeChangedCallback(Element*, const QualifiedName&,
-        const AtomicString& oldValue, const AtomicString& newValue) {}
+        const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
     void enqueueUpgradeReaction(Element*);
     void enqueueConnectedCallback(Element*);
@@ -70,9 +74,13 @@ protected:
 
     static void checkConstructorResult(Element*, Document&, const QualifiedName&, ExceptionState&);
 
+    HashSet<AtomicString> m_observedAttributes;
+
 private:
     const CustomElementDescriptor m_descriptor;
     ConstructionStack m_constructionStack;
+
+    void enqueueAttributeChangedCallbackForAllAttributes(Element*);
 };
 
 } // namespace blink

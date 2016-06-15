@@ -113,7 +113,7 @@ bool ScriptCustomElementDefinitionBuilder::checkPrototype()
 }
 
 bool ScriptCustomElementDefinitionBuilder::callableForName(const String& name,
-    v8::Local<v8::Object>& callback) const
+    v8::Local<v8::Function>& callback) const
 {
     v8::Local<v8::Value> value;
     if (!valueForName(m_prototype, name, value))
@@ -121,17 +121,12 @@ bool ScriptCustomElementDefinitionBuilder::callableForName(const String& name,
     // "undefined" means "omitted", so return true.
     if (value->IsUndefined())
         return true;
-    if (!value->IsObject()) {
+    if (!value->IsFunction()) {
         m_exceptionState.throwTypeError(
-            String::format("\"%s\" is not an object", name.ascii().data()));
+            String::format("\"%s\" is not a callable object", name.ascii().data()));
         return false;
     }
-    callback = value.As<v8::Object>();
-    if (!callback->IsCallable()) {
-        m_exceptionState.throwTypeError(
-            String::format("\"%s\" is not callable", name.ascii().data()));
-        return false;
-    }
+    callback = value.As<v8::Function>();
     return true;
 }
 
@@ -162,10 +157,10 @@ bool ScriptCustomElementDefinitionBuilder::rememberOriginalProperties()
     const String kConnectedCallback = "connectedCallback";
     const String kDisconnectedCallback = "disconnectedCallback";
     const String kAttributeChangedCallback = "attributeChangedCallback";
-    return retrieveObservedAttributes()
-        && callableForName(kConnectedCallback, m_connectedCallback)
+    return callableForName(kConnectedCallback, m_connectedCallback)
         && callableForName(kDisconnectedCallback, m_disconnectedCallback)
-        && callableForName(kAttributeChangedCallback, m_attributeChangedCallback);
+        && callableForName(kAttributeChangedCallback, m_attributeChangedCallback)
+        && (m_attributeChangedCallback.IsEmpty() || retrieveObservedAttributes());
 }
 
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::build(

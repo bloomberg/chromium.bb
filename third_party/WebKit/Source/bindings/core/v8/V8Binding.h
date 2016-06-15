@@ -407,6 +407,13 @@ inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string
     return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string.impl());
 }
 
+inline v8::Local<v8::Value> v8StringOrNull(v8::Isolate* isolate, const AtomicString& string)
+{
+    if (string.isNull())
+        return v8::Null(isolate);
+    return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string.impl());
+}
+
 inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const CompressibleString& string)
 {
     if (string.isNull())

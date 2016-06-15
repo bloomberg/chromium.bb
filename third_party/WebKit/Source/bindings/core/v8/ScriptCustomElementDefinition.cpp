@@ -82,9 +82,10 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
     return static_cast<ScriptCustomElementDefinition*>(definition);
 }
 
+template <typename T>
 static void keepAlive(v8::Local<v8::Array>& array, uint32_t index,
-    const v8::Local<v8::Object>& value,
-    ScopedPersistent<v8::Object>& persistent,
+    const v8::Local<T>& value,
+    ScopedPersistent<T>& persistent,
     ScriptState* scriptState)
 {
     if (value.IsEmpty())
@@ -102,9 +103,9 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
     const v8::Local<v8::Object>& prototype,
-    const v8::Local<v8::Object>& connectedCallback,
-    const v8::Local<v8::Object>& disconnectedCallback,
-    const v8::Local<v8::Object>& attributeChangedCallback,
+    const v8::Local<v8::Function>& connectedCallback,
+    const v8::Local<v8::Function>& disconnectedCallback,
+    const v8::Local<v8::Function>& attributeChangedCallback,
     const HashSet<AtomicString>& observedAttributes)
 {
     ScriptCustomElementDefinition* definition =
@@ -143,14 +144,13 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
     const v8::Local<v8::Object>& prototype,
-    const v8::Local<v8::Object>& connectedCallback,
-    const v8::Local<v8::Object>& disconnectedCallback,
-    const v8::Local<v8::Object>& attributeChangedCallback,
+    const v8::Local<v8::Function>& connectedCallback,
+    const v8::Local<v8::Function>& disconnectedCallback,
+    const v8::Local<v8::Function>& attributeChangedCallback,
     const HashSet<AtomicString>& observedAttributes)
-    : CustomElementDefinition(descriptor)
+    : CustomElementDefinition(descriptor, observedAttributes)
     , m_scriptState(scriptState)
     , m_constructor(scriptState->isolate(), constructor)
-    , m_observedAttributes(observedAttributes)
 {
 }
 
@@ -281,6 +281,76 @@ v8::Local<v8::Object> ScriptCustomElementDefinition::prototype() const
 ScriptValue ScriptCustomElementDefinition::getConstructorForScript()
 {
     return ScriptValue(m_scriptState.get(), constructor());
+}
+
+bool ScriptCustomElementDefinition::hasConnectedCallback() const
+{
+    return !m_connectedCallback.isEmpty();
+}
+
+bool ScriptCustomElementDefinition::hasDisconnectedCallback() const
+{
+    return !m_disconnectedCallback.isEmpty();
+}
+
+void ScriptCustomElementDefinition::runCallback(
+    v8::Local<v8::Function> callback,
+    Element* element, int argc, v8::Local<v8::Value> argv[])
+{
+    DCHECK(ScriptState::current(m_scriptState->isolate()) == m_scriptState);
+    v8::Isolate* isolate = m_scriptState->isolate();
+
+    // Invoke custom element reactions
+    // https://html.spec.whatwg.org/multipage/scripting.html#invoke-custom-element-reactions
+    // If this throws any exception, then report the exception.
+    v8::TryCatch tryCatch(isolate);
+    tryCatch.SetVerbose(true);
+
+    ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+    v8::Local<v8::Value> elementHandle = toV8(element,
+        m_scriptState->context()->Global(), isolate);
+    V8ScriptRunner::callFunction(
+        callback,
+        executionContext,
+        elementHandle,
+        argc, argv, isolate);
+}
+
+void ScriptCustomElementDefinition::runConnectedCallback(Element* element)
+{
+    if (!m_scriptState->contextIsValid())
+        return;
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    runCallback(m_connectedCallback.newLocal(isolate), element);
+}
+
+void ScriptCustomElementDefinition::runDisconnectedCallback(Element* element)
+{
+    if (!m_scriptState->contextIsValid())
+        return;
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    runCallback(m_disconnectedCallback.newLocal(isolate), element);
+}
+
+void ScriptCustomElementDefinition::runAttributeChangedCallback(
+    Element* element, const QualifiedName& name,
+    const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (!m_scriptState->contextIsValid())
+        return;
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    const int argc = 4;
+    v8::Local<v8::Value> argv[argc] = {
+        v8String(isolate, name.localName()),
+        v8StringOrNull(isolate, oldValue),
+        v8StringOrNull(isolate, newValue),
+        v8String(isolate, name.namespaceURI()),
+    };
+    runCallback(m_attributeChangedCallback.newLocal(isolate), element,
+        argc, argv);
 }
 
 } // namespace blink

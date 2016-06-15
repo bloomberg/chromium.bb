@@ -10,11 +10,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "v8.h"
-#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -36,9 +33,9 @@ public:
         const CustomElementDescriptor&,
         const v8::Local<v8::Object>& constructor,
         const v8::Local<v8::Object>& prototype,
-        const v8::Local<v8::Object>& connectedCallback,
-        const v8::Local<v8::Object>& disconnectedCallback,
-        const v8::Local<v8::Object>& attributeChangedCallback,
+        const v8::Local<v8::Function>& connectedCallback,
+        const v8::Local<v8::Function>& disconnectedCallback,
+        const v8::Local<v8::Function>& attributeChangedCallback,
         const HashSet<AtomicString>& observedAttributes);
 
     virtual ~ScriptCustomElementDefinition() = default;
@@ -49,15 +46,23 @@ public:
     HTMLElement* createElementSync(Document&, const QualifiedName&) override;
     HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) override;
 
+    bool hasConnectedCallback() const override;
+    bool hasDisconnectedCallback() const override;
+
+    void runConnectedCallback(Element*) override;
+    void runDisconnectedCallback(Element*) override;
+    void runAttributeChangedCallback(Element*, const QualifiedName&,
+        const AtomicString& oldValue, const AtomicString& newValue) override;
+
 private:
     ScriptCustomElementDefinition(
         ScriptState*,
         const CustomElementDescriptor&,
         const v8::Local<v8::Object>& constructor,
         const v8::Local<v8::Object>& prototype,
-        const v8::Local<v8::Object>& connectedCallback,
-        const v8::Local<v8::Object>& disconnectedCallback,
-        const v8::Local<v8::Object>& attributeChangedCallback,
+        const v8::Local<v8::Function>& connectedCallback,
+        const v8::Local<v8::Function>& disconnectedCallback,
+        const v8::Local<v8::Function>& attributeChangedCallback,
         const HashSet<AtomicString>& observedAttributes);
 
     // Implementations of |CustomElementDefinition|
@@ -65,13 +70,15 @@ private:
     bool runConstructor(Element*) override;
     Element* runConstructor();
 
+    void runCallback(v8::Local<v8::Function>, Element*,
+        int argc = 0, v8::Local<v8::Value> argv[] = nullptr);
+
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;
     ScopedPersistent<v8::Object> m_prototype;
-    ScopedPersistent<v8::Object> m_connectedCallback;
-    ScopedPersistent<v8::Object> m_disconnectedCallback;
-    ScopedPersistent<v8::Object> m_attributeChangedCallback;
-    HashSet<AtomicString> m_observedAttributes;
+    ScopedPersistent<v8::Function> m_connectedCallback;
+    ScopedPersistent<v8::Function> m_disconnectedCallback;
+    ScopedPersistent<v8::Function> m_attributeChangedCallback;
 };
 
 } // namespace blink

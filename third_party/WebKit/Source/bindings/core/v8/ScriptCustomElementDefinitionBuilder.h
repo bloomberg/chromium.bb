@@ -50,14 +50,14 @@ private:
     v8::Local<v8::Value> m_constructorValue;
     v8::Local<v8::Object> m_constructor;
     v8::Local<v8::Object> m_prototype;
-    v8::Local<v8::Object> m_connectedCallback;
-    v8::Local<v8::Object> m_disconnectedCallback;
-    v8::Local<v8::Object> m_attributeChangedCallback;
+    v8::Local<v8::Function> m_connectedCallback;
+    v8::Local<v8::Function> m_disconnectedCallback;
+    v8::Local<v8::Function> m_attributeChangedCallback;
     HashSet<AtomicString> m_observedAttributes;
     ExceptionState& m_exceptionState;
 
     bool valueForName(const v8::Local<v8::Object>&, const String&, v8::Local<v8::Value>&) const;
-    bool callableForName(const String&, v8::Local<v8::Object>&) const;
+    bool callableForName(const String&, v8::Local<v8::Function>&) const;
     bool retrieveObservedAttributes();
 };
 

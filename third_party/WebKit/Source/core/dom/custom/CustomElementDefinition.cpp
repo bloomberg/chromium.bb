@@ -4,6 +4,7 @@
 
 #include "core/dom/custom/CustomElementDefinition.h"
 
+#include "core/dom/Attr.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElement.h"
@@ -18,6 +19,14 @@ namespace blink {
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor)
     : m_descriptor(descriptor)
+{
+}
+
+CustomElementDefinition::CustomElementDefinition(
+    const CustomElementDescriptor& descriptor,
+    const HashSet<AtomicString>& observedAttributes)
+    : m_observedAttributes(observedAttributes)
+    , m_descriptor(descriptor)
 {
 }
 
@@ -93,14 +102,8 @@ HTMLElement* CustomElementDefinition::createElementAsync(Document& document, con
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
 void CustomElementDefinition::upgrade(Element* element)
 {
-    // TODO(kojii): This should be reversed by exposing observedAttributes from
-    // ScriptCustomElementDefinition, because Element::attributes() requires
-    // attribute synchronizations, and generally elements have more attributes
-    // than custom elements observe.
-    for (const auto& attribute : element->attributes()) {
-        if (hasAttributeChangedCallback(attribute.name()))
-            enqueueAttributeChangedCallback(element, attribute.name(), nullAtom, attribute.value());
-    }
+    if (!m_observedAttributes.isEmpty())
+        enqueueAttributeChangedCallbackForAllAttributes(element);
 
     if (element->inShadowIncludingDocument() && hasConnectedCallback())
         enqueueConnectedCallback(element);
@@ -120,6 +123,12 @@ void CustomElementDefinition::upgrade(Element* element)
         return;
 
     CHECK(element->getCustomElementState() == CustomElementState::Custom);
+}
+
+bool CustomElementDefinition::hasAttributeChangedCallback(
+    const QualifiedName& name)
+{
+    return m_observedAttributes.contains(name.localName());
 }
 
 static void enqueueReaction(Element* element, CustomElementReaction* reaction)
@@ -150,6 +159,22 @@ void CustomElementDefinition::enqueueAttributeChangedCallback(Element* element,
     const AtomicString& oldValue, const AtomicString& newValue)
 {
     enqueueReaction(element, new CustomElementAttributeChangedCallbackReaction(this, name, oldValue, newValue));
+}
+
+void CustomElementDefinition::enqueueAttributeChangedCallbackForAllAttributes(
+    Element* element)
+{
+    // Avoid synchronizing all attributes unless it is needed, while enqueing
+    // callbacks "in order" as defined in the spec.
+    // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
+    for (const AtomicString& name : m_observedAttributes)
+        element->synchronizeAttribute(name);
+    for (const auto& attribute : element->attributesWithoutUpdate()) {
+        if (hasAttributeChangedCallback(attribute.name())) {
+            enqueueAttributeChangedCallback(element, attribute.name(),
+                nullAtom, attribute.value());
+        }
+    }
 }
 
 } // namespace blink
