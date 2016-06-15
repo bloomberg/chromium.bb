@@ -225,6 +225,10 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
   // Delegate::OnChannelError.
   virtual void Write(MessagePtr message) = 0;
 
+  // Causes the platform handle to leak when this channel is shut down instead
+  // of closing it.
+  virtual void LeakHandle() = 0;
+
  protected:
   explicit Channel(Delegate* delegate);
   virtual ~Channel();

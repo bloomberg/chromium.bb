@@ -116,6 +116,11 @@ class ChannelWin : public Channel,
     }
   }
 
+  void LeakHandle() override {
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    leak_handle_ = true;
+  }
+
   bool GetReadPlatformHandles(
       size_t num_handles,
       const void* extra_header,
@@ -191,6 +196,8 @@ class ChannelWin : public Channel,
     // |handle_| should be valid at this point.
     CHECK(handle_.is_valid());
     CancelIo(handle_.get().handle);
+    if (leak_handle_)
+      ignore_result(handle_.release());
     handle_.reset();
 
     // May destroy the |this| if it was the last reference.
@@ -331,6 +338,8 @@ class ChannelWin : public Channel,
   std::deque<MessageView> outgoing_messages_;
 
   bool wait_for_connect_;
+
+  bool leak_handle_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };

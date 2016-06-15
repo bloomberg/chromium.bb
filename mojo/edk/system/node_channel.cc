@@ -208,6 +208,13 @@ void NodeChannel::ShutDown() {
   }
 }
 
+void NodeChannel::LeakHandleOnShutdown() {
+  base::AutoLock lock(channel_lock_);
+  if (channel_) {
+    channel_->LeakHandle();
+  }
+}
+
 void NodeChannel::NotifyBadMessage(const std::string& error) {
   if (!process_error_callback_.is_null())
     process_error_callback_.Run("Received bad user message: " + error);

@@ -137,6 +137,11 @@ class ChannelPosix : public Channel,
     }
   }
 
+  void LeakHandle() override {
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+    leak_handle_ = true;
+  }
+
   bool GetReadPlatformHandles(
       size_t num_handles,
       const void* extra_header,
@@ -239,6 +244,8 @@ class ChannelPosix : public Channel,
 
     read_watcher_.reset();
     write_watcher_.reset();
+    if (leak_handle_)
+      ignore_result(handle_.release());
     handle_.reset();
 #if defined(OS_MACOSX)
     handles_to_close_.reset();
@@ -488,6 +495,8 @@ class ChannelPosix : public Channel,
   bool pending_write_ = false;
   bool reject_writes_ = false;
   std::deque<MessageView> outgoing_messages_;
+
+  bool leak_handle_ = false;
 
 #if defined(OS_MACOSX)
   base::Lock handles_to_close_lock_;

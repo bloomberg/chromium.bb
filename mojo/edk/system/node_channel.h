@@ -101,6 +101,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Permanently stop the channel from sending or receiving messages.
   void ShutDown();
 
+  // Leaks the pipe handle instead of closing it on shutdown.
+  void LeakHandleOnShutdown();
+
   // Invokes the bad message callback for this channel, if any.
   void NotifyBadMessage(const std::string& error);
 

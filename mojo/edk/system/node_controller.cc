@@ -370,6 +370,12 @@ void NodeController::ConnectToParentOnIOThread(
     bootstrap_parent_channel_ =
         NodeChannel::Create(this, std::move(platform_handle), io_task_runner_,
                             ProcessErrorCallback());
+    // Prevent the parent pipe handle from being closed on shutdown. Pipe
+    // closure is used by the parent to detect the child process has exited.
+    // Relying on message pipes to be closed is not enough because the parent
+    // may see the message pipe closure before the child is dead, causing the
+    // child process to be unexpectedly SIGKILL'd.
+    bootstrap_parent_channel_->LeakHandleOnShutdown();
   }
   bootstrap_parent_channel_->Start();
 }
