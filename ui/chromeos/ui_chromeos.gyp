@@ -85,6 +85,8 @@
         'ime/input_method_menu_manager.h',
         'ime/mode_indicator_view.cc',
         'ime/mode_indicator_view.h',
+        'material_design_icon_controller.cc',
+        'material_design_icon_controller.h',
         'network/network_connect.cc',
         'network/network_connect.h',
         'network/network_icon.cc',

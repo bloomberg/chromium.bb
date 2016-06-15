@@ -10,6 +10,10 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/chromeos/material_design_icon_controller.h"
+#endif  // OS_CHROMEOS
+
 namespace ash {
 
 namespace {
@@ -40,6 +44,11 @@ void MaterialDesignController::Initialize() {
     }
     SetMode(DefaultMode());
   }
+
+#if defined(OS_CHROMEOS)
+  ui::md_icon_controller::SetUseMaterialDesignNetworkIcons(
+      UseMaterialDesignSystemIcons());
+#endif  // OS_CHROMEOS
 }
 
 // static
@@ -65,6 +74,11 @@ bool MaterialDesignController::IsOverviewMaterial() {
 
 // static
 bool MaterialDesignController::IsShelfMaterial() {
+  return MaterialDesignController::IsMaterialExperimental();
+}
+
+// static
+bool MaterialDesignController::UseMaterialDesignSystemIcons() {
   return MaterialDesignController::IsMaterialExperimental();
 }
 

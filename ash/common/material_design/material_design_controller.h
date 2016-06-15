@@ -52,6 +52,10 @@ class ASH_EXPORT MaterialDesignController {
   // Returns true if Material Design features are enabled for Chrome OS shelf.
   static bool IsShelfMaterial();
 
+  // Returns true if material design versions of icons should be used in the
+  // status tray and system menu.
+  static bool UseMaterialDesignSystemIcons();
+
  private:
   friend class test::MaterialDesignControllerTestAPI;
 
