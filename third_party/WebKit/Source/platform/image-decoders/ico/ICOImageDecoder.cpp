@@ -85,14 +85,6 @@ bool ICOImageDecoder::setSize(unsigned width, unsigned height)
     return m_frameSize.isEmpty() ? ImageDecoder::setSize(width, height) : ((IntSize(width, height) == m_frameSize) || setFailed());
 }
 
-bool ICOImageDecoder::frameIsCompleteAtIndex(size_t index) const
-{
-    if (index >= m_dirEntries.size())
-        return false;
-    const IconDirectoryEntry& dirEntry = m_dirEntries[index];
-    return (dirEntry.m_imageOffset + dirEntry.m_byteSize) <= m_data->size();
-}
-
 bool ICOImageDecoder::setFailed()
 {
     m_bmpReaders.clear();
@@ -130,13 +122,6 @@ bool ICOImageDecoder::compareEntries(const IconDirectoryEntry& a, const IconDire
 size_t ICOImageDecoder::decodeFrameCount()
 {
     decodeSize();
-
-    // Length of sequence of completely received frames.
-    for (size_t i = 0; i < m_dirEntries.size(); ++i) {
-        const IconDirectoryEntry& dirEntry = m_dirEntries[i];
-        if ((dirEntry.m_imageOffset + dirEntry.m_byteSize) > m_data->size())
-            return i;
-    }
     return m_dirEntries.size();
 }
 
@@ -190,12 +175,13 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
 
     if (imageType == BMP) {
         if (!m_bmpReaders[index]) {
+            // We need to have already sized m_frameBufferCache before this, and
+            // we must not resize it again later (see caution in frameCount()).
+            ASSERT(m_frameBufferCache.size() == m_dirEntries.size());
             m_bmpReaders[index] = adoptPtr(new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
             m_bmpReaders[index]->setData(m_data.get());
+            m_bmpReaders[index]->setBuffer(&m_frameBufferCache[index]);
         }
-        // Update the pointer to the buffer as it could change after
-        // m_frameBufferCache.resize().
-        m_bmpReaders[index]->setBuffer(&m_frameBufferCache[index]);
         m_frameSize = dirEntry.m_size;
         bool result = m_bmpReaders[index]->decodeBMP(false);
         m_frameSize = IntSize();
@@ -294,7 +280,6 @@ ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::readDirectoryEntry()
         entry.m_bitCount = readUint16(6);
         entry.m_hotSpot = IntPoint();
     }
-    entry.m_byteSize = readUint32(8);
     entry.m_imageOffset = readUint32(12);
 
     // Some icons don't have a bit depth, only a color count.  Convert the

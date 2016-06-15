@@ -95,8 +95,6 @@ private:
     int m_repetitionCount;
     bool m_hasColorProfile;
     bool m_canYUVDecode;
-    bool m_hasHotSpot;
-    IntPoint m_hotSpot;
 
     // Caches frame state information.
     Vector<DeferredFrameData> m_frameData;
