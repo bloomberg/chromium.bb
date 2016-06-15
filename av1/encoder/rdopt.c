@@ -2768,7 +2768,12 @@ static int64_t handle_inter_mode(
     AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int *rate2,
     int64_t *distortion, int *skippable, int *rate_y, int *rate_uv,
     int *disable_skip, int_mv (*mode_mv)[MAX_REF_FRAMES], int mi_row,
-    int mi_col, int_mv single_newmv[MAX_REF_FRAMES],
+    int mi_col,
+#if CONFIG_MOTION_VAR
+    uint8_t *above_pred_buf[3], int above_pred_stride[3],
+    uint8_t *left_pred_buf[3], int left_pred_stride[3],
+#endif  // CONFIG_MOTION_VAR
+    int_mv single_newmv[MAX_REF_FRAMES],
     InterpFilter (*single_filter)[MAX_REF_FRAMES],
     int (*single_skippable)[MAX_REF_FRAMES], int64_t *psse,
     const int64_t ref_best_rd, int64_t *mask_filter, int64_t filter_cache[]) {
@@ -2812,6 +2817,13 @@ static int64_t handle_inter_mode(
   int64_t skip_sse_sb = INT64_MAX;
   int64_t distortion_y = 0, distortion_uv = 0;
   int16_t mode_ctx = mbmi_ext->mode_context[refs[0]];
+#if CONFIG_MOTION_VAR
+  int allow_motion_variation = is_motion_variation_allowed(mbmi);
+  int rate2_nocoeff, best_rate2 = INT_MAX, best_skippable, best_xskip,
+                     best_disable_skip = 0;
+  int64_t best_distortion = INT64_MAX;
+  MB_MODE_INFO best_mbmi;
+#endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_REF_MV
   mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame,
@@ -3103,9 +3115,37 @@ static int64_t handle_inter_mode(
   }
 
   if (cm->interp_filter == SWITCHABLE) *rate2 += rs;
+#if CONFIG_MOTION_VAR
+  rate2_nocoeff = *rate2;
+#endif  // CONFIG_MOTION_VAR
 
   memcpy(x->skip_txfm, skip_txfm, sizeof(skip_txfm));
   memcpy(x->bsse, bsse, sizeof(bsse));
+
+#if CONFIG_MOTION_VAR
+  best_rd = INT64_MAX;
+  for (mbmi->motion_mode = SIMPLE_TRANSLATION;
+       mbmi->motion_mode < (allow_motion_variation ? MOTION_MODES : 1);
+       mbmi->motion_mode++) {
+    int64_t tmp_rd, tmp_dist;
+    int tmp_rate;
+    int tmp_rate2 = rate2_nocoeff;
+
+    if (mbmi->motion_mode == OBMC_CAUSAL) {
+      av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, 0, NULL, NULL,
+                                      above_pred_buf, above_pred_stride,
+                                      left_pred_buf, left_pred_stride);
+      model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &skip_txfm_sb,
+                      &skip_sse_sb);
+    }
+
+    x->skip = 0;
+
+    *rate2 = tmp_rate2;
+    if (allow_motion_variation)
+      *rate2 += cpi->motion_mode_cost[bsize][mbmi->motion_mode];
+    *distortion = 0;
+#endif  // CONFIG_MOTION_VAR
 
   if (!skip_txfm_sb) {
     int skippable_y, skippable_uv;
@@ -3120,8 +3160,16 @@ static int64_t handle_inter_mode(
     if (*rate_y == INT_MAX) {
       *rate2 = INT_MAX;
       *distortion = INT64_MAX;
+#if CONFIG_MOTION_VAR
+      if (mbmi->motion_mode != SIMPLE_TRANSLATION) {
+        continue;
+      } else {
+#endif  // CONFIG_MOTION_VAR
       restore_dst_buf(xd, orig_dst, orig_dst_stride);
       return INT64_MAX;
+#if CONFIG_MOTION_VAR
+      }
+#endif  // CONFIG_MOTION_VAR
     }
 
     *rate2 += *rate_y;
@@ -3134,23 +3182,85 @@ static int64_t handle_inter_mode(
                           &sseuv, bsize, ref_best_rd - rdcosty)) {
       *rate2 = INT_MAX;
       *distortion = INT64_MAX;
+#if CONFIG_MOTION_VAR
+      continue;
+#else
       restore_dst_buf(xd, orig_dst, orig_dst_stride);
       return INT64_MAX;
+#endif  // CONFIG_MOTION_VAR
     }
 
     *psse += sseuv;
     *rate2 += *rate_uv;
     *distortion += distortion_uv;
     *skippable = skippable_y && skippable_uv;
+#if CONFIG_MOTION_VAR
+    if (*skippable) {
+      *rate2 -= *rate_uv + *rate_y;
+      *rate_y = 0;
+      *rate_uv = 0;
+      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+      mbmi->skip = 0;
+      // here mbmi->skip temporarily plays a role as what this_skip2 does
+    } else if (!xd->lossless[mbmi->segment_id] &&
+               (RDCOST(x->rdmult, x->rddiv,
+                       *rate_y + *rate_uv +
+                           av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
+                       *distortion) >=
+                RDCOST(x->rdmult, x->rddiv,
+                       av1_cost_bit(av1_get_skip_prob(cm, xd), 1), *psse))) {
+      *rate2 -= *rate_uv + *rate_y;
+      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+      *distortion = *psse;
+      *rate_y = 0;
+      *rate_uv = 0;
+      mbmi->skip = 1;
+    } else {
+      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+      mbmi->skip = 0;
+    }
+    *disable_skip = 0;
+#endif  // CONFIG_MOTION_VAR
   } else {
     x->skip = 1;
     *disable_skip = 1;
+
+#if CONFIG_MOTION_VAR
+    mbmi->skip = 0;
+#endif  // CONFIG_MOTION_VAR
 
     // The cost of skip bit needs to be added.
     *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
 
     *distortion = skip_sse_sb;
   }
+
+#if CONFIG_MOTION_VAR
+  tmp_rd = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
+  if (mbmi->motion_mode == SIMPLE_TRANSLATION || (tmp_rd < best_rd)) {
+    best_mbmi = *mbmi;
+    best_rd = tmp_rd;
+    best_rate2 = *rate2;
+    best_distortion = *distortion;
+    best_skippable = *skippable;
+    best_xskip = x->skip;
+    best_disable_skip = *disable_skip;
+  }
+  }
+
+  if (best_rd == INT64_MAX) {
+    *rate2 = INT_MAX;
+    *distortion = INT64_MAX;
+    restore_dst_buf(xd, orig_dst, orig_dst_stride);
+    return INT64_MAX;
+  }
+  *mbmi = best_mbmi;
+  *rate2 = best_rate2;
+  *distortion = best_distortion;
+  *skippable = best_skippable;
+  x->skip = best_xskip;
+  *disable_skip = best_disable_skip;
+#endif  // CONFIG_MOTION_VAR
 
   if (!is_comp_pred) single_skippable[this_mode][refs[0]] = *skippable;
 
@@ -3806,9 +3916,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
       this_rd = handle_inter_mode(
           cpi, x, bsize, &rate2, &distortion2, &skippable, &rate_y, &rate_uv,
-          &disable_skip, frame_mv, mi_row, mi_col, single_newmv,
-          single_inter_filter, single_skippable, &total_sse, best_rd,
-          &mask_filter, filter_cache);
+          &disable_skip, frame_mv, mi_row, mi_col,
+#if CONFIG_MOTION_VAR
+          dst_buf1, dst_stride1, dst_buf2, dst_stride2,
+#endif  // CONFIG_MOTION_VAR
+          single_newmv, single_inter_filter, single_skippable, &total_sse,
+          best_rd, &mask_filter, filter_cache);
 
 #if CONFIG_REF_MV
       if ((mbmi->mode == NEARMV &&
@@ -3890,6 +4003,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             tmp_alt_rd = handle_inter_mode(
                 cpi, x, bsize, &tmp_rate, &tmp_dist, &tmp_skip, &tmp_rate_y,
                 &tmp_rate_uv, &dummy_disable_skip, frame_mv, mi_row, mi_col,
+#if CONFIG_MOTION_VAR
+                dst_buf1, dst_stride1, dst_buf2, dst_stride2,
+#endif  // CONFIG_MOTION_VAR
                 dummy_single_newmv, dummy_single_inter_filter,
                 dummy_single_skippable, &tmp_sse, best_rd, &dummy_mask_filter,
                 dummy_filter_cache);
@@ -3912,6 +4028,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           }
 
           if (tmp_alt_rd < INT64_MAX) {
+#if CONFIG_MOTION_VAR
+            tmp_alt_rd = RDCOST(x->rdmult, x->rddiv, tmp_rate, tmp_dist);
+#else
             if (RDCOST(x->rdmult, x->rddiv,
                        tmp_rate_y + tmp_rate_uv + rate_skip0, tmp_dist) <
                 RDCOST(x->rdmult, x->rddiv, rate_skip1, tmp_sse))
@@ -3921,6 +4040,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
               tmp_alt_rd = RDCOST(
                   x->rdmult, x->rddiv,
                   tmp_rate + rate_skip1 - tmp_rate_y - tmp_rate_uv, tmp_sse);
+#endif  // CONFIG_MOTION_VAR
           }
 
           if (tmp_ref_rd > tmp_alt_rd) {
@@ -3969,7 +4089,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       rate2 += ref_costs_single[ref_frame];
     }
 
+#if CONFIG_MOTION_VAR
+    if (ref_frame == INTRA_FRAME) {
+#else
     if (!disable_skip) {
+#endif  // CONFIG_MOTION_VAR
       if (skippable) {
         // Back out the coefficient coding costs
         rate2 -= (rate_y + rate_uv);
@@ -4002,6 +4126,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
       // Calculate the final RD estimate for this mode.
       this_rd = RDCOST(x->rdmult, x->rddiv, rate2, distortion2);
+#if CONFIG_MOTION_VAR
+    } else {
+      this_skip2 = mbmi->skip;
+      this_rd = RDCOST(x->rdmult, x->rddiv, rate2, distortion2);
+#endif  // CONFIG_MOTION_VAR
     }
 
     // Apply an adjustment to the rd value based on the similarity of the

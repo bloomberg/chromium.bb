@@ -288,7 +288,7 @@ static const uint8_t obmc_mask_32[2][32] = {
     4, 4, 3, 2, 2, 1, 1, 0, 0, 0, 0, 0 }
 };
 
-void setup_obmc_mask(int length, const uint8_t *mask[2]) {
+void av1_setup_obmc_mask(int length, const uint8_t *mask[2]) {
   switch (length) {
     case 1:
       mask[0] = obmc_mask_1[0];
@@ -326,12 +326,15 @@ void setup_obmc_mask(int length, const uint8_t *mask[2]) {
 // top/left neighboring blocks' inter predictors with the regular inter
 // prediction. We assume the original prediction (bmc) is stored in
 // xd->plane[].dst.buf
-void av1_build_obmc_inter_prediction(
-    AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-    int use_tmp_dst_buf, uint8_t *final_buf[MAX_MB_PLANE],
-    int final_stride[MAX_MB_PLANE], uint8_t *above_pred_buf[MAX_MB_PLANE],
-    int above_pred_stride[MAX_MB_PLANE], uint8_t *left_pred_buf[MAX_MB_PLANE],
-    int left_pred_stride[MAX_MB_PLANE]) {
+void av1_build_obmc_inter_prediction(AV1_COMMON *cm, MACROBLOCKD *xd,
+                                     int mi_row, int mi_col,
+                                     int use_tmp_dst_buf,
+                                     uint8_t *final_buf[MAX_MB_PLANE],
+                                     const int final_stride[MAX_MB_PLANE],
+                                     uint8_t *above_pred_buf[MAX_MB_PLANE],
+                                     const int above_pred_stride[MAX_MB_PLANE],
+                                     uint8_t *left_pred_buf[MAX_MB_PLANE],
+                                     const int left_pred_stride[MAX_MB_PLANE]) {
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int plane, i, mi_step;
@@ -343,8 +346,8 @@ void av1_build_obmc_inter_prediction(
   if (use_tmp_dst_buf) {
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
-      int bw = (xd->n8_w << 3) >> pd->subsampling_x;
-      int bh = (xd->n8_h << 3) >> pd->subsampling_y;
+      const int bw = (xd->n8_w << 3) >> pd->subsampling_x;
+      const int bh = (xd->n8_h << 3) >> pd->subsampling_y;
       int row;
 #if CONFIG_AOM_HIGHBITDEPTH
       if (is_hbd) {
@@ -381,18 +384,19 @@ void av1_build_obmc_inter_prediction(
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
-      int bw = (mi_step << 3) >> pd->subsampling_x;
-      int bh = overlap >> pd->subsampling_y;
+      const int bw = (mi_step << 3) >> pd->subsampling_x;
+      const int bh = overlap >> pd->subsampling_y;
       int row, col;
-      int dst_stride = use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
+      const int dst_stride =
+          use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
       uint8_t *dst = use_tmp_dst_buf
                          ? &final_buf[plane][(i << 3) >> pd->subsampling_x]
                          : &pd->dst.buf[(i << 3) >> pd->subsampling_x];
-      int tmp_stride = above_pred_stride[plane];
+      const int tmp_stride = above_pred_stride[plane];
       uint8_t *tmp = &above_pred_buf[plane][(i << 3) >> pd->subsampling_x];
       const uint8_t *mask[2];
 
-      setup_obmc_mask(bh, mask);
+      av1_setup_obmc_mask(bh, mask);
 
 #if CONFIG_AOM_HIGHBITDEPTH
       if (is_hbd) {
@@ -442,20 +446,21 @@ void av1_build_obmc_inter_prediction(
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
-      int bw = overlap >> pd->subsampling_x;
-      int bh = (mi_step << 3) >> pd->subsampling_y;
+      const int bw = overlap >> pd->subsampling_x;
+      const int bh = (mi_step << 3) >> pd->subsampling_y;
       int row, col;
-      int dst_stride = use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
+      const int dst_stride =
+          use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
       uint8_t *dst =
           use_tmp_dst_buf
               ? &final_buf[plane][((i << 3) >> pd->subsampling_y) * dst_stride]
               : &pd->dst.buf[((i << 3) >> pd->subsampling_y) * dst_stride];
-      int tmp_stride = left_pred_stride[plane];
+      const int tmp_stride = left_pred_stride[plane];
       uint8_t *tmp =
           &left_pred_buf[plane][((i << 3) >> pd->subsampling_y) * tmp_stride];
       const uint8_t *mask[2];
 
-      setup_obmc_mask(bw, mask);
+      av1_setup_obmc_mask(bw, mask);
 
 #if CONFIG_AOM_HIGHBITDEPTH
       if (is_hbd) {
@@ -490,7 +495,7 @@ void av1_build_obmc_inter_prediction(
 void av1_build_prediction_by_above_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
-                                         int tmp_stride[MAX_MB_PLANE]) {
+                                         const int tmp_stride[MAX_MB_PLANE]) {
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
@@ -566,7 +571,7 @@ void av1_build_prediction_by_above_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
 void av1_build_prediction_by_left_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col,
                                         uint8_t *tmp_buf[MAX_MB_PLANE],
-                                        int tmp_stride[MAX_MB_PLANE]) {
+                                        const int tmp_stride[MAX_MB_PLANE]) {
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
@@ -637,5 +642,49 @@ void av1_build_prediction_by_left_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
   }
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+}
+
+void av1_build_obmc_inter_predictors_sb(AV1_COMMON *cm, MACROBLOCKD *xd,
+                                        int mi_row, int mi_col) {
+#if CONFIG_AOM_HIGHBITDEPTH
+  DECLARE_ALIGNED(16, uint8_t, tmp_buf1[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, tmp_buf2[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
+#else
+  DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_SB_SQUARE]);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
+  const int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE,
+                                          MAX_SB_SIZE };
+  const int dst_stride2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE,
+                                          MAX_SB_SIZE };
+
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    int len = sizeof(uint16_t);
+    dst_buf1[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
+    dst_buf1[1] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * len);
+    dst_buf1[2] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * 2 * len);
+    dst_buf2[0] = CONVERT_TO_BYTEPTR(tmp_buf2);
+    dst_buf2[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
+    dst_buf2[2] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * 2 * len);
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    dst_buf1[0] = tmp_buf1;
+    dst_buf1[1] = tmp_buf1 + MAX_SB_SQUARE;
+    dst_buf1[2] = tmp_buf1 + MAX_SB_SQUARE * 2;
+    dst_buf2[0] = tmp_buf2;
+    dst_buf2[1] = tmp_buf2 + MAX_SB_SQUARE;
+    dst_buf2[2] = tmp_buf2 + MAX_SB_SQUARE * 2;
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col, dst_buf1,
+                                      dst_stride1);
+  av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
+                                     dst_stride2);
+  av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+  av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, 0, NULL, NULL,
+                                  dst_buf1, dst_stride1, dst_buf2, dst_stride2);
 }
 #endif  // CONFIG_MOTION_VAR

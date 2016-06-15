@@ -510,6 +510,10 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   } else {
     // Prediction
     av1_build_inter_predictors_sb(xd, mi_row, mi_col, AOMMAX(bsize, BLOCK_8X8));
+#if CONFIG_MOTION_VAR
+    if (mbmi->motion_mode == OBMC_CAUSAL)
+      av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+#endif  // CONFIG_MOTION_VAR
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;

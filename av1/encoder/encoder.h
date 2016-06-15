@@ -461,6 +461,9 @@ typedef struct AV1_COMP {
 
   int mbmode_cost[INTRA_MODES];
   unsigned int inter_mode_cost[INTER_MODE_CONTEXTS][INTER_MODES];
+#if CONFIG_MOTION_VAR
+  int motion_mode_cost[BLOCK_SIZES][MOTION_MODES];
+#endif  // CONFIG_MOTION_VAR
   int intra_uv_mode_cost[INTRA_MODES][INTRA_MODES];
   int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];
   int switchable_interp_costs[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];

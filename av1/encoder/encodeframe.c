@@ -2957,6 +2957,11 @@ static void encode_superblock(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     av1_build_inter_predictors_sbuv(xd, mi_row, mi_col,
                                     AOMMAX(bsize, BLOCK_8X8));
 
+#if CONFIG_MOTION_VAR
+    if (mbmi->motion_mode == OBMC_CAUSAL)
+      av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+#endif  // CONFIG_MOTION_VAR
+
     av1_encode_sb(x, AOMMAX(bsize, BLOCK_8X8));
     av1_tokenize_sb(cpi, td, t, !output_enabled, AOMMAX(bsize, BLOCK_8X8));
   }

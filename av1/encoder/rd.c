@@ -348,6 +348,11 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
       av1_cost_tokens((int *)cpi->inter_mode_cost[i],
                       cm->fc->inter_mode_probs[i], av1_inter_mode_tree);
 #endif
+#if CONFIG_MOTION_VAR
+    for (i = 0; i < BLOCK_SIZES; i++)
+      av1_cost_tokens((int *)cpi->motion_mode_cost[i],
+                      cm->fc->motion_mode_prob[i], av1_motion_mode_tree);
+#endif  // CONFIG_MOTION_VAR
   }
 }
 
