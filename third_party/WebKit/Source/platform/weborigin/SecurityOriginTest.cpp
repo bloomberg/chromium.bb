@@ -81,7 +81,7 @@ TEST_F(SecurityOriginTest, LocalAccess)
     // Block |file1|'s access to local origins. It should now be same-origin
     // with itself, but shouldn't have access to |file2|.
     file1->blockLocalAccessFromLocalOrigin();
-    EXPECT_FALSE(file1->isSameSchemeHostPort(file1.get()));
+    EXPECT_TRUE(file1->isSameSchemeHostPort(file1.get()));
     EXPECT_FALSE(file1->isSameSchemeHostPort(file2.get()));
     EXPECT_FALSE(file2->isSameSchemeHostPort(file1.get()));
 
@@ -433,6 +433,17 @@ TEST_F(SecurityOriginTest, UniquenessPropagatesToBlobUrls)
         EXPECT_EQ(blobUrlOrigin->toString(), origin->toString());
         EXPECT_EQ(blobUrlOrigin->toRawString(), origin->toRawString());
     }
+}
+
+TEST_F(SecurityOriginTest, UniqueOriginIsSameSchemeHostPort)
+{
+    RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
+    RefPtr<SecurityOrigin> tupleOrigin = SecurityOrigin::createFromString("http://example.com");
+
+    EXPECT_TRUE(uniqueOrigin->isSameSchemeHostPort(uniqueOrigin.get()));
+    EXPECT_FALSE(SecurityOrigin::createUnique()->isSameSchemeHostPort(uniqueOrigin.get()));
+    EXPECT_FALSE(tupleOrigin->isSameSchemeHostPort(uniqueOrigin.get()));
+    EXPECT_FALSE(uniqueOrigin->isSameSchemeHostPort(tupleOrigin.get()));
 }
 
 } // namespace blink

@@ -531,6 +531,12 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol, const 
 
 bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
 {
+    if (this == other)
+        return true;
+
+    if (isUnique() || other->isUnique())
+        return false;
+
     if (m_host != other->m_host)
         return false;
 
