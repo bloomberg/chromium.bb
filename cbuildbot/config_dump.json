@@ -8389,6 +8389,17 @@
                 "chroot_replace": false,
                 "grouped": true,
                 "name": "x86-alex-toolchain-gcc"
+            },
+            {
+                "_template": "gcc",
+                "boards": [
+                    "oak"
+                ],
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "oak-toolchain-gcc"
             }
         ]
     },
@@ -12257,6 +12268,22 @@
                     "chrome_internal",
                     "llvm-next"
                 ]
+            },
+            {
+                "_template": "llvm",
+                "boards": [
+                    "oak"
+                ],
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "oak-next-toolchain-llvm",
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal",
+                    "llvm-next"
+                ]
             }
         ],
         "useflags": [
@@ -12301,6 +12328,17 @@
                 "chroot_replace": false,
                 "grouped": true,
                 "name": "x86-alex-toolchain-llvm"
+            },
+            {
+                "_template": "llvm",
+                "boards": [
+                    "oak"
+                ],
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "oak-toolchain-llvm"
             }
         ]
     },
@@ -14805,6 +14843,20 @@
         ],
         "vm_tests": []
     },
+    "oak-next-toolchain-llvm": {
+        "_template": "llvm",
+        "boards": [
+            "oak"
+        ],
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "llvm-next"
+        ]
+    },
     "oak-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -14911,6 +14963,24 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "oak-toolchain-gcc": {
+        "_template": "gcc",
+        "boards": [
+            "oak"
+        ],
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false
+    },
+    "oak-toolchain-llvm": {
+        "_template": "llvm",
+        "boards": [
+            "oak"
+        ],
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false
     },
     "oak-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",

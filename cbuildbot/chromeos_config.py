@@ -2239,6 +2239,10 @@ def GetConfig():
           'x86-alex-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
       ),
+      site_config.Add(
+          'oak-toolchain-llvm', _llvm_grouped,
+          boards=['oak'],
+      ),
   )
 
   site_config.AddGroup(
@@ -2256,6 +2260,11 @@ def GetConfig():
       site_config.Add(
           'x86-alex-next-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
+          useflags=append_useflags(['llvm-next']),
+      ),
+      site_config.Add(
+          'oak-next-toolchain-llvm', _llvm_grouped,
+          boards=['oak'],
           useflags=append_useflags(['llvm-next']),
       ),
   )
@@ -2302,6 +2311,10 @@ def GetConfig():
       site_config.Add(
           'x86-alex-toolchain-gcc', _gcc_grouped,
           boards=['x86-alex'],
+      ),
+      site_config.Add(
+          'oak-toolchain-gcc', _gcc_grouped,
+          boards=['oak'],
       ),
   )
 
