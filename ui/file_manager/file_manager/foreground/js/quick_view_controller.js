@@ -10,11 +10,13 @@
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!ListContainer} listContainer
  * @param {!QuickViewModel} quickViewModel
+ * @param {!TaskController} taskController
  *
  * @constructor
  */
 function QuickViewController(
-    quickView, metadataModel, selectionHandler, listContainer, quickViewModel) {
+    quickView, metadataModel, selectionHandler, listContainer, quickViewModel,
+    taskController) {
   /**
    * @type {!FilesQuickView}
    * @private
@@ -40,6 +42,12 @@ function QuickViewController(
   this.listContainer_ = listContainer;
 
   /**
+   * @type {!TaskController}
+   * @private
+   */
+  this.taskController_ = taskController;
+
+  /**
    * Current selection of selectionHandler.
    *
    * @type {!Array<!FileEntry>}
@@ -53,7 +61,20 @@ function QuickViewController(
   listContainer.element.addEventListener(
       'keypress', this.onKeyPressToOpen_.bind(this));
   quickView.addEventListener('keypress', this.onKeyPressToClose_.bind(this));
+  quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 }
+
+/**
+ * Handles open-in-new button tap.
+ *
+ * @param {!Event} event A button click event.
+ * @private
+ */
+QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
+  this.taskController_.executeDefaultTask();
+  this.quickView_.close();
+}
+
 
 /**
  * Handles key event on listContainer if it's relevent to quick view.
@@ -128,6 +149,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
   var entry =
       (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
   assert(entry);
+  this.quickView_.filePath = entry.name;
   return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
       .then(this.onMetadataLoaded_.bind(this, entry));
 };

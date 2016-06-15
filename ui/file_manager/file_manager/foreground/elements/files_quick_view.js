@@ -64,5 +64,13 @@ var FilesQuickView = Polymer({
 
   getFilesMetadataBox: function() {
     return this.$['metadata-box'];
-  }
+  },
+
+  // Client should assign the function to open the file.
+  onOpenInNewButtonTap: function(event) {},
+
+  onCloseButtonTap_: function(event) {
+    this.close();
+  },
+
 });

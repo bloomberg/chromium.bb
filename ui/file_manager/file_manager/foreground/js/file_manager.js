@@ -539,7 +539,7 @@ FileManager.prototype = /** @struct */ {
             this.quickViewController_ = new QuickViewController(
                 quickView, assert(this.metadataModel_),
                 assert(this.selectionHandler_), assert(this.ui_.listContainer),
-                assert(this.quickViewModel_));
+                assert(this.quickViewModel_), assert(this.taskController_));
             this.metadataBoxController_ = new MetadataBoxController(
                 this.metadataModel_, quickView.getFilesMetadataBox(), quickView,
                 this.quickViewModel_);
