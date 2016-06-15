@@ -4025,6 +4025,9 @@ void RenderFrameImpl::willSendRequest(
     extra_data->set_lofi_state(navigation_state->common_params().lofi_state);
   else
     extra_data->set_lofi_state(is_using_lofi_ ? LOFI_ON : LOFI_OFF);
+  WebString error;
+  extra_data->set_initiated_in_secure_context(
+      frame->document().isSecureContext(error));
   request.setExtraData(extra_data);
 
   // TODO(creis): Update prefetching to work with out-of-process iframes.

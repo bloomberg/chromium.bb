@@ -241,6 +241,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(report_raw_headers)
   IPC_STRUCT_TRAITS_MEMBER(lofi_state)
   IPC_STRUCT_TRAITS_MEMBER(resource_body_stream_url)
+  IPC_STRUCT_TRAITS_MEMBER(initiated_in_secure_context)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters for a ResourceMsg_RequestComplete

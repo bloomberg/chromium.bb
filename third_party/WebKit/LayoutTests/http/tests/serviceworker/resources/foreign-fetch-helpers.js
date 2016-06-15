@@ -3,8 +3,9 @@
 // Installs a service worker on a different origin. Both |worker| and |scope|
 // are resolved relative to the /serviceworker/resources/ directory on a
 // remote origin.
-function install_cross_origin_worker(t, worker, scope) {
-  return with_iframe(get_host_info().HTTPS_REMOTE_ORIGIN +
+function install_cross_origin_worker(
+    t, worker, scope, origin = get_host_info().HTTPS_REMOTE_ORIGIN) {
+  return with_iframe(origin +
                      '/serviceworker/resources/install-worker-helper.html')
     .then(frame => new Promise((resolve, reject) => {
         var channel = new MessageChannel();

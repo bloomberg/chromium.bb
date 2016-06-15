@@ -170,6 +170,9 @@ struct CONTENT_EXPORT ResourceRequest {
   // access to the body of the response that has already been fetched by the
   // browser.
   GURL resource_body_stream_url;
+
+  // Wether or not the initiator of this request is a secure context.
+  bool initiated_in_secure_context = false;
 };
 
 }  // namespace content
