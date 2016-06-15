@@ -35,6 +35,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #else  // defined(OS_CHROMEOS)
 #include "chrome/browser/shell_integration.h"
 #endif  // !defined(OS_CHROMEOS)
@@ -64,6 +65,7 @@ class BrowserOptionsHandler
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
       public policy::ConsumerManagementService::Observer,
+      public ArcAppListPrefs::Observer,
 #endif
       public TemplateURLServiceObserver,
       public extensions::ExtensionRegistryObserver,
@@ -147,6 +149,12 @@ class BrowserOptionsHandler
 
   // ConsumerManagementService::Observer:
   void OnConsumerManagementStatusChanged() override;
+
+  // ArcAppListPrefs::Observer overrides.
+  void OnAppReadyChanged(const std::string& app_id, bool ready) override;
+  void OnAppRemoved(const std::string& app_id) override;
+  void OnAppRegistered(const std::string& app_id,
+                       const ArcAppListPrefs::AppInfo& app_info) override;
 #endif
 
   void UpdateSyncState();
@@ -323,6 +331,9 @@ class BrowserOptionsHandler
   // Called when the user confirmed factory reset. Chrome will
   // initiate asynchronous file operation and then log out.
   void PerformFactoryResetRestart(const base::ListValue* args);
+
+  // Update visibility of Android apps settings section.
+  void UpdateAndroidSettingsAppState(bool visible);
 
   // Called to show Android apps settings.
   void ShowAndroidAppsSettings(const base::ListValue* args);

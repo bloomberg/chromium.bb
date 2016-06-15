@@ -127,6 +127,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/chromeos_switches.h"
@@ -893,6 +894,10 @@ void BrowserOptionsHandler::Uninitialize() {
           GetConsumerManagementService();
   if (consumer_management)
     consumer_management->RemoveObserver(this);
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(
+      Profile::FromWebUI(web_ui()));
+  if (arc_prefs)
+    arc_prefs->RemoveObserver(this);
 #endif
 }
 
@@ -1046,7 +1051,9 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::
                      OnSystemTimezoneAutomaticDetectionPolicyChanged,
                  base::Unretained(this)));
-
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  if (arc_prefs)
+    arc_prefs->AddObserver(this);
 #else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
       proxy_config::prefs::kProxy,
@@ -1119,6 +1126,11 @@ void BrowserOptionsHandler::InitializePage() {
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.showAndroidAppsSection",
         is_arc_enabled);
+    // Get the initial state of Android Settings app readiness.
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        ArcAppListPrefs::Get(profile)->GetApp(arc::kSettingsAppId);
+    if (app_info && app_info->ready)
+      UpdateAndroidSettingsAppState(app_info->ready);
   }
 
   OnSystemTimezoneAutomaticDetectionPolicyChanged();
@@ -1910,6 +1922,30 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(
   // Perform sign out. Current chrome process will then terminate, new one will
   // be launched (as if it was a restart).
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void BrowserOptionsHandler::OnAppRegistered(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  OnAppReadyChanged(app_id, app_info.ready);
+}
+
+void BrowserOptionsHandler::OnAppRemoved(const std::string& app_id) {
+  OnAppReadyChanged(app_id, false);
+}
+
+void BrowserOptionsHandler::OnAppReadyChanged(
+    const std::string& app_id,
+    bool ready) {
+  if (app_id == arc::kSettingsAppId) {
+    UpdateAndroidSettingsAppState(ready);
+  }
+}
+
+void BrowserOptionsHandler::UpdateAndroidSettingsAppState(bool visible) {
+  base::FundamentalValue is_visible(visible);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setAndroidAppsSettingsVisibility", is_visible);
 }
 
 void BrowserOptionsHandler::ShowAndroidAppsSettings(

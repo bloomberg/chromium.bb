@@ -2432,11 +2432,18 @@ cr.define('options', function() {
         return;
 
       section.hidden = false;
+    };
+
+    /**
+     * Shows/hides Android Settings app section.
+     * (Chrome OS only).
+     */
+    BrowserOptions.setAndroidAppsSettingsVisibility = function(isVisible) {
       var settings = $('android-apps-settings');
       if (!settings)
         return;
 
-      settings.hidden = !isArcEnabled;
+      settings.hidden = !isVisible;
     };
   }
 
