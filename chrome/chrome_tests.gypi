@@ -542,6 +542,7 @@
       'browser/ui/webui/password_manager_internals/password_manager_internals_ui_browsertest.cc',
       'browser/ui/webui/policy_ui_browsertest.cc',
       'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
+      'browser/ui/webui/settings/md_settings_ui_browsertest.cc',
       'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
       'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
       'browser/ui/webui/uber/uber_ui_browsertest.cc',

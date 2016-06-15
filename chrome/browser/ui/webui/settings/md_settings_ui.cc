@@ -88,9 +88,14 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   // Host must be derived from the visible URL, since this might be serving
   // either chrome://settings or chrome://md-settings.
-  const GURL url = web_ui->GetWebContents()->GetVisibleURL();
+  GURL url = web_ui->GetWebContents()->GetVisibleURL();
+
+  if (url.SchemeIs(content::kViewSourceScheme))
+    url = GURL(url.GetContent());
+
   CHECK(url.GetOrigin() == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
         url.GetOrigin() == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin());
+
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
