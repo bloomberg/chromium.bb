@@ -130,7 +130,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   // end, in which case -1 is returned. If |start_from| is out of bounds, -1
   // will also be returned. A chapter-stop is defined as the last page the user
   // browsed to within the same domain. For example, if the user's homepage is
-  // Google and she navigates to Google pages G1, G2 and G3 before heading over
+  // Google and they navigate to Google pages G1, G2 and G3 before heading over
   // to WikiPedia for pages W1 and W2 and then back to Google for pages G4 and
   // G5 then G3, W2 and G5 are considered chapter-stops. The return value from
   // this function is an index into the NavigationEntryList vector.

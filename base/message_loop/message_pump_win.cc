@@ -283,7 +283,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   // messages that may be in the Windows message queue.
   ProcessPumpReplacementMessage();
 
-  // Now give the delegate a chance to do some work.  He'll let us know if he
+  // Now give the delegate a chance to do some work.  It'll let us know if it
   // needs to do more work.
   if (state_->delegate->DoWork())
     ScheduleWork();

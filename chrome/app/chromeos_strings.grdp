@@ -6053,10 +6053,10 @@ All users must sign out to continue.
   <message name="IDS_PAIRING_CONTROLLER_CONFIRMATION_QUESTION" desc="Text that is shown near 6-digit confirmation code on a controller's screen during the 'Chromebox for meeting' setup process.">
     Does this code appear on your Chromebox screen?
   </message>
-  <message name="IDS_PAIRING_CONTROLLER_REJECT_CODE" desc="Text on button, pressing which user reports that he doesn't see confirmation code on host screen.">
+  <message name="IDS_PAIRING_CONTROLLER_REJECT_CODE" desc="Text on a button which the user presses to report that they don't see a confirmation code.">
     No, I don't see it
   </message>
-  <message name="IDS_PAIRING_CONTROLLER_ACCEPT_CODE" desc="Text on button, pressing which user reports that he sees confirmation code on host screen and code is correct.">
+  <message name="IDS_PAIRING_CONTROLLER_ACCEPT_CODE" desc="Text on a button which the user presses to report that they see a correct confirmation code.">
     Yes, I see it
   </message>
   <message name="IDS_PAIRING_CONTROLLER_UPDATE_TITLE" desc="Title of the controller's update page of the 'Chromebox for meeting' setup process.">

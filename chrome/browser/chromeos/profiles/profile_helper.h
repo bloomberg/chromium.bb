@@ -124,7 +124,7 @@ class ProfileHelper
 
   // DEPRECATED
   // Returns profile of the |user| if user's profile is created and fully
-  // initialized. Otherwise, if some user is active, returns his profile.
+  // initialized. Otherwise, if some user is active, returns their profile.
   // Otherwise, returns signin profile.
   // Behaviour of this function does not correspond to its name and can be
   // very surprising, that's why it should not be used anymore.

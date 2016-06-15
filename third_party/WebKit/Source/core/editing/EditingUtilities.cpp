@@ -329,7 +329,7 @@ Element* rootEditableElementOf(const VisiblePosition& visiblePosition)
 }
 
 // Finds the enclosing element until which the tree can be split.
-// When a user hits ENTER, he/she won't expect this element to be split into two.
+// When a user hits ENTER, they won't expect this element to be split into two.
 // You may pass it as the second argument of splitTreeToNode.
 Element* unsplittableElementForPosition(const Position& p)
 {

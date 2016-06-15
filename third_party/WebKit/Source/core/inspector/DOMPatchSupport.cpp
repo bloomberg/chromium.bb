@@ -452,7 +452,7 @@ bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState&
         return false;
 
     // Diff works within levels. In order not to lose the node identity when user
-    // prepends his HTML with "<div>" (i.e. all nodes are shifted to the next nested level),
+    // prepends their HTML with "<div>" (i.e. all nodes are shifted to the next nested level),
     // prior to dropping the original node on the floor, check whether new DOM has a digest
     // with matching sha1. If it does, replace it with the original DOM chunk. Chances are
     // high that it will get merged back into the original DOM during the further patching.
