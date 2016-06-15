@@ -371,8 +371,8 @@
         <item name="windowActionBar">false</item>
     </style>
 
-    <!-- Bookmarks -->
-    <style name="BookmarkDialog" parent="Theme.AppCompat.Light.DialogWhenLarge">
+    <!-- Drawer layouts -->
+    <style name="DrawerDialog" parent="Theme.AppCompat.Light.DialogWhenLarge">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/black</item>
         <item name="colorAccent">@color/light_active_color</item>
@@ -381,9 +381,11 @@
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>
-    <style name="BookmarkDialogWhite" parent="BookmarkDialog">
+    <style name="DrawerDialogWhite" parent="DrawerDialog">
       <item name="android:windowBackground">@drawable/bg_white_dialog</item>
     </style>
+
+    <!-- Bookmarks -->
     <style name="BookmarkTitleBarButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

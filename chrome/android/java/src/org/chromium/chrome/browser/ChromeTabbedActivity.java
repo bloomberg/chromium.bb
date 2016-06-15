@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -1066,6 +1067,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (isUrlBarVisible) {
                 getToolbarManager().setUrlBarFocus(true);
             }
+        } else if (id == R.id.downloads_menu_id) {
+            DownloadActivity.launch(this);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }

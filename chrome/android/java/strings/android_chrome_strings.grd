@@ -1946,6 +1946,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_MENU_HISTORY" desc="Menu item for opening the history page. [CHAR-LIMIT=27]">
         History
       </message>
+      <message name="IDS_MENU_DOWNLOADS" desc="Menu item for opening the downloads page. [CHAR-LIMIT=27]">
+        Downloads
+      </message>
       <message name="IDS_MENU_FIND_IN_PAGE" desc="Menu item allowing users to find text within the current page. [CHAR-LIMIT=27]">
         Find in page
       </message>
