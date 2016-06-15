@@ -44,6 +44,7 @@ class BattOrConnectionImpl
                  const void* buffer,
                  size_t bytes_to_send) override;
   void ReadMessage(BattOrMessageType type) override;
+  void CancelReadMessage() override;
   void Flush() override;
 
  protected:

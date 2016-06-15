@@ -63,6 +63,9 @@ class BattOrConnection {
   // listener's OnMessageRead() when complete.
   virtual void ReadMessage(BattOrMessageType type) = 0;
 
+  // Cancels the current message read operation.
+  virtual void CancelReadMessage() = 0;
+
   // Flushes the serial connection to the BattOr.
   virtual void Flush() = 0;
 

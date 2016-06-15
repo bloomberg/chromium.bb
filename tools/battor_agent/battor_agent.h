@@ -94,7 +94,6 @@ class BattOrAgent : public BattOrConnection::Listener,
     REQUEST_CONNECTION,
 
     // Actions required for starting tracing.
-    SEND_RESET,
     SEND_INIT,
     READ_INIT_ACK,
     SEND_SET_GAIN,
@@ -172,6 +171,9 @@ class BattOrAgent : public BattOrConnection::Listener,
   // The expected sequence number of the next frame. We use this to ensure that
   // we receive frames in order.
   uint32_t next_sequence_number_;
+
+  // The number of times we've attempted to init the BattOr.
+  uint8_t num_init_attempts_;
 
   // The number of times that we've attempted to read the last message.
   uint8_t num_read_attempts_;

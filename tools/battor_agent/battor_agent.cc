@@ -17,8 +17,11 @@ namespace battor {
 
 namespace {
 
-// The number of seconds that it takes a BattOr to reset.
-const uint8_t kBattOrResetTimeSeconds = 5;
+// The maximum number of times to retry when init'ing a battor.
+const uint8_t kMaxInitAttempts = 20;
+
+// The number of milliseconds to wait before trying to init again.
+const uint16_t kInitRetryDelayMilliseconds = 100;
 
 // The maximum number of times to retry when reading a message.
 const uint8_t kMaxReadAttempts = 20;
@@ -31,7 +34,7 @@ const uint8_t kReadRetryDelayMilliseconds = 1;
 const uint8_t kStopTracingClockSyncDelayMilliseconds = 100;
 
 // The number of seconds allowed for a given action before timing out.
-const uint8_t kBattOrTimeoutSeconds = 10;
+const uint8_t kBattOrTimeoutSeconds = 4;
 
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
@@ -119,6 +122,7 @@ BattOrAgent::BattOrAgent(
       listener_(listener),
       last_action_(Action::INVALID),
       command_(Command::INVALID),
+      num_init_attempts_(0),
       num_read_attempts_(0) {
   // We don't care what thread the constructor is called on - we only care that
   // all of the other method invocations happen on the same thread.
@@ -174,11 +178,8 @@ void BattOrAgent::OnConnectionOpened(bool success) {
 
   switch (command_) {
     case Command::START_TRACING:
-      // TODO(charliea): Ideally, we'd just like to send an init, and the BattOr
-      // firmware can handle whether a reset is necessary or not, sending an
-      // init ack regardless. This reset can be removed once this is true.
-      // https://github.com/aschulm/battor/issues/30 tracks this.
-      PerformAction(Action::SEND_RESET);
+      num_init_attempts_ = 1;
+      PerformAction(Action::SEND_INIT);
       return;
     case Command::STOP_TRACING:
       PerformAction(Action::SEND_EEPROM_REQUEST);
@@ -206,16 +207,6 @@ void BattOrAgent::OnBytesSent(bool success) {
   }
 
   switch (last_action_) {
-    case Action::SEND_RESET:
-      // TODO(charliea): Ideally, we'd just like to send an init, and the BattOr
-      // firmware can handle whether a reset is necessary or not, sending an
-      // init ack regardless. This reset can be removed once this is true.
-      // https://github.com/aschulm/battor/issues/30 tracks this.
-
-      // Wait for the reset to happen before sending the init message.
-      PerformDelayedAction(Action::SEND_INIT, base::TimeDelta::FromSeconds(
-                                                  kBattOrResetTimeSeconds));
-      return;
     case Action::SEND_INIT:
       PerformAction(Action::READ_INIT_ACK);
       return;
@@ -266,6 +257,18 @@ void BattOrAgent::OnMessageRead(bool success,
                                                kReadRetryDelayMilliseconds));
         return;
 
+      // Retry sending an INIT if it an ACK is not received.
+      case Action::SEND_INIT:
+      case Action::READ_INIT_ACK:
+        if (num_init_attempts_++ < kMaxInitAttempts) {
+          PerformDelayedAction(Action::SEND_INIT,
+              base::TimeDelta::FromMilliseconds(kInitRetryDelayMilliseconds));
+        } else {
+          CompleteCommand(BATTOR_ERROR_TOO_MANY_INIT_RETRIES);
+        }
+
+        return;
+
       default:
         CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
         return;
@@ -276,7 +279,13 @@ void BattOrAgent::OnMessageRead(bool success,
     case Action::READ_INIT_ACK:
       if (!IsAckOfControlCommand(type, BATTOR_CONTROL_MESSAGE_TYPE_INIT,
                                  *bytes)) {
-        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        if (num_init_attempts_++ < kMaxInitAttempts) {
+          PerformDelayedAction(Action::SEND_INIT,
+              base::TimeDelta::FromMilliseconds(kInitRetryDelayMilliseconds));
+        } else {
+          CompleteCommand(BATTOR_ERROR_TOO_MANY_INIT_RETRIES);
+        }
+
         return;
       }
 
@@ -400,15 +409,8 @@ void BattOrAgent::PerformAction(Action action) {
       return;
 
     // The following actions are required for StartTracing:
-    case Action::SEND_RESET:
-      // Reset the BattOr to clear any preexisting state. After sending the
-      // reset signal, we need to wait for the reset to finish before issuing
-      // further commands.
-      SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0, 0);
-      return;
     case Action::SEND_INIT:
-      // After resetting the BattOr, we need to make sure to flush the serial
-      // stream. Strange data may have been written into it during the reset.
+      // Clear out the serial data that may exist from prior init attempts.
       connection_->Flush();
 
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_INIT, 0, 0);
@@ -483,7 +485,21 @@ void BattOrAgent::PerformDelayedAction(Action action, base::TimeDelta delay) {
 }
 
 void BattOrAgent::OnActionTimeout() {
-  CompleteCommand(BATTOR_ERROR_TIMEOUT);
+  switch (last_action_) {
+    case Action::READ_INIT_ACK:
+      if (num_init_attempts_++ < kMaxInitAttempts) {
+        // OnMessageRead() will fail and retry SEND_INIT.
+        connection_->CancelReadMessage();
+      } else {
+        CompleteCommand(BATTOR_ERROR_TOO_MANY_INIT_RETRIES);
+      }
+
+      return;
+
+    default:
+      CompleteCommand(BATTOR_ERROR_TIMEOUT);
+  }
+
   timeout_callback_.Cancel();
 }
 

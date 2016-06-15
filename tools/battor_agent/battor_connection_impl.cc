@@ -181,6 +181,10 @@ void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
   BeginReadBytes(message_max_bytes - already_read_buffer_.size());
 }
 
+void BattOrConnectionImpl::CancelReadMessage() {
+  io_handler_->CancelRead(device::serial::ReceiveError::TIMEOUT);
+}
+
 void BattOrConnectionImpl::Flush() {
   io_handler_->Flush();
   already_read_buffer_.clear();
