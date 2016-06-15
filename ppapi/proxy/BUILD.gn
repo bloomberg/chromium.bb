@@ -283,7 +283,6 @@ component("proxy") {
     "//gpu/command_buffer/client:client_sources_for_ppapi",
     "//ipc",
     "//media:shared_memory_support",
-    "//mojo/edk/system",
     "//ppapi/c",
     "//ppapi/shared_impl",
   ]

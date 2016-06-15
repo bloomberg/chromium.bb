@@ -112,7 +112,6 @@ component("system") {
       "broker_host_posix.cc",
       "broker_posix.cc",
       "channel_posix.cc",
-      "remote_message_pipe_bootstrap.cc",
     ]
   }
 

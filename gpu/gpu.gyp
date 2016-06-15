@@ -315,8 +315,8 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
-        '../ipc/ipc.gyp:ipc_run_all_unittests',
         '../ipc/ipc.gyp:test_support_ipc',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',

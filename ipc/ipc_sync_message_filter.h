@@ -7,16 +7,14 @@
 
 #include <memory>
 #include <set>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
-#include "ipc/mojo_event.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -63,8 +61,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   // Signal all the pending sends as done, used in an error condition.
   void SignalAllEvents();
 
-  void OnShutdownEventSignaled(base::WaitableEvent* event);
-
   // The channel to which this filter was added.
   Sender* sender_;
 
@@ -81,20 +77,12 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   PendingSyncMessages pending_sync_messages_;
 
   // Messages waiting to be delivered after IO initialization.
-  std::vector<std::unique_ptr<Message>> pending_messages_;
+  ScopedVector<Message> pending_messages_;
 
   // Locks data members above.
   base::Lock lock_;
 
-  base::WaitableEvent* const shutdown_event_;
-
-  // Used to asynchronously watch |shutdown_event_| on the IO thread and forward
-  // to |shutdown_mojo_event_| (see below.)
-  base::WaitableEventWatcher shutdown_watcher_;
-
-  // A Mojo event which can be watched for shutdown. Signals are forwarded to
-  // this event asynchronously from |shutdown_event_|.
-  MojoEvent shutdown_mojo_event_;
+  base::WaitableEvent* shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncMessageFilter);
 };

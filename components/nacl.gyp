@@ -74,7 +74,6 @@
             '../base/base.gyp:base_static',
             '../crypto/crypto.gyp:crypto',
             '../ipc/ipc.gyp:ipc',
-            '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
@@ -285,7 +284,6 @@
               },
               'dependencies': [
                 'nacl_common_win64',
-                '../mojo/mojo_edk.gyp:mojo_system_impl_win64',
                 '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
                 '../ppapi/ppapi_internal.gyp:ppapi_shared_win64',
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',

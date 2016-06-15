@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/sync_handle_registry.h"
+#include "mojo/public/cpp/bindings/lib/sync_handle_registry.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {

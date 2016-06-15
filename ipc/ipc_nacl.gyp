@@ -26,8 +26,6 @@
           },
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
-            '../mojo/mojo_public_nacl.gyp:mojo_cpp_bindings_nacl',
-            '../mojo/mojo_public_nacl.gyp:mojo_cpp_system_nacl',
           ],
         },
         {
@@ -57,8 +55,6 @@
           ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../mojo/mojo_public_nacl.gyp:mojo_cpp_bindings_nacl',
-            '../mojo/mojo_public_nacl.gyp:mojo_cpp_system_nacl',
           ],
         },
       ],

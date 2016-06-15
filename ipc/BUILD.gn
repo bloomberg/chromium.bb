@@ -94,8 +94,6 @@ component("ipc") {
     "message_filter_router.h",
     "message_router.cc",
     "message_router.h",
-    "mojo_event.cc",
-    "mojo_event.h",
     "param_traits_log_macros.h",
     "param_traits_macros.h",
     "param_traits_read_macros.h",
@@ -129,14 +127,12 @@ component("ipc") {
 
   public_deps = [
     ":param_traits",
-    "//mojo/public/cpp/system",
   ]
   deps = [
     "//base",
 
     # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
     "//base/third_party/dynamic_annotations",
-    "//mojo/public/cpp/bindings",
   ]
 
   if (is_win || is_mac) {
@@ -159,20 +155,6 @@ source_set("param_traits") {
 }
 
 if (!is_ios) {
-  source_set("run_all_unittests") {
-    testonly = true
-
-    sources = [
-      "run_all_unittests.cc",
-    ]
-
-    deps = [
-      "//base",
-      "//base/test:test_support",
-      "//mojo/edk/system",
-    ]
-  }
-
   test("ipc_tests") {
     sources = [
       "attachment_broker_mac_unittest.cc",
@@ -191,6 +173,7 @@ if (!is_ios) {
       "ipc_test_message_generator.cc",
       "ipc_test_message_generator.h",
       "ipc_test_messages.h",
+      "run_all_unittests.cc",
       "sync_socket_unittest.cc",
     ]
 
@@ -213,7 +196,6 @@ if (!is_ios) {
 
     deps = [
       ":ipc",
-      ":run_all_unittests",
       ":test_support",
       "//base",
       "//base:i18n",

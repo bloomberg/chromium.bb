@@ -1,14 +1,6 @@
 include_rules = [
   "+crypto",
-  "+mojo/edk/embedder",
-  "+mojo/public",
   # For ipc_channel_nacl.cc:
   "+native_client/src/public",
   "+sandbox/mac/seatbelt.h",
 ]
-
-specific_include_rules = {
-  "run_all_unittests\.cc": [
-    "+mojo/edk/embedder",
-  ]
-}
