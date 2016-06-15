@@ -14,24 +14,6 @@ const float kRadiansToDegrees = 180.0f / 3.14159265f;
 
 namespace gfx {
 
-Vector3dF::Vector3dF()
-    : x_(0),
-      y_(0),
-      z_(0) {
-}
-
-Vector3dF::Vector3dF(float x, float y, float z)
-    : x_(x),
-      y_(y),
-      z_(z) {
-}
-
-Vector3dF::Vector3dF(const Vector2dF& other)
-    : x_(other.x()),
-      y_(other.y()),
-      z_(0) {
-}
-
 std::string Vector3dF::ToString() const {
   return base::StringPrintf("[%f %f %f]", x_, y_, z_);
 }

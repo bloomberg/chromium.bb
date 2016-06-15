@@ -24,14 +24,12 @@ namespace gfx {
 // A size has width and height values.
 class GFX_EXPORT Size {
  public:
-  Size() : width_(0), height_(0) {}
-  Size(int width, int height)
+  constexpr Size() : width_(0), height_(0) {}
+  constexpr Size(int width, int height)
       : width_(width < 0 ? 0 : width), height_(height < 0 ? 0 : height) {}
 #if defined(OS_MACOSX)
   explicit Size(const CGSize& s);
 #endif
-
-  ~Size() {}
 
 #if defined(OS_MACOSX)
   Size& operator=(const CGSize& s);
@@ -43,8 +41,8 @@ class GFX_EXPORT Size {
   CGSize ToCGSize() const;
 #endif
 
-  int width() const { return width_; }
-  int height() const { return height_; }
+  constexpr int width() const { return width_; }
+  constexpr int height() const { return height_; }
 
   void set_width(int width) { width_ = width < 0 ? 0 : width; }
   void set_height(int height) { height_ = height < 0 ? 0 : height; }

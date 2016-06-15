@@ -19,13 +19,13 @@ namespace gfx {
 
 class GFX_EXPORT Vector2dF {
  public:
-  Vector2dF() : x_(0), y_(0) {}
-  Vector2dF(float x, float y) : x_(x), y_(y) {}
+  constexpr Vector2dF() : x_(0), y_(0) {}
+  constexpr Vector2dF(float x, float y) : x_(x), y_(y) {}
 
-  float x() const { return x_; }
+  constexpr float x() const { return x_; }
   void set_x(float x) { x_ = x; }
 
-  float y() const { return y_; }
+  constexpr float y() const { return y_; }
   void set_y(float y) { y_ = y; }
 
   // True if both components of the vector are 0.

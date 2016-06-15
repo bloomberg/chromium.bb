@@ -17,13 +17,11 @@ namespace gfx {
 // A point has an x, y and z coordinate.
 class GFX_EXPORT Point3F {
  public:
-  Point3F() : x_(0), y_(0), z_(0) {}
+  constexpr Point3F() : x_(0), y_(0), z_(0) {}
+  constexpr Point3F(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 
-  Point3F(float x, float y, float z) : x_(x), y_(y), z_(z) {}
-
-  explicit Point3F(const PointF& point) : x_(point.x()), y_(point.y()), z_(0) {}
-
-  ~Point3F() {}
+  constexpr explicit Point3F(const PointF& point)
+      : x_(point.x()), y_(point.y()), z_(0) {}
 
   void Scale(float scale) {
     Scale(scale, scale, scale);
@@ -33,9 +31,9 @@ class GFX_EXPORT Point3F {
     SetPoint(x() * x_scale, y() * y_scale, z() * z_scale);
   }
 
-  float x() const { return x_; }
-  float y() const { return y_; }
-  float z() const { return z_; }
+  constexpr float x() const { return x_; }
+  constexpr float y() const { return y_; }
+  constexpr float z() const { return z_; }
 
   void set_x(float x) { x_ = x; }
   void set_y(float y) { y_ = y; }

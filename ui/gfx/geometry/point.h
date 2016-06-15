@@ -25,8 +25,8 @@ namespace gfx {
 // A point has an x and y coordinate.
 class GFX_EXPORT Point {
  public:
-  Point() : x_(0), y_(0) {}
-  Point(int x, int y) : x_(x), y_(y) {}
+  constexpr Point() : x_(0), y_(0) {}
+  constexpr Point(int x, int y) : x_(x), y_(y) {}
 #if defined(OS_WIN)
   // |point| is a DWORD value that contains a coordinate.  The x-coordinate is
   // the low-order short and the y-coordinate is the high-order short.  This
@@ -38,16 +38,14 @@ class GFX_EXPORT Point {
   explicit Point(const CGPoint& point);
 #endif
 
-  ~Point() {}
-
 #if defined(OS_WIN)
   POINT ToPOINT() const;
 #elif defined(OS_MACOSX)
   CGPoint ToCGPoint() const;
 #endif
 
-  int x() const { return x_; }
-  int y() const { return y_; }
+  constexpr int x() const { return x_; }
+  constexpr int y() const { return y_; }
   void set_x(int x) { x_ = x; }
   void set_y(int y) { y_ = y; }
 

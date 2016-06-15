@@ -17,17 +17,16 @@ namespace gfx {
 // A floating version of gfx::Size.
 class GFX_EXPORT SizeF {
  public:
-  SizeF() : width_(0.f), height_(0.f) {}
-  SizeF(float width, float height)
+  constexpr SizeF() : width_(0.f), height_(0.f) {}
+  constexpr SizeF(float width, float height)
       : width_(width >= 0 ? width : 0), height_(height >= 0 ? height : 0) {}
-  ~SizeF() {}
 
-  explicit SizeF(const Size& size)
+  constexpr explicit SizeF(const Size& size)
       : SizeF(static_cast<float>(size.width()),
               static_cast<float>(size.height())) {}
 
-  float width() const { return width_; }
-  float height() const { return height_; }
+  constexpr float width() const { return width_; }
+  constexpr float height() const { return height_; }
 
   void set_width(float width) { width_ = fmaxf(0, width); }
   void set_height(float height) { height_ = fmaxf(0, height); }

@@ -22,13 +22,13 @@ namespace gfx {
 
 class GFX_EXPORT Vector2d {
  public:
-  Vector2d() : x_(0), y_(0) {}
-  Vector2d(int x, int y) : x_(x), y_(y) {}
+  constexpr Vector2d() : x_(0), y_(0) {}
+  constexpr Vector2d(int x, int y) : x_(x), y_(y) {}
 
-  int x() const { return x_; }
+  constexpr int x() const { return x_; }
   void set_x(int x) { x_ = x; }
 
-  int y() const { return y_; }
+  constexpr int y() const { return y_; }
   void set_y(int y) { y_ = y; }
 
   // True if both components of the vector are 0.

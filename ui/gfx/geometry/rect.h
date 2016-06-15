@@ -34,20 +34,19 @@ class Insets;
 
 class GFX_EXPORT Rect {
  public:
-  Rect() {}
-  Rect(int width, int height) : size_(width, height) {}
-  Rect(int x, int y, int width, int height)
+  constexpr Rect() = default;
+  constexpr Rect(int width, int height) : size_(width, height) {}
+  constexpr Rect(int x, int y, int width, int height)
       : origin_(x, y), size_(width, height) {}
-  explicit Rect(const Size& size) : size_(size) {}
-  Rect(const Point& origin, const Size& size) : origin_(origin), size_(size) {}
+  constexpr explicit Rect(const Size& size) : size_(size) {}
+  constexpr Rect(const Point& origin, const Size& size)
+      : origin_(origin), size_(size) {}
 
 #if defined(OS_WIN)
   explicit Rect(const RECT& r);
 #elif defined(OS_MACOSX)
   explicit Rect(const CGRect& r);
 #endif
-
-  ~Rect() {}
 
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
@@ -57,30 +56,30 @@ class GFX_EXPORT Rect {
   CGRect ToCGRect() const;
 #endif
 
-  int x() const { return origin_.x(); }
+  constexpr int x() const { return origin_.x(); }
   void set_x(int x) { origin_.set_x(x); }
 
-  int y() const { return origin_.y(); }
+  constexpr int y() const { return origin_.y(); }
   void set_y(int y) { origin_.set_y(y); }
 
-  int width() const { return size_.width(); }
+  constexpr int width() const { return size_.width(); }
   void set_width(int width) { size_.set_width(width); }
 
-  int height() const { return size_.height(); }
+  constexpr int height() const { return size_.height(); }
   void set_height(int height) { size_.set_height(height); }
 
-  const Point& origin() const { return origin_; }
+  constexpr const Point& origin() const { return origin_; }
   void set_origin(const Point& origin) { origin_ = origin; }
 
-  const Size& size() const { return size_; }
+  constexpr const Size& size() const { return size_; }
   void set_size(const Size& size) { size_ = size; }
 
-  int right() const { return x() + width(); }
-  int bottom() const { return y() + height(); }
+  constexpr int right() const { return x() + width(); }
+  constexpr int bottom() const { return y() + height(); }
 
-  Point top_right() const { return Point(right(), y()); }
-  Point bottom_left() const { return Point(x(), bottom()); }
-  Point bottom_right() const { return Point(right(), bottom()); }
+  constexpr Point top_right() const { return Point(right(), y()); }
+  constexpr Point bottom_left() const { return Point(x(), bottom()); }
+  constexpr Point bottom_right() const { return Point(right(), bottom()); }
 
   Vector2d OffsetFromOrigin() const { return Vector2d(x(), y()); }
 

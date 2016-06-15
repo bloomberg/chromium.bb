@@ -14,25 +14,29 @@ namespace gfx {
 
 class GFX_EXPORT Insets {
  public:
-  Insets();
-  explicit Insets(int all);
-  Insets(int vertical, int horizontal);
-  Insets(int top, int left, int bottom, int right);
+  constexpr Insets() : top_(0), left_(0), bottom_(0), right_(0) {}
+  constexpr explicit Insets(int all)
+      : top_(all), left_(all), bottom_(all), right_(all) {}
+  constexpr Insets(int vertical, int horizontal)
+      : top_(vertical),
+        left_(horizontal),
+        bottom_(vertical),
+        right_(horizontal) {}
+  constexpr Insets(int top, int left, int bottom, int right)
+      : top_(top), left_(left), bottom_(bottom), right_(right) {}
 
-  ~Insets();
-
-  int top() const { return top_; }
-  int left() const { return left_; }
-  int bottom() const { return bottom_; }
-  int right() const { return right_; }
+  constexpr int top() const { return top_; }
+  constexpr int left() const { return left_; }
+  constexpr int bottom() const { return bottom_; }
+  constexpr int right() const { return right_; }
 
   // Returns the total width taken up by the insets, which is the sum of the
   // left and right insets.
-  int width() const { return left_ + right_; }
+  constexpr int width() const { return left_ + right_; }
 
   // Returns the total height taken up by the insets, which is the sum of the
   // top and bottom insets.
-  int height() const { return top_ + bottom_; }
+  constexpr int height() const { return top_ + bottom_; }
 
   // Returns true if the insets are empty.
   bool IsEmpty() const { return width() == 0 && height() == 0; }
@@ -58,6 +62,13 @@ class GFX_EXPORT Insets {
     left_ += insets.left_;
     bottom_ += insets.bottom_;
     right_ += insets.right_;
+  }
+
+  void operator-=(const Insets& insets) {
+    top_ -= insets.top_;
+    left_ -= insets.left_;
+    bottom_ -= insets.bottom_;
+    right_ -= insets.right_;
   }
 
   Insets operator-() const {
@@ -89,6 +100,16 @@ class GFX_EXPORT Insets {
   int bottom_;
   int right_;
 };
+
+inline Insets operator+(Insets lhs, const Insets& rhs) {
+  lhs += rhs;
+  return lhs;
+}
+
+inline Insets operator-(Insets lhs, const Insets& rhs) {
+  lhs -= rhs;
+  return lhs;
+}
 
 }  // namespace gfx
 

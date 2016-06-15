@@ -25,15 +25,15 @@ class InsetsF;
 // A floating version of gfx::Rect.
 class GFX_EXPORT RectF {
  public:
-  RectF() {}
-  RectF(float width, float height) : size_(width, height) {}
-  RectF(float x, float y, float width, float height)
+  constexpr RectF() = default;
+  constexpr RectF(float width, float height) : size_(width, height) {}
+  constexpr RectF(float x, float y, float width, float height)
       : origin_(x, y), size_(width, height) {}
-  explicit RectF(const SizeF& size) : size_(size) {}
-  RectF(const PointF& origin, const SizeF& size)
+  constexpr explicit RectF(const SizeF& size) : size_(size) {}
+  constexpr RectF(const PointF& origin, const SizeF& size)
       : origin_(origin), size_(size) {}
 
-  explicit RectF(const Rect& r)
+  constexpr explicit RectF(const Rect& r)
       : RectF(static_cast<float>(r.x()),
               static_cast<float>(r.y()),
               static_cast<float>(r.width()),
@@ -45,32 +45,30 @@ class GFX_EXPORT RectF {
   CGRect ToCGRect() const;
 #endif
 
-  ~RectF() {}
-
-  float x() const { return origin_.x(); }
+  constexpr float x() const { return origin_.x(); }
   void set_x(float x) { origin_.set_x(x); }
 
-  float y() const { return origin_.y(); }
+  constexpr float y() const { return origin_.y(); }
   void set_y(float y) { origin_.set_y(y); }
 
-  float width() const { return size_.width(); }
+  constexpr float width() const { return size_.width(); }
   void set_width(float width) { size_.set_width(width); }
 
-  float height() const { return size_.height(); }
+  constexpr float height() const { return size_.height(); }
   void set_height(float height) { size_.set_height(height); }
 
-  const PointF& origin() const { return origin_; }
+  constexpr const PointF& origin() const { return origin_; }
   void set_origin(const PointF& origin) { origin_ = origin; }
 
-  const SizeF& size() const { return size_; }
+  constexpr const SizeF& size() const { return size_; }
   void set_size(const SizeF& size) { size_ = size; }
 
-  float right() const { return x() + width(); }
-  float bottom() const { return y() + height(); }
+  constexpr float right() const { return x() + width(); }
+  constexpr float bottom() const { return y() + height(); }
 
-  PointF top_right() const { return PointF(right(), y()); }
-  PointF bottom_left() const { return PointF(x(), bottom()); }
-  PointF bottom_right() const { return PointF(right(), bottom()); }
+  constexpr PointF top_right() const { return PointF(right(), y()); }
+  constexpr PointF bottom_left() const { return PointF(x(), bottom()); }
+  constexpr PointF bottom_right() const { return PointF(right(), bottom()); }
 
   Vector2dF OffsetFromOrigin() const { return Vector2dF(x(), y()); }
 

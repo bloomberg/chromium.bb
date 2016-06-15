@@ -17,18 +17,21 @@ namespace gfx {
 // the camera.
 class GFX_EXPORT BoxF {
  public:
-  BoxF() : BoxF(0, 0, 0) {}
-  BoxF(float width, float height, float depth)
+  constexpr BoxF() : BoxF(0, 0, 0) {}
+  constexpr BoxF(float width, float height, float depth)
       : BoxF(0, 0, 0, width, height, depth) {}
-  BoxF(float x, float y, float z, float width, float height, float depth)
+  constexpr BoxF(float x,
+                 float y,
+                 float z,
+                 float width,
+                 float height,
+                 float depth)
       : BoxF(Point3F(x, y, z), width, height, depth) {}
-  BoxF(const Point3F& origin, float width, float height, float depth)
+  constexpr BoxF(const Point3F& origin, float width, float height, float depth)
       : origin_(origin),
         width_(width >= 0 ? width : 0),
         height_(height >= 0 ? height : 0),
         depth_(depth >= 0 ? depth : 0) {}
-
-  ~BoxF() {}
 
   // Scales all three axes by the given scale.
   void Scale(float scale) {
@@ -55,27 +58,27 @@ class GFX_EXPORT BoxF {
 
   std::string ToString() const;
 
-  float x() const { return origin_.x(); }
+  constexpr float x() const { return origin_.x(); }
   void set_x(float x) { origin_.set_x(x); }
 
-  float y() const { return origin_.y(); }
+  constexpr float y() const { return origin_.y(); }
   void set_y(float y) { origin_.set_y(y); }
 
-  float z() const { return origin_.z(); }
+  constexpr float z() const { return origin_.z(); }
   void set_z(float z) { origin_.set_z(z); }
 
-  float width() const { return width_; }
+  constexpr float width() const { return width_; }
   void set_width(float width) { width_ = width < 0 ? 0 : width; }
 
-  float height() const { return height_; }
+  constexpr float height() const { return height_; }
   void set_height(float height) { height_ = height < 0 ? 0 : height; }
 
-  float depth() const { return depth_; }
+  constexpr float depth() const { return depth_; }
   void set_depth(float depth) { depth_ = depth < 0 ? 0 : depth; }
 
-  float right() const { return x() + width(); }
-  float bottom() const { return y() + height(); }
-  float front() const { return z() + depth(); }
+  constexpr float right() const { return x() + width(); }
+  constexpr float bottom() const { return y() + height(); }
+  constexpr float front() const { return z() + depth(); }
 
   void set_size(float width, float height, float depth) {
     width_ = width < 0 ? 0 : width;
@@ -83,7 +86,7 @@ class GFX_EXPORT BoxF {
     depth_ = depth < 0 ? 0 : depth;
   }
 
-  const Point3F& origin() const { return origin_; }
+  constexpr const Point3F& origin() const { return origin_; }
   void set_origin(const Point3F& origin) { origin_ = origin; }
 
   // Expands |this| to contain the given point, if necessary. Please note, even

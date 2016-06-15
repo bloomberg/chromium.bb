@@ -18,15 +18,14 @@ namespace gfx {
 // A floating version of gfx::Point.
 class GFX_EXPORT PointF {
  public:
-  PointF() : x_(0.f), y_(0.f) {}
-  PointF(float x, float y) : x_(x), y_(y) {}
-  ~PointF() {}
+  constexpr PointF() : x_(0.f), y_(0.f) {}
+  constexpr PointF(float x, float y) : x_(x), y_(y) {}
 
-  explicit PointF(const Point& p)
+  constexpr explicit PointF(const Point& p)
       : PointF(static_cast<float>(p.x()), static_cast<float>(p.y())) {}
 
-  float x() const { return x_; }
-  float y() const { return y_; }
+  constexpr float x() const { return x_; }
+  constexpr float y() const { return y_; }
   void set_x(float x) { x_ = x; }
   void set_y(float y) { y_ = y; }
 

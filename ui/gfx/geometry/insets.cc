@@ -8,18 +8,6 @@
 
 namespace gfx {
 
-Insets::Insets() : Insets(0) {}
-
-Insets::Insets(int all) : Insets(all, all, all, all) {}
-
-Insets::Insets(int vertical, int horizontal)
-    : Insets(vertical, horizontal, vertical, horizontal) {}
-
-Insets::Insets(int top, int left, int bottom, int right)
-    : top_(top), left_(left), bottom_(bottom), right_(right) {}
-
-Insets::~Insets() {}
-
 std::string Insets::ToString() const {
   // Print members in the same order of the constructor parameters.
   return base::StringPrintf("%d,%d,%d,%d", top(),  left(), bottom(), right());
