@@ -324,6 +324,7 @@
         'chromecast_locales.gyp:chromecast_settings',
         'media/media.gyp:media_base',
         'media/media.gyp:media_cdm',
+        'media/media.gyp:media_features',
         '../base/base.gyp:base',
         '../components/components.gyp:breakpad_host',
         '../components/components.gyp:cdm_renderer',

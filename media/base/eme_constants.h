@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "media/media_features.h"
+
 namespace media {
 
 // Defines values that specify registered Initialization Data Types used
@@ -38,7 +40,13 @@ enum EmeCodec {
   EME_CODEC_MP4_AUDIO_ALL = EME_CODEC_MP4_AAC,
   EME_CODEC_MP4_AVC1 = 1 << 5,
   EME_CODEC_MP4_VP9 = 1 << 6,
+#if !BUILDFLAG(ENABLE_HEVC_DEMUXING)
   EME_CODEC_MP4_VIDEO_ALL = (EME_CODEC_MP4_AVC1 | EME_CODEC_MP4_VP9),
+#else
+  EME_CODEC_MP4_HEVC = 1 << 7,
+  EME_CODEC_MP4_VIDEO_ALL =
+      (EME_CODEC_MP4_AVC1 | EME_CODEC_MP4_VP9 | EME_CODEC_MP4_HEVC),
+#endif
   EME_CODEC_MP4_ALL = (EME_CODEC_MP4_AUDIO_ALL | EME_CODEC_MP4_VIDEO_ALL),
   EME_CODEC_AUDIO_ALL = (EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL),
   EME_CODEC_VIDEO_ALL = (EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL),

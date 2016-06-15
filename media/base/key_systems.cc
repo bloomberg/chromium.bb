@@ -62,7 +62,11 @@ static const NamedCodec kCodecStrings[] = {
 #endif
     {"mp4a", EME_CODEC_MP4_AAC},   // AAC.
     {"avc1", EME_CODEC_MP4_AVC1},  // AVC1.
-    {"avc3", EME_CODEC_MP4_AVC1}   // AVC3.
+    {"avc3", EME_CODEC_MP4_AVC1},  // AVC3.
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    {"hev1", EME_CODEC_MP4_HEVC},  // HEV1.
+    {"hvc1", EME_CODEC_MP4_HEVC},  // HVC1.
+#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 

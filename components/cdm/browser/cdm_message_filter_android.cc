@@ -14,6 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/media_features.h"
 
 using content::BrowserThread;
 using media::MediaDrmBridge;
@@ -42,7 +43,10 @@ const CodecInfo kCodecsToQuery[] = {
   {media::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},
 #if defined(USE_PROPRIETARY_CODECS)
   {media::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
-  {media::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
+  {media::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"},
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  {media::EME_CODEC_MP4_HEVC, CODEC_VIDEO, "hvc1", "video/mp4"},
+#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 

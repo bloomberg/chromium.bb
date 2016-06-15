@@ -123,6 +123,14 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    video_mp4_codecs_.push_back("hvc1.1.6.L93.B0");
+    video_mp4_codecs_.push_back("hev1.1.6.L93.B0");
+#else
+    invalid_codecs_.push_back("hvc1.1.6.L93.B0");
+    invalid_codecs_.push_back("hev1.1.6.L93.B0");
+#endif
+
     // Extended codecs are used, so make sure generic ones fail. These will be
     // tested against all initDataTypes as they should always fail to be
     // supported.
@@ -135,6 +143,12 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     invalid_codecs_.push_back("mp4a");
     invalid_codecs_.push_back("avc2");
     invalid_codecs_.push_back("foo");
+
+    // We only support proper long-form HEVC codec ids.
+    invalid_codecs_.push_back("hev1");
+    invalid_codecs_.push_back("hev1.");
+    invalid_codecs_.push_back("hvc1");
+    invalid_codecs_.push_back("hvc1.");
   }
 
   typedef std::vector<std::string> CodecVector;
