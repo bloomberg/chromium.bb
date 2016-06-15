@@ -158,8 +158,9 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
   DictionaryBuilder manifest;
   manifest.Set("name", name)
       .Set("version", "1")
-      .Set("manifest_version", 2)
-      .Set(action_key, DictionaryBuilder().Build());
+      .Set("manifest_version", 2);
+  if (action_key)
+    manifest.Set(action_key, DictionaryBuilder().Build());
   if (!host_permission.empty())
     manifest.Set("permissions", ListBuilder().Append(host_permission).Build());
   scoped_refptr<const Extension> extension =
@@ -654,6 +655,45 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
       ExtensionContextMenuModel::VISIBLE, nullptr);
   EXPECT_EQ(-1, feature_disabled_menu.GetIndexOfCommandId(
                     ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
+}
+
+TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
+  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
+      new FeatureSwitch::ScopedOverride(
+          FeatureSwitch::extension_action_redesign(), true));
+
+  InitializeEmptyExtensionService();
+  {
+    const Extension* page_action = AddExtension(
+        "page_action", manifest_keys::kPageAction, Manifest::INTERNAL);
+    ASSERT_TRUE(page_action);
+    ExtensionContextMenuModel menu(page_action, GetBrowser(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    int inspect_popup_index =
+        menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
+    EXPECT_GE(0, inspect_popup_index);
+  }
+  {
+    const Extension* browser_action = AddExtension(
+        "browser_action", manifest_keys::kBrowserAction, Manifest::INTERNAL);
+    ExtensionContextMenuModel menu(browser_action, GetBrowser(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    int inspect_popup_index =
+        menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
+    EXPECT_GE(0, inspect_popup_index);
+  }
+  {
+    // With the extension toolbar redesign, an extension with no specified
+    // action has one synthesized. However, there will never be a popup to
+    // inspect, so we shouldn't add a menu item.
+    const Extension* no_action = AddExtension(
+        "no_action", nullptr, Manifest::INTERNAL);
+    ExtensionContextMenuModel menu(no_action, GetBrowser(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    int inspect_popup_index =
+        menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
+    EXPECT_EQ(-1, inspect_popup_index);
+  }
 }
 
 }  // namespace extensions
