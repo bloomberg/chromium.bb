@@ -1532,8 +1532,16 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
-crbug.com/620126 svg/repaint/inner-svg-change-viewBox-contract.svg [ Skip ]
-crbug.com/620126 svg/repaint/mask-clip-target-transform.svg [ Skip ]
+crbug.com/620126 svg/repaint/inner-svg-change-viewBox-contract.svg [ NeedsManualRebaseline ]
+crbug.com/620126 svg/repaint/mask-clip-target-transform.svg [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-shadow-tree-content.xhtml [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-content.xhtml [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/resource-invalidate-on-target-update.svg [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/marker-viewBox-changes.svg [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-image.xhtml [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsManualRebaseline ]
+crbug.com/620126 svg/custom/js-late-clipPath-creation.svg [ NeedsManualRebaseline ]
 
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
