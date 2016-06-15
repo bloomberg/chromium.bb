@@ -75,7 +75,8 @@ get_input(void) {
   static char input_buffer[BUFSIZE];
   size_t input_length;
   input_buffer[0] = 0;
-  fgets(input_buffer, sizeof(input_buffer), stdin);
+  if (!fgets(input_buffer, sizeof(input_buffer), stdin))
+    exit(EXIT_FAILURE);
   input_length = strlen(input_buffer) - 1;
   if (input_length < 0)
     exit(0);
