@@ -61,19 +61,16 @@ def get_device_info(args, failures):
     rc = common.run_command([
         sys.executable,
         os.path.join(args.paths['checkout'],
-                     'third_party',
-                     'catapult',
-                     'devil',
-                     'devil',
+                     'build',
                      'android',
-                     'tools',
-                     'device_status.py'),
+                     'buildbot',
+                     'bb_device_status_check.py'),
         '--json-output', tempfile_path,
         '--blacklist-file', os.path.join(
             args.paths['checkout'], 'out', 'bad_devices.json')])
 
     if rc:
-      failures.append('device_status')
+      failures.append('bb_device_status_check')
       return {}
 
     with open(tempfile_path, 'r') as src:
@@ -82,8 +79,7 @@ def get_device_info(args, failures):
   results = {}
   results['devices'] = sorted(v['serial'] for v in device_info)
 
-  details = [v['ro.build.fingerprint']
-             for v in device_info if not v['blacklisted']]
+  details = [v['build_detail'] for v in device_info if not v['blacklisted']]
 
   def unique_build_details(index):
     return sorted(list(set([v.split(':')[index] for v in details])))
