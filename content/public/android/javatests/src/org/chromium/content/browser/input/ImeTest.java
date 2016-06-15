@@ -626,6 +626,49 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("blablargblarg", "", "");
     }
 
+    // Chrome can crash after pasting long text into textarea, becasue there is an overflow bug in
+    // SpannableStringBuilder#replace(). This can be avoided by enabling ImeThread.
+    // crbug.com/606059
+    @CommandLineFlags.Add("enable-features=ImeThread")
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testPasteLongText() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClipboardManager clipboardManager =
+                        (ClipboardManager) getActivity().getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("blarg", "blarg"));
+            }
+        });
+
+        int textLength = 25000;
+        String text = new String(new char[textLength]).replace("\0", "a");
+
+        commitText(text, 1);
+        waitAndVerifyUpdateSelection(0, textLength, textLength, -1, -1);
+        selectAll();
+        waitAndVerifyUpdateSelection(1, 0, textLength, -1, -1);
+        copy();
+
+        focusElement("textarea");
+        waitAndVerifyUpdateSelection(2, 0, 0, -1, -1);
+
+        // In order to reproduce the bug, we need some text after the pasting text.
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(3, 5, 5, -1, -1);
+
+        setSelection(0, 0);
+        waitAndVerifyUpdateSelection(4, 0, 0, -1, -1);
+
+        // It will crash after the 3rd paste if ImeThread is not enabled.
+        for (int i = 0; i < 10; i++) {
+            paste();
+            waitAndVerifyUpdateSelection(5 + i, textLength * (i + 1), textLength * (i + 1), -1, -1);
+        }
+    }
+
     @SmallTest
     @Feature({"TextInput"})
     @FlakyTest(message = "crbug.com/598482")
