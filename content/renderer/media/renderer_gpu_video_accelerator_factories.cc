@@ -89,9 +89,15 @@ RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 bool RendererGpuVideoAcceleratorFactories::CheckContextLost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (context_provider_) {
-    cc::ContextProvider::ScopedContextLock lock(context_provider_);
-    if (lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-      context_provider_ = nullptr;
+    bool release_context_provider = false;
+    {
+      cc::ContextProvider::ScopedContextLock lock(context_provider_);
+      if (lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+        context_provider_ = nullptr;
+        release_context_provider = true;
+      }
+    }
+    if (release_context_provider) {
       // Drop the reference on the main thread.
       main_thread_task_runner_->PostTask(
           FROM_HERE,
