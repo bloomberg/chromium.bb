@@ -302,30 +302,44 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
 
-    # Nexus 6
+    # Nexus 6 (Adreno 420) and 6P (Adreno 430)
     self.Fail('WebglExtension.EXT_sRGB',
-              ['android', ('qualcomm', 'Adreno (TM) 420')])
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')])
     self.Fail('conformance/context/context-size-change.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/extensions/oes-texture-half-float.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/extensions/' +
               'oes-texture-half-float-with-image-data.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/glsl/bugs/qualcomm-crash.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     # This test is skipped because running it causes a future test to fail.
     # The list of tests which may be that future test is very long. It is
     # almost (but not quite) every webgl conformance test.
@@ -601,16 +615,20 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=527761)
     self.Fail('conformance/glsl/bugs/sketchfab-lighting-shader-crash.html',
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=551937)
-    # Nexus 6 failures only
+    # Nexus 6 and 6P failures
     self.Fail('conformance/context/' +
               'context-attributes-alpha-depth-stencil-antialias.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/context/premultiplyalpha-test.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=499555)
     self.Fail('conformance/textures/image_bitmap_from_blob/*',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
     self.Fail('conformance/textures/image_bitmap_from_canvas/*',
@@ -654,9 +672,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=499555)
     self.Fail('conformance/textures/canvas/*',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+              ['android',
+               ('qualcomm', 'Adreno (TM) 420'),
+               ('qualcomm', 'Adreno (TM) 430')], bug=499555)
     self.Fail('conformance/textures/image_data/*',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/image/*',
