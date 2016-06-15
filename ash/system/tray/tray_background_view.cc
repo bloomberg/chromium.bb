@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_background_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -109,26 +110,32 @@ class TrayBackground : public views::Background {
   }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
-    SkColor color = SK_ColorTRANSPARENT;
+    SkColor background_color = SK_ColorTRANSPARENT;
     ShelfWidget* shelf_widget = GetShelfWidget();
-    if (tray_background_view_->draw_background_as_active()) {
-      // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active
-      // state using the material design ripple animation.
-      color = SK_ColorBLUE;
-    } else if (shelf_widget &&
-               shelf_widget->GetBackgroundType() ==
-                   ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
-      color = SkColorSetA(kShelfBaseColor,
-                          GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+    if (shelf_widget &&
+        shelf_widget->GetBackgroundType() ==
+            ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+      background_color = SkColorSetA(kShelfBaseColor,
+                                     GetShelfConstant(SHELF_BACKGROUND_ALPHA));
     }
 
     // TODO(bruthig|tdanderson): The background should be changed using a
     // fade in/out animation.
     const int kCornerRadius = 2;
-    SkPaint paint;
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(color);
-    canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius, paint);
+
+    SkPaint background_paint;
+    background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    background_paint.setColor(background_color);
+    canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius,
+                          background_paint);
+
+    if (tray_background_view_->draw_background_as_active()) {
+      SkPaint highlight_paint;
+      highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
+      highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
+      canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius,
+                            highlight_paint);
+    }
   }
 
   void PaintNonMaterial(gfx::Canvas* canvas, views::View* view) const {

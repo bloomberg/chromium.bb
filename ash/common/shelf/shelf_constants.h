@@ -52,6 +52,11 @@ ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 // based on the desired shelf opacity level.
 ASH_EXPORT extern const SkColor kShelfBaseColor;
 
+// Highlight color used for shelf button activated states.
+// TODO(bruthig|mohsen): Use of this color is temporary. Draw the active state
+// using the material design ripple animation.
+ASH_EXPORT extern const SkColor kShelfButtonActivatedHighlightColor;
+
 // The foreground color of the icons used in the shelf (launcher,
 // notifications, etc).
 ASH_EXPORT extern const SkColor kShelfIconColor;

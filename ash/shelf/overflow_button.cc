@@ -60,26 +60,30 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   if (MaterialDesignController::IsShelfMaterial()) {
-    SkColor color = SK_ColorTRANSPARENT;
+    SkColor background_color = SK_ColorTRANSPARENT;
     ShelfWidget* shelf_widget = shelf_->shelf_widget();
-    if (shelf_->IsShowingOverflowBubble()) {
-      // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active
-      // state using the material design ripple animation.
-      color = SK_ColorBLUE;
-    } else if (shelf_widget &&
-               shelf_widget->GetBackgroundType() ==
-                   ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
-      color = SkColorSetA(kShelfBaseColor,
-                          GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+    if (shelf_widget &&
+        shelf_widget->GetBackgroundType() ==
+            ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+      background_color = SkColorSetA(kShelfBaseColor,
+                                     GetShelfConstant(SHELF_BACKGROUND_ALPHA));
     }
 
     // TODO(bruthig|tdanderson): The background should be changed using a
     // fade in/out animation.
     const int kCornerRadius = 2;
-    SkPaint paint;
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(color);
-    canvas->DrawRoundRect(bounds, kCornerRadius, paint);
+
+    SkPaint background_paint;
+    background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    background_paint.setColor(background_color);
+    canvas->DrawRoundRect(bounds, kCornerRadius, background_paint);
+
+    if (shelf_->IsShowingOverflowBubble()) {
+      SkPaint highlight_paint;
+      highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
+      highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
+      canvas->DrawRoundRect(bounds, kCornerRadius, highlight_paint);
+    }
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* background =

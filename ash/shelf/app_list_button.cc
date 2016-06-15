@@ -6,6 +6,7 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -125,32 +126,36 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kFill_Style);
+  SkPaint background_paint;
+  background_paint.setColor(SK_ColorTRANSPARENT);
+  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  background_paint.setStyle(SkPaint::kFill_Style);
 
-  // TODO(mohsen): Do not paint a blue background color once the material
-  // design ripple has been added. See crbug.com/612567.
-  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
-      draw_background_as_active_) {
-    paint.setColor(SK_ColorBLUE);
-  } else if (shelf_view_->shelf()->shelf_widget()->GetDimsShelf()) {
-    paint.setColor(SK_ColorTRANSPARENT);
-  } else {
-    paint.setColor(
+  const ShelfWidget* shelf_widget = shelf_view_->shelf()->shelf_widget();
+  if (shelf_widget &&
+      shelf_widget->GetBackgroundType() ==
+          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+    background_paint.setColor(
         SkColorSetA(kShelfBaseColor, GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
   }
 
   // Paint the circular background of AppList button.
-  gfx::Rect contents_bounds = GetContentsBounds();
-  if (IsHorizontalAlignment(shelf_view_->shelf()->alignment())) {
-    canvas->DrawCircle(
-        gfx::Point(contents_bounds.width() / 2, contents_bounds.height() / 2),
-        kAppListButtonBackgroundRadius, paint);
-  } else {
-    canvas->DrawCircle(
-        gfx::Point(contents_bounds.height() / 2, contents_bounds.width() / 2),
-        kAppListButtonBackgroundRadius, paint);
+  gfx::Point circle_center = GetContentsBounds().CenterPoint();
+  if (!IsHorizontalAlignment(shelf_view_->shelf()->alignment()))
+    circle_center = gfx::Point(circle_center.y(), circle_center.x());
+
+  canvas->DrawCircle(circle_center, kAppListButtonBackgroundRadius,
+                     background_paint);
+
+  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
+      draw_background_as_active_) {
+    SkPaint highlight_paint;
+    highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
+    highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    highlight_paint.setStyle(SkPaint::kFill_Style);
+
+    canvas->DrawCircle(circle_center, kAppListButtonBackgroundRadius,
+                       highlight_paint);
   }
 }
 
