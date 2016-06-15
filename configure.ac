@@ -672,8 +672,6 @@ AC_MSG_RESULT([
 	Screen Sharing			${enable_screen_sharing}
 	JUnit XML output		${enable_junit_xml}
 
-	Raspberry Pi BCM headers	${have_bcm_host}
-
 	Build Clients			${enable_clients}
 	Build EGL Clients		${have_cairo_egl}
 	Build Simple Clients		${enable_simple_clients}
