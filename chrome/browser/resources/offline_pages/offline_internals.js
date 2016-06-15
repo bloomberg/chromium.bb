@@ -2,51 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   onlineUrl: string,
+ *   creationTime: number,
+ *   id: string,
+ *   namespace: string,
+ *   size: string,
+ *   filePath: string,
+ *   lastAccessTime: number,
+ *   accessCount: number
+ * }}
+ */
+var OfflinePage;
+
+/**
+ * @typedef {{
+ *   status: string,
+ *   onlineUrl: string,
+ *   creationTime: number,
+ *   id: string,
+ *   namespace: string,
+ *   lastAttempt: number
+ * }}
+ */
+var SavePageRequest;
+
 cr.define('offlineInternals', function() {
   'use strict';
 
-  /**
-   * @typedef {{
-   *   onlineUrl: string,
-   *   creationTime: number,
-   *   status: number,
-   *   id: string,
-   *   namespace: string,
-   *   size: string,
-   *   filePath: string,
-   *   lastAccessTime: number,
-   *   accessCount: number
-   *  }}
-   */
-  var OfflinePageItem;
+  /** @type {!Array<OfflinePage>} */
+  var offlinePages = [];
 
-  /**
-   * @typedef {{
-   *   status: string,
-   *   onlineUrl: string,
-   *   creationTime: number,
-   *   id: string,
-   *   namespace: string,
-   *   attemptCount: number
-   * }}
-   */
-  var SavePageRequest;
-
-  /**
-   * Clear the specified table.
-   * @param {string} tableId id of the table to clear.
-   */
-  function clearTable(tableId) {
-    $(tableId).textContent = '';
-  }
+  /** @type {!Array<SavePageRequest>} */
+  var savePageRequests = [];
 
   /**
    * Fill stored pages table.
-   * @param {HTMLElement} element A HTML element.
-   * @param {!Array<OfflinePageItem>} pages An array object representing
+   * @param {!Array<OfflinePage>} pages An array object representing
    *     stored offline pages.
    */
-  function fillStoredPages(element, pages) {
+  function fillStoredPages(pages) {
+    var storedPagesTable = $('stored-pages');
+    storedPagesTable.textContent = '';
+
     for (var i = 0; i < pages.length; i++) {
       var row = document.createElement('tr');
 
@@ -68,20 +67,23 @@ cr.define('offlineInternals', function() {
       row.appendChild(cell);
 
       cell = document.createElement('td');
-      cell.textContent = pages[i].size;
+      cell.textContent = Math.round(pages[i].size / 1024);
       row.appendChild(cell);
 
-      element.appendChild(row);
+      storedPagesTable.appendChild(row);
     }
+    offlinePages = pages;
   }
 
   /**
    * Fill requests table.
-   * @param {HTMLElement} element A HTML element.
    * @param {!Array<SavePageRequest>} requests An array object representing
    *     the request queue.
    */
-  function fillRequestQueue(element, requests) {
+  function fillRequestQueue(requests) {
+    var requestQueueTable = $('request-queue');
+    requestQueueTable.textContent = '';
+
     for (var i = 0; i < requests.length; i++) {
       var row = document.createElement('tr');
 
@@ -97,15 +99,17 @@ cr.define('offlineInternals', function() {
       cell.textContent = requests[i].status;
       row.appendChild(cell);
 
-      element.appendChild(row);
+      requestQueueTable.appendChild(row);
     }
+    savePageRequests = requests;
   }
 
   /**
    * Refresh all displayed information.
    */
   function refreshAll() {
-    cr.sendWithPromise('getOfflineInternalsInfo').then(setOfflineInternalsInfo);
+    cr.sendWithPromise('getStoredPagesInfo').then(fillStoredPages);
+    cr.sendWithPromise('getRequestQueueInfo').then(fillRequestQueue);
   }
 
   /**
@@ -117,25 +121,36 @@ cr.define('offlineInternals', function() {
 
   /**
    * Callback when pages are deleted.
-   * @param {string} deletePageStatus The status of delete page call.
+   * @param {string} status The status of the request.
    */
-  function pagesDeleted(deletePageStatus) {
-    // TODO(chili): decide what to do here. Perhaps a refresh of just
-    // the stored pages table?
+  function pagesDeleted(status) {
+    $('page-actions-info').textContent = status;
+    cr.sendWithPromise('getStoredPagesInfo').then(fillStoredPages);
   }
 
   /**
-   * Callback when information is loaded.
-   * @param {{AllPages: !Array<OfflinePageItem>,
-   *          Queue: !Array<SavePageRequest>}} info An object containing both
-   *     stored pages and request queue status.
+   * Helper function to JSON-escape and add quotes around a string.
+   * @param {string} strObj The obj to escape and add quotes around.
+   * @return {string} The escaped string.
    */
-  function setOfflineInternalsInfo(info) {
-    clearTable('stored-pages');
-    clearTable('request-queue');
+  function escapeString(strObj) {
+    // CSV single quotes are encoded as "". There can also be commas.
+    return '"' + strObj.replace(/"/g, '""') + '"';
+  }
 
-    fillStoredPages($('stored-pages'), info.AllPages);
-    fillRequestQueue($('request-queue'), info.Queue);
+  /**
+   * Downloads all the stored page and request queue information into a file.
+   * TODO(chili): Create a CSV writer that can abstract out the line joining.
+   */
+  function download() {
+    var json = JSON.stringify({
+      offlinePages: offlinePages,
+      savePageRequests: savePageRequests
+    }, null, 2);
+
+    window.open(
+        'data:application/json,' + encodeURIComponent(json),
+        'dump.json');
   }
 
   /**
@@ -144,9 +159,10 @@ cr.define('offlineInternals', function() {
   function deleteSelectedPages() {
     var checkboxes = document.getElementsByName('stored');
     var selectedIds = [];
-    for (var checkbox of checkboxes) {
-      if (checkbox.checked)
-        selectedIds.push(checkbox.value);
+
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked)
+        selectedIds.push(checkboxes[i].value);
     }
 
     cr.sendWithPromise('deleteSelectedPages', selectedIds).then(pagesDeleted);
@@ -156,6 +172,7 @@ cr.define('offlineInternals', function() {
     $('clear-all').onclick = deleteAllPages;
     $('clear-selected').onclick = deleteSelectedPages;
     $('refresh').onclick = refreshAll;
+    $('download').onclick = download;
     refreshAll();
   }
 

@@ -18,6 +18,7 @@
     <div>
       <div id="current-status"></div>
       <button id="refresh">Refresh page</button>
+      <button id="download">Dump</button>
     </div>
 
     <h2>Stored Pages</h2>
@@ -31,11 +32,12 @@
           <th>&nbsp;</th>
           <th>URL</th>
           <th>Namespace</th>
-          <th>Size</th>
+          <th>Size (Kb)</th>
         </tr>
       </thead>
       <tbody id="stored-pages"> </tbody>
     </table>
+    <div id="page-actions-info"></div>
 
     <h2>Request Queue</h2>
     <table class="request-queue-table">
