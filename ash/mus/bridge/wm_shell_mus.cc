@@ -202,7 +202,7 @@ std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   return wm_windows;
 }
 
-void WmShellMus::RecordUserMetricsAction(wm::WmUserMetricsAction action) {
+void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
   NOTIMPLEMENTED();
 }
 

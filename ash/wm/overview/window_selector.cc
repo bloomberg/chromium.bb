@@ -12,13 +12,13 @@
 
 #include "ash/ash_switches.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -303,7 +303,7 @@ void WindowSelector::Init(const WindowList& windows) {
   shell->AddActivationObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
-  shell->RecordUserMetricsAction(wm::WmUserMetricsAction::WINDOW_OVERVIEW);
+  shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   WmShell::Get()->GetAccessibilityDelegate()->TriggerAccessibilityAlert(
       ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
@@ -399,7 +399,7 @@ void WindowSelector::SelectWindow(WmWindow* window) {
       WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList();
   if (!window_list.empty() && window_list[0] != window) {
     WmShell::Get()->RecordUserMetricsAction(
-        wm::WmUserMetricsAction::WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
+        UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
   }
 
   window->GetWindowState()->Activate();
@@ -440,8 +440,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Ash.WindowSelector.KeyPressesOverItemsRatio",
           (num_key_presses_ * 100) / num_items_, 1, 300, 30);
-      WmShell::Get()->RecordUserMetricsAction(
-          wm::WmUserMetricsAction::WINDOW_OVERVIEW_ENTER_KEY);
+      WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
       SelectWindow(
           grid_list_[selected_grid_index_]->SelectedWindow()->GetWindow());
       break;

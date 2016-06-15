@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/default_window_resizer.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -18,7 +19,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"
 #include "ash/common/wm/workspace/two_step_edge_cycler.h"
 #include "ash/common/wm_lookup.h"
@@ -421,10 +421,9 @@ void WorkspaceWindowResizer::CompleteDrag() {
                                   ? wm::WM_EVENT_SNAP_LEFT
                                   : wm::WM_EVENT_SNAP_RIGHT);
       window_state()->OnWMEvent(&event);
-      shell_->RecordUserMetricsAction(
-          snap_type_ == SNAP_LEFT
-              ? wm::WmUserMetricsAction::DRAG_MAXIMIZE_LEFT
-              : wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT);
+      shell_->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
+                                          ? UMA_DRAG_MAXIMIZE_LEFT
+                                          : UMA_DRAG_MAXIMIZE_RIGHT);
       snapped = true;
     }
   }

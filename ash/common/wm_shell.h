@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/metrics/user_metrics_action.h"
 
 namespace gfx {
 class Rect;
@@ -30,10 +31,7 @@ class WmSystemTrayNotifier;
 class WmWindow;
 
 namespace wm {
-
 class WindowState;
-
-enum class WmUserMetricsAction;
 }
 
 // Similar to ash::Shell. Eventually the two will be merged.
@@ -90,7 +88,7 @@ class ASH_EXPORT WmShell {
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
-  virtual void RecordUserMetricsAction(wm::WmUserMetricsAction action) = 0;
+  virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
 
   // Returns a WindowResizer to handle dragging. |next_window_resizer| is
   // the next WindowResizer in the WindowResizer chain. This may return

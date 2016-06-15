@@ -99,7 +99,7 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
   return wm_windows;
 }
 
-void WmShellAura::RecordUserMetricsAction(wm::WmUserMetricsAction action) {
+void WmShellAura::RecordUserMetricsAction(UserMetricsAction action) {
   return Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
 }
 

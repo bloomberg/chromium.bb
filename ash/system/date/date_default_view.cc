@@ -4,12 +4,12 @@
 
 #include "ash/system/date/date_default_view.h"
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
-#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/date/date_view.h"
 #include "base/i18n/rtl.h"
@@ -129,13 +129,13 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
   WmShell* shell = WmShell::Get();
   SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
   if (sender == help_button_) {
-    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_HELP);
+    shell->RecordUserMetricsAction(UMA_TRAY_HELP);
     tray_delegate->ShowHelp();
   } else if (sender == shutdown_button_) {
-    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_SHUT_DOWN);
+    shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     tray_delegate->RequestShutdown();
   } else if (sender == lock_button_) {
-    shell->RecordUserMetricsAction(wm::WmUserMetricsAction::TRAY_LOCK_SCREEN);
+    shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     tray_delegate->RequestLockScreen();
   } else {
     NOTREACHED();

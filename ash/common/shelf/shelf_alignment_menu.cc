@@ -4,9 +4,9 @@
 
 #include "ash/common/shelf/shelf_alignment_menu.h"
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm_shell.h"
 #include "grit/ash_strings.h"
 
@@ -57,18 +57,15 @@ void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   WmShell* shell = WmShell::Get();
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
-      shell->RecordUserMetricsAction(
-          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_LEFT);
+      shell->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
       wm_shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
       break;
     case MENU_ALIGN_BOTTOM:
-      shell->RecordUserMetricsAction(
-          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_BOTTOM);
+      shell->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
       wm_shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_ALIGN_RIGHT:
-      shell->RecordUserMetricsAction(
-          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_RIGHT);
+      shell->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
       wm_shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
       break;
   }

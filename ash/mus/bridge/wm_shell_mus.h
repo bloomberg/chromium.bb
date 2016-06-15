@@ -57,7 +57,7 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
-  void RecordUserMetricsAction(wm::WmUserMetricsAction action) override;
+  void RecordUserMetricsAction(UserMetricsAction action) override;
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
