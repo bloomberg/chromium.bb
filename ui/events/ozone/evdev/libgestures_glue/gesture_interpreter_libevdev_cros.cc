@@ -382,15 +382,32 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
 
 void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
                                                     const GesturePinch* pinch) {
-  DVLOG(3) << base::StringPrintf(
-                  "Gesture Pinch: dz=%f [%f]", pinch->dz, pinch->ordinal_dz);
+  DVLOG(3) << base::StringPrintf("Gesture Pinch: dz=%f [%f] zoom_state=%u",
+                                 pinch->dz, pinch->ordinal_dz,
+                                 pinch->zoom_state);
 
   if (!cursor_)
     return;  // No cursor!
 
+  EventType type;
+  switch (pinch->zoom_state) {
+    case GESTURES_ZOOM_START:
+      type = ET_GESTURE_PINCH_BEGIN;
+      break;
+    case GESTURES_ZOOM_UPDATE:
+      type = ET_GESTURE_PINCH_UPDATE;
+      break;
+    case GESTURES_ZOOM_END:
+      type = ET_GESTURE_PINCH_END;
+      break;
+    default:
+      LOG(WARNING) << base::StringPrintf("Unrecognized pinch zoom state (%u)",
+                                         pinch->zoom_state);
+      return;
+  }
   dispatcher_->DispatchPinchEvent(
-      PinchEventParams(id_, ET_GESTURE_PINCH_UPDATE, cursor_->GetLocation(),
-                       pinch->dz, StimeToTimeTicks(gesture->end_time)));
+      PinchEventParams(id_, type, cursor_->GetLocation(), pinch->dz,
+                       StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureMetrics(
