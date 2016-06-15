@@ -726,18 +726,23 @@ def set_read_only_swallow(path, read_only):
     return e
 
 
+def remove(filepath):
+  """Removes a file, even if it is read-only."""
+  # TODO(maruel): Not do it unless necessary since it slows this function
+  # down.
+  if sys.platform == 'win32':
+    # Deleting a read-only file will fail if it is read-only.
+    set_read_only(filepath, False)
+  else:
+    # Deleting a read-only file will fail if the directory is read-only.
+    set_read_only(os.path.dirname(filepath), False)
+  fs.remove(filepath)
+
+
 def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist."""
   try:
-    # TODO(maruel): Not do it unless necessary since it slows this function
-    # down.
-    if sys.platform == 'win32':
-      # Deleting a read-only file will fail if it is read-only.
-      set_read_only(filepath, False)
-    else:
-      # Deleting a read-only file will fail if the directory is read-only.
-      set_read_only(os.path.dirname(filepath), False)
-    fs.remove(filepath)
+    remove(filepath)
   except OSError:
     pass
 

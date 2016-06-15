@@ -395,7 +395,7 @@ def get_client(
     # binary.
     binary_path = unicode(os.path.join(cache_dir, 'cipd' + EXECUTABLE_SUFFIX))
     if fs.isfile(binary_path):
-      fs.unlink(binary_path)
+      file_path.remove(binary_path)
     instance_cache.hardlink(instance_id, binary_path, 0511)  # -r-x--x--x
 
     yield CipdClient(binary_path)
