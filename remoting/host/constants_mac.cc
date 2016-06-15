@@ -4,6 +4,10 @@
 
 #include "remoting/host/constants_mac.h"
 
+#if defined(GN_BUILD)
+#include "remoting/host/version.h"
+#endif
+
 namespace remoting {
 
 #define SERVICE_NAME "org.chromium.chromoting"
