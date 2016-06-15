@@ -12,6 +12,8 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 
 # ====== Oilpan-only failures until here ======
 
+crbug.com/574272 bug574272/test.html [ NeedsManualRebaseline ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 

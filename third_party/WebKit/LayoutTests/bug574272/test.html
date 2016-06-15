@@ -2,8 +2,10 @@
 onload = function() {
   if (navigator.platform.indexOf('Linux') != -1)
     document.body.appendChild(document.createTextNode('Linux'));
+  else if (navigator.platform.indexOf('Win') != -1)
+    document.body.appendChild(document.createTextNode('Windows'));
 };
 if (window.testRunner)
   testRunner.dumpAsText();
 </script>
-Common result
+Common new result
