@@ -16,3 +16,9 @@ include_rules = [
   "+ppapi/cpp/completion_callback.h",
   "+ppapi/cpp/output_traits.h",
 ]
+
+specific_include_rules = {
+  "ppapi_perftests\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ]
+}

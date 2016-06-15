@@ -77,6 +77,9 @@ class Watcher {
   // passed to |Start()| will never be called again for this Watcher.
   void Cancel();
 
+  Handle handle() const { return handle_; }
+  ReadyCallback ready_callback() const { return callback_; }
+
  private:
   class MessageLoopObserver;
   friend class MessageLoopObserver;

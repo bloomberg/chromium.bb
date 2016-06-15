@@ -51,6 +51,7 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -248,6 +249,9 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   // Takes ownership of the pointer, but we can use it since we have the same
   // lifetime.
   EXPECT_TRUE(service_process.Initialize(&main_message_loop, state));
+
+  // Needed for IPC.
+  mojo::edk::Init();
 
   MockServiceIPCServer server(&service_process,
                               service_process.io_task_runner(),

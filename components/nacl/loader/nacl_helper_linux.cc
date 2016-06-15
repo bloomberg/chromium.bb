@@ -40,6 +40,7 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 
@@ -117,6 +118,9 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
 
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
                                               browser_fd.release());
+
+  // The Mojo EDK must be initialized before using IPC.
+  mojo::edk::Init();
 
   base::MessageLoopForIO main_message_loop;
 #if defined(OS_NACL_NONSFI)

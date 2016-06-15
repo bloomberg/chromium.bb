@@ -20,6 +20,8 @@
         '../base/base.gyp:base',
         # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_system',
       ],
       # TODO(gregoryd): direct_dependent_settings should be shared with the
       # 64-bit target, but it doesn't work due to a bug in gyp
@@ -37,10 +39,27 @@
       ],
     },
     {
+      'target_name': 'ipc_run_all_unittests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'run_all_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'ipc_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'ipc',
+        'ipc_run_all_unittests',
         'test_support_ipc',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -70,7 +89,6 @@
         'ipc_test_messages.h',
         'ipc_test_message_generator.cc',
         'ipc_test_message_generator.h',
-        'run_all_unittests.cc',
         'sync_socket_unittest.cc',
         'unix_domain_socket_util_unittest.cc',
       ],
@@ -166,6 +184,8 @@
             # suspect.
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings_win64',
+            '../mojo/mojo_public.gyp:mojo_cpp_system_win64',
           ],
           # TODO(gregoryd): direct_dependent_settings should be shared with the
           # 32-bit target, but it doesn't work due to a bug in gyp

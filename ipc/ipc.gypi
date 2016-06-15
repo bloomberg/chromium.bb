@@ -98,6 +98,8 @@
           'message_filter_router.h',
           'message_router.cc',
           'message_router.h',
+          'mojo_event.cc',
+          'mojo_event.h',
           'param_traits_log_macros.h',
           'param_traits_macros.h',
           'param_traits_read_macros.h',

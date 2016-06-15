@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/sync_handle_registry.h"
+#include "mojo/public/cpp/bindings/sync_handle_registry.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -11,7 +11,6 @@
 #include "mojo/public/c/system/core.h"
 
 namespace mojo {
-namespace internal {
 namespace {
 
 base::LazyInstance<base::ThreadLocalPointer<SyncHandleRegistry>>
@@ -111,5 +110,4 @@ SyncHandleRegistry::~SyncHandleRegistry() {
   g_current_sync_handle_watcher.Pointer()->Set(nullptr);
 }
 
-}  // namespace internal
 }  // namespace mojo
