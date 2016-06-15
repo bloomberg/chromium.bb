@@ -33,7 +33,7 @@ private:
 };
 
 class V8TestingScope {
-    DISALLOW_NEW();
+    STACK_ALLOCATED();
 public:
     V8TestingScope();
     ScriptState* getScriptState() const;
@@ -49,8 +49,8 @@ public:
 private:
     OwnPtr<DummyPageHolder> m_holder;
     v8::HandleScope m_handleScope;
+    v8::Local<v8::Context> m_context;
     v8::Context::Scope m_contextScope;
-    ScriptState::Scope m_scriptStateScope;
     TrackExceptionState m_exceptionState;
 };
 

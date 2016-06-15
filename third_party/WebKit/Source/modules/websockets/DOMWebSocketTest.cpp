@@ -109,166 +109,181 @@ private:
     bool m_hasCreatedChannel;
 };
 
-class DOMWebSocketTestBase {
+class DOMWebSocketTestScope {
 public:
-    DOMWebSocketTestBase()
-        : m_websocket(DOMWebSocketWithMockChannel::create(m_scope.getExecutionContext()))
+    explicit DOMWebSocketTestScope(ExecutionContext* executionContext)
+        : m_websocket(DOMWebSocketWithMockChannel::create(executionContext))
     {
     }
 
-    virtual ~DOMWebSocketTestBase()
+    ~DOMWebSocketTestScope()
     {
         if (!m_websocket)
             return;
         // These statements are needed to clear WebSocket::m_channel to
         // avoid ASSERTION failure on ~DOMWebSocket.
-        ASSERT(m_websocket->channel());
-        ::testing::Mock::VerifyAndClear(m_websocket->channel());
+        DCHECK(socket().channel());
+        ::testing::Mock::VerifyAndClear(socket().channel());
         EXPECT_CALL(channel(), disconnect()).Times(AnyNumber());
 
-        m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+        socket().didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     }
 
     MockWebSocketChannel& channel() { return *m_websocket->channel(); }
+    DOMWebSocketWithMockChannel& socket() { return *m_websocket.get(); }
 
-    V8TestingScope m_scope;
+private:
     Persistent<DOMWebSocketWithMockChannel> m_websocket;
 };
 
-class DOMWebSocketTest : public DOMWebSocketTestBase, public ::testing::Test {
-public:
-};
-
-TEST_F(DOMWebSocketTest, connectToBadURL)
+TEST(DOMWebSocketTest, connectToBadURL)
 {
-    m_websocket->connect("xxx", Vector<String>(), m_scope.getExceptionState());
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
+    webSocketScope.socket().connect("xxx", Vector<String>(), scope.getExceptionState());
 
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SyntaxError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The URL 'xxx' is invalid.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+    EXPECT_EQ("The URL 'xxx' is invalid.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, connectToNonWsURL)
+TEST(DOMWebSocketTest, connectToNonWsURL)
 {
-    m_websocket->connect("http://example.com/", Vector<String>(), m_scope.getExceptionState());
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
+    webSocketScope.socket().connect("http://example.com/", Vector<String>(), scope.getExceptionState());
 
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SyntaxError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+    EXPECT_EQ("The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, connectToURLHavingFragmentIdentifier)
+TEST(DOMWebSocketTest, connectToURLHavingFragmentIdentifier)
 {
-    m_websocket->connect("ws://example.com/#fragment", Vector<String>(), m_scope.getExceptionState());
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
+    webSocketScope.socket().connect("ws://example.com/#fragment", Vector<String>(), scope.getExceptionState());
 
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SyntaxError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The URL contains a fragment identifier ('fragment'). Fragment identifiers are not allowed in WebSocket URLs.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+    EXPECT_EQ("The URL contains a fragment identifier ('fragment'). Fragment identifiers are not allowed in WebSocket URLs.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, invalidPort)
+TEST(DOMWebSocketTest, invalidPort)
 {
-    m_websocket->connect("ws://example.com:7", Vector<String>(), m_scope.getExceptionState());
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
+    webSocketScope.socket().connect("ws://example.com:7", Vector<String>(), scope.getExceptionState());
 
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SecurityError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The port 7 is not allowed.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SecurityError, scope.getExceptionState().code());
+    EXPECT_EQ("The port 7 is not allowed.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
 // FIXME: Add a test for Content Security Policy.
 
-TEST_F(DOMWebSocketTest, invalidSubprotocols)
+TEST(DOMWebSocketTest, invalidSubprotocols)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Vector<String> subprotocols;
     subprotocols.append("@subprotocol-|'\"x\x01\x02\x03x");
 
-    m_websocket->connect("ws://example.com/", subprotocols, m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", subprotocols, scope.getExceptionState());
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SyntaxError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The subprotocol '@subprotocol-|'\"x\\u0001\\u0002\\u0003x' is invalid.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+    EXPECT_EQ("The subprotocol '@subprotocol-|'\"x\\u0001\\u0002\\u0003x' is invalid.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, insecureRequestsUpgrade)
+TEST(DOMWebSocketTest, insecureRequestsUpgrade)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "wss://example.com/endpoint"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "wss://example.com/endpoint"), String())).WillOnce(Return(true));
     }
 
-    m_scope.document().setInsecureRequestPolicy(kUpgradeInsecureRequests);
-    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_scope.getExceptionState());
+    scope.document().setInsecureRequestPolicy(kUpgradeInsecureRequests);
+    webSocketScope.socket().connect("ws://example.com/endpoint", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
-    EXPECT_EQ(KURL(KURL(), "wss://example.com/endpoint"), m_websocket->url());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
+    EXPECT_EQ(KURL(KURL(), "wss://example.com/endpoint"), webSocketScope.socket().url());
 }
 
-TEST_F(DOMWebSocketTest, insecureRequestsDoNotUpgrade)
+TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
     }
 
-    m_scope.document().setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_scope.getExceptionState());
+    scope.document().setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+    webSocketScope.socket().connect("ws://example.com/endpoint", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
-    EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), m_websocket->url());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
+    EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), webSocketScope.socket().url());
 }
 
-TEST_F(DOMWebSocketTest, channelConnectSuccess)
+TEST(DOMWebSocketTest, channelConnectSuccess)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Vector<String> subprotocols;
     subprotocols.append("aa");
     subprotocols.append("bb");
 
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/hoge"), String("aa, bb"))).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/hoge"), String("aa, bb"))).WillOnce(Return(true));
     }
 
-    m_websocket->connect("ws://example.com/hoge", Vector<String>(subprotocols), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/hoge", Vector<String>(subprotocols), scope.getExceptionState());
 
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
-    EXPECT_EQ(KURL(KURL(), "ws://example.com/hoge"), m_websocket->url());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
+    EXPECT_EQ(KURL(KURL(), "ws://example.com/hoge"), webSocketScope.socket().url());
 }
 
-TEST_F(DOMWebSocketTest, channelConnectFail)
+TEST(DOMWebSocketTest, channelConnectFail)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Vector<String> subprotocols;
     subprotocols.append("aa");
     subprotocols.append("bb");
 
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String("aa, bb"))).WillOnce(Return(false));
-        EXPECT_CALL(channel(), disconnect());
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String("aa, bb"))).WillOnce(Return(false));
+        EXPECT_CALL(webSocketScope.channel(), disconnect());
     }
 
-    m_websocket->connect("ws://example.com/", Vector<String>(subprotocols), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(subprotocols), scope.getExceptionState());
 
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SecurityError, m_scope.getExceptionState().code());
-    EXPECT_EQ("An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SecurityError, scope.getExceptionState().code());
+    EXPECT_EQ("An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, isValidSubprotocolString)
+TEST(DOMWebSocketTest, isValidSubprotocolString)
 {
     EXPECT_TRUE(DOMWebSocket::isValidSubprotocolString("Helloworld!!"));
     EXPECT_FALSE(DOMWebSocket::isValidSubprotocolString("Hello, world!!"));
@@ -292,398 +307,436 @@ TEST_F(DOMWebSocketTest, isValidSubprotocolString)
     }
 }
 
-TEST_F(DOMWebSocketTest, connectSuccess)
+TEST(DOMWebSocketTest, connectSuccess)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Vector<String> subprotocols;
     subprotocols.append("aa");
     subprotocols.append("bb");
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String("aa, bb"))).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String("aa, bb"))).WillOnce(Return(true));
     }
-    m_websocket->connect("ws://example.com/", subprotocols, m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", subprotocols, scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("bb", "cc");
+    webSocketScope.socket().didConnect("bb", "cc");
 
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    EXPECT_EQ("bb", m_websocket->protocol());
-    EXPECT_EQ("cc", m_websocket->extensions());
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    EXPECT_EQ("bb", webSocketScope.socket().protocol());
+    EXPECT_EQ("cc", webSocketScope.socket().extensions());
 }
 
-TEST_F(DOMWebSocketTest, didClose)
+TEST(DOMWebSocketTest, didClose)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), disconnect());
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), disconnect());
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    webSocketScope.socket().didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
 
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, maximumReasonSize)
+TEST(DOMWebSocketTest, maximumReasonSize)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), failMock(_, _, _));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), failMock(_, _, _));
     }
     String reason;
     for (size_t i = 0; i < 123; ++i)
         reason.append("a");
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->close(1000, reason, m_scope.getExceptionState());
+    webSocketScope.socket().close(1000, reason, scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, reasonSizeExceeding)
+TEST(DOMWebSocketTest, reasonSizeExceeding)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
     }
     String reason;
     for (size_t i = 0; i < 124; ++i)
         reason.append("a");
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->close(1000, reason, m_scope.getExceptionState());
+    webSocketScope.socket().close(1000, reason, scope.getExceptionState());
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(SyntaxError, m_scope.getExceptionState().code());
-    EXPECT_EQ("The message must not be greater than 123 bytes.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+    EXPECT_EQ("The message must not be greater than 123 bytes.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, closeWhenConnecting)
+TEST(DOMWebSocketTest, closeWhenConnecting)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), failMock(String("WebSocket is closed before the connection is established."), WarningMessageLevel, _));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), failMock(String("WebSocket is closed before the connection is established."), WarningMessageLevel, _));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->close(1000, "bye", m_scope.getExceptionState());
+    webSocketScope.socket().close(1000, "bye", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, close)
+TEST(DOMWebSocketTest, close)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), close(3005, String("bye")));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), close(3005, String("bye")));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("", "");
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    m_websocket->close(3005, "bye", m_scope.getExceptionState());
+    webSocketScope.socket().didConnect("", "");
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(3005, "bye", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, closeWithoutReason)
+TEST(DOMWebSocketTest, closeWithoutReason)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), close(3005, String()));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), close(3005, String()));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("", "");
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    m_websocket->close(3005, m_scope.getExceptionState());
+    webSocketScope.socket().didConnect("", "");
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(3005, scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, closeWithoutCodeAndReason)
+TEST(DOMWebSocketTest, closeWithoutCodeAndReason)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), close(-1, String()));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), close(-1, String()));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("", "");
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    m_websocket->close(m_scope.getExceptionState());
+    webSocketScope.socket().didConnect("", "");
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, closeWhenClosing)
+TEST(DOMWebSocketTest, closeWhenClosing)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), close(-1, String()));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), close(-1, String()));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("", "");
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    m_websocket->close(m_scope.getExceptionState());
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    webSocketScope.socket().didConnect("", "");
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 
-    m_websocket->close(m_scope.getExceptionState());
+    webSocketScope.socket().close(scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, closeWhenClosed)
+TEST(DOMWebSocketTest, closeWhenClosed)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), close(-1, String()));
-        EXPECT_CALL(channel(), disconnect());
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), close(-1, String()));
+        EXPECT_CALL(webSocketScope.channel(), disconnect());
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->didConnect("", "");
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-    m_websocket->close(m_scope.getExceptionState());
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    webSocketScope.socket().didConnect("", "");
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 
-    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeComplete, 1000, String());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
-    m_websocket->close(m_scope.getExceptionState());
+    webSocketScope.socket().didClose(WebSocketChannelClient::ClosingHandshakeComplete, 1000, String());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
+    webSocketScope.socket().close(scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendStringWhenConnecting)
+TEST(DOMWebSocketTest, sendStringWhenConnecting)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->send("hello", m_scope.getExceptionState());
+    webSocketScope.socket().send("hello", scope.getExceptionState());
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(InvalidStateError, m_scope.getExceptionState().code());
-    EXPECT_EQ("Still in CONNECTING state.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(InvalidStateError, scope.getExceptionState().code());
+    EXPECT_EQ("Still in CONNECTING state.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendStringWhenClosing)
+TEST(DOMWebSocketTest, sendStringWhenClosing)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Checkpoint checkpoint;
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), failMock(_, _, _));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), failMock(_, _, _));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->close(m_scope.getExceptionState());
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    webSocketScope.socket().close(scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->send("hello", m_scope.getExceptionState());
+    webSocketScope.socket().send("hello", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendStringWhenClosed)
+TEST(DOMWebSocketTest, sendStringWhenClosed)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Checkpoint checkpoint;
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), disconnect());
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), disconnect());
         EXPECT_CALL(checkpoint, Call(1));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    webSocketScope.socket().didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     checkpoint.Call(1);
 
-    m_websocket->send("hello", m_scope.getExceptionState());
+    webSocketScope.socket().send("hello", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendStringSuccess)
+TEST(DOMWebSocketTest, sendStringSuccess)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(CString("hello")));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), send(CString("hello")));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->didConnect("", "");
-    m_websocket->send("hello", m_scope.getExceptionState());
+    webSocketScope.socket().didConnect("", "");
+    webSocketScope.socket().send("hello", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendNonLatin1String)
+TEST(DOMWebSocketTest, sendNonLatin1String)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(CString("\xe7\x8b\x90\xe0\xa4\x94")));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), send(CString("\xe7\x8b\x90\xe0\xa4\x94")));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->didConnect("", "");
+    webSocketScope.socket().didConnect("", "");
     UChar nonLatin1String[] = {
         0x72d0,
         0x0914,
         0x0000
     };
-    m_websocket->send(nonLatin1String, m_scope.getExceptionState());
+    webSocketScope.socket().send(nonLatin1String, scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
+TEST(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->send(view->buffer(), m_scope.getExceptionState());
+    webSocketScope.socket().send(view->buffer(), scope.getExceptionState());
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(InvalidStateError, m_scope.getExceptionState().code());
-    EXPECT_EQ("Still in CONNECTING state.", m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(InvalidStateError, scope.getExceptionState().code());
+    EXPECT_EQ("Still in CONNECTING state.", scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
+TEST(DOMWebSocketTest, sendArrayBufferWhenClosing)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), failMock(_, _, _));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), failMock(_, _, _));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->close(m_scope.getExceptionState());
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    webSocketScope.socket().close(scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->send(view->buffer(), m_scope.getExceptionState());
+    webSocketScope.socket().send(view->buffer(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
+TEST(DOMWebSocketTest, sendArrayBufferWhenClosed)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     Checkpoint checkpoint;
     DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), disconnect());
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), disconnect());
         EXPECT_CALL(checkpoint, Call(1));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    webSocketScope.socket().didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     checkpoint.Call(1);
 
-    m_websocket->send(view->buffer(), m_scope.getExceptionState());
+    webSocketScope.socket().send(view->buffer(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSED, webSocketScope.socket().readyState());
 }
 
-TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
+TEST(DOMWebSocketTest, sendArrayBufferSuccess)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), send(Ref(*view->buffer()), 0, 8));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    m_websocket->didConnect("", "");
-    m_websocket->send(view->buffer(), m_scope.getExceptionState());
+    webSocketScope.socket().didConnect("", "");
+    webSocketScope.socket().send(view->buffer(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::OPEN, webSocketScope.socket().readyState());
 }
 
 // FIXME: We should have Blob tests here.
@@ -693,66 +746,68 @@ TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
 
 // FIXME: We should add tests for data receiving.
 
-TEST_F(DOMWebSocketTest, binaryType)
+TEST(DOMWebSocketTest, binaryType)
 {
-    EXPECT_EQ("blob", m_websocket->binaryType());
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
+    EXPECT_EQ("blob", webSocketScope.socket().binaryType());
 
-    m_websocket->setBinaryType("arraybuffer");
+    webSocketScope.socket().setBinaryType("arraybuffer");
 
-    EXPECT_EQ("arraybuffer", m_websocket->binaryType());
+    EXPECT_EQ("arraybuffer", webSocketScope.socket().binaryType());
 
-    m_websocket->setBinaryType("blob");
+    webSocketScope.socket().setBinaryType("blob");
 
-    EXPECT_EQ("blob", m_websocket->binaryType());
+    EXPECT_EQ("blob", webSocketScope.socket().binaryType());
 }
 
 // FIXME: We should add tests for suspend / resume.
 
-class DOMWebSocketValidClosingTest : public DOMWebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
-public:
-};
+class DOMWebSocketValidClosingTest : public ::testing::TestWithParam<unsigned short> {};
 
 TEST_P(DOMWebSocketValidClosingTest, test)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), failMock(_, _, _));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), failMock(_, _, _));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->close(GetParam(), "bye", m_scope.getExceptionState());
+    webSocketScope.socket().close(GetParam(), "bye", scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
 }
 
 INSTANTIATE_TEST_CASE_P(DOMWebSocketValidClosing, DOMWebSocketValidClosingTest, ::testing::Values(1000, 3000, 3001, 4998, 4999));
 
-class DOMWebSocketInvalidClosingCodeTest : public DOMWebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
-public:
-};
+class DOMWebSocketInvalidClosingCodeTest : public ::testing::TestWithParam<unsigned short> {};
 
 TEST_P(DOMWebSocketInvalidClosingCodeTest, test)
 {
+    V8TestingScope scope;
+    DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
     {
         InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
+        EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
     }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_scope.getExceptionState());
+    webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
-    EXPECT_FALSE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    m_websocket->close(GetParam(), "bye", m_scope.getExceptionState());
+    webSocketScope.socket().close(GetParam(), "bye", scope.getExceptionState());
 
-    EXPECT_TRUE(m_scope.getExceptionState().hadException());
-    EXPECT_EQ(InvalidAccessError, m_scope.getExceptionState().code());
-    EXPECT_EQ(String::format("The code must be either 1000, or between 3000 and 4999. %d is neither.", GetParam()), m_scope.getExceptionState().message());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(InvalidAccessError, scope.getExceptionState().code());
+    EXPECT_EQ(String::format("The code must be either 1000, or between 3000 and 4999. %d is neither.", GetParam()), scope.getExceptionState().message());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 }
 
 INSTANTIATE_TEST_CASE_P(DOMWebSocketInvalidClosingCode, DOMWebSocketInvalidClosingCodeTest, ::testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));

@@ -2023,8 +2023,6 @@
       'payments/AbortTest.cpp',
       'payments/PaymentAddressTest.cpp',
       'payments/PaymentRequestDetailsTest.cpp',
-      'payments/PaymentRequestTestBase.cpp',
-      'payments/PaymentRequestTestBase.h',
       'payments/PaymentRequestTest.cpp',
       'payments/PaymentRequestUpdateEventTest.cpp',
       'payments/PaymentResponseTest.cpp',

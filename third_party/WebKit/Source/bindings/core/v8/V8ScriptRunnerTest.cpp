@@ -34,10 +34,6 @@ public:
         m_resource.clear();
     }
 
-    v8::Isolate* isolate() const
-    {
-        return m_scope.isolate();
-    }
     WTF::String code() const
     {
         // Simple function for testing. Note:
@@ -66,11 +62,11 @@ public:
         V8ScriptRunner::setCacheTimeStamp(cacheHandler);
     }
 
-    bool compileScript(V8CacheOptions cacheOptions)
+    bool compileScript(v8::Isolate* isolate, V8CacheOptions cacheOptions)
     {
         return !V8ScriptRunner::compileScript(
-            v8String(isolate(), code()), filename(), String(), WTF::TextPosition(),
-            isolate(), m_resource.get(), nullptr, m_resource.get() ? m_resource->cacheHandler(): nullptr, NotSharableCrossOrigin, cacheOptions)
+            v8String(isolate, code()), filename(), String(), WTF::TextPosition(),
+            isolate, m_resource.get(), nullptr, m_resource.get() ? m_resource->cacheHandler(): nullptr, NotSharableCrossOrigin, cacheOptions)
             .IsEmpty();
     }
 
@@ -94,7 +90,6 @@ public:
 protected:
     ResourceRequest m_resourceRequest;
     Persistent<ScriptResource> m_resource;
-    V8TestingScope m_scope;
 
     static int counter;
 };
@@ -103,9 +98,10 @@ int V8ScriptRunnerTest::counter = 0;
 
 TEST_F(V8ScriptRunnerTest, resourcelessShouldPass)
 {
-    EXPECT_TRUE(compileScript(V8CacheOptionsNone));
-    EXPECT_TRUE(compileScript(V8CacheOptionsParse));
-    EXPECT_TRUE(compileScript(V8CacheOptionsCode));
+    V8TestingScope scope;
+    EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsNone));
+    EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsParse));
+    EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsCode));
 }
 
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler)
@@ -116,8 +112,9 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler)
 
 TEST_F(V8ScriptRunnerTest, parseOption)
 {
+    V8TestingScope scope;
     setResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsParse));
+    EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsParse));
     EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
@@ -128,10 +125,11 @@ TEST_F(V8ScriptRunnerTest, parseOption)
 
 TEST_F(V8ScriptRunnerTest, codeOption)
 {
+    V8TestingScope scope;
     setResource();
     setCacheTimeStamp(cacheHandler());
 
-    EXPECT_TRUE(compileScript(V8CacheOptionsCode));
+    EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsCode));
 
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
     EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));

@@ -2,87 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptState.h"
+// Tests for PaymentRequest::abort().
+
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "modules/payments/PaymentRequest.h"
-#include "modules/payments/PaymentRequestTestBase.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {
 
-// Tests for PaymentRequest::abort().
-class AbortTest : public PaymentRequestTestBase {
-};
-
 // If request.abort() is called without calling request.show() first, then
 // abort() should reject with exception.
-TEST_F(AbortTest, CannotAbortBeforeShow)
+TEST(AbortTest, CannotAbortBeforeShow)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
 
-    request->abort(getScriptState()).then(expectNoCall(), expectCall());
+    request->abort(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 }
 
 // If request.abort() is called again before the previous abort() resolved, then
 // the second abort() should reject with exception.
-TEST_F(AbortTest, CannotAbortTwiceConcurrently)
+TEST(AbortTest, CannotAbortTwiceConcurrently)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
-    request->show(getScriptState());
-    request->abort(getScriptState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    request->show(scope.getScriptState());
+    request->abort(scope.getScriptState());
 
-    request->abort(getScriptState()).then(expectNoCall(), expectCall());
+    request->abort(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 }
 
 // If request.abort() is called after calling request.show(), then abort()
 // should not reject with exception.
-TEST_F(AbortTest, CanAbortAfterShow)
+TEST(AbortTest, CanAbortAfterShow)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
-    request->show(getScriptState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    request->show(scope.getScriptState());
 
-    request->abort(getScriptState()).then(expectNoCall(), expectNoCall());
+    request->abort(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectNoCall());
 }
 
 // If the browser is unable to abort the payment, then the request.abort()
 // promise should be rejected.
-TEST_F(AbortTest, FailedAbortShouldRejectAbortPromise)
+TEST(AbortTest, FailedAbortShouldRejectAbortPromise)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
-    request->show(getScriptState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    request->show(scope.getScriptState());
 
-    request->abort(getScriptState()).then(expectNoCall(), expectCall());
+    request->abort(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(false);
 }
 
 // After the browser is unable to abort the payment once, the second abort()
 // call should not be rejected, as it's not a duplicate request anymore.
-TEST_F(AbortTest, CanAbortAgainAfterFirstAbortRejected)
+TEST(AbortTest, CanAbortAgainAfterFirstAbortRejected)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
-    request->show(getScriptState());
-    request->abort(getScriptState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    request->show(scope.getScriptState());
+    request->abort(scope.getScriptState());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(false);
 
-    request->abort(getScriptState()).then(expectNoCall(), expectNoCall());
+    request->abort(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectNoCall());
 }
 
 // If the browser successfully aborts the payment, then the request.show()
 // promise should be rejected, and request.abort() promise should be resolved.
-TEST_F(AbortTest, SuccessfulAbortShouldRejectShowPromiseAndResolveAbortPromise)
+TEST(AbortTest, SuccessfulAbortShouldRejectShowPromiseAndResolveAbortPromise)
 {
-    ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), getExceptionState());
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
 
-    request->show(getScriptState()).then(expectNoCall(), expectCall());
-    request->abort(getScriptState()).then(expectCall(), expectNoCall());
+    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
+    request->abort(scope.getScriptState()).then(funcs.expectCall(), funcs.expectNoCall());
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(true);
 }

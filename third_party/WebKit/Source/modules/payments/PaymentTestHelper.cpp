@@ -4,7 +4,10 @@
 
 #include "modules/payments/PaymentTestHelper.h"
 
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/Document.h"
 #include "modules/payments/CurrencyAmount.h"
+#include "modules/payments/PaymentMethodData.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
@@ -103,6 +106,49 @@ mojom::blink::PaymentResponsePtr buildPaymentResponseForTest()
     mojom::blink::PaymentResponsePtr result = mojom::blink::PaymentResponse::New();
     result->total_amount = mojom::blink::CurrencyAmount::New();
     return result;
+}
+
+void makePaymentRequestOriginSecure(Document& document)
+{
+    document.setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
+}
+
+PaymentRequestMockFunctionScope::PaymentRequestMockFunctionScope(ScriptState* scriptState)
+    : m_scriptState(scriptState)
+{
+}
+
+PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope()
+{
+    v8::MicrotasksScope::PerformCheckpoint(m_scriptState->isolate());
+    for (MockFunction* mockFunction : m_mockFunctions) {
+        testing::Mock::VerifyAndClearExpectations(mockFunction);
+    }
+}
+
+v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall()
+{
+    m_mockFunctions.append(new MockFunction(m_scriptState));
+    EXPECT_CALL(*m_mockFunctions.last(), call(testing::_));
+    return m_mockFunctions.last()->bind();
+}
+
+v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectNoCall()
+{
+    m_mockFunctions.append(new MockFunction(m_scriptState));
+    EXPECT_CALL(*m_mockFunctions.last(), call(testing::_)).Times(0);
+    return m_mockFunctions.last()->bind();
+}
+
+PaymentRequestMockFunctionScope::MockFunction::MockFunction(ScriptState* scriptState)
+    : ScriptFunction(scriptState)
+{
+    ON_CALL(*this, call(testing::_)).WillByDefault(testing::ReturnArg<0>());
+}
+
+v8::Local<v8::Function> PaymentRequestMockFunctionScope::MockFunction::bind()
+{
+    return bindToV8Function();
 }
 
 } // namespace blink

@@ -27,7 +27,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     WTF_MAKE_NONCOPYABLE(ScriptState);
 public:
     class Scope {
-        DISALLOW_NEW();
+        STACK_ALLOCATED();
     public:
         // You need to make sure that scriptState->context() is not empty before creating a Scope.
         explicit Scope(ScriptState* scriptState)

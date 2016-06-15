@@ -35,8 +35,8 @@ void ScriptStateForTesting::setExecutionContext(ExecutionContext* executionConte
 V8TestingScope::V8TestingScope()
     : m_holder(DummyPageHolder::create())
     , m_handleScope(isolate())
-    , m_contextScope(v8::Context::New(isolate()))
-    , m_scriptStateScope(getScriptState())
+    , m_context(getScriptState()->context())
+    , m_contextScope(context())
 {
 }
 
@@ -57,7 +57,7 @@ v8::Isolate* V8TestingScope::isolate() const
 
 v8::Local<v8::Context> V8TestingScope::context() const
 {
-    return getScriptState()->context();
+    return m_context;
 }
 
 ExceptionState& V8TestingScope::getExceptionState()

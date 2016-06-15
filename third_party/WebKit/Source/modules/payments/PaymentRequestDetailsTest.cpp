@@ -113,29 +113,17 @@ std::ostream& operator<<(std::ostream& out, DetailsTestCase testCase)
     return out;
 }
 
-class PaymentRequestDetailsTest : public testing::TestWithParam<DetailsTestCase> {
-public:
-    PaymentRequestDetailsTest()
-    {
-        m_scope.document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
-    }
-
-    ~PaymentRequestDetailsTest() override {}
-
-    ScriptState* getScriptState() { return m_scope.getScriptState(); }
-    ExceptionState& getExceptionState() { return m_scope.getExceptionState(); }
-
-private:
-    V8TestingScope m_scope;
-};
+class PaymentRequestDetailsTest : public testing::TestWithParam<DetailsTestCase> {};
 
 TEST_P(PaymentRequestDetailsTest, ValidatesDetails)
 {
-    PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), GetParam().buildDetails(), getExceptionState());
+    V8TestingScope scope;
+    scope.document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
+    PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), GetParam().buildDetails(), scope.getExceptionState());
 
-    EXPECT_EQ(GetParam().expectException(), getExceptionState().hadException());
+    EXPECT_EQ(GetParam().expectException(), scope.getExceptionState().hadException());
     if (GetParam().expectException())
-        EXPECT_EQ(GetParam().getExpectedExceptionCode(), getExceptionState().code());
+        EXPECT_EQ(GetParam().getExpectedExceptionCode(), scope.getExceptionState().code());
 }
 
 INSTANTIATE_TEST_CASE_P(MissingData,
