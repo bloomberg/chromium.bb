@@ -116,8 +116,8 @@ declare_args() {
       ]
       mojo_media_host = "browser"
     } else {
-      mojo_media_services = [ "cdm" ]
-      mojo_media_host = "utility"
+      mojo_media_services = [ "video_decoder" ]
+      mojo_media_host = "gpu"
     }
   }
 }

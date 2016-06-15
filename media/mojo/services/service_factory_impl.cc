@@ -40,13 +40,11 @@ ServiceFactoryImpl::ServiceFactoryImpl(
 #if defined(ENABLE_MOJO_CDM)
       interfaces_(interfaces),
 #endif
-#if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_CDM) || \
-    defined(ENABLE_MOJO_RENDERER)
-      mojo_media_client_(mojo_media_client),
-#endif
       media_log_(media_log),
-      connection_ref_(std::move(connection_ref)) {
+      connection_ref_(std::move(connection_ref)),
+      mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __FUNCTION__;
+  DCHECK(mojo_media_client_);
 }
 
 ServiceFactoryImpl::~ServiceFactoryImpl() {

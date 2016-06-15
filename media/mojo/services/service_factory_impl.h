@@ -60,12 +60,10 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
 #if defined(ENABLE_MOJO_CDM)
   shell::mojom::InterfaceProvider* interfaces_;
 #endif
-#if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_CDM) || \
-    defined(ENABLE_MOJO_RENDERER)
-  MojoMediaClient* mojo_media_client_;
-#endif
+
   scoped_refptr<MediaLog> media_log_;
   std::unique_ptr<shell::ShellConnectionRef> connection_ref_;
+  MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);
 };
