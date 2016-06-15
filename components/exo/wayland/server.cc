@@ -17,6 +17,7 @@
 #include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
 #include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
+#include <vsync-feedback-unstable-v1-server-protocol.h>     // NOLINT
 
 #include <algorithm>
 #include <iterator>
@@ -53,6 +54,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -1714,6 +1716,92 @@ void bind_remote_shell(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// zwp_vsync_timing_v1_interface:
+
+// Implements VSync timing interface by monitoring a compositor for updates
+// to VSync parameters.
+class VSyncTiming : public ui::CompositorVSyncManager::Observer {
+ public:
+  ~VSyncTiming() { vsync_manager_->RemoveObserver(this); }
+
+  static std::unique_ptr<VSyncTiming> Create(ui::Compositor* compositor,
+                                             wl_resource* timing_resource) {
+    std::unique_ptr<VSyncTiming> vsync_timing(
+        new VSyncTiming(compositor, timing_resource));
+    // Note: AddObserver() will call OnUpdateVSyncParameters.
+    vsync_timing->vsync_manager_->AddObserver(vsync_timing.get());
+    return vsync_timing;
+  }
+
+  // Overridden from ui::CompositorVSyncManager::Observer:
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override {
+    uint64_t timebase_us = timebase.ToInternalValue();
+    uint64_t interval_us = interval.ToInternalValue();
+    zwp_vsync_timing_v1_send_update(timing_resource_, timebase_us & 0xffffffff,
+                                    timebase_us >> 32, interval_us & 0xffffffff,
+                                    interval_us >> 32);
+    wl_client_flush(wl_resource_get_client(timing_resource_));
+  }
+
+ private:
+  VSyncTiming(ui::Compositor* compositor, wl_resource* timing_resource)
+      : vsync_manager_(compositor->vsync_manager()),
+        timing_resource_(timing_resource) {}
+
+  // The VSync manager being observed.
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+
+  // The VSync timing resource.
+  wl_resource* const timing_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(VSyncTiming);
+};
+
+void vsync_timing_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zwp_vsync_timing_v1_interface vsync_timing_implementation = {
+    vsync_timing_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
+// zwp_vsync_feedback_v1_interface:
+
+void vsync_feedback_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void vsync_feedback_get_vsync_timing(wl_client* client,
+                                     wl_resource* resource,
+                                     uint32_t id,
+                                     wl_resource* output) {
+  wl_resource* timing_resource =
+      wl_resource_create(client, &zwp_vsync_timing_v1_interface, 1, id);
+
+  // TODO(reveman): Multi-display support.
+  ui::Compositor* compositor =
+      ash::Shell::GetPrimaryRootWindow()->layer()->GetCompositor();
+
+  SetImplementation(timing_resource, &vsync_timing_implementation,
+                    VSyncTiming::Create(compositor, timing_resource));
+}
+
+const struct zwp_vsync_feedback_v1_interface vsync_feedback_implementation = {
+    vsync_feedback_destroy, vsync_feedback_get_vsync_timing};
+
+void bind_vsync_feedback(wl_client* client,
+                         void* data,
+                         uint32_t version,
+                         uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_vsync_feedback_v1_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &vsync_feedback_implementation,
+                                 nullptr, nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // wl_data_device_interface:
 
 void data_device_start_drag(wl_client* client,
@@ -2573,6 +2661,8 @@ Server::Server(Display* display)
                    display_, bind_output);
   wl_global_create(wl_display_.get(), &xdg_shell_interface, 1, display_,
                    bind_xdg_shell);
+  wl_global_create(wl_display_.get(), &zwp_vsync_feedback_v1_interface, 1,
+                   display_, bind_vsync_feedback);
   wl_global_create(wl_display_.get(), &wl_data_device_manager_interface, 1,
                    display_, bind_data_device_manager);
   wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
