@@ -83,8 +83,8 @@
 
                     // forEach() should return both entries.
                     result = [];
-                    mediaKeySession.keyStatuses.forEach(function(value, key, map) {
-                        result.push({ key: arrayBufferAsString(key), value: value });
+                    mediaKeySession.keyStatuses.forEach(function(status, keyId) {
+                        result.push({ key: arrayBufferAsString(keyId), value: status });
                     });
                     assert_object_equals(result,
                                          [{ key: key1String, value: 'usable'}, { key: key2String, value: 'usable'}],

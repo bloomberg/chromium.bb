@@ -5,7 +5,8 @@
 #ifndef MediaKeyStatusMap_h
 #define MediaKeyStatusMap_h
 
-#include "bindings/core/v8/Maplike.h"
+#include "bindings/core/v8/Iterable.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Heap.h"
@@ -21,7 +22,7 @@ class WebData;
 // status known to a particular session. Since it can be updated any time there
 // is a keychange event, iteration order and completeness is not guaranteed
 // if the event loop runs.
-class MediaKeyStatusMap final : public GarbageCollected<MediaKeyStatusMap>, public ScriptWrappable, public Maplike<ArrayBufferOrArrayBufferView, String> {
+class MediaKeyStatusMap final : public GarbageCollected<MediaKeyStatusMap>, public ScriptWrappable, public PairIterable<ArrayBufferOrArrayBufferView, String> {
     DEFINE_WRAPPERTYPEINFO();
 private:
     // MapEntry holds the keyId (DOMArrayBuffer) and status (MediaKeyStatus as
@@ -41,14 +42,16 @@ public:
 
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
+    bool has(const ArrayBufferOrArrayBufferView& keyId);
+    ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& keyId);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    // PairIterable<> implementation.
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
-    bool getMapEntry(ScriptState*, const ArrayBufferOrArrayBufferView&, String&, ExceptionState&) override;
 
-    size_t indexOf(const DOMArrayPiece& key) const;
+    size_t indexOf(const DOMArrayPiece& keyId) const;
 
     MediaKeyStatusMapType m_entries;
 };

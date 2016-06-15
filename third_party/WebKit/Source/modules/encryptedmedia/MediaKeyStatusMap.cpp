@@ -11,6 +11,7 @@
 #include "wtf/text/WTFString.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace blink {
 
@@ -140,23 +141,28 @@ size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const
             return index;
     }
 
-    // Not found, so return an index outside the valid range.
-    return m_entries.size();
+    // Not found, so return an index outside the valid range. The caller
+    // must ensure this value is not exposed outside this class.
+    return std::numeric_limits<size_t>::max();
+}
+
+bool MediaKeyStatusMap::has(const ArrayBufferOrArrayBufferView& keyId)
+{
+    size_t index = indexOf(keyId);
+    return index < m_entries.size();
+}
+
+ScriptValue MediaKeyStatusMap::get(ScriptState* scriptState, const ArrayBufferOrArrayBufferView& keyId)
+{
+    size_t index = indexOf(keyId);
+    if (index >= m_entries.size())
+        return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptValue::from(scriptState, at(index).status());
 }
 
 PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource* MediaKeyStatusMap::startIteration(ScriptState*, ExceptionState&)
 {
     return new MapIterationSource(this);
-}
-
-bool MediaKeyStatusMap::getMapEntry(ScriptState*, const ArrayBufferOrArrayBufferView& key, String& value, ExceptionState&)
-{
-    size_t index = indexOf(key);
-    if (index < m_entries.size()) {
-        value = at(index).status();
-        return true;
-    }
-    return false;
 }
 
 DEFINE_TRACE(MediaKeyStatusMap)
