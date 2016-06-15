@@ -6,12 +6,6 @@
 cr.define('settings_prefUtil', function() {
   function registerTests() {
     suite('PrefUtil', function() {
-      // Import source before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://md-settings/prefs/pref_util.html');
-      });
-
       var global = function() { return this; }();
       var origTraceAssertionsForTesting = global.traceAssertionsForTesting;
 

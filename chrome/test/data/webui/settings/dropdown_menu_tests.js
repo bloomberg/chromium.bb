@@ -6,15 +6,6 @@
 cr.define('settings_dropdown_menu', function() {
   function registerTests() {
     suite('SettingsDropdownMenu', function() {
-      // Import settings_dropdown_menu.html before running suite.
-      suiteSetup(function() {
-        return Promise.all([
-          PolymerTest.importHtml('chrome://md-settings/i18n_setup.html'),
-          PolymerTest.importHtml(
-              'chrome://md-settings/controls/settings_dropdown_menu.html'),
-        ]);
-      });
-
       /** @type {SettingsDropdownMenu} */
       var dropdown;
 

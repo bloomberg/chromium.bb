@@ -22,12 +22,6 @@ cr.define('settings_checkbox', function() {
         value: true
       };
 
-      // Import settings_checkbox.html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://md-settings/controls/settings_checkbox.html');
-      });
-
       // Initialize a checked settings-checkbox before each test.
       setup(function() {
         PolymerTest.clearBody();
