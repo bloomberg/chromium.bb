@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/shell/public/cpp/lib/callback_binder.h"
 #include "services/shell/public/cpp/lib/interface_factory_binder.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
@@ -75,11 +76,28 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // constructor.
   mojom::InterfaceProviderPtr TakeClientHandle();
 
+  // Allows |Interface| to be exposed via this registry. Requests to bind will
+  // be handled by |factory|. Returns true if the interface was exposed, false
+  // if Connection policy prevented exposure.
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
     return SetInterfaceBinderForName(
         base::WrapUnique(
             new internal::InterfaceFactoryBinder<Interface>(factory)),
+        Interface::Name_);
+  }
+
+  // Like AddInterface above, except supplies a callback to bind the MP instead
+  // of an InterfaceFactory, and optionally provides a task runner where the
+  // callback will be run.
+  template <typename Interface>
+  bool AddInterface(
+      const base::Callback<void(mojo::InterfaceRequest<Interface>)>& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
+          nullptr) {
+    return SetInterfaceBinderForName(
+        base::WrapUnique(
+            new internal::CallbackBinder<Interface>(callback, task_runner)),
         Interface::Name_);
   }
 

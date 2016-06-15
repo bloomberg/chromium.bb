@@ -73,6 +73,12 @@ class Connection {
   bool AddInterface(InterfaceFactory<Interface>* factory) {
     return GetLocalRegistry()->AddInterface<Interface>(factory);
   }
+  template <typename Interface>
+  bool AddInterface(
+      const base::Callback<void(mojo::InterfaceRequest<Interface>)>& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    return GetLocalRegistry()->AddInterface<Interface>(callback, task_runner);
+  }
 
   // Binds |ptr| to an implemention of Interface in the remote application.
   // |ptr| can immediately be used to start sending requests to the remote

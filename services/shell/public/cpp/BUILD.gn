@@ -23,6 +23,7 @@ source_set("sources") {
     "interface_factory_impl.h",
     "interface_registry.h",
     "lib/application_runner.cc",
+    "lib/callback_binder.h",
     "lib/capabilities.cc",
     "lib/connection_impl.cc",
     "lib/connection_impl.h",
