@@ -49,13 +49,12 @@ class Config {
   }
 
   static bool IsPersistent(const std::string& name) {
-    return name == "Persistent" ||
-           name == "WeakPersistent" ;
+    return name == "Persistent";
   }
 
-  static bool IsCrossThreadPersistent(const std::string& name) {
-    return name == "CrossThreadPersistent" ||
-           name == "CrossThreadWeakPersistent" ;
+  static bool IsPersistentHandle(const std::string& name) {
+    return IsPersistent(name) ||
+           IsPersistentGCCollection(name);
   }
 
   static bool IsRefPtr(const std::string& name) {
@@ -64,10 +63,6 @@ class Config {
 
   static bool IsOwnPtr(const std::string& name) {
     return name == "OwnPtr";
-  }
-
-  static bool IsUniquePtr(const std::string& name) {
-    return name == "unique_ptr";
   }
 
   static bool IsWTFCollection(const std::string& name) {

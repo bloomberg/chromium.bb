@@ -118,17 +118,6 @@ class HashMap {};
 
 }
 
-namespace std {
-
-template<typename T> class unique_ptr {
-public:
-    ~unique_ptr() { }
-    operator T*() const { return 0; }
-    T* operator->() { return 0; }
-};
-
-}
-
 namespace blink {
 
 using namespace WTF;
@@ -183,27 +172,6 @@ public:
 };
 
 template<typename T> class Persistent {
-public:
-    operator T*() const { return 0; }
-    T* operator->() { return 0; }
-    bool operator!() const { return false; }
-};
-
-template<typename T> class WeakPersistent {
-public:
-    operator T*() const { return 0; }
-    T* operator->() { return 0; }
-    bool operator!() const { return false; }
-};
-
-template<typename T> class CrossThreadPersistent {
-public:
-    operator T*() const { return 0; }
-    T* operator->() { return 0; }
-    bool operator!() const { return false; }
-};
-
-template<typename T> class CrossThreadWeakPersistent {
 public:
     operator T*() const { return 0; }
     T* operator->() { return 0; }

@@ -23,14 +23,8 @@ const char kBaseRequiresTracingNote[] =
 const char kFieldsRequireTracing[] =
     "[blink-gc] Class %0 has untraced fields that require tracing.";
 
-const char kFieldsImproperlyTraced[] =
-    "[blink-gc] Class %0 has untraced or not traceable fields.";
-
 const char kFieldRequiresTracingNote[] =
     "[blink-gc] Untraced field %0 declared here:";
-
-const char kFieldShouldNotBeTracedNote[] =
-    "[blink-gc] Untraceable field %0 declared here:";
 
 const char kClassContainsInvalidFields[] =
     "[blink-gc] Class %0 contains invalid fields.";
@@ -62,9 +56,6 @@ const char kReferencePtrToGCManagedClassNote[] =
 
 const char kOwnPtrToGCManagedClassNote[] =
     "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
-
-const char kUniquePtrToGCManagedClassNote[] =
-    "[blink-gc] std::unique_ptr field %0 to a GC managed class declared here:";
 
 const char kMemberToGCUnmanagedClassNote[] =
     "[blink-gc] Member field %0 to non-GC managed class declared here:";
@@ -171,8 +162,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresTracing);
   diag_fields_require_tracing_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
-  diag_fields_improperly_traced_ =
-      diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsImproperlyTraced);
   diag_class_contains_invalid_fields_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kClassContainsInvalidFields);
   diag_class_contains_gc_root_ =
@@ -213,8 +202,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kBaseRequiresTracingNote);
   diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kFieldRequiresTracingNote);
-  diag_field_should_not_be_traced_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kFieldShouldNotBeTracedNote);
   diag_raw_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kRawPtrToGCManagedClassNote);
   diag_ref_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
@@ -223,8 +210,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kReferencePtrToGCManagedClassNote);
   diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
-  diag_unique_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kUniquePtrToGCManagedClassNote);
   diag_member_to_gc_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kMemberToGCUnmanagedClassNote);
   diag_stack_allocated_field_note_ = diagnostic_.getCustomDiagID(
@@ -294,25 +279,14 @@ void DiagnosticsReporter::BaseRequiresTracing(
       << base << derived->record();
 }
 
-void DiagnosticsReporter::FieldsImproperlyTraced(
+void DiagnosticsReporter::FieldsRequireTracing(
     RecordInfo* info,
     CXXMethodDecl* trace) {
-  // Only mention untraceable in header diagnostic if they appear.
-  unsigned diag = diag_fields_require_tracing_;
-  for (auto& field : info->GetFields()) {
-    if (field.second.IsInproperlyTraced()) {
-      diag = diag_fields_improperly_traced_;
-      break;
-    }
-  }
-  ReportDiagnostic(trace->getLocStart(), diag)
+  ReportDiagnostic(trace->getLocStart(), diag_fields_require_tracing_)
       << info->record();
-  for (auto& field : info->GetFields()) {
+  for (auto& field : info->GetFields())
     if (!field.second.IsProperlyTraced())
       NoteFieldRequiresTracing(info, field.first);
-    if (field.second.IsInproperlyTraced())
-      NoteFieldShouldNotBeTraced(info, field.first);
-  }
 }
 
 void DiagnosticsReporter::ClassContainsInvalidFields(
@@ -333,8 +307,6 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
       note = diag_reference_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kOwnPtrToGCManaged) {
       note = diag_own_ptr_to_gc_managed_class_note_;
-    } else if (error.second == CheckFieldsVisitor::kUniquePtrToGCManaged) {
-      note = diag_unique_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kMemberToGCUnmanaged) {
       note = diag_member_to_gc_unmanaged_class_note_;
     } else if (error.second == CheckFieldsVisitor::kMemberInUnmanaged) {
@@ -508,12 +480,6 @@ void DiagnosticsReporter::NoteFieldRequiresTracing(
     RecordInfo* holder,
     FieldDecl* field) {
   NoteField(field, diag_field_requires_tracing_note_);
-}
-
-void DiagnosticsReporter::NoteFieldShouldNotBeTraced(
-    RecordInfo* holder,
-    FieldDecl* field) {
-  NoteField(field, diag_field_should_not_be_traced_note_);
 }
 
 void DiagnosticsReporter::NotePartObjectContainsGCRoot(FieldPoint* point) {

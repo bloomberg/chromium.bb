@@ -24,7 +24,6 @@ private:
     PartObject m_part;
     HeapVector<PartObject> m_parts;
     PersistentHeapVector<Member<HeapObject> > m_objs;
-    WeakPersistent<HeapObject> m_weakPersistent;
 };
 
 }
