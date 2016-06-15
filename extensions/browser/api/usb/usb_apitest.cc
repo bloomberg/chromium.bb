@@ -46,8 +46,13 @@ ACTION_TEMPLATE(InvokeCallback,
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p1)) {
-  net::IOBuffer* io_buffer = new net::IOBuffer(1);
-  memset(io_buffer->data(), 0, 1);  // Avoid uninitialized reads.
+  net::IOBuffer* io_buffer = nullptr;
+  size_t length = 0;
+  if (p1 != device::USB_TRANSFER_ERROR) {
+    length = 1;
+    io_buffer = new net::IOBuffer(length);
+    memset(io_buffer->data(), 0, length);  // Avoid uninitialized reads.
+  }
   ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
 }
 

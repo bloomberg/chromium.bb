@@ -469,8 +469,13 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
   std::unique_ptr<base::DictionaryValue> transfer_info(
       new base::DictionaryValue());
   transfer_info->SetInteger(kResultCodeKey, status);
-  transfer_info->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
-                                   data->data(), length));
+
+  if (data) {
+    transfer_info->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
+                                     data->data(), length));
+  } else {
+    transfer_info->Set(kDataKey, new base::BinaryValue());
+  }
 
   if (status == device::USB_TRANSFER_COMPLETED) {
     Respond(OneArgument(std::move(transfer_info)));
@@ -1207,8 +1212,10 @@ void UsbIsochronousTransferFunction::OnCompleted(
       status = packet.status;
     }
 
-    memcpy(&buffer[buffer_offset], data->data() + data_offset,
-           packet.transferred_length);
+    if (data) {
+      memcpy(&buffer[buffer_offset], data->data() + data_offset,
+             packet.transferred_length);
+    }
     buffer_offset += packet.transferred_length;
     data_offset += packet.length;
   }
