@@ -100,6 +100,14 @@ CanvasAsyncBlobCreator::~CanvasAsyncBlobCreator()
 {
 }
 
+void CanvasAsyncBlobCreator::dispose()
+{
+    // Eagerly let go of references to prevent retention of these
+    // resources while any remaining posted tasks are queued.
+    m_data.clear();
+    m_callback.clear();
+}
+
 void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, const double& quality)
 {
     ASSERT(isMainThread());
@@ -127,7 +135,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
 
 void CanvasAsyncBlobCreator::scheduleInitiateJpegEncoding(const double& quality)
 {
-    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiateJpegEncoding, WeakPersistentThisPointer<CanvasAsyncBlobCreator>(this), quality));
+    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
 }
 
 void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality, double deadlineSeconds)
@@ -149,7 +157,7 @@ void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality, double 
 
 void CanvasAsyncBlobCreator::scheduleInitiatePngEncoding()
 {
-    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, WeakPersistentThisPointer<CanvasAsyncBlobCreator>(this)));
+    Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
 }
 
 void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
@@ -256,12 +264,16 @@ void CanvasAsyncBlobCreator::createBlobAndInvokeCallback()
     ASSERT(isMainThread());
     Blob* resultBlob = Blob::create(m_encodedImage->data(), m_encodedImage->size(), convertMimeTypeEnumToString(m_mimeType));
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, resultBlob));
+    // Avoid unwanted retention, see dispose().
+    dispose();
 }
 
 void CanvasAsyncBlobCreator::createNullAndInvokeCallback()
 {
     ASSERT(isMainThread());
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+    // Avoid unwanted retention, see dispose().
+    dispose();
 }
 
 void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)

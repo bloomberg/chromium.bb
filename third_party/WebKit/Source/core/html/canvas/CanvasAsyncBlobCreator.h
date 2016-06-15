@@ -64,6 +64,8 @@ protected:
 private:
     friend class CanvasAsyncBlobCreatorTest;
 
+    void dispose();
+
     OwnPtr<PNGImageEncoderState> m_pngEncoderState;
     OwnPtr<JPEGImageEncoderState> m_jpegEncoderState;
     Member<DOMUint8ClampedArray> m_data;
