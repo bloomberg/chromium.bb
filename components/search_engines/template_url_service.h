@@ -621,9 +621,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // of the following are true:
   //  * |local_turl|'s last_modified timestamp is newer than sync_turl.
   //  * |local_turl| is created by policy.
-  //  * |local_turl| is the local default search provider.
+  //  * |prefer_local_default| is true and |local_turl| is the local default
+  //    search provider
   bool IsLocalTemplateURLBetter(const TemplateURL* local_turl,
-                                const TemplateURL* sync_turl);
+                                const TemplateURL* sync_turl,
+                                bool prefer_local_default = true);
 
   // Given two synced TemplateURLs with a conflicting keyword, one of which
   // needs to be added to or updated in the local model (|unapplied_sync_turl|)
