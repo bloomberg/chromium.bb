@@ -306,7 +306,10 @@ class OpenSystemSettingsHelper {
   // watched. The array must contain at least one element.
   static void Begin(const wchar_t* const protocols[],
                     const base::Closure& on_finished_callback) {
-    new OpenSystemSettingsHelper(protocols, on_finished_callback);
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+    delete instance_;
+    instance_ = new OpenSystemSettingsHelper(protocols, on_finished_callback);
   }
 
  private:
@@ -366,7 +369,8 @@ class OpenSystemSettingsHelper {
         "DefaultBrowser.SettingsInteraction.ConcludeReason", conclude_reason,
         NUM_CONCLUDE_REASON_TYPES);
     on_finished_callback_.Run();
-    delete this;
+    delete instance_;
+    instance_ = nullptr;
   }
 
   // Helper function to create a registry watcher for a given |key_path|. Do
@@ -382,6 +386,9 @@ class OpenSystemSettingsHelper {
       registry_key_watchers_.push_back(std::move(reg_key));
     }
   }
+
+  // Used to make sure only one instance is alive at the same time.
+  static OpenSystemSettingsHelper* instance_;
 
   // This is needed to make sure that Windows displays an entry for the protocol
   // inside the "Choose default apps by protocol" settings page.
@@ -411,6 +418,8 @@ class OpenSystemSettingsHelper {
 
   DISALLOW_COPY_AND_ASSIGN(OpenSystemSettingsHelper);
 };
+
+OpenSystemSettingsHelper* OpenSystemSettingsHelper::instance_ = nullptr;
 
 }  // namespace
 
