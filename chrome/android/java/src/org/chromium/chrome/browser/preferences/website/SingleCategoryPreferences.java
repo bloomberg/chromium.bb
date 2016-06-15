@@ -461,7 +461,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             }
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setPositiveButton(R.string.storage_clear_dialog_clear_storage_option,
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -473,7 +473,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         builder.setTitle(R.string.storage_clear_site_storage_title);
         Resources res = getResources();
         String dialogFormattedText = res.getString(R.string.storage_clear_dialog_text,
-                Formatter.formatShortFileSize(getContext(), totalUsage));
+                Formatter.formatShortFileSize(getActivity(), totalUsage));
         builder.setMessage(dialogFormattedText);
         builder.create().show();
     }
