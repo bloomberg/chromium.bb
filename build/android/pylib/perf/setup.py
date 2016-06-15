@@ -28,6 +28,10 @@ def _GetAllDevices(active_devices, devices_path):
     if devices_path:
       devices = [device_utils.DeviceUtils(s)
                  for s in device_list.GetPersistentDeviceList(devices_path)]
+      if not devices and active_devices:
+        logging.warning('%s is empty. Falling back to active devices.',
+                        devices_path)
+        devices = active_devices
     else:
       logging.warning('Known devices file path not being passed. For device '
                       'affinity to work properly, it must be passed.')
