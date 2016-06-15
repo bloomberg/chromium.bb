@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_STORAGE_H_
 #define IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_STORAGE_H_
 
+#include <vector>
+
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 
 class ReadingListModel;
