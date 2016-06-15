@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -43,6 +44,9 @@ const char kHistogramPopularName[] = "popular";
 const char kHistogramWhitelistName[] = "whitelist";
 
 const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
+
+const base::Feature kDisplaySuggestionsServiceTiles{
+    "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The visual type of a most visited tile.
 //
@@ -425,7 +429,8 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     const SuggestionsProfile& suggestions_profile) {
   int num_tiles = suggestions_profile.suggestions_size();
   // With no server suggestions, fall back to local TopSites.
-  if (num_tiles == 0) {
+  if (num_tiles == 0 ||
+      !base::FeatureList::IsEnabled(kDisplaySuggestionsServiceTiles)) {
     InitiateTopSitesQuery();
     return;
   }
