@@ -15,6 +15,10 @@ webview,
   width: 100%;
 }
 
+#arc-support {
+  padding: 36px 0 0 0;
+}
+
 .button-separator {
   width: 1px;
 }
