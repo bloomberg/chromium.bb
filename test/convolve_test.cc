@@ -375,7 +375,8 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
   void CopyOutputToRef() {
     memcpy(output_ref_, output_, kOutputBufferSize);
 #if CONFIG_AOM_HIGHBITDEPTH
-    memcpy(output16_ref_, output16_, kOutputBufferSize);
+    // Copy 16-bit pixels values. The effective number of bytes is double.
+    memcpy(output16_ref_, output16_, 2 * kOutputBufferSize);
 #endif
   }
 
@@ -390,8 +391,8 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     if (UUT_->use_highbd_ == 0) {
       return input_ + BorderTop() * kOuterBlockSize + BorderLeft();
     } else {
-      return CONVERT_TO_BYTEPTR(input16_ + BorderTop() * kOuterBlockSize +
-                                BorderLeft());
+      return CONVERT_TO_BYTEPTR(input16_) + BorderTop() * kOuterBlockSize +
+             BorderLeft();
     }
 #else
     return input_ + BorderTop() * kOuterBlockSize + BorderLeft();
@@ -403,8 +404,8 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     if (UUT_->use_highbd_ == 0) {
       return output_ + BorderTop() * kOuterBlockSize + BorderLeft();
     } else {
-      return CONVERT_TO_BYTEPTR(output16_ + BorderTop() * kOuterBlockSize +
-                                BorderLeft());
+      return CONVERT_TO_BYTEPTR(output16_) + BorderTop() * kOuterBlockSize +
+             BorderLeft();
     }
 #else
     return output_ + BorderTop() * kOuterBlockSize + BorderLeft();
@@ -416,8 +417,8 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     if (UUT_->use_highbd_ == 0) {
       return output_ref_ + BorderTop() * kOuterBlockSize + BorderLeft();
     } else {
-      return CONVERT_TO_BYTEPTR(output16_ref_ + BorderTop() * kOuterBlockSize +
-                                BorderLeft());
+      return CONVERT_TO_BYTEPTR(output16_ref_) + BorderTop() * kOuterBlockSize +
+             BorderLeft();
     }
 #else
     return output_ref_ + BorderTop() * kOuterBlockSize + BorderLeft();
