@@ -147,22 +147,7 @@ void PaintPath(Canvas* canvas,
         break;
       }
 
-      case ARC_TO: {
-        SkScalar rx = path_elements[++i].arg;
-        SkScalar ry = path_elements[++i].arg;
-        SkScalar angle = path_elements[++i].arg;
-        SkScalar large_arc_flag = path_elements[++i].arg;
-        SkScalar arc_sweep_flag = path_elements[++i].arg;
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        path.arcTo(
-            rx, ry, angle,
-            large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
-            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
-            x, y);
-        break;
-      }
-
+      case ARC_TO:
       case R_ARC_TO: {
         SkScalar rx = path_elements[++i].arg;
         SkScalar ry = path_elements[++i].arg;
@@ -171,7 +156,14 @@ void PaintPath(Canvas* canvas,
         SkScalar arc_sweep_flag = path_elements[++i].arg;
         SkScalar x = path_elements[++i].arg;
         SkScalar y = path_elements[++i].arg;
-        path.rArcTo(
+
+        auto path_fn =
+            path_elements[i].type == ARC_TO
+                ? static_cast<void (SkPath::*)(
+                      SkScalar, SkScalar, SkScalar, SkPath::ArcSize,
+                      SkPath::Direction, SkScalar, SkScalar)>(&SkPath::arcTo)
+                : &SkPath::rArcTo;
+        (path.*path_fn)(
             rx, ry, angle,
             large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
             arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
