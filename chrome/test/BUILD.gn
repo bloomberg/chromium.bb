@@ -282,6 +282,39 @@ group("telemetry_gpu_test") {
   ]
 }
 
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("telemetry_gpu_integration_test_run") {
+  testonly = true
+  deps = [
+    ":telemetry_gpu_integration_test",
+  ]
+}
+
+group("telemetry_gpu_integration_test") {
+  testonly = true
+  deps = [
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+  ]
+
+  data = [
+    # For isolate contract.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_gpu_integration_test_as_googletest.py",
+
+    "//content/test/gpu/",
+    "//content/test/data/gpu/",
+
+    # For GpuProcess.video
+    "//content/test/data/media/bear.ogv",
+
+    # For webgl_conformance
+    "//third_party/webgl/",
+    "//content/test/gpu/run_gpu_integration_test.py",
+  ]
+}
+
 if (!is_android) {
   # GYP version: chrome/chrome_tests.gypi:test_support_ui
   source_set("test_support_ui") {

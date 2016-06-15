@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import json
 import sys
 
@@ -12,8 +13,6 @@ import gpu_project_config
 path_util.SetupTelemetryPaths()
 
 from telemetry.testing import browser_test_runner
-
-abbr_json_arg = '--write-abbreviated-json-results-to='
 
 def PostprocessJSON(file_name):
   def TrimPrefix(s):
@@ -33,10 +32,14 @@ def main():
   # Postprocess the outputted JSON to trim all of the prefixes from
   # the test names, to keep them as similar to the old form as
   # possible -- and keep them from getting crazily long.
-  for arg in rest_args:
-    if arg.startswith(abbr_json_arg):
-      PostprocessJSON(arg[len(abbr_json_arg):])
-      break
+  parser = argparse.ArgumentParser(description='Temporary argument parser')
+  parser.add_argument(
+    '--write-abbreviated-json-results-to', metavar='FILENAME',
+    action='store',
+    help=('Full path for json results'))
+  option, _ = parser.parse_known_args(rest_args)
+  if option.write_abbreviated_json_results_to:
+    PostprocessJSON(option.write_abbreviated_json_results_to)
 
 if __name__ == '__main__':
   sys.exit(main())
