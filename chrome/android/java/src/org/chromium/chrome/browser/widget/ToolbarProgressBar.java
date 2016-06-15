@@ -16,9 +16,11 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ProgressBar;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -75,6 +77,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private int mMarginTop;
     private ViewGroup mControlContainer;
     private int mProgressStartCount;
+    private int mThemeColor;
 
     private ToolbarProgressBarAnimatingView mAnimatingView;
 
@@ -199,7 +202,13 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             animationParams.topMargin = mMarginTop;
 
             mAnimatingView = new ToolbarProgressBarAnimatingView(getContext(), animationParams);
-            setForegroundColor(getForegroundColor());
+
+            // The primary theme color may not have been set.
+            if (mThemeColor != 0) {
+                setThemeColor(mThemeColor, false);
+            } else {
+                setForegroundColor(getForegroundColor());
+            }
             UiUtils.insertAfter(mControlContainer, mAnimatingView, this);
         } else if (TextUtils.equals(animation, "fast-start")) {
             mAnimationLogic = new ProgressAnimationFastStart();
@@ -348,6 +357,18 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * @param color The Android color the toolbar is using.
      */
     public void setThemeColor(int color, boolean isIncognito) {
+        mThemeColor = color;
+
+        // The default toolbar has specific colors to use.
+        if (ColorUtils.isUsingDefaultToolbarColor(getResources(), color) && !isIncognito) {
+            setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.progress_bar_foreground));
+            setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.progress_bar_background));
+            return;
+        }
+
+        // All other theme colors are computed.
         if (!ColorUtils.shoudUseLightForegroundOnBackground(color) && !isIncognito) {
             // Light theme.
             setForegroundColor(ColorUtils.getColorWithOverlay(Color.BLACK, color,
