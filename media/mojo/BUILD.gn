@@ -4,6 +4,13 @@
 
 import("//testing/test.gni")
 
+group("tests") {
+  testonly = true
+  deps = [
+    ":media_mojo_unittests",
+  ]
+}
+
 test("media_mojo_unittests") {
   sources = [
     "common/media_type_converters_unittest.cc",

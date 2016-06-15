@@ -637,10 +637,7 @@ group("gn_only") {
   deps = []
 
   if (!is_ios) {
-    deps += [
-      "//media/mojo:media_mojo_unittests",
-      "//mojo/common:mojo_common_perftests",
-    ]
+    deps += [ "//mojo/common:mojo_common_perftests" ]
   }
 
   if (!is_android && !is_ios) {
@@ -790,6 +787,8 @@ group("gn_mojo_targets") {
     # and figure out how cross-platform they are
     deps = [
       "//ipc/mojo:ipc_mojo_perftests",
+      "//media/mojo:tests",
+      "//media/mojo/services",
       "//mojo:tests",
     ]
   }
