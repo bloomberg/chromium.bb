@@ -34,6 +34,8 @@ using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
 using suggestions::SuggestionsService;
 
+namespace ntp_tiles {
+
 namespace {
 
 // Identifiers for the various tile sources.
@@ -661,3 +663,5 @@ void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
     InitiateTopSitesQuery();
   }
 }
+
+}  // namespace ntp_tiles

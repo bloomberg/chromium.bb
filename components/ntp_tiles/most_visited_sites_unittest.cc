@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ntp_tiles {
+
 namespace {
 
 struct TitleURL {
@@ -137,3 +139,5 @@ TEST_F(MostVisitedSitesTest, PersonalPrecedePopularSites) {
   Check(popular_sites, std::vector<TitleURL>(), personal_sites,
         expected_sites_source, expected_sites);
 }
+
+}  // namespace ntp_tiles

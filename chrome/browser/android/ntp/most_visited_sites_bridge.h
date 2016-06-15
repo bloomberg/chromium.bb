@@ -62,7 +62,7 @@ class MostVisitedSitesBridge {
   class JavaObserver;
   std::unique_ptr<JavaObserver> java_observer_;
 
-  class SupervisorBridge : public MostVisitedSitesSupervisor,
+  class SupervisorBridge : public ntp_tiles::MostVisitedSitesSupervisor,
                            public SupervisedUserServiceObserver {
    public:
     explicit SupervisorBridge(Profile* profile);
@@ -84,7 +84,7 @@ class MostVisitedSitesBridge {
   };
   SupervisorBridge supervisor_;
 
-  MostVisitedSites most_visited_;
+  ntp_tiles::MostVisitedSites most_visited_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSitesBridge);
 };

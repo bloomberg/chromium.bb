@@ -36,6 +36,8 @@ class VariationsService;
 class PrefService;
 class TemplateURLService;
 
+namespace ntp_tiles {
+
 // Downloads and provides a list of suggested popular sites, for display on
 // the NTP when there are not enough personalized suggestions. Caches the
 // downloaded file on disk to avoid re-downloading on every startup.
@@ -149,5 +151,7 @@ class PopularSites : public net::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(PopularSites);
 };
+
+}  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_POPULAR_SITES_H_

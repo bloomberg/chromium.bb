@@ -34,6 +34,8 @@
 using net::URLFetcher;
 using variations::VariationsService;
 
+namespace ntp_tiles {
+
 namespace {
 
 const char kPopularSitesURLFormat[] =
@@ -399,3 +401,5 @@ void PopularSites::OnDownloadFailed() {
     callback_.Run(false);
   }
 }
+
+}  // namespace ntp_tiles

@@ -37,6 +37,8 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using content::BrowserThread;
+using ntp_tiles::MostVisitedSites;
+using ntp_tiles::MostVisitedSitesSupervisor;
 using suggestions::SuggestionsServiceFactory;
 
 namespace {

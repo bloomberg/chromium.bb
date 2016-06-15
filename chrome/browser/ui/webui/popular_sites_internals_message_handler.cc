@@ -22,6 +22,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 
+using ntp_tiles::PopularSites;
+
 namespace {
 
 std::string ReadFileToString(const base::FilePath& path) {

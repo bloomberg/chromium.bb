@@ -507,10 +507,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   variations::VariationsService::RegisterProfilePrefs(registry);
-  MostVisitedSites::RegisterProfilePrefs(registry);
+  ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
+  ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
   NewTabPagePrefs::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
-  PopularSites::RegisterProfilePrefs(registry);
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);

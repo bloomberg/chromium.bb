@@ -43,6 +43,8 @@ namespace variations {
 class VariationsService;
 }
 
+namespace ntp_tiles {
+
 // Shim interface for SupervisedUserService.
 class MostVisitedSitesSupervisor {
  public:
@@ -285,5 +287,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };
+
+}  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_MOST_VISITED_SITES_H_
