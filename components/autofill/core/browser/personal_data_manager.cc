@@ -333,9 +333,14 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
           base::string16 email =
               base::UTF8ToUTF16(
                   account_tracker_->GetAccountInfo(account_id).email);
-          DCHECK(!email.empty());
-          for (AutofillProfile* profile : server_profiles_)
-            profile->SetRawInfo(EMAIL_ADDRESS, email);
+
+          // User may have signed out during the fulfillment of the web data
+          // request, in which case there is no point updating
+          // |server_profiles_| as it will be cleared.
+          if (!email.empty()) {
+            for (AutofillProfile* profile : server_profiles_)
+              profile->SetRawInfo(EMAIL_ADDRESS, email);
+          }
         }
       }
       break;
