@@ -14,6 +14,8 @@
 IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(ui::DragDropTypes::DragEventSource,
                           ui::DragDropTypes::DRAG_EVENT_SOURCE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::DropData::Kind,
+                          content::DropData::Kind::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)
@@ -40,6 +42,13 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileSystemFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::Metadata)
+  IPC_STRUCT_TRAITS_MEMBER(kind)
+  IPC_STRUCT_TRAITS_MEMBER(mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(filename)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::DragEventSourceInfo)

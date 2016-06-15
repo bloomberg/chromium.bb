@@ -173,6 +173,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   dropped_data.filenames.push_back(
       ui::FileInfo(dragged_file_path, base::FilePath()));
 
+  rvh()->FilterDropData(&dropped_data);
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
                               blink::WebDragOperationNone, 0);
 
@@ -180,10 +181,11 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
+  // Permissions are not granted at DragEnter.
   EXPECT_FALSE(policy->CanRequestURL(id, highlighted_file_url));
   EXPECT_FALSE(policy->CanReadFile(id, highlighted_file_path));
-  EXPECT_TRUE(policy->CanRequestURL(id, dragged_file_url));
-  EXPECT_TRUE(policy->CanReadFile(id, dragged_file_path));
+  EXPECT_FALSE(policy->CanRequestURL(id, dragged_file_url));
+  EXPECT_FALSE(policy->CanReadFile(id, dragged_file_path));
   EXPECT_FALSE(policy->CanRequestURL(id, sensitive_file_url));
   EXPECT_FALSE(policy->CanReadFile(id, sensitive_file_path));
 }

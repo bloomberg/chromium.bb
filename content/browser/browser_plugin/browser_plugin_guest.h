@@ -437,8 +437,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Whether or not our embedder has seen a DragSourceEndedAt() call.
   bool seen_embedder_drag_source_ended_at_;
 
-  // Indicates the URL dragged into the guest if any.
-  GURL dragged_url_;
+  // Ignore the URL dragged into guest that is coming from guest.
+  bool ignore_dragged_url_;
 
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.

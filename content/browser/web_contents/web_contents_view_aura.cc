@@ -1055,6 +1055,9 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   current_drop_data_.reset(new DropData());
 
   PrepareDropData(current_drop_data_.get(), event.data());
+
+  web_contents_->GetRenderViewHost()->FilterDropData(current_drop_data_.get());
+
   blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
   // Give the delegate an opportunity to cancel the drag.
@@ -1070,7 +1073,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
 
   gfx::Point screen_pt = display::Screen::GetScreen()->GetCursorScreenPoint();
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
-      *current_drop_data_.get(), event.location(), screen_pt, op,
+      *current_drop_data_, event.location(), screen_pt, op,
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
 
   if (drag_dest_delegate_) {
@@ -1123,7 +1126,8 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
     return ui::DragDropTypes::DRAG_NONE;
 
   web_contents_->GetRenderViewHost()->DragTargetDrop(
-      event.location(), display::Screen::GetScreen()->GetCursorScreenPoint(),
+      *current_drop_data_, event.location(),
+      display::Screen::GetScreen()->GetCursorScreenPoint(),
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();

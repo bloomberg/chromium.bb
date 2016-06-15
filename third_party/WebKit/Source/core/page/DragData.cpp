@@ -88,6 +88,11 @@ void DragData::asFilePaths(Vector<String>& result) const
     }
 }
 
+unsigned DragData::numberOfFiles() const
+{
+    return m_platformDragData->filenames().size();
+}
+
 bool DragData::containsPlainText() const
 {
     return m_platformDragData->types().contains(mimeTypeTextPlain);

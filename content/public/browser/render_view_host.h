@@ -141,9 +141,11 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
       blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) = 0;
   virtual void DragTargetDragLeave() = 0;
-  virtual void DragTargetDrop(const gfx::Point& client_pt,
+  virtual void DragTargetDrop(const DropData& drop_data,
+                              const gfx::Point& client_pt,
                               const gfx::Point& screen_pt,
                               int key_modifiers) = 0;
+  virtual void FilterDropData(DropData* drop_data) = 0;
 
   // Instructs the RenderView to automatically resize and send back updates
   // for the new size.

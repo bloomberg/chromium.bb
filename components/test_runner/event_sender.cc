@@ -2652,7 +2652,8 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& e,
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
-    view()->dragTargetDrop(client_point, screen_point, e.modifiers);
+    view()->dragTargetDrop(current_drag_data_, client_point, screen_point,
+                           e.modifiers);
   } else {
     view()->dragTargetDragLeave();
   }

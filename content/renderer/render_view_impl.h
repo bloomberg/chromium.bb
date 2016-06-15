@@ -33,6 +33,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_message_enums.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
@@ -128,7 +129,6 @@ class RendererDateTimePicker;
 class RendererWebColorChooserImpl;
 class SpeechRecognitionDispatcher;
 class WebPluginDelegateProxy;
-struct DropData;
 struct FaviconURL;
 struct FileChooserParams;
 struct FileChooserFileInfo;
@@ -617,14 +617,17 @@ class CONTENT_EXPORT RenderViewImpl
                          const gfx::Point& screen_point,
                          blink::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
-  void OnDragTargetDrop(const gfx::Point& client_pt,
+  void OnDragTargetDrop(const DropData& drop_data,
+                        const gfx::Point& client_pt,
                         const gfx::Point& screen_pt,
                         int key_modifiers);
-  void OnDragTargetDragEnter(const DropData& drop_data,
-                             const gfx::Point& client_pt,
-                             const gfx::Point& screen_pt,
-                             blink::WebDragOperationsMask operations_allowed,
-                             int key_modifiers);
+  // Real data that is dragged is not included at DragEnter time.
+  void OnDragTargetDragEnter(
+      const std::vector<DropData::Metadata>& drop_meta_data,
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers);
   void OnDragTargetDragLeave();
   void OnDragTargetDragOver(const gfx::Point& client_pt,
                             const gfx::Point& screen_pt,

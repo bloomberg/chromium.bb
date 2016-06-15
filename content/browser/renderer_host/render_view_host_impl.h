@@ -110,6 +110,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                          int screen_y,
                          blink::WebDragOperation operation) override;
   void DragSourceSystemDragEnded() override;
+  // |drop_data| must have been filtered. The embedder should call
+  // FilterDropData before passing the drop data to RVHI.
   void DragTargetDragEnter(const DropData& drop_data,
                            const gfx::Point& client_pt,
                            const gfx::Point& screen_pt,
@@ -120,9 +122,13 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                           blink::WebDragOperationsMask operations_allowed,
                           int key_modifiers) override;
   void DragTargetDragLeave() override;
-  void DragTargetDrop(const gfx::Point& client_pt,
+  // |drop_data| must have been filtered. The embedder should call
+  // FilterDropData before passing the drop data to RVHI.
+  void DragTargetDrop(const DropData& drop_data,
+                      const gfx::Point& client_pt,
                       const gfx::Point& screen_pt,
                       int key_modifiers) override;
+  void FilterDropData(DropData* drop_data) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
@@ -340,6 +346,12 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // upon receipt from the renderer process to prevent it from forging access to
   // files without the user's consent.
   void GrantFileAccessFromPageState(const PageState& validated_state);
+
+  // 1. Grants permissions to URL (if any)
+  // 2. Grants permissions to filenames
+  // 3. Grants permissions to file system files.
+  // 4. Register the files with the IsolatedContext.
+  void GrantFileAccessFromDropData(DropData* drop_data);
 
   // The RenderWidgetHost.
   std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;

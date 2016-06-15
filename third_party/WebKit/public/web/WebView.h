@@ -396,6 +396,7 @@ public:
         int modifiers) = 0;
     virtual void dragTargetDragLeave() = 0;
     virtual void dragTargetDrop(
+        const WebDragData&,
         const WebPoint& clientPoint, const WebPoint& screenPoint,
         int modifiers) = 0;
 

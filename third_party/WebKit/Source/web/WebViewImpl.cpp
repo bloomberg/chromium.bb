@@ -3726,11 +3726,12 @@ void WebViewImpl::dragTargetDragLeave()
     m_currentDragData = nullptr;
 }
 
-void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
-                                 const WebPoint& screenPoint,
-                                 int modifiers)
+void WebViewImpl::dragTargetDrop(const WebDragData& webDragData, const WebPoint& clientPoint,
+    const WebPoint& screenPoint,
+    int modifiers)
 {
     DCHECK(m_currentDragData);
+    m_currentDragData = DataObject::create(webDragData);
 
     WebAutofillClient* autofillClient = mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
     UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);

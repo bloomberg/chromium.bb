@@ -80,6 +80,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
@@ -142,6 +143,57 @@ void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
       display::win::GetSystemMetricsInDIP(SM_CXHSCROLL);
 }
 #endif
+
+std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
+  std::vector<DropData::Metadata> metadata;
+  if (!drop_data.text.is_null()) {
+    metadata.push_back(DropData::Metadata::CreateForMimeType(
+        DropData::Kind::STRING,
+        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeText)));
+  }
+
+  if (drop_data.url.is_valid()) {
+    metadata.push_back(DropData::Metadata::CreateForMimeType(
+        DropData::Kind::STRING,
+        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeURIList)));
+  }
+
+  if (!drop_data.html.is_null()) {
+    metadata.push_back(DropData::Metadata::CreateForMimeType(
+        DropData::Kind::STRING,
+        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeHTML)));
+  }
+
+  // On Aura, filenames are available before drop.
+  for (const auto& file_info : drop_data.filenames) {
+    if (!file_info.path.empty()) {
+      metadata.push_back(DropData::Metadata::CreateForFilePath(file_info.path));
+    }
+  }
+
+  // On Android, only files' mime types are available before drop.
+  for (const auto& mime_type : drop_data.file_mime_types) {
+    if (!mime_type.empty()) {
+      metadata.push_back(DropData::Metadata::CreateForMimeType(
+          DropData::Kind::FILENAME, mime_type));
+    }
+  }
+
+  for (const auto& file_system_file : drop_data.file_system_files) {
+    if (!file_system_file.url.is_empty()) {
+      metadata.push_back(
+          DropData::Metadata::CreateForFileSystemUrl(file_system_file.url));
+    }
+  }
+
+  for (const auto& custom_data_item : drop_data.custom_data) {
+    metadata.push_back(DropData::Metadata::CreateForMimeType(
+        DropData::Kind::STRING, custom_data_item.first));
+  }
+
+  return metadata;
+}
+
 }  // namespace
 
 // static
@@ -570,96 +622,9 @@ void RenderViewHostImpl::DragTargetDragEnter(
     const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed,
     int key_modifiers) {
-  const int renderer_id = GetProcess()->GetID();
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-#if defined(OS_CHROMEOS)
-  // The externalfile:// scheme is used in Chrome OS to open external files in a
-  // browser tab.
-  if (drop_data.url.SchemeIs(content::kExternalFileScheme))
-    policy->GrantRequestURL(renderer_id, drop_data.url);
-#endif
-
-  // The URL could have been cobbled together from any highlighted text string,
-  // and can't be interpreted as a capability.
-  DropData filtered_data(drop_data);
-  GetProcess()->FilterURL(true, &filtered_data.url);
-  if (drop_data.did_originate_from_renderer) {
-    filtered_data.filenames.clear();
-  }
-
-  // The filenames vector, on the other hand, does represent a capability to
-  // access the given files.
-  storage::IsolatedContext::FileInfoSet files;
-  for (std::vector<ui::FileInfo>::iterator iter(
-           filtered_data.filenames.begin());
-       iter != filtered_data.filenames.end();
-       ++iter) {
-    // A dragged file may wind up as the value of an input element, or it
-    // may be used as the target of a navigation instead.  We don't know
-    // which will happen at this point, so generously grant both access
-    // and request permissions to the specific file to cover both cases.
-    // We do not give it the permission to request all file:// URLs.
-
-    // Make sure we have the same display_name as the one we register.
-    if (iter->display_name.empty()) {
-      std::string name;
-      files.AddPath(iter->path, &name);
-      iter->display_name = base::FilePath::FromUTF8Unsafe(name);
-    } else {
-      files.AddPathWithName(iter->path, iter->display_name.AsUTF8Unsafe());
-    }
-
-    policy->GrantRequestSpecificFileURL(renderer_id,
-                                        net::FilePathToFileURL(iter->path));
-
-    // If the renderer already has permission to read these paths, we don't need
-    // to re-grant them. This prevents problems with DnD for files in the CrOS
-    // file manager--the file manager already had read/write access to those
-    // directories, but dragging a file would cause the read/write access to be
-    // overwritten with read-only access, making them impossible to delete or
-    // rename until the renderer was killed.
-    if (!policy->CanReadFile(renderer_id, iter->path))
-      policy->GrantReadFile(renderer_id, iter->path);
-  }
-
-  storage::IsolatedContext* isolated_context =
-      storage::IsolatedContext::GetInstance();
-  DCHECK(isolated_context);
-  std::string filesystem_id = isolated_context->RegisterDraggedFileSystem(
-      files);
-  if (!filesystem_id.empty()) {
-    // Grant the permission iff the ID is valid.
-    policy->GrantReadFileSystem(renderer_id, filesystem_id);
-  }
-  filtered_data.filesystem_id = base::UTF8ToUTF16(filesystem_id);
-
-  storage::FileSystemContext* file_system_context =
-      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
-                                          GetSiteInstance())
-          ->GetFileSystemContext();
-  for (size_t i = 0; i < filtered_data.file_system_files.size(); ++i) {
-    storage::FileSystemURL file_system_url =
-        file_system_context->CrackURL(filtered_data.file_system_files[i].url);
-
-    std::string register_name;
-    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        file_system_url.type(), file_system_url.filesystem_id(),
-        file_system_url.path(), &register_name);
-    policy->GrantReadFileSystem(renderer_id, filesystem_id);
-
-    // Note: We are using the origin URL provided by the sender here. It may be
-    // different from the receiver's.
-    filtered_data.file_system_files[i].url =
-        GURL(storage::GetIsolatedFileSystemRootURIString(
-                 file_system_url.origin(), filesystem_id, std::string())
-                 .append(register_name));
-  }
-
-  Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,
-                                   screen_pt, operations_allowed,
-                                   key_modifiers));
+  Send(new DragMsg_TargetDragEnter(
+      GetRoutingID(), DropDataToMetaData(drop_data), client_pt, screen_pt,
+      operations_allowed, key_modifiers));
 }
 
 void RenderViewHostImpl::DragTargetDragOver(
@@ -675,12 +640,25 @@ void RenderViewHostImpl::DragTargetDragLeave() {
   Send(new DragMsg_TargetDragLeave(GetRoutingID()));
 }
 
-void RenderViewHostImpl::DragTargetDrop(
-    const gfx::Point& client_pt,
-    const gfx::Point& screen_pt,
-    int key_modifiers) {
-  Send(new DragMsg_TargetDrop(GetRoutingID(), client_pt, screen_pt,
-                              key_modifiers));
+void RenderViewHostImpl::DragTargetDrop(const DropData& drop_data,
+                                        const gfx::Point& client_pt,
+                                        const gfx::Point& screen_pt,
+                                        int key_modifiers) {
+  DropData drop_data_with_permissions(drop_data);
+  GrantFileAccessFromDropData(&drop_data_with_permissions);
+  Send(new DragMsg_TargetDrop(GetRoutingID(), drop_data_with_permissions,
+                              client_pt, screen_pt, key_modifiers));
+}
+
+void RenderViewHostImpl::FilterDropData(DropData* drop_data) {
+#if DCHECK_IS_ON()
+  drop_data->view_id = GetRoutingID();
+#endif  // DCHECK_IS_ON()
+
+  GetProcess()->FilterURL(true, &drop_data->url);
+  if (drop_data->did_originate_from_renderer) {
+    drop_data->filenames.clear();
+  }
 }
 
 void RenderViewHostImpl::DragSourceEndedAt(
@@ -1286,6 +1264,90 @@ void RenderViewHostImpl::PostRenderViewReady() {
 
 void RenderViewHostImpl::RenderViewReady() {
   delegate_->RenderViewReady(this);
+}
+
+void RenderViewHostImpl::GrantFileAccessFromDropData(DropData* drop_data) {
+  DCHECK_EQ(GetRoutingID(), drop_data->view_id);
+  const int renderer_id = GetProcess()->GetID();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+#if defined(OS_CHROMEOS)
+  // The externalfile:// scheme is used in Chrome OS to open external files in a
+  // browser tab.
+  if (drop_data->url.SchemeIs(content::kExternalFileScheme))
+    policy->GrantRequestURL(renderer_id, drop_data->url);
+#endif
+
+  // The filenames vector represents a capability to access the given files.
+  storage::IsolatedContext::FileInfoSet files;
+  for (auto& filename : drop_data->filenames) {
+    // Make sure we have the same display_name as the one we register.
+    if (filename.display_name.empty()) {
+      std::string name;
+      files.AddPath(filename.path, &name);
+      filename.display_name = base::FilePath::FromUTF8Unsafe(name);
+    } else {
+      files.AddPathWithName(filename.path,
+                            filename.display_name.AsUTF8Unsafe());
+    }
+    // A dragged file may wind up as the value of an input element, or it
+    // may be used as the target of a navigation instead.  We don't know
+    // which will happen at this point, so generously grant both access
+    // and request permissions to the specific file to cover both cases.
+    // We do not give it the permission to request all file:// URLs.
+    policy->GrantRequestSpecificFileURL(renderer_id,
+                                        net::FilePathToFileURL(filename.path));
+
+    // If the renderer already has permission to read these paths, we don't need
+    // to re-grant them. This prevents problems with DnD for files in the CrOS
+    // file manager--the file manager already had read/write access to those
+    // directories, but dragging a file would cause the read/write access to be
+    // overwritten with read-only access, making them impossible to delete or
+    // rename until the renderer was killed.
+    if (!policy->CanReadFile(renderer_id, filename.path))
+      policy->GrantReadFile(renderer_id, filename.path);
+  }
+
+  storage::IsolatedContext* isolated_context =
+      storage::IsolatedContext::GetInstance();
+  DCHECK(isolated_context);
+
+  if (!files.fileset().empty()) {
+    std::string filesystem_id =
+        isolated_context->RegisterDraggedFileSystem(files);
+    if (!filesystem_id.empty()) {
+      // Grant the permission iff the ID is valid.
+      policy->GrantReadFileSystem(renderer_id, filesystem_id);
+    }
+    drop_data->filesystem_id = base::UTF8ToUTF16(filesystem_id);
+  }
+
+  storage::FileSystemContext* file_system_context =
+      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
+                                          GetSiteInstance())
+          ->GetFileSystemContext();
+  for (auto& file_system_file : drop_data->file_system_files) {
+    storage::FileSystemURL file_system_url =
+        file_system_context->CrackURL(file_system_file.url);
+
+    std::string register_name;
+    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
+        file_system_url.type(), file_system_url.filesystem_id(),
+        file_system_url.path(), &register_name);
+
+    if (!filesystem_id.empty()) {
+      // Grant the permission iff the ID is valid.
+      policy->GrantReadFileSystem(renderer_id, filesystem_id);
+    }
+
+    // Note: We are using the origin URL provided by the sender here. It may be
+    // different from the receiver's.
+    file_system_file.url =
+        GURL(storage::GetIsolatedFileSystemRootURIString(
+                 file_system_url.origin(), filesystem_id, std::string())
+                 .append(register_name));
+  }
 }
 
 }  // namespace content

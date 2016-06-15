@@ -130,6 +130,7 @@ int GetModifierFlags() {
   dropData.reset(new DropData());
   [self populateDropData:dropData.get()
              fromPasteboard:[info draggingPasteboard]];
+  currentRVH_->FilterDropData(dropData.get());
 
   NSDragOperation mask = [info draggingSourceOperationMask];
 
@@ -254,9 +255,8 @@ int GetModifierFlags() {
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   webContents_->GetRenderViewHost()->DragTargetDrop(
-      gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y),
-      GetModifierFlags());
+      *dropData_, gfx::Point(viewPoint.x, viewPoint.y),
+      gfx::Point(screenPoint.x, screenPoint.y), GetModifierFlags());
 
   dropData_.reset();
 

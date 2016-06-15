@@ -251,6 +251,7 @@ public:
         int modifiers) override;
     void dragTargetDragLeave() override;
     void dragTargetDrop(
+        const WebDragData&,
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
         int modifiers) override;

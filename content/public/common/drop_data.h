@@ -17,6 +17,7 @@
 
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "url/gurl.h"
@@ -32,9 +33,33 @@ struct CONTENT_EXPORT DropData {
     int64_t size;
   };
 
+  enum class Kind {
+    STRING = 0,
+    FILENAME,
+    FILESYSTEMFILE,
+    LAST = FILESYSTEMFILE
+  };
+
+  struct Metadata {
+    Metadata();
+    static Metadata CreateForMimeType(const Kind& kind,
+                                      const base::string16& mime_type);
+    static Metadata CreateForFilePath(const base::FilePath& filename);
+    static Metadata CreateForFileSystemUrl(const GURL& file_system_url);
+    Metadata(const Metadata& other);
+    ~Metadata();
+
+    Kind kind;
+    base::string16 mime_type;
+    base::FilePath filename;
+    GURL file_system_url;
+  };
+
   DropData();
   DropData(const DropData& other);
   ~DropData();
+
+  int view_id = MSG_ROUTING_NONE;
 
   // Whether this drag originated from a renderer.
   bool did_originate_from_renderer;
@@ -54,6 +79,8 @@ struct CONTENT_EXPORT DropData {
   // populated if the drag is not renderer tainted, as this allows File access
   // from web content.
   std::vector<ui::FileInfo> filenames;
+  // The mime types of dragged files.
+  std::vector<base::string16> file_mime_types;
 
   // Isolated filesystem ID for the files being dragged on the webview.
   base::string16 filesystem_id;
