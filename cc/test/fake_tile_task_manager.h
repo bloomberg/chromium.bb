@@ -15,19 +15,14 @@ namespace cc {
 class FakeTileTaskManagerImpl : public TileTaskManager {
  public:
   FakeTileTaskManagerImpl();
-  // Ctor for custom raster buffer provider.
-  FakeTileTaskManagerImpl(
-      std::unique_ptr<RasterBufferProvider> raster_buffer_provider);
   ~FakeTileTaskManagerImpl() override;
 
   // Overridden from TileTaskManager:
   void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;
   void Shutdown() override;
-  RasterBufferProvider* GetRasterBufferProvider() const override;
 
  protected:
-  std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   Task::Vector completed_tasks_;
 };
 

@@ -94,8 +94,9 @@ void BitmapRasterBufferProvider::ReleaseBufferForRaster(
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-void BitmapRasterBufferProvider::OrderingBarrier() {
+bool BitmapRasterBufferProvider::OrderingBarrier() {
   // No need to sync resources as this provider does not use GL context.
+  return true;
 }
 
 ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(

@@ -15,25 +15,19 @@ TileTaskManager::~TileTaskManager() {}
 
 // static
 std::unique_ptr<TileTaskManagerImpl> TileTaskManagerImpl::Create(
-    std::unique_ptr<RasterBufferProvider> raster_buffer_provider,
     TaskGraphRunner* task_graph_runner) {
-  return base::WrapUnique<TileTaskManagerImpl>(new TileTaskManagerImpl(
-      std::move(raster_buffer_provider), task_graph_runner));
+  return base::WrapUnique<TileTaskManagerImpl>(
+      new TileTaskManagerImpl(task_graph_runner));
 }
 
-TileTaskManagerImpl::TileTaskManagerImpl(
-    std::unique_ptr<RasterBufferProvider> raster_buffer_provider,
-    TaskGraphRunner* task_graph_runner)
-    : raster_buffer_provider_(std::move(raster_buffer_provider)),
-      task_graph_runner_(task_graph_runner),
+TileTaskManagerImpl::TileTaskManagerImpl(TaskGraphRunner* task_graph_runner)
+    : task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()) {}
 
 TileTaskManagerImpl::~TileTaskManagerImpl() {}
 
 void TileTaskManagerImpl::ScheduleTasks(TaskGraph* graph) {
   TRACE_EVENT0("cc", "TileTaskManagerImpl::ScheduleTasks");
-
-  raster_buffer_provider_->OrderingBarrier();
   task_graph_runner_->ScheduleTasks(namespace_token_, graph);
 }
 
@@ -57,12 +51,6 @@ void TileTaskManagerImpl::Shutdown() {
   TaskGraph empty;
   task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
-
-  raster_buffer_provider_->Shutdown();
-}
-
-RasterBufferProvider* TileTaskManagerImpl::GetRasterBufferProvider() const {
-  return raster_buffer_provider_.get();
 }
 
 }  // namespace cc

@@ -596,8 +596,8 @@ static sk_sp<SkImage> WrapTexture(
   GrGLTextureInfo texture_info;
   texture_info.fTarget = lock.target();
   texture_info.fID = lock.texture_id();
-  backend_texture_description.fWidth = lock.texture_size().width();
-  backend_texture_description.fHeight = lock.texture_size().height();
+  backend_texture_description.fWidth = lock.size().width();
+  backend_texture_description.fHeight = lock.size().height();
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
   backend_texture_description.fTextureHandle =
       skia::GrGLTextureInfoToGrBackendObject(texture_info);
@@ -831,8 +831,8 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
       bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
       resource_provider_->best_texture_format());
   {
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                             device_background_texture->id());
+    ResourceProvider::ScopedWriteLockGL lock(
+        resource_provider_, device_background_texture->id(), false);
     GetFramebufferTexture(lock.texture_id(), RGBA_8888, bounding_rect);
   }
   return device_background_texture;
@@ -2543,7 +2543,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     uv_transform = UVTransform(quad);
   if (sampler == SAMPLER_TYPE_2D_RECT) {
     // Un-normalize the texture coordiantes for rectangle targets.
-    gfx::Size texture_size = lock.texture_size();
+    gfx::Size texture_size = lock.size();
     uv_transform.data[0] *= texture_size.width();
     uv_transform.data[2] *= texture_size.width();
     uv_transform.data[1] *= texture_size.height();
@@ -2807,7 +2807,7 @@ void GLRenderer::SwapBuffersComplete() {
     // |swapped_and_acked_overlay_resources_|.
     if (!swapping_overlay_resources_.empty()) {
       for (OverlayResourceLock& lock : swapping_overlay_resources_.front()) {
-        swapped_and_acked_overlay_resources_[lock->GetResourceId()] =
+        swapped_and_acked_overlay_resources_[lock->resource_id()] =
             std::move(lock);
       }
       swapping_overlay_resources_.pop_front();
@@ -2816,8 +2816,8 @@ void GLRenderer::SwapBuffersComplete() {
     // Release resources that are no longer in use by the Window Server.
     auto it = swapped_and_acked_overlay_resources_.begin();
     while (it != swapped_and_acked_overlay_resources_.end()) {
-      if (it->second->GetGpuMemoryBuffer() &&
-          it->second->GetGpuMemoryBuffer()->IsInUseByMacOSWindowServer()) {
+      if (it->second->gpu_memory_buffer() &&
+          it->second->gpu_memory_buffer()->IsInUseByMacOSWindowServer()) {
         ++it;
         continue;
       }
@@ -3081,7 +3081,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
       base::WrapUnique(new ResourceProvider::ScopedWriteLockGL(
-          resource_provider_, texture->id()));
+          resource_provider_, texture->id(), false));
   unsigned texture_id = current_framebuffer_lock_->texture_id();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                             texture_id, 0);
@@ -3682,7 +3682,7 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
       pending_overlay_resources_.push_back(
           base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
               resource_provider_, ca_layer_overlay.contents_resource_id)));
-      texture_id = pending_overlay_resources_.back()->GetTextureId();
+      texture_id = pending_overlay_resources_.back()->texture_id();
     }
     GLfloat contents_rect[4] = {
         ca_layer_overlay.contents_rect.x(), ca_layer_overlay.contents_rect.y(),
@@ -3725,7 +3725,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
       pending_overlay_resources_.push_back(
           base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
               resource_provider_, overlay.resource_id)));
-      texture_id = pending_overlay_resources_.back()->GetTextureId();
+      texture_id = pending_overlay_resources_.back()->texture_id();
     }
 
     context_support_->ScheduleOverlayPlane(

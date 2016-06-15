@@ -21,7 +21,9 @@ FakeRasterBufferProviderImpl::AcquireBufferForRaster(
 void FakeRasterBufferProviderImpl::ReleaseBufferForRaster(
     std::unique_ptr<RasterBuffer> buffer) {}
 
-void FakeRasterBufferProviderImpl::OrderingBarrier() {}
+bool FakeRasterBufferProviderImpl::OrderingBarrier() {
+  return true;
+}
 
 ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
     bool must_support_alpha) const {
