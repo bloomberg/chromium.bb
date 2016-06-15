@@ -51,7 +51,7 @@
 using blink::WebMediaSource;
 using blink::WebSourceBuffer;
 
-#define MEDIA_SOURCE_LOG_LEVEL 3
+#define MSLOG DVLOG(3)
 
 namespace blink {
 
@@ -104,24 +104,24 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_activeSourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_isAddedToRegistry(false)
 {
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    MSLOG << __FUNCTION__ << " this=" << this;
 }
 
 MediaSource::~MediaSource()
 {
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    MSLOG << __FUNCTION__ << " this=" << this;
     DCHECK(isClosed());
 }
 
 void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState, const ExceptionCode& error, const String& message)
 {
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(error=" << error << ", message=" << message << ")";
+    MSLOG << __FUNCTION__ << " (error=" << error << ", message=" << message << ")";
     exceptionState.throwDOMException(error, message);
 }
 
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
 {
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") " << this;
+    MSLOG << __FUNCTION__ << " this=" << this << " type=" << type;
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
     // 1. If type is an empty string then throw an InvalidAccessError exception
@@ -162,13 +162,13 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     m_sourceBuffers->add(buffer);
 
     // 7. Return the new object to the caller.
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") " << buffer << " -> " << this;
+    MSLOG << __FUNCTION__ << " this=" << this << " type=" << type << " -> " << buffer;
     return buffer;
 }
 
 void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& exceptionState)
 {
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << buffer << ") -> " << this;
+    MSLOG << __FUNCTION__ << " this=" << this << " buffer=" << buffer;
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
 
@@ -236,7 +236,7 @@ bool MediaSource::isTypeSupported(const String& type)
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-isTypeSupported-boolean-DOMString-type
     // 1. If type is an empty string, then return false.
     if (type.isEmpty()) {
-        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (empty input)";
+        MSLOG << __FUNCTION__ << "(" << type << ") -> false (empty input)";
         return false;
     }
 
@@ -245,14 +245,14 @@ bool MediaSource::isTypeSupported(const String& type)
 
     // 2. If type does not contain a valid MIME type string, then return false.
     if (contentType.type().isEmpty()) {
-        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (invalid mime type)";
+        MSLOG << __FUNCTION__ << "(" << type << ") -> false (invalid mime type)";
         return false;
     }
 
     // Note: MediaSource.isTypeSupported() returning true implies that HTMLMediaElement.canPlayType() will return "maybe" or "probably"
     // since it does not make sense for a MediaSource to support a type the HTMLMediaElement knows it cannot play.
     if (HTMLMediaElement::supportsType(contentType) == WebMimeRegistry::IsNotSupported) {
-        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (not supported by HTMLMediaElement)";
+        MSLOG << __FUNCTION__ << "(" << type << ") -> false (not supported by HTMLMediaElement)";
         return false;
     }
 
@@ -261,7 +261,7 @@ bool MediaSource::isTypeSupported(const String& type)
     // 5. If the MediaSource does not support the specified combination of media type, media subtype, and codecs then return false.
     // 6. Return true.
     bool result = MIMETypeRegistry::isSupportedMediaSourceMIMEType(contentType.type(), codecs);
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> " << (result ? "true" : "false");
+    MSLOG << __FUNCTION__ << "(" << type << ") -> " << (result ? "true" : "false");
     return result;
 }
 
@@ -447,7 +447,7 @@ void MediaSource::setReadyState(const AtomicString& state)
     DCHECK(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
 
     AtomicString oldState = readyState();
-    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << " : " << oldState << " -> " << state << " " << this;
+    MSLOG << __FUNCTION__ << " this=" << this << " : " << oldState << " -> " << state;
 
     if (state == closedKeyword()) {
         m_webMediaSource.reset();
