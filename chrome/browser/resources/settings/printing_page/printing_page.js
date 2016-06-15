@@ -14,6 +14,6 @@ Polymer({
 
   /** @private */
   onManageTap_: function() {
-    location.href = loadTimeData.getString('devicesUrl');
+    window.open(loadTimeData.getString('devicesUrl'));
   },
 });
