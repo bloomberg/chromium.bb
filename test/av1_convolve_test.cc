@@ -137,7 +137,6 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
       av1_convolve(src1 + offset, src_stride, dst1, dst_stride, w, h,
                    &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
                    y_step_q4, avg);
-
       avg = 0;
       av1_convolve(src0 + offset, src_stride, dst, dst_stride, w, h,
                    &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
@@ -180,7 +179,7 @@ TEST(AV1ConvolveTest, av1_highbd_convolve) {
   for (subpel_x_q4 = 0; subpel_x_q4 < 16; subpel_x_q4++) {
     for (subpel_y_q4 = 0; subpel_y_q4 < 16; subpel_y_q4++) {
       av1_highbd_convolve(
-          CONVERT_TO_BYTEPTR(src + src_stride * filter_center + filter_center),
+          CONVERT_TO_BYTEPTR(src) + src_stride * filter_center + filter_center,
           src_stride, CONVERT_TO_BYTEPTR(dst), dst_stride, w, h, &interp_filter,
           subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4, avg, bd);
 
@@ -240,23 +239,23 @@ TEST(AV1ConvolveTest, av1_highbd_convolve_avg) {
       int offset = filter_size * filter_center + filter_center;
 
       avg = 0;
-      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src0 + offset), src_stride,
+      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src0) + offset, src_stride,
                           CONVERT_TO_BYTEPTR(dst0), dst_stride, w, h,
                           &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
                           y_step_q4, avg, bd);
       avg = 0;
-      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src1 + offset), src_stride,
+      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src1) + offset, src_stride,
                           CONVERT_TO_BYTEPTR(dst1), dst_stride, w, h,
                           &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
                           y_step_q4, avg, bd);
 
       avg = 0;
-      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src0 + offset), src_stride,
+      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src0) + offset, src_stride,
                           CONVERT_TO_BYTEPTR(dst), dst_stride, w, h,
                           &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
                           y_step_q4, avg, bd);
       avg = 1;
-      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src1 + offset), src_stride,
+      av1_highbd_convolve(CONVERT_TO_BYTEPTR(src1) + offset, src_stride,
                           CONVERT_TO_BYTEPTR(dst), dst_stride, w, h,
                           &interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
                           y_step_q4, avg, bd);
