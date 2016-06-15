@@ -224,6 +224,12 @@ struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
                      const scoped_refptr<MediaLog>& media_log);
 };
 
+struct MEDIA_EXPORT VPCodecConfigurationRecord : Box {
+  DECLARE_BOX_METHODS(VPCodecConfigurationRecord);
+
+  VideoCodecProfile profile;
+};
+
 struct MEDIA_EXPORT PixelAspectRatioBox : Box {
   DECLARE_BOX_METHODS(PixelAspectRatioBox);
 
