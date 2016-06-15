@@ -75,7 +75,7 @@ TEST_F(ChooserContentViewTest, InitialState) {
   // the number of rows is 1.
   EXPECT_EQ(1, table_view_->RowCount());
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT),
+      l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
       table_model_->GetText(0, 0));
   // |table_view_| should be disabled since there is no option shown.
   EXPECT_FALSE(table_view_->enabled());
@@ -148,7 +148,7 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
   // needs to be displayed on the |table_view_|, the number of rows is 1.
   EXPECT_EQ(1, table_view_->RowCount());
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT),
+      l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
       table_model_->GetText(0, 0));
   // |table_view_| should be disabled since all options are removed.
   EXPECT_FALSE(table_view_->enabled());
@@ -293,7 +293,7 @@ TEST_F(ChooserContentViewTest,
   // needs to be displayed on the |table_view_|, the number of rows is 1.
   EXPECT_EQ(1, table_view_->RowCount());
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT),
+      l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
       table_model_->GetText(0, 0));
   // |table_view_| should be disabled since all options are removed.
   EXPECT_FALSE(table_view_->enabled());

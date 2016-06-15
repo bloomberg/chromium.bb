@@ -69,7 +69,7 @@ base::string16 ChooserTableModel::GetText(int row, int column_id) {
   if (num_options == 0) {
     DCHECK_EQ(0, row);
     return l10n_util::GetStringUTF16(
-        IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
+        IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
   }
 
   DCHECK_GE(row, 0);
@@ -153,8 +153,8 @@ gfx::Size ChooserContentView::GetPreferredSize() const {
 base::string16 ChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_CHOOSER_BUBBLE_CONNECT_BUTTON_TEXT
-                                       : IDS_CHOOSER_BUBBLE_CANCEL_BUTTON_TEXT);
+                                       ? IDS_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT
+                                       : IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
 }
 
 bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
@@ -165,10 +165,10 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
 views::StyledLabel* ChooserContentView::CreateFootnoteView(
     views::StyledLabelListener* listener) const {
   base::string16 link =
-      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT);
+      l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT);
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT, link, &offset);
+      IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT, link, &offset);
   views::StyledLabel* styled_label = new views::StyledLabel(text, listener);
   styled_label->AddStyleRange(
       gfx::Range(offset, offset + link.length()),

@@ -171,7 +171,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   chooserContentView_.reset([[ChooserContentViewCocoa alloc]
       initWithChooserTitle:
           l10n_util::GetNSStringF(
-              IDS_CHOOSER_BUBBLE_PROMPT,
+              IDS_DEVICE_CHOOSER_PROMPT,
               url_formatter::FormatOriginForSecurityDisplay(
                   chooserController_->GetOrigin(),
                   url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC))]);
@@ -228,7 +228,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
       static_cast<NSInteger>(chooserController_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, rowIndex);
-    return l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
+    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
   }
 
   DCHECK_GE(rowIndex, 0);

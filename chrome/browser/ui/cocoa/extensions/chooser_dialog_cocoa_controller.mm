@@ -49,7 +49,7 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   }
 
   chooserContentView_.reset([[ChooserContentViewCocoa alloc]
-      initWithChooserTitle:l10n_util::GetNSStringF(IDS_CHOOSER_BUBBLE_PROMPT,
+      initWithChooserTitle:l10n_util::GetNSStringF(IDS_DEVICE_CHOOSER_PROMPT,
                                                    chooserTitle)]);
 
   tableView_ = [chooserContentView_ tableView];
@@ -85,7 +85,7 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
       static_cast<NSInteger>(chooserController_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, rowIndex);
-    return l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
+    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
   }
 
   DCHECK_GE(rowIndex, 0);

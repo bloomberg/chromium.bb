@@ -188,13 +188,13 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 - (base::scoped_nsobject<NSButton>)createConnectButton {
   NSString* connectTitle =
-      l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_CONNECT_BUTTON_TEXT);
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
   return [self createButtonWithTitle:connectTitle];
 }
 
 - (base::scoped_nsobject<NSButton>)createCancelButton {
   NSString* cancelTitle =
-      l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_CANCEL_BUTTON_TEXT);
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
   return [self createButtonWithTitle:cancelTitle];
 }
 
@@ -215,7 +215,7 @@ const CGFloat kSeparatorHeight = 1.0f;
   [messageView setEditable:NO];
   [messageView setSelectable:NO];
   [messageView
-      setStringValue:l10n_util::GetNSStringF(IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT,
+      setStringValue:l10n_util::GetNSStringF(IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT,
                                              base::string16())];
   [messageView setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   [messageView sizeToFit];
@@ -227,7 +227,7 @@ const CGFloat kSeparatorHeight = 1.0f;
       [[NSButton alloc] initWithFrame:NSZeroRect]);
   base::scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc]
       initTextCell:l10n_util::GetNSString(
-                       IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT)]);
+                       IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT)]);
   [button setCell:cell.get()];
   [button sizeToFit];
   return button;

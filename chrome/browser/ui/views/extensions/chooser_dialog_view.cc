@@ -65,7 +65,7 @@ base::string16 ChooserDialogView::GetWindowTitle() const {
         origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   }
 
-  return l10n_util::GetStringFUTF16(IDS_CHOOSER_BUBBLE_PROMPT, chooser_title);
+  return l10n_util::GetStringFUTF16(IDS_DEVICE_CHOOSER_PROMPT, chooser_title);
 }
 
 bool ChooserDialogView::ShouldShowCloseButton() const {

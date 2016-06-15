@@ -119,7 +119,7 @@ ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(
-      IDS_CHOOSER_BUBBLE_PROMPT,
+      IDS_DEVICE_CHOOSER_PROMPT,
       url_formatter::FormatOriginForSecurityDisplay(
           chooser_controller_->GetOrigin(),
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
