@@ -50,6 +50,10 @@ public class ChildProcessCreationParams {
         return mExtraBindFlags;
     }
 
+    public int getLibraryProcessType() {
+        return mLibraryProcessType;
+    }
+
     /**
      * Adds required extra flags to the given child service binding flags and returns them.
      * Does not modify the state of the ChildProcessCreationParams instance.

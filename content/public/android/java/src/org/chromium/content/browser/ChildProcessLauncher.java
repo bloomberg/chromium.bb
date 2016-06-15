@@ -652,20 +652,37 @@ public class ChildProcessLauncher {
         boolean inSandbox = true;
         String processType =
                 ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
-        ChildProcessCreationParams params = null;
+        ChildProcessCreationParams params = ChildProcessCreationParams.get();
+        if (params != null) {
+            params = params.copy();
+        }
         if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
             callbackType = CALLBACK_FOR_RENDERER_PROCESS;
-            if (ChildProcessCreationParams.get() != null) {
-                params = ChildProcessCreationParams.get().copy();
-            }
-        } else if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
-            callbackType = CALLBACK_FOR_GPU_PROCESS;
-            inSandbox = false;
-        } else if (ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType)) {
-            // We only support sandboxed right now.
-            callbackType = CALLBACK_FOR_UTILITY_PROCESS;
         } else {
-            assert false;
+            if (params != null && !params.getPackageName().equals(context.getPackageName())) {
+                // WebViews and WebAPKs have renderer processes running in their applications.
+                // When launching these renderer processes, {@link ChildProcessConnectionImpl}
+                // requires the package name of the application which holds the renderer process.
+                // Therefore, the package name in ChildProcessCreationParams could be the package
+                // name of WebViews, WebAPKs, or Chrome, depending on the host application.
+                // Except renderer process, all other child processes should use Chrome's package
+                // name. In WebAPK, ChildProcessCreationParams are initialized with WebAPK's
+                // package name. Make a copy of the WebAPK's params, but replace the package with
+                // Chrome's package to use when initializing a non-renderer processes.
+                // TODO(michaelbai | hanxi): crbug.com/620102. Cleans up the setting of
+                // ChildProcessCreationParams after using N sdk.
+                params = new ChildProcessCreationParams(context.getPackageName(),
+                        params.getExtraBindFlags(), params.getLibraryProcessType());
+            }
+            if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
+                callbackType = CALLBACK_FOR_GPU_PROCESS;
+                inSandbox = false;
+            } else if (ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType)) {
+                // We only support sandboxed right now.
+                callbackType = CALLBACK_FOR_UTILITY_PROCESS;
+            } else {
+                assert false;
+            }
         }
 
         startInternal(context, commandLine, childProcessId, filesToBeMapped, clientContext,
