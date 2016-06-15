@@ -6609,6 +6609,21 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device. User has an option to active them using opt-in dialog">
     Automatically send diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
+  <message name="IDS_ARC_OPT_OUT_TAB_TITLE" desc="Tab title when viewing opt-out setting dialog for android apps.">
+    Settings - Remove Google Play Store
+  </message>
+  <message name="IDS_ARC_OPT_OUT_DIALOG_HEADER" desc="Title of the opt-out dialog for android apps.">
+    Remove Google Play Store?
+  </message>
+  <message name="IDS_ARC_OPT_OUT_DIALOG_DESCRIPTION" desc="Describes what will happen if the user opts out of android apps">
+    Apps downloaded from the Play Store, along with all app data, will be deleted from this Chromebook. This cannot be undone. This doesn't affect apps from the Play Store on Android devices and other Chromebooks.
+  </message>
+  <message name="IDS_ARC_OPT_OUT_DIALOG_BUTTON_CONFIRM_DISABLE" desc="Button to confirm that play store should be removed from this device">
+    Remove Play Store
+  </message>
+  <message name="IDS_ARC_OPT_OUT_DIALOG_BUTTON_CANCEL" desc="Button to cancel the removal of the play store from this device">
+    Cancel
+  </message>
   <message name="IDS_ARC_SIGN_IN_NETWORK_ERROR" desc="Android sign-in error because of network error">
     Network error
   </message>

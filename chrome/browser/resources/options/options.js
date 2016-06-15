@@ -228,6 +228,18 @@ function load() {
                                 [$('storage-manager-button')]);
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
+    PageManager.registerOverlay(
+        new ConfirmDialog(
+            'arcOptOutConfirm',
+            loadTimeData.getString('arcOptOutConfirmOverlayTabTitle'),
+            'arc-opt-out-confirm-overlay',
+            /** @type {HTMLButtonElement} */($('arc-opt-out-confirm-ok')),
+            /** @type {HTMLButtonElement} */($('arc-opt-out-confirm-cancel')),
+            $('android-apps-enabled')['pref'],
+            $('android-apps-enabled')['metric'],
+            undefined,
+            false),
+        BrowserOptions.getInstance());
   }
 
   if (!cr.isWindows && !cr.isMac) {
