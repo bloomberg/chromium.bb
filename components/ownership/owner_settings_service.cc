@@ -12,9 +12,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/ownership/owner_key_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -93,8 +94,8 @@ bool OwnerSettingsService::IsOwner() {
 void OwnerSettingsService::IsOwnerAsync(const IsOwnerCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (private_key_.get()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, IsOwner()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, IsOwner()));
   } else {
     pending_is_owner_callbacks_.push_back(callback);
   }

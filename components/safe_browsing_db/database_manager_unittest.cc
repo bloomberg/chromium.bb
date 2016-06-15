@@ -10,11 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,7 +52,7 @@ class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
   void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
                              FullHashCallback callback) override {
     prefixes_ = prefixes;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(InvokeFullHashCallback, callback, full_hashes_,
                               negative_cache_expire_),
         base::TimeDelta::FromSeconds(delay_seconds_));

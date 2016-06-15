@@ -8,7 +8,6 @@
 
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
@@ -253,7 +252,7 @@ void DomDistillerService::CancelTask(TaskTracker* task) {
   TaskList::iterator it = std::find(tasks_.begin(), tasks_.end(), task);
   if (it != tasks_.end()) {
     tasks_.weak_erase(it);
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, task);
   }
 }
 

@@ -8,10 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/timers/alarm_timer_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +56,7 @@ class OneShotAlarmTimerTester {
   void Run() {
     *did_run_ = true;
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
@@ -81,7 +84,7 @@ class OneShotSelfDeletingAlarmTimerTester {
     *did_run_ = true;
     timer_.reset();
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
@@ -110,7 +113,7 @@ class RepeatingAlarmTimerTester {
       *did_run_ = true;
       timer_->Stop();
 
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   }
@@ -152,7 +155,7 @@ TEST(AlarmTimerTest, OneShotAlarmTimer_Cancel) {
         new OneShotAlarmTimerTester(&did_run_a, kTenMilliseconds);
 
     // This should run before the timer expires.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, a);
 
     // Now start the timer.
     a->Start();
@@ -207,7 +210,7 @@ TEST(AlarmTimerTest, RepeatingAlarmTimer_Cancel) {
         new RepeatingAlarmTimerTester(&did_run_a, kTenMilliseconds);
 
     // This should run before the timer expires.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, a);
 
     // Now start the timer.
     a->Start();
@@ -246,7 +249,7 @@ TEST(AlarmTimerTest, RepeatingAlarmTimerZeroDelay_Cancel) {
         new RepeatingAlarmTimerTester(&did_run_a, base::TimeDelta());
 
     // This should run before the timer expires.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, a);
 
     // Now start the timer.
     a->Start();
@@ -362,13 +365,13 @@ void ClearAllCallbackHappened() {
 
 void SetCallbackHappened1() {
   g_callback_happened1 = true;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void SetCallbackHappened2() {
   g_callback_happened2 = true;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
@@ -409,7 +412,7 @@ namespace {
 void TimerRanCallback(bool* did_run) {
   *did_run = true;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 

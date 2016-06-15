@@ -4,6 +4,9 @@
 
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,13 +120,13 @@ void StoragePartitionHttpCacheDataRemover::CountHttpCacheOnIOThread() {
 void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   done_callback_.Run();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void StoragePartitionHttpCacheDataRemover::CountedHttpCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   result_callback_.Run(calculation_result_);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 // The expected state sequence is STATE_NONE --> STATE_CREATE_MAIN -->

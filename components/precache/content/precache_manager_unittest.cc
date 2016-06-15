@@ -325,7 +325,8 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
   // Run a task to get unfinished work, and to get hosts.
   for (int i = 0; i < 2; ++i) {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     run_loop.Run();
   }
   // base::RunLoop().RunUntilIdle();

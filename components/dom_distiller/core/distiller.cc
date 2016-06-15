@@ -12,10 +12,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
@@ -319,7 +320,7 @@ void DistillerImpl::OnFetchImageDone(int page_num,
   // Delete the |url_fetcher| by DeleteSoon since the OnFetchImageDone
   // callback is invoked by the |url_fetcher|.
   page_data->image_fetchers_.weak_erase(fetcher_it);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, url_fetcher);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, url_fetcher);
 
   DistilledPageProto_Image* image =
       page_data->distilled_page_proto->data.add_image();

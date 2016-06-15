@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace {
 
@@ -82,11 +84,9 @@ void FakeHostPairingController::ChangeStage(Stage new_stage) {
 }
 
 void FakeHostPairingController::ChangeStageLater(Stage new_stage) {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeHostPairingController::ChangeStage,
-                 base::Unretained(this),
-                 new_stage),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeHostPairingController::ChangeStage,
+                            base::Unretained(this), new_stage),
       async_duration_);
 }
 

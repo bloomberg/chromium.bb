@@ -9,6 +9,9 @@
 #include <memory>
 #include <tuple>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -169,7 +172,7 @@ class TestRequestCallbacks
 
 void RunAllPendingTasks() {
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   run_loop.Run();
 }

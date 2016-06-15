@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
@@ -154,14 +153,16 @@ void TaskTracker::OnDistillerFinished(
 
   // 'distiller_ != null' is used as a signal that distillation is in progress,
   // so it needs to be released so that we know distillation is done.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  distiller_.release());
 
   ContentSourceFinished();
 }
 
 void TaskTracker::CancelPendingSources() {
   if (distiller_) {
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                    distiller_.release());
   }
 }
 

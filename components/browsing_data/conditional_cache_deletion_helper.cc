@@ -5,6 +5,9 @@
 #include "components/browsing_data/conditional_cache_deletion_helper.h"
 
 #include "base/callback.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -78,7 +81,7 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
       // but we know that there is nothing more that we can do, so we return OK.
       base::MessageLoop::current()->task_runner()->PostTask(
           FROM_HERE, base::Bind(completion_callback_, net::OK));
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
       return;
     }
 
