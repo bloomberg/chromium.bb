@@ -42,7 +42,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Skip('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/sync.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureshadow/*.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
@@ -505,6 +504,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlod.html',
         ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
+        ['mac', 'amd'], bug=483282)
 
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -556,6 +557,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
