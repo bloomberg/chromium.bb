@@ -1710,8 +1710,12 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
                      return output_record.picture_id == picture_buffer_id;
                    });
   if (iter == output_buffer_map_.end()) {
-    LOGF(ERROR) << "Invalid picture_buffer_id=" << picture_buffer_id;
-    NOTIFY_ERROR(INVALID_ARGUMENT);
+    // It's possible that we've already posted a DismissPictureBuffer for this
+    // picture, but it has not yet executed when this ImportBufferForPicture was
+    // posted to us by the client. In that case just ignore this (we've already
+    // dismissed it and accounted for that).
+    DVLOGF(3) << "got picture id=" << picture_buffer_id
+              << " not in use (anymore?).";
     return;
   }
 
