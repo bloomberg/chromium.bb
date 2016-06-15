@@ -29,10 +29,7 @@
 import json
 import logging
 
-from webkitpy.common.memoized import memoized
 from webkitpy.layout_tests.layout_package import json_results_generator
-from webkitpy.layout_tests.models import test_expectations
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
 
 _log = logging.getLogger(__name__)
 
@@ -126,3 +123,15 @@ class LayoutTestResults(object):
 
     def _test_result_tree(self):
         return self._results['tests']
+
+    def tests_with_new_baselines(self):
+        """Returns a list of tests for which there are new baselines."""
+        tests = []
+
+        def add_if_has_new_baseline(test_result):
+            actual = test_result.actual_results()
+            if actual in ('TEXT', 'IMAGE', 'IMAGE+TEXT', 'AUDIO'):
+                tests.append(test_result.test_name())
+
+        LayoutTestResults._for_each_test(self._test_result_tree(), add_if_has_new_baseline)
+        return tests
