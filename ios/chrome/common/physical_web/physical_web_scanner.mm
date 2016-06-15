@@ -114,7 +114,7 @@ enum BeaconType {
   [devicesUrls_ removeAllObjects];
   [devices_ removeAllObjects];
   started_ = YES;
-  if ([centralManager_ state] == CBCentralManagerStatePoweredOn)
+  if ([self bluetoothEnabled])
     [self reallyStart];
   else
     pendingStart_ = YES;
@@ -127,8 +127,7 @@ enum BeaconType {
     [request cancel];
   }
   [pendingRequests_ removeAllObjects];
-  if (!pendingStart_ &&
-      [centralManager_ state] == CBCentralManagerStatePoweredOn) {
+  if (!pendingStart_ && [self bluetoothEnabled]) {
     [centralManager_ stopScan];
   }
   pendingStart_ = NO;
@@ -170,7 +169,13 @@ enum BeaconType {
 }
 
 - (BOOL)bluetoothEnabled {
+// TODO(crbug.com/619982): The CBManager base class appears to still be in
+// flux.  Unwind this #ifdef once the APIs settle.
+#if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+  return [centralManager_ state] == CBManagerStatePoweredOn;
+#else
   return [centralManager_ state] == CBCentralManagerStatePoweredOn;
+#endif
 }
 
 - (void)reallyStart {
@@ -186,7 +191,7 @@ enum BeaconType {
 #pragma mark CBCentralManagerDelegate methods
 
 - (void)centralManagerDidUpdateState:(CBCentralManager*)central {
-  if ([centralManager_ state] == CBCentralManagerStatePoweredOn) {
+  if ([self bluetoothEnabled]) {
     if (pendingStart_)
       [self reallyStart];
   } else {
