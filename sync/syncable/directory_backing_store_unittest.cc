@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
