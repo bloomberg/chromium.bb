@@ -218,6 +218,26 @@ cronet_bidirectional_stream* cronet_bidirectional_stream_create(
   return stream;
 }
 
+int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream) {
+  CronetBidirectionalStreamAdapter::DestroyAdapterForStream(stream);
+  delete stream;
+  return 1;
+}
+
+void cronet_bidirectional_stream_disable_auto_flush(
+    cronet_bidirectional_stream* stream,
+    bool disable_auto_flush) {
+  CronetBidirectionalStreamAdapter::GetCronetStream(stream)->disable_auto_flush(
+      disable_auto_flush);
+}
+
+void cronet_bidirectional_stream_delay_request_headers_until_flush(
+    cronet_bidirectional_stream* stream,
+    bool delay_headers_until_flush) {
+  CronetBidirectionalStreamAdapter::GetCronetStream(stream)
+      ->delay_headers_until_flush(delay_headers_until_flush);
+}
+
 int cronet_bidirectional_stream_start(
     cronet_bidirectional_stream* stream,
     const char* url,
@@ -259,13 +279,10 @@ int cronet_bidirectional_stream_write(cronet_bidirectional_stream* stream,
       buffer, count, end_of_stream);
 }
 
-int cronet_bidirectional_stream_cancel(cronet_bidirectional_stream* stream) {
-  CronetBidirectionalStreamAdapter::GetCronetStream(stream)->Cancel();
-  return 1;
+void cronet_bidirectional_stream_flush(cronet_bidirectional_stream* stream) {
+  return CronetBidirectionalStreamAdapter::GetCronetStream(stream)->Flush();
 }
 
-int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream) {
-  CronetBidirectionalStreamAdapter::DestroyAdapterForStream(stream);
-  delete stream;
-  return 1;
+void cronet_bidirectional_stream_cancel(cronet_bidirectional_stream* stream) {
+  CronetBidirectionalStreamAdapter::GetCronetStream(stream)->Cancel();
 }

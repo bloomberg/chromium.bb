@@ -117,7 +117,7 @@ typedef struct cronet_bidirectional_stream_callback {
   void (*on_canceled)(cronet_bidirectional_stream* stream);
 } cronet_bidirectional_stream_callback;
 
-/* Create a new stream object that uses |engine| and |callback|. All stream
+/* Creates a new stream object that uses |engine| and |callback|. All stream
  * tasks are performed asynchronously on the |engine| network thread. |callback|
  * methods are invoked synchronously on the |engine| network thread, but must
  * not run tasks on the current thread to prevent blocking networking operations
@@ -137,17 +137,38 @@ cronet_bidirectional_stream* cronet_bidirectional_stream_create(
 
 /* TBD: The following methods return int. Should it be a custom type? */
 
-/* Destroy stream object. Destroy could be called from any thread, including
+/* Destroys stream object. Destroy could be called from any thread, including
  * network thread, but is posted, so |stream| is valid until calling task is
  * complete.
  */
 CRONET_EXPORT
 int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream);
 
-/* Start the stream by sending request to |url| using |method| and |headers|. If
- * |end_of_stream| is true, then no data is expected to be written. The |method|
- * is HTTP verb, with PUT having a special meaning to mark idempotent request,
- * which could use QUIC 0-RTT.
+/**
+ * Disables or enables auto flush. By default, data is flushed after
+ * every cronet_bidirectional_stream_write(). If the auto flush is disabled,
+ * the client should explicitly call cronet_bidirectional_stream_flush to flush
+ * the data.
+ */
+CRONET_EXPORT void cronet_bidirectional_stream_disable_auto_flush(
+    cronet_bidirectional_stream* stream,
+    bool disable_auto_flush);
+
+/**
+ * Delays sending request headers until cronet_bidirectional_stream_flush()
+ * is called. This flag is currently only respected when QUIC is negotiated.
+ * When true, QUIC will send request header frame along with data frame(s)
+ * as a single packet when possible.
+ */
+CRONET_EXPORT
+void cronet_bidirectional_stream_delay_request_headers_until_flush(
+    cronet_bidirectional_stream* stream,
+    bool delay_headers_until_flush);
+
+/* Starts the stream by sending request to |url| using |method| and |headers|.
+ * If |end_of_stream| is true, then no data is expected to be written. The
+ * |method| is HTTP verb, with PUT having a special meaning to mark idempotent
+ * request, which could use QUIC 0-RTT.
  */
 CRONET_EXPORT
 int cronet_bidirectional_stream_start(
@@ -158,8 +179,8 @@ int cronet_bidirectional_stream_start(
     const cronet_bidirectional_stream_header_array* headers,
     bool end_of_stream);
 
-/* Read response data into |buffer| of |capacity| length. Must only be called at
- * most once in response to each invocation of the
+/* Reads response data into |buffer| of |capacity| length. Must only be called
+ * at most once in response to each invocation of the
  * on_stream_ready()/on_response_headers_received() and on_read_completed()
  * methods of the cronet_bidirectional_stream_callback.
  * Each call will result in an invocation of the callback's
@@ -172,10 +193,9 @@ int cronet_bidirectional_stream_read(cronet_bidirectional_stream* stream,
                                      char* buffer,
                                      int capacity);
 
-/* Write request data from |buffer| of |buffer_length| length. Must only be
- * called at most once in response to each invocation of the
- * on_stream_ready() and on_write_completed() methods of the
- * cronet_bidirectional_stream_callback.
+/* Writes request data from |buffer| of |buffer_length| length. If auto flush is
+ * disabled, data will be sent only after cronet_bidirectional_stream_flush() is
+ * called.
  * Each call will result in an invocation the callback's on_write_completed()
  * method if data is sent, or its on_failed() method if there's an error.
  * The callback's on_succeeded() method is also invoked if |end_of_stream| is
@@ -187,6 +207,16 @@ int cronet_bidirectional_stream_write(cronet_bidirectional_stream* stream,
                                       int buffer_length,
                                       bool end_of_stream);
 
+/**
+ * Flushes pending writes. This method should not be called before invocation of
+ * on_stream_ready() method of the cronet_bidirectional_stream_callback.
+ * For each previously called cronet_bidirectional_stream_write()
+ * a corresponding on_write_completed() callback will be invoked when the buffer
+ * is sent.
+ */
+CRONET_EXPORT
+void cronet_bidirectional_stream_flush(cronet_bidirectional_stream* stream);
+
 /* Cancels the stream. Can be called at any time after
  * cronet_bidirectional_stream_start(). The on_canceled() method of
  * cronet_bidirectional_stream_callback will be invoked when cancelation
@@ -197,7 +227,7 @@ int cronet_bidirectional_stream_write(cronet_bidirectional_stream* stream,
  * cronet_bidirectional_stream_cancel() has completed.
  */
 CRONET_EXPORT
-int cronet_bidirectional_stream_cancel(cronet_bidirectional_stream* stream);
+void cronet_bidirectional_stream_cancel(cronet_bidirectional_stream* stream);
 
 /* Returns true if the |stream| was successfully started and is now done
  * (succeeded, canceled, or failed).

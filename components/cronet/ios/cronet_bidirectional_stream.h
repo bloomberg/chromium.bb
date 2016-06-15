@@ -6,6 +6,7 @@
 #define COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -54,6 +55,16 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   CronetBidirectionalStream(CronetEnvironment* environment, Delegate* delegate);
   ~CronetBidirectionalStream() override;
 
+  // Disables automatic flushing of each buffer passed to WriteData().
+  void disable_auto_flush(bool disable_auto_flush) {
+    disable_auto_flush_ = disable_auto_flush;
+  }
+
+  // Delays sending request headers until first call to Flush().
+  void delay_headers_until_flush(bool delay_headers_until_flush) {
+    delay_headers_until_flush_ = delay_headers_until_flush;
+  }
+
   // Validates method and headers, initializes and starts the request. If
   // |end_of_stream| is true, then stream is half-closed after sending header
   // frame and no data is expected to be written.
@@ -73,6 +84,9 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   // Writes |count| bytes of data from |buffer|. The |end_of_stream| is
   // passed to remote to indicate end of stream.
   bool WriteData(const char* buffer, int count, bool end_of_stream);
+
+  // Sends buffers passed to WriteData().
+  void Flush();
 
   // Cancels the request. The OnCanceled callback is invoked when request is
   // caneceled, and not other callbacks are invoked afterwards..
@@ -107,13 +121,47 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
     ERROR,
     // Reading and writing are done, and the stream is closed successfully.
     SUCCESS,
-    // Waiting for WriteData() to be called.
-    WAITING_FOR_WRITE,
+    // Waiting for Flush() to be called.
+    WAITING_FOR_FLUSH,
     // Writing to the remote, callback will be invoked when done.
     WRITING,
     // There is no more data to write and stream is half-closed by the local
     // side.
     WRITING_DONE,
+  };
+
+  // Container to hold buffers and sizes of the pending data to be written.
+  class WriteBuffers {
+   public:
+    WriteBuffers();
+    ~WriteBuffers();
+
+    // Clears Write Buffers list.
+    void Clear();
+
+    // Appends |buffer| of |buffer_size| length to the end of buffer list.
+    void AppendBuffer(const scoped_refptr<net::IOBuffer>& buffer,
+                      int buffer_size);
+
+    void MoveTo(WriteBuffers* target);
+
+    // Returns true of Write Buffers list is empty.
+    bool Empty() const;
+
+    const std::vector<scoped_refptr<net::IOBuffer>>& buffers() const {
+      return write_buffer_list;
+    }
+
+    const std::vector<int>& lengths() const { return write_buffer_len_list; }
+
+   private:
+    // Every IOBuffer in |write_buffer_list| points to the memory owned by the
+    // application.
+    std::vector<scoped_refptr<net::IOBuffer>> write_buffer_list;
+    // A list of the length of each IOBuffer in |write_buffer_list|.
+    std::vector<int> write_buffer_len_list;
+
+    DISALLOW_COPY_AND_ASSIGN(WriteBuffers);
   };
 
   // net::BidirectionalStream::Delegate implementations:
@@ -133,6 +181,8 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   void WriteDataOnNetworkThread(scoped_refptr<net::WrappedIOBuffer> read_buffer,
                                 int buffer_size,
                                 bool end_of_stream);
+  void FlushOnNetworkThread();
+  void SendFlushingWriteData();
   void CancelOnNetworkThread();
   void DestroyOnNetworkThread();
 
@@ -147,15 +197,26 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   //                         / <--- WRITING <---  \
   //                         |                    |
   //                         \                    /
-  // NOT_STARTED -> STARTED --> WAITING_FOR_WRITE -> WRITING_DONE -> SUCCESS
+  // NOT_STARTED -> STARTED --> WAITING_FOR_FLUSH -> WRITING_DONE -> SUCCESS
   State write_state_;
 
   bool write_end_of_stream_;
+  bool request_headers_sent_;
+
+  bool disable_auto_flush_;
+  bool delay_headers_until_flush_;
 
   CronetEnvironment* const environment_;
 
   scoped_refptr<net::WrappedIOBuffer> read_buffer_;
-  scoped_refptr<net::WrappedIOBuffer> write_buffer_;
+
+  // Write data that is pending the flush.
+  std::unique_ptr<WriteBuffers> pending_write_data_;
+  // Write data that is flushed, but not sending yet.
+  std::unique_ptr<WriteBuffers> flushing_write_data_;
+  // Write data that is sending.
+  std::unique_ptr<WriteBuffers> sending_write_data_;
+
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
   Delegate* delegate_;
 

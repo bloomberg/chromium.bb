@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/ios/rules.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
@@ -39,8 +40,6 @@ source_set("cronet_sources") {
     "../histogram_manager.h",
     "../url_request_context_config.cc",
     "../url_request_context_config.h",
-    "Cronet.h",
-    "Cronet.mm",
     "cronet_bidirectional_stream.cc",
     "cronet_bidirectional_stream.h",
     "cronet_c_for_grpc.cc",
@@ -54,13 +53,28 @@ source_set("cronet_sources") {
   }
 }
 
-shared_library("cronet_shared") {
+ios_framework_bundle("cronet_framework") {
+  output_name = "Cronet"
+
   deps = [
     ":cronet_sources",
     "//base",
     "//net:net",
   ]
+
+  info_plist = "Info.plist"
+
   libs = [ "UIKit.Framework" ]
+
+  public_headers = [
+    "Cronet.h",
+    "cronet_c_for_grpc.h",
+  ]
+
+  sources = [
+    "Cronet.h",
+    "Cronet.mm",
+  ]
 }
 
 bundle_data("cronet_test_bundle_data") {
@@ -133,7 +147,7 @@ action("generate_license") {
 
 copy("cronet_package_copy") {
   sources = [
-    "$root_out_dir/libcronet_shared.dylib",
+    "$root_out_dir/Cronet.framework",
     "//AUTHORS",
     "//chrome/VERSION",
     "//components/cronet/ios/Cronet.h",
@@ -144,7 +158,7 @@ copy("cronet_package_copy") {
   ]
 
   deps = [
-    ":cronet_shared",
+    ":cronet_framework",
   ]
 }
 
