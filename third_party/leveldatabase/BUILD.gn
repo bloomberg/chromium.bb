@@ -116,6 +116,11 @@ static_library("leveldatabase") {
 
   if (is_win) {
     cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+
+    if (is_official_build) {
+      # Function recursive on all control paths, crbug.com/620018
+      cflags += [ "/wd4717" ]
+    }
   }
 }
 
