@@ -485,6 +485,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Contains the initialization parameters for the video.
   Config config_;
 
+  // Set to true if we are processing a video configuration change.
+  bool processing_config_changed_;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
 
