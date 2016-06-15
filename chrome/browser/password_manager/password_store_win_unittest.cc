@@ -143,10 +143,14 @@ class PasswordStoreWinTest : public testing::Test {
   void TearDown() override {
     if (store_.get())
       store_->ShutdownOnUIThread();
-    wds_->ShutdownOnUIThread();
-    wdbs_->ShutdownDatabase();
-    wds_ = nullptr;
-    wdbs_ = nullptr;
+    if (wds_) {
+      wds_->ShutdownOnUIThread();
+      wds_ = nullptr;
+    }
+    if (wdbs_) {
+      wdbs_->ShutdownDatabase();
+      wdbs_ = nullptr;
+    }
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -268,8 +272,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   base::MessageLoop::current()->Run();
 }
 
-// Crashy.  http://crbug.com/86558
-TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
+TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   store_ = CreatePasswordStore();
   EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
@@ -294,7 +297,10 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   // Release the PSW and the WDS before the query can return.
   store_->ShutdownOnUIThread();
   store_ = nullptr;
+  wds_->ShutdownOnUIThread();
   wds_ = nullptr;
+  wdbs_->ShutdownDatabase();
+  wdbs_ = nullptr;
 
   base::MessageLoop::current()->RunUntilIdle();
 }
