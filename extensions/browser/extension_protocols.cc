@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_verifier.h"
@@ -364,6 +365,14 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // request.
   if (extension_info_map->process_map().Contains(
       request->url().host(), info->GetChildID())) {
+    return true;
+  }
+
+  // PlzNavigate: frame navigations to extensions have already been checked in
+  // the ExtensionNavigationThrottle.
+  if (info->GetChildID() == -1 &&
+      content::IsResourceTypeFrame(info->GetResourceType()) &&
+      content::IsBrowserSideNavigationEnabled()) {
     return true;
   }
 
