@@ -68,6 +68,11 @@ void RequestCoordinator::AddRequestResultCallback(
   scheduler_->Schedule(conditions);
 }
 
+// Called in response to updating a request in the request queue.
+void RequestCoordinator::UpdateRequestCallback(
+    RequestQueue::UpdateRequestResult result) {}
+
+// Called by the request picker when a request has been picked.
 void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
   Scheduler::TriggerCondition conditions;
 
@@ -79,15 +84,28 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
 }
 
 void RequestCoordinator::RequestQueueEmpty() {
-  // TODO(petewil): return to the BackgroundScheduler by calling
-  // ProcessingDoneCallback
+  // Clear the outstanding "safety" task in the scheduler.
+  scheduler_->Unschedule();
+  // Return control to the scheduler when there is no more to do.
+  scheduler_callback_.Run(true);
 }
 
 bool RequestCoordinator::StartProcessing(
     const base::Callback<void(bool)>& callback) {
+  scheduler_callback_ = callback;
   // TODO(petewil): Check existing conditions (should be passed down from
   // BackgroundTask)
 
+  TryNextRequest();
+
+  // TODO(petewil): Should return true if the caller should expect a
+  // callback.  Return false if there is already a request running.
+  // Probably best to do this when I prevent multiple instances from
+  // running at the same time.
+  return true;
+}
+
+void RequestCoordinator::TryNextRequest() {
   // Choose a request to process that meets the available conditions.
   // This is an async call, and returns right away.
   picker_->ChooseNextRequest(
@@ -95,7 +113,6 @@ bool RequestCoordinator::StartProcessing(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestQueueEmpty,
                  weak_ptr_factory_.GetWeakPtr()));
-  return false;
 }
 
 void RequestCoordinator::StopProcessing() {
@@ -124,10 +141,19 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << __FUNCTION__;
   last_offlining_status_ = status;
 
-  // TODO(petewil): Check time budget.  Start a request if we have time, return
-  // to the scheduler if we are out of time.
-
   // TODO(petewil): If the request succeeded, remove it from the Queue.
+  if (status == Offliner::RequestStatus::SAVED) {
+    queue_->RemoveRequest(request.request_id(),
+                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                                     weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // TODO(petewil): Check time budget. Return to the scheduler if we are out.
+
+
+  // Start a request if we have time.
+  TryNextRequest();
+
 }
 
 }  // namespace offline_pages

@@ -27,6 +27,7 @@ namespace {
 // put test constants here
 const GURL kUrl("http://universe.com/everything");
 const ClientId kClientId("bookmark", "42");
+const int kRequestId(1);
 }  // namespace
 
 class SchedulerStub : public Scheduler {
@@ -94,9 +95,16 @@ class RequestCoordinatorTest
   void EmptyCallbackFunction(bool result) {
   }
 
+  // Callback for Add requests
+  void AddRequestDone(RequestQueue::AddRequestResult result,
+                      const SavePageRequest& request);
+
   // Callback for getting requests.
   void GetRequestsDone(RequestQueue::GetRequestsResult result,
                        const std::vector<SavePageRequest>& requests);
+
+  void SendOfflinerDoneCallback(const SavePageRequest& request,
+                                Offliner::RequestStatus status);
 
   RequestQueue::GetRequestsResult last_get_requests_result() const {
     return last_get_requests_result_;
@@ -144,12 +152,24 @@ void RequestCoordinatorTest::GetRequestsDone(
   last_requests_ = requests;
 }
 
+
+void RequestCoordinatorTest::AddRequestDone(
+    RequestQueue::AddRequestResult result,
+    const SavePageRequest& request) {}
+
+void RequestCoordinatorTest::SendOfflinerDoneCallback(
+    const SavePageRequest& request, Offliner::RequestStatus status) {
+  // Using the fact that the test class is a friend, call to the callback
+  coordinator_->OfflinerDoneCallback(request, status);
+}
+
+
 TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
   base::Callback<void(bool)> callback =
       base::Bind(
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
-  EXPECT_FALSE(coordinator()->StartProcessing(callback));
+  EXPECT_TRUE(coordinator()->StartProcessing(callback));
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
@@ -172,6 +192,41 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
       coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDone) {
+
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(
+      kRequestId, kUrl, kClientId, base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // We need to give a callback to the request.
+  base::Callback<void(bool)> callback =
+      base::Bind(
+          &RequestCoordinatorTest::EmptyCallbackFunction,
+          base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Call the OfflinerDoneCallback to simulate the page being completed, wait
+  // for callbacks.
+  SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
+  PumpLoop();
+
+  // Verify the request gets removed from the queue, and wait for callbacks.
+  coordinator()->queue()->GetRequests(
+      base::Bind(&RequestCoordinatorTest::GetRequestsDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // We should not find any requests in the queue anymore.
+  // RequestPicker should *not* have tried to start an additional job,
+  // because the request queue is empty now.
+  EXPECT_EQ(0UL, last_requests().size());
 }
 
 }  // namespace offline_pages

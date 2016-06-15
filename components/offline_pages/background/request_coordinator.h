@@ -55,6 +55,11 @@ class RequestCoordinator : public KeyedService {
   // is stopped or complete.
   void StopProcessing();
 
+  // A way for tests to set the callback in use when an operation is over.
+  void SetProcessingCallbackForTest(const base::Callback<void(bool)> callback) {
+    scheduler_callback_ = callback;
+  }
+
   // Returns the request queue used for requests.  Coordinator keeps ownership.
   RequestQueue* queue() { return queue_.get(); }
 
@@ -70,6 +75,8 @@ class RequestCoordinator : public KeyedService {
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
 
+  void UpdateRequestCallback(RequestQueue::UpdateRequestResult result);
+
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);
 
@@ -78,8 +85,14 @@ class RequestCoordinator : public KeyedService {
 
   void SendRequestToOffliner(const SavePageRequest& request);
 
+  // Called by the offliner when an offlining request is completed. (and by
+  // tests).
   void OfflinerDoneCallback(const SavePageRequest& request,
                             Offliner::RequestStatus status);
+
+  void TryNextRequest();
+
+  friend class RequestCoordinatorTest;
 
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -93,6 +106,8 @@ class RequestCoordinator : public KeyedService {
   Offliner::RequestStatus last_offlining_status_;
   // Class to choose which request to schedule next
   std::unique_ptr<RequestPicker> picker_;
+  // Calling this returns to the scheduler across the JNI bridge.
+  base::Callback<void(bool)> scheduler_callback_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
