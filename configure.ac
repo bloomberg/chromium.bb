@@ -157,6 +157,7 @@ AC_CONFIG_FILES([
         tests/tables/resolve_table/dir_2/Makefile
 	tests/tablesWithMetadata/Makefile
         tests/doctests/Makefile
+        tests/ueb_test_data/Makefile
         tests/yaml/Makefile
 	python/Makefile
 	python/louis/Makefile
