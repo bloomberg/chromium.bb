@@ -152,6 +152,22 @@ class NET_EXPORT ParsedCertificate
     return *name_constraints_;
   }
 
+  // Returns true if the certificate has an AuthorityInfoAccess extension.
+  bool has_authority_info_access() const { return has_authority_info_access_; }
+
+  // Returns the ParsedExtension struct for the AuthorityInfoAccess extension.
+  const ParsedExtension& authority_info_access_extension() const {
+    return authority_info_access_extension_;
+  }
+
+  // Returns any caIssuers URIs from the AuthorityInfoAccess extension.
+  const std::vector<base::StringPiece>& ca_issuers_uris() const {
+    return ca_issuers_uris_;
+  }
+
+  // Returns any OCSP URIs from the AuthorityInfoAccess extension.
+  const std::vector<base::StringPiece>& ocsp_uris() const { return ocsp_uris_; }
+
   // Returns a map of unhandled extensions (excludes the ones above).
   const ExtensionsMap& unparsed_extensions() const {
     return unparsed_extensions_;
@@ -201,6 +217,15 @@ class NET_EXPORT ParsedCertificate
 
   // NameConstraints extension.
   std::unique_ptr<NameConstraints> name_constraints_;
+
+  // AuthorityInfoAccess extension.
+  bool has_authority_info_access_ = false;
+  ParsedExtension authority_info_access_extension_;
+  // CaIssuers and Ocsp URIs parsed from the AuthorityInfoAccess extension. Note
+  // that the AuthorityInfoAccess may have contained other AccessDescriptions
+  // which are not represented here.
+  std::vector<base::StringPiece> ca_issuers_uris_;
+  std::vector<base::StringPiece> ocsp_uris_;
 
   // The remaining extensions (excludes the standard ones above).
   ExtensionsMap unparsed_extensions_;

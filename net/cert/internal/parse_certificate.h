@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
@@ -312,6 +313,27 @@ NET_EXPORT der::Input PolicyConstraintsOid();
 // In dotted notation: 2.5.29.37
 NET_EXPORT der::Input ExtKeyUsageOid();
 
+// From RFC 5280:
+//
+//     id-pe-authorityInfoAccess OBJECT IDENTIFIER ::= { id-pe 1 }
+//
+// In dotted notation: 1.3.6.1.5.5.7.1.1
+NET_EXPORT der::Input AuthorityInfoAccessOid();
+
+// From RFC 5280:
+//
+//     id-ad-caIssuers OBJECT IDENTIFIER ::= { id-ad 2 }
+//
+// In dotted notation: 1.3.6.1.5.5.7.48.2
+NET_EXPORT der::Input AdCaIssuersOid();
+
+// From RFC 5280:
+//
+//     id-ad-ocsp OBJECT IDENTIFIER ::= { id-ad 1 }
+//
+// In dotted notation: 1.3.6.1.5.5.7.48.1
+NET_EXPORT der::Input AdOcspOid();
+
 // Parses the Extensions sequence as defined by RFC 5280. Extensions are added
 // to the map |extensions| keyed by the OID. Parsing guarantees that each OID
 // is unique. Note that certificate verification must consume each extension
@@ -390,6 +412,27 @@ enum KeyUsageBit {
 //     key_usage->AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE);
 NET_EXPORT bool ParseKeyUsage(const der::Input& key_usage_tlv,
                               der::BitString* key_usage) WARN_UNUSED_RESULT;
+
+// Parses the Authority Information Access extension defined by RFC 5280.
+// Returns true on success, and |out_ca_issuers_uris| and |out_ocsp_uris| will
+// alias data in |authority_info_access_tlv|. On failure returns false, and
+// |out_ca_issuers_uris| and |out_ocsp_uris| may have been partially filled.
+//
+// |out_ca_issuers_uris| is filled with the accessLocations of type
+// uniformResourceIdentifier for the accessMethod id-ad-caIssuers.
+// |out_ocsp_uris| is filled with the accessLocations of type
+// uniformResourceIdentifier for the accessMethod id-ad-ocsp.
+//
+// The values in |out_ca_issuers_uris| and |out_ocsp_uris| are checked to be
+// IA5String (ASCII strings), but no other validation is performed on them.
+//
+// accessMethods other than id-ad-caIssuers and id-ad-ocsp are silently ignored.
+// accessLocation types other than uniformResourceIdentifier are silently
+// ignored.
+NET_EXPORT bool ParseAuthorityInfoAccess(
+    const der::Input& authority_info_access_tlv,
+    std::vector<base::StringPiece>* out_ca_issuers_uris,
+    std::vector<base::StringPiece>* out_ocsp_uris) WARN_UNUSED_RESULT;
 
 }  // namespace net
 

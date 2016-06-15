@@ -78,6 +78,9 @@ class Certificate(object):
     self.name = name
     self.path_id = GetUniquePathId(name)
 
+    # If specified, use the key from this path instead of generating a new one.
+    self.key_path = None
+
     # The issuer is also a Certificate object. Passing |None| means it is a
     # self-signed certificate.
     self.issuer = issuer
@@ -132,6 +135,7 @@ class Certificate(object):
 
   def generate_rsa_key(self, size_bits):
     """Generates an RSA private key for the certificate."""
+    assert self.key_path is None
     subprocess.check_call(
         ['openssl', 'genrsa', '-out', self.get_key_path(), str(size_bits)])
 
@@ -139,6 +143,7 @@ class Certificate(object):
   def generate_ec_key(self, named_curve):
     """Generates an EC private key for the certificate. |named_curve| can be
     something like secp384r1"""
+    assert self.key_path is None
     subprocess.check_call(
         ['openssl', 'ecparam', '-out', self.get_key_path(),
          '-name', named_curve, '-genkey'])
@@ -166,7 +171,16 @@ class Certificate(object):
     return os.path.join(g_out_dir, '%s%s' % (self.path_id, suffix))
 
 
+  def set_key_path(self, path):
+    """Uses the key from the given path instead of generating a new one."""
+    self.key_path = path
+    section = self.config.get_section('root_ca')
+    section.set_property('private_key', self.get_key_path())
+
+
   def get_key_path(self):
+    if self.key_path is not None:
+      return self.key_path
     return self.get_path('.key')
 
 
@@ -351,7 +365,8 @@ def data_to_pem(block_header, block_data):
           base64.b64encode(block_data), block_header)
 
 
-def write_test_file(description, chain, trusted_certs, utc_time, verify_result):
+def write_test_file(description, chain, trusted_certs, utc_time, verify_result,
+                    out_pem=None):
   """Writes a test file that contains all the inputs necessary to run a
   verification on a certificate chain"""
 
@@ -374,7 +389,7 @@ def write_test_file(description, chain, trusted_certs, utc_time, verify_result):
   verify_result_string = 'SUCCESS' if verify_result else 'FAIL'
   test_data += '\n' + data_to_pem('VERIFY_RESULT', verify_result_string)
 
-  write_string_to_file(test_data, g_out_pem)
+  write_string_to_file(test_data, out_pem if out_pem else g_out_pem)
 
 
 def write_string_to_file(data, path):

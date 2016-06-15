@@ -53,6 +53,8 @@ void ParseCertificateForFuzzer(const der::Input& in) {
     der::BitString key_usage;
     std::vector<der::Input> policies;
     std::vector<der::Input> eku_oids;
+    std::vector<base::StringPiece> ca_issuers_uris;
+    std::vector<base::StringPiece> ocsp_uris;
     if (FindExtension(BasicConstraintsOid(), &extensions, &extension))
       ignore_result(ParseBasicConstraints(extension.value, &basic_constraints));
     if (FindExtension(KeyUsageOid(), &extensions, &extension))
@@ -63,6 +65,9 @@ void ParseCertificateForFuzzer(const der::Input& in) {
       ParseCertificatePoliciesExtension(extension.value, &policies);
     if (FindExtension(ExtKeyUsageOid(), &extensions, &extension))
       ParseEKUExtension(extension.value, &eku_oids);
+    if (FindExtension(AuthorityInfoAccessOid(), &extensions, &extension))
+      ignore_result(ParseAuthorityInfoAccess(extension.value, &ca_issuers_uris,
+                                             &ocsp_uris));
   }
 }
 

@@ -126,6 +126,17 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateFromCertificateData(
         return nullptr;
     }
 
+    // Authority information access.
+    if (ConsumeExtension(AuthorityInfoAccessOid(),
+                         &result->unparsed_extensions_,
+                         &result->authority_info_access_extension_)) {
+      result->has_authority_info_access_ = true;
+      if (!ParseAuthorityInfoAccess(
+              result->authority_info_access_extension_.value,
+              &result->ca_issuers_uris_, &result->ocsp_uris_))
+        return nullptr;
+    }
+
     // NOTE: if additional extensions are consumed here, the verification code
     // must be updated to process those extensions, since the
     // VerifyNoUnconsumedCriticalExtensions uses the unparsed_extensions_
