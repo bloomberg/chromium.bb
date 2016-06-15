@@ -14,7 +14,7 @@
     DependentLifetime,
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState] Promise<PaymentResponse> show();
-    [RaisesException] void abort();
+    [CallWith=ScriptState] Promise<void> abort();
 
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;

@@ -51,7 +51,7 @@ public:
     };
 
     ScriptPromise show(ScriptState*);
-    void abort(ExceptionState&);
+    ScriptPromise abort(ScriptState*);
 
     PaymentAddress* getShippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
@@ -87,6 +87,7 @@ private:
     void OnPaymentResponse(mojom::blink::PaymentResponsePtr) override;
     void OnError() override;
     void OnComplete() override;
+    void OnAbort(bool abortedSuccessfully) override;
 
     // Clears the promise resolvers and closes the Mojo connection.
     void clearResolversAndCloseMojoConnection();
@@ -98,6 +99,7 @@ private:
     String m_shippingOption;
     Member<ScriptPromiseResolver> m_showResolver;
     Member<ScriptPromiseResolver> m_completeResolver;
+    Member<ScriptPromiseResolver> m_abortResolver;
     mojom::blink::PaymentRequestPtr m_paymentProvider;
     mojo::Binding<mojom::blink::PaymentRequestClient> m_clientBinding;
 };

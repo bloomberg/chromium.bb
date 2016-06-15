@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
+import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -35,7 +36,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @CommandLineFlags.Add({ChromeSwitches.EXPERIMENTAL_WEB_PLAFTORM_FEATURES})
 abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
-        implements PaymentRequestObserverForTest, CardUnmaskObserverForTest {
+        implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
+        CardUnmaskObserverForTest {
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToClose;
@@ -43,6 +45,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     protected final CallbackHelper mDismissed;
+    protected final CallbackHelper mUnableToAbort;
     private final AtomicReference<ContentViewCore> mViewCoreRef;
     private final AtomicReference<WebContents> mWebContentsRef;
     private final String mTestFilePath;
@@ -57,6 +60,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mDismissed = new CallbackHelper();
+        mUnableToAbort = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = UrlUtils.getIsolatedTestFilePath(
@@ -79,15 +83,20 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
                 mViewCoreRef.set(getActivity().getCurrentContentViewCore());
                 mWebContentsRef.set(mViewCoreRef.get().getWebContents());
                 PaymentRequestUI.setObserverForTest(PaymentRequestTestBase.this);
+                PaymentRequestImpl.setObserverForTest(PaymentRequestTestBase.this);
                 CardUnmaskPrompt.setObserverForTest(PaymentRequestTestBase.this);
             }
         });
         assertWaitForPageScaleFactorMatch(1);
-
-        int callCount = helper.getCallCount();
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "buy");
-        helper.waitForCallback(callCount);
+        clickNodeAndWait("buy", helper);
         mUI = helper.getTarget();
+    }
+
+    protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        int callCount = helper.getCallCount();
+        DOMUtils.clickNode(this, mViewCoreRef.get(), nodeId);
+        helper.waitForCallback(callCount);
     }
 
     protected void clickAndWait(final int resourceId, CallbackHelper helper)
@@ -191,11 +200,16 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mResultReady.notifyCalled(ui);
     }
 
-
     @Override
     public void onPaymentRequestDismiss() {
         ThreadUtils.assertOnUiThread();
         mDismissed.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestServiceUnableToAbort() {
+        ThreadUtils.assertOnUiThread();
+        mUnableToAbort.notifyCalled();
     }
 
     @Override

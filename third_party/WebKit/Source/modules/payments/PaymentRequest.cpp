@@ -295,14 +295,17 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
     return m_showResolver->promise();
 }
 
-void PaymentRequest::abort(ExceptionState& exceptionState)
+ScriptPromise PaymentRequest::abort(ScriptState* scriptState)
 {
-    if (!m_showResolver) {
-        exceptionState.throwDOMException(InvalidStateError, "Never called show(), so nothing to abort");
-        return;
-    }
+    if (m_abortResolver)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Cannot abort() again until the previous abort() has resolved or rejected"));
 
+    if (!m_showResolver)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Never called show(), so nothing to abort"));
+
+    m_abortResolver = ScriptPromiseResolver::create(scriptState);
     m_paymentProvider->Abort();
+    return m_abortResolver->promise();
 }
 
 const AtomicString& PaymentRequest::interfaceName() const
@@ -370,6 +373,7 @@ DEFINE_TRACE(PaymentRequest)
     visitor->trace(m_shippingAddress);
     visitor->trace(m_showResolver);
     visitor->trace(m_completeResolver);
+    visitor->trace(m_abortResolver);
     EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
@@ -490,6 +494,8 @@ void PaymentRequest::OnError()
         m_completeResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
     if (m_showResolver)
         m_showResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
+    if (m_abortResolver)
+        m_abortResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
     clearResolversAndCloseMojoConnection();
 }
 
@@ -500,10 +506,27 @@ void PaymentRequest::OnComplete()
     clearResolversAndCloseMojoConnection();
 }
 
+void PaymentRequest::OnAbort(bool abortedSuccessfully)
+{
+    DCHECK(m_abortResolver);
+    DCHECK(m_showResolver);
+
+    if (!abortedSuccessfully) {
+        m_abortResolver->reject(DOMException::create(InvalidStateError));
+        m_abortResolver.clear();
+        return;
+    }
+
+    m_showResolver->reject(DOMException::create(AbortError));
+    m_abortResolver->resolve();
+    clearResolversAndCloseMojoConnection();
+}
+
 void PaymentRequest::clearResolversAndCloseMojoConnection()
 {
     m_completeResolver.clear();
     m_showResolver.clear();
+    m_abortResolver.clear();
     if (m_clientBinding.is_bound())
         m_clientBinding.Close();
     m_paymentProvider.reset();

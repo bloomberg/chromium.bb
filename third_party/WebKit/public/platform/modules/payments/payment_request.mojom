@@ -68,6 +68,7 @@ interface PaymentRequestClient {
   OnPaymentResponse(PaymentResponse response);
   OnError();
   OnComplete();
+  OnAbort(bool aborted_successfully);
 };
 
 struct PaymentItem {

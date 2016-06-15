@@ -178,7 +178,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private final Context mContext;
     private final Client mClient;
-    private final PaymentRequestObserverForTest mObserverForTest;
     private final boolean mRequestShipping;
 
     private final Dialog mDialog;
@@ -230,19 +229,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
      * @return The UI for PaymentRequest.
      */
-    public static PaymentRequestUI show(Activity activity, Client client, boolean requestShipping,
-            String title, String origin) {
-        PaymentRequestUI ui = new PaymentRequestUI(activity, client, requestShipping, title, origin,
-                sObserverForTest);
-        sObserverForTest = null;
-        return ui;
-    }
-
-    private PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            String title, String origin, PaymentRequestObserverForTest observerForTest) {
+    public PaymentRequestUI(Activity activity, Client client, boolean requestShipping, String title,
+            String origin) {
         mContext = activity;
         mClient = client;
-        mObserverForTest = observerForTest;
         mRequestShipping = requestShipping;
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
@@ -420,7 +410,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 if (callback != null) callback.run();
             }
         });
-        if (mObserverForTest != null) mObserverForTest.onPaymentRequestResultReady(this);
+        if (sObserverForTest != null) sObserverForTest.onPaymentRequestResultReady(this);
     }
 
     /**
@@ -737,7 +727,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
-        if (mObserverForTest != null) mObserverForTest.onPaymentRequestDismiss();
+        if (sObserverForTest != null) sObserverForTest.onPaymentRequestDismiss();
         if (!mIsClientClosing) mClient.onDismiss();
     }
 
@@ -934,20 +924,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     private void notifyReadyForInput() {
-        if (mObserverForTest != null && isAcceptingUserInput()) {
-            mObserverForTest.onPaymentRequestReadyForInput(this);
+        if (sObserverForTest != null && isAcceptingUserInput()) {
+            sObserverForTest.onPaymentRequestReadyForInput(this);
         }
     }
 
     private void notifyReadyToPay() {
-        if (mObserverForTest != null && isAcceptingUserInput() && mPayButton.isEnabled()) {
-            mObserverForTest.onPaymentRequestReadyToPay(this);
+        if (sObserverForTest != null && isAcceptingUserInput() && mPayButton.isEnabled()) {
+            sObserverForTest.onPaymentRequestReadyToPay(this);
         }
     }
 
     private void notifyReadyToClose() {
-        if (mObserverForTest != null && isAcceptingCloseButton()) {
-            mObserverForTest.onPaymentRequestReadyToClose(this);
+        if (sObserverForTest != null && isAcceptingCloseButton()) {
+            sObserverForTest.onPaymentRequestReadyToClose(this);
         }
     }
 }

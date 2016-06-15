@@ -38,7 +38,7 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
                 }
             });
         } else {
-            mCardUnmaskPrompt = CardUnmaskPrompt.create(activity, this, title, instructions,
+            mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions,
                     confirmButtonLabel, ResourceId.mapToDrawableId(iconId),
                     shouldRequestExpirationDate, canStoreLocally, defaultToStoringLocally);
         }

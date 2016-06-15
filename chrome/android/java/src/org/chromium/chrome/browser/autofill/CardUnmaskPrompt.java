@@ -48,7 +48,6 @@ public class CardUnmaskPrompt
     private static CardUnmaskObserverForTest sObserverForTest;
 
     private final CardUnmaskPromptDelegate mDelegate;
-    private final CardUnmaskObserverForTest mObserverForTest;
     private final AlertDialog mDialog;
     private boolean mShouldRequestExpirationDate;
 
@@ -120,23 +119,11 @@ public class CardUnmaskPrompt
         void onCardUnmaskPromptReadyToUnmask(CardUnmaskPrompt prompt);
     }
 
-    public static CardUnmaskPrompt create(Context context, CardUnmaskPromptDelegate delegate,
-            String title, String instructions, String confirmButtonLabel, int drawableId,
-            boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally) {
-        CardUnmaskPrompt prompt = new CardUnmaskPrompt(context, delegate, title, instructions,
-                confirmButtonLabel, drawableId, shouldRequestExpirationDate, canStoreLocally,
-                defaultToStoringLocally, sObserverForTest);
-        sObserverForTest = null;
-        return prompt;
-    }
-
-    private CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
+    public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, CardUnmaskObserverForTest observerForTest) {
+            boolean defaultToStoringLocally) {
         mDelegate = delegate;
-        mObserverForTest = observerForTest;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
@@ -284,8 +271,8 @@ public class CardUnmaskPrompt
     private void validate() {
         Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.setEnabled(areInputsValid());
-        if (positiveButton.isEnabled() && mObserverForTest != null) {
-            mObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
+        if (positiveButton.isEnabled() && sObserverForTest != null) {
+            sObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
         }
     }
 
@@ -379,8 +366,8 @@ public class CardUnmaskPrompt
         View view = mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput;
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
-        if (mObserverForTest != null) {
-            mObserverForTest.onCardUnmaskPromptReadyForInput(this);
+        if (sObserverForTest != null) {
+            sObserverForTest.onCardUnmaskPromptReadyForInput(this);
         }
     }
 

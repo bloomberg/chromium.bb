@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -58,11 +59,23 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         PaymentApp.InstrumentsCallback, PaymentInstrument.DetailsCallback {
 
     /**
+     * A test-only observer for the PaymentRequest service implementation.
+     */
+    public interface PaymentRequestServiceObserverForTest {
+        /**
+         * Called when an abort request was denied.
+         */
+        void onPaymentRequestServiceUnableToAbort();
+    }
+
+    /**
      * The size for the favicon in density-independent pixels.
      */
     private static final int FAVICON_SIZE_DP = 24;
 
     private static final String TAG = "cr_PaymentRequest";
+
+    private static PaymentRequestServiceObserverForTest sObserverForTest;
 
     private final Handler mHandler = new Handler();
 
@@ -113,9 +126,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private Pattern mRegionCodePattern;
     private boolean mMerchantNeedsShippingAddress;
+    private boolean mPaymentAppRunning;
 
     /**
-     * Builds the dialog.
+     * Builds the PaymentRequest service implementation.
      *
      * @param webContents The web contents that have invoked the PaymentRequest API.
      */
@@ -241,7 +255,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS);
         }
 
-        mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
+        mUI = new PaymentRequestUI(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
     }
@@ -557,6 +571,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
+        mPaymentAppRunning = true;
         instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
                 mMethodData.get(instrument.getMethodName()), this);
     }
@@ -577,8 +592,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void abort() {
-        closeClient();
-        closeUI(false);
+        mClient.onAbort(!mPaymentAppRunning);
+        if (mPaymentAppRunning) {
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
+        } else {
+            closeClient();
+            closeUI(false);
+        }
     }
 
     /**
@@ -704,5 +724,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void closeClient() {
         if (mClient != null) mClient.close();
         mClient = null;
+    }
+
+    @VisibleForTesting
+    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
+        sObserverForTest = observerForTest;
     }
 }

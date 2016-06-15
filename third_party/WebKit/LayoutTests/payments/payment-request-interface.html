@@ -181,6 +181,10 @@ test(function() {
     });
 }, 'Absence of total should throw TypeError.');
 
+promise_test(function(t) {
+    return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
+}, 'abort() without show() should reject with error');
+
 generate_tests(assert_throws, [
     ['PaymentRequest constructor should throw for incorrect parameter types.', null, function() {
         new PaymentRequest('', '', '')
@@ -202,9 +206,6 @@ generate_tests(assert_throws, [
     }],
     ['Null shipping options should throw', new TypeError(), function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': null});
-    }],
-    ['Aborting before showing should throw.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort()
     }],
 
     // Payment method specific data should be a JSON-serializable object.
