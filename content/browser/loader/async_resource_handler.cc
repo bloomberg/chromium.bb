@@ -23,7 +23,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/resource_context_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/view_messages.h"

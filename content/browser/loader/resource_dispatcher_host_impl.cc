@@ -61,7 +61,6 @@
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
@@ -71,7 +70,6 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/appcache_interfaces.h"
 #include "content/common/navigation_params.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
@@ -82,8 +80,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -637,23 +633,10 @@ void ResourceDispatcherHostImpl::SetAllowCrossOriginAuthPrompt(bool value) {
   allow_cross_origin_auth_prompt_ = value;
 }
 
-void ResourceDispatcherHostImpl::AddResourceContext(ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  active_resource_contexts_.insert(context);
-}
-
-void ResourceDispatcherHostImpl::RemoveResourceContext(
-    ResourceContext* context) {
-  CHECK(ContainsKey(active_resource_contexts_, context));
-  active_resource_contexts_.erase(context);
-}
-
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
     ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context);
-
-  CHECK(ContainsKey(active_resource_contexts_, context));
 
   // Note that request cancellation has side effects. Therefore, we gather all
   // the requests to cancel first, and then we start cancelling. We assert at
@@ -725,21 +708,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
     async_revalidation_manager_->CancelAsyncRevalidationsForResourceContext(
         context);
   }
-
-  // Validate that no more requests for this context were added.
-  for (const auto& loader : pending_loaders_) {
-    // http://crbug.com/90971
-    CHECK_NE(loader.second->GetRequestInfo()->GetContext(), context);
-  }
-
-  for (const auto& blocked_loaders : blocked_loaders_map_) {
-    BlockedLoadersList* loaders = blocked_loaders.second.get();
-    if (!loaders->empty()) {
-      ResourceRequestInfoImpl* info = loaders->front()->GetRequestInfo();
-      // http://crbug.com/90971
-      CHECK_NE(info->GetContext(), context);
-    }
-  }
 }
 
 DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
@@ -755,13 +723,6 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   const GURL& url = request->original_url();
-
-  // http://crbug.com/90971
-  char url_buf[128];
-  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-  CHECK(ContainsKey(active_resource_contexts_, context));
-
   SetReferrerForRequest(request.get(), referrer);
 
   // We treat a download as a main frame load, and thus update the policy URL on
@@ -1427,8 +1388,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   net::URLRequestContext* request_context = NULL;
   filter_->GetContexts(request_data.resource_type, request_data.origin_pid,
                        &resource_context, &request_context);
-  // http://crbug.com/90971
-  CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   // Parse the headers before calling ShouldServiceRequest, so that they are
   // available to be validated.
@@ -1917,12 +1876,6 @@ void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
   if (is_shutdown_)
     return;
 
-  // http://crbug.com/90971
-  char url_buf[128];
-  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-  CHECK(ContainsKey(active_resource_contexts_, context));
-
   request_id_--;
 
   const net::URLRequestContext* request_context = context->GetRequestContext();
@@ -2206,14 +2159,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     loader->NotifyRequestFailed(false, net::ERR_ABORTED);
     return;
   }
-
-  // Save the URL on the stack to help catch URLRequests which outlive their
-  // URLRequestContexts. See https://crbug.com/90971
-  char url_buf[128];
-  base::strlcpy(
-      url_buf, info.common_params.url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-  CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   const net::URLRequestContext* request_context =
       resource_context->GetRequestContext();

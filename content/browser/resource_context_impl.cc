@@ -32,21 +32,11 @@ const char kURLDataManagerBackendKeyName[] = "url_data_manager_backend";
 
 ResourceContext::ResourceContext()
     : media_device_id_salt_(CreateRandomMediaDeviceIDSalt()) {
-  ResourceDispatcherHostImpl* rdhi = ResourceDispatcherHostImpl::Get();
-  if (rdhi) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::AddResourceContext,
-                   base::Unretained(rdhi), this));
-  }
 }
 
 ResourceContext::~ResourceContext() {
-  ResourceDispatcherHostImpl* rdhi = ResourceDispatcherHostImpl::Get();
-  if (rdhi) {
-    rdhi->CancelRequestsForContext(this);
-    rdhi->RemoveResourceContext(this);
-  }
+  if (ResourceDispatcherHostImpl::Get())
+    ResourceDispatcherHostImpl::Get()->CancelRequestsForContext(this);
 }
 
 std::string ResourceContext::GetMediaDeviceIDSalt() {

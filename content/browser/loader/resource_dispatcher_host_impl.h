@@ -16,7 +16,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -33,9 +32,6 @@
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/common/resource_request_body.h"
-#include "content/public/browser/child_process_data.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -134,12 +130,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
   void Shutdown();
-
-  // Notify the ResourceDispatcherHostImpl of a new resource context.
-  void AddResourceContext(ResourceContext* context);
-
-  // Notify the ResourceDispatcherHostImpl of a resource context destruction.
-  void RemoveResourceContext(ResourceContext* context);
 
   // Force cancels any pending requests for the given |context|. This is
   // necessary to ensure that before |context| goes away, all requests
@@ -268,8 +258,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.
-  // |id| should be |content::DownloadItem::kInvalidId| to request automatic
-  // assignment. This is marked virtual so it can be overriden in testing.
+  // This is marked virtual so it can be overriden in testing.
   virtual std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
@@ -648,10 +637,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // AsyncRevalidationManager is non-NULL if and only if
   // stale-while-revalidate is enabled.
   std::unique_ptr<AsyncRevalidationManager> async_revalidation_manager_;
-
-  // http://crbug.com/90971 - Assists in tracking down use-after-frees on
-  // shutdown.
-  std::set<const ResourceContext*> active_resource_contexts_;
 
   typedef std::map<GlobalRequestID,
                    base::ObserverList<ResourceMessageDelegate>*> DelegateMap;
