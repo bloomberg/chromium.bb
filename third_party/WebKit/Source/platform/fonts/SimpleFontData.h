@@ -111,7 +111,7 @@ public:
 
     Glyph glyphForCharacter(UChar32) const;
 
-    bool isCustomFont() const override { return m_customFontData; }
+    bool isCustomFont() const override { return m_customFontData.get(); }
     bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
     bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
     bool isSegmented() const override;

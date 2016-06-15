@@ -20,7 +20,7 @@ PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(const FontDescrip
 {
     // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
     RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(fontDescription, m_fontName, true);
-    m_histograms.record(fontData);
+    m_histograms.record(fontData.get());
     return fontData.release();
 }
 

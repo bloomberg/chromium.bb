@@ -736,7 +736,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
             m_imageBuffer->notifySurfaceInvalid();
         CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Accelerated2DCanvasGPUContextLost);
     }
-    return m_surface;
+    return m_surface.get();
 }
 
 bool Canvas2DLayerBridge::restoreSurface()
@@ -771,7 +771,7 @@ bool Canvas2DLayerBridge::restoreSurface()
     if (m_imageBuffer)
         m_imageBuffer->updateGPUMemoryUsage();
 
-    return m_surface;
+    return m_surface.get();
 }
 
 bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)

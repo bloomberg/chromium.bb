@@ -65,7 +65,7 @@ public:
                 return false;
             *wordResult = shapeWord(m_textRun, m_font);
             m_startIndex = 1;
-            return *wordResult;
+            return wordResult->get();
         }
 
         return nextWord(wordResult);
@@ -177,7 +177,7 @@ private:
             *result = shapeWord(subRun, m_font);
         }
         m_startIndex = endIndex;
-        return *result;
+        return result->get();
     }
 
     unsigned endIndexUntil(UChar ch)

@@ -31,7 +31,7 @@ void DrawingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, W
 
 bool DrawingDisplayItem::drawsContent() const
 {
-    return m_picture;
+    return m_picture.get();
 }
 
 void DrawingDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyzer) const
