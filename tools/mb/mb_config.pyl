@@ -810,8 +810,8 @@
       'mac_chromium_variable_chrome': 'findit',
       'mac_chromium_variable_gn': 'findit',
       'mac_chromium_variable_layout': 'findit',
-      'mac_nacl_sdk': 'nacl_annotator',
-      'mac_nacl_sdk_build': 'nacl_annotator',
+      'mac_nacl_sdk': 'gyp_release_bot',
+      'mac_nacl_sdk_build': 'gyp_release_bot',
       'mac_optional_gpu_tests_rel':
         'swarming_gpu_fyi_tests_gyp_release_trybot',
       'mac_upload_clang': 'gn_release_bot',
@@ -891,8 +891,8 @@
       'win_clang_rel': 'swarming_gyp_clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
       'win_clang_x64_rel': 'swarming_gyp_clang_official_release_trybot_x64',
-      'win_nacl_sdk': 'nacl_annotator',
-      'win_nacl_sdk_build': 'nacl_annotator',
+      'win_nacl_sdk': 'gyp_release_bot_minimal_symbols_x86',
+      'win_nacl_sdk_build': 'gyp_release_bot_minimal_symbols_x86',
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'win_pgo': 'gyp_official_winpgo',
@@ -1407,10 +1407,6 @@
     'mac_views_browser_gyp_release_trybot': [
       'mac_views_browser', 'gyp', 'release_trybot',
     ],
-
-    # This is used to indicate that the bot runs the nacl annotator-based
-    # configs and switching them is out of scope for MB.
-    'nacl_annotator': [ 'error' ],
 
     # This is used for tracking purposes; any bot that uses this config
     # should never actually run MB.
