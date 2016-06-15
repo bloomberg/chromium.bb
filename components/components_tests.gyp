@@ -18,6 +18,7 @@
     'autofill_unittest_sources': [
       'autofill/content/browser/content_autofill_driver_unittest.cc',
       'autofill/content/browser/payments/payments_client_unittest.cc',
+      'autofill/content/public/cpp/autofill_types_struct_traits_unittest.cc',
       'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
       'autofill/core/browser/address_field_unittest.cc',
       'autofill/core/browser/address_i18n_unittest.cc',
@@ -1301,6 +1302,7 @@
             'components.gyp:autofill_content_browser',
             'components.gyp:autofill_content_renderer',
             'components.gyp:autofill_content_test_support',
+            'components.gyp:autofill_content_test_types_mojo_bindings',
             'components.gyp:certificate_transparency',
             'components.gyp:crash_test_support',
             'components.gyp:data_reduction_proxy_content_browser',

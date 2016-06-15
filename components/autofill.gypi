@@ -316,6 +316,64 @@
     ['OS != "ios"', {
       'targets': [
         {
+          # GN version: //components/autofill/content/public/interfaces:types
+          'target_name': 'autofill_content_types_mojo_bindings_mojom',
+          'type': 'none',
+          'variables': {
+            'mojom_files': [
+              'autofill/content/public/interfaces/autofill_types.mojom',
+            ],
+            'mojom_typemaps': [
+              'autofill/content/public/cpp/autofill_types.typemap',
+              '<(DEPTH)/url/mojo/gurl.typemap',
+            ],
+          },
+          'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+          'dependencies': [
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+        },
+        {
+          # GN version: //components/autofill/content/public/interfaces:types
+          'target_name': 'autofill_content_types_mojo_bindings',
+          'type': 'static_library',
+          'sources': [
+            'autofill/content/public/cpp/autofill_types_struct_traits.cc'
+          ],
+          'export_dependent_settings': [
+            '../url/url.gyp:url_mojom',
+           ],
+          'dependencies': [
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '../url/url.gyp:url_mojom',
+            'autofill_content_types_mojo_bindings_mojom',
+          ],
+        },
+        {
+          # GN version: //components/autofill/content/public/interfaces:test_types
+          'target_name': 'autofill_content_test_types_mojo_bindings',
+          'type': 'static_library',
+          'variables': {
+            'mojom_typemaps': [
+              'autofill/content/public/cpp/autofill_types.typemap',
+              '<(DEPTH)/url/mojo/gurl.typemap',
+            ],
+          },
+          'sources': [
+            'autofill/content/public/interfaces/test_autofill_types.mojom',
+          ],
+          'export_dependent_settings': [
+            '../url/url.gyp:url_mojom',
+            'autofill_content_types_mojo_bindings',
+           ],
+          'dependencies': [
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '../url/url.gyp:url_mojom',
+            'autofill_content_types_mojo_bindings',
+          ],
+          'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
+        },
+        {
           # GN version: //components/autofill/content/public/interfaces
           'target_name': 'autofill_content_mojo_bindings_mojom',
           'type': 'none',
@@ -323,6 +381,9 @@
             'mojom_files': [
               'autofill/content/public/interfaces/autofill_agent.mojom',
               'autofill/content/public/interfaces/autofill_driver.mojom',
+            ],
+            'mojom_typemaps': [
+              'autofill/content/public/cpp/autofill_types.typemap',
             ],
           },
           'include_dirs': [
@@ -342,6 +403,7 @@
           'dependencies': [
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             'autofill_content_mojo_bindings_mojom',
+            'autofill_content_types_mojo_bindings',
           ],
         },
         {

@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//components/safe_json/public/interfaces/safe_json.typemap" ]
+typemaps = [
+  "//components/autofill/content/public/cpp/autofill_types.typemap",
+  "//components/safe_json/public/interfaces/safe_json.typemap",
+]

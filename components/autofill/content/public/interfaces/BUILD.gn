@@ -9,4 +9,28 @@ mojom("interfaces") {
     "autofill_agent.mojom",
     "autofill_driver.mojom",
   ]
+
+  public_deps = [
+    ":types",
+  ]
+}
+
+mojom("types") {
+  sources = [
+    "autofill_types.mojom",
+  ]
+
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
+  ]
+}
+
+mojom("test_types") {
+  sources = [
+    "test_autofill_types.mojom",
+  ]
+
+  public_deps = [
+    ":types",
+  ]
 }
