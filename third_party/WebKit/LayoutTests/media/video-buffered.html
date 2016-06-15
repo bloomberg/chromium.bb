@@ -1,26 +1,29 @@
-<video controls></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test video buffering properties.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-    testExpected("video.buffered.length", 0);
-    testDOMException("video.buffered.start(-1)", "DOMException.INDEX_SIZE_ERR");
-    testDOMException("video.buffered.end(-1)", "DOMException.INDEX_SIZE_ERR");
-    testDOMException("video.buffered.start(0)", "DOMException.INDEX_SIZE_ERR");
-    testDOMException("video.buffered.end(0)", "DOMException.INDEX_SIZE_ERR");
-    waitForEvent('canplaythrough',
-        function ()
-        {
-            testExpected("video.buffered.length", 1);
-            testExpected("video.buffered.start(0)", 0);
-            testExpected("video.buffered.end(0)", 0, '>');
-            testDOMException("video.buffered.start(-1)", "DOMException.INDEX_SIZE_ERR");
-            testDOMException("video.buffered.end(-1)", "DOMException.INDEX_SIZE_ERR");
-            testDOMException("video.buffered.start(1)", "DOMException.INDEX_SIZE_ERR");
-            testDOMException("video.buffered.end(1)", "DOMException.INDEX_SIZE_ERR");
-            endTest();
-        }
-    );
+async_test(function(t) {
+    var video = document.querySelector("video");
+
+    assert_equals(video.buffered.length, 0);
+    assert_throws("IndexSizeError", function() { video.buffered.start(-1); });
+    assert_throws("IndexSizeError", function() { video.buffered.end(-1); });
+    assert_throws("IndexSizeError", function() { video.buffered.start(0); });
+    assert_throws("IndexSizeError", function() { video.buffered.end(0); });
+
+    video.oncanplaythrough = t.step_func_done(function () {
+        assert_equals(video.buffered.length, 1);
+        assert_equals(video.buffered.start(0), 0);
+        assert_greater_than(video.buffered.end(0), 0);
+        assert_throws("IndexSizeError", function() { video.buffered.start(-1); });
+        assert_throws("IndexSizeError", function() { video.buffered.end(-1); });
+        assert_throws("IndexSizeError", function() { video.buffered.start(1); });
+        assert_throws("IndexSizeError", function() { video.buffered.end(1); });
+    });
+
     video.src = findMediaFile("video", "content/test");
+});
 </script>
