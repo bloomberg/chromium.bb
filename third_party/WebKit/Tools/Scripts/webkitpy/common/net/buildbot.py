@@ -179,8 +179,7 @@ class Builder(object):
             build = Build(self,
                           build_number=build_number,
                           revision=revision,
-                          is_green=False,
-                          )
+                          is_green=False)
         return build
 
 
@@ -232,9 +231,7 @@ class BuildBot(object):
             # Will be either a revision number or a build number
             revision_string = status_link.string
             # If revision_string has non-digits assume it's not a revision number.
-            builder['built_revision'] = int(revision_string) \
-                if not re.match('\D', revision_string) \
-                else None
+            builder['built_revision'] = int(revision_string) if not re.match(r'\D', revision_string) else None
 
             # FIXME: We treat slave lost as green even though it is not to
             # work around the Qts bot being on a broken internet connection.
@@ -258,7 +255,7 @@ class BuildBot(object):
         activity_lines = cell.renderContents().split("<br />")
         builder["activity"] = activity_lines[0]  # normally "building" or "idle"
         # The middle lines document how long left for any current builds.
-        match = re.match("(?P<pending_builds>\d) pending", activity_lines[-1])
+        match = re.match(r'(?P<pending_builds>\d) pending', activity_lines[-1])
         builder["pending_builds"] = int(match.group("pending_builds")) if match else 0
 
     def _parse_builder_status_from_row(self, status_row):
@@ -336,11 +333,11 @@ class BuildBot(object):
         soup = BeautifulSoup(builders_page_content)
         return [self._parse_builder_status_from_row(status_row) for status_row in soup.find('table').findAll('tr')]
 
-    def builder_with_name(self, name, master_name='chromium.webkit'):
-        builder = self._builder_by_name.get(name)
+    def builder_with_name(self, builder_name, master_name='chromium.webkit'):
+        builder = self._builder_by_name.get(builder_name)
         if not builder:
-            builder = Builder(name, self, master_name=master_name)
-            self._builder_by_name[name] = builder
+            builder = Builder(builder_name, self, master_name=master_name)
+            self._builder_by_name[builder_name] = builder
         return builder
 
     def _latest_builds_from_builders(self):

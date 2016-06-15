@@ -44,8 +44,9 @@ class MockBuild(object):
 
 class MockBuilder(object):
 
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, builder_name, master_name='chromium.mock'):
+        self._name = builder_name
+        self._master_name = master_name
 
     def name(self):
         return self._name
@@ -80,8 +81,8 @@ class MockBuildBot(object):
             "activity": "idle",
         }
 
-    def builder_with_name(self, name):
-        return MockBuilder(name)
+    def builder_with_name(self, builder_name, master_name='chromium.mock'):
+        return MockBuilder(builder_name, master_name)
 
     def builder_statuses(self):
         return [
