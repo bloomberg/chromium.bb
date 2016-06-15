@@ -1030,9 +1030,6 @@ static void update_state(AV1_COMP *cpi, ThreadData *td, PICK_MODE_CONTEXT *ctx,
     rdc->comp_pred_diff[SINGLE_REFERENCE] += ctx->single_pred_diff;
     rdc->comp_pred_diff[COMPOUND_REFERENCE] += ctx->comp_pred_diff;
     rdc->comp_pred_diff[REFERENCE_MODE_SELECT] += ctx->hybrid_pred_diff;
-
-    for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
-      rdc->filter_diff[i] += ctx->best_filter_diff[i];
   }
 
   for (h = 0; h < y_mis; ++h) {
@@ -2674,7 +2671,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(*td->counts);
   av1_zero(rdc->coef_counts);
   av1_zero(rdc->comp_pred_diff);
-  av1_zero(rdc->filter_diff);
   rdc->m_search_count = 0;   // Count of motion search hits.
   rdc->ex_search_count = 0;  // Exhaustive mesh search hits.
 
@@ -2734,20 +2730,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif
 }
 
-static InterpFilter get_interp_filter(
-    const int64_t threshes[SWITCHABLE_FILTER_CONTEXTS], int is_alt_ref) {
-  if (!is_alt_ref && threshes[EIGHTTAP_SMOOTH] > threshes[EIGHTTAP] &&
-      threshes[EIGHTTAP_SMOOTH] > threshes[EIGHTTAP_SHARP] &&
-      threshes[EIGHTTAP_SMOOTH] > threshes[SWITCHABLE - 1]) {
-    return EIGHTTAP_SMOOTH;
-  } else if (threshes[EIGHTTAP_SHARP] > threshes[EIGHTTAP] &&
-             threshes[EIGHTTAP_SHARP] > threshes[SWITCHABLE - 1]) {
-    return EIGHTTAP_SHARP;
-  } else if (threshes[EIGHTTAP] > threshes[SWITCHABLE - 1]) {
-    return EIGHTTAP;
-  } else {
-    return SWITCHABLE;
-  }
+static InterpFilter get_interp_filter(AV1_COMP *cpi) {
+  (void)cpi;
+  return SWITCHABLE;
 }
 
 void av1_encode_frame(AV1_COMP *cpi) {
@@ -2790,7 +2775,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     // It does the same analysis for transform size selection also.
     const MV_REFERENCE_FRAME frame_type = get_frame_type(cpi);
     int64_t *const mode_thrs = rd_opt->prediction_type_threshes[frame_type];
-    int64_t *const filter_thrs = rd_opt->filter_threshes[frame_type];
     const int is_alt_ref = frame_type == ALTREF_FRAME;
 
     /* prediction (compound, single or hybrid) mode selection */
@@ -2806,15 +2790,12 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->reference_mode = REFERENCE_MODE_SELECT;
 
     if (cm->interp_filter == SWITCHABLE)
-      cm->interp_filter = get_interp_filter(filter_thrs, is_alt_ref);
+      cm->interp_filter = get_interp_filter(cpi);
 
     encode_frame_internal(cpi);
 
     for (i = 0; i < REFERENCE_MODES; ++i)
       mode_thrs[i] = (mode_thrs[i] + rdc->comp_pred_diff[i] / cm->MBs) / 2;
-
-    for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
-      filter_thrs[i] = (filter_thrs[i] + rdc->filter_diff[i] / cm->MBs) / 2;
 
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
       int single_count_zero = 0;
