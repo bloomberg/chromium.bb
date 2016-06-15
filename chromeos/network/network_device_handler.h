@@ -199,6 +199,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   // available in the future.
   virtual void SetCellularAllowRoaming(bool allow_roaming) = 0;
 
+  // Sets up MAC address randomization if available. This applies to devices
+  // which become available in the future.
+  virtual void SetMACAddressRandomizationEnabled(bool enabled) = 0;
+
   // Attempts to enable or disable TDLS for the specified IP or MAC address for
   // the active wifi device.
   virtual void SetWifiTDLSEnabled(

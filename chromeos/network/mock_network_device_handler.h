@@ -87,6 +87,8 @@ class CHROMEOS_EXPORT MockNetworkDeviceHandler : public NetworkDeviceHandler {
 
   MOCK_METHOD1(SetCellularAllowRoaming, void(bool allow_roaming));
 
+  MOCK_METHOD1(SetMACAddressRandomizationEnabled, void(bool enabled));
+
   MOCK_METHOD4(SetWifiTDLSEnabled,
                void(const std::string& ip_or_mac_address,
                     bool enabled,
