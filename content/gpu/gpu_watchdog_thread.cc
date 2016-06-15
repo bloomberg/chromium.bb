@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -20,9 +19,7 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
-#include "content/common/gpu_watchdog_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 
@@ -80,26 +77,6 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
   SetupXServer();
 #endif
   watched_message_loop_->AddTaskObserver(&task_observer_);
-
-#if defined(OS_WIN)
-  // Create a temp file for checking whether I/O is a bottleneck.
-  // This code runs on the main GPU thread before the sandbox is lowered.
-  base::FilePath temp_file_path;
-  if (GetGpuWatchdogTempFile(&temp_file_path)) {
-    // Please note that multiple instances of GPU process may reuse the same
-    // temporary file. That's OK because the file is written to only when
-    // the watchdog gets triggered and about to crash the process. The file
-    // should be deleted when the last handle is closed.
-    temp_file_for_io_checking_.Initialize(
-        temp_file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
-                            base::File::FLAG_DELETE_ON_CLOSE |
-                            base::File::FLAG_SHARE_DELETE);
-    if (!temp_file_for_io_checking_.IsValid()) {
-      LOG(ERROR) << "Couldn't create " << temp_file_path.value().c_str()
-                 << ", error: " << temp_file_for_io_checking_.error_details();
-    }
-  }
-#endif
 }
 
 void GpuWatchdogThread::PostAcknowledge() {
@@ -247,12 +224,14 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
   task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GpuWatchdogThread::BeginTerminating,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+                 weak_factory_.GetWeakPtr()),
       timeout);
 }
 
-void GpuWatchdogThread::BeginTerminating() {
+// Use the --disable-gpu-watchdog command line switch to disable this.
+void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // Should not get here while the system is suspended.
   DCHECK(!suspended_);
 
@@ -263,38 +242,14 @@ void GpuWatchdogThread::BeginTerminating() {
   base::TimeDelta time_since_arm = current_cpu_time - arm_cpu_time_;
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
     message_loop()->PostDelayedTask(
-        FROM_HERE, base::Bind(&GpuWatchdogThread::BeginTerminating,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::Bind(
+            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+            weak_factory_.GetWeakPtr()),
         timeout_ - time_since_arm);
     return;
   }
-
-  // If the machine is busy with heavy I/O activity this should defer
-  // termination until the I/O queue clears (on the drive that contains
-  // the temp directory).
-  if (temp_file_for_io_checking_.IsValid()) {
-    // Write a few bytes and wait for the write to flush.
-    const char temp_data[32] = {};
-    base::ElapsedTimer timer;
-    temp_file_for_io_checking_.Write(0, temp_data, sizeof(temp_data));
-    temp_file_for_io_checking_.Flush();
-    // Record duration of the write operation above for crash dump analysis.
-    io_check_duration_ = timer.Elapsed();
-  }
 #endif
-
-  // Post a new task to actually terminate unless an acknowledge from the
-  // watched thread arrives in between.
-  message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-                 weak_factory_.GetWeakPtr()));
-}
-
-// Use the --disable-gpu-watchdog command line switch to disable this.
-void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
-  // Should not get here while the system is suspended.
-  DCHECK(!suspended_);
 
   // If the watchdog woke up significantly behind schedule, disarm and reset
   // the watchdog check. This is to prevent the watchdog thread from terminating
@@ -381,12 +336,9 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // This is the time since the watchdog was armed, in 100ns intervals,
   // ignoring time where the computer is suspended.
   ULONGLONG interrupt_delay = fire_interrupt_time - arm_interrupt_time_;
+
   base::debug::Alias(&interrupt_delay);
-
-  base::ThreadTicks current_cpu_time = GetWatchedThreadTime();
   base::debug::Alias(&current_cpu_time);
-
-  base::TimeDelta time_since_arm = current_cpu_time - arm_cpu_time_;
   base::debug::Alias(&time_since_arm);
 
   bool using_thread_ticks = base::ThreadTicks::IsSupported();
