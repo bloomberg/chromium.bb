@@ -39,8 +39,6 @@
         'ipc_message_pipe_reader.cc',
         'ipc_message_pipe_reader.h',
         'ipc.mojom',
-        'scoped_ipc_support.cc',
-        'scoped_ipc_support.h',
       ],
       # TODO(gregoryd): direct_dependent_settings should be shared with the
       # 64-bit target, but it doesn't work due to a bug in gyp
@@ -49,6 +47,18 @@
           '..',
         ],
       },
+    },
+    {
+      'target_name': 'ipc_mojo_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'scoped_ipc_support.cc',
+        'scoped_ipc_support.h',
+      ],
     },
     {
       'target_name': 'ipc_mojo_unittests',

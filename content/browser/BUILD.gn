@@ -64,6 +64,7 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//ipc/mojo",
+    "//ipc/mojo:ipc_support",
     "//media",
     "//media/gpu/ipc/client",
     "//media/midi",

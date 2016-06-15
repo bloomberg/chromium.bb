@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "ipc/ipc_export.h"
 
 namespace IPC {
 
@@ -18,7 +17,7 @@ namespace IPC {
 // This should be instantiated once per process and retained as long as Mojo IPC
 // is needed. The TaskRunner passed to the constructor should outlive this
 // object.
-class IPC_MOJO_EXPORT ScopedIPCSupport {
+class ScopedIPCSupport {
  public:
   ScopedIPCSupport(scoped_refptr<base::TaskRunner> io_thread_task_runner);
   ~ScopedIPCSupport();
