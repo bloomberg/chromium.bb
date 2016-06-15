@@ -244,8 +244,10 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
 // UI thread but ImageDecoder does its work mainly on the IO thread. So the test
 // checks for both possible valid outcomes.
 //
-// Flaky timeouts on Linux ASan / LSan. crbug.com/618206
+// Flaky timeouts on Linux ASan / LSan, and on Mac. crbug.com/618206
 #if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)) && defined(OS_LINUX)
+#define MAYBE_StartAndKillProcess DISABLED_StartAndKillProcess
+#elif defined(OS_MACOSX)
 #define MAYBE_StartAndKillProcess DISABLED_StartAndKillProcess
 #else
 #define MAYBE_StartAndKillProcess StartAndKillProcess
