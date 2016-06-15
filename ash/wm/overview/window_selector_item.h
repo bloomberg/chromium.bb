@@ -177,7 +177,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   OverviewLabelButton* window_label_button_view_;
 
   // The close buttons widget container. Not used with Material Design.
-  views::Widget close_button_widget_;
+  std::unique_ptr<views::Widget> close_button_widget_;
 
   // A close button for the window in this item. Owned by the
   // |caption_container_view_| with Material Design or by |close_button_widget_|

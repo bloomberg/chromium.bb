@@ -262,7 +262,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
-    return &(window->close_button_widget_);
+    return window->close_button_widget_.get();
   }
 
   views::LabelButton* GetLabelButtonView(ash::WindowSelectorItem* window) {

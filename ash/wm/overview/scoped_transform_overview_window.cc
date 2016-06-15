@@ -332,7 +332,6 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
     int title_height) {
   DCHECK(!rect.IsEmpty());
   DCHECK_LE(top_view_inset, rect.height());
-  DCHECK_LE(title_height, bounds.height());
   const float scale =
       GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
   if (!ash::MaterialDesignController::IsOverviewMaterial()) {

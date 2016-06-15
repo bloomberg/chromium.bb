@@ -233,14 +233,15 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    close_button_widget_.set_focus_on_creation(false);
+    close_button_widget_.reset(new views::Widget);
+    close_button_widget_->set_focus_on_creation(false);
     window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-        &close_button_widget_, kShellWindowId_OverlayContainer, &params);
-    close_button_widget_.Init(params);
+        close_button_widget_.get(), kShellWindowId_OverlayContainer, &params);
+    close_button_widget_->Init(params);
     close_button_->SetVisible(false);
-    close_button_widget_.SetContentsView(close_button_);
-    close_button_widget_.SetSize(close_button_->GetPreferredSize());
-    close_button_widget_.Show();
+    close_button_widget_->SetContentsView(close_button_);
+    close_button_widget_->SetSize(close_button_->GetPreferredSize());
+    close_button_widget_->Show();
 
     gfx::Rect close_button_rect(close_button_->GetPreferredSize());
     // Align the center of the button with position (0, 0) so that the
@@ -249,7 +250,7 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
     close_button_rect.set_x(-close_button_rect.width() / 2);
     close_button_rect.set_y(-close_button_rect.height() / 2);
     WmLookup::Get()
-        ->GetWindowForWidget(&close_button_widget_)
+        ->GetWindowForWidget(close_button_widget_.get())
         ->SetBounds(close_button_rect);
   }
   GetWindow()->AddObserver(this);
@@ -400,7 +401,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 void WindowSelectorItem::SetOpacity(float opacity) {
   window_label_->SetOpacity(opacity);
   if (!ash::MaterialDesignController::IsOverviewMaterial())
-    close_button_widget_.SetOpacity(opacity);
+    close_button_widget_->SetOpacity(opacity);
 
   transform_window_.SetOpacity(opacity);
 }
@@ -511,10 +512,10 @@ void WindowSelectorItem::UpdateHeaderLayout(
   } else {
     if (!close_button_->visible()) {
       close_button_->SetVisible(true);
-      SetupFadeInAfterLayout(&close_button_widget_);
+      SetupFadeInAfterLayout(close_button_widget_.get());
     }
     WmWindow* close_button_widget_window =
-        WmLookup::Get()->GetWindowForWidget(&close_button_widget_);
+        WmLookup::Get()->GetWindowForWidget(close_button_widget_.get());
     std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
         ScopedOverviewAnimationSettingsFactory::Get()
             ->CreateOverviewAnimationSettings(animation_type,

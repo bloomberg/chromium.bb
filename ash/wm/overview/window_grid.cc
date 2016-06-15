@@ -335,17 +335,17 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   int vertical_inset =
       horizontal_inset +
       kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
-  total_bounds.Inset(horizontal_inset - kWindowMarginMD,
-                     vertical_inset - kWindowMarginMD);
+  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMarginMD),
+                     std::max(0, vertical_inset - kWindowMarginMD));
   std::vector<gfx::Rect> rects;
 
   // Keep track of the lowest coordinate.
-  int max_bottom = 0;
+  int max_bottom = total_bounds.y();
 
   // Right bound of the narrowest row.
-  int min_right = 0;
+  int min_right = total_bounds.right();
   // Right bound of the widest row.
-  int max_right = 0;
+  int max_right = total_bounds.x();
 
   // Keep track of the difference between the narrowest and the widest row.
   // Initially this is set to the worst it can ever be assuming the windows fit.
@@ -767,12 +767,12 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   int top = bounds.y();
 
   // Keep track of the lowest coordinate.
-  *max_bottom = 0;
+  *max_bottom = bounds.y();
 
   // Right bound of the narrowest row.
   *min_right = bounds.right();
   // Right bound of the widest row.
-  *max_right = 0;
+  *max_right = bounds.x();
 
   // With Material Design all elements are of same height and only the height is
   // necessary to determine each item's scale.
