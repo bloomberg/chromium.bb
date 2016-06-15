@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
@@ -213,6 +214,8 @@ public class BackgroundSyncLauncher {
     }
 
     private static boolean removeScheduledTasks(GcmNetworkManager scheduler) {
+        // Third-party code causes broadcast to touch disk. http://crbug.com/614679
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             scheduler.cancelTask(TASK_TAG, ChromeBackgroundService.class);
         } catch (IllegalArgumentException e) {
@@ -223,6 +226,8 @@ public class BackgroundSyncLauncher {
             setGCMEnabled(false);
             // Return false so that the failure will be logged.
             return false;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
         return true;
     }

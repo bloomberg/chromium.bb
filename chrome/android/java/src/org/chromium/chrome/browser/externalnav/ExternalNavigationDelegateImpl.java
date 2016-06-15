@@ -319,8 +319,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean startActivityIfNeeded(Intent intent) {
-        // Only reads disk on Kitkat. See http://crbug.com/617725 for more context.
+        // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        StrictMode.allowThreadDiskReads();
         try {
             forcePdfViewerAsIntentHandlerIfNeeded(mApplicationContext, intent);
             Context context = getAvailableContext();

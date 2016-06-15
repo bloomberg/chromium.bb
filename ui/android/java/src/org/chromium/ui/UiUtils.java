@@ -94,6 +94,8 @@ public class UiUtils {
                 InputMethodManager imm =
                         (InputMethodManager) view.getContext().getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
+                // Third-party touches disk on showSoftInput call. http://crbug.com/619824
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
                 try {
                     imm.showSoftInput(view, 0);
                 } catch (IllegalArgumentException e) {
@@ -102,6 +104,8 @@ public class UiUtils {
                     } else {
                         Log.e(TAG, "Unable to open keyboard.  Giving up.", e);
                     }
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
                 }
             }
         };
