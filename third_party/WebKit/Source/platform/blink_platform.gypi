@@ -1218,6 +1218,7 @@
       'image-decoders/gif/GIFImageDecoderTest.cpp',
       'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
+      'image-decoders/ico/ICOImageDecoderTest.cpp',
       'inspector_protocol/ParserTest.cpp',
       'mac/VersionUtilMacTest.mm',
       'mojo/KURLSecurityOriginTest.cpp',

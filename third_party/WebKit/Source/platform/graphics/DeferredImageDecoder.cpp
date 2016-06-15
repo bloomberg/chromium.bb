@@ -76,6 +76,7 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
     , m_repetitionCount(cAnimationNone)
     , m_hasColorProfile(false)
     , m_canYUVDecode(false)
+    , m_hasHotSpot(false)
 {
 }
 
@@ -235,6 +236,7 @@ void DeferredImageDecoder::activateLazyDecoding()
         return;
 
     m_size = m_actualDecoder->size();
+    m_hasHotSpot = m_actualDecoder->hotSpot(m_hotSpot);
     m_filenameExtension = m_actualDecoder->filenameExtension();
     // JPEG images support YUV decoding: other decoders do not, WEBP could in future.
     m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() && (m_filenameExtension == "jpg");
@@ -248,8 +250,7 @@ void DeferredImageDecoder::activateLazyDecoding()
 void DeferredImageDecoder::prepareLazyDecodedFrames()
 {
     if (!m_actualDecoder
-        || !m_actualDecoder->isSizeAvailable()
-        || m_actualDecoder->filenameExtension() == "ico")
+        || !m_actualDecoder->isSizeAvailable())
         return;
 
     activateLazyDecoding();
@@ -314,8 +315,11 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
 
 bool DeferredImageDecoder::hotSpot(IntPoint& hotSpot) const
 {
-    // TODO: Implement.
-    return m_actualDecoder ? m_actualDecoder->hotSpot(hotSpot) : false;
+    if (m_actualDecoder)
+        return m_actualDecoder->hotSpot(hotSpot);
+    if (m_hasHotSpot)
+        hotSpot = m_hotSpot;
+    return m_hasHotSpot;
 }
 
 } // namespace blink

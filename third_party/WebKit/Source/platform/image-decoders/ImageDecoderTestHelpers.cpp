@@ -86,9 +86,16 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
         if (!decoder->isSizeAvailable())
             continue;
 
-        ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-        if (frame && frame->getStatus() == ImageFrame::FrameComplete && framesDecoded < frameCount)
-            ++framesDecoded;
+        for (size_t i = framesDecoded; i < frameCount; ++i) {
+            // In ICOImageDecoder memory layout could differ from frame order.
+            // E.g. memory layout could be |<frame1><frame0>| and frameCount
+            // would return 1 until receiving full file.
+            // When file is completely received frameCount would return 2 and
+            // only then both frames could be completely decoded.
+            ImageFrame* frame = decoder->frameBufferAtIndex(i);
+            if (frame && frame->getStatus() == ImageFrame::FrameComplete)
+                ++framesDecoded;
+        }
     }
 
     EXPECT_FALSE(decoder->failed());
