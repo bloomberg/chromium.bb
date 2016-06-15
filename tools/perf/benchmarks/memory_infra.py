@@ -16,7 +16,8 @@ import page_sets
 
 # See tr.v.Numeric.getSummarizedScalarNumericsWithNames()
 # https://github.com/catapult-project/catapult/blob/master/tracing/tracing/value/numeric.html#L323
-_IGNORED_STATS_RE = re.compile(r'_(std|count|max|min|sum|pct_\d{4}(_\d+)?)$')
+_IGNORED_STATS_RE = re.compile(
+    r'(?<!dump)(?<!process)_(std|count|max|min|sum|pct_\d{4}(_\d+)?)$')
 
 
 class _MemoryInfra(perf_benchmark.PerfBenchmark):

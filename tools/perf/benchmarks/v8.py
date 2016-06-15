@@ -198,7 +198,8 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
 class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
   """Base class for benchmarks measuring code size."""
 
-  _IGNORED_V8_STATS_RE = re.compile(r'_(std|count|min|sum|pct_\d{4}(_\d+)?)$')
+  _IGNORED_V8_STATS_RE = re.compile(
+      r'(?<!dump)(?<!process)_(std|count|min|sum|pct_\d{4}(_\d+)?)$')
 
   def CreateTimelineBasedMeasurementOptions(self):
     category_filter = tracing_category_filter.TracingCategoryFilter(
