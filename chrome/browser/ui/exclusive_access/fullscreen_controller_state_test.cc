@@ -21,18 +21,6 @@
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-bool SupportsMacSystemFullscreen() {
-#if defined(OS_MACOSX)
-  return chrome::mac::SupportsSystemFullscreen();
-#else
-  return false;
-#endif
-}
-
-}  // namespace
-
 FullscreenControllerStateTest::FullscreenControllerStateTest()
     : state_(STATE_NORMAL),
       last_notification_received_state_(STATE_NORMAL) {
@@ -40,32 +28,21 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
   // For each state, for each event, define the resulting state.
   State transition_table_data[][NUM_EVENTS] = {
     { // STATE_NORMAL:
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN_CHROME
+      STATE_TO_BROWSER_FULLSCREEN,            // Event TOGGLE_FULLSCREEN
       STATE_TO_TAB_FULLSCREEN,                // Event TAB_FULLSCREEN_TRUE
       STATE_NORMAL,                           // Event TAB_FULLSCREEN_FALSE
       STATE_NORMAL,                           // Event BUBBLE_EXIT_LINK
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
-    { // STATE_BROWSER_FULLSCREEN_NO_CHROME:
+    { // STATE_BROWSER_FULLSCREEN:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
+      STATE_BROWSER_FULLSCREEN,               // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
-    },
-    { // STATE_BROWSER_FULLSCREEN_WITH_CHROME:
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
-      STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event TAB_FULLSCREEN_TRUE
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TAB_FULLSCREEN_FALSE
-      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event WINDOW_CHANGE
+      STATE_BROWSER_FULLSCREEN,               // Event WINDOW_CHANGE
     },
     { // STATE_TAB_FULLSCREEN:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TAB_FULLSCREEN,                   // Event TAB_FULLSCREEN_TRUE
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
@@ -73,63 +50,42 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
     },
     { // STATE_TAB_BROWSER_FULLSCREEN:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_EXIT_LINK
+      STATE_BROWSER_FULLSCREEN,               // Event TAB_FULLSCREEN_FALSE
+      STATE_BROWSER_FULLSCREEN,               // Event BUBBLE_EXIT_LINK
       STATE_TAB_BROWSER_FULLSCREEN,           // Event WINDOW_CHANGE
     },
-    { // STATE_TAB_BROWSER_FULLSCREEN_CHROME:
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
-      STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event TAB_FULLSCREEN_TRUE
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TAB_FULLSCREEN_FALSE
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event BUBBLE_EXIT_LINK
-      STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event WINDOW_CHANGE
-    },
     { // STATE_TO_NORMAL:
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN_CHROME
+      STATE_TO_BROWSER_FULLSCREEN,            // Event TOGGLE_FULLSCREEN
       // TODO(scheib) Should be a route back to TAB. http://crbug.com/154196
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_TRUE
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
-    { // STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
+    { // STATE_TO_BROWSER_FULLSCREEN:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_TRUE
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_FALSE
+      STATE_TO_BROWSER_FULLSCREEN,            // Event TAB_FULLSCREEN_TRUE
+      STATE_TO_BROWSER_FULLSCREEN,            // Event TAB_FULLSCREEN_FALSE
 #if defined(OS_MACOSX)
       // Mac window reports fullscreen immediately and an exit triggers exit.
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
 #else
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_EXIT_LINK
+      STATE_TO_BROWSER_FULLSCREEN,            // Event BUBBLE_EXIT_LINK
 #endif
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
-    },
-    { // STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
-      // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
-      STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TAB_FULLSCREEN_FALSE
-      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event WINDOW_CHANGE
+      STATE_BROWSER_FULLSCREEN,               // Event WINDOW_CHANGE
     },
     { // STATE_TO_TAB_FULLSCREEN:
       // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
       STATE_TO_TAB_FULLSCREEN,                // Event TOGGLE_FULLSCREEN
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TO_TAB_FULLSCREEN,                // Event TAB_FULLSCREEN_TRUE
 #if defined(OS_MACOSX)
       // Mac runs as expected due to a forced NotifyTabOfExitIfNecessary();
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
 #else
       // TODO(scheib) Should be a route back to NORMAL. http://crbug.com/154196
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_FALSE
+      STATE_TO_BROWSER_FULLSCREEN,            // Event TAB_FULLSCREEN_FALSE
 #endif
 #if defined(OS_MACOSX)
       // Mac window reports fullscreen immediately and an exit triggers exit.
@@ -175,14 +131,11 @@ FullscreenControllerStateTest::~FullscreenControllerStateTest() {
 const char* FullscreenControllerStateTest::GetStateString(State state) {
   switch (state) {
     ENUM_TO_STRING(STATE_NORMAL);
-    ENUM_TO_STRING(STATE_BROWSER_FULLSCREEN_NO_CHROME);
-    ENUM_TO_STRING(STATE_BROWSER_FULLSCREEN_WITH_CHROME);
+    ENUM_TO_STRING(STATE_BROWSER_FULLSCREEN);
     ENUM_TO_STRING(STATE_TAB_FULLSCREEN);
     ENUM_TO_STRING(STATE_TAB_BROWSER_FULLSCREEN);
-    ENUM_TO_STRING(STATE_TAB_BROWSER_FULLSCREEN_CHROME);
     ENUM_TO_STRING(STATE_TO_NORMAL);
-    ENUM_TO_STRING(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME);
-    ENUM_TO_STRING(STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME);
+    ENUM_TO_STRING(STATE_TO_BROWSER_FULLSCREEN);
     ENUM_TO_STRING(STATE_TO_TAB_FULLSCREEN);
     ENUM_TO_STRING(STATE_INVALID);
     default:
@@ -195,7 +148,6 @@ const char* FullscreenControllerStateTest::GetStateString(State state) {
 const char* FullscreenControllerStateTest::GetEventString(Event event) {
   switch (event) {
     ENUM_TO_STRING(TOGGLE_FULLSCREEN);
-    ENUM_TO_STRING(TOGGLE_FULLSCREEN_CHROME);
     ENUM_TO_STRING(TAB_FULLSCREEN_TRUE);
     ENUM_TO_STRING(TAB_FULLSCREEN_FALSE);
     ENUM_TO_STRING(BUBBLE_EXIT_LINK);
@@ -220,16 +172,13 @@ bool FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant() {
 bool FullscreenControllerStateTest::IsPersistentState(State state) {
   switch (state) {
     case STATE_NORMAL:
-    case STATE_BROWSER_FULLSCREEN_NO_CHROME:
-    case STATE_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_BROWSER_FULLSCREEN:
     case STATE_TAB_FULLSCREEN:
     case STATE_TAB_BROWSER_FULLSCREEN:
-    case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
       return true;
 
     case STATE_TO_NORMAL:
-    case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
-    case STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_TO_BROWSER_FULLSCREEN:
     case STATE_TO_TAB_FULLSCREEN:
       return false;
 
@@ -308,17 +257,6 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
     case TOGGLE_FULLSCREEN:
       GetFullscreenController()->ToggleBrowserFullscreenMode();
       break;
-
-    case TOGGLE_FULLSCREEN_CHROME:
-#if defined(OS_MACOSX)
-      if (chrome::mac::SupportsSystemFullscreen()) {
-        GetFullscreenController()->ToggleBrowserFullscreenWithToolbar();
-        break;
-      }
-#endif
-      NOTREACHED() << GetAndClearDebugLog();
-      break;
-
     case TAB_FULLSCREEN_TRUE:
     case TAB_FULLSCREEN_FALSE: {
       content::WebContents* const active_tab =
@@ -365,43 +303,28 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 void FullscreenControllerStateTest::VerifyWindowState() {
   switch (state_) {
     case STATE_NORMAL:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_FALSE,
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_FALSE);
       break;
-    case STATE_BROWSER_FULLSCREEN_NO_CHROME:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_TRUE,
-                                    FULLSCREEN_FOR_TAB_FALSE);
-      break;
-    case STATE_BROWSER_FULLSCREEN_WITH_CHROME:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_TRUE,
-                                    FULLSCREEN_FOR_BROWSER_TRUE,
+    case STATE_BROWSER_FULLSCREEN:
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_FALSE);
       break;
     case STATE_TAB_FULLSCREEN:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_FALSE,
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_TRUE);
       break;
     case STATE_TAB_BROWSER_FULLSCREEN:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_TRUE,
-                                    FULLSCREEN_FOR_TAB_TRUE);
-      break;
-    case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_TRUE,
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_TRUE);
       break;
     case STATE_TO_NORMAL:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_FOR_BROWSER_NO_EXPECTATION,
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_NO_EXPECTATION,
                                     FULLSCREEN_FOR_TAB_NO_EXPECTATION);
       break;
 
-    case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
+    case STATE_TO_BROWSER_FULLSCREEN:
+      VerifyWindowStateExpectations(
 #if defined(OS_MACOSX)
                                     FULLSCREEN_FOR_BROWSER_TRUE,
 #else
@@ -409,30 +332,8 @@ void FullscreenControllerStateTest::VerifyWindowState() {
 #endif
                                     FULLSCREEN_FOR_TAB_NO_EXPECTATION);
       break;
-
-    case STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_TRUE,
-#if defined(OS_MACOSX)
-                                    FULLSCREEN_FOR_BROWSER_TRUE,
-#else
-                                    FULLSCREEN_FOR_BROWSER_FALSE,
-#endif
-                                    FULLSCREEN_FOR_TAB_NO_EXPECTATION);
-      break;
-
     case STATE_TO_TAB_FULLSCREEN:
-#if defined(OS_MACOSX)
-      // TODO(scheib) InPresentationMode returns false when invoking events:
-      // TAB_FULLSCREEN_TRUE, TOGGLE_FULLSCREEN. http://crbug.com/156645
-      // It may be that a new testing state TO_TAB_BROWSER_FULLSCREEN
-      // would help work around this http://crbug.com/154196
-      // Test with: STATE_TO_TAB_FULLSCREEN__TOGGLE_FULLSCREEN
-      //
-      // EXPECT_TRUE(GetBrowser()->window()->InPresentationMode())
-      //     << GetAndClearDebugLog();
-#endif
-      VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_NO_EXPECTATION,
-                                    FULLSCREEN_FOR_BROWSER_FALSE,
+      VerifyWindowStateExpectations(FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_TRUE);
       break;
 
@@ -537,37 +438,18 @@ bool FullscreenControllerStateTest::ShouldSkipStateAndEventPair(State state,
                                                                 Event event) {
   // TODO(scheib) Toggling Tab fullscreen while pending Tab or
   // Browser fullscreen is broken currently http://crbug.com/154196
-  if ((state == STATE_TO_BROWSER_FULLSCREEN_NO_CHROME ||
-       state == STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME ||
+  if ((state == STATE_TO_BROWSER_FULLSCREEN ||
        state == STATE_TO_TAB_FULLSCREEN) &&
       (event == TAB_FULLSCREEN_TRUE || event == TAB_FULLSCREEN_FALSE))
     return true;
+
   if (state == STATE_TO_NORMAL && event == TAB_FULLSCREEN_TRUE)
     return true;
-
-  // Skip Mac Lion Fullscreen state and events when not on OSX 10.7+.
-  if (!SupportsMacSystemFullscreen()) {
-    if (state == STATE_BROWSER_FULLSCREEN_WITH_CHROME ||
-        state == STATE_TAB_BROWSER_FULLSCREEN_CHROME ||
-        state == STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME ||
-        event == TOGGLE_FULLSCREEN_CHROME) {
-      return true;
-    }
-  }
 
   return false;
 }
 
 bool FullscreenControllerStateTest::ShouldSkipTest(State state, Event event) {
-  // Quietly skip Mac Lion Fullscreen tests when not on OSX 10.7+.
-  if (!SupportsMacSystemFullscreen()) {
-    if (state == STATE_BROWSER_FULLSCREEN_WITH_CHROME ||
-        event == TOGGLE_FULLSCREEN_CHROME) {
-      debugging_log_ << "\nSkipping Lion Fullscreen test on non-OSX 10.7+.\n";
-      return true;
-    }
-  }
-
   // When testing reentrancy there are states the fullscreen controller
   // will be unable to remain in, as they will progress due to the
   // reentrant window change call. Skip states that will be instantly
@@ -613,16 +495,8 @@ void FullscreenControllerStateTest::TestStateAndEvent(State state,
 }
 
 void FullscreenControllerStateTest::VerifyWindowStateExpectations(
-    FullscreenWithToolbarExpectation fullscreen_with_toolbar,
     FullscreenForBrowserExpectation fullscreen_for_browser,
     FullscreenForTabExpectation fullscreen_for_tab) {
-  ExclusiveAccessContext* context =
-      GetBrowser()->window()->GetExclusiveAccessContext();
-  if (fullscreen_with_toolbar != FULLSCREEN_WITH_CHROME_NO_EXPECTATION &&
-      context->SupportsFullscreenWithToolbar()) {
-    EXPECT_EQ(context->IsFullscreenWithToolbar(), !!fullscreen_with_toolbar)
-        << GetAndClearDebugLog();
-  }
   if (fullscreen_for_browser != FULLSCREEN_FOR_BROWSER_NO_EXPECTATION) {
     EXPECT_EQ(GetFullscreenController()->IsFullscreenForBrowser(),
               !!fullscreen_for_browser) << GetAndClearDebugLog();

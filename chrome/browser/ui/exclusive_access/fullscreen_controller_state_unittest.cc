@@ -74,22 +74,20 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void ChangeWindowFullscreenState();
 
  private:
-  // Enters fullscreen with |new_mac_with_toolbar_mode|.
-  void EnterFullscreen(bool new_mac_with_toolbar_mode);
+  // TODO(spqchan): Remove the with_toolbar param in EnterFullscreen() since
+  // it is now deprecated. See crbug.com/579259.
+  void EnterFullscreen();
 
   // Returns true if ChangeWindowFullscreenState() should be called as a result
   // of updating the current fullscreen state to the passed in state.
-  bool IsTransitionReentrant(bool new_fullscreen,
-                             bool new_mac_with_toolbar_mode);
+  bool IsTransitionReentrant(bool new_fullscreen);
 
   WindowState state_;
-  bool mac_with_toolbar_mode_;
   Browser* browser_;
 };
 
 FullscreenControllerTestWindow::FullscreenControllerTestWindow()
     : state_(NORMAL),
-      mac_with_toolbar_mode_(false),
       browser_(NULL) {
 }
 
@@ -97,15 +95,14 @@ void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,
     ExclusiveAccessBubbleType type,
     bool with_toolbar) {
-  EnterFullscreen(with_toolbar);
+  EnterFullscreen();
 }
 
 void FullscreenControllerTestWindow::ExitFullscreen() {
   if (IsFullscreen()) {
     state_ = TO_NORMAL;
-    mac_with_toolbar_mode_ = false;
 
-    if (IsTransitionReentrant(false, false))
+    if (IsTransitionReentrant(false))
       ChangeWindowFullscreenState();
   }
 }
@@ -132,11 +129,11 @@ bool FullscreenControllerTestWindow::SupportsFullscreenWithToolbar() const {
 
 void FullscreenControllerTestWindow::UpdateFullscreenWithToolbar(
     bool with_toolbar) {
-  EnterFullscreen(with_toolbar);
+  EnterFullscreen();
 }
 
 bool FullscreenControllerTestWindow::IsFullscreenWithToolbar() const {
-  return IsFullscreen() && mac_with_toolbar_mode_;
+  return IsFullscreen();
 }
 
 // static
@@ -167,11 +164,9 @@ void FullscreenControllerTestWindow::ChangeWindowFullscreenState() {
   browser_->WindowFullscreenStateChanged();
 }
 
-void FullscreenControllerTestWindow::EnterFullscreen(
-    bool new_mac_with_toolbar_mode) {
-  bool reentrant = IsTransitionReentrant(true, new_mac_with_toolbar_mode);
+void FullscreenControllerTestWindow::EnterFullscreen() {
+  bool reentrant = IsTransitionReentrant(true);
 
-  mac_with_toolbar_mode_ = new_mac_with_toolbar_mode;
   if (!IsFullscreen())
     state_ = TO_FULLSCREEN;
 
@@ -180,17 +175,10 @@ void FullscreenControllerTestWindow::EnterFullscreen(
 }
 
 bool FullscreenControllerTestWindow::IsTransitionReentrant(
-    bool new_fullscreen,
-    bool new_mac_with_toolbar_mode) {
-#if defined(OS_MACOSX)
-  bool mac_with_toolbar_mode_changed =
-      new_mac_with_toolbar_mode != IsFullscreenWithToolbar();
-#else
-  bool mac_with_toolbar_mode_changed = false;
-#endif
+    bool new_fullscreen) {
   bool fullscreen_changed = (new_fullscreen != IsFullscreen());
 
-  if (!fullscreen_changed && !mac_with_toolbar_mode_changed)
+  if (!fullscreen_changed)
     return false;
 
   if (FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant())
@@ -199,9 +187,7 @@ bool FullscreenControllerTestWindow::IsTransitionReentrant(
   // BrowserWindowCocoa::EnterFullscreen() and
   // BrowserWindowCocoa::EnterFullscreenWithToolbar() are reentrant when
   // switching between fullscreen with chrome and fullscreen without chrome.
-  return state_ == FULLSCREEN &&
-      !fullscreen_changed &&
-      mac_with_toolbar_mode_changed;
+  return state_ == FULLSCREEN && !fullscreen_changed;
 }
 
 ExclusiveAccessContext*
@@ -285,11 +271,9 @@ void FullscreenControllerStateUnitTest::VerifyWindowState() {
                 window_->state()) << GetAndClearDebugLog();
       break;
 
-    case STATE_BROWSER_FULLSCREEN_NO_CHROME:
-    case STATE_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_BROWSER_FULLSCREEN:
     case STATE_TAB_FULLSCREEN:
     case STATE_TAB_BROWSER_FULLSCREEN:
-    case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
       EXPECT_EQ(FullscreenControllerTestWindow::FULLSCREEN,
                 window_->state()) << GetAndClearDebugLog();
       break;
@@ -299,8 +283,7 @@ void FullscreenControllerStateUnitTest::VerifyWindowState() {
                 window_->state()) << GetAndClearDebugLog();
       break;
 
-    case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
-    case STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_TO_BROWSER_FULLSCREEN:
     case STATE_TO_TAB_FULLSCREEN:
       EXPECT_EQ(FullscreenControllerTestWindow::TO_FULLSCREEN,
                 window_->state()) << GetAndClearDebugLog();
@@ -321,8 +304,7 @@ bool FullscreenControllerStateUnitTest::ShouldSkipStateAndEventPair(
   // Normal. This doesn't appear to be the desired result, and would add
   // too much complexity to mimic in our simple FullscreenControllerTestWindow.
   // http://crbug.com/156968
-  if ((state == STATE_TO_NORMAL ||
-       state == STATE_TO_BROWSER_FULLSCREEN_NO_CHROME ||
+  if ((state == STATE_TO_BROWSER_FULLSCREEN ||
        state == STATE_TO_TAB_FULLSCREEN) &&
       event == TOGGLE_FULLSCREEN)
     return true;
@@ -379,7 +361,7 @@ TEST_F(FullscreenControllerStateUnitTest,
     return;
   AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_NO_FATAL_FAILURE(
-      TransitionToState(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME))
+      TransitionToState(STATE_TO_BROWSER_FULLSCREEN))
       << GetAndClearDebugLog();
 
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE)) << GetAndClearDebugLog();
