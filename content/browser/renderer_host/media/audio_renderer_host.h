@@ -86,7 +86,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                     AudioMirroringManager* mirroring_manager,
                     MediaInternals* media_internals,
                     MediaStreamManager* media_stream_manager,
-                    const ResourceContext::SaltCallback& salt_callback);
+                    const std::string& salt);
 
   // Calls |callback| with the list of AudioOutputControllers for this object.
   void GetOutputControllers(
@@ -255,7 +255,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   base::AtomicRefCount num_playing_streams_;
 
   // Salt required to translate renderer device IDs to raw device unique IDs
-  ResourceContext::SaltCallback salt_callback_;
+  std::string salt_;
 
   // Map of device authorizations for streams that are not yet created
   // The key is the stream ID, and the value is a pair. The pair's first element

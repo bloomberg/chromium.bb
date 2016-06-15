@@ -499,7 +499,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     signin_allowed_.MoveToThread(io_task_runner);
   }
 
-  media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, IsOffTheRecord());
+  if (!IsOffTheRecord())
+    media_device_id_salt_ = new MediaDeviceIDSalt(pref_service);
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
                                    pref_service);
@@ -865,8 +866,9 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-ResourceContext::SaltCallback ProfileIOData::GetMediaDeviceIDSalt() const {
-  return base::Bind(&MediaDeviceIDSalt::GetSalt, media_device_id_salt_);
+std::string ProfileIOData::GetMediaDeviceIDSalt() const {
+  DCHECK(media_device_id_salt_);
+  return media_device_id_salt_->GetSalt();
 }
 
 bool ProfileIOData::IsOffTheRecord() const {
@@ -1003,9 +1005,11 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
 #endif
 }
 
-ResourceContext::SaltCallback
-ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
-  return io_data_->GetMediaDeviceIDSalt();
+std::string ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
+  if (io_data_->HasMediaDeviceIDSalt())
+    return io_data_->GetMediaDeviceIDSalt();
+
+  return content::ResourceContext::GetMediaDeviceIDSalt();
 }
 
 void ProfileIOData::Init(

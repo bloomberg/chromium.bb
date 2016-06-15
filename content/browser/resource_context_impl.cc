@@ -6,9 +6,11 @@
 
 #include <stdint.h>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -23,22 +25,13 @@ using base::UserDataAdapter;
 
 namespace content {
 
-namespace {
-
 // Key names on ResourceContext.
 const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 const char kStreamContextKeyName[] = "content_stream_context";
 const char kURLDataManagerBackendKeyName[] = "url_data_manager_backend";
 
-// Used by the default implementation of GetMediaDeviceIDSalt, below.
-std::string ReturnEmptySalt() {
-  return std::string();
-}
-
-}  // namespace
-
-
-ResourceContext::ResourceContext() {
+ResourceContext::ResourceContext()
+    : media_device_id_salt_(CreateRandomMediaDeviceIDSalt()) {
   ResourceDispatcherHostImpl* rdhi = ResourceDispatcherHostImpl::Get();
   if (rdhi) {
     BrowserThread::PostTask(
@@ -56,8 +49,8 @@ ResourceContext::~ResourceContext() {
   }
 }
 
-ResourceContext::SaltCallback ResourceContext::GetMediaDeviceIDSalt() {
-  return base::Bind(&ReturnEmptySalt);
+std::string ResourceContext::GetMediaDeviceIDSalt() {
+  return media_device_id_salt_;
 }
 
 std::unique_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {
@@ -71,6 +64,14 @@ void ResourceContext::CreateKeygenHandler(
     const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>& callback) {
   callback.Run(base::WrapUnique(
       new net::KeygenHandler(key_size_in_bits, challenge_string, url)));
+}
+
+// static
+std::string ResourceContext::CreateRandomMediaDeviceIDSalt() {
+  std::string salt;
+  base::Base64Encode(base::RandBytesAsString(16), &salt);
+  DCHECK(!salt.empty());
+  return salt;
 }
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(

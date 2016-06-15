@@ -119,7 +119,7 @@ class CONTENT_EXPORT MediaStreamManager
   void GenerateStream(MediaStreamRequester* requester,
                       int render_process_id,
                       int render_frame_id,
-                      const ResourceContext::SaltCallback& sc,
+                      const std::string& salt,
                       int page_request_id,
                       const StreamControls& controls,
                       const url::Origin& security_origin,
@@ -151,7 +151,7 @@ class CONTENT_EXPORT MediaStreamManager
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
                                        int render_process_id,
                                        int render_frame_id,
-                                       const ResourceContext::SaltCallback& sc,
+                                       const std::string& salt,
                                        int page_request_id,
                                        MediaStreamType type,
                                        const url::Origin& security_origin);
@@ -162,7 +162,7 @@ class CONTENT_EXPORT MediaStreamManager
   void OpenDevice(MediaStreamRequester* requester,
                   int render_process_id,
                   int render_frame_id,
-                  const ResourceContext::SaltCallback& sc,
+                  const std::string& salt,
                   int page_request_id,
                   const std::string& device_id,
                   MediaStreamType type,
@@ -172,7 +172,7 @@ class CONTENT_EXPORT MediaStreamManager
   // |source_id|. Returns true if there was a raw device id that matched the
   // given |source_id|, false if nothing matched it.
   bool TranslateSourceIdToDeviceId(MediaStreamType stream_type,
-                                   const ResourceContext::SaltCallback& rc,
+                                   const std::string& salt,
                                    const url::Origin& security_origin,
                                    const std::string& source_id,
                                    std::string* device_id) const;
@@ -242,18 +242,16 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Generates a hash of a device's unique ID usable by one
   // particular security origin.
-  static std::string GetHMACForMediaDeviceID(
-      const ResourceContext::SaltCallback& sc,
-      const url::Origin& security_origin,
-      const std::string& raw_unique_id);
+  static std::string GetHMACForMediaDeviceID(const std::string& salt,
+                                             const url::Origin& security_origin,
+                                             const std::string& raw_unique_id);
 
   // Convenience method to check if |device_guid| is an HMAC of
   // |raw_device_id| for |security_origin|.
-  static bool DoesMediaDeviceIDMatchHMAC(
-      const ResourceContext::SaltCallback& sc,
-      const url::Origin& security_origin,
-      const std::string& device_guid,
-      const std::string& raw_unique_id);
+  static bool DoesMediaDeviceIDMatchHMAC(const std::string& salt,
+                                         const url::Origin& security_origin,
+                                         const std::string& device_guid,
+                                         const std::string& raw_unique_id);
 
   // Returns true if the renderer process identified with |render_process_id|
   // is allowed to access |origin|.
@@ -405,7 +403,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Returns false if the required device ID is present and invalid.
   // Otherwise, if no valid device is found, device_id is unchanged.
   bool PickDeviceId(MediaStreamType type,
-                    const ResourceContext::SaltCallback& salt_callback,
+                    const std::string& salt,
                     const url::Origin& security_origin,
                     const TrackControls& controls,
                     std::string* device_id) const;

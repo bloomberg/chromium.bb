@@ -60,13 +60,7 @@ typedef media::FakeAudioManager AudioManagerPlatform;
 
 namespace {
 
-std::string ReturnMockSalt() {
-  return std::string();
-}
-
-ResourceContext::SaltCallback GetMockSaltCallback() {
-  return base::Bind(&ReturnMockSalt);
-}
+const char kMockSalt[] = "";
 
 // This class mocks the audio manager and overrides some methods to ensure that
 // we can run our tests on the buildbots.
@@ -316,30 +310,28 @@ TEST_F(MediaStreamManagerTest, DeviceID) {
   const std::string unique_default_id(
       media::AudioDeviceDescription::kDefaultDeviceId);
   const std::string hashed_default_id =
-      MediaStreamManager::GetHMACForMediaDeviceID(
-          GetMockSaltCallback(), security_origin, unique_default_id);
+      MediaStreamManager::GetHMACForMediaDeviceID(kMockSalt, security_origin,
+                                                  unique_default_id);
   EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
-      GetMockSaltCallback(), security_origin, hashed_default_id,
-      unique_default_id));
+      kMockSalt, security_origin, hashed_default_id, unique_default_id));
   EXPECT_EQ(unique_default_id, hashed_default_id);
 
   const std::string unique_communications_id(
       media::AudioDeviceDescription::kCommunicationsDeviceId);
   const std::string hashed_communications_id =
-      MediaStreamManager::GetHMACForMediaDeviceID(
-          GetMockSaltCallback(), security_origin, unique_communications_id);
+      MediaStreamManager::GetHMACForMediaDeviceID(kMockSalt, security_origin,
+                                                  unique_communications_id);
   EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
-      GetMockSaltCallback(), security_origin, hashed_communications_id,
+      kMockSalt, security_origin, hashed_communications_id,
       unique_communications_id));
   EXPECT_EQ(unique_communications_id, hashed_communications_id);
 
   const std::string unique_other_id("other-unique-id");
   const std::string hashed_other_id =
-      MediaStreamManager::GetHMACForMediaDeviceID(
-          GetMockSaltCallback(), security_origin, unique_other_id);
+      MediaStreamManager::GetHMACForMediaDeviceID(kMockSalt, security_origin,
+                                                  unique_other_id);
   EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
-      GetMockSaltCallback(), security_origin, hashed_other_id,
-      unique_other_id));
+      kMockSalt, security_origin, hashed_other_id, unique_other_id));
   EXPECT_NE(unique_other_id, hashed_other_id);
   EXPECT_EQ(hashed_other_id.size(), 64U);
   for (const char& c : hashed_other_id)
@@ -360,7 +352,7 @@ TEST_F(MediaStreamManagerTest, EnumerationOutputDevices) {
     EXPECT_CALL(requester,
                 MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
     std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, GetMockSaltCallback(),
+        &requester, render_process_id, render_frame_id, kMockSalt,
         page_request_id, MEDIA_DEVICE_AUDIO_OUTPUT, security_origin);
     run_loop.Run();
     // CancelRequest is necessary for enumeration requests.
@@ -389,7 +381,7 @@ TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
                 MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
     EXPECT_CALL(requester, MockDevicesChanged(_)).Times(0);
     std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, GetMockSaltCallback(),
+        &requester, render_process_id, render_frame_id, kMockSalt,
         page_request_id, MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
     run_loop_enumeration.Run();
     media_stream_manager_->CancelRequest(label);
@@ -420,7 +412,7 @@ TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
     EXPECT_CALL(requester,
                 MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
     std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, GetMockSaltCallback(),
+        &requester, render_process_id, render_frame_id, kMockSalt,
         page_request_id, MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
     run_loop.Run();
     media_stream_manager_->CancelRequest(label);

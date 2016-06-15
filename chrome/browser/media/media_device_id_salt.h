@@ -22,7 +22,7 @@ class PrefService;
 // callback returned by ResourceContext::GetMediaDeviceIDSalt.
 class MediaDeviceIDSalt : public base::RefCountedThreadSafe<MediaDeviceIDSalt> {
  public:
-  MediaDeviceIDSalt(PrefService* pref_service, bool incognito);
+  explicit MediaDeviceIDSalt(PrefService* pref_service);
   void ShutdownOnUIThread();
 
   std::string GetSalt() const;
@@ -34,9 +34,6 @@ class MediaDeviceIDSalt : public base::RefCountedThreadSafe<MediaDeviceIDSalt> {
   friend class base::RefCountedThreadSafe<MediaDeviceIDSalt>;
   ~MediaDeviceIDSalt();
 
-  // |incognito_salt_| is initialized in ctor on UI thread but only read
-  //  on the IO thread.
-  std::string incognito_salt_;
   mutable StringPrefMember media_device_id_salt_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceIDSalt);

@@ -33,7 +33,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                                  public MediaStreamRequester {
  public:
   MediaStreamDispatcherHost(int render_process_id,
-                            const ResourceContext::SaltCallback& salt_callback,
+                            const std::string& salt,
                             MediaStreamManager* media_stream_manager,
                             bool use_fake_ui = false);
 
@@ -118,7 +118,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                  bool have_access);
 
   int render_process_id_;
-  ResourceContext::SaltCallback salt_callback_;
+  std::string salt_;
   MediaStreamManager* media_stream_manager_;
 
   struct DeviceChangeSubscriberInfo {

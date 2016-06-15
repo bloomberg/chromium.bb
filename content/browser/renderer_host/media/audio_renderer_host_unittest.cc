@@ -66,13 +66,13 @@ class MockAudioRendererHost : public AudioRendererHost {
                         AudioMirroringManager* mirroring_manager,
                         MediaInternals* media_internals,
                         MediaStreamManager* media_stream_manager,
-                        const ResourceContext::SaltCallback& salt_callback)
+                        const std::string& salt)
       : AudioRendererHost(kRenderProcessId,
                           audio_manager,
                           mirroring_manager,
                           media_internals,
                           media_stream_manager,
-                          salt_callback),
+                          salt),
         shared_memory_length_(0) {}
 
   // A list of mock methods.
@@ -170,18 +170,12 @@ class MockAudioRendererHost : public AudioRendererHost {
 };
 
 namespace {
-std::string ReturnMockSalt() {
-  return std::string();
-}
-
-ResourceContext::SaltCallback GetMockSaltCallback() {
-  return base::Bind(&ReturnMockSalt);
-}
 
 void WaitForEnumeration(base::RunLoop* loop,
                         const AudioOutputDeviceEnumeration& e) {
   loop->Quit();
 }
+
 }  // namespace
 
 class AudioRendererHostTest : public testing::Test {
@@ -202,10 +196,10 @@ class AudioRendererHostTest : public testing::Test {
         base::Bind(&WaitForEnumeration, &run_loop));
     run_loop.Run();
 
-    host_ = new MockAudioRendererHost(audio_manager_.get(), &mirroring_manager_,
-                                      MediaInternals::GetInstance(),
-                                      media_stream_manager_.get(),
-                                      GetMockSaltCallback());
+    host_ =
+        new MockAudioRendererHost(audio_manager_.get(), &mirroring_manager_,
+                                  MediaInternals::GetInstance(),
+                                  media_stream_manager_.get(), std::string());
 
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());
