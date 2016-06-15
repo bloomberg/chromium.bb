@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,17 +49,23 @@ void StorageManagerHandler::GetLocalizedValues(
                 IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE);
 
   localized_strings->SetString(
-      "storageItemLabelCapacity",  l10n_util::GetStringUTF16(
+      "storageItemLabelCapacity", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_CAPACITY));
   localized_strings->SetString(
-      "storageItemLabelInUse",  l10n_util::GetStringUTF16(
+      "storageItemLabelInUse", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_IN_USE));
   localized_strings->SetString(
-      "storageItemLabelAvailable",  l10n_util::GetStringUTF16(
+      "storageItemLabelAvailable", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_AVAILABLE));
   localized_strings->SetString(
-      "storageSubitemLabelDownloads",  l10n_util::GetStringUTF16(
+      "storageSubitemLabelDownloads", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DOWNLOADS));
+  localized_strings->SetString(
+      "storageSubitemLabelArc", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC));
+  localized_strings->SetString(
+      "storageSizeCalculating", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SIZE_CALCULATING));
 }
 
 void StorageManagerHandler::InitializePage() {
@@ -76,12 +83,17 @@ void StorageManagerHandler::RegisterMessages() {
       "openDownloads",
       base::Bind(&StorageManagerHandler::HandleOpenDownloads,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openArcStorage",
+      base::Bind(&StorageManagerHandler::HandleOpenArcStorage,
+                 base::Unretained(this)));
 }
 
 void StorageManagerHandler::HandleUpdateStorageInfo(
     const base::ListValue* unused_args) {
   UpdateSizeStat();
   UpdateDownloadsSize();
+  UpdateArcSize();
 }
 
 void StorageManagerHandler::HandleOpenDownloads(
@@ -94,6 +106,11 @@ void StorageManagerHandler::HandleOpenDownloads(
        downloads_path,
        platform_util::OPEN_FOLDER,
        platform_util::OpenOperationCallback());
+}
+
+void StorageManagerHandler::HandleOpenArcStorage(
+    const base::ListValue* unused_args) {
+  arc::ArcStorageManager::Get()->OpenPrivateVolumeSettings();
 }
 
 void StorageManagerHandler::UpdateSizeStat() {
@@ -145,6 +162,44 @@ void StorageManagerHandler::OnGetDownloadsSize(int64_t size) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDownloadsSize",
       base::StringValue(ui::FormatBytes(size)));
+}
+
+void StorageManagerHandler::UpdateArcSize() {
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  if (!arc::ArcAuthService::IsAllowedForProfile(profile) ||
+      arc::ArcAuthService::IsOptInVerificationDisabled() ||
+      !arc::ArcAuthService::Get()->IsArcEnabled()) {
+    return;
+  }
+
+  // Shows the item "Android apps and cache" and start calculating size.
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "options.StorageManager.showArcItem");
+  bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
+      base::Bind(&StorageManagerHandler::OnGetArcSize,
+                 base::Unretained(this)));
+  if (!success) {
+    // TODO(fukino): Retry updating arc size later if the arc bridge service is
+    // not ready.
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "options.StorageManager.setArcSize",
+        base::StringValue(l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN)));
+  }
+}
+
+void StorageManagerHandler::OnGetArcSize(bool succeeded,
+                                         arc::mojom::ApplicationsSizePtr size) {
+  base::StringValue arc_size(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN));
+  if (succeeded) {
+    uint64_t total_bytes = size->total_code_bytes +
+                           size->total_data_bytes +
+                           size->total_cache_bytes;
+    arc_size = base::StringValue(ui::FormatBytes(total_bytes));
+  }
+  web_ui()->CallJavascriptFunctionUnsafe("options.StorageManager.setArcSize",
+                                         arc_size);
 }
 
 }  // namespace options

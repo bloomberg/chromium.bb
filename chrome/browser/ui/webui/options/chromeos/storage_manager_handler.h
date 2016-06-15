@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/arc/storage_manager/arc_storage_manager.h"
 
 namespace chromeos {
 namespace options {
@@ -29,6 +30,7 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Handlers of JS messages.
   void HandleUpdateStorageInfo(const base::ListValue* unused_args);
   void HandleOpenDownloads(const base::ListValue* unused_args);
+  void HandleOpenArcStorage(const base::ListValue* unused_args);
 
   // Requests updating disk space information.
   void UpdateSizeStat();
@@ -41,6 +43,12 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
 
   // Callback to update the UI about the size of Downloads directory.
   void OnGetDownloadsSize(int64_t size);
+
+  // Requests updating the space size used by Android apps and cache.
+  void UpdateArcSize();
+
+  // Callback to update the UI about Android apps and cache.
+  void OnGetArcSize(bool succeeded, arc::mojom::ApplicationsSizePtr size);
 
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 

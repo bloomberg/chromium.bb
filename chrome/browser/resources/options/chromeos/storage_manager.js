@@ -34,6 +34,9 @@ cr.define('options', function() {
       $('storage-manager-label-downloads').onclick = function() {
         chrome.send('openDownloads');
       };
+      $('storage-manager-label-arc').onclick = function() {
+        chrome.send('openArcStorage');
+      };
 
       $('storage-confirm').onclick = function() {
         PageManager.closeOverlay();
@@ -67,12 +70,33 @@ cr.define('options', function() {
     setDownloadsSize_: function(size) {
       $('storage-manager-size-downloads').textContent = size;
     },
+
+    /**
+     * Updates the total size of Android apps and cache.
+     * @param {string} size Formatted string of the size of Android apps and
+     * cache.
+     * @private
+     */
+    setArcSize_: function(size) {
+      assert(!$('storage-manager-item-arc').hidden);
+      $('storage-manager-size-arc').textContent = size;
+    },
+
+    /**
+     * Shows the item "Android apps and cache" on the overlay UI.
+     * @private
+     */
+    showArcItem_: function() {
+      $('storage-manager-item-arc').hidden = false;
+    },
   };
 
   // Forward public APIs to private implementations.
   cr.makePublic(StorageManager, [
-    'setSizeStat',
+    'setArcSize',
     'setDownloadsSize',
+    'setSizeStat',
+    'showArcItem',
   ]);
 
   return {
