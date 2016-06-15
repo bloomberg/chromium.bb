@@ -338,7 +338,7 @@ template("mac_app_bundle") {
       ":$_info_plist_bundle_data",
       ":$_pkg_info_bundle_data",
     ]
-
+    product_type = "com.apple.product-type.application"
     bundle_root_dir = "$root_out_dir/${_output_name}.app/Contents"
     bundle_resources_dir = "$bundle_root_dir/Resources"
     bundle_executable_dir = "$bundle_root_dir/MacOS"
