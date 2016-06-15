@@ -296,12 +296,13 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     cancel_request_with_policy_violating_referrer_ = val;
   }
 
-  int observed_before_proxy_headers_sent_callbacks() const {
-    return observed_before_proxy_headers_sent_callbacks_;
+  int before_send_headers_with_proxy_count() const {
+    return before_send_headers_with_proxy_count_;
   }
   int before_start_transaction_count() const {
     return before_start_transaction_count_;
   }
+
   int headers_received_count() const { return headers_received_count_; }
   int64_t total_network_bytes_received() const {
     return total_network_bytes_received_;
@@ -325,9 +326,10 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int OnBeforeStartTransaction(URLRequest* request,
                                const CompletionCallback& callback,
                                HttpRequestHeaders* headers) override;
-  void OnBeforeSendProxyHeaders(URLRequest* request,
-                                const ProxyInfo& proxy_info,
-                                HttpRequestHeaders* headers) override;
+  void OnBeforeSendHeaders(URLRequest* request,
+                           const ProxyInfo& proxy_info,
+                           const ProxyRetryInfoMap& proxy_retry_info,
+                           HttpRequestHeaders* headers) override;
   void OnStartTransaction(URLRequest* request,
                           const HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
@@ -379,7 +381,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_get_cookies_count_;
   int blocked_set_cookie_count_;
   int set_cookie_count_;
-  int observed_before_proxy_headers_sent_callbacks_;
+  int before_send_headers_with_proxy_count_;
   int before_start_transaction_count_;
   int headers_received_count_;
   int64_t total_network_bytes_received_;

@@ -228,8 +228,8 @@ class MockNetworkTransaction
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
 
-  void SetBeforeProxyHeadersSentCallback(
-      const BeforeProxyHeadersSentCallback& callback) override;
+  void SetBeforeHeadersSentCallback(
+      const BeforeHeadersSentCallback& callback) override;
 
   int ResumeNetworkStart() override;
 

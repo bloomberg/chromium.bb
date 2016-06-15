@@ -21,9 +21,10 @@ int NetworkDelegateImpl::OnBeforeStartTransaction(
   return OK;
 }
 
-void NetworkDelegateImpl::OnBeforeSendProxyHeaders(
+void NetworkDelegateImpl::OnBeforeSendHeaders(
     URLRequest* request,
     const ProxyInfo& proxy_info,
+    const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {}
 
 void NetworkDelegateImpl::OnStartTransaction(

@@ -89,8 +89,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
-  void SetBeforeProxyHeadersSentCallback(
-      const BeforeProxyHeadersSentCallback& callback) override;
+  void SetBeforeHeadersSentCallback(
+      const BeforeHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
 
   // HttpStreamRequest::Delegate methods:
@@ -388,7 +388,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
       websocket_handshake_stream_base_create_helper_;
 
   BeforeNetworkStartCallback before_network_start_callback_;
-  BeforeProxyHeadersSentCallback before_proxy_headers_sent_callback_;
+  BeforeHeadersSentCallback before_headers_sent_callback_;
 
   ConnectionAttempts connection_attempts_;
   IPEndPoint remote_endpoint_;

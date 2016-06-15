@@ -20,6 +20,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,10 +53,11 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return OK;
   }
 
-  void OnBeforeSendProxyHeaders(URLRequest* request,
-                                const ProxyInfo& proxy_info,
-                                HttpRequestHeaders* headers) override {
-    IncrementAndCompareCounter("on_before_send_proxy_headers_count");
+  void OnBeforeSendHeaders(URLRequest* request,
+                           const ProxyInfo& proxy_info,
+                           const ProxyRetryInfoMap& proxy_retry_info,
+                           HttpRequestHeaders* headers) override {
+    IncrementAndCompareCounter("on_before_send_headers_count");
   }
 
   void OnStartTransaction(URLRequest* request,
@@ -180,12 +182,14 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     scoped_refptr<HttpResponseHeaders> response_headers(
         new HttpResponseHeaders(""));
     TestCompletionCallback completion_callback;
+    ProxyRetryInfoMap proxy_retry_info;
 
     EXPECT_EQ(OK, OnBeforeURLRequest(request.get(),
                                      completion_callback.callback(), NULL));
     EXPECT_EQ(OK, OnBeforeStartTransaction(NULL, completion_callback.callback(),
                                            request_headers.get()));
-    OnBeforeSendProxyHeaders(NULL, ProxyInfo(), request_headers.get());
+    OnBeforeSendHeaders(NULL, ProxyInfo(), proxy_retry_info,
+                        request_headers.get());
     OnStartTransaction(NULL, *request_headers);
     OnNetworkBytesSent(request.get(), 42);
     EXPECT_EQ(OK, OnHeadersReceived(NULL, completion_callback.callback(),
@@ -221,11 +225,12 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_before_start_transaction_count"]);
   }
 
-  void OnBeforeSendProxyHeadersInternal(URLRequest* request,
-                                        const ProxyInfo& proxy_info,
-                                        HttpRequestHeaders* headers) override {
-    ++(*counters_)["on_before_send_proxy_headers_count"];
-    EXPECT_EQ(1, (*counters_)["on_before_send_proxy_headers_count"]);
+  void OnBeforeSendHeadersInternal(URLRequest* request,
+                                   const ProxyInfo& proxy_info,
+                                   const ProxyRetryInfoMap& proxy_retry_info,
+                                   HttpRequestHeaders* headers) override {
+    ++(*counters_)["on_before_send_headers_count"];
+    EXPECT_EQ(1, (*counters_)["on_before_send_headers_count"]);
   }
 
   void OnStartTransactionInternal(URLRequest* request,

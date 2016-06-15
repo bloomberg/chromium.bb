@@ -44,20 +44,21 @@ void LayeredNetworkDelegate::OnBeforeStartTransactionInternal(
     const CompletionCallback& callback,
     HttpRequestHeaders* headers) {}
 
-void LayeredNetworkDelegate::OnBeforeSendProxyHeaders(
+void LayeredNetworkDelegate::OnBeforeSendHeaders(
     URLRequest* request,
     const ProxyInfo& proxy_info,
+    const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {
-  OnBeforeSendProxyHeadersInternal(request, proxy_info, headers);
-  nested_network_delegate_->NotifyBeforeSendProxyHeaders(request, proxy_info,
-                                                         headers);
+  OnBeforeSendHeadersInternal(request, proxy_info, proxy_retry_info, headers);
+  nested_network_delegate_->NotifyBeforeSendHeaders(request, proxy_info,
+                                                    proxy_retry_info, headers);
 }
 
-void LayeredNetworkDelegate::OnBeforeSendProxyHeadersInternal(
+void LayeredNetworkDelegate::OnBeforeSendHeadersInternal(
     URLRequest* request,
     const ProxyInfo& proxy_info,
-    HttpRequestHeaders* headers) {
-}
+    const ProxyRetryInfoMap& proxy_retry_info,
+    HttpRequestHeaders* headers) {}
 
 void LayeredNetworkDelegate::OnStartTransaction(
     URLRequest* request,

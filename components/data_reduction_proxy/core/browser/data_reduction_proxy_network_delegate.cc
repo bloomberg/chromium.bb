@@ -165,14 +165,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
   }
 }
 
-void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
+void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
+    const net::ProxyRetryInfoMap& proxy_retry_info,
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
-  if (!proxy_info.proxy_server().is_valid())
-    return;
-  if (proxy_info.proxy_server().is_direct())
+  // The following checks rule out direct, invalid, and othe connection types.
+  if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
     return;
   if (proxy_info.proxy_server().host_port_pair().IsEmpty())
     return;
@@ -180,6 +180,11 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
           proxy_info.proxy_server().host_port_pair(), nullptr)) {
     return;
   }
+
+  // TODO(ryansturm): Remove this nullptr check, as request should never be
+  // null. crbug.com/619712
+  if (!request)
+    return;
 
   // Retrieves DataReductionProxyData from a request, creating a new instance
   // if needed.
@@ -189,7 +194,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     data->set_used_data_reduction_proxy(true);
 
   if (data_reduction_proxy_io_data_ &&
-      data_reduction_proxy_io_data_->lofi_decider() && request) {
+      data_reduction_proxy_io_data_->lofi_decider()) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
     bool is_using_lofi_mode =
         lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);

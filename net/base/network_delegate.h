@@ -15,6 +15,7 @@
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/proxy/proxy_retry_info.h"
 
 class GURL;
 
@@ -65,9 +66,10 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeStartTransaction(URLRequest* request,
                                    const CompletionCallback& callback,
                                    HttpRequestHeaders* headers);
-  void NotifyBeforeSendProxyHeaders(URLRequest* request,
-                                    const ProxyInfo& proxy_info,
-                                    HttpRequestHeaders* headers);
+  void NotifyBeforeSendHeaders(URLRequest* request,
+                               const ProxyInfo& proxy_info,
+                               const ProxyRetryInfoMap& proxy_retry_info,
+                               HttpRequestHeaders* headers);
   void NotifyStartTransaction(URLRequest* request,
                               const HttpRequestHeaders& headers);
   int NotifyHeadersReceived(
@@ -139,12 +141,16 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                                        const CompletionCallback& callback,
                                        HttpRequestHeaders* headers) = 0;
 
-  // Called after a proxy connection. Allows the delegate to read/write
-  // |headers| before they get sent out. |headers| is valid only until
-  // OnCompleted or OnURLRequestDestroyed is called for this request.
-  virtual void OnBeforeSendProxyHeaders(URLRequest* request,
-                                        const ProxyInfo& proxy_info,
-                                        HttpRequestHeaders* headers) = 0;
+  // Called after a connection is established , and just before headers are sent
+  // to the destination server (i.e., not called for HTTP CONNECT requests). For
+  // non-tunneled requests using HTTP proxies, |headers| will include any
+  // proxy-specific headers as well. Allows the delegate to read/write |headers|
+  // before they get sent out. |headers| is valid only until OnCompleted or
+  // OnURLRequestDestroyed is called for this request.
+  virtual void OnBeforeSendHeaders(URLRequest* request,
+                                   const ProxyInfo& proxy_info,
+                                   const ProxyRetryInfoMap& proxy_retry_info,
+                                   HttpRequestHeaders* headers) = 0;
 
   // Called right before the HTTP request(s) are being sent to the network.
   // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is

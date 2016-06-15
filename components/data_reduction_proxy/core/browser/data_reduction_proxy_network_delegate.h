@@ -91,12 +91,13 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
                                   const net::CompletionCallback& callback,
                                   GURL* new_url) override;
 
-  // Called after a proxy connection. Allows the delegate to read/write
+  // Called after connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
   // OnCompleted or OnURLRequestDestroyed is called for this request.
-  void OnBeforeSendProxyHeadersInternal(
+  void OnBeforeSendHeadersInternal(
       net::URLRequest* request,
       const net::ProxyInfo& proxy_info,
+      const net::ProxyRetryInfoMap& proxy_retry_info,
       net::HttpRequestHeaders* headers) override;
 
   // Indicates that the URL request has been completed or failed.

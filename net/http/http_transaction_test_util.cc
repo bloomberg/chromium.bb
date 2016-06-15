@@ -476,9 +476,8 @@ void MockNetworkTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback) {
 }
 
-void MockNetworkTransaction::SetBeforeProxyHeadersSentCallback(
-    const BeforeProxyHeadersSentCallback& callback) {
-}
+void MockNetworkTransaction::SetBeforeHeadersSentCallback(
+    const BeforeHeadersSentCallback& callback) {}
 
 int MockNetworkTransaction::ResumeNetworkStart() {
   // Should not get here.

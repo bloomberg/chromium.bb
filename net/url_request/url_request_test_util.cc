@@ -23,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -340,7 +341,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
-      observed_before_proxy_headers_sent_callbacks_(0),
+      before_send_headers_with_proxy_count_(0),
       before_start_transaction_count_(0),
       headers_received_count_(0),
       total_network_bytes_received_(0),
@@ -417,11 +418,18 @@ int TestNetworkDelegate::OnBeforeStartTransaction(
   return OK;
 }
 
-void TestNetworkDelegate::OnBeforeSendProxyHeaders(
+void TestNetworkDelegate::OnBeforeSendHeaders(
     URLRequest* request,
     const ProxyInfo& proxy_info,
+    const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {
-  ++observed_before_proxy_headers_sent_callbacks_;
+  if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
+    return;
+  if (!request || request->url().SchemeIs("https") ||
+      request->url().SchemeIsWSOrWSS()) {
+    return;
+  }
+  ++before_send_headers_with_proxy_count_;
   last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
 }
 

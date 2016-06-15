@@ -43,6 +43,8 @@
 #include "net/http/http_util.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
@@ -395,15 +397,15 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     out->clear();
 }
 
-void URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback(
+void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
     const ProxyInfo& proxy_info,
     HttpRequestHeaders* request_headers) {
   DCHECK(request_headers);
   DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
   if (network_delegate()) {
-    network_delegate()->NotifyBeforeSendProxyHeaders(
-        request_,
-        proxy_info,
+    network_delegate()->NotifyBeforeSendHeaders(
+        request_, proxy_info,
+        request_->context()->proxy_service()->proxy_retry_info(),
         request_headers);
   }
 }
@@ -637,8 +639,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
       transaction_->SetBeforeNetworkStartCallback(
           base::Bind(&URLRequestHttpJob::NotifyBeforeNetworkStart,
                      base::Unretained(this)));
-      transaction_->SetBeforeProxyHeadersSentCallback(
-          base::Bind(&URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback,
+      transaction_->SetBeforeHeadersSentCallback(
+          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
                      base::Unretained(this)));
 
       if (!throttling_entry_.get() ||

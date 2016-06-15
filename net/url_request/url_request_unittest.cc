@@ -3807,8 +3807,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     base::RunLoop().Run();
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
     EXPECT_TRUE(r->proxy_server().Equals(http_test_server()->host_port_pair()));
-    EXPECT_EQ(
-        1, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    // before_send_headers_with_proxy_count only increments for headers sent
+    // through an untunneled proxy.
+    EXPECT_EQ(1, network_delegate.before_send_headers_with_proxy_count());
     EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
         http_test_server()->host_port_pair()));
 
@@ -3861,8 +3862,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
     EXPECT_TRUE(r->proxy_server().Equals(http_test_server()->host_port_pair()));
-    EXPECT_EQ(
-        1, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    // before_send_headers_with_proxy_count only increments for headers sent
+    // through an untunneled proxy.
+    EXPECT_EQ(1, network_delegate.before_send_headers_with_proxy_count());
     EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
         http_test_server()->host_port_pair()));
     EXPECT_EQ(0, r->status().error());
@@ -3959,8 +3961,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
     EXPECT_TRUE(r->proxy_server().Equals(http_test_server()->host_port_pair()));
-    EXPECT_EQ(
-        2, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    // before_send_headers_with_proxy_count only increments for headers sent
+    // through an untunneled proxy.
+    EXPECT_EQ(2, network_delegate.before_send_headers_with_proxy_count());
     EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
         http_test_server()->host_port_pair()));
 

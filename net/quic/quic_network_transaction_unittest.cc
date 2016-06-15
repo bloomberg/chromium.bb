@@ -168,19 +168,23 @@ class MockQuicData {
   std::unique_ptr<SequencedSocketData> socket_data_;
 };
 
-class ProxyHeadersHandler {
+class HeadersHandler {
  public:
-  ProxyHeadersHandler() : was_called_(false) {}
+  HeadersHandler() : was_proxied_(false) {}
 
-  bool was_called() { return was_called_; }
+  bool was_proxied() { return was_proxied_; }
 
-  void OnBeforeProxyHeadersSent(const ProxyInfo& proxy_info,
-                                HttpRequestHeaders* request_headers) {
-    was_called_ = true;
+  void OnBeforeHeadersSent(const ProxyInfo& proxy_info,
+                           HttpRequestHeaders* request_headers) {
+    if (!proxy_info.is_http() && !proxy_info.is_https() &&
+        !proxy_info.is_quic()) {
+      return;
+    }
+    was_proxied_ = true;
   }
 
  private:
-  bool was_called_;
+  bool was_proxied_;
 };
 
 class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
@@ -668,15 +672,15 @@ class QuicNetworkTransactionTest
       uint16_t port) {
     std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-    ProxyHeadersHandler proxy_headers_handler;
-    trans->SetBeforeProxyHeadersSentCallback(
-        base::Bind(&ProxyHeadersHandler::OnBeforeProxyHeadersSent,
-                   base::Unretained(&proxy_headers_handler)));
+    HeadersHandler headers_handler;
+    trans->SetBeforeHeadersSentCallback(
+        base::Bind(&HeadersHandler::OnBeforeHeadersSent,
+                   base::Unretained(&headers_handler)));
     RunTransaction(trans);
     CheckWasQuicResponse(trans);
     CheckResponsePort(trans, port);
     CheckResponseData(trans, expected);
-    EXPECT_EQ(used_proxy, proxy_headers_handler.was_called());
+    EXPECT_EQ(used_proxy, headers_handler.was_proxied());
   }
 };
 

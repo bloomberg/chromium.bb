@@ -41,13 +41,14 @@ int NetworkDelegate::NotifyBeforeStartTransaction(
   return OnBeforeStartTransaction(request, callback, headers);
 }
 
-void NetworkDelegate::NotifyBeforeSendProxyHeaders(
+void NetworkDelegate::NotifyBeforeSendHeaders(
     URLRequest* request,
     const ProxyInfo& proxy_info,
+    const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {
   DCHECK(CalledOnValidThread());
   DCHECK(headers);
-  OnBeforeSendProxyHeaders(request, proxy_info, headers);
+  OnBeforeSendHeaders(request, proxy_info, proxy_retry_info, headers);
 }
 
 void NetworkDelegate::NotifyStartTransaction(

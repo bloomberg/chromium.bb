@@ -452,9 +452,9 @@ void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
-void HttpNetworkTransaction::SetBeforeProxyHeadersSentCallback(
-    const BeforeProxyHeadersSentCallback& callback) {
-  before_proxy_headers_sent_callback_ = callback;
+void HttpNetworkTransaction::SetBeforeHeadersSentCallback(
+    const BeforeHeadersSentCallback& callback) {
+  before_headers_sent_callback_ = callback;
 }
 
 int HttpNetworkTransaction::ResumeNetworkStart() {
@@ -1037,9 +1037,8 @@ int HttpNetworkTransaction::BuildRequestHeaders(
 
   request_headers_.MergeFrom(request_->extra_headers);
 
-  if (using_http_proxy_without_tunnel &&
-      !before_proxy_headers_sent_callback_.is_null())
-    before_proxy_headers_sent_callback_.Run(proxy_info_, &request_headers_);
+  if (!before_headers_sent_callback_.is_null())
+    before_headers_sent_callback_.Run(proxy_info_, &request_headers_);
 
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||

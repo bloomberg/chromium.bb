@@ -27,6 +27,7 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -109,10 +110,11 @@ class ContentLoFiDeciderTest : public testing::Test {
     return request;
   }
 
-  void NotifyBeforeSendProxyHeaders(net::HttpRequestHeaders* headers,
-                                    net::URLRequest* request,
-                                    bool use_data_reduction_proxy) {
+  void NotifyBeforeSendHeaders(net::HttpRequestHeaders* headers,
+                               net::URLRequest* request,
+                               bool use_data_reduction_proxy) {
     net::ProxyInfo data_reduction_proxy_info;
+    net::ProxyRetryInfoMap proxy_retry_info;
 
     if (use_data_reduction_proxy) {
       std::string data_reduction_proxy;
@@ -123,8 +125,8 @@ class ContentLoFiDeciderTest : public testing::Test {
       data_reduction_proxy_info.UseNamedProxy("proxy.com");
     }
 
-    data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
-        request, data_reduction_proxy_info, headers);
+    data_reduction_proxy_network_delegate_->NotifyBeforeSendHeaders(
+        request, data_reduction_proxy_info, proxy_retry_info, headers);
   }
 
   static void VerifyLoFiHeader(bool expected_lofi_used,
@@ -190,7 +192,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
 
     // No flags or field trials. The Lo-Fi header should not be added.
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
@@ -202,7 +204,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFiValueAlwaysOn);
     request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     headers.Clear();
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(
@@ -214,7 +216,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     // should be added.
     request->SetLoadFlags(0);
     headers.Clear();
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
@@ -226,7 +228,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueCellularOnly);
     headers.Clear();
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
@@ -238,7 +240,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
     headers.Clear();
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
@@ -261,7 +263,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
@@ -283,7 +285,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
@@ -308,7 +310,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
     if (tests[i].is_main_frame)
       request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
                             headers);
@@ -357,7 +359,7 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
 
     VerifyLoFiHeader(expect_lofi_header, headers);
   }
@@ -407,7 +409,7 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
+    NotifyBeforeSendHeaders(&headers, request.get(), true);
 
     VerifyLoFiHeader(expect_lofi_header, headers);
   }
@@ -428,7 +430,7 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
-    NotifyBeforeSendProxyHeaders(&headers, request.get(), false);
+    NotifyBeforeSendHeaders(&headers, request.get(), false);
     std::string header_value;
     headers.GetHeader(chrome_proxy_header(), &header_value);
     EXPECT_EQ(std::string::npos,
