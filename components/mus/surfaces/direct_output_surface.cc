@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -19,9 +21,8 @@ DirectOutputSurface::DirectOutputSurface(
     scoped_refptr<SurfacesContextProvider> context_provider,
     base::SingleThreadTaskRunner* task_runner)
     : cc::OutputSurface(context_provider, nullptr, nullptr),
-      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
-          task_runner,
-          cc::BeginFrameArgs::DefaultInterval())),
+      synthetic_begin_frame_source_(new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner))),
       weak_ptr_factory_(this) {
   context_provider->SetDelegate(this);
 }

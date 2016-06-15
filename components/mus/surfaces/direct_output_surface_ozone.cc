@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "components/display_compositor/buffer_queue.h"
 #include "components/mus/common/gpu_service.h"
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
@@ -31,9 +33,8 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     : cc::OutputSurface(context_provider, nullptr, nullptr),
       gl_helper_(context_provider->ContextGL(),
                  context_provider->ContextSupport()),
-      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
-          task_runner,
-          cc::BeginFrameArgs::DefaultInterval())),
+      synthetic_begin_frame_source_(new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner))),
       weak_ptr_factory_(this) {
   if (!GpuService::UseChromeGpuCommandBuffer()) {
     ozone_gpu_memory_buffer_manager_.reset(new OzoneGpuMemoryBufferManager());

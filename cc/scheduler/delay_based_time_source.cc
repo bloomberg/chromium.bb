@@ -14,24 +14,22 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/output/begin_frame_args.h"
 
 namespace cc {
 
 // The following methods correspond to the DelayBasedTimeSource that uses
 // the base::TimeTicks::Now as the timebase.
 DelayBasedTimeSource::DelayBasedTimeSource(
-    base::TimeDelta interval,
     base::SingleThreadTaskRunner* task_runner)
     : client_(nullptr),
       active_(false),
       timebase_(base::TimeTicks()),
-      interval_(interval),
-      last_tick_time_(base::TimeTicks() - interval),
+      interval_(BeginFrameArgs::DefaultInterval()),
+      last_tick_time_(base::TimeTicks() - interval_),
       next_tick_time_(base::TimeTicks()),
       task_runner_(task_runner),
-      weak_factory_(this) {
-  DCHECK_GT(interval, base::TimeDelta());
-}
+      weak_factory_(this) {}
 
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
 
@@ -84,7 +82,6 @@ void DelayBasedTimeSource::SetClient(DelayBasedTimeSourceClient* client) {
 
 void DelayBasedTimeSource::SetTimebaseAndInterval(base::TimeTicks timebase,
                                                   base::TimeDelta interval) {
-  DCHECK_GT(interval, base::TimeDelta());
   interval_ = interval;
   timebase_ = timebase;
 }
@@ -148,10 +145,14 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 //      now=37   tick_target=16.667  new_target=50.000  -->
 //          tick(), PostDelayedTask(floor(50.000-37)) --> PostDelayedTask(13)
 void DelayBasedTimeSource::PostNextTickTask(base::TimeTicks now) {
-  next_tick_time_ = now.SnappedToNextTick(timebase_, interval_);
-  if (next_tick_time_ == now)
-    next_tick_time_ += interval_;
-  DCHECK_GT(next_tick_time_, now);
+  if (interval_.is_zero()) {
+    next_tick_time_ = now;
+  } else {
+    next_tick_time_ = now.SnappedToNextTick(timebase_, interval_);
+    if (next_tick_time_ == now)
+      next_tick_time_ += interval_;
+    DCHECK_GT(next_tick_time_, now);
+  }
   tick_closure_.Reset(base::Bind(&DelayBasedTimeSource::OnTimerTick,
                                  weak_factory_.GetWeakPtr()));
   task_runner_->PostDelayedTask(FROM_HERE, tick_closure_.callback(),

@@ -8,6 +8,7 @@
 
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -27,7 +28,8 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   SurfaceDisplayOutputSurfaceTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
-        begin_frame_source_(new BackToBackBeginFrameSource(task_runner_.get())),
+        begin_frame_source_(new BackToBackBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()))),
         allocator_(0),
         display_size_(1920, 1080),
         display_rect_(display_size_),

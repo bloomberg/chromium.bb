@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -15,6 +16,7 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_renderer.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
@@ -85,8 +87,8 @@ void Display::CreateScheduler() {
 
     observed_begin_frame_source_ = vsync_begin_frame_source_;
     if (settings_.disable_display_vsync) {
-      internal_begin_frame_source_.reset(
-          new BackToBackBeginFrameSource(task_runner_));
+      internal_begin_frame_source_.reset(new BackToBackBeginFrameSource(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_)));
       observed_begin_frame_source_ = internal_begin_frame_source_.get();
     }
   }

@@ -14,6 +14,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -149,9 +150,10 @@ void InProcessContextFactory::CreateOutputSurface(
           "UICompositor");
 
   std::unique_ptr<cc::OutputSurface> display_output_surface;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
-      new cc::SyntheticBeginFrameSource(compositor->task_runner().get(),
-                                        cc::BeginFrameArgs::DefaultInterval()));
+  std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
+      new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(
+              compositor->task_runner().get())));
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;

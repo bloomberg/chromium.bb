@@ -699,7 +699,7 @@ void LayerTreeTest::DoBeginTest() {
   if (settings_.use_external_begin_frame_source) {
     DCHECK(!IsRemoteTest());
     external_begin_frame_source.reset(new FakeExternalBeginFrameSource(
-        settings_.renderer_settings.refresh_rate));
+        settings_.renderer_settings.refresh_rate, true));
     external_begin_frame_source_ = external_begin_frame_source.get();
   }
 

@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/display.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,7 +72,8 @@ class TestDisplayScheduler : public DisplayScheduler {
 class DisplaySchedulerTest : public testing::Test {
  public:
   DisplaySchedulerTest()
-      : now_src_(new base::SimpleTestTickClock()),
+      : fake_begin_frame_source_(0.f, false),
+        now_src_(new base::SimpleTestTickClock()),
         task_runner_(new base::NullTaskRunner),
         client_(new FakeDisplaySchedulerClient),
         scheduler_(new TestDisplayScheduler(client_.get(),
@@ -99,7 +101,7 @@ class DisplaySchedulerTest : public testing::Test {
   FakeDisplaySchedulerClient& client() { return *client_; }
   DisplayScheduler& scheduler() { return *scheduler_; }
 
-  FakeBeginFrameSource fake_begin_frame_source_;
+  FakeExternalBeginFrameSource fake_begin_frame_source_;
 
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<base::NullTaskRunner> task_runner_;

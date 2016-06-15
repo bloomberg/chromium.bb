@@ -40,23 +40,14 @@ class FakeDelayBasedTimeSourceClient : public DelayBasedTimeSourceClient {
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static std::unique_ptr<FakeDelayBasedTimeSource> Create(
-      base::TimeDelta interval,
-      base::SingleThreadTaskRunner* task_runner) {
-    return base::WrapUnique(
-        new FakeDelayBasedTimeSource(interval, task_runner));
-  }
-
+  explicit FakeDelayBasedTimeSource(base::SingleThreadTaskRunner* task_runner)
+      : DelayBasedTimeSource(task_runner) {}
   ~FakeDelayBasedTimeSource() override {}
 
   void SetNow(base::TimeTicks time) { now_ = time; }
   base::TimeTicks Now() const override;
 
  protected:
-  FakeDelayBasedTimeSource(base::TimeDelta interval,
-                           base::SingleThreadTaskRunner* task_runner)
-      : DelayBasedTimeSource(interval, task_runner) {}
-
   base::TimeTicks now_;
 
  private:
@@ -65,21 +56,11 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
 
 class TestDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static std::unique_ptr<TestDelayBasedTimeSource> Create(
-      base::SimpleTestTickClock* now_src,
-      base::TimeDelta interval,
-      OrderedSimpleTaskRunner* task_runner) {
-    return base::WrapUnique(
-        new TestDelayBasedTimeSource(now_src, interval, task_runner));
-  }
-
+  TestDelayBasedTimeSource(base::SimpleTestTickClock* now_src,
+                           OrderedSimpleTaskRunner* task_runner);
   ~TestDelayBasedTimeSource() override;
 
  protected:
-  TestDelayBasedTimeSource(base::SimpleTestTickClock* now_src,
-                           base::TimeDelta interval,
-                           OrderedSimpleTaskRunner* task_runner);
-
   // Overridden from DelayBasedTimeSource
   base::TimeTicks Now() const override;
   std::string TypeString() const override;
@@ -89,56 +70,6 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDelayBasedTimeSource);
-};
-
-class FakeBeginFrameSource : public BeginFrameSourceBase {
- public:
-  FakeBeginFrameSource();
-  ~FakeBeginFrameSource() override;
-
-  // TODO(sunnyps): Use using BeginFrameSourceBase::CallOnBeginFrame instead.
-  void TestOnBeginFrame(const BeginFrameArgs& args) {
-    return CallOnBeginFrame(args);
-  }
-
-  BeginFrameArgs TestLastUsedBeginFrameArgs() {
-    if (!observers_.empty())
-      return (*observers_.begin())->LastUsedBeginFrameArgs();
-    return BeginFrameArgs();
-  }
-
-  bool has_observers() const { return !observers_.empty(); }
-
-  using BeginFrameSourceBase::SetBeginFrameSourcePaused;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeBeginFrameSource);
-};
-
-class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
- public:
-  TestBackToBackBeginFrameSource(base::SimpleTestTickClock* now_src,
-                                 base::SingleThreadTaskRunner* task_runner);
-  ~TestBackToBackBeginFrameSource() override;
-
- protected:
-  base::TimeTicks Now() override;
-  // Not owned.
-  base::SimpleTestTickClock* now_src_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBackToBackBeginFrameSource);
-};
-
-class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
- public:
-  explicit TestSyntheticBeginFrameSource(base::SimpleTestTickClock* now_src,
-                                         OrderedSimpleTaskRunner* task_runner,
-                                         base::TimeDelta initial_interval);
-  ~TestSyntheticBeginFrameSource() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);
 };
 
 class FakeCompositorTimingHistory : public CompositorTimingHistory {

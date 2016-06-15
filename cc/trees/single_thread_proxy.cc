@@ -16,6 +16,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/compositor_timing_history.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -79,13 +80,14 @@ void SingleThreadProxy::Start(
       if (!scheduler_settings.throttle_frame_production) {
         // Unthrottled source takes precedence over external sources.
         unthrottled_begin_frame_source_.reset(new BackToBackBeginFrameSource(
-            task_runner_provider_->MainThreadTaskRunner()));
+            base::MakeUnique<DelayBasedTimeSource>(
+                task_runner_provider_->MainThreadTaskRunner())));
         frame_source = unthrottled_begin_frame_source_.get();
       }
       if (!frame_source) {
-        synthetic_begin_frame_source_.reset(new SyntheticBeginFrameSource(
-            task_runner_provider_->MainThreadTaskRunner(),
-            BeginFrameArgs::DefaultInterval()));
+        synthetic_begin_frame_source_.reset(new DelayBasedBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(
+                task_runner_provider_->MainThreadTaskRunner())));
         frame_source = synthetic_begin_frame_source_.get();
       }
     }
@@ -492,11 +494,6 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 
 void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
                                               base::TimeDelta interval) {
-  if (interval.is_zero()) {
-    // TODO(brianderson): We should not be receiving 0 intervals.
-    interval = BeginFrameArgs::DefaultInterval();
-  }
-
   if (synthetic_begin_frame_source_)
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }

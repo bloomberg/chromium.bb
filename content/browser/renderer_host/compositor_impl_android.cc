@@ -7,7 +7,7 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 #include <stdint.h>
-
+#include <unordered_set>
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -81,23 +81,40 @@ namespace {
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
-class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
+class ExternalBeginFrameSource : public cc::BeginFrameSource,
                                  public CompositorImpl::VSyncObserver {
  public:
-  ExternalBeginFrameSource(CompositorImpl* compositor)
+  explicit ExternalBeginFrameSource(CompositorImpl* compositor)
       : compositor_(compositor) {
     compositor_->AddObserver(this);
   }
-
   ~ExternalBeginFrameSource() override { compositor_->RemoveObserver(this); }
 
-  // cc::BeginFrameSourceBase implementation:
-  void AddObserver(cc::BeginFrameObserver* obs) override {
-    cc::BeginFrameSourceBase::AddObserver(obs);
-    DCHECK(needs_begin_frames());
-    if (!last_begin_frame_args_.IsValid())
-      return;
+  // cc::BeginFrameSource implementation.
+  void AddObserver(cc::BeginFrameObserver* obs) override;
+  void RemoveObserver(cc::BeginFrameObserver* obs) override;
+  void DidFinishFrame(cc::BeginFrameObserver* obs,
+                      size_t remaining_frames) override {}
 
+  // CompositorImpl::VSyncObserver implementation.
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override;
+
+ private:
+  CompositorImpl* const compositor_;
+  std::unordered_set<cc::BeginFrameObserver*> observers_;
+  cc::BeginFrameArgs last_begin_frame_args_;
+};
+
+void ExternalBeginFrameSource::AddObserver(cc::BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) == observers_.end());
+
+  observers_.insert(obs);
+  obs->OnBeginFrameSourcePausedChanged(false);
+  compositor_->OnNeedsBeginFramesChange(true);
+
+  if (last_begin_frame_args_.IsValid()) {
     // Send a MISSED begin frame if necessary.
     cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
@@ -112,27 +129,27 @@ class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
       obs->OnBeginFrame(last_begin_frame_args_);
     }
   }
+}
 
-  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override {
-    TRACE_EVENT1("compositor", "OnNeedsBeginFramesChanged",
-                 "needs_begin_frames", needs_begin_frames);
-    compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
-  }
+void ExternalBeginFrameSource::RemoveObserver(cc::BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) != observers_.end());
 
-  // CompositorImpl::VSyncObserver implementation:
-  void OnVSync(base::TimeTicks frame_time,
-               base::TimeDelta vsync_period) override {
-    base::TimeTicks deadline = std::max(base::TimeTicks::Now(), frame_time);
-    last_begin_frame_args_ =
-        cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
-                                   vsync_period, cc::BeginFrameArgs::NORMAL);
-    CallOnBeginFrame(last_begin_frame_args_);
-  }
+  observers_.erase(obs);
+  if (observers_.empty())
+    compositor_->OnNeedsBeginFramesChange(false);
+}
 
- private:
-  CompositorImpl* compositor_;
-  cc::BeginFrameArgs last_begin_frame_args_;
-};
+void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
+                                       base::TimeDelta vsync_period) {
+  base::TimeTicks deadline = std::max(base::TimeTicks::Now(), frame_time);
+  last_begin_frame_args_ =
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 vsync_period, cc::BeginFrameArgs::NORMAL);
+  std::unordered_set<cc::BeginFrameObserver*> observers(observers_);
+  for (auto* obs : observers)
+    obs->OnBeginFrame(last_begin_frame_args_);
+}
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
 class OutputSurfaceWithoutParent : public cc::OutputSurface,

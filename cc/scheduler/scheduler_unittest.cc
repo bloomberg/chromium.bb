@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,7 +52,8 @@ namespace {
 base::TimeDelta kSlowDuration = base::TimeDelta::FromSeconds(1);
 base::TimeDelta kFastDuration = base::TimeDelta::FromMilliseconds(1);
 
-class FakeSchedulerClient : public SchedulerClient {
+class FakeSchedulerClient : public SchedulerClient,
+                            public FakeExternalBeginFrameSource::Client {
  public:
   FakeSchedulerClient()
       : automatic_swap_ack_(true),
@@ -180,6 +182,14 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.push_back(scheduler_->AsValue());
   }
 
+  // FakeExternalBeginFrameSource::Client implementation.
+  void OnAddObserver(BeginFrameObserver* obs) override {
+    PushAction("AddObserver(this)");
+  }
+  void OnRemoveObserver(BeginFrameObserver* obs) override {
+    PushAction("RemoveObserver(this)");
+  }
+
  protected:
   bool ImplFrameDeadlinePendingCallback(bool state) {
     return scheduler_->BeginImplFrameDeadlinePending() == state;
@@ -197,33 +207,6 @@ class FakeSchedulerClient : public SchedulerClient {
   std::vector<std::unique_ptr<base::trace_event::ConvertableToTraceFormat>>
       states_;
   TestScheduler* scheduler_;
-};
-
-class FakeExternalBeginFrameSource : public BeginFrameSourceBase {
- public:
-  explicit FakeExternalBeginFrameSource(FakeSchedulerClient* client)
-      : client_(client) {}
-  ~FakeExternalBeginFrameSource() override {}
-
-  void AddObserver(BeginFrameObserver* obs) override {
-    client_->PushAction("AddObserver(this)");
-    BeginFrameSourceBase::AddObserver(obs);
-  }
-
-  void RemoveObserver(BeginFrameObserver* obs) override {
-    client_->PushAction("RemoveObserver(this)");
-    BeginFrameSourceBase::RemoveObserver(obs);
-  }
-
-  // TODO(sunnyps): Use using CallOnBeginFrame, SetBeginFrameSourcePaused.
-  void TestOnBeginFrame(const BeginFrameArgs& args) {
-    return CallOnBeginFrame(args);
-  }
-
-  void SetPaused(bool paused) { SetBeginFrameSourcePaused(paused); }
-
- private:
-  FakeSchedulerClient* client_;
 };
 
 class SchedulerTest : public testing::Test {
@@ -245,12 +228,15 @@ class SchedulerTest : public testing::Test {
  protected:
   TestScheduler* CreateScheduler() {
     BeginFrameSource* frame_source;
-    unthrottled_frame_source_.reset(
-        new TestBackToBackBeginFrameSource(now_src_.get(), task_runner_.get()));
+    unthrottled_frame_source_.reset(new BackToBackBeginFrameSource(
+        base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
+                                                   task_runner_.get())));
     fake_external_begin_frame_source_.reset(
-        new FakeExternalBeginFrameSource(client_.get()));
-    synthetic_frame_source_.reset(new TestSyntheticBeginFrameSource(
-        now_src_.get(), task_runner_.get(), BeginFrameArgs::DefaultInterval()));
+        new FakeExternalBeginFrameSource(0.f, false));
+    fake_external_begin_frame_source_->SetClient(client_.get());
+    synthetic_frame_source_.reset(new DelayBasedBeginFrameSource(
+        base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
+                                                   task_runner_.get())));
     if (!scheduler_settings_.throttle_frame_production) {
       frame_source = unthrottled_frame_source_.get();
     } else if (scheduler_settings_.use_external_begin_frame_source) {
@@ -429,8 +415,8 @@ class SchedulerTest : public testing::Test {
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   std::unique_ptr<FakeExternalBeginFrameSource>
       fake_external_begin_frame_source_;
-  std::unique_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source_;
-  std::unique_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> unthrottled_frame_source_;
   SchedulerSettings scheduler_settings_;
   std::unique_ptr<FakeSchedulerClient> client_;
   std::unique_ptr<TestScheduler> scheduler_;
@@ -2769,7 +2755,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   EXPECT_NO_ACTION(client_);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
+TEST_F(SchedulerTest, DidLoseOutputSurfaceWithDelayBasedBeginFrameSource) {
   SetUpScheduler(true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.

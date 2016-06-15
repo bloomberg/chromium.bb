@@ -13,6 +13,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_software_output_device.h"
@@ -91,7 +92,8 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
     bool init = display_->InitializeSynchronous(&display_client_);
     CHECK(init);
   } else {
-    begin_frame_source_.reset(new BackToBackBeginFrameSource(task_runner));
+    begin_frame_source_.reset(new BackToBackBeginFrameSource(
+        base::MakeUnique<DelayBasedTimeSource>(task_runner)));
     display_->SetBeginFrameSource(begin_frame_source_.get());
 
     bool init = display_->Initialize(&display_client_);

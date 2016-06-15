@@ -36,12 +36,7 @@ class CC_EXPORT DelayBasedTimeSourceClient {
 // delays. DelayBasedTimeSource uses base::TimeTicks::Now as its timebase.
 class CC_EXPORT DelayBasedTimeSource {
  public:
-  static std::unique_ptr<DelayBasedTimeSource> Create(
-      base::TimeDelta interval,
-      base::SingleThreadTaskRunner* task_runner) {
-    return base::WrapUnique(new DelayBasedTimeSource(interval, task_runner));
-  }
-
+  explicit DelayBasedTimeSource(base::SingleThreadTaskRunner* task_runner);
   virtual ~DelayBasedTimeSource();
 
   void SetClient(DelayBasedTimeSourceClient* client);
@@ -62,9 +57,6 @@ class CC_EXPORT DelayBasedTimeSource {
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 
  protected:
-  DelayBasedTimeSource(base::TimeDelta interval,
-                       base::SingleThreadTaskRunner* task_runner);
-
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
   virtual std::string TypeString() const;
