@@ -6,8 +6,7 @@
  * FileManager constructor.
  *
  * FileManager objects encapsulate the functionality of the file selector
- * dialogs, as well as the full screen file manager application (though the
- * latter is not yet implemented).
+ * dialogs, as well as the full screen file manager application.
  *
  * @constructor
  * @struct
