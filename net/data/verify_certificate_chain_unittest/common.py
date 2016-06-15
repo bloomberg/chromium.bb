@@ -39,8 +39,8 @@ JANUARY_1_2016_UTC = '160101120000Z'
 # The default time tests should use when verifying.
 DEFAULT_TIME = MARCH_2_2015_UTC
 
-# Counter used to generate unique (but readable) path names.
-g_cur_path_id = 0
+# Counters used to generate unique (but readable) path names.
+g_cur_path_id = {}
 
 # Output paths used:
 #   - g_out_dir: where any temporary files (keys, cert req, signing db etc) are
@@ -56,10 +56,8 @@ g_out_pem = None
 def GetUniquePathId(name):
   """Returns a base filename that contains 'name', but is unique to the output
   directory"""
-  global g_cur_path_id
-
-  path_id = g_cur_path_id
-  g_cur_path_id += 1
+  path_id = g_cur_path_id.get(name, 0)
+  g_cur_path_id[name] = path_id + 1
 
   # Use a short and clean name for the first use of this name.
   if path_id == 0:
