@@ -157,6 +157,7 @@ class ProfileImpl : public Profile {
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, DISABLED_ProfileReadmeCreated);
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest,
                            ProfileDeletedBeforeReadmeCreated);
+  FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, DiskCacheDirOverride);
 
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,

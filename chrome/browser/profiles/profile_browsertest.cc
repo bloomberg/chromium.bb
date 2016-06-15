@@ -687,3 +687,35 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
       incognito_browser,
       incognito_browser->profile()->GetRequestContextForExtensions());
 }
+
+// Verifies the cache directory supports multiple profiles when it's overriden
+// by group policy or command line switches.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
+  int size;
+  const base::FilePath::StringPieceType profile_name =
+      FILE_PATH_LITERAL("Profile 1");
+  base::ScopedTempDir mock_user_data_dir;
+  ASSERT_TRUE(mock_user_data_dir.CreateUniqueTempDir());
+  base::FilePath profile_path = mock_user_data_dir.path().Append(profile_name);
+  ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
+
+  {
+    profile_impl->GetPrefs()->SetFilePath(prefs::kDiskCacheDir,
+                                          base::FilePath());
+
+    base::FilePath cache_path = profile_path;
+    profile_impl->GetCacheParameters(false, &cache_path, &size);
+    EXPECT_EQ(profile_path, cache_path);
+  }
+
+  {
+    base::ScopedTempDir temp_disk_cache_dir;
+    ASSERT_TRUE(temp_disk_cache_dir.CreateUniqueTempDir());
+    profile_impl->GetPrefs()->SetFilePath(prefs::kDiskCacheDir,
+                                          temp_disk_cache_dir.path());
+
+    base::FilePath cache_path = profile_path;
+    profile_impl->GetCacheParameters(false, &cache_path, &size);
+    EXPECT_EQ(temp_disk_cache_dir.path().Append(profile_name), cache_path);
+  }
+}

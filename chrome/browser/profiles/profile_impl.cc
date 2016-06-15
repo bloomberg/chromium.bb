@@ -77,6 +77,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
@@ -1236,9 +1237,11 @@ void ProfileImpl::GetCacheParameters(bool is_media_context,
                                      int* max_size) {
   DCHECK(cache_path);
   DCHECK(max_size);
+
   base::FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
   if (!path.empty())
-    *cache_path = path;
+    *cache_path = path.Append(cache_path->BaseName());
+
   *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :
                                  prefs_->GetInteger(prefs::kDiskCacheSize);
 }
