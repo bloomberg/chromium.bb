@@ -415,7 +415,8 @@ Output.RULES = {
       speak: '!doNotInterrupt $role $descendants'
     },
     alertDialog: {
-      enter: '$nameFromNode $role $description $descendants'
+      enter: '$nameFromNode $role $description',
+      speak: '$name $role $descendants'
     },
     cell: {
       enter: '@column_granularity $tableCellColumnIndex'
