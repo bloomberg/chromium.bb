@@ -243,6 +243,9 @@ const struct NonPrintableKeyEntry {
     {VKEY_ALTGR, DomKey::ALT_GRAPH},
     {VKEY_PROCESSKEY, DomKey::PROCESS},
     // VKEY_PACKET - Used to pass Unicode char, considered as printable key.
+
+    // TODO(chongz): Handle Japanese keyboard layout keys 0xF0..0xF5.
+    // https://crbug.com/612694
     {VKEY_ATTN, DomKey::ATTN},
     {VKEY_CRSEL, DomKey::CR_SEL},
     {VKEY_EXSEL, DomKey::EX_SEL},
@@ -254,30 +257,7 @@ const struct NonPrintableKeyEntry {
     {VKEY_OEM_CLEAR, DomKey::CLEAR},
 };
 
-// Disambiguates the meaning of certain non-printable keys which have different
-// meanings under different languages, but use the same VKEY code.
-DomKey LanguageSpecificOemKeyboardCodeToDomKey(KeyboardCode key_code,
-                                               HKL layout) {
-  WORD language = LOWORD(layout);
-  WORD primary_language = PRIMARYLANGID(language);
-  if (primary_language == LANG_KOREAN) {
-    switch (key_code) {
-      case VKEY_HANGUL:
-        return DomKey::HANGUL_MODE;
-      case VKEY_HANJA:
-        return DomKey::HANJA_MODE;
-      default:
-        return DomKey::NONE;
-    }
-  }
-  // TODO(chongz): Handle Japanese keyboard layout keys 0xF0..0xF5, VKEY_KANA,
-  // VKEY_KANJI.
-  // https://crbug.com/612694
-  return DomKey::NONE;
-}
-
-DomKey NonPrintableKeyboardCodeToDomKey(KeyboardCode key_code, HKL layout) {
-  // 1. Most |key_codes| have the same meaning regardless of |layout|.
+DomKey NonPrintableKeyboardCodeToDomKey(KeyboardCode key_code) {
   const NonPrintableKeyEntry* result = std::lower_bound(
       std::begin(kNonPrintableKeyMap), std::end(kNonPrintableKeyMap), key_code,
       [](const NonPrintableKeyEntry& entry, KeyboardCode needle) {
@@ -285,8 +265,7 @@ DomKey NonPrintableKeyboardCodeToDomKey(KeyboardCode key_code, HKL layout) {
       });
   if (result != std::end(kNonPrintableKeyMap) && result->key_code == key_code)
     return result->dom_key;
-  // 2. Look up a |layout|-specific meaning for |key_code|.
-  return LanguageSpecificOemKeyboardCodeToDomKey(key_code, layout);
+  return DomKey::NONE;
 }
 
 void CleanupKeyMapTls(void* data) {
@@ -320,9 +299,13 @@ PlatformKeyMap::~PlatformKeyMap() {}
 DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
                                             KeyboardCode key_code,
                                             int flags) const {
-  DomKey key = NonPrintableKeyboardCodeToDomKey(key_code, keyboard_layout_);
+  DomKey key = NonPrintableKeyboardCodeToDomKey(key_code);
   if (key != DomKey::NONE)
     return key;
+
+  // TODO(chongz): Handle VKEY_KANA/VKEY_HANGUL, VKEY_HANJA/VKEY_KANJI based on
+  // layout.
+  // https://crbug.com/612736
 
   if (KeycodeConverter::DomCodeToLocation(code) == DomKeyLocation::NUMPAD) {
     // Derived the DOM Key value from |key_code| instead of |code|, to address
