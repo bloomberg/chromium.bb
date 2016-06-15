@@ -32,10 +32,6 @@ CustomNotificationView::CustomNotificationView(
   AddChildView(small_image());
 
   CreateOrUpdateCloseButtonView(notification);
-
-  // Use a layer for close button so that custom content does not eclipse it.
-  if (close_button())
-    close_button()->SetPaintToLayer(true);
 }
 
 CustomNotificationView::~CustomNotificationView() {}
