@@ -33,6 +33,7 @@ noletsignafter '
 capsletter 6
 begcapsword 6-6
 endcapsword 6-3
+nocontractsign 56
 
 # Typeforms (rulebook 9)
 emphclass italic
