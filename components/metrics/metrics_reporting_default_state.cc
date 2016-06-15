@@ -12,20 +12,18 @@ namespace metrics {
 
 void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kMetricsDefaultOptIn,
-                                MetricsServiceClient::DEFAULT_UNKNOWN);
+                                EnableMetricsDefault::DEFAULT_UNKNOWN);
 }
 
-void RecordMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in) {
-  DCHECK(GetMetricsReportingDefaultOptIn(local_state) ==
-         MetricsServiceClient::DEFAULT_UNKNOWN);
-  local_state->SetInteger(
-      prefs::kMetricsDefaultOptIn,
-      opt_in ? MetricsServiceClient::OPT_IN : MetricsServiceClient::OPT_OUT);
+void RecordMetricsReportingDefaultState(PrefService* local_state,
+                                        EnableMetricsDefault default_state) {
+  DCHECK_EQ(GetMetricsReportingDefaultState(local_state),
+            EnableMetricsDefault::DEFAULT_UNKNOWN);
+  local_state->SetInteger(prefs::kMetricsDefaultOptIn, default_state);
 }
 
-MetricsServiceClient::EnableMetricsDefault GetMetricsReportingDefaultOptIn(
-    PrefService* local_state) {
-  return static_cast<MetricsServiceClient::EnableMetricsDefault>(
+EnableMetricsDefault GetMetricsReportingDefaultState(PrefService* local_state) {
+  return static_cast<EnableMetricsDefault>(
       local_state->GetInteger(prefs::kMetricsDefaultOptIn));
 }
 

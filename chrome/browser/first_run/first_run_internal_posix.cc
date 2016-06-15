@@ -32,9 +32,11 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
   // has not already set preferences.
   if (internal::IsOrganicFirstRun() && !local_state_file_exists) {
     if (ShowFirstRunDialog(profile)) {
-      metrics::RecordMetricsReportingDefaultOptIn(
+      bool is_opt_in = first_run::IsMetricsReportingOptIn();
+      metrics::RecordMetricsReportingDefaultState(
           g_browser_process->local_state(),
-          first_run::IsMetricsReportingOptIn());
+          is_opt_in ? metrics::EnableMetricsDefault::OPT_IN
+                    : metrics::EnableMetricsDefault::OPT_OUT);
       startup_metric_utils::SetNonBrowserUIDisplayed();
     }
   }

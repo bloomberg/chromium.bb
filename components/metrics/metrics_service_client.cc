@@ -14,9 +14,8 @@ bool MetricsServiceClient::IsReportingPolicyManaged() {
   return false;
 }
 
-MetricsServiceClient::EnableMetricsDefault
-MetricsServiceClient::GetDefaultOptIn() {
-  return DEFAULT_UNKNOWN;
+EnableMetricsDefault MetricsServiceClient::GetMetricsReportingDefaultState() {
+  return EnableMetricsDefault::DEFAULT_UNKNOWN;
 }
 
 bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {

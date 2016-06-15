@@ -151,9 +151,9 @@ base::TimeDelta BlimpMetricsServiceClient::GetStandardUploadInterval() {
   return base::TimeDelta::FromMinutes(kStandardUploadIntervalMinutes);
 }
 
-metrics::MetricsServiceClient::EnableMetricsDefault
-BlimpMetricsServiceClient::GetDefaultOptIn() {
-  return OPT_IN;
+metrics::EnableMetricsDefault
+BlimpMetricsServiceClient::GetMetricsReportingDefaultState() {
+  return metrics::EnableMetricsDefault::OPT_IN;
 }
 
 bool BlimpMetricsServiceClient::IsConsentGiven() {

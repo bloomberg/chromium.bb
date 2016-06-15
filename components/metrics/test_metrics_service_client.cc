@@ -17,7 +17,7 @@ TestMetricsServiceClient::TestMetricsServiceClient()
     : version_string_("5.0.322.0-64-devel"),
       product_(ChromeUserMetricsExtension::CHROME),
       reporting_is_managed_(false),
-      enable_default_(MetricsServiceClient::DEFAULT_UNKNOWN) {}
+      enable_default_(EnableMetricsDefault::DEFAULT_UNKNOWN) {}
 
 TestMetricsServiceClient::~TestMetricsServiceClient() {
 }
@@ -85,8 +85,8 @@ bool TestMetricsServiceClient::IsReportingPolicyManaged() {
   return reporting_is_managed_;
 }
 
-MetricsServiceClient::EnableMetricsDefault
-TestMetricsServiceClient::GetDefaultOptIn() {
+EnableMetricsDefault
+TestMetricsServiceClient::GetMetricsReportingDefaultState() {
   return enable_default_;
 }
 

@@ -101,7 +101,7 @@ bool IsFirstRunSuppressed(const base::CommandLine& command_line);
 // initially checked. Opt-in means it is not initially checked, opt-out means it
 // is. This is not guaranteed to be correct outside of the first-run situation,
 // as the default may change over time. For that, use
-// GetMetricsReportingDefaultOptIn in
+// GetMetricsReportingDefaultState in
 // chrome/browser/metrics/metrics_reporting_state.h, which gives a value that
 // was stored during first-run.
 bool IsMetricsReportingOptIn();

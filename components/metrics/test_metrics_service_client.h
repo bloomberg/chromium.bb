@@ -41,7 +41,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   bool IsReportingPolicyManaged() override;
-  MetricsServiceClient::EnableMetricsDefault GetDefaultOptIn() override;
+  EnableMetricsDefault GetMetricsReportingDefaultState() override;
 
   const std::string& get_client_id() const { return client_id_; }
   void set_version_string(const std::string& str) { version_string_ = str; }
@@ -49,8 +49,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   void set_reporting_is_managed(bool managed) {
     reporting_is_managed_ = managed;
   }
-  void set_enable_default(
-      MetricsServiceClient::EnableMetricsDefault enable_default) {
+  void set_enable_default(EnableMetricsDefault enable_default) {
     enable_default_ = enable_default;
   }
 
@@ -59,7 +58,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   std::string version_string_;
   int32_t product_;
   bool reporting_is_managed_;
-  MetricsServiceClient::EnableMetricsDefault enable_default_;
+  EnableMetricsDefault enable_default_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsServiceClient);
 };

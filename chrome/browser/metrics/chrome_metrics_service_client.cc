@@ -359,9 +359,9 @@ bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
   return IsMetricsReportingPolicyManaged();
 }
 
-metrics::MetricsServiceClient::EnableMetricsDefault
-ChromeMetricsServiceClient::GetDefaultOptIn() {
-  return metrics::GetMetricsReportingDefaultOptIn(
+metrics::EnableMetricsDefault
+ChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
+  return metrics::GetMetricsReportingDefaultState(
       g_browser_process->local_state());
 }
 

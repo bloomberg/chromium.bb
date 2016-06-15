@@ -77,7 +77,7 @@ class ChromeMetricsServiceClient
   base::string16 GetRegistryBackupKey() override;
   void OnPluginLoadingError(const base::FilePath& plugin_path) override;
   bool IsReportingPolicyManaged() override;
-  EnableMetricsDefault GetDefaultOptIn() override;
+  metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
 
   // Persistent browser metrics need to be persisted somewhere. This constant

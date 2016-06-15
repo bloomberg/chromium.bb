@@ -61,8 +61,7 @@ class BlimpMetricsServiceClient : public metrics::MetricsServiceClient,
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
-  metrics::MetricsServiceClient::EnableMetricsDefault GetDefaultOptIn()
-      override;
+  metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
 
   // metrics::EnabledStateProvider implementation.
   // Returns if consent is given for the MetricsService to record metrics

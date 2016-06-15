@@ -318,7 +318,9 @@ PrefService* InitializeLocalState(
       // |stats_default| == true means that the default state of consent for the
       // product at the time of install was to report usage statistics, meaning
       // "opt-out".
-      metrics::RecordMetricsReportingDefaultOptIn(local_state, !stats_default);
+      metrics::RecordMetricsReportingDefaultState(
+          local_state, stats_default ? metrics::EnableMetricsDefault::OPT_OUT
+                                     : metrics::EnableMetricsDefault::OPT_IN);
     }
   }
 #endif  // defined(OS_WIN)

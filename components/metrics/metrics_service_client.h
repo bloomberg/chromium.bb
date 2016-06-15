@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
 namespace base {
@@ -28,19 +29,6 @@ class MetricsService;
 // environment.
 class MetricsServiceClient {
  public:
-  // Default value of the enable metrics recording. This relates to the state of
-  // the enable checkbox shown on first-run. This enum is used to store values
-  // in a pref, and shouldn't be renumbered.
-  enum EnableMetricsDefault {
-    // We only record the value during first-run. The default of existing
-    // installs is considered unknown.
-    DEFAULT_UNKNOWN,
-    // The first-run checkbox was unchecked by default.
-    OPT_IN,
-    // The first-run checkbox was checked by default.
-    OPT_OUT,
-  };
-
   virtual ~MetricsServiceClient() {}
 
   // Returns the MetricsService instance that this client is associated with.
@@ -115,9 +103,9 @@ class MetricsServiceClient {
   // Returns whether metrics reporting is managed by policy.
   virtual bool IsReportingPolicyManaged();
 
-  // Gets information about the default value for the enable metrics reporting
-  // checkbox shown during first-run.
-  virtual EnableMetricsDefault GetDefaultOptIn();
+  // Gets information about the default value for the metrics reporting checkbox
+  // shown during first-run.
+  virtual EnableMetricsDefault GetMetricsReportingDefaultState();
 
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();

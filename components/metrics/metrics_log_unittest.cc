@@ -340,7 +340,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
                                 synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_FALSE(log_unknown.system_profile().has_uma_default_state());
 
-  client.set_enable_default(MetricsServiceClient::OPT_IN);
+  client.set_enable_default(EnableMetricsDefault::OPT_IN);
   TestMetricsLog log_opt_in(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                             &client, &prefs_);
   log_opt_in.RecordEnvironment(std::vector<MetricsProvider*>(),
@@ -349,7 +349,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_IN,
             log_opt_in.system_profile().uma_default_state());
 
-  client.set_enable_default(MetricsServiceClient::OPT_OUT);
+  client.set_enable_default(EnableMetricsDefault::OPT_OUT);
   TestMetricsLog log_opt_out(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
   log_opt_out.RecordEnvironment(std::vector<MetricsProvider*>(),

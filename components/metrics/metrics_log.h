@@ -163,9 +163,8 @@ class MetricsLog {
   bool HasEnvironment() const;
 
   // Write the default state of the enable metrics checkbox.
-  void WriteMetricsEnableDefault(
-      MetricsServiceClient::EnableMetricsDefault metrics_default,
-      SystemProfileProto* system_profile);
+  void WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
+                                 SystemProfileProto* system_profile);
 
   // Returns true if the stability metrics have already been filled in by a
   // call to RecordStabilityMetrics().
