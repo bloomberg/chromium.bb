@@ -758,12 +758,12 @@ int32_t SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
 std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
   switch (version) {
     case SPDY3:
-      return "spdy/3";
+      return "spdy/3.1";
     case HTTP2:
       return "h2";
     default:
       SPDY_BUG << "Unsupported SPDY major version: " << version;
-      return "spdy/3";
+      return "spdy/3.1";
   }
 }
 
