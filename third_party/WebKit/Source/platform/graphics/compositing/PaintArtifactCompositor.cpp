@@ -239,7 +239,7 @@ private:
     Vector<NodeLayerPair, 16> m_clipLayers;
 };
 
-scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Transform transform)
+scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset)
 {
     if (paintChunk.size() != 1)
         return nullptr;
@@ -249,9 +249,8 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArt
         return nullptr;
 
     const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItem);
+    layerOffset = gfx::Vector2dF(foreignLayerDisplayItem.location().x(), foreignLayerDisplayItem.location().y());
     scoped_refptr<cc::Layer> layer = foreignLayerDisplayItem.layer();
-    transform.Translate(foreignLayerDisplayItem.location().x(), foreignLayerDisplayItem.location().y());
-    layer->SetTransform(transform);
     layer->SetBounds(foreignLayerDisplayItem.bounds());
     layer->SetIsDrawable(true);
     return layer;
@@ -348,17 +347,13 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     ClipLayerManager clipLayerManager(m_rootLayer.get());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
         cc::Layer* parent;
-        gfx::Transform transform;
-        if (useLayerLists) {
+        if (useLayerLists)
             parent = m_rootLayer.get();
-        } else {
+        else
             parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
-            // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
-            // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
-            transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
-        }
 
-        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, transform);
+        gfx::Vector2dF layerOffset;
+        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
         if (useLayerLists) {
             // This is only good enough to get trivial 2D translations working.
             // We'll need to actually create more cc transform nodes to do any
@@ -367,8 +362,23 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
             // TODO(jbroman): ^ Do that.
             layer->set_offset_to_transform_parent(
                 transformToTransformSpace(paintChunk.properties.transform.get(), nullptr).To2dTranslation()
-                + layer->transform().To2dTranslation());
+                + layerOffset);
+        } else {
+            // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
+            // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
+            gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
+            transform.Translate(layerOffset.x(), layerOffset.y());
+            // If a clip was applied, its origin needs to be cancelled out in
+            // this transform.
+            if (const auto* clip = paintChunk.properties.clip.get()) {
+                FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
+                gfx::Transform undoClipOffset;
+                undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
+                transform.ConcatTransform(undoClipOffset);
+            }
+            layer->SetTransform(transform);
         }
+        layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
         layer->SetNeedsDisplay();
         parent->AddChild(layer);
 
@@ -388,10 +398,12 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     }
 }
 
-scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Transform transform)
+scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset)
 {
+    DCHECK(paintChunk.size());
+
     // If the paint chunk is a foreign layer, just return that layer.
-    if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(paintArtifact, paintChunk, transform))
+    if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(paintArtifact, paintChunk, layerOffset))
         return foreignLayer;
 
     // The common case: create a layer for painted content.
@@ -400,26 +412,10 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
         new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
 
-    // Include the offset in the transform, because it needs to apply in
-    // this layer's transform space (whereas layer position applies in its
-    // parent's transform space).
-    gfx::Vector2dF offset = gfx::PointF(combinedBounds.origin()).OffsetFromOrigin();
-    transform.Translate(offset.x(), offset.y());
-
-    // If a clip was applied, its origin needs to be cancelled out in
-    // this transform.
-    if (const auto* clip = paintChunk.properties.clip.get()) {
-        FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
-        gfx::Transform undoClipOffset;
-        undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
-        transform.ConcatTransform(undoClipOffset);
-    }
-
+    layerOffset = combinedBounds.OffsetFromOrigin();
     scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(contentLayerClient.get());
     layer->SetBounds(combinedBounds.size());
-    layer->SetTransform(transform);
     layer->SetIsDrawable(true);
-    layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
     if (paintChunk.knownToBeOpaque)
         layer->SetContentsOpaque(true);
     m_contentLayerClients.append(std::move(contentLayerClient));
