@@ -44,6 +44,7 @@ class EsParserTestBase {
 
  protected:
   void LoadStream(const char* filename);
+  std::vector<Packet> LoadPacketsFromFiles(const char* file_temp, size_t num);
 
   // ES parser callbacks.
   void NewAudioConfig(const AudioDecoderConfig& config);

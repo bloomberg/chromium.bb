@@ -7,6 +7,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
@@ -39,6 +40,30 @@ void EsParserTestBase::LoadStream(const char* filename) {
 
   stream_.resize(stream.length());
   memcpy(&stream_[0], stream.data(), stream_.size());
+}
+
+std::vector<EsParserTestBase::Packet> EsParserTestBase::LoadPacketsFromFiles(
+    const char* filename_template,
+    size_t file_count) {
+  std::vector<Packet> packets;
+  for (size_t i = 0; i < file_count; ++i) {
+    base::FilePath file_path =
+        GetTestDataFilePath(base::StringPrintf(filename_template, i));
+    base::MemoryMappedFile stream;
+    EXPECT_TRUE(stream.Initialize(file_path)) << "Couldn't open stream file: "
+                                              << file_path.MaybeAsASCII();
+
+    Packet packet;
+    packet.offset = stream_.size();
+    packet.size = stream.length();
+    packet.pts = kNoTimestamp();
+
+    stream_.insert(stream_.end(), stream.data(),
+                   stream.data() + stream.length());
+    packets.push_back(packet);
+  }
+
+  return packets;
 }
 
 void EsParserTestBase::NewAudioConfig(const AudioDecoderConfig& config) {

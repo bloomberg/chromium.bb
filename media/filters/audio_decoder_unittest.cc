@@ -204,7 +204,9 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     // streams we need to extract it with a separate procedure.
     if (GetParam().decoder_type == MEDIA_CODEC &&
         GetParam().codec == kCodecAAC && config.extra_data().empty()) {
-      ASSERT_TRUE(ParseAdtsHeader(packet.data, false, &config));
+      size_t ignore_orig_sample_rate;
+      ASSERT_TRUE(ParseAdtsHeader(packet.data, false, &config,
+                                  &ignore_orig_sample_rate));
       ASSERT_FALSE(config.extra_data().empty());
     }
 #endif

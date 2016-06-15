@@ -17,6 +17,9 @@ namespace media {
 class AudioDecoderConfig;
 
 namespace mp2t {
+namespace {
+const char kAac44100PacketTimestamp[] = "(0) (23) (46) (69)";
+}
 
 class EsParserAdtsTest : public EsParserTestBase,
                          public testing::Test {
@@ -24,7 +27,7 @@ class EsParserAdtsTest : public EsParserTestBase,
   EsParserAdtsTest();
 
  protected:
-  bool Process(const std::vector<Packet>& pes_packets, bool force_timing);
+  bool Process(const std::vector<Packet>& pes_packets, bool sbr_in_mimetype);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EsParserAdtsTest);
@@ -33,14 +36,13 @@ class EsParserAdtsTest : public EsParserTestBase,
 EsParserAdtsTest::EsParserAdtsTest() {
 }
 
-bool EsParserAdtsTest::Process(
-    const std::vector<Packet>& pes_packets,
-    bool force_timing) {
+bool EsParserAdtsTest::Process(const std::vector<Packet>& pes_packets,
+                               bool sbr_in_mimetype) {
   EsParserAdts es_parser(
       base::Bind(&EsParserAdtsTest::NewAudioConfig, base::Unretained(this)),
       base::Bind(&EsParserAdtsTest::EmitBuffer, base::Unretained(this)),
-      false);
-  return ProcessPesPackets(&es_parser, pes_packets, force_timing);
+      sbr_in_mimetype);
+  return ProcessPesPackets(&es_parser, pes_packets, false /* force_timing */);
 }
 
 TEST_F(EsParserAdtsTest, NoInitialPts) {
@@ -49,7 +51,7 @@ TEST_F(EsParserAdtsTest, NoInitialPts) {
   // Process should succeed even without timing info, we should just skip the
   // audio frames without timing info, but still should be able to parse and
   // play the stream after that.
-  EXPECT_TRUE(Process(pes_packets, false));
+  EXPECT_TRUE(Process(pes_packets, false /* sbr_in_mimetype */));
   EXPECT_EQ(1u, config_count_);
   EXPECT_EQ(0u, buffer_count_);
 }
@@ -60,7 +62,7 @@ TEST_F(EsParserAdtsTest, SinglePts) {
   std::vector<Packet> pes_packets = GenerateFixedSizePesPacket(512);
   pes_packets.front().pts = base::TimeDelta::FromSeconds(10);
 
-  EXPECT_TRUE(Process(pes_packets, false));
+  EXPECT_TRUE(Process(pes_packets, false /* sbr_in_mimetype */));
   EXPECT_EQ(1u, config_count_);
   EXPECT_EQ(45u, buffer_count_);
 }
@@ -69,9 +71,19 @@ TEST_F(EsParserAdtsTest, AacLcAdts) {
   LoadStream("sfx.adts");
   std::vector<Packet> pes_packets = GenerateFixedSizePesPacket(512);
   pes_packets.front().pts = base::TimeDelta::FromSeconds(1);
-  EXPECT_TRUE(Process(pes_packets, false));
+  EXPECT_TRUE(Process(pes_packets, false /* sbr_in_mimetype */));
   EXPECT_EQ(1u, config_count_);
   EXPECT_EQ(14u, buffer_count_);
+}
+
+TEST_F(EsParserAdtsTest, AacSampleRate) {
+  std::vector<Packet> pes_packets =
+      LoadPacketsFromFiles("aac-44100-packet-%d", 4);
+
+  pes_packets.front().pts = base::TimeDelta::FromSeconds(0);
+  EXPECT_TRUE(Process(pes_packets, true /* sbr_in_mimetype */));
+  EXPECT_EQ(4u, buffer_count_);
+  EXPECT_EQ(kAac44100PacketTimestamp, buffer_timestamps_);
 }
 }  // namespace mp2t
 }  // namespace media

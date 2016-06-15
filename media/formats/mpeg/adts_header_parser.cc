@@ -29,8 +29,10 @@ size_t ExtractAdtsChannelConfig(const uint8_t* adts_header) {
 
 bool ParseAdtsHeader(const uint8_t* adts_header,
                      bool is_sbr,
-                     AudioDecoderConfig* config) {
+                     AudioDecoderConfig* config,
+                     size_t* orig_sample_freq) {
   DCHECK(adts_header);
+  DCHECK(orig_sample_freq);
 
   size_t frequency_index = ExtractAdtsFrequencyIndex(adts_header);
   if (frequency_index >= kADTSFrequencyTableSize) {
@@ -58,6 +60,7 @@ bool ParseAdtsHeader(const uint8_t* adts_header,
   // TODO(damienv) : Extend sample rate cap to 96kHz for Level 5 content.
   int extended_samples_per_second =
       is_sbr ? std::min(2 * samples_per_second, 48000) : samples_per_second;
+  *orig_sample_freq = samples_per_second;
 
   // The following code is written according to ISO 14496 Part 3 Table 1.13 -
   // Syntax of AudioSpecificConfig.

@@ -177,7 +177,9 @@ void EsParserAdts::ResetInternal() {
 
 bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
   AudioDecoderConfig audio_decoder_config;
-  if (!ParseAdtsHeader(adts_header, sbr_in_mimetype_, &audio_decoder_config))
+  size_t orig_sample_rate = 0;
+  if (!ParseAdtsHeader(adts_header, sbr_in_mimetype_, &audio_decoder_config,
+                       &orig_sample_rate))
     return false;
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
@@ -191,19 +193,15 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
     // doubled in ParseAdtsHeader above, but AudioTimestampHelper should still
     // use the original sample rate to compute audio timestamps and durations
     // correctly.
-    int samples_per_second = sbr_in_mimetype_
-                                 ? audio_decoder_config.samples_per_second() / 2
-                                 : audio_decoder_config.samples_per_second();
+
     // Reset the timestamp helper to use a new time scale.
     if (audio_timestamp_helper_ &&
         audio_timestamp_helper_->base_timestamp() != kNoTimestamp()) {
       base::TimeDelta base_timestamp = audio_timestamp_helper_->GetTimestamp();
-      audio_timestamp_helper_.reset(
-          new AudioTimestampHelper(samples_per_second));
+      audio_timestamp_helper_.reset(new AudioTimestampHelper(orig_sample_rate));
       audio_timestamp_helper_->SetBaseTimestamp(base_timestamp);
     } else {
-      audio_timestamp_helper_.reset(
-          new AudioTimestampHelper(samples_per_second));
+      audio_timestamp_helper_.reset(new AudioTimestampHelper(orig_sample_rate));
     }
     // Audio config notification.
     last_audio_decoder_config_ = audio_decoder_config;
