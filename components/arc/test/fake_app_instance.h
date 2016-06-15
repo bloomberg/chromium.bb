@@ -86,6 +86,8 @@ class FakeAppInstance : public mojom::AppInstance {
   void CloseTask(int32_t task_id) override;
   void ShowPackageInfo(const mojo::String& package_name,
                        const gfx::Rect& dimension_on_screen) override;
+  void SetNotificationsEnabled(const mojo::String& package_name,
+                               bool enabled) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);

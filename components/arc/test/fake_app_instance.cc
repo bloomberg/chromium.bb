@@ -172,4 +172,8 @@ void FakeAppInstance::ShowPackageInfo(const mojo::String& package_name,
                                       const gfx::Rect& dimension_on_screen) {
 }
 
+void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
+                                              bool enabled) {
+}
+
 }  // namespace arc

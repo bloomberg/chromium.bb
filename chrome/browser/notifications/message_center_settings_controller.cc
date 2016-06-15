@@ -49,6 +49,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/system_notifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/arc_notifier_manager.h"
+#include "components/arc/arc_bridge_service.h"
 #endif
 
 using message_center::Notifier;
@@ -141,6 +143,9 @@ MessageCenterSettingsController::MessageCenterSettingsController(
   // UserManager may not exist in some tests.
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->AddSessionStateObserver(this);
+  // Check if ARC is enabled.
+  if (arc::ArcBridgeService::Get())
+    arc_notifier_manager_.reset(new arc::ArcNotifierManager());
 #endif
 }
 
@@ -275,9 +280,17 @@ void MessageCenterSettingsController::GetNotifierList(
         favicon_tracker_.get());
   }
 
-  // Screenshot notification feature is only for ChromeOS. See crbug.com/238358
 #if defined(OS_CHROMEOS)
-  const base::string16 screenshot_name =
+  // Add ARC++ apps.
+  if (arc_notifier_manager_) {
+    auto list = arc_notifier_manager_->GetNotifiers(profile);
+    for (auto& notifier : list) {
+      notifiers->push_back(notifier.release());
+    }
+  }
+
+  // Screenshot notification feature is only for ChromeOS. See crbug.com/238358
+  const base::string16& screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
   NotifierId screenshot_notifier_id(
       NotifierId::SYSTEM_COMPONENT, ash::system_notifier::kNotifierScreenshot);
@@ -305,66 +318,86 @@ void MessageCenterSettingsController::SetNotifierEnabled(
   DCHECK_LT(current_notifier_group_, notifier_groups_.size());
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
-  if (notifier.notifier_id.type == NotifierId::WEB_PAGE) {
-    // WEB_PAGE notifier cannot handle in DesktopNotificationService
-    // since it has the exact URL pattern.
-    // TODO(mukai): fix this.
-    ContentSetting default_setting =
-        HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
+  switch (notifier.notifier_id.type) {
+    case NotifierId::WEB_PAGE: {
+      // WEB_PAGE notifier cannot handle in DesktopNotificationService
+      // since it has the exact URL pattern.
+      // TODO(mukai): fix this.
+      ContentSetting default_setting =
+          HostContentSettingsMapFactory::GetForProfile(profile)
+              ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                         NULL);
 
-    DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
-           default_setting == CONTENT_SETTING_BLOCK ||
-           default_setting == CONTENT_SETTING_ASK);
+      DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
+             default_setting == CONTENT_SETTING_BLOCK ||
+             default_setting == CONTENT_SETTING_ASK);
 
-    // The content setting for notifications needs to clear when it changes to
-    // the default value or get explicitly set when it differs from the default.
-    bool differs_from_default_value =
-        (default_setting != CONTENT_SETTING_ALLOW && enabled) ||
-        (default_setting == CONTENT_SETTING_ALLOW && !enabled);
+      // The content setting for notifications needs to clear when it changes to
+      // the default value or get explicitly set when it differs from the
+      // default.
+      bool differs_from_default_value =
+          (default_setting != CONTENT_SETTING_ALLOW && enabled) ||
+          (default_setting == CONTENT_SETTING_ALLOW && !enabled);
 
-    if (differs_from_default_value) {
-      if (notifier.notifier_id.url.is_valid()) {
-        if (enabled) {
-          DesktopNotificationProfileUtil::GrantPermission(
-              profile, notifier.notifier_id.url);
+      if (differs_from_default_value) {
+        if (notifier.notifier_id.url.is_valid()) {
+          if (enabled) {
+            DesktopNotificationProfileUtil::GrantPermission(
+                profile, notifier.notifier_id.url);
+          } else {
+            DesktopNotificationProfileUtil::DenyPermission(
+                profile, notifier.notifier_id.url);
+          }
         } else {
-          DesktopNotificationProfileUtil::DenyPermission(
-              profile, notifier.notifier_id.url);
+          LOG(ERROR) << "Invalid url pattern: "
+                     << notifier.notifier_id.url.spec();
         }
       } else {
-        LOG(ERROR) << "Invalid url pattern: "
-                   << notifier.notifier_id.url.spec();
-      }
-    } else {
-      ContentSettingsPattern pattern;
+        ContentSettingsPattern pattern;
 
-      const auto& iter = patterns_.find(notifier.name);
-      if (iter != patterns_.end()) {
-        pattern = iter->second;
-      } else if (notifier.notifier_id.url.is_valid()) {
-        pattern =
-            ContentSettingsPattern::FromURLNoWildcard(notifier.notifier_id.url);
-      } else {
-        LOG(ERROR) << "Invalid url pattern: "
-                   << notifier.notifier_id.url.spec();
-      }
+        const auto& iter = patterns_.find(notifier.name);
+        if (iter != patterns_.end()) {
+          pattern = iter->second;
+        } else if (notifier.notifier_id.url.is_valid()) {
+          pattern = ContentSettingsPattern::FromURLNoWildcard(
+              notifier.notifier_id.url);
+        } else {
+          LOG(ERROR) << "Invalid url pattern: "
+                     << notifier.notifier_id.url.spec();
+        }
 
-      if (pattern.IsValid()) {
-        // Note that we don't use DesktopNotificationProfileUtil::ClearSetting()
-        // here because pattern might be from user manual input and not match
-        // the default one used by ClearSetting().
-        HostContentSettingsMapFactory::GetForProfile(profile)
-            ->SetContentSettingCustomScope(
-                pattern, ContentSettingsPattern::Wildcard(),
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                content_settings::ResourceIdentifier(),
-                CONTENT_SETTING_DEFAULT);
+        if (pattern.IsValid()) {
+          // Note that we don't use
+          // DesktopNotificationProfileUtil::ClearSetting()
+          // here because pattern might be from user manual input and not match
+          // the default one used by ClearSetting().
+          HostContentSettingsMapFactory::GetForProfile(profile)
+              ->SetContentSettingCustomScope(
+                  pattern, ContentSettingsPattern::Wildcard(),
+                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                  content_settings::ResourceIdentifier(),
+                  CONTENT_SETTING_DEFAULT);
+        }
       }
+      break;
     }
-  } else {
-    NotifierStateTrackerFactory::GetForProfile(profile)
-        ->SetNotifierEnabled(notifier.notifier_id, enabled);
+    case NotifierId::APPLICATION:
+    case NotifierId::SYSTEM_COMPONENT: {
+      NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
+          notifier.notifier_id, enabled);
+      break;
+    }
+    case NotifierId::ARC_APPLICATION: {
+#if defined(OS_CHROMEOS)
+      if (arc_notifier_manager_) {
+        arc_notifier_manager_->SetNotifierEnabled(notifier.notifier_id.id,
+                                                  enabled);
+      }
+#else
+      NOTREACHED();
+#endif
+      break;
+    }
   }
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,

@@ -31,6 +31,12 @@
 
 class Profile;
 
+#if defined(OS_CHROMEOS)
+namespace arc {
+class ArcNotifierManager;
+}
+#endif
+
 namespace base {
 class CancelableTaskTracker;
 }
@@ -124,6 +130,10 @@ class MessageCenterSettingsController
   std::unique_ptr<base::CancelableTaskTracker> favicon_tracker_;
 
   std::unique_ptr<AppIconLoader> app_icon_loader_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<arc::ArcNotifierManager> arc_notifier_manager_;
+#endif
 
   std::map<base::string16, ContentSettingsPattern> patterns_;
 

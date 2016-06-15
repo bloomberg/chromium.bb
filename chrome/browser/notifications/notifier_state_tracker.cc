@@ -96,6 +96,14 @@ bool NotifierStateTracker::IsNotifierEnabled(
       // We do not disable system component notifications.
       return true;
 #endif
+    case NotifierId::ARC_APPLICATION:
+#if defined(OS_CHROMEOS)
+      // TODO(hriono): Ask Android if the application's notifications are
+      // enabled.
+      return true;
+#else
+      return false;
+#endif
   }
 
   NOTREACHED();

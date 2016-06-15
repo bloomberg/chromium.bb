@@ -44,6 +44,7 @@ MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
 struct MESSAGE_CENTER_EXPORT NotifierId {
   enum NotifierType {
     APPLICATION,
+    ARC_APPLICATION,
     WEB_PAGE,
     SYSTEM_COMPONENT,
   };
