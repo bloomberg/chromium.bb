@@ -93,11 +93,11 @@ const uint32_t kMinNumAnalysesToGenerateReport =
     kSizeSuspicionThreshold + 1 + kCallStackSuspicionThreshold + 1;
 
 // Returns the offset within [kMappingAddr, kMappingAddr + kMappingSize) if
-// |addr| falls in that range. Otherwise, returns |addr|.
+// |addr| falls in that range. Otherwise, returns |UINTPTR_MAX|.
 uintptr_t GetOffsetInMapping(uintptr_t addr) {
   if (addr >= kMappingAddr && addr < kMappingAddr + kMappingSize)
     return addr - kMappingAddr;
-  return addr;
+  return UINTPTR_MAX;
 }
 
 // Copied from leak_detector_impl.cc. Converts a size to a size class index.

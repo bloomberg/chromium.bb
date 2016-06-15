@@ -250,7 +250,7 @@ uintptr_t LeakDetectorImpl::GetOffset(const void* ptr) const {
   uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
   if (ptr_value >= mapping_addr_ && ptr_value < mapping_addr_ + mapping_size_)
     return ptr_value - mapping_addr_;
-  return ptr_value;
+  return UINTPTR_MAX;
 }
 
 void LeakDetectorImpl::RecordCurrentAllocationDataInHistory() {

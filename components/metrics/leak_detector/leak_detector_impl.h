@@ -153,7 +153,7 @@ class LeakDetectorImpl {
   };
 
   // Returns the offset of |ptr| within the current binary. If it is not in the
-  // current binary, just return |ptr| as an integer.
+  // current binary, return |UINTPTR_MAX|.
   uintptr_t GetOffset(const void* ptr) const;
 
   // Record some of the current allocation bookkeeping. The net number of allocs
