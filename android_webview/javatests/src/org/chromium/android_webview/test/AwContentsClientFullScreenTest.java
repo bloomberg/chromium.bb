@@ -63,9 +63,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         mTestContainerView.getAwContents().getSettings().setFullscreenSupported(true);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
+    */
+    @DisabledTest(message = "crbug.com/618749")
     public void testFullscreenVideoInSoftwareModeDoesNotDeadlock() throws Throwable {
         // Although fullscreen video is not supported without hardware acceleration
         // we should not deadlock if apps try to use it.
@@ -215,8 +218,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    */
+    @DisabledTest(message = "crbug.com/618749")
     public void testHolePunchingSurfaceNotCreatedForClearVideo()
             throws Throwable {
         loadTestPage(VIDEO_TEST_URL);
@@ -231,8 +237,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                 mTestContainerView);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    */
+    @DisabledTest(message = "crbug.com/618749")
     public void testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv()
             throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
