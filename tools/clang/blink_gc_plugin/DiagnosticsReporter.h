@@ -30,8 +30,8 @@ class DiagnosticsReporter {
   void BaseRequiresTracing(RecordInfo* derived,
                            clang::CXXMethodDecl* trace,
                            clang::CXXRecordDecl* base);
-  void FieldsRequireTracing(RecordInfo* info,
-                            clang::CXXMethodDecl* trace);
+  void FieldsImproperlyTraced(RecordInfo* info,
+                              clang::CXXMethodDecl* trace);
   void ClassContainsInvalidFields(
       RecordInfo* info,
       const CheckFieldsVisitor::Errors& errors);
@@ -66,6 +66,7 @@ class DiagnosticsReporter {
   void NoteManualDispatchMethod(clang::CXXMethodDecl* dispatch);
   void NoteBaseRequiresTracing(BasePoint* base);
   void NoteFieldRequiresTracing(RecordInfo* holder, clang::FieldDecl* field);
+  void NoteFieldShouldNotBeTraced(RecordInfo* holder, clang::FieldDecl* field);
   void NotePartObjectContainsGCRoot(FieldPoint* point);
   void NoteFieldContainsGCRoot(FieldPoint* point);
   void NoteUserDeclaredDestructor(clang::CXXMethodDecl* dtor);
@@ -93,6 +94,7 @@ class DiagnosticsReporter {
   unsigned diag_class_requires_trace_method_;
   unsigned diag_base_requires_tracing_;
   unsigned diag_fields_require_tracing_;
+  unsigned diag_fields_improperly_traced_;
   unsigned diag_class_contains_invalid_fields_;
   unsigned diag_class_contains_gc_root_;
   unsigned diag_class_requires_finalization_;
@@ -113,10 +115,12 @@ class DiagnosticsReporter {
 
   unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;
+  unsigned diag_field_should_not_be_traced_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_reference_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
+  unsigned diag_unique_ptr_to_gc_managed_class_note_;
   unsigned diag_member_to_gc_unmanaged_class_note_;
   unsigned diag_stack_allocated_field_note_;
   unsigned diag_member_in_unmanaged_class_note_;
