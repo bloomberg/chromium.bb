@@ -499,9 +499,7 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
   python_deps = None
   if hasattr(options, 'depfile') and options.depfile:
     python_deps = GetPythonDependencies()
-    # List python deps in input_strings rather than input_paths since the
-    # contents of them does not change what gets written to the depfile.
-    input_strings += python_deps
+    input_paths += python_deps
     output_paths += [options.depfile]
 
   stamp_file = hasattr(options, 'stamp') and options.stamp
