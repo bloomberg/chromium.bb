@@ -117,7 +117,8 @@
     <div id="toolbar-container">
       <cr-toolbar id="main-toolbar" page-name="$i18n{title}"
           clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}"
-          hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]">
+          hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]"
+          on-search-changed="onSearchChanged_">
       </cr-toolbar>
       <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
         <div id="overlay-buttons">

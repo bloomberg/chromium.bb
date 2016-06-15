@@ -10337,16 +10337,6 @@ Polymer({
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @interface */
-var SearchFieldDelegate = function() {};
-
-SearchFieldDelegate.prototype = {
-  /**
-   * @param {string} value
-   */
-  onSearchTermSearch: assertNotReached,
-};
-
 /**
  * Implements an incremental search field which can be shown and hidden.
  * Canonical implementation is <cr-search-field>.
@@ -10373,6 +10363,12 @@ var CrSearchFieldBehavior = {
     },
 
     hasSearchText: Boolean,
+
+    /** @private */
+    lastValue_: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -10393,11 +10389,6 @@ var CrSearchFieldBehavior = {
     this.hasSearchText = value != '';
   },
 
-  /** @param {SearchFieldDelegate} delegate */
-  setDelegate: function(delegate) {
-    this.delegate_ = delegate;
-  },
-
   showAndFocus: function() {
     this.showingSearch = true;
     this.focus_();
@@ -10408,15 +10399,17 @@ var CrSearchFieldBehavior = {
     this.$.searchInput.focus();
   },
 
-  /** @private */
-  onSearchTermSearch_: function() {
-    this.hasSearchText = this.getValue() != '';
-    if (this.delegate_)
-      this.delegate_.onSearchTermSearch(this.getValue());
+  onSearchTermSearch: function() {
+    var newValue = this.getValue();
+    if (newValue == this.lastValue_)
+      return;
+
+    this.hasSearchText = newValue != '';
+    this.fire('search-changed', newValue);
+    this.lastValue_ = newValue;
   },
 
-  /** @private */
-  onSearchTermKeydown_: function(e) {
+  onSearchTermKeydown: function(e) {
     if (e.key == 'Escape')
       this.showingSearch = false;
   },
@@ -10430,7 +10423,7 @@ var CrSearchFieldBehavior = {
 
     this.setValue('');
     this.$.searchInput.blur();
-    this.onSearchTermSearch_();
+    this.onSearchTermSearch();
   },
 
   /** @private */
@@ -11218,10 +11211,6 @@ cr.define('downloads', function() {
     attached: function() {
       // isRTL() only works after i18n_template.js runs to set <html dir>.
       this.overflowAlign_ = isRTL() ? 'left' : 'right';
-
-      /** @private {!SearchFieldDelegate} */
-      this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
-      this.$['search-input'].setDelegate(this.searchFieldDelegate_);
     },
 
     properties: {
@@ -11263,9 +11252,12 @@ cr.define('downloads', function() {
       this.updateClearAll_();
     },
 
-    /** @param {string} searchTerm */
-    onSearchTermSearch: function(searchTerm) {
-      downloads.ActionService.getInstance().search(searchTerm);
+    /**
+     * @param {!CustomEvent} event
+     * @private
+     */
+    onSearchChanged_: function(event) {
+      downloads.ActionService.getInstance().search(event.detail);
       this.updateClearAll_();
     },
 
@@ -11280,24 +11272,6 @@ cr.define('downloads', function() {
       this.$$('paper-menu .clear-all').hidden = !this.canClearAll();
     },
   });
-
-  /**
-   * @constructor
-   * @implements {SearchFieldDelegate}
-   */
-  // TODO(devlin): This is a bit excessive, and it would be better to just have
-  // Toolbar implement SearchFieldDelegate. But for now, we don't know how to
-  // make that happen with closure compiler.
-  function ToolbarSearchFieldDelegate(toolbar) {
-    this.toolbar_ = toolbar;
-  }
-
-  ToolbarSearchFieldDelegate.prototype = {
-    /** @override */
-    onSearchTermSearch: function(searchTerm) {
-      this.toolbar_.onSearchTermSearch(searchTerm);
-    }
-  };
 
   return {Toolbar: Toolbar};
 });

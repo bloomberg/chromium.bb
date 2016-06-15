@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @interface */
-var SearchFieldDelegate = function() {};
-
-SearchFieldDelegate.prototype = {
-  /**
-   * @param {string} value
-   */
-  onSearchTermSearch: assertNotReached,
-};
-
 /**
  * Implements an incremental search field which can be shown and hidden.
  * Canonical implementation is <cr-search-field>.
@@ -64,11 +54,6 @@ var CrSearchFieldBehavior = {
     this.hasSearchText = value != '';
   },
 
-  /** @param {SearchFieldDelegate} delegate */
-  setDelegate: function(delegate) {
-    this.delegate_ = delegate;
-  },
-
   showAndFocus: function() {
     this.showingSearch = true;
     this.focus_();
@@ -85,8 +70,7 @@ var CrSearchFieldBehavior = {
       return;
 
     this.hasSearchText = newValue != '';
-    if (this.delegate_)
-      this.delegate_.onSearchTermSearch(newValue);
+    this.fire('search-changed', newValue);
     this.lastValue_ = newValue;
   },
 

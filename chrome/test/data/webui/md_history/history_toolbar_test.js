@@ -49,7 +49,7 @@ cr.define('md_history.history_toolbar_test', function() {
           done();
         });
 
-        toolbar.onSearch('Test');
+        toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
       });
 
       teardown(function() {

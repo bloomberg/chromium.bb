@@ -7,31 +7,16 @@ cr.define('cr_toolbar_search_field', function() {
   function registerTests() {
     suite('cr-toolbar-search-field', function() {
       /** @type {?CrToolbarSearchFieldElement} */
-      var field;
-      /** @type {?MockSearchFieldDelegate} */
-      var delegate;
+      var field = null;
+
+      /** @type {?Array<string>} */
+      var searches = null;
 
       /** @param {string} term */
       function simulateSearch(term) {
         field.$.searchInput.bindValue = term;
         field.onSearchTermSearch();
       }
-
-      /**
-       * @constructor
-       * @implements {SearchFieldDelegate}
-       */
-      function MockSearchFieldDelegate() {
-        /** @type {!Array<string>} */
-        this.searches = [];
-      }
-
-      MockSearchFieldDelegate.prototype = {
-        /** @override */
-        onSearchTermSearch: function(term) {
-          this.searches.push(term);
-        }
-      };
 
       suiteSetup(function() {
         return PolymerTest.importHtml(
@@ -41,17 +26,18 @@ cr.define('cr_toolbar_search_field', function() {
 
       setup(function() {
         PolymerTest.clearBody();
-        // Constructing a new delegate resets the list of searches.
-        delegate = new MockSearchFieldDelegate();
         field = document.createElement('cr-toolbar-search-field');
-        field.setDelegate(delegate);
+        searches = [];
+        field.addEventListener('search-changed', function(event) {
+          searches.push(event.detail);
+        });
         document.body.appendChild(field);
       });
 
       teardown(function() {
         field.remove();
         field = null;
-        delegate = null;
+        searches = null;
       });
 
       test('opens and closes correctly', function() {
@@ -85,7 +71,7 @@ cr.define('cr_toolbar_search_field', function() {
         // Expecting identical query to be ignored.
         simulateSearch('query2');
 
-        assertEquals(['query1', '', 'query2'].join(), delegate.searches.join());
+        assertEquals(['query1', '', 'query2'].join(), searches.join());
       });
 
       test('blur does not close field when a search is active', function() {

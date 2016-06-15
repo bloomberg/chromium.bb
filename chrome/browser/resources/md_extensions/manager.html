@@ -15,7 +15,8 @@
 <dom-module id="extensions-manager">
   <template>
     <paper-header-panel id="panel">
-      <extensions-toolbar class="paper-header" id="toolbar">
+      <extensions-toolbar class="paper-header" id="toolbar"
+          on-search-changed="onFilterChanged_">
       </extensions-toolbar>
       <extensions-sidebar in-dev-mode="[[inDevMode]]">
       </extensions-sidebar>

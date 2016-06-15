@@ -5,11 +5,6 @@
 cr.define('extensions', function() {
   var Toolbar = Polymer({
     is: 'extensions-toolbar',
-
-    /** @param {SearchFieldDelegate} delegate */
-    setSearchDelegate: function(delegate) {
-      this.$['search-field'].setDelegate(delegate);
-    },
   });
 
   return {Toolbar: Toolbar};
