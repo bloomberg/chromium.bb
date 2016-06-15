@@ -75,6 +75,8 @@ class IOSChromeMetricsServiceClient
   void WebStateDidStartLoading(web::WebState* web_state) override;
   void WebStateDidStopLoading(web::WebState* web_state) override;
 
+  metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
+
  private:
   explicit IOSChromeMetricsServiceClient(
       metrics::MetricsStateManager* state_manager);

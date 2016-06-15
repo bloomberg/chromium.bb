@@ -316,3 +316,9 @@ void IOSChromeMetricsServiceClient::OnTabParented(web::WebState* web_state) {
 void IOSChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   metrics_service_->OnApplicationNotIdle();
 }
+
+metrics::EnableMetricsDefault
+IOSChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
+  return metrics::GetMetricsReportingDefaultState(
+      GetApplicationContext()->GetLocalState());
+}
