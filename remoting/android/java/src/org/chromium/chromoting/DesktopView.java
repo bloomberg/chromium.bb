@@ -306,7 +306,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     @Override
     public void showActionBar() {
-        mDesktop.showActionBar();
+        mDesktop.showSystemUi();
     }
 
     @Override

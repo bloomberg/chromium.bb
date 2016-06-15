@@ -62,7 +62,7 @@ public class Desktop
     /** Preference used to track the last input mode selected by the user. */
     private static final String PREFERENCE_INPUT_MODE = "input_mode";
 
-    /** The amount of time to wait to hide the Actionbar after user input is seen. */
+    /** The amount of time to wait to hide the ActionBar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
 
     private final Event.Raisable<SoftInputMethodVisibilityChangedEventParameter>
@@ -80,9 +80,6 @@ public class Desktop
 
     /** Flag to indicate whether the current activity is switching to Cardboard desktop activity. */
     private boolean mSwitchToCardboardDesktopActivity;
-
-    /** Flag to indicate whether to manually hide the system UI when the OSK is dismissed. */
-    private boolean mHideSystemUIOnSoftKeyboardDismiss = false;
 
     /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
     private boolean mSoftInputVisible = false;
@@ -125,7 +122,7 @@ public class Desktop
         // The action bar is already shown when the activity is started however calling the
         // function below will set our preferred system UI flags which will adjust the layout
         // size of the canvas and we can avoid an initial resize event.
-        showActionBar();
+        showSystemUi();
 
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
@@ -145,7 +142,7 @@ public class Desktop
             mActionBarAutoHideTask = new Runnable() {
                 public void run() {
                     if (!mToolbar.isOverflowMenuShowing()) {
-                        hideActionBar();
+                        hideSystemUi();
                     }
                 }
             };
@@ -190,7 +187,7 @@ public class Desktop
         super.onResume();
         mActivityLifecycleListener.onActivityResumed(this);
         mClient.enableVideoChannel(true);
-        startActionBarAutoHideTimer();
+        syncActionBarToSystemUiState();
     }
 
     @Override
@@ -368,27 +365,36 @@ public class Desktop
         }
     }
 
+    // Updates the ActionBar visibility to match the System UI elements.  This is useful after a
+    // power or activity lifecycle event in which the current System UI state has changed but we
+    // never received the notification.
+    private void syncActionBarToSystemUiState() {
+        onSystemUiVisibilityChange(getWindow().getDecorView().getSystemUiVisibility());
+    }
+
+    private boolean isActionBarVisible() {
+        return getSupportActionBar() != null && getSupportActionBar().isShowing();
+    }
+
     /** Called whenever the visibility of the system status bar or navigation bar changes. */
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
         // Ensure the action-bar's visibility matches that of the system controls. This
         // minimizes the number of states the UI can be in, to keep things simple for the user.
 
-        // Determine if the system is in fullscreen/lights-out mode. LOW_PROFILE is needed since
-        // it's the only flag supported in 4.0. But it is not sufficient in itself; when
-        // IMMERSIVE_STICKY mode is used, the system clears this flag (leaving the FULLSCREEN flag
-        // set) when the user swipes the edge to reveal the bars temporarily. When this happens,
-        // the action-bar should remain hidden.
+        // Check if the system is in fullscreen/lights-out mode then update the ActionBar to match.
         int fullscreenFlags = getFullscreenFlags();
         if ((visibility & fullscreenFlags) != 0) {
-            hideActionBarWithoutSystemUi();
+            hideActionBar();
         } else {
-            showActionBarWithoutSystemUi();
+            showActionBar();
         }
     }
 
     @SuppressLint("InlinedApi")
     private static int getFullscreenFlags() {
+        // LOW_PROFILE gives the status and navigation bars a "lights-out" appearance.
+        // FULLSCREEN hides the status bar on supported devices (4.1 and above).
         int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             flags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -397,7 +403,7 @@ public class Desktop
     }
 
     @SuppressLint("InlinedApi")
-    private static int getImmersiveLayoutFlags() {
+    private static int getLayoutFlags() {
         int flags = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
@@ -407,72 +413,59 @@ public class Desktop
         return flags;
     }
 
-    public void showActionBar() {
-        mHideSystemUIOnSoftKeyboardDismiss = false;
-
+    public void showSystemUi() {
         // Request exit from any fullscreen mode. The action-bar controls will be shown in response
         // to the SystemUiVisibility notification. The visibility of the action-bar should be tied
         // to the fullscreen state of the system, so there's no need to explicitly show it here.
-        int flags = View.SYSTEM_UI_FLAG_VISIBLE | getImmersiveLayoutFlags();
+        int flags = View.SYSTEM_UI_FLAG_VISIBLE | getLayoutFlags();
         getWindow().getDecorView().setSystemUiVisibility(flags);
 
-        // The OS will not call onSystemUiVisibilityChange() if the keyboard is visible which means
-        // our ActionBar will not be visible until then.  This check allows us to work around this
-        // issue and still allow the system to show the ActionBar normally with the soft keyboard.
+        // The OS will not call onSystemUiVisibilityChange() if the soft keyboard is visible which
+        // means our ActionBar will not be shown if this function is called in that scenario.
         if (mSoftInputVisible) {
-            showActionBarWithoutSystemUi();
+            showActionBar();
         }
     }
 
     /** Shows the action bar without changing SystemUiVisibility. */
-    private void showActionBarWithoutSystemUi() {
+    private void showActionBar() {
         getSupportActionBar().show();
         startActionBarAutoHideTimer();
     }
 
     @SuppressLint("InlinedApi")
-    public void hideActionBar() {
+    public void hideSystemUi() {
+        // If a soft input device is present, then hide the ActionBar but do not hide the rest of
+        // system UI.  A second call will be made once the soft input device is hidden.
+        if (mSoftInputVisible) {
+            hideActionBar();
+            return;
+        }
+
         // Request the device to enter fullscreen mode. Don't hide the controls yet, because the
         // system might not honor the fullscreen request immediately (for example, if the
         // keyboard is visible, the system might delay fullscreen until the keyboard is hidden).
         // The controls will be hidden in response to the SystemUiVisibility notification.
         // This helps ensure that the visibility of the controls is synchronized with the
         // fullscreen state.
-
-        // LOW_PROFILE gives the status and navigation bars a "lights-out" appearance.
-        // FULLSCREEN hides the status bar on supported devices (4.1 and above).
         int flags = getFullscreenFlags();
 
         // HIDE_NAVIGATION hides the navigation bar. However, if the user touches the screen, the
         // event is not seen by the application and instead the navigation bar is re-shown.
-        // IMMERSIVE(_STICKY) fixes this problem and allows the user to interact with the app while
+        // IMMERSIVE fixes this problem and allows the user to interact with the app while
         // keeping the navigation controls hidden. This flag was introduced in 4.4, later than
         // HIDE_NAVIGATION, and so a runtime check is needed before setting either of these flags.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             flags |= View.SYSTEM_UI_FLAG_IMMERSIVE;
-            flags |= getImmersiveLayoutFlags();
         }
+        flags |= getLayoutFlags();
 
         getWindow().getDecorView().setSystemUiVisibility(flags);
-
-        // The OS will not call onSystemUiVisibilityChange() until the keyboard has been dismissed
-        // which means our ActionBar will still be visible.  This check allows us to work around
-        // this issue when the keyboard is visible and the user wants additional space on the screen
-        // and still allow the system to hide the ActionBar normally when no keyboard is present.
-        if (mSoftInputVisible) {
-            hideActionBarWithoutSystemUi();
-
-            // Android OSes prior to Marshmallow do not call onSystemUiVisibilityChange after the
-            // OSK is dismissed if the user has interacted with the status bar.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                mHideSystemUIOnSoftKeyboardDismiss = true;
-            }
-        }
     }
 
     /** Hides the action bar without changing SystemUiVisibility. */
-    private void hideActionBarWithoutSystemUi() {
+    private void hideActionBar() {
         getSupportActionBar().hide();
         stopActionBarAutoHideTimer();
     }
@@ -503,7 +496,7 @@ public class Desktop
             return true;
         }
         if (id == R.id.actionbar_hide) {
-            hideActionBar();
+            hideSystemUi();
             return true;
         }
         if (id == R.id.actionbar_disconnect || id == android.R.id.home) {
@@ -555,25 +548,26 @@ public class Desktop
                     return;
                 }
 
-                // If the delta between lowest bound we have seen (should be a systemUI such as
+                // If the delta between lowest bound we have seen (should be a System UI such as
                 // the navigation bar) and the current bound does not match, then we have a form
                 // of soft input displayed.  Note that the size of a soft input device can change
                 // when the input method is changed so we want to send updates to the image canvas
                 // whenever they occur.
+                boolean oldSoftInputVisible = mSoftInputVisible;
                 mSoftInputVisible = (bottom < mMaxBottomValue);
                 mOnSoftInputMethodVisibilityChanged.raise(
                         new SoftInputMethodVisibilityChangedEventParameter(
                                 mSoftInputVisible, left, top, right, bottom));
 
-                if (!mSoftInputVisible && mHideSystemUIOnSoftKeyboardDismiss) {
+                boolean softInputVisibilityChanged = oldSoftInputVisible != mSoftInputVisible;
+                if (!mSoftInputVisible && softInputVisibilityChanged && !isActionBarVisible()) {
                     // Queue a task which will run after the current action (OSK dismiss) has
                     // completed, otherwise the hide request will not take effect.
                     new Handler().post(new Runnable() {
                         @Override
                         public void run() {
-                            if (mHideSystemUIOnSoftKeyboardDismiss) {
-                                mHideSystemUIOnSoftKeyboardDismiss = false;
-                                hideActionBar();
+                            if (!mSoftInputVisible && !isActionBarVisible()) {
+                                hideSystemUi();
                             }
                         }
                     });
