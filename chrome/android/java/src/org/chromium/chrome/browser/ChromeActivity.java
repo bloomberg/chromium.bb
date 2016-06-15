@@ -1501,7 +1501,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 RecordUserAction.record("MobileToolbarReload");
             }
         } else if (id == R.id.info_menu_id) {
-            WebsiteSettingsPopup.show(this, currentTab, null);
+            WebsiteSettingsPopup.show(
+                    this, currentTab, null, WebsiteSettingsPopup.OPENED_FROM_MENU);
         } else if (id == R.id.open_history_menu_id) {
             currentTab.loadUrl(
                     new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));

@@ -1809,7 +1809,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             if (currentTab != null && currentTab.getWebContents() != null) {
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity != null) {
-                    WebsiteSettingsPopup.show(activity, currentTab, null);
+                    WebsiteSettingsPopup.show(
+                            activity, currentTab, null, WebsiteSettingsPopup.OPENED_FROM_TOOLBAR);
                 }
             }
         } else if (v == mMicButton) {
