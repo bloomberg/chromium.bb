@@ -141,10 +141,18 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       ExitFromThreadStartFailure(kIoThreadName);
     }
 
+    // Block until the creation of the BattOrAgent is complete. This doesn't
+    // seem necessary because we're posting the creation to the IO thread
+    // before posting any commands, so we're guaranteed that the creation
+    // will happen first. However, the crashes that happen without this sync
+    // mechanism in place say otherwise.
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgentBin::CreateAgent, base::Unretained(this), path,
-                   base::ThreadTaskRunnerHandle::Get()));
+                   base::ThreadTaskRunnerHandle::Get(), &done));
+    done.Wait();
   }
 
   // Performs any cleanup necessary after the BattOr binary is done running.
@@ -272,7 +280,8 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   // and deleting it, MUST happen on the IO thread.
   void CreateAgent(
       const std::string& path,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner,
+      base::WaitableEvent* done) {
     // In Chrome, we already have a file thread running. Because the Chrome
     // serial library relies on having it available, we have to spin up our own.
     if (!file_thread_.Start())
@@ -280,6 +289,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
     agent_.reset(new BattOrAgent(path, this, file_thread_.task_runner(),
                                  ui_thread_task_runner));
+    done->Signal();
   }
 
   // Postable task for deleting the BattOrAgent. See the comment for
