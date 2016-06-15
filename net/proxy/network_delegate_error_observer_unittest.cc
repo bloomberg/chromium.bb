@@ -33,13 +33,13 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                          GURL* new_url) override {
     return OK;
   }
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override {
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override {
     return OK;
   }
-  void OnSendHeaders(URLRequest* request,
-                     const HttpRequestHeaders& headers) override {}
+  void OnStartTransaction(URLRequest* request,
+                          const HttpRequestHeaders& headers) override {}
   int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,

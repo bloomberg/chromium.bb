@@ -280,7 +280,7 @@ URLRequestHttpJob::URLRequestHttpJob(
       start_callback_(base::Bind(&URLRequestHttpJob::OnStartCompleted,
                                  base::Unretained(this))),
       notify_before_headers_sent_callback_(
-          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
+          base::Bind(&URLRequestHttpJob::NotifyBeforeStartTransactionCallback,
                      base::Unretained(this))),
       read_in_progress_(false),
       throttling_entry_(nullptr),
@@ -512,8 +512,8 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
     DCHECK(!response_info_->auth_challenge.get());
     // TODO(battre): This breaks the webrequest API for
     // URLRequestTestHTTP.BasicAuthWithCookies
-    // where OnBeforeSendHeaders -> OnSendHeaders -> OnBeforeSendHeaders
-    // occurs.
+    // where OnBeforeStartTransaction -> OnStartTransaction ->
+    // OnBeforeStartTransaction occurs.
     RestartTransactionWithAuth(AuthCredentials());
     return;
   }
@@ -543,7 +543,7 @@ void URLRequestHttpJob::StartTransaction() {
 
   if (network_delegate()) {
     OnCallToDelegate();
-    int rv = network_delegate()->NotifyBeforeSendHeaders(
+    int rv = network_delegate()->NotifyBeforeStartTransaction(
         request_, notify_before_headers_sent_callback_,
         &request_info_.extra_headers);
     // If an extension blocks the request, we rely on the callback to
@@ -556,7 +556,7 @@ void URLRequestHttpJob::StartTransaction() {
   StartTransactionInternal();
 }
 
-void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(int result) {
+void URLRequestHttpJob::NotifyBeforeStartTransactionCallback(int result) {
   // Check that there are no callbacks to already canceled requests.
   DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
 
@@ -609,8 +609,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
     network_quality_estimator->NotifyStartTransaction(*request_);
 
   if (network_delegate()) {
-    network_delegate()->NotifySendHeaders(
-        request_, request_info_.extra_headers);
+    network_delegate()->NotifyStartTransaction(request_,
+                                               request_info_.extra_headers);
   }
 
   if (transaction_.get()) {

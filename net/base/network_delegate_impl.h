@@ -51,14 +51,14 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
                          const CompletionCallback& callback,
                          GURL* new_url) override;
 
-  // Called right before the HTTP headers are sent. Allows the delegate to
+  // Called right before the network transaction starts. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are
   // valid only until OnCompleted or OnURLRequestDestroyed is called for this
   // request.
   // See OnBeforeURLRequest for return value description. Returns OK by default.
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override;
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override;
 
   // Called after a proxy connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
@@ -70,8 +70,8 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   // Called right before the HTTP request(s) are being sent to the network.
   // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is
   // called for this request.
-  void OnSendHeaders(URLRequest* request,
-                     const HttpRequestHeaders& headers) override;
+  void OnStartTransaction(URLRequest* request,
+                          const HttpRequestHeaders& headers) override;
 
   // Called for HTTP requests when the headers have been received.
   // |original_response_headers| contains the headers as received over the

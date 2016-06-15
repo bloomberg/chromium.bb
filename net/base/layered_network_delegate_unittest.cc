@@ -45,10 +45,10 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return OK;
   }
 
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override {
-    IncrementAndCompareCounter("on_before_send_headers_count");
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override {
+    IncrementAndCompareCounter("on_before_start_transaction_count");
     return OK;
   }
 
@@ -58,9 +58,9 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_before_send_proxy_headers_count");
   }
 
-  void OnSendHeaders(URLRequest* request,
-                     const HttpRequestHeaders& headers) override {
-    IncrementAndCompareCounter("on_send_headers_count");
+  void OnStartTransaction(URLRequest* request,
+                          const HttpRequestHeaders& headers) override {
+    IncrementAndCompareCounter("on_start_transaction_count");
   }
 
   int OnHeadersReceived(
@@ -183,10 +183,10 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
     EXPECT_EQ(OK, OnBeforeURLRequest(request.get(),
                                      completion_callback.callback(), NULL));
-    EXPECT_EQ(OK, OnBeforeSendHeaders(NULL, completion_callback.callback(),
-                                      request_headers.get()));
+    EXPECT_EQ(OK, OnBeforeStartTransaction(NULL, completion_callback.callback(),
+                                           request_headers.get()));
     OnBeforeSendProxyHeaders(NULL, ProxyInfo(), request_headers.get());
-    OnSendHeaders(NULL, *request_headers);
+    OnStartTransaction(NULL, *request_headers);
     OnNetworkBytesSent(request.get(), 42);
     EXPECT_EQ(OK, OnHeadersReceived(NULL, completion_callback.callback(),
                                     response_headers.get(), NULL, NULL));
@@ -214,11 +214,11 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_before_url_request_count"]);
   }
 
-  void OnBeforeSendHeadersInternal(URLRequest* request,
-                                   const CompletionCallback& callback,
-                                   HttpRequestHeaders* headers) override {
-    ++(*counters_)["on_before_send_headers_count"];
-    EXPECT_EQ(1, (*counters_)["on_before_send_headers_count"]);
+  void OnBeforeStartTransactionInternal(URLRequest* request,
+                                        const CompletionCallback& callback,
+                                        HttpRequestHeaders* headers) override {
+    ++(*counters_)["on_before_start_transaction_count"];
+    EXPECT_EQ(1, (*counters_)["on_before_start_transaction_count"]);
   }
 
   void OnBeforeSendProxyHeadersInternal(URLRequest* request,
@@ -228,10 +228,10 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_before_send_proxy_headers_count"]);
   }
 
-  void OnSendHeadersInternal(URLRequest* request,
-                             const HttpRequestHeaders& headers) override {
-    ++(*counters_)["on_send_headers_count"];
-    EXPECT_EQ(1, (*counters_)["on_send_headers_count"]);
+  void OnStartTransactionInternal(URLRequest* request,
+                                  const HttpRequestHeaders& headers) override {
+    ++(*counters_)["on_start_transaction_count"];
+    EXPECT_EQ(1, (*counters_)["on_start_transaction_count"]);
   }
 
   void OnHeadersReceivedInternal(

@@ -96,11 +96,11 @@ class ChromeExtensionsNetworkDelegateImpl
   int OnBeforeURLRequest(net::URLRequest* request,
                          const net::CompletionCallback& callback,
                          GURL* new_url) override;
-  int OnBeforeSendHeaders(net::URLRequest* request,
-                          const net::CompletionCallback& callback,
-                          net::HttpRequestHeaders* headers) override;
-  void OnSendHeaders(net::URLRequest* request,
-                     const net::HttpRequestHeaders& headers) override;
+  int OnBeforeStartTransaction(net::URLRequest* request,
+                               const net::CompletionCallback& callback,
+                               net::HttpRequestHeaders* headers) override;
+  void OnStartTransaction(net::URLRequest* request,
+                          const net::HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       net::URLRequest* request,
       const net::CompletionCallback& callback,
@@ -163,7 +163,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
       profile_, extension_info_map_.get(), request, callback, new_url);
 }
 
-int ChromeExtensionsNetworkDelegateImpl::OnBeforeSendHeaders(
+int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
@@ -171,7 +171,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
 }
 
-void ChromeExtensionsNetworkDelegateImpl::OnSendHeaders(
+void ChromeExtensionsNetworkDelegateImpl::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
@@ -303,17 +303,16 @@ int ChromeExtensionsNetworkDelegate::OnBeforeURLRequest(
   return net::OK;
 }
 
-int ChromeExtensionsNetworkDelegate::OnBeforeSendHeaders(
+int ChromeExtensionsNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   return net::OK;
 }
 
-void ChromeExtensionsNetworkDelegate::OnSendHeaders(
+void ChromeExtensionsNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
-    const net::HttpRequestHeaders& headers) {
-}
+    const net::HttpRequestHeaders& headers) {}
 
 int ChromeExtensionsNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,

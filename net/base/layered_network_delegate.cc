@@ -30,20 +30,19 @@ void LayeredNetworkDelegate::OnBeforeURLRequestInternal(
     GURL* new_url) {
 }
 
-int LayeredNetworkDelegate::OnBeforeSendHeaders(
+int LayeredNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
     const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
-  OnBeforeSendHeadersInternal(request, callback, headers);
-  return nested_network_delegate_->NotifyBeforeSendHeaders(request, callback,
-                                                           headers);
+  OnBeforeStartTransactionInternal(request, callback, headers);
+  return nested_network_delegate_->NotifyBeforeStartTransaction(
+      request, callback, headers);
 }
 
-void LayeredNetworkDelegate::OnBeforeSendHeadersInternal(
+void LayeredNetworkDelegate::OnBeforeStartTransactionInternal(
     URLRequest* request,
     const CompletionCallback& callback,
-    HttpRequestHeaders* headers) {
-}
+    HttpRequestHeaders* headers) {}
 
 void LayeredNetworkDelegate::OnBeforeSendProxyHeaders(
     URLRequest* request,
@@ -60,16 +59,16 @@ void LayeredNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     HttpRequestHeaders* headers) {
 }
 
-void LayeredNetworkDelegate::OnSendHeaders(URLRequest* request,
-                                           const HttpRequestHeaders& headers) {
-  OnSendHeadersInternal(request, headers);
-  nested_network_delegate_->NotifySendHeaders(request, headers);
-}
-
-void LayeredNetworkDelegate::OnSendHeadersInternal(
+void LayeredNetworkDelegate::OnStartTransaction(
     URLRequest* request,
     const HttpRequestHeaders& headers) {
+  OnStartTransactionInternal(request, headers);
+  nested_network_delegate_->NotifyStartTransaction(request, headers);
 }
+
+void LayeredNetworkDelegate::OnStartTransactionInternal(
+    URLRequest* request,
+    const HttpRequestHeaders& headers) {}
 
 int LayeredNetworkDelegate::OnHeadersReceived(
     URLRequest* request,

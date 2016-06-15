@@ -299,7 +299,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int observed_before_proxy_headers_sent_callbacks() const {
     return observed_before_proxy_headers_sent_callbacks_;
   }
-  int before_send_headers_count() const { return before_send_headers_count_; }
+  int before_start_transaction_count() const {
+    return before_start_transaction_count_;
+  }
   int headers_received_count() const { return headers_received_count_; }
   int64_t total_network_bytes_received() const {
     return total_network_bytes_received_;
@@ -320,14 +322,14 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
                          GURL* new_url) override;
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override;
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override;
   void OnBeforeSendProxyHeaders(URLRequest* request,
                                 const ProxyInfo& proxy_info,
                                 HttpRequestHeaders* headers) override;
-  void OnSendHeaders(URLRequest* request,
-                     const HttpRequestHeaders& headers) override;
+  void OnStartTransaction(URLRequest* request,
+                          const HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
@@ -378,7 +380,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_set_cookie_count_;
   int set_cookie_count_;
   int observed_before_proxy_headers_sent_callbacks_;
-  int before_send_headers_count_;
+  int before_start_transaction_count_;
   int headers_received_count_;
   int64_t total_network_bytes_received_;
   int64_t total_network_bytes_sent_;
@@ -386,7 +388,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   HostPortPair last_observed_proxy_;
 
   // NetworkDelegate callbacks happen in a particular order (e.g.
-  // OnBeforeURLRequest is always called before OnBeforeSendHeaders).
+  // OnBeforeURLRequest is always called before OnBeforeStartTransaction).
   // This bit-set indicates for each request id (key) what events may be sent
   // next.
   std::map<int, int> next_states_;

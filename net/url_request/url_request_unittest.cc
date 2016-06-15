@@ -432,9 +432,9 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
                          const CompletionCallback& callback,
                          GURL* new_url) override;
 
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override;
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override;
 
   int OnHeadersReceived(
       URLRequest* request,
@@ -543,11 +543,11 @@ int BlockingNetworkDelegate::OnBeforeURLRequest(
   return MaybeBlockStage(ON_BEFORE_URL_REQUEST, callback);
 }
 
-int BlockingNetworkDelegate::OnBeforeSendHeaders(
+int BlockingNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
     const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
-  TestNetworkDelegate::OnBeforeSendHeaders(request, callback, headers);
+  TestNetworkDelegate::OnBeforeStartTransaction(request, callback, headers);
 
   return MaybeBlockStage(ON_BEFORE_SEND_HEADERS, callback);
 }
@@ -4300,7 +4300,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting1) {
 
 // Tests that we can handle when a network request was canceled while we were
 // waiting for the network delegate.
-// Part 2: Request is cancelled while waiting for OnBeforeSendHeaders callback.
+// Part 2: Request is cancelled while waiting for OnBeforeStartTransaction
+// callback.
 TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting2) {
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -4879,10 +4880,10 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
     return RunCallbackAsynchronously(request, callback);
   }
 
-  int OnBeforeSendHeaders(URLRequest* request,
-                          const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) override {
-    TestNetworkDelegate::OnBeforeSendHeaders(request, callback, headers);
+  int OnBeforeStartTransaction(URLRequest* request,
+                               const CompletionCallback& callback,
+                               HttpRequestHeaders* headers) override {
+    TestNetworkDelegate::OnBeforeStartTransaction(request, callback, headers);
     return RunCallbackAsynchronously(request, callback);
   }
 
@@ -5163,7 +5164,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
   // The NetworkDelegate logged information in OnBeforeURLRequest,
-  // OnBeforeSendHeaders, and OnHeadersReceived.
+  // OnBeforeStartTransaction, and OnHeadersReceived.
   for (size_t i = 0; i < 3; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
         entries,
@@ -5245,8 +5246,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
   // The NetworkDelegate should have logged information in OnBeforeURLRequest,
-  // OnBeforeSendHeaders, OnHeadersReceived, OnAuthRequired, and then again in
-  // OnBeforeURLRequest and OnBeforeSendHeaders.
+  // OnBeforeStartTransaction, OnHeadersReceived, OnAuthRequired, and then again
+  // in
+  // OnBeforeURLRequest and OnBeforeStartTransaction.
   for (size_t i = 0; i < 6; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
         entries,
@@ -7994,7 +7996,7 @@ TEST_F(URLRequestInterceptorTestHTTP,
   EXPECT_EQ(0, d.received_redirect_count());
 
   EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(1, default_network_delegate()->before_send_headers_count());
+  EXPECT_EQ(1, default_network_delegate()->before_start_transaction_count());
   EXPECT_EQ(1, default_network_delegate()->headers_received_count());
 }
 
@@ -8027,7 +8029,7 @@ TEST_F(URLRequestInterceptorTestHTTP,
   EXPECT_EQ(0, d.received_redirect_count());
 
   EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(1, default_network_delegate()->before_send_headers_count());
+  EXPECT_EQ(1, default_network_delegate()->before_start_transaction_count());
   EXPECT_EQ(0, default_network_delegate()->headers_received_count());
 }
 
@@ -8059,7 +8061,7 @@ TEST_F(URLRequestInterceptorTestHTTP,
   EXPECT_EQ(0, d.received_redirect_count());
 
   EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(2, default_network_delegate()->before_send_headers_count());
+  EXPECT_EQ(2, default_network_delegate()->before_start_transaction_count());
   EXPECT_EQ(2, default_network_delegate()->headers_received_count());
 }
 

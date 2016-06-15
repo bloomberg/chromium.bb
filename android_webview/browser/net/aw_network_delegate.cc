@@ -42,11 +42,10 @@ int AwNetworkDelegate::OnBeforeURLRequest(
   return net::OK;
 }
 
-int AwNetworkDelegate::OnBeforeSendHeaders(
+int AwNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-
   DCHECK(headers);
   headers->SetHeaderIfMissing(
       "X-Requested-With",
@@ -54,9 +53,9 @@ int AwNetworkDelegate::OnBeforeSendHeaders(
   return net::OK;
 }
 
-void AwNetworkDelegate::OnSendHeaders(net::URLRequest* request,
-                                      const net::HttpRequestHeaders& headers) {
-}
+void AwNetworkDelegate::OnStartTransaction(
+    net::URLRequest* request,
+    const net::HttpRequestHeaders& headers) {}
 
 int AwNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,

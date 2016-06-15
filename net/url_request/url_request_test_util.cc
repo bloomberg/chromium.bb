@@ -39,8 +39,8 @@ namespace {
 // |TestNetworkDelegate::next_states_| to check that we do not send
 // events in the wrong order.
 const int kStageBeforeURLRequest = 1 << 0;
-const int kStageBeforeSendHeaders = 1 << 1;
-const int kStageSendHeaders = 1 << 2;
+const int kStageBeforeStartTransaction = 1 << 1;
+const int kStageStartTransaction = 1 << 2;
 const int kStageHeadersReceived = 1 << 3;
 const int kStageAuthRequired = 1 << 4;
 const int kStageBeforeRedirect = 1 << 5;
@@ -341,7 +341,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
       observed_before_proxy_headers_sent_callbacks_(0),
-      before_send_headers_count_(0),
+      before_start_transaction_count_(0),
       headers_received_count_(0),
       total_network_bytes_received_(0),
       total_network_bytes_sent_(0),
@@ -393,28 +393,27 @@ int TestNetworkDelegate::OnBeforeURLRequest(
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeURLRequest) <<
       event_order_[req_id];
   next_states_[req_id] =
-      kStageBeforeSendHeaders |
+      kStageBeforeStartTransaction |
       kStageResponseStarted |  // data: URLs do not trigger sending headers
-      kStageBeforeRedirect |  // a delegate can trigger a redirection
-      kStageCompletedError |  // request canceled by delegate
-      kStageAuthRequired;  // Auth can come next for FTP requests
+      kStageBeforeRedirect |   // a delegate can trigger a redirection
+      kStageCompletedError |   // request canceled by delegate
+      kStageAuthRequired;      // Auth can come next for FTP requests
   created_requests_++;
   return OK;
 }
 
-int TestNetworkDelegate::OnBeforeSendHeaders(
+int TestNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
     const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
-  event_order_[req_id] += "OnBeforeSendHeaders\n";
-  EXPECT_TRUE(next_states_[req_id] & kStageBeforeSendHeaders) <<
-      event_order_[req_id];
-  next_states_[req_id] =
-      kStageSendHeaders |
-      kStageCompletedError;  // request canceled by delegate
-  before_send_headers_count_++;
+  event_order_[req_id] += "OnBeforeStartTransaction\n";
+  EXPECT_TRUE(next_states_[req_id] & kStageBeforeStartTransaction)
+      << event_order_[req_id];
+  next_states_[req_id] = kStageStartTransaction |
+                         kStageCompletedError;  // request canceled by delegate
+  before_start_transaction_count_++;
   return OK;
 }
 
@@ -426,14 +425,14 @@ void TestNetworkDelegate::OnBeforeSendProxyHeaders(
   last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
 }
 
-void TestNetworkDelegate::OnSendHeaders(
+void TestNetworkDelegate::OnStartTransaction(
     URLRequest* request,
     const HttpRequestHeaders& headers) {
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
-  event_order_[req_id] += "OnSendHeaders\n";
-  EXPECT_TRUE(next_states_[req_id] & kStageSendHeaders) <<
-      event_order_[req_id];
+  event_order_[req_id] += "OnStartTransaction\n";
+  EXPECT_TRUE(next_states_[req_id] & kStageStartTransaction)
+      << event_order_[req_id];
   if (!will_be_intercepted_on_next_error_)
     next_states_[req_id] = kStageHeadersReceived | kStageCompletedError;
   else
@@ -460,7 +459,7 @@ int TestNetworkDelegate::OnHeadersReceived(
 
   // Basic authentication sends a second request from the URLRequestHttpJob
   // layer before the URLRequest reports that a response has started.
-  next_states_[req_id] |= kStageBeforeSendHeaders;
+  next_states_[req_id] |= kStageBeforeStartTransaction;
 
   if (!redirect_on_headers_received_url_.is_empty()) {
     *override_response_headers =
@@ -493,9 +492,10 @@ void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeRedirect) <<
       event_order_[req_id];
   next_states_[req_id] =
-      kStageBeforeURLRequest |  // HTTP redirects trigger this.
-      kStageBeforeSendHeaders |  // Redirects from the network delegate do not
-                                 // trigger onBeforeURLRequest.
+      kStageBeforeURLRequest |        // HTTP redirects trigger this.
+      kStageBeforeStartTransaction |  // Redirects from the network delegate do
+                                      // not
+                                      // trigger onBeforeURLRequest.
       kStageCompletedError;
 
   // A redirect can lead to a file or a data URL. In this case, we do not send
@@ -588,7 +588,8 @@ NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
   event_order_[req_id] += "OnAuthRequired\n";
   EXPECT_TRUE(next_states_[req_id] & kStageAuthRequired) <<
       event_order_[req_id];
-  next_states_[req_id] = kStageBeforeSendHeaders |
+  next_states_[req_id] =
+      kStageBeforeStartTransaction |
       kStageAuthRequired |  // For example, proxy auth followed by server auth.
       kStageHeadersReceived |  // Request canceled by delegate simulates empty
                                // response.

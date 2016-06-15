@@ -38,7 +38,7 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
       browser_context_, extension_info_map_.get(), request, callback, new_url);
 }
 
-int ShellNetworkDelegate::OnBeforeSendHeaders(
+int ShellNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
@@ -46,7 +46,7 @@ int ShellNetworkDelegate::OnBeforeSendHeaders(
       browser_context_, extension_info_map_.get(), request, callback, headers);
 }
 
-void ShellNetworkDelegate::OnSendHeaders(
+void ShellNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(

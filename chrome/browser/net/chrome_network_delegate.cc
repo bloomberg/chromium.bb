@@ -452,20 +452,21 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   return rv;
 }
 
-int ChromeNetworkDelegate::OnBeforeSendHeaders(
+int ChromeNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   if (force_youtube_safety_mode_ && force_youtube_safety_mode_->GetValue())
     safe_search_util::ForceYouTubeSafetyMode(request, headers);
 
-  return extensions_delegate_->OnBeforeSendHeaders(request, callback, headers);
+  return extensions_delegate_->OnBeforeStartTransaction(request, callback,
+                                                        headers);
 }
 
-void ChromeNetworkDelegate::OnSendHeaders(
+void ChromeNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
-  extensions_delegate_->OnSendHeaders(request, headers);
+  extensions_delegate_->OnStartTransaction(request, headers);
 }
 
 int ChromeNetworkDelegate::OnHeadersReceived(
