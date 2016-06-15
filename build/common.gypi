@@ -5821,8 +5821,9 @@
                   '-Wno-missing-field-initializers',
 
                   # Many files use intrinsics without including this header.
-                  # TODO(hans): Fix those files, or move this to sub-GYPs.
-                  '/FIIntrin.h',
+                  # TODO(hans): Fix those files, or move this to sub-GYPs,
+                  # https://crbug.com/592745
+                  '/FIintrin.h',
 
                   # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
                   '-Wno-microsoft-enum-value',  # http://crbug.com/505296
