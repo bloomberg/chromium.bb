@@ -49,8 +49,7 @@ import org.chromium.chrome.browser.ntp.cards.CardsLayoutOperations;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -146,7 +145,10 @@ public class NewTabPageView extends FrameLayout
         /** Opens the recent tabs page in the current tab. */
         void navigateToRecentTabs();
 
-        /** Opens a snippet in the current tab. */
+        /**
+         * Opens an url in the current tab.
+         * @param url the URL to open
+         */
         void openSnippet(String url);
 
         /** Opens the interests dialog. */
@@ -165,9 +167,6 @@ public class NewTabPageView extends FrameLayout
          * @param numResults The maximum number of sites to retrieve.
          */
         void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults);
-
-        /** Sets the observer that will be notified of new snippets. */
-        void setSnippetsObserver(SnippetsObserver observer);
 
         /**
          * Gets a cached thumbnail of a URL.
@@ -229,23 +228,6 @@ public class NewTabPageView extends FrameLayout
          * @param mostVisitedItems The MostVisitedItem shown on the NTP. Used to record metrics.
          */
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
-
-        /**
-         * Called when a snippet has been dismissed by the user.
-         */
-        void onSnippetDismissed(SnippetArticle dismissedSnippet);
-
-        /**
-         * Gets the thumbnail image for a snippet.
-         * @param snippet The snippet for which we want to fetch the image.
-         * @param callback Callback to run after fetching completes (successful or not).
-         */
-        void fetchSnippetImage(SnippetArticle snippet, Callback<Bitmap> callback);
-
-        /**
-         * Requests new snippets.
-         */
-        void fetchSnippets();
     }
 
     /**
@@ -278,14 +260,14 @@ public class NewTabPageView extends FrameLayout
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
      * @param searchProviderHasLogo Whether the search provider has a logo.
-     * @param useCardsUi Whether to use the new cards based UI or the old one.
+     * @param snippetsBridge The optional bridge, that can be used to interact with the snippets.
      */
-    public void initialize(NewTabPageManager manager,
-            boolean searchProviderHasLogo, boolean useCardsUi) {
+    public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo,
+            SnippetsBridge snippetsBridge) {
         mManager = manager;
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
 
-        mUseCardsUi = useCardsUi;
+        mUseCardsUi = snippetsBridge != null;
         if (mUseCardsUi) {
             stub.setLayoutResource(R.layout.new_tab_page_recycler_view);
             mRecyclerView = (NewTabPageRecyclerView) stub.inflate();
@@ -401,7 +383,7 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout);
+            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
 
             // Set up swipe-to-dismiss

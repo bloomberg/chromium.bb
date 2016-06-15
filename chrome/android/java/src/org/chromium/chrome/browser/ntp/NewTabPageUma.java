@@ -4,17 +4,23 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -169,6 +175,15 @@ public class NewTabPageUma {
     }
 
     /**
+     * Records stats related to article visits, such as the time spent on the website, or if the
+     * user comes back to the NTP.
+     * @param tab Tab opened to load an article.
+     */
+    public static void monitorVisit(Tab tab) {
+        tab.addObserver(new SnippetVisitRecorder());
+    }
+
+    /**
      * Snap state representing which part of the NTP the user is reading.
      */
     public enum SnapState {
@@ -203,6 +218,60 @@ public class NewTabPageUma {
                     }
                     break;
             }
+        }
+    }
+
+    /**
+     * Records stats related to article visits, such as the time spent on the website, or if the
+     * user comes back to the NTP. Use through {@link NewTabPageUma#monitorVisit(Tab)}.
+     */
+    private static class SnippetVisitRecorder extends EmptyTabObserver {
+        private final long mStartTimeNs = SystemClock.elapsedRealtime();
+
+        private SnippetVisitRecorder() {}
+
+        @Override
+        public void onHidden(Tab tab) {
+            endRecording(tab);
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            endRecording(null);
+        }
+
+        @Override
+        public void onUpdateUrl(Tab tab, String url) {
+            // onLoadUrl below covers many exit conditions to stop recording but not all,
+            // such as navigating back. We therefore stop recording if a URL change
+            // indicates some non-Web page was visited.
+            if (!url.startsWith(UrlConstants.CHROME_SCHEME)
+                    && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) {
+                assert !NewTabPage.isNTPUrl(url);
+                return;
+            }
+            if (NewTabPage.isNTPUrl(url)) {
+                RecordUserAction.record("MobileNTP.Snippets.VisitEndBackInNTP");
+            }
+            endRecording(tab);
+        }
+
+        @Override
+        public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+            // End recording if a new URL gets loaded e.g. after entering a new query in
+            // the omnibox. This doesn't cover the nagivate-back case so we also need
+            // onUpdateUrl.
+            int transitionTypeMask = PageTransition.FROM_ADDRESS_BAR | PageTransition.HOME_PAGE
+                    | PageTransition.CHAIN_START | PageTransition.CHAIN_END;
+
+            if ((params.getTransitionType() & transitionTypeMask) != 0) endRecording(tab);
+        }
+
+        private void endRecording(Tab removeObserverFromTab) {
+            if (removeObserverFromTab != null) removeObserverFromTab.removeObserver(this);
+            RecordUserAction.record("MobileNTP.Snippets.VisitEnd");
+            RecordHistogram.recordLongTimesHistogram("NewTabPage.Snippets.VisitDuration",
+                    SystemClock.elapsedRealtime() - mStartTimeNs, TimeUnit.MILLISECONDS);
         }
     }
 }

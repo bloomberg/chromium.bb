@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 
 import java.util.ArrayList;
@@ -41,6 +43,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final ItemTouchCallbacks mItemTouchCallbacks;
     private NewTabPageRecyclerView mRecyclerView;
     private boolean mWantsSnippets;
+
+    private SnippetsBridge mSnippetsBridge;
 
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
@@ -94,12 +98,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     /**
      * Constructor to create the manager for all the cards to display on the NTP
      *
-     * @param manager the NewTabPageManager to use to interact with the snippets service and the
-     *                rest of the system.
+     * @param manager the NewTabPageManager to use to interact with the rest of the system.
      * @param newTabPageLayout the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
+     * @param snippetsBridge the bridge to interact with the snippets service.
      */
-    public NewTabPageAdapter(NewTabPageManager manager, NewTabPageLayout newTabPageLayout) {
+    public NewTabPageAdapter(NewTabPageManager manager, NewTabPageLayout newTabPageLayout,
+            SnippetsBridge snippetsBridge) {
         mNewTabPageManager = manager;
         mNewTabPageLayout = newTabPageLayout;
         mAboveTheFoldListItem = new AboveTheFoldListItem();
@@ -107,9 +112,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
         mWantsSnippets = true;
+        mSnippetsBridge = snippetsBridge;
 
         loadSnippets(new ArrayList<SnippetArticle>());
-        mNewTabPageManager.setSnippetsObserver(this);
+        mSnippetsBridge.setObserver(this);
     }
 
     /** Returns callbacks to configure the interactions with the RecyclerView's items. */
@@ -160,7 +166,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
-            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager);
+            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager, mSnippetsBridge);
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_SPACING) {
@@ -187,7 +193,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     /** Start a request for new snippets. */
     public void reloadSnippets() {
         mWantsSnippets = true;
-        mNewTabPageManager.fetchSnippets();
+        SnippetsBridge.fetchSnippets();
     }
 
     private void loadSnippets(List<SnippetArticle> listSnippets) {
@@ -237,8 +243,18 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
-        mNewTabPageManager.onSnippetDismissed((SnippetArticle) mNewTabPageListItems.get(position));
+        SnippetArticle dismissedSnippet = (SnippetArticle) mNewTabPageListItems.get(position);
 
+        mSnippetsBridge.getSnippedVisited(dismissedSnippet, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                NewTabPageUma.recordSnippetAction(result
+                                ? NewTabPageUma.SNIPPETS_ACTION_DISMISSED_VISITED
+                                : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
+            }
+        });
+
+        mSnippetsBridge.discardSnippet(dismissedSnippet);
         mNewTabPageListItems.remove(position);
         notifyItemRemoved(position);
     }

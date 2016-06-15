@@ -113,8 +113,7 @@ public class SnippetsBridge {
     private void onSnippetsAvailable(String[] ids, String[] titles, String[] urls, String[] ampUrls,
             String[] thumbnailUrls, String[] previewText, long[] timestamps, String[] publishers,
             float[] scores) {
-        // Don't notify observer if we've already been destroyed.
-        if (mNativeSnippetsBridge == 0) return;
+        assert mNativeSnippetsBridge != 0;
         assert mObserver != null;
 
         List<SnippetArticle> newSnippets = new ArrayList<>(ids.length);

@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -36,12 +37,14 @@ public class NewTabPageAdapterTest {
 
     private NewTabPageManager mNewTabPageManager;
     private SnippetsObserver mSnippetsObserver;
+    private SnippetsBridge mSnippetsBridge;
 
     @Before
     public void setUp() {
         RecordHistogram.disableForTests();
         mNewTabPageManager = mock(NewTabPageManager.class);
         mSnippetsObserver = null;
+        mSnippetsBridge = mock(SnippetsBridge.class);
 
         // Intercept the observers so that we can mock invocations.
         doAnswer(new Answer<Void>() {
@@ -49,7 +52,7 @@ public class NewTabPageAdapterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 mSnippetsObserver = invocation.getArgumentAt(0, SnippetsObserver.class);
                 return null;
-            }}).when(mNewTabPageManager).setSnippetsObserver(any(SnippetsObserver.class));
+            }}).when(mSnippetsBridge).setObserver(any(SnippetsObserver.class));
     }
 
     /**
@@ -59,7 +62,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoading() {
-        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         assertEquals(4, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
@@ -90,7 +93,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoadingInitiallyEmpty() {
-        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         // If we don't get anything, we should be in the same situation as the initial one.
         mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticle>());
@@ -122,7 +125,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetClearing() {
-        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         List<SnippetArticle> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);

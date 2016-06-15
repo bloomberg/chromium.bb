@@ -57,6 +57,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private static final String PARAMETER_ENABLED_VALUE = "on";
 
     private final NewTabPageManager mNewTabPageManager;
+    private final SnippetsBridge mSnippetsBridge;
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -78,12 +79,15 @@ public class SnippetArticleViewHolder extends CardViewHolder {
      * Constructs a SnippetCardItemView item used to display snippets
      *
      * @param parent The ViewGroup that is going to contain the newly created view.
-     * @param manager The SnippetsManager object used to open an article
+     * @param manager The NTPManager object used to open an article
+     * @param snippetsBridge The SnippetsBridge used to retrieve the snippet thumbnails.
      */
-    public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager) {
+    public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
+            SnippetsBridge snippetsBridge) {
         super(R.layout.new_tab_page_snippets_card, parent);
 
         mNewTabPageManager = manager;
+        mSnippetsBridge = snippetsBridge;
         mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
@@ -146,7 +150,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
             mImageCallback = new FetchImageCallback(this, mArticle);
-            mNewTabPageManager.fetchSnippetImage(mArticle, mImageCallback);
+            mSnippetsBridge.fetchSnippetImage(mArticle, mImageCallback);
         }
 
         updateFavicon();
