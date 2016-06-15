@@ -27,6 +27,12 @@
   native <methods>;
 }
 
+# Class merging provides negligible .dex size reduction and method count
+# reduction (about 0.3% improvement on method count, and 0.1% savings on size),
+# and it messes up stack traces if the classes are optimized. Thus, it is in our
+# best interests to turn it off. See crbug.com/620323
+-optimizations !class/merging/*
+
 # Keep all runtime visible annotations
 -keepattributes RuntimeVisibleAnnotations
 
