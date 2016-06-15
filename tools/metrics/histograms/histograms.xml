@@ -15542,6 +15542,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ResetPermissionsIncrease" enum="Boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Whether the DISABLE_PERMISSIONS_INCREASE disable reason was removed from an
+    extension while checking for a permissions increase. Recorded during startup
+    and on reload and update, for each extension that has the
+    DISABLE_PERMISSIONS_INCREASE reason.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ResourceDirectoryTimestampQueryLatency" units="ms">
   <owner>asargent@chromium.org</owner>
   <summary>
