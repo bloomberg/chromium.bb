@@ -54,9 +54,6 @@ ResourceContext::~ResourceContext() {
     rdhi->CancelRequestsForContext(this);
     rdhi->RemoveResourceContext(this);
   }
-
-  // In some tests this object is destructed on UI thread.
-  DetachUserDataThread();
 }
 
 ResourceContext::SaltCallback ResourceContext::GetMediaDeviceIDSalt() {
