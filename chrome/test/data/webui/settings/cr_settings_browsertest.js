@@ -54,21 +54,23 @@ CrSettingsBrowserTest.prototype = {
 // Have to include command_line.h manually due to GEN calls below.
 GEN('#include "base/command_line.h"');
 
-// Times out on memory bots. http://crbug.com/534718
-GEN('#if defined(MEMORY_SANITIZER)');
-GEN('#define MAYBE_CrSettingsTest DISABLED_CrSettingsTest');
-GEN('#else');
-GEN('#define MAYBE_CrSettingsTest CrSettingsTest');
-GEN('#endif');
-
-// TODO(dbeam): these should be split into multiple TEST_F()s.
-TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
+TEST_F('CrSettingsBrowserTest', 'Checkbox', function() {
   settings_checkbox.registerTests();
-  settings_dropdown_menu.registerTests();
-  settings_prefUtil.registerTests();
-  settings_prefs.registerTests();
+  mocha.run();
+});
 
-  // Run all registered tests.
+TEST_F('CrSettingsBrowserTest', 'DropdownMenu', function() {
+  settings_dropdown_menu.registerTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsBrowserTest', 'PrefUtil', function() {
+  settings_prefUtil.registerTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsBrowserTest', 'Prefs', function() {
+  settings_prefs.registerTests();
   mocha.run();
 });
 
