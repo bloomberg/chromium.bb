@@ -104,6 +104,12 @@ public class CustomTabActivity extends ChromeActivity {
         public void didAddTab(Tab tab, TabLaunchType type) {
             tab.addObserver(mTabObserver);
         }
+
+        @Override
+        public void didCloseTab(int tabId, boolean incognito) {
+            // Finish the activity after we intent out.
+            if (getTabModelSelector().getCurrentModel().getCount() == 0) finish();
+        }
     };
 
     /**

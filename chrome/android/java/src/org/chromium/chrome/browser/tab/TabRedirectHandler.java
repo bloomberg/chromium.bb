@@ -12,6 +12,7 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
@@ -40,6 +41,7 @@ public class TabRedirectHandler {
     // A resolver list which includes all resolvers of |mInitialIntent|.
     private final HashSet<ComponentName> mCachedResolvers = new HashSet<ComponentName>();
     private boolean mIsInitialIntentHeadingToChrome;
+    private boolean mIsCustomTabIntent;
 
     private long mLastNewUrlLoadingTime = INVALID_TIME;
     private boolean mIsOnEffectiveRedirectChain;
@@ -76,6 +78,7 @@ public class TabRedirectHandler {
                         Browser.EXTRA_APPLICATION_ID))) {
             mIsInitialIntentHeadingToChrome = true;
         }
+        mIsCustomTabIntent = ChromeLauncherActivity.isCustomTabIntent(intent);
 
         // Copies minimum information to retrieve resolvers.
         mInitialIntent = new Intent(Intent.ACTION_VIEW);
@@ -89,6 +92,7 @@ public class TabRedirectHandler {
 
     private void clearIntentHistory() {
         mIsInitialIntentHeadingToChrome = false;
+        mIsCustomTabIntent = false;
         mInitialIntent = null;
         mCachedResolvers.clear();
     }
@@ -187,6 +191,13 @@ public class TabRedirectHandler {
         return (mIsInitialIntentHeadingToChrome && !hasExternalProtocol)
                 || mInitialNavigationType == NAVIGATION_TYPE_FROM_LINK_WITHOUT_USER_GESTURE
                 || mInitialNavigationType == NAVIGATION_TYPE_FROM_RELOAD;
+    }
+
+    /**
+     * @return Whether this navigation is initiated by a Custom Tabs {@link Intent}.
+     */
+    public boolean isFromCustomTabIntent() {
+        return mIsCustomTabIntent;
     }
 
     /**

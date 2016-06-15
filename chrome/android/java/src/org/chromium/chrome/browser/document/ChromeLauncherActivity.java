@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -146,7 +145,7 @@ public class ChromeLauncherActivity extends Activity
         mIsInLegacyMultiInstanceMode =
                 MultiWindowUtils.getInstance().shouldRunInLegacyMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
-        mIsCustomTabIntent = isCustomTabIntent();
+        mIsCustomTabIntent = isCustomTabIntent(getIntent());
         if (!mIsCustomTabIntent) {
             mIsHerbIntent = isHerbIntent();
             mIsCustomTabIntent = mIsHerbIntent;
@@ -292,9 +291,6 @@ public class ChromeLauncherActivity extends Activity
             return false;
         }
 
-        // Custom Tabs have to be available.
-        if (!ChromePreferenceManager.getInstance(context).getCustomTabsEnabled()) return false;
-
         return true;
     }
 
@@ -390,18 +386,13 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * @return Whether the intent sent is for launching a Custom Tab.
+     * @return Whether the intent is for launching a Custom Tab.
      */
-    private boolean isCustomTabIntent() {
-        if (getIntent() == null || !getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
+    public static boolean isCustomTabIntent(Intent intent) {
+        if (intent == null || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
         }
-
-        String url = IntentHandler.getUrlFromIntent(getIntent());
-        if (url == null) return false;
-
-        if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return false;
-        return true;
+        return IntentHandler.getUrlFromIntent(intent) != null;
     }
 
     /**
@@ -431,7 +422,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Create and fire a launch intent.
         startActivity(createCustomTabActivityIntent(
-                this, getIntent(), !isCustomTabIntent() && mIsHerbIntent));
+                this, getIntent(), !isCustomTabIntent(getIntent()) && mIsHerbIntent));
         if (mIsHerbIntent) overridePendingTransition(R.anim.slide_in_up, R.anim.no_anim);
     }
 

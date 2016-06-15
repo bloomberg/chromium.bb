@@ -36,7 +36,6 @@ public class ChromePreferenceManager {
             "contextual_search_peek_promo_show_count";
     private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
-    private static final String ENABLE_CUSTOM_TABS = "enable_custom_tabs";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String APP_LINK_KEY = "applink.app_link_enabled";
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
@@ -123,24 +122,6 @@ public class ChromePreferenceManager {
      */
     public boolean getPromosSkippedOnFirstStart() {
         return mSharedPreferences.getBoolean(PROMOS_SKIPPED_ON_FIRST_START, false);
-    }
-
-    /**
-     * Enables custom tabs when true. This will take effect next time an activity is created.
-     * @param enabled Whether custom tabs should be enabled.
-     */
-    public void setCustomTabsEnabled(boolean enabled) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(ENABLE_CUSTOM_TABS, enabled);
-        ed.apply();
-    }
-
-    /**
-     * @return Whether custom tabs is enabled. This return value is designed to be used as a kill
-     *         switch for the feature, so it returns true by default if the preference is not set.
-     */
-    public boolean getCustomTabsEnabled() {
-        return mSharedPreferences.getBoolean(ENABLE_CUSTOM_TABS, true);
     }
 
     /**

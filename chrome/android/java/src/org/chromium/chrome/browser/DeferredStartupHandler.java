@@ -170,14 +170,6 @@ public class DeferredStartupHandler {
 
         startModerateBindingManagementIfNeeded();
 
-        String customTabsTrialGroupName = FieldTrialList.findFullName("CustomTabs");
-        if (customTabsTrialGroupName.equals("Disabled")) {
-            ChromePreferenceManager.getInstance(mAppContext).setCustomTabsEnabled(false);
-        } else if (customTabsTrialGroupName.equals("Enabled")
-                || customTabsTrialGroupName.equals("DisablePrerender")) {
-            ChromePreferenceManager.getInstance(mAppContext).setCustomTabsEnabled(true);
-        }
-
         recordKeyboardLocaleUma();
 
         ChromeApplication application = (ChromeApplication) mAppContext;

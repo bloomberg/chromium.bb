@@ -62,17 +62,6 @@
             "group_name": "Enabled"
         }
     ],
-    "CustomTabs": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "DisablePrerender"
-        },
-        {
-            "group_name": "Disabled"
-        }
-    ],
     "DataCompressionProxyDevRollout": [
         {
             "group_name": "Control"

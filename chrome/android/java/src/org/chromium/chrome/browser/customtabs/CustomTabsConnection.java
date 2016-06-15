@@ -29,7 +29,6 @@ import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -676,7 +675,6 @@ public class CustomTabsConnection {
     }
 
     private boolean mayPrerender(CustomTabsSessionToken session) {
-        if (FieldTrialList.findFullName("CustomTabs").equals("DisablePrerender")) return false;
         if (!DeviceClassManager.enablePrerendering()) return false;
         // TODO(yusufo): The check for prerender in PrivacyManager now checks for the network
         // connection type as well, we should either change that or add another check for custom

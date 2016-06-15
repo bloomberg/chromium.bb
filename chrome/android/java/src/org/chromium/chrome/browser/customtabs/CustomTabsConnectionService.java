@@ -12,7 +12,6 @@ import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.List;
 
@@ -27,7 +26,6 @@ public class CustomTabsConnectionService extends CustomTabsService {
         boolean firstRunNecessary = FirstRunFlowSequencer
                 .checkIfFirstRunIsNecessary(getApplicationContext(), false) != null;
         if (firstRunNecessary) return null;
-        if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return null;
         mConnection = CustomTabsConnection.getInstance(getApplication());
         mConnection.logCall("Service#onBind()", true);
         return super.onBind(intent);
