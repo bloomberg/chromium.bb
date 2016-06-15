@@ -203,7 +203,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         source_baseline = "%s/%s" % (results_url, self._file_name_for_actual_result(test_name, suffix))
         target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
 
-        _log.debug("Retrieving %s." % source_baseline)
+        _log.debug("Retrieving source %s for target %s." % (source_baseline, target_baseline))
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True),
                             target_baseline)
 
