@@ -25539,6 +25539,50 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NCN.getNetInfo1stSuccess"
+    enum="BooleanAvoidedNullPointerException">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    True if the first call to ConnectivityManager.getNetworkInfo(Network) did
+    not throw NullPointerException, false if it did. Useful for investigating
+    and avoiding unexpected exceptions, see http://crbug.com/592131.
+  </summary>
+</histogram>
+
+<histogram name="NCN.getNetInfo2ndSuccess"
+    enum="BooleanAvoidedNullPointerException">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Recorded after the first call to ConnectivityManager.getNetworkInfo(Network)
+    threw a NullPointerException. True if the second call to
+    ConnectivityManager.getNetworkInfo(Network) did not throw
+    NullPointerException, false if it did. Useful for investigating and avoiding
+    unexpected exceptions, see http://crbug.com/592131.
+  </summary>
+</histogram>
+
+<histogram name="NCN.getWifiInfo1stSuccess"
+    enum="BooleanAvoidedNullPointerException">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    True if the first call to WifiManager.getConnectionInfo() did not throw
+    NullPointerException, false if it did. Useful for investigating and avoiding
+    unexpected exceptions, see http://crbug.com/592131.
+  </summary>
+</histogram>
+
+<histogram name="NCN.getWifiInfo2ndSuccess"
+    enum="BooleanAvoidedNullPointerException">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Recorded after the first call to WifiManager.getConnectionInfo() threw a
+    NullPointerException. True if the second call to
+    ConnectivityManager.getNetworkInfo(Network) did not throw
+    NullPointerException, false if it did. Useful for investigating and avoiding
+    unexpected exceptions, see http://crbug.com/592131.
+  </summary>
+</histogram>
+
 <histogram name="NCN.IPAddressChange" units="ms">
   <owner>pauljensen@chromium.org</owner>
   <summary>Time between IP address change messages.</summary>
@@ -65659,6 +65703,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanAvailable" type="int">
   <int value="0" label="Not Available"/>
   <int value="1" label="Available"/>
+</enum>
+
+<enum name="BooleanAvoidedNullPointerException" type="int">
+  <int value="0" label="Had NullPointerException"/>
+  <int value="1" label="No exception"/>
 </enum>
 
 <enum name="BooleanBlocked" type="int">

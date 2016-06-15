@@ -30,6 +30,7 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -87,13 +88,34 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             return getNetworkState(mConnectivityManager.getActiveNetworkInfo());
         }
 
+        // Fetches NetworkInfo and records UMA for NullPointerExceptions.
+        private NetworkInfo getNetworkInfo(Network network) {
+            try {
+                NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
+                RecordHistogram.recordBooleanHistogram("NCN.getNetInfo1stSuccess", true);
+                return networkInfo;
+            } catch (NullPointerException firstException) {
+                RecordHistogram.recordBooleanHistogram("NCN.getNetInfo1stSuccess", false);
+                // Try the IPC again to test if the NPE is a random/transient/ephemeral failure.
+                // This will indicate if retrying is a viable solution.
+                try {
+                    NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
+                    RecordHistogram.recordBooleanHistogram("NCN.getNetInfo2ndSuccess", true);
+                    return networkInfo;
+                } catch (NullPointerException secondException) {
+                    RecordHistogram.recordBooleanHistogram("NCN.getNetInfo2ndSuccess", false);
+                    throw secondException;
+                }
+            }
+        }
+
         /**
          * Returns connection type and status information about |network|.
          * Only callable on Lollipop and newer releases.
          */
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         NetworkState getNetworkState(Network network) {
-            final NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
+            final NetworkInfo networkInfo = getNetworkInfo(network);
             if (networkInfo != null && networkInfo.getType() == TYPE_VPN) {
                 // When a VPN is in place the underlying network type can be queried via
                 // getActiveNeworkInfo() thanks to
@@ -191,7 +213,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             final Network[] networks = getAllNetworksFiltered(this, null);
             int defaultNetId = NetId.INVALID;
             for (Network network : networks) {
-                final NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
+                final NetworkInfo networkInfo = getNetworkInfo(network);
                 if (networkInfo != null
                         && (networkInfo.getType() == defaultNetworkInfo.getType()
                                    // getActiveNetworkInfo() will not return TYPE_VPN types due to
@@ -255,13 +277,34 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             return "";
         }
 
+        // Fetches WifiInfo and records UMA for NullPointerExceptions.
+        private WifiInfo getWifiInfo() {
+            try {
+                WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+                RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo1stSuccess", true);
+                return wifiInfo;
+            } catch (NullPointerException firstException) {
+                RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo1stSuccess", false);
+                // Try the IPC again to test if the NPE is a random/transient/ephemeral failure.
+                // This will indicate if retrying is a viable solution.
+                try {
+                    WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+                    RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo2ndSuccess", true);
+                    return wifiInfo;
+                } catch (NullPointerException secondException) {
+                    RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo2ndSuccess", false);
+                    throw secondException;
+                }
+            }
+        }
+
         /*
          * Requires ACCESS_WIFI_STATE permission to get the real link speed, else returns
          * UNKNOWN_LINK_SPEED.
          */
         int getLinkSpeedInMbps() {
             if (!mHasWifiPermission || mWifiManager == null) return UNKNOWN_LINK_SPEED;
-            final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+            final WifiInfo wifiInfo = getWifiInfo();
             if (wifiInfo == null) return UNKNOWN_LINK_SPEED;
 
             // wifiInfo.getLinkSpeed returns the current wifi linkspeed, which can change even
