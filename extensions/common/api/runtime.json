@@ -264,6 +264,24 @@
         "parameters": []
       },
       {
+        "name": "restartAfterDelay",
+        "description": "Restart the ChromeOS device when the app runs in kiosk mode after the given seconds. If called again before the time ends, the reboot will be delayed. If called with a value of -1, the reboot will be cancelled. It's a no-op in non-kiosk mode. It's only allowed to be called repeatedly by the first extension to invoke this API.",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "seconds",
+            "description": "Time to wait in seconds before rebooting the device, or -1 to cancel a scheduled reboot."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "A callback to be invoked when a restart request was successfully rescheduled.",
+            "optional": true
+          }
+        ]
+      },
+      {
         "name": "connect",
         "type": "function",
         "nocompile": true,

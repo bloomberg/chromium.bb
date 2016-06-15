@@ -1195,6 +1195,7 @@ enum HistogramValue {
   SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET,
   SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE,
   AUTOFILLPRIVATE_GETCOUNTRYLIST,
+  RUNTIME_RESTARTAFTERDELAY,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

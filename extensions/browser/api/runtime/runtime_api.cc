@@ -13,9 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
@@ -79,6 +82,31 @@ const char kPrefPreviousVersion[] = "previous_version";
 // particular value does not matter to user code, but is chosen for consistency
 // with the equivalent Pepper API.
 const char kPackageDirectoryPath[] = "crxfs";
+
+// Preference key for storing the last successful restart due to a call to
+// chrome.runtime.restartAfterDelay().
+constexpr char kPrefLastRestartAfterDelayTime[] =
+    "last_restart_after_delay_time";
+// Preference key for storing whether the most recent restart was due to a
+// successful call to chrome.runtime.restartAfterDelay().
+constexpr char kPrefLastRestartWasDueToDelayedRestartApi[] =
+    "last_restart_was_due_to_delayed_restart_api";
+
+// Error and status messages strings for the restartAfterDelay() API.
+constexpr char kErrorInvalidArgument[] = "Invalid argument: *.";
+constexpr char kErrorOnlyKioskModeAllowed[] =
+    "API available only for ChromeOS kiosk mode.";
+constexpr char kErrorOnlyFirstExtensionAllowed[] =
+    "Not the first extension to call this API.";
+constexpr char kErrorInvalidStatus[] = "Invalid restart request status.";
+constexpr char kErrorRequestedTooSoon[] =
+    "Restart was requested too soon. It was throttled instead.";
+
+constexpr int kMinDurationBetweenSuccessiveRestartsHours = 3;
+
+// This is used for unit tests, so that we can test the restartAfterDelay
+// API without a kiosk app.
+bool allow_non_kiosk_apps_restart_api_for_test = false;
 
 void DispatchOnStartupEventImpl(BrowserContext* browser_context,
                                 const std::string& extension_id,
@@ -151,6 +179,13 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
+// static
+void RuntimeAPI::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kPrefLastRestartWasDueToDelayedRestartApi,
+                                false);
+  registry->RegisterDoublePref(kPrefLastRestartAfterDelayTime, 0.0);
+}
+
 template <>
 void BrowserContextKeyedAPIFactory<RuntimeAPI>::DeclareFactoryDependencies() {
   DependsOn(ProcessManagerFactory::GetInstance());
@@ -158,9 +193,14 @@ void BrowserContextKeyedAPIFactory<RuntimeAPI>::DeclareFactoryDependencies() {
 
 RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
     : browser_context_(context),
-      dispatch_chrome_updated_event_(false),
       extension_registry_observer_(this),
-      process_manager_observer_(this) {
+      process_manager_observer_(this),
+      minimum_duration_between_restarts_(base::TimeDelta::FromHours(
+          kMinDurationBetweenSuccessiveRestartsHours)),
+      dispatch_chrome_updated_event_(false),
+      did_read_delayed_restart_preferences_(false),
+      was_last_restart_due_to_delayed_restart_api_(false),
+      weak_ptr_factory_(this) {
   // RuntimeAPI is redirected in incognito, so |browser_context_| is never
   // incognito.
   DCHECK(!browser_context_->IsOffTheRecord());
@@ -319,11 +359,141 @@ bool RuntimeAPI::GetPlatformInfo(runtime::PlatformInfo* info) {
 }
 
 bool RuntimeAPI::RestartDevice(std::string* error_message) {
+  if (was_last_restart_due_to_delayed_restart_api_ &&
+      (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode() ||
+       allow_non_kiosk_apps_restart_api_for_test)) {
+    // We don't allow an app by calling chrome.runtime.restart() to clear the
+    // throttle enforced on it when calling chrome.runtime.restartAfterDelay(),
+    // i.e. the app can't unthrottle itself.
+    // When running in forced kiosk app mode, we assume the following restart
+    // request will succeed.
+    PrefService* pref_service =
+        ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
+            browser_context_);
+    DCHECK(pref_service);
+    pref_service->SetBoolean(kPrefLastRestartWasDueToDelayedRestartApi, true);
+  }
   return delegate_->RestartDevice(error_message);
+}
+
+RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::RestartDeviceAfterDelay(
+    const std::string& extension_id,
+    int seconds_from_now) {
+  // To achieve as much accuracy as possible, record the time of the call as
+  // |now| here.
+  const base::Time now = base::Time::NowFromSystemTime();
+
+  if (schedule_restart_first_extension_id_.empty()) {
+    schedule_restart_first_extension_id_ = extension_id;
+  } else if (extension_id != schedule_restart_first_extension_id_) {
+    // We only allow the first extension to call this API to call it repeatedly.
+    // Any other extension will fail.
+    return RestartAfterDelayStatus::FAILED_NOT_FIRST_EXTENSION;
+  }
+
+  MaybeCancelRunningDelayedRestartTimer();
+
+  if (seconds_from_now == -1) {
+    // We already stopped the running timer (if any).
+    return RestartAfterDelayStatus::SUCCESS_RESTART_CANCELED;
+  }
+
+  if (!did_read_delayed_restart_preferences_) {
+    // Try to read any previous successful restart attempt time resulting from
+    // this API.
+    PrefService* pref_service =
+        ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
+            browser_context_);
+    DCHECK(pref_service);
+
+    was_last_restart_due_to_delayed_restart_api_ =
+        pref_service->GetBoolean(kPrefLastRestartWasDueToDelayedRestartApi);
+    if (was_last_restart_due_to_delayed_restart_api_) {
+      // We clear this bit if the previous restart was due to this API, so that
+      // we don't throttle restart requests coming after other restarts or
+      // shutdowns not caused by the runtime API.
+      pref_service->SetBoolean(kPrefLastRestartWasDueToDelayedRestartApi,
+                               false);
+    }
+
+    last_delayed_restart_time_ = base::Time::FromDoubleT(
+        pref_service->GetDouble(kPrefLastRestartAfterDelayTime));
+
+    if (!allow_non_kiosk_apps_restart_api_for_test) {
+      // Don't read every time unless in tests.
+      did_read_delayed_restart_preferences_ = true;
+    }
+  }
+
+  return ScheduleDelayedRestart(now, seconds_from_now);
 }
 
 bool RuntimeAPI::OpenOptionsPage(const Extension* extension) {
   return delegate_->OpenOptionsPage(extension);
+}
+
+void RuntimeAPI::MaybeCancelRunningDelayedRestartTimer() {
+  if (restart_after_delay_timer_.IsRunning())
+    restart_after_delay_timer_.Stop();
+}
+
+RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::ScheduleDelayedRestart(
+    const base::Time& now,
+    int seconds_from_now) {
+  base::TimeDelta delay_till_restart =
+      base::TimeDelta::FromSeconds(seconds_from_now);
+
+  // Throttle restart requests that are received too soon successively, only if
+  // the previous restart was due to this API.
+  bool was_throttled = false;
+  if (was_last_restart_due_to_delayed_restart_api_) {
+    base::Time future_restart_time = now + delay_till_restart;
+    base::TimeDelta delta_since_last_restart =
+        future_restart_time > last_delayed_restart_time_
+            ? future_restart_time - last_delayed_restart_time_
+            : base::TimeDelta::Max();
+    if (delta_since_last_restart < minimum_duration_between_restarts_) {
+      // Schedule the restart after |minimum_duration_between_restarts_| has
+      // passed.
+      delay_till_restart = minimum_duration_between_restarts_ -
+                           (now - last_delayed_restart_time_);
+      was_throttled = true;
+    }
+  }
+
+  restart_after_delay_timer_.Start(
+      FROM_HERE, delay_till_restart,
+      base::Bind(&RuntimeAPI::OnDelayedRestartTimerTimeout,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  return was_throttled ? RestartAfterDelayStatus::FAILED_THROTTLED
+                       : RestartAfterDelayStatus::SUCCESS_RESTART_SCHEDULED;
+}
+
+void RuntimeAPI::OnDelayedRestartTimerTimeout() {
+  // We can persist "now" as the last successful restart time, assuming that the
+  // following restart request will succeed, since it can only fail if requested
+  // by non kiosk apps, and we prevent that from the beginning (unless in
+  // unit tests).
+  // This assumption is important, since once restart is requested, we might not
+  // have enough time to persist the data to disk.
+  double now = base::Time::NowFromSystemTime().ToDoubleT();
+  PrefService* pref_service =
+      ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
+          browser_context_);
+  DCHECK(pref_service);
+  pref_service->SetDouble(kPrefLastRestartAfterDelayTime, now);
+  pref_service->SetBoolean(kPrefLastRestartWasDueToDelayedRestartApi, true);
+
+  std::string error_message;
+  const bool success = delegate_->RestartDevice(&error_message);
+
+  // Make sure our above assumption is maintained.
+  DCHECK(success || allow_non_kiosk_apps_restart_api_for_test);
+}
+
+void RuntimeAPI::AllowNonKioskAppsInRestartAfterDelayForTesting() {
+  allow_non_kiosk_apps_restart_api_for_test = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -551,6 +721,41 @@ ExtensionFunction::ResponseAction RuntimeRestartFunction::Run() {
     return RespondNow(Error(message));
   }
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction RuntimeRestartAfterDelayFunction::Run() {
+  if (!allow_non_kiosk_apps_restart_api_for_test &&
+      !ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode()) {
+    return RespondNow(Error(kErrorOnlyKioskModeAllowed));
+  }
+
+  std::unique_ptr<api::runtime::RestartAfterDelay::Params> params(
+      api::runtime::RestartAfterDelay::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  int seconds = params->seconds;
+
+  if (seconds <= 0 && seconds != -1)
+    return RespondNow(Error(kErrorInvalidArgument, base::IntToString(seconds)));
+
+  RuntimeAPI::RestartAfterDelayStatus request_status =
+      RuntimeAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->RestartDeviceAfterDelay(extension()->id(), seconds);
+
+  switch (request_status) {
+    case RuntimeAPI::RestartAfterDelayStatus::FAILED_NOT_FIRST_EXTENSION:
+      return RespondNow(Error(kErrorOnlyFirstExtensionAllowed));
+
+    case RuntimeAPI::RestartAfterDelayStatus::FAILED_THROTTLED:
+      return RespondNow(Error(kErrorRequestedTooSoon));
+
+    case RuntimeAPI::RestartAfterDelayStatus::SUCCESS_RESTART_CANCELED:
+    case RuntimeAPI::RestartAfterDelayStatus::SUCCESS_RESTART_SCHEDULED:
+      return RespondNow(NoArguments());
+  }
+
+  NOTREACHED();
+  return RespondNow(Error(kErrorInvalidStatus));
 }
 
 ExtensionFunction::ResponseAction RuntimeGetPlatformInfoFunction::Run() {
