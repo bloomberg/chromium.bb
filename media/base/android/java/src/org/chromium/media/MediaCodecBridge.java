@@ -251,6 +251,9 @@ class MediaCodecBridge {
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot start the media codec", e);
             return false;
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Cannot start the media codec", e);
+            return false;
         }
         return true;
     }
