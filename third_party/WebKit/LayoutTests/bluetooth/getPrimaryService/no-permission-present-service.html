@@ -6,9 +6,9 @@
 'use strict';
 promise_test(() => {
   let expected = new DOMException('Origin is not allowed to access the ' +
-                                  'service. Remember to add the service to a ' +
-                                  'filter or to optionalServices in ' +
-                                  'requestDevice().',
+                                  'service. Tip: Add the service UUID to ' +
+                                  '\'optionalServices\' in requestDevice() ' +
+                                  'options. https://goo.gl/HxfxSQ',
                                   'SecurityError');
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
