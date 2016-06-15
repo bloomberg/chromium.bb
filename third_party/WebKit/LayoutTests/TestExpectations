@@ -10,10 +10,6 @@ crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-relo
 
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
-# ====== Oilpan-only failures until here ======
-
-crbug.com/574272 bug574272/test.html [ NeedsRebaseline ]
-
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
