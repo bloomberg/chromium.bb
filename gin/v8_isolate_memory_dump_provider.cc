@@ -4,6 +4,7 @@
 
 #include "gin/v8_isolate_memory_dump_provider.h"
 
+#include <inttypes.h>
 #include <stddef.h>
 
 #include "base/strings/stringprintf.h"
@@ -84,8 +85,9 @@ void DumpCodeStatistics(
 void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
-  std::string dump_base_name =
-      base::StringPrintf("v8/isolate_%p", isolate_holder_->isolate());
+  std::string dump_base_name = base::StringPrintf(
+      "v8/isolate_0x%" PRIXPTR,
+      reinterpret_cast<uintptr_t>(isolate_holder_->isolate()));
 
   // Dump statistics of the heap's spaces.
   std::string space_name_prefix = dump_base_name + "/heap_spaces";

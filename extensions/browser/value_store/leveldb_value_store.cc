@@ -4,6 +4,7 @@
 
 #include "extensions/browser/value_store/leveldb_value_store.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <utility>
@@ -252,7 +253,8 @@ bool LeveldbValueStore::OnMemoryDump(
   DCHECK(res);
 
   auto dump = pmd->CreateAllocatorDump(base::StringPrintf(
-      "leveldb/value_store/%s/%p", open_histogram_name().c_str(), this));
+      "leveldb/value_store/%s/0x%" PRIXPTR, open_histogram_name().c_str(),
+      reinterpret_cast<uintptr_t>(this)));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
 

@@ -4,6 +4,8 @@
 
 #include "sql/connection_memory_dump_provider.h"
 
+#include <inttypes.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -53,8 +55,9 @@ bool ConnectionMemoryDumpProvider::OnMemoryDump(
   }
 
   std::string name = base::StringPrintf(
-      "sqlite/%s_connection/%p",
-      connection_name_.empty() ? "Unknown" : connection_name_.c_str(), this);
+      "sqlite/%s_connection/0x%" PRIXPTR,
+      connection_name_.empty() ? "Unknown" : connection_name_.c_str(),
+      reinterpret_cast<uintptr_t>(this));
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,

@@ -4,6 +4,8 @@
 
 #include "cc/tiles/gpu_image_decode_controller.h"
 
+#include <inttypes.h>
+
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -465,7 +467,8 @@ bool GpuImageDecodeController::OnMemoryDump(
     // If we have discardable decoded data, dump this here.
     if (image_data->decode.data()) {
       std::string discardable_dump_name = base::StringPrintf(
-          "cc/image_memory/controller_%p/discardable/image_%d", this, image_id);
+          "cc/image_memory/controller_0x%" PRIXPTR "/discardable/image_%d",
+          reinterpret_cast<uintptr_t>(this), image_id);
       base::trace_event::MemoryAllocatorDump* dump =
           image_data->decode.data()->CreateMemoryAllocatorDump(
               discardable_dump_name.c_str(), pmd);
@@ -485,7 +488,8 @@ bool GpuImageDecodeController::OnMemoryDump(
     if (image_data->upload.image() &&
         image_data->mode == DecodedDataMode::GPU) {
       std::string gpu_dump_name = base::StringPrintf(
-          "cc/image_memory/controller_%p/gpu/image_%d", this, image_id);
+          "cc/image_memory/controller_0x%" PRIXPTR "/gpu/image_%d",
+          reinterpret_cast<uintptr_t>(this), image_id);
       base::trace_event::MemoryAllocatorDump* dump =
           pmd->CreateAllocatorDump(gpu_dump_name);
       dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

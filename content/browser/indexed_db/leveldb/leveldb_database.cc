@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <cerrno>
@@ -460,8 +461,8 @@ bool LevelDBDatabase::OnMemoryDump(
   DCHECK(res);
   base::StringToUint64(value, &size);
 
-  auto dump = pmd->CreateAllocatorDump(
-      base::StringPrintf("leveldb/index_db/%p", db_.get()));
+  auto dump = pmd->CreateAllocatorDump(base::StringPrintf(
+      "leveldb/index_db/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(db_.get())));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
   dump->AddString("file_name", "", file_name_for_tracing);

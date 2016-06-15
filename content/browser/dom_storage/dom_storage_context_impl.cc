@@ -4,6 +4,7 @@
 
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -476,7 +477,8 @@ bool DOMStorageContextImpl::OnMemoryDump(
     DOMStorageNamespace::UsageStatistics total_stats =
         GetTotalNamespaceStatistics(namespaces_);
     auto mad = pmd->CreateAllocatorDump(
-        StringPrintf("dom_storage/%p/cache_size", this));
+        base::StringPrintf("dom_storage/0x%" PRIXPTR "/cache_size",
+                           reinterpret_cast<uintptr_t>(this)));
     mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                    total_stats.total_cache_size);

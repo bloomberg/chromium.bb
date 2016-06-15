@@ -4,6 +4,8 @@
 
 #include "content/browser/dom_storage/dom_storage_area.h"
 
+#include <inttypes.h>
+
 #include <algorithm>
 #include <cctype>  // for std::isalnum
 
@@ -347,7 +349,9 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
     if (!std::isalnum(url[index]))
       url[index] = '_';
   }
-  std::string name = StringPrintf("dom_storage/%s/%p", url.c_str(), this);
+  std::string name =
+      base::StringPrintf("dom_storage/%s/0x%" PRIXPTR, url.c_str(),
+                         reinterpret_cast<uintptr_t>(this));
 
   const char* system_allocator_name =
       base::trace_event::MemoryDumpManager::GetInstance()

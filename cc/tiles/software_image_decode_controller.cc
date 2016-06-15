@@ -4,6 +4,7 @@
 
 #include "cc/tiles/software_image_decode_controller.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -707,9 +708,9 @@ void SoftwareImageDecodeController::DumpImageMemoryForCache(
 
   for (const auto& image_pair : cache) {
     std::string dump_name = base::StringPrintf(
-        "cc/image_memory/controller_%p/%s/image_%" PRIu64 "_id_%d", this,
-        cache_name, image_pair.second->tracing_id(),
-        image_pair.first.image_id());
+        "cc/image_memory/controller_0x%" PRIXPTR "/%s/image_%" PRIu64 "_id_%d",
+        reinterpret_cast<uintptr_t>(this), cache_name,
+        image_pair.second->tracing_id(), image_pair.first.image_id());
     base::trace_event::MemoryAllocatorDump* dump =
         image_pair.second->memory()->CreateMemoryAllocatorDump(
             dump_name.c_str(), pmd);
