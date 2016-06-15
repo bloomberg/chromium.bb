@@ -594,6 +594,22 @@ void AutofillMetrics::LogParseFormTiming(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("Autofill.Timing.ParseForm", duration);
 }
 
+// static
+void AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
+    size_t num_considered) {
+  // A maximum of 50 is enforced to reduce the number of generated buckets.
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesConsideredForDedupe",
+                            std::min(int(num_considered), 50));
+}
+
+// static
+void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
+    size_t num_removed) {
+  // A maximum of 50 is enforced to reduce the number of generated buckets.
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesRemovedDuringDedupe",
+                            std::min(int(num_removed), 50));
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

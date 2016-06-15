@@ -2849,6 +2849,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.NumberOfProfilesConsideredForDedupe" units="profiles">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The number of Autofill profiles that have been considered for deduplication.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.NumberOfProfilesRemovedDuringDedupe" units="profiles">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The number of Autofill profiles that have been removed during deduplication.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.PasswordFormQueryVolume"
     enum="PasswordFormQueryVolume">
   <owner>dvadym@chromium.org</owner>

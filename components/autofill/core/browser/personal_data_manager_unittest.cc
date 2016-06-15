@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -4451,6 +4452,7 @@ TEST_F(PersonalDataManagerTest, DedupeOnInsert) {
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
 
+  base::HistogramTester histogram_tester;
   // Save the imported profile (use it).
   personal_data_->SaveImportedProfile(imported_profile);
 
@@ -4463,6 +4465,12 @@ TEST_F(PersonalDataManagerTest, DedupeOnInsert) {
   // The imported profile and saved profiles 1 and 2 should be merged together.
   // Therefore there should only be 3 saved profiles.
   ASSERT_EQ(3U, profiles.size());
+  // 4 profiles were considered for dedupe.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 4, 1);
+  // 1 profile was removed.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 1, 1);
 
   // Sort the profiles by frecency to have a deterministic order.
   base::Time comparison_time = base::Time::Now();
@@ -4542,9 +4550,16 @@ TEST_F(PersonalDataManagerTest,
   existing_profiles.push_back(&profile4);
   existing_profiles.push_back(&profile5);
 
+  base::HistogramTester histogram_tester;
   std::vector<std::string> guids_to_delete;
   personal_data_->FindAndMergeDuplicateProfiles(existing_profiles, &profile1,
                                                 &guids_to_delete);
+  // 5 profiles were considered for dedupe.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 5, 1);
+  // 2 profiles were removed.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 2, 1);
 
   // Profile1 should be deleted because it was sent as the profile to merge and
   // thus was merged into profile3 and then into profile5.
@@ -4602,6 +4617,7 @@ TEST_F(PersonalDataManagerTest,
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "");
 
+  base::HistogramTester histogram_tester;
   personal_data_->SaveImportedProfile(imported_profile);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -4613,6 +4629,12 @@ TEST_F(PersonalDataManagerTest,
   // The imported profile and saved profiles 1 and 2 should be merged together.
   // Therefore there should only be 1 saved profile.
   ASSERT_EQ(1U, profiles.size());
+  // 2 profiles were considered for dedupe.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 2, 1);
+  // 1 profile was removed.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 1, 1);
 
   // Since profiles with higher frecency scores are merged into profiles with
   // lower frecency scores, the result of the merge should be contained in

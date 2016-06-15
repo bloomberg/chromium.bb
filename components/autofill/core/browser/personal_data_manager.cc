@@ -1563,6 +1563,8 @@ void PersonalDataManager::FindAndMergeDuplicateProfiles(
     const std::vector<AutofillProfile*>& existing_profiles,
     AutofillProfile* profile_to_merge,
     std::vector<std::string>* profile_guids_to_delete) {
+  AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
+      existing_profiles.size());
   for (AutofillProfile* existing_profile : existing_profiles) {
     // Don't try to merge a profile with itself or with any profile with a
     // different PrimaryValue.
@@ -1583,6 +1585,9 @@ void PersonalDataManager::FindAndMergeDuplicateProfiles(
       }
     }
   }
+
+  AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
+      profile_guids_to_delete->size());
 }
 
 }  // namespace autofill

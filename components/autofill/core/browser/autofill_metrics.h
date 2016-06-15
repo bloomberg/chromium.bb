@@ -639,6 +639,12 @@ class AutofillMetrics {
   // This should be called when parsing each form.
   static void LogParseFormTiming(const base::TimeDelta& duration);
 
+  // Log how many profiles were considered for the deduplication process.
+  static void LogNumberOfProfilesConsideredForDedupe(size_t num_considered);
+
+  // Log how many profiles were removed as part of the deduplication process.
+  static void LogNumberOfProfilesRemovedDuringDedupe(size_t num_removed);
+
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
   class FormEventLogger {
