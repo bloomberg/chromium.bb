@@ -4,12 +4,16 @@
 
 source_set("image_fetcher") {
   sources = [
+    "image_data_fetcher.cc",
+    "image_data_fetcher.h",
+    "image_decoder.h",
     "image_fetcher.h",
     "image_fetcher_delegate.h",
   ]
 
   public_deps = [
     "//base",
+    "//net",
     "//url",
   ]
 }
