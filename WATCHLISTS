@@ -349,11 +349,6 @@
     'disk_cache': {
       'filepath': 'net/disk_cache/|http_cache',
     },
-    'dns': {
-      'filepath': 'net/base/host_resolver|' \
-                  'net/base/host_cache|' \
-                  'net/dns/'
-    },
     'download': {
       'filepath': 'chrome/browser/download/|'\
                   'content/browser/download/',
@@ -595,11 +590,11 @@
       'filepath': 'net/base/net_error_list.h',
     },
     'net_log': {
-      'filepath': 'net/base/net_log|' \
+      'filepath': 'net/log/|' \
         'chrome/browser/net/.*net_log|' \
-        'chrome/browser/net/passive_log_collector|' \
         'chrome/browser/resources/net_internals/|' \
-        'chrome/browser/ui/webui/net_internals/'
+        'chrome/browser/ui/webui/net_internals/|' \
+	'components/net_log/'
     },
     'netinfo': {
       'filepath': 'netinfo',
@@ -1442,7 +1437,8 @@
                 'darin-cc@chromium.org' ],
     'content_bluetooth': ['scheib+watch@chromium.org',
                           'ortuno+watch@chromium.org'],
-    'content_loader': ['loading-reviews@chromium.org', 'rdsmith@chromium.org'],
+    'content_loader': ['loading-reviews@chromium.org', 'rdsmith@chromium.org',
+                       'mmenke@chromium.org'],
     'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org',
                           'mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
@@ -1467,7 +1463,6 @@
     'developer_recommended_flags': ['scheib+watch@chromium.org'],
     'devtools': ['pfeldman@chromium.org', 'devtools-reviews@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org', 'kinuko+cache@chromium.org' ],
-    'dns': ['mmenke@chromium.org'],
     'download': ['asanka@chromium.org'],
     'downloads_ui': ['asanka@chromium.org',
                      'dbeam+watch-downloads@chromium.org'],
