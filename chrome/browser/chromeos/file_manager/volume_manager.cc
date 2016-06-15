@@ -676,7 +676,7 @@ void VolumeManager::OnProvidedFileSystemUnmount(
 
 void VolumeManager::OnExternalStorageDisabledChanged() {
   // If the policy just got disabled we have to unmount every device currently
-  // mounted. The opposite is fine - we can let the user re-plug her device to
+  // mounted. The opposite is fine - we can let the user re-plug their device to
   // make it available.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
     // We do not iterate on mount_points directly, because mount_points can

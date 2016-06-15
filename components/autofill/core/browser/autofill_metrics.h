@@ -407,13 +407,13 @@ class AutofillMetrics {
     // User chose to opt in (checked the checkbox when it was empty).
     // Only logged if there was an attempt to unmask.
     UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN,
-    // User did not opt in when he had the chance (left the checkbox unchecked).
-    // Only logged if there was an attempt to unmask.
+    // User did not opt in when they had the chance (left the checkbox
+    // unchecked).  Only logged if there was an attempt to unmask.
     UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN,
     // User chose to opt out (unchecked the checkbox when it was check).
     // Only logged if there was an attempt to unmask.
     UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT,
-    // User did not opt out when he had a chance (left the checkbox checked).
+    // User did not opt out when they had a chance (left the checkbox checked).
     // Only logged if there was an attempt to unmask.
     UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT,
     // The prompt was closed while chrome was unmasking the card (user pressed

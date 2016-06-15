@@ -35,7 +35,7 @@ message WebData {
   //   no matching suggestions were found.
   // - NONE_OF_THE_ABOVE if the user has chosen "None of the above".
   // - Empty string if suggestions were shown but the user hasn't chosen
-  //   any of them (and also she hasn't chosen "None of the above").
+  //   any of them (and also they haven't chosen "None of the above").
   // - Actual suggestion identifier as returned from the server.
   optional string suggestion_id = 5;
 

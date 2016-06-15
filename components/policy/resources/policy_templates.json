@@ -247,7 +247,7 @@
 
           If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still choose the New Tab Page as their home page.
 
-          Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.
+          Leaving this policy not set will allow the user to choose their home page on their own if HomepageIsNewTabPage is not set too.
 
           This policy is not available on Windows instances that are not joined
           to an Active Directory domain.''',
@@ -275,7 +275,7 @@
 
           If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Leaving this policy not set will allow the user to choose whether the new tab page is his home page on his own.
+          Leaving this policy not set will allow the user to choose whether the new tab page is their home page on their own.
 
           This policy is not available on Windows instances that are not joined
           to an Active Directory domain.''',
@@ -3848,7 +3848,7 @@
 
       If you enable or disable this setting, users cannot change or override it.
 
-      If the policy is left not set the user can choose whether he wants to be asked for password to unlock the device or not.''',
+      If the policy is left not set the user can choose whether they want to be asked for password to unlock the device or not.''',
     },
     {
       'name': 'ChromeOsMultiProfileUserBehavior',
@@ -4613,7 +4613,7 @@
 
       In this mode the profile data is persisted on disk only for the length of the user session. Features like browser history, extensions and their data, web data like cookies and web databases are not preserved after the browser is closed. However this does not prevent the user from downloading any data to disk manually, save pages or print them.
 
-      If the user has enabled sync all this data is preserved in his sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
+      If the user has enabled sync all this data is preserved in their sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.'''
     },
@@ -7618,7 +7618,7 @@
 
       If you set this policy, users cannot change or override it.
 
-      If the policy is left not set, the user can choose the avatar image representing him/her on the login screen.''',
+      If the policy is left not set, the user can choose the avatar image representing them on the login screen.''',
     },
     {
       'name': 'WallpaperImage',
@@ -7721,11 +7721,11 @@
 
       When a user authenticates via a SAML IdP during login, cookies set by the IdP are written to a temporary profile at first. These cookies can be transferred to the user's profile to carry forward the authentication state.
 
-      When this policy is set to true, cookies set by the IdP are transferred to the user's profile every time he/she authenticates against the SAML IdP during login.
+      When this policy is set to true, cookies set by the IdP are transferred to the user's profile every time they authenticate against the SAML IdP during login.
 
-      When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during his/her first login on a device only.
+      When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
-      This policy affects users whose domain matches the device's enrollment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during his/her first login on the device only.''',
+      This policy affects users whose domain matches the device's enrollment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.''',
     },
     {
       'name': 'EasyUnlockAllowed',
@@ -8010,7 +8010,7 @@
       'caption': '''Enable domain name autocomplete during user sign in''',
       'tags': [],
       'desc': '''If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show an autocomplete option during user sign-in flow.
-      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only his user name without the domain name extension.  The user will be able to overwrite this domain name extension.''',
+      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only their user name without the domain name extension.  The user will be able to overwrite this domain name extension.''',
     },
     {
       'name': 'ForceMaximizeOnFirstRun',
@@ -8358,7 +8358,7 @@
       'tags': [],
       'desc': '''If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will disable Bluetooth and the user cannot enable it back.
 
-      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as he wishes.
+      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as they wish.
 
       If this policy is set, the user cannot change or override it.
 

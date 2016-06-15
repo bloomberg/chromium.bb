@@ -292,7 +292,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(1U, result.size());
   result.clear();
 
-  // User changes his password.
+  // User changes their password.
   PasswordForm form6(form5);
   form6.password_value = ASCIIToUTF16("test6");
   form6.preferred = true;

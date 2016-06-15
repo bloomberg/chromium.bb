@@ -106,7 +106,7 @@ branch.
 
 e) Also at the start of each shift, we updated the local upstream
 branches for each branch to match the upstream relationships that the
-person ending their shift had on his end.  One case is if the oldest
+person ending their shift had on their end.  One case is if the oldest
 branch in the pipeline has been merged to a new LKGR, then we did this:
 
 ```

@@ -334,7 +334,7 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
     // Delete the file. No shortuct is better than corrupted one. Use unlinkat
     // to make sure we're deleting the file in the directory we think we are.
     // Even if an attacker manager to put something other at
-    // |shortcut_filename| we'll just undo his action.
+    // |shortcut_filename| we'll just undo their action.
     unlinkat(desktop_fd, shortcut_filename.value().c_str(), 0);
   }
 

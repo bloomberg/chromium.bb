@@ -318,7 +318,7 @@
       Search
     </message>
   </if>
-  <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user attempts to export his bookmarks from Bookmark Manager.">
+  <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user attempts to export their bookmarks from Bookmark Manager.">
     bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
   </message>
   <!-- End of Bookmarks Manager strings. -->

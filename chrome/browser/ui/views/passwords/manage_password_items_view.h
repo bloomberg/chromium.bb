@@ -17,7 +17,7 @@ class ManagePasswordsBubbleModel;
 // A custom view of individual credentials. The view is represented as a table
 // where each row can be in three distinct states:
 //
-// * Present credentials to the user which she may choose to save.
+// * Present credentials the user may choose to save.
 // * Present already-saved credentials to the user for management.
 // * Offer the user the ability to undo a deletion action.
 class ManagePasswordItemsView : public views::View {

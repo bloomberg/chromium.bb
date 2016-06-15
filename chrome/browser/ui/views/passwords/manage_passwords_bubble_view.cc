@@ -375,7 +375,7 @@ void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
 
-// A view offering the user a list of her currently saved credentials
+// A view offering the user a list of their currently saved credentials
 // for the current page, along with a "Manage passwords" link and a
 // "Done" button.
 class ManagePasswordsBubbleView::ManageView : public views::View,

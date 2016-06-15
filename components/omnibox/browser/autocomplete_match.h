@@ -275,8 +275,8 @@ struct AutocompleteMatch {
   // input.  Note that rare or unusual types that could be considered verbatim,
   // such as keyword engine matches or extension-provided matches, aren't
   // detected by this IsVerbatimType, as the user will not be able to infer
-  // what will happen when he or she presses enter in those cases if the match
-  // is not shown.
+  // what will happen when they press enter in those cases if the match is not
+  // shown.
   bool IsVerbatimType() const;
 
   // Returns whether this match or any duplicate of this match can be deleted.

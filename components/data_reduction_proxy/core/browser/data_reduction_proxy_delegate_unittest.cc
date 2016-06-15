@@ -362,7 +362,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   OnResolveProxyHandler(url, "GET", load_flags, data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &result);
   EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
-  // Only the proxy list should be updated, not he proxy info.
+  // Only the proxy list should be updated, not the proxy info.
   EXPECT_EQ(result.config_id(), prev_id);
 
   // A direct connection is used, but the data reduction proxy is on the retry

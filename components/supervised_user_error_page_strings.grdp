@@ -31,16 +31,16 @@
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE" desc="The text that tells the supervised user that a request could not be sent.">
         Your request to access this site could not be sent to <ph name="NAME">$1<ex>John Doe</ex></ph>. Please try again.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request has been sent to his/her parent.">
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request has been sent to their parent.">
         You asked your parent if it's ok to visit this page.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request has been sent to his/her parents.">
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request has been sent to their parents.">
         You asked your parents if it's ok to visit this page.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request to his/her parent failed.">
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request to their parent failed.">
         We could not reach your parent at the moment. Please try again.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request to his/her parents failed.">
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request to their parents failed.">
         We could not reach your parents at the moment. Please try again.
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK" desc="The text for a link to submit feedback about a blocked site.">

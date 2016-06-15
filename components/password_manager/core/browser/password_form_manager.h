@@ -285,15 +285,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
     kManagerActionMax
   };
 
-  // UserAction - What does the user do with this form? If he or she
-  // does nothing (either by accepting what the password manager did, or
-  // by simply (not typing anything at all), you get None. If there were
-  // multiple choices and the user selects one other than the default,
-  // you get Choose, if user selects an entry from matching against the Public
-  // Suffix List you get ChoosePslMatch, if the user types in a new value
-  // for just the password you get OverridePassword, and if the user types in a
-  // new value for the username and password you get
-  // OverrideUsernameAndPassword.
+  // UserAction - What does the user do with this form? If they do nothing
+  // (either by accepting what the password manager did, or by simply (not
+  // typing anything at all), you get None. If there were multiple choices and
+  // the user selects one other than the default, you get Choose, if user
+  // selects an entry from matching against the Public Suffix List you get
+  // ChoosePslMatch, if the user types in a new value for just the password you
+  // get OverridePassword, and if the user types in a new value for the
+  // username and password you get OverrideUsernameAndPassword.
   enum UserAction {
     kUserActionNone = 0,
     kUserActionChoose,

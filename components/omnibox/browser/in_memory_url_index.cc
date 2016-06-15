@@ -177,7 +177,7 @@ void InMemoryURLIndex::OnURLsDeleted(history::HistoryService* history_service,
   // through an unclean shutdown (and therefore fail to write a new cache file),
   // when Chrome restarts and we restore from the previous cache, we'll end up
   // searching over URLs that may be deleted.  This would be wrong, and
-  // surprising to the user who bothered to delete some URLs from his/her
+  // surprising to the user who bothered to delete some URLs from their
   // history.  In this situation, deleting the cache is a better solution than
   // writing a new cache (after deleting the URLs from the in-memory structure)
   // because deleting the cache forces it to be rebuilt from history upon

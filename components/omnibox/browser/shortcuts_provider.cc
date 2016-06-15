@@ -136,8 +136,8 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   GURL url(match.destination_url);
   DCHECK(url.is_valid());
 
-  // When a user deletes a match, he probably means for the URL to disappear out
-  // of history entirely. So nuke all shortcuts that map to this URL.
+  // When a user deletes a match, they probably mean for the URL to disappear
+  // out of history entirely. So nuke all shortcuts that map to this URL.
   scoped_refptr<ShortcutsBackend> backend =
       client_->GetShortcutsBackendIfExists();
   if (backend.get())  // Can be NULL in Incognito.

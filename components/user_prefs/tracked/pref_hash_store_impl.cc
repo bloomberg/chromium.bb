@@ -203,7 +203,7 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
           break;
         case SECURE_LEGACY:
           // Secure legacy device IDs based hashes are still accepted, but we
-          // should make sure to notify the caller for him to update the legacy
+          // should make sure to notify the caller for them to update the legacy
           // hashes.
           has_secure_legacy_id_hashes = true;
           break;

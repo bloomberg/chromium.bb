@@ -372,8 +372,8 @@ class OmniboxEditModel {
     DOWN_WITH_CHANGE,     // The control key is depressed, and the edit's
                           // contents/selection have changed since it was
                           // depressed.  If the user now hits enter, we assume
-                          // he simply hasn't released the key, rather than that
-                          // he intended to hit "ctrl-enter".
+                          // they simply haven't released the key, rather than
+                          // that they intended to hit "ctrl-enter".
   };
 
   // Returns true if a query to an autocomplete provider is currently

@@ -261,7 +261,7 @@ message PolicyData {
 
   // The DM token that was used by the client in the HTTP POST header
   // for authenticating the request. It is included here again so that
-  // the client can verify that the response is meant for him (and not
+  // the client can verify that the response is meant for them (and not
   // issued by a replay or man-in-the-middle attack).
   optional string request_token = 3;
 
