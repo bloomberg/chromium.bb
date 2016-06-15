@@ -58,15 +58,14 @@ void AXTreeSourceAura::ShowContextMenu(int32_t id) {
     obj->ShowContextMenu();
 }
 
-ui::AXTreeData AXTreeSourceAura::GetTreeData() const {
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = 0;
-  tree_data.loaded = true;
-  tree_data.loading_progress = 1.0;
+bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
+  tree_data->tree_id = 0;
+  tree_data->loaded = true;
+  tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
-    tree_data.focus_id = focus->GetID();
-  return tree_data;
+    tree_data->focus_id = focus->GetID();
+  return true;
 }
 
 AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {

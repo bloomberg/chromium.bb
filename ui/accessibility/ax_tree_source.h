@@ -24,8 +24,8 @@ class AXTreeSource {
  public:
   virtual ~AXTreeSource() {}
 
-  // Get the tree data.
-  virtual AXTreeData GetTreeData() const = 0;
+  // Get the tree data and returns true if there is any data to copy.
+  virtual bool GetTreeData(AXTreeData* data) const = 0;
 
   // Get the root of the tree.
   virtual AXNodeSource GetRoot() const = 0;

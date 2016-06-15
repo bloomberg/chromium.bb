@@ -324,8 +324,9 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::SerializeChanges(
     AXSourceNode node,
     AXTreeUpdateBase<AXNodeData, AXTreeData>* out_update) {
   // Send the tree data if it's changed since the last update.
-  AXTreeData new_tree_data = tree_->GetTreeData();
-  if (new_tree_data != client_tree_data_) {
+  AXTreeData new_tree_data;
+  if (tree_->GetTreeData(&new_tree_data) &&
+      new_tree_data != client_tree_data_) {
     out_update->has_tree_data = true;
     out_update->tree_data = new_tree_data;
     client_tree_data_ = new_tree_data;

@@ -37,7 +37,7 @@ class AXTreeSourceAura
   void ShowContextMenu(int32_t id);
 
   // AXTreeSource implementation.
-  ui::AXTreeData GetTreeData() const override;
+  bool GetTreeData(ui::AXTreeData* data) const override;
   views::AXAuraObjWrapper* GetRoot() const override;
   views::AXAuraObjWrapper* GetFromId(int32_t id) const override;
   int32_t GetId(views::AXAuraObjWrapper* node) const override;
