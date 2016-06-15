@@ -149,7 +149,7 @@ void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
     return;
 
   GetMediaClient()->RecordRapporURL(
-      "Media.OriginUrl." + LoadTypeToString(load_type) + "PipelineError",
+      "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError",
       blink::WebStringToGURL(security_origin.toString()));
 }
 
