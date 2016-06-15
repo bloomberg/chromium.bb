@@ -779,6 +779,29 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
+    def test_remove_line_keeping_comments_before_whitespace_lines(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-win7', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """
+ # This comment line should not get stripped.
+
+ # This comment line should get stripped.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations(
+            [('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
+
+        self.assertEqual("""
+ # This comment line should not get stripped.
+""", actual_expectations)
+
     def test_remove_first_line(self):
         host = MockHost()
         test_port = host.port_factory.get('test-win-win7', None)

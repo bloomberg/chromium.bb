@@ -443,8 +443,11 @@ class TestExpectationLine(object):
     def is_flaky(self):
         return len(self.parsed_expectations) > 1
 
-    def is_whitespace_or_comment(self):
-        return bool(re.match("^\s*$", self.original_string.split('#')[0]))
+    def is_comment(self):
+        return bool(re.match(r"^\s*#.*$", self.original_string))
+
+    def is_whitespace(self):
+        return not self.original_string.strip()
 
     @staticmethod
     def create_passing_expectation(test):
@@ -1125,8 +1128,11 @@ class TestExpectations(object):
             index = self._expectations.index(expectation)
             self._expectations.remove(expectation)
 
-            if index == len(self._expectations) or self._expectations[index].is_whitespace_or_comment():
-                while index and self._expectations[index - 1].is_whitespace_or_comment():
+            if index == len(self._expectations) or self._expectations[index].is_whitespace() or self._expectations[index].is_comment():
+                while index and self._expectations[index - 1].is_comment():
+                    index = index - 1
+                    self._expectations.pop(index)
+                while index and self._expectations[index - 1].is_whitespace():
                     index = index - 1
                     self._expectations.pop(index)
 
