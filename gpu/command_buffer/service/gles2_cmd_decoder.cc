@@ -12468,8 +12468,14 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     bool use_workaround = NeedsCopyTextureImageWorkaround(
         final_internal_format, channels_exist, &source_texture_service_id,
         &source_texture_target);
-    if (use_workaround) {
-      DCHECK(!requires_luma_blit);
+    if (requires_luma_blit) {
+      copy_tex_image_blit_->DoCopyTexImage2DToLUMAComatabilityTexture(
+          this, texture->service_id(), texture->target(), target, format,
+          type, level, internal_format, copyX, copyY, copyWidth, copyHeight,
+          framebuffer_state_.bound_read_framebuffer->service_id(),
+          framebuffer_state_.bound_read_framebuffer
+              ->GetReadBufferInternalFormat());
+    } else if (use_workaround) {
       GLenum dest_texture_target = target;
       GLenum framebuffer_target = features().chromium_framebuffer_multisample
                                       ? GL_READ_FRAMEBUFFER_EXT
@@ -12510,17 +12516,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       glDeleteTextures(1, &temp_texture);
     } else {
-      if (requires_luma_blit) {
-        copy_tex_image_blit_->DoCopyTexImage2DToLUMAComatabilityTexture(
-            this, texture->service_id(), texture->target(), target, format,
-            type, level, internal_format, copyX, copyY, copyWidth, copyHeight,
-            framebuffer_state_.bound_read_framebuffer->service_id(),
-            framebuffer_state_.bound_read_framebuffer
-                ->GetReadBufferInternalFormat());
-      } else {
-        glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
-                         copyWidth, copyHeight, border);
-      }
+      glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
+                       copyWidth, copyHeight, border);
     }
   }
   GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
