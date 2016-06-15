@@ -13,8 +13,6 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -32,6 +30,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
+#endif
+
 // Gmock matchers and actions.
 using testing::_;
 using testing::Invoke;
@@ -48,6 +51,7 @@ const char kTestEmail2[] = "foo2@bar.com";
 
 const char kTestWebUIResponse[] = "cr.webUIListenerCallback";
 
+#if defined(ENABLE_SUPERVISED_USERS)
 const char kSupervisedUserId1[] = "test-supervised-id-1";
 const char kSupervisedUserId2[] = "test-supervised-id-2";
 
@@ -73,6 +77,7 @@ syncer::SyncData CreateSyncData(const std::string& id,
       syncer::AttachmentIdList(),
       syncer::AttachmentServiceProxyForTest::Create());
 }
+#endif
 
 }  // namespace
 
@@ -135,6 +140,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
                     Profile* custodian_profile,
                     Profile* new_profile));
 
+#if defined(ENABLE_SUPERVISED_USERS)
   // Calls the callback method to resume profile creation flow.
   void RealRegisterSupervisedUser(bool create_shortcut,
                                   const std::string& supervised_user_id,
@@ -147,6 +153,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
         new_profile,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
+#endif
 
  private:
   TestingProfileManager* profile_manager_;
@@ -185,6 +192,7 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId1,
                                                       kTestEmail1);
 
+#if defined(ENABLE_SUPERVISED_USERS)
     // Add supervised users to the custodian profile.
     SupervisedUserSyncService* sync_service_ =
         SupervisedUserSyncServiceFactory::GetForProfile(custodian_);
@@ -216,6 +224,7 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
 
     EXPECT_EQ(2u,
         profile_manager()->profile_attributes_storage()->GetNumberOfProfiles());
+#endif
   }
 
   void TearDown() override {
@@ -365,6 +374,8 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   ASSERT_TRUE(profile->GetBoolean("isSupervised", &is_supervised));
   ASSERT_FALSE(is_supervised);
 }
+
+#if defined(ENABLE_SUPERVISED_USERS)
 
 TEST_F(SigninCreateProfileHandlerTest, CreateSupervisedUser) {
   // Expect the call to create the profile.
@@ -595,3 +606,5 @@ TEST_F(SigninCreateProfileHandlerTest, NotAllowedToCreateSupervisedUser) {
   ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsString(&error_message));
   EXPECT_EQ(expected_error_message, error_message);
 }
+
+#endif

@@ -1602,7 +1602,6 @@
       'browser/signin/signin_global_error_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',
       'browser/ui/webui/signin/signin_create_profile_handler_unittest.cc',
-      'browser/ui/webui/signin/signin_supervised_user_import_handler_unittest.cc',
       'browser/ui/webui/signin/sync_confirmation_handler_unittest.cc',
       'browser/upgrade_detector_impl_unittest.cc',
     ],
@@ -2741,6 +2740,11 @@
         }],
         ['enable_supervised_users == 1 and OS != "android" and OS != "ios"', {
           'sources': [ '<@(chrome_unit_tests_supervised_user_legacy_sources)' ],
+        }],
+        ['enable_supervised_users == 1 and OS != "android" and chromeos == 0', {
+          'sources': [
+            'browser/ui/webui/signin/signin_supervised_user_import_handler_unittest.cc',
+          ],
         }],
         ['safe_browsing==1 and enable_extensions==1', {
           'sources': [

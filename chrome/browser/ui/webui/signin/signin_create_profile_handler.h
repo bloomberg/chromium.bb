@@ -42,6 +42,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                            ReturnSignedInProfiles);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            CreateProfile);
+#if defined(ENABLE_SUPERVISED_USERS)
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            CreateSupervisedUser);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
@@ -54,6 +55,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                            CustodianHasAuthError);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            NotAllowedToCreateSupervisedUser);
+#endif
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -92,8 +94,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
 
   // Callback for the "requestSignedInProfiles" message.
   // Sends the email address of the signed-in user, or an empty string if the
-  // user is not signed in. Also sends information about whether supervised
-  // users may be created.
+  // user is not signed in.
   void RequestSignedInProfiles(const base::ListValue* args);
 
   // Asynchronously creates and initializes a new profile.
@@ -130,21 +131,21 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                     Profile* custodian_profile,
                                     Profile* profile);
 
+  // Opens a new window for |profile|.
+  virtual void OpenNewWindowForProfile(Profile* profile,
+                                       Profile::CreateStatus status);
+
+  // This callback is run after a new browser (but not the window) has been
+  // created for the new profile.
+  void OnBrowserReadyCallback(Profile* profile, Profile::CreateStatus status);
+
   // Updates the UI to show an error when creating a profile.
   void ShowProfileCreationError(Profile* profile, const base::string16& error);
-
-  // Updates the UI to show a non-fatal warning when creating a profile.
-  void ShowProfileCreationWarning(const base::string16& warning);
 
   // Records UMA histograms relevant to profile creation.
   void RecordProfileCreationMetrics(Profile::CreateStatus status);
 
   base::string16 GetProfileCreationErrorMessageLocal() const;
-#if defined(ENABLE_SUPERVISED_USERS)
-  // The following error messages only apply to supervised profiles.
-  base::string16 GetProfileCreateErrorMessageRemote() const;
-  base::string16 GetProfileCreateErrorMessageSignin() const;
-#endif
 
   base::StringValue GetWebUIListenerName(ProfileCreationStatus status) const;
 
@@ -168,6 +169,9 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                Profile* custodian_profile);
 
 #if defined(ENABLE_SUPERVISED_USERS)
+  base::string16 GetProfileCreateErrorMessageRemote() const;
+  base::string16 GetProfileCreateErrorMessageSignin() const;
+
   // Extracts the supervised user ID and the custodian user profile path from
   // the args passed into CreateProfile.
   bool GetSupervisedCreateProfileArgs(const base::ListValue* args,
@@ -196,6 +200,11 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // was caused implicitly, e.g. by shutting down the browser.
   void CancelProfileRegistration(bool user_initiated);
 
+  // Returns true if profile has signed into chrome.
+  bool IsAccountConnected(Profile* profile) const;
+  // Returns true if profile has authentication error.
+  bool HasAuthError(Profile* profile) const;
+
   // After a new supervised-user profile has been created, registers the user
   // with the management server.
   virtual void RegisterSupervisedUser(bool create_shortcut,
@@ -208,6 +217,9 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                   Profile* custodian_profile,
                                   Profile* profile,
                                   const GoogleServiceAuthError& error);
+
+  // Updates the UI to show a non-fatal warning when creating a profile.
+  void ShowProfileCreationWarning(const base::string16& warning);
 
   // Records UMA histograms relevant to supervised user profiles
   // creation and registration.
@@ -223,10 +235,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                  Profile* custodian_profile,
                                  const base::DictionaryValue* dict);
 
-  // Opens a new window for |profile|.
-  virtual void OpenNewWindowForProfile(Profile* profile,
-                                       Profile::CreateStatus status);
-
   // Callback for the "switchToProfile" message. Opens a new window for the
   // profile. The profile file path is passed as a string argument.
   void SwitchToProfile(const base::ListValue* args);
@@ -234,16 +242,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   std::unique_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
 #endif
-
-  // Returns true if profile has signed into chrome.
-  bool IsAccountConnected(Profile* profile) const;
-  // Returns true if profile has authentication error.
-  bool HasAuthError(Profile* profile) const;
-
-  // This callback is run after a new browser (but not the window) has been
-  // created for the new profile.
-  void OnBrowserReadyCallback(Profile* profile,
-                              Profile::CreateStatus status);
 
   content::NotificationRegistrar registrar_;
 

@@ -487,6 +487,18 @@ void SigninCreateProfileHandler::OnBrowserReadyCallback(
   }
 }
 
+base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
+    ProfileCreationStatus status) const {
+  switch (status) {
+    case PROFILE_CREATION_SUCCESS:
+      return base::StringValue("create-profile-success");
+    case PROFILE_CREATION_ERROR:
+      return base::StringValue("create-profile-error");
+  }
+  NOTREACHED();
+  return base::StringValue(std::string());
+}
+
 #if defined(ENABLE_SUPERVISED_USERS)
 base::string16 SigninCreateProfileHandler::GetProfileCreateErrorMessageRemote()
     const {
@@ -503,21 +515,7 @@ base::string16 SigninCreateProfileHandler::GetProfileCreateErrorMessageSignin()
           ? IDS_LEGACY_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR
           : IDS_PROFILES_CREATE_SIGN_IN_ERROR);
 }
-#endif
 
-base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
-    ProfileCreationStatus status) const {
-  switch (status) {
-    case PROFILE_CREATION_SUCCESS:
-      return base::StringValue("create-profile-success");
-    case PROFILE_CREATION_ERROR:
-      return base::StringValue("create-profile-error");
-  }
-  NOTREACHED();
-  return base::StringValue(std::string());
-}
-
-#if defined(ENABLE_SUPERVISED_USERS)
 bool SigninCreateProfileHandler::GetSupervisedCreateProfileArgs(
     const base::ListValue* args,
     std::string* supervised_user_id,
@@ -805,5 +803,4 @@ void SigninCreateProfileHandler::SwitchToProfile(
       profile,
       Profile::CREATE_STATUS_INITIALIZED);
 }
-
 #endif

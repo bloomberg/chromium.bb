@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_users.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {

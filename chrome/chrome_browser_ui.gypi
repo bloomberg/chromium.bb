@@ -3334,6 +3334,8 @@
             'browser/ui/webui/options/supervised_user_import_handler.h',
             'browser/ui/webui/options/supervised_user_learn_more_handler.cc',
             'browser/ui/webui/options/supervised_user_learn_more_handler.h',
+            'browser/ui/webui/signin/signin_supervised_user_import_handler.cc',
+            'browser/ui/webui/signin/signin_supervised_user_import_handler.h',
           ],
         }],
         ['enable_webrtc==1', {
