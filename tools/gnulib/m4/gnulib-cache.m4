@@ -27,7 +27,7 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --lib=libgnutools --source-base=tools/gnulib --m4-base=tools/gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --libtool --macro-prefix=gl_tools --no-vc-files error getopt-gnu malloc-gnu progname strndup version-etc
+#   gnulib-tool --import --lib=libgnutools --source-base=tools/gnulib --m4-base=tools/gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --libtool --macro-prefix=gl_tools --no-vc-files error getopt-gnu malloc-gnu progname strndup unistr/u16-to-u8 unistr/u32-to-u8 version-etc
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
@@ -37,6 +37,8 @@ gl_MODULES([
   malloc-gnu
   progname
   strndup
+  unistr/u16-to-u8
+  unistr/u32-to-u8
   version-etc
 ])
 gl_AVOID([])

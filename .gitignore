@@ -200,6 +200,8 @@ TAGS
 /tools/gnulib/string.h
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
+/tools/gnulib/unistr.h
+/tools/gnulib/unitypes.h
 /tools/gnulib/warn-on-use.h
 
 # stuff used with /tools/lou_compare
