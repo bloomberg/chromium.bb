@@ -194,13 +194,12 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 
-AudioRendererHost::AudioRendererHost(
-    int render_process_id,
-    media::AudioManager* audio_manager,
-    AudioMirroringManager* mirroring_manager,
-    MediaInternals* media_internals,
-    MediaStreamManager* media_stream_manager,
-    const ResourceContext::SaltCallback& salt_callback)
+AudioRendererHost::AudioRendererHost(int render_process_id,
+                                     media::AudioManager* audio_manager,
+                                     AudioMirroringManager* mirroring_manager,
+                                     MediaInternals* media_internals,
+                                     MediaStreamManager* media_stream_manager,
+                                     const std::string& salt)
     : BrowserMessageFilter(AudioMsgStart),
       render_process_id_(render_process_id),
       audio_manager_(audio_manager),
@@ -209,7 +208,7 @@ AudioRendererHost::AudioRendererHost(
           media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)),
       media_stream_manager_(media_stream_manager),
       num_playing_streams_(0),
-      salt_callback_(salt_callback),
+      salt_(salt),
       max_simultaneous_streams_(0) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
@@ -436,7 +435,7 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
       // Hash matched device id and pass it to the renderer
       Send(new AudioMsg_NotifyDeviceAuthorized(
           stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params,
-          GetHMACForMediaDeviceID(salt_callback_, security_origin,
+          GetHMACForMediaDeviceID(salt_, security_origin,
                                   info->device.matched_output_device_id)));
       return;
     }
@@ -795,9 +794,8 @@ void AudioRendererHost::TranslateDeviceID(
         callback.Run(true, device_info);
         return;
       }
-    } else if (content::DoesMediaDeviceIDMatchHMAC(salt_callback_,
-                                                   security_origin, device_id,
-                                                   device_info.unique_id)) {
+    } else if (content::DoesMediaDeviceIDMatchHMAC(
+                   salt_, security_origin, device_id, device_info.unique_id)) {
       callback.Run(true, device_info);
       return;
     }

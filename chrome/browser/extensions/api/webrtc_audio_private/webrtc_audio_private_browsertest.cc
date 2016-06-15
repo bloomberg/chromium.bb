@@ -155,9 +155,9 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
                      GURL origin,
                      const std::string& raw_device_id,
                      std::string* id_in_origin) {
-    if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
+          content::BrowserThread::UI, FROM_HERE,
           base::Bind(&WebrtcAudioPrivateTest::GetIDInOrigin,
                      this, resource_context, origin, raw_device_id,
                      id_in_origin));

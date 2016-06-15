@@ -29,7 +29,6 @@
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "net/cert/ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -185,7 +184,11 @@ class ProfileIOData {
     return &network_prediction_options_;
   }
 
-  content::ResourceContext::SaltCallback GetMediaDeviceIDSalt() const;
+  bool HasMediaDeviceIDSalt() const {
+    return media_device_id_salt_.get() != nullptr;
+  }
+
+  std::string GetMediaDeviceIDSalt() const;
 
   DevToolsNetworkControllerHandle* network_controller_handle() const {
     return &network_controller_handle_;
@@ -436,7 +439,7 @@ class ProfileIOData {
         const GURL& url,
         const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>&
             callback) override;
-    SaltCallback GetMediaDeviceIDSalt() override;
+    std::string GetMediaDeviceIDSalt() override;
 
    private:
     friend class ProfileIOData;

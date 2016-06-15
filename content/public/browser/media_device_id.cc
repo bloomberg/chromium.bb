@@ -8,23 +8,23 @@
 
 namespace content {
 
-std::string GetHMACForMediaDeviceID(const ResourceContext::SaltCallback& sc,
+std::string GetHMACForMediaDeviceID(const std::string& salt,
                                     const url::Origin& security_origin,
                                     const std::string& raw_unique_id) {
-  return MediaStreamManager::GetHMACForMediaDeviceID(sc, security_origin,
+  return MediaStreamManager::GetHMACForMediaDeviceID(salt, security_origin,
                                                      raw_unique_id);
 }
 
-bool DoesMediaDeviceIDMatchHMAC(const ResourceContext::SaltCallback& sc,
+bool DoesMediaDeviceIDMatchHMAC(const std::string& salt,
                                 const url::Origin& security_origin,
                                 const std::string& device_guid,
                                 const std::string& raw_unique_id) {
   return MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
-      sc, security_origin, device_guid, raw_unique_id);
+      salt, security_origin, device_guid, raw_unique_id);
 }
 
 bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
-                             const ResourceContext::SaltCallback& rc,
+                             const std::string& salt,
                              const url::Origin& security_origin,
                              const std::string& source_id,
                              std::string* device_id) {
@@ -32,10 +32,7 @@ bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
       content::BrowserMainLoop::GetInstance()->media_stream_manager();
 
   return manager->TranslateSourceIdToDeviceId(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE,
-      rc,
-      security_origin,
-      source_id,
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, salt, security_origin, source_id,
       device_id);
 }
 

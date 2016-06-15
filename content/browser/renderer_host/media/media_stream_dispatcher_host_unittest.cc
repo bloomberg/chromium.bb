@@ -63,10 +63,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                       public TestContentBrowserClient {
  public:
   MockMediaStreamDispatcherHost(
-      const ResourceContext::SaltCallback salt_callback,
+      const std::string& salt,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       MediaStreamManager* manager)
-      : MediaStreamDispatcherHost(kProcessId, salt_callback, manager, true),
+      : MediaStreamDispatcherHost(kProcessId, salt, manager, true),
         task_runner_(task_runner),
         current_ipc_(NULL) {}
 

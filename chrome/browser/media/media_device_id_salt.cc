@@ -9,35 +9,18 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
 
 using content::BrowserThread;
 
-namespace {
-
-std::string CreateSalt() {
-  std::string salt;
-  base::Base64Encode(base::RandBytesAsString(16), &salt);
-  DCHECK(!salt.empty());
-  return salt;
-}
-
-}  // namespace
-
-MediaDeviceIDSalt::MediaDeviceIDSalt(PrefService* pref_service,
-                                     bool incognito) {
+MediaDeviceIDSalt::MediaDeviceIDSalt(PrefService* pref_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (incognito) {
-    incognito_salt_ = CreateSalt();
-    return;
-  }
-
   media_device_id_salt_.Init(prefs::kMediaDeviceIdSalt, pref_service);
-  if (media_device_id_salt_.GetValue().empty())
-    media_device_id_salt_.SetValue(CreateSalt());
-
-  media_device_id_salt_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  if (media_device_id_salt_.GetValue().empty()) {
+    media_device_id_salt_.SetValue(
+        content::ResourceContext::CreateRandomMediaDeviceIDSalt());
+  }
 }
 
 MediaDeviceIDSalt::~MediaDeviceIDSalt() {
@@ -45,14 +28,11 @@ MediaDeviceIDSalt::~MediaDeviceIDSalt() {
 
 void MediaDeviceIDSalt::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (incognito_salt_.empty())
-    media_device_id_salt_.Destroy();
+  media_device_id_salt_.Destroy();
 }
 
 std::string MediaDeviceIDSalt::GetSalt() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (incognito_salt_.size())
-    return incognito_salt_;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return media_device_id_salt_.GetValue();
 }
 
@@ -62,6 +42,7 @@ void MediaDeviceIDSalt::RegisterProfilePrefs(
 }
 
 void MediaDeviceIDSalt::Reset(PrefService* pref_service) {
-  pref_service->SetString(prefs::kMediaDeviceIdSalt,
-                          CreateSalt());
+  pref_service->SetString(
+      prefs::kMediaDeviceIdSalt,
+      content::ResourceContext::CreateRandomMediaDeviceIDSalt());
 }
