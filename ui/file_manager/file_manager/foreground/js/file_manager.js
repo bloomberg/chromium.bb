@@ -532,18 +532,6 @@ FileManager.prototype = /** @struct */ {
     /**@private {!FilesQuickView} */
     var quickView = /** @type {!FilesQuickView} */
         (queryRequiredElement('#quick-view'));
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-files-quick-view', function(disabled) {
-          if (!disabled) {
-            this.quickViewController_ = new QuickViewController(
-                quickView, assert(this.metadataModel_),
-                assert(this.selectionHandler_), assert(this.ui_.listContainer),
-                assert(this.quickViewModel_), assert(this.taskController_));
-            this.metadataBoxController_ = new MetadataBoxController(
-                this.metadataModel_, quickView.getFilesMetadataBox(), quickView,
-                this.quickViewModel_);
-          }
-        }.bind(this));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(
@@ -557,6 +545,22 @@ FileManager.prototype = /** @struct */ {
                   assert(this.mediaImportHandler_),
                   new importer.RuntimeCommandWidget(),
                   assert(this.tracker_));
+            }
+          }.bind(this));
+      var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
+          this.directoryModel_.getFileListSelection());
+      chrome.commandLinePrivate.hasSwitch(
+          'disable-files-quick-view', function(disabled) {
+            if (!disabled) {
+              this.quickViewController_ = new QuickViewController(
+                  quickView, assert(this.metadataModel_),
+                  assert(this.selectionHandler_),
+                  assert(this.ui_.listContainer), assert(this.quickViewModel_),
+                  assert(this.taskController_),
+                  fileListSelectionModel);
+              this.metadataBoxController_ = new MetadataBoxController(
+                  this.metadataModel_, quickView.getFilesMetadataBox(),
+                  quickView, this.quickViewModel_);
             }
           }.bind(this));
     }

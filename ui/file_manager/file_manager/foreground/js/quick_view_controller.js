@@ -11,12 +11,13 @@
  * @param {!ListContainer} listContainer
  * @param {!QuickViewModel} quickViewModel
  * @param {!TaskController} taskController
+ * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
  *
  * @constructor
  */
 function QuickViewController(
     quickView, metadataModel, selectionHandler, listContainer, quickViewModel,
-    taskController) {
+    taskController, fileListSelectionModel) {
   /**
    * @type {!FilesQuickView}
    * @private
@@ -48,6 +49,12 @@ function QuickViewController(
   this.taskController_ = taskController;
 
   /**
+   * @type {!cr.ui.ListSelectionModel}
+   * @private
+   */
+  this.fileListSelectionModel_ = fileListSelectionModel;
+
+  /**
    * Current selection of selectionHandler.
    *
    * @type {!Array<!FileEntry>}
@@ -59,8 +66,8 @@ function QuickViewController(
       FileSelectionHandler.EventType.CHANGE,
       this.onFileSelectionChanged_.bind(this));
   listContainer.element.addEventListener(
-      'keypress', this.onKeyPressToOpen_.bind(this));
-  quickView.addEventListener('keypress', this.onKeyPressToClose_.bind(this));
+      'keydown', this.onKeyDownToOpen_.bind(this));
+  quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 }
 
@@ -82,7 +89,7 @@ QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
  * @param {!Event} event A keyboard event.
  * @private
  */
-QuickViewController.prototype.onKeyPressToOpen_ = function(event) {
+QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
   if (this.entries_.length == 0)
     return;
   if (event.key === ' ') {
@@ -97,13 +104,26 @@ QuickViewController.prototype.onKeyPressToOpen_ = function(event) {
  * @param {!Event} event A keyboard event.
  * @private
  */
-QuickViewController.prototype.onKeyPressToClose_ = function(event) {
-  if (event.key === ' ') {
-    event.preventDefault();
-    this.quickView_.close();
-    this.listContainer_.focus();
+QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
+  switch (event.key) {
+    case ' ':
+      event.preventDefault();
+      this.quickView_.close();
+      this.listContainer_.focus();
+      break;
+    case 'ArrowRight':
+      var index = this.fileListSelectionModel_.selectedIndex + 1;
+      if (index >= this.fileListSelectionModel_.length)
+        index = 0;
+      this.fileListSelectionModel_.selectedIndex = index;
+      break;
+    case 'ArrowLeft':
+      var index = this.fileListSelectionModel_.selectedIndex - 1;
+      if (index < 0)
+        index = this.fileListSelectionModel_.length - 1;
+      this.fileListSelectionModel_.selectedIndex = index;
+      break;
   }
-  // TODO(oka): Open previous/next file with Left/Right.
 };
 
 /**
