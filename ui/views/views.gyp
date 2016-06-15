@@ -582,6 +582,7 @@
       'animation/ink_drop_impl_unittest.cc',
       'animation/ink_drop_ripple_unittest.cc',
       'animation/square_ink_drop_ripple_unittest.cc',
+      'border_unittest.cc',
       'bubble/bubble_border_unittest.cc',
       'bubble/bubble_dialog_delegate_unittest.cc',
       'bubble/bubble_frame_view_unittest.cc',
