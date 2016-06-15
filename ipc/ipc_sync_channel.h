@@ -18,15 +18,22 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace base {
 class WaitableEvent;
 };
 
+namespace mojo {
+class Watcher;
+}
+
 namespace IPC {
 
-class SyncMessage;
 class ChannelFactory;
+class MojoEvent;
+class SyncMessage;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
 // synchronous messages.
@@ -142,13 +149,13 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // result of the Send call for that message.
     bool Pop();
 
-    // Returns an event that's set when the send is complete, timed out or the
-    // process shut down.
-    base::WaitableEvent* GetSendDoneEvent();
+    // Returns a Mojo Event that signals when a sync send is complete or timed
+    // out or the process shut down.
+    MojoEvent* GetSendDoneEvent();
 
-    // Returns an event that's set when an incoming message that's not the reply
-    // needs to get dispatched (by calling SyncContext::DispatchMessages).
-    base::WaitableEvent* GetDispatchEvent();
+    // Returns a Mojo Event that signals when an incoming message that's not the
+    // pending reply needs to get dispatched (by calling DispatchMessages.)
+    MojoEvent* GetDispatchEvent();
 
     void DispatchMessages();
 
@@ -171,8 +178,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       return restrict_dispatch_group_;
     }
 
-    base::WaitableEventWatcher::EventCallback MakeWaitableEventCallback();
-
    private:
     ~SyncContext() override;
     // ChannelProxy methods that we override.
@@ -189,7 +194,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // Cancels all pending Send calls.
     void CancelPendingSends();
 
-    void OnWaitableEventSignaled(base::WaitableEvent* event);
+    void OnShutdownEventSignaled(base::WaitableEvent* event);
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;
@@ -209,7 +214,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       base::WaitableEvent* shutdown_event);
 
-  void OnWaitableEventSignaled(base::WaitableEvent* arg);
+  void OnDispatchHandleReady(MojoResult result);
 
   SyncContext* sync_context() {
     return reinterpret_cast<SyncContext*>(context());
@@ -217,8 +222,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   // Both these functions wait for a reply, timeout or process shutdown.  The
   // latter one also runs a nested message loop in the meantime.
-  static void WaitForReply(
-      SyncContext* context, base::WaitableEvent* pump_messages_event);
+  static void WaitForReply(SyncContext* context, bool pump_messages);
 
   // Runs a nested message loop until a reply arrives, times out, or the process
   // shuts down.
@@ -233,8 +237,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   bool SendOnIPCThread(std::unique_ptr<Message> message) override;
 
   // Used to signal events between the IPC and listener threads.
-  base::WaitableEventWatcher dispatch_watcher_;
-  base::WaitableEventWatcher::EventCallback dispatch_watcher_callback_;
+  mojo::Watcher dispatch_watcher_;
 
   // Tracks SyncMessageFilters created before complete channel initialization.
   std::vector<scoped_refptr<SyncMessageFilter>> pre_init_sync_message_filters_;

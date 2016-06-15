@@ -7,6 +7,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -20,6 +21,7 @@ int main(int argc, char** argv) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
 #endif
+  mojo::edk::Init();
   base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
       argc, argv,

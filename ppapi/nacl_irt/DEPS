@@ -5,6 +5,8 @@ include_rules = [
   # for plugins only.
   "-ppapi/cpp",
 
+  "+mojo/edk/embedder",
+
   # The untrusted build references the NaCl integrated runtime (IRT).
   "+native_client/src/public",
   "+native_client/src/untrusted/irt/irt.h",

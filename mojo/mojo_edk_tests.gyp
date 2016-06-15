@@ -35,11 +35,11 @@
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_public_bindings_test_utils',
-        'mojo_public.gyp:mojo_public_test_associated_interfaces',
-        'mojo_public.gyp:mojo_public_test_interfaces',
-        'mojo_public.gyp:mojo_public_test_interfaces_blink',
-        'mojo_public.gyp:mojo_public_test_interfaces_struct_traits',
         'mojo_public.gyp:mojo_public_test_utils',
+        'mojo_public_tests.gyp:mojo_public_test_associated_interfaces',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces_blink',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces_struct_traits',
       ],
       'variables': {
         'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
@@ -122,9 +122,9 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_public.gyp:mojo_public_test_interfaces',
-        'mojo_public.gyp:mojo_public_test_wtf_types',
-        'mojo_public.gyp:mojo_public_test_wtf_types_blink',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces',
+        'mojo_public_tests.gyp:mojo_public_test_wtf_types',
+        'mojo_public_tests.gyp:mojo_public_test_wtf_types_blink',
       ],
       'variables': {
          'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
@@ -149,8 +149,8 @@
         'mojo_edk.gyp:mojo_run_all_perftests',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_public_bindings_test_utils',
-        'mojo_public.gyp:mojo_public_test_interfaces',
         'mojo_public.gyp:mojo_public_test_utils',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces',
       ],
       'sources': [
         'public/cpp/bindings/tests/bindings_perftest.cc',
@@ -270,7 +270,7 @@
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_edk.gyp:mojo_js_lib',
-        'mojo_public.gyp:mojo_public_test_interfaces',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces',
       ],
       'sources': [
         'edk/js/handle_unittest.cc',
@@ -288,7 +288,7 @@
         'mojo_edk.gyp:mojo_js_lib',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_js_to_cpp_bindings',
-        'mojo_public.gyp:mojo_public_test_interfaces',
+        'mojo_public_tests.gyp:mojo_public_test_interfaces',
       ],
       'sources': [
         'edk/js/test/run_js_integration_tests.cc',

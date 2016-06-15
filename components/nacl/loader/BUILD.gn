@@ -33,6 +33,7 @@ source_set("minimal") {
     "//components/nacl/common:minimal",
     "//crypto",
     "//ipc",
+    "//mojo/edk/system",
     "//native_client/src/trusted/service_runtime:sel_main_chrome",
     "//ppapi/c",
     "//ppapi/proxy:ipc",
@@ -116,6 +117,7 @@ if (is_linux) {
       "//content/public/common",
       "//crypto",
       "//ipc",
+      "//mojo/edk/system",
       "//sandbox/linux:sandbox_services",
       "//url/ipc:url_ipc",
     ]
@@ -206,6 +208,7 @@ if (is_nacl_nonsfi) {
       "//components/tracing",
       "//content",
       "//ipc",
+      "//mojo/edk/system",
       "//native_client/src/nonsfi/irt:nacl_sys_private",
       "//native_client/src/nonsfi/loader:elf_loader",
 

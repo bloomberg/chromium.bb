@@ -17,13 +17,10 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace IPC {
 
 class MessageReplyDeserializer;
+class MojoEvent;
 
 class IPC_EXPORT SyncMessage : public Message {
  public:
@@ -41,24 +38,16 @@ class IPC_EXPORT SyncMessage : public Message {
   // If this message can cause the receiver to block while waiting for user
   // input (i.e. by calling MessageBox), then the caller needs to pump window
   // messages and dispatch asynchronous messages while waiting for the reply.
-  // If this event is passed in, then window messages will start being pumped
-  // when it's set.  Note that this behavior will continue even if the event is
-  // later reset.  The event must be valid until after the Send call returns.
-  void set_pump_messages_event(base::WaitableEvent* event) {
-    pump_messages_event_ = event;
-    if (event) {
-      header()->flags |= PUMPING_MSGS_BIT;
-    } else {
-      header()->flags &= ~PUMPING_MSGS_BIT;
-    }
+  // This call enables message pumping behavior while waiting for a reply to
+  // this message.
+  void EnableMessagePumping() {
+    header()->flags |= PUMPING_MSGS_BIT;
   }
 
-  // Call this if you always want to pump messages.  You can call this method
-  // or set_pump_messages_event but not both.
-  void EnableMessagePumping();
-
-  base::WaitableEvent* pump_messages_event() const {
-    return pump_messages_event_;
+  // Indicates whether window messages should be pumped while waiting for a
+  // reply to this message.
+  bool ShouldPumpMessages() const {
+    return (header()->flags & PUMPING_MSGS_BIT) != 0;
   }
 
   // Returns true if the message is a reply to the given request id.
@@ -84,7 +73,6 @@ class IPC_EXPORT SyncMessage : public Message {
   static bool WriteSyncHeader(Message* msg, const SyncHeader& header);
 
   std::unique_ptr<MessageReplyDeserializer> deserializer_;
-  base::WaitableEvent* pump_messages_event_;
 };
 
 // Used to deserialize parameters from a reply to a synchronous message
@@ -102,13 +90,12 @@ class IPC_EXPORT MessageReplyDeserializer {
 // When sending a synchronous message, this structure contains an object
 // that knows how to deserialize the response.
 struct PendingSyncMsg {
-  PendingSyncMsg(int id,
-                 MessageReplyDeserializer* d,
-                 base::WaitableEvent* e)
+  PendingSyncMsg(int id, MessageReplyDeserializer* d, MojoEvent* e)
       : id(id), deserializer(d), done_event(e), send_result(false) { }
+
   int id;
   MessageReplyDeserializer* deserializer;
-  base::WaitableEvent* done_event;
+  MojoEvent* done_event;
   bool send_result;
 };
 

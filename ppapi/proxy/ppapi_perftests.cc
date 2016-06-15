@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/test/perf_test_suite.h"
+#include "mojo/edk/embedder/embedder.h"
 
 int main(int argc, char** argv) {
+  mojo::edk::Init();
   return base::PerfTestSuite(argc, argv).Run();
 }
 
