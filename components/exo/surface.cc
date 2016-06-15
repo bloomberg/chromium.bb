@@ -189,9 +189,10 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 Surface::Surface()
     : window_(new aura::Window(new CustomWindowDelegate(this))),
       has_pending_contents_(false),
+      surface_manager_(
+          aura::Env::GetInstance()->context_factory()->GetSurfaceManager()),
+      factory_owner_(new SurfaceFactoryOwner),
       needs_commit_surface_hierarchy_(false),
-      update_contents_after_successful_compositing_(false),
-      compositor_(nullptr),
       delegate_(nullptr) {
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoSurface");
@@ -200,20 +201,11 @@ Surface::Surface()
   window_->set_layer_owner_delegate(this);
   window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   window_->set_owned_by_parent(false);
-  surface_manager_ =
-      aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
-  if (use_surface_layer_) {
-    factory_owner_ = make_scoped_refptr(new SurfaceFactoryOwner);
-    factory_owner_->surface_ = this;
-    factory_owner_->id_allocator_ =
-        aura::Env::GetInstance()->context_factory()->CreateSurfaceIdAllocator();
-    factory_owner_->surface_factory_.reset(
-        new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
-  }
-
-  if (!factory_owner_) {
-    window_->AddObserver(this);
-  }
+  factory_owner_->surface_ = this;
+  factory_owner_->id_allocator_ =
+      aura::Env::GetInstance()->context_factory()->CreateSurfaceIdAllocator();
+  factory_owner_->surface_factory_.reset(
+      new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
 }
 
 Surface::~Surface() {
@@ -221,13 +213,7 @@ Surface::~Surface() {
 
   window_->layer()->SetShowSolidColorContent();
 
-  if (factory_owner_) {
-    factory_owner_->surface_ = nullptr;
-  } else {
-    window_->RemoveObserver(this);
-  }
-  if (compositor_)
-    compositor_->RemoveObserver(this);
+  factory_owner_->surface_ = nullptr;
 
   // Call pending frame callbacks with a null frame time to indicate that they
   // have been cancelled.
@@ -244,11 +230,6 @@ Surface::~Surface() {
 // static
 Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
-}
-
-// static
-void Surface::SetUseSurfaceLayer(bool use_surface_layer) {
-  use_surface_layer_ = use_surface_layer;
 }
 
 void Surface::Attach(Buffer* buffer) {
@@ -452,312 +433,9 @@ void Surface::CommitSurfaceHierarchy() {
   state_ = pending_state_;
   pending_state_.only_visible_on_secure_output = false;
 
-  if (factory_owner_) {
-    CommitSurfaceContents();
-  } else {
-    CommitTextureContents();
-  }
-
-  // Synchronize window hierarchy. This will position and update the stacking
-  // order of all sub-surfaces after committing all pending state of sub-surface
-  // descendants.
-  aura::Window* stacking_target = nullptr;
-  for (auto& sub_surface_entry : pending_sub_surfaces_) {
-    Surface* sub_surface = sub_surface_entry.first;
-
-    // Synchronsouly commit all pending state of the sub-surface and its
-    // decendents.
-    if (sub_surface->needs_commit_surface_hierarchy())
-      sub_surface->CommitSurfaceHierarchy();
-
-    // Enable/disable sub-surface based on if it has contents.
-    if (sub_surface->has_contents())
-      sub_surface->window()->Show();
-    else
-      sub_surface->window()->Hide();
-
-    // Move sub-surface to its new position in the stack.
-    if (stacking_target)
-      window_->StackChildAbove(sub_surface->window(), stacking_target);
-
-    // Stack next sub-surface above this sub-surface.
-    stacking_target = sub_surface->window();
-
-    // Update sub-surface position relative to surface origin.
-    sub_surface->window()->SetBounds(gfx::Rect(
-        sub_surface_entry.second, sub_surface->window()->layer()->size()));
-  }
-}
-
-bool Surface::IsSynchronized() const {
-  return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
-}
-
-gfx::Rect Surface::GetHitTestBounds() const {
-  SkIRect bounds = state_.input_region.getBounds();
-  if (!bounds.intersect(
-          gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))))
-    return gfx::Rect();
-  return gfx::SkIRectToRect(bounds);
-}
-
-bool Surface::HitTestRect(const gfx::Rect& rect) const {
-  if (HasHitTestMask())
-    return state_.input_region.intersects(gfx::RectToSkIRect(rect));
-
-  return rect.Intersects(gfx::Rect(window_->layer()->size()));
-}
-
-bool Surface::HasHitTestMask() const {
-  return !state_.input_region.contains(
-      gfx::RectToSkIRect(gfx::Rect(window_->layer()->size())));
-}
-
-void Surface::GetHitTestMask(gfx::Path* mask) const {
-  state_.input_region.getBoundaryPath(mask);
-}
-
-void Surface::RegisterCursorProvider(Pointer* provider) {
-  cursor_providers_.insert(provider);
-}
-
-void Surface::UnregisterCursorProvider(Pointer* provider) {
-  cursor_providers_.erase(provider);
-}
-
-bool Surface::HasCursorProvider() const {
-  return !cursor_providers_.empty();
-}
-
-void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {
-  DCHECK(!delegate_ || !delegate);
-  delegate_ = delegate;
-}
-
-bool Surface::HasSurfaceDelegate() const {
-  return !!delegate_;
-}
-
-void Surface::AddSurfaceObserver(SurfaceObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void Surface::RemoveSurfaceObserver(SurfaceObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
-  return observers_.HasObserver(observer);
-}
-
-std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
-  std::unique_ptr<base::trace_event::TracedValue> value(
-      new base::trace_event::TracedValue());
-  value->SetString("name", window_->layer()->name());
-  return value;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver overrides:
-
-void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
-  DCHECK(!compositor_);
-  DCHECK(!factory_owner_);
-  compositor_ = window_->layer()->GetCompositor();
-  compositor_->AddObserver(this);
-}
-
-void Surface::OnWindowRemovingFromRootWindow(aura::Window* window,
-                                             aura::Window* new_root) {
-  DCHECK(compositor_);
-  compositor_->RemoveObserver(this);
-  compositor_ = nullptr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ui::LayerOwnerDelegate overrides:
-
-void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
-  if (!current_buffer_)
-    return;
-
-  // TODO(reveman): Give the client a chance to provide new contents.
-  if (factory_owner_) {
-    SetSurfaceLayerContents(new_layer);
-  } else {
-    SetTextureLayerContents(new_layer);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ui::CompositorObserver overrides:
-
-void Surface::OnCompositingDidCommit(ui::Compositor* compositor) {
-  DCHECK(!factory_owner_);
-  // Move frame callbacks to the end of |active_frame_callbacks_|.
-  active_frame_callbacks_.splice(active_frame_callbacks_.end(),
-                                 frame_callbacks_);
-}
-
-void Surface::OnCompositingStarted(ui::Compositor* compositor,
-                                   base::TimeTicks start_time) {
-  last_compositing_start_time_ = start_time;
-}
-
-void Surface::OnCompositingEnded(ui::Compositor* compositor) {
-  // Run all frame callbacks associated with the compositor's active tree.
-  while (!active_frame_callbacks_.empty()) {
-    active_frame_callbacks_.front().Run(last_compositing_start_time_);
-    active_frame_callbacks_.pop_front();
-  }
-
-  // Nothing more to do in here unless this has been set.
-  if (!update_contents_after_successful_compositing_)
-    return;
-
-  update_contents_after_successful_compositing_ = false;
-
-  // Early out if no contents is currently assigned to the surface.
-  if (!current_buffer_)
-    return;
-
-  // Update contents by producing a new texture mailbox for the current buffer.
-  SetTextureLayerContents(window_->layer());
-}
-
-void Surface::OnCompositingAborted(ui::Compositor* compositor) {
-  // The contents of this surface might be lost if compositing aborted because
-  // of a lost graphics context. We recover from this by updating the contents
-  // of the surface next time the compositor successfully ends compositing.
-  update_contents_after_successful_compositing_ = true;
-}
-
-void Surface::OnCompositingShuttingDown(ui::Compositor* compositor) {
-  compositor->RemoveObserver(this);
-  compositor_ = nullptr;
-}
-
-void Surface::WillDraw(cc::SurfaceId id) {
-  while (!active_frame_callbacks_.empty()) {
-    active_frame_callbacks_.front().Run(base::TimeTicks::Now());
-    active_frame_callbacks_.pop_front();
-  }
-}
-
-void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
-  if (HasLayerHierarchyChanged())
-    SetSurfaceHierarchyNeedsCommitToNewSurfaces();
-}
-
-Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
-
-Surface::State::~State() = default;
-
-bool Surface::State::operator==(const State& other) {
-  return (other.crop == crop && alpha == other.alpha &&
-          other.blend_mode == blend_mode && other.viewport == viewport &&
-          other.opaque_region == opaque_region &&
-          other.buffer_scale == buffer_scale &&
-          other.input_region == input_region);
-}
-
-bool Surface::HasLayerHierarchyChanged() const {
-  if (needs_commit_surface_hierarchy_ && has_pending_layer_changes_)
-    return true;
-
-  for (const auto& sub_surface_entry : pending_sub_surfaces_) {
-    if (sub_surface_entry.first->HasLayerHierarchyChanged())
-      return true;
-  }
-  return false;
-}
-
-void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
-  needs_commit_to_new_surface_ = true;
-  for (auto& sub_surface_entry : pending_sub_surfaces_) {
-    sub_surface_entry.first->SetSurfaceHierarchyNeedsCommitToNewSurfaces();
-  }
-}
-
-void Surface::CommitTextureContents() {
   // We update contents if Attach() has been called since last commit.
-  if (has_pending_contents_) {
-    has_pending_contents_ = false;
-
-    current_buffer_ = pending_buffer_;
-    pending_buffer_.reset();
-
-    cc::TextureMailbox texture_mailbox;
-    std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
-    if (current_buffer_) {
-      texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, state_.only_visible_on_secure_output,
-          true /* client_usage */);
-    }
-
-    // Update layer with the new contents.
-    if (texture_mailbox_release_callback) {
-      texture_size_in_dip_ = gfx::ScaleToFlooredSize(
-          texture_mailbox.size_in_pixels(), 1.0f / state_.buffer_scale);
-      window_->layer()->SetTextureMailbox(
-          texture_mailbox, std::move(texture_mailbox_release_callback),
-          texture_size_in_dip_);
-      window_->layer()->SetTextureFlipped(false);
-    } else {
-      // Show solid color content if no buffer is attached or we failed
-      // to produce a texture mailbox for the currently attached buffer.
-      window_->layer()->SetShowSolidColorContent();
-      window_->layer()->SetColor(SK_ColorBLACK);
-    }
-
-    // Schedule redraw of the damage region.
-    for (SkRegion::Iterator it(pending_damage_); !it.done(); it.next())
-      window_->layer()->SchedulePaint(gfx::SkIRectToRect(it.rect()));
-
-    // Reset damage.
-    pending_damage_.setEmpty();
-  }
-
-  if (window_->layer()->has_external_content()) {
-    // Determine the new surface size.
-    // - Texture size in DIP defines the size if nothing else is set.
-    // - If a viewport is set then that defines the size, otherwise
-    //   the crop rectangle defines the size if set.
-    gfx::Size contents_size = texture_size_in_dip_;
-    if (!state_.viewport.IsEmpty()) {
-      contents_size = state_.viewport;
-    } else if (!state_.crop.IsEmpty()) {
-      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
-                           !gfx::IsExpressibleAsInt(state_.crop.height()))
-          << "Crop rectangle size (" << state_.crop.size().ToString()
-          << ") most be expressible using integers when viewport is not set";
-      contents_size = gfx::ToCeiledSize(state_.crop.size());
-    }
-    window_->layer()->SetTextureCrop(state_.crop);
-    window_->layer()->SetTextureScale(
-        static_cast<float>(texture_size_in_dip_.width()) /
-            contents_size.width(),
-        static_cast<float>(texture_size_in_dip_.height()) /
-            contents_size.height());
-    window_->layer()->SetTextureAlpha(state_.alpha);
-    window_->layer()->SetBounds(
-        gfx::Rect(window_->layer()->bounds().origin(), contents_size));
-  }
-
-  // Move pending frame callbacks to the end of |frame_callbacks_|.
-  frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
-
-  // Update alpha compositing properties.
-  // TODO(reveman): Use a more reliable way to force blending off than setting
-  // fills-bounds-opaquely.
-  window_->layer()->SetFillsBoundsOpaquely(
-      state_.blend_mode == SkXfermode::kSrc_Mode ||
-      state_.opaque_region.contains(
-          gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))));
-}
-
-void Surface::CommitSurfaceContents() {
-  // We update contents if Attach() has been called since last commit.
+  // TODO(jbauman): Support producing a new texture mailbox after lost
+  // context.
   if (has_pending_contents_) {
     has_pending_contents_ = false;
     current_buffer_ = pending_buffer_;
@@ -910,29 +588,157 @@ void Surface::CommitSurfaceContents() {
   // Move pending frame callbacks to the end of active_frame_callbacks_
   active_frame_callbacks_.splice(active_frame_callbacks_.end(),
                                  pending_frame_callbacks_);
+
+  // Synchronize window hierarchy. This will position and update the stacking
+  // order of all sub-surfaces after committing all pending state of sub-surface
+  // descendants.
+  aura::Window* stacking_target = nullptr;
+  for (auto& sub_surface_entry : pending_sub_surfaces_) {
+    Surface* sub_surface = sub_surface_entry.first;
+
+    // Synchronsouly commit all pending state of the sub-surface and its
+    // decendents.
+    if (sub_surface->needs_commit_surface_hierarchy())
+      sub_surface->CommitSurfaceHierarchy();
+
+    // Enable/disable sub-surface based on if it has contents.
+    if (sub_surface->has_contents())
+      sub_surface->window()->Show();
+    else
+      sub_surface->window()->Hide();
+
+    // Move sub-surface to its new position in the stack.
+    if (stacking_target)
+      window_->StackChildAbove(sub_surface->window(), stacking_target);
+
+    // Stack next sub-surface above this sub-surface.
+    stacking_target = sub_surface->window();
+
+    // Update sub-surface position relative to surface origin.
+    sub_surface->window()->SetBounds(gfx::Rect(
+        sub_surface_entry.second, sub_surface->window()->layer()->size()));
+  }
 }
 
-void Surface::SetTextureLayerContents(ui::Layer* layer) {
-  DCHECK(current_buffer_);
+bool Surface::IsSynchronized() const {
+  return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
+}
 
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
-      current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, state_.only_visible_on_secure_output,
-          false /* client_usage */);
-  if (!texture_mailbox_release_callback)
+gfx::Rect Surface::GetHitTestBounds() const {
+  SkIRect bounds = state_.input_region.getBounds();
+  if (!bounds.intersect(
+          gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))))
+    return gfx::Rect();
+  return gfx::SkIRectToRect(bounds);
+}
+
+bool Surface::HitTestRect(const gfx::Rect& rect) const {
+  if (HasHitTestMask())
+    return state_.input_region.intersects(gfx::RectToSkIRect(rect));
+
+  return rect.Intersects(gfx::Rect(window_->layer()->size()));
+}
+
+bool Surface::HasHitTestMask() const {
+  return !state_.input_region.contains(
+      gfx::RectToSkIRect(gfx::Rect(window_->layer()->size())));
+}
+
+void Surface::GetHitTestMask(gfx::Path* mask) const {
+  state_.input_region.getBoundaryPath(mask);
+}
+
+void Surface::RegisterCursorProvider(Pointer* provider) {
+  cursor_providers_.insert(provider);
+}
+
+void Surface::UnregisterCursorProvider(Pointer* provider) {
+  cursor_providers_.erase(provider);
+}
+
+bool Surface::HasCursorProvider() const {
+  return !cursor_providers_.empty();
+}
+
+void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {
+  DCHECK(!delegate_ || !delegate);
+  delegate_ = delegate;
+}
+
+bool Surface::HasSurfaceDelegate() const {
+  return !!delegate_;
+}
+
+void Surface::AddSurfaceObserver(SurfaceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Surface::RemoveSurfaceObserver(SurfaceObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
+  return observers_.HasObserver(observer);
+}
+
+std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
+  std::unique_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
+  value->SetString("name", window_->layer()->name());
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::LayerOwnerDelegate overrides:
+
+void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
+  if (!current_buffer_)
     return;
 
-  layer->SetTextureMailbox(texture_mailbox,
-                           std::move(texture_mailbox_release_callback),
-                           texture_size_in_dip_);
-  layer->SetTextureFlipped(false);
-  layer->SetTextureCrop(state_.crop);
-  layer->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
-                             layer->bounds().width(),
-                         static_cast<float>(texture_size_in_dip_.height()) /
-                             layer->bounds().height());
-  layer->SetTextureAlpha(state_.alpha);
+  // TODO(reveman): Give the client a chance to provide new contents.
+  SetSurfaceLayerContents(new_layer);
+}
+
+void Surface::WillDraw(cc::SurfaceId id) {
+  while (!active_frame_callbacks_.empty()) {
+    active_frame_callbacks_.front().Run(base::TimeTicks::Now());
+    active_frame_callbacks_.pop_front();
+  }
+}
+
+void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
+  if (HasLayerHierarchyChanged())
+    SetSurfaceHierarchyNeedsCommitToNewSurfaces();
+}
+
+Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
+
+Surface::State::~State() = default;
+
+bool Surface::State::operator==(const State& other) {
+  return (other.crop == crop && alpha == other.alpha &&
+          other.blend_mode == blend_mode && other.viewport == viewport &&
+          other.opaque_region == opaque_region &&
+          other.buffer_scale == buffer_scale &&
+          other.input_region == input_region);
+}
+
+bool Surface::HasLayerHierarchyChanged() const {
+  if (needs_commit_surface_hierarchy_ && has_pending_layer_changes_)
+    return true;
+
+  for (const auto& sub_surface_entry : pending_sub_surfaces_) {
+    if (sub_surface_entry.first->HasLayerHierarchyChanged())
+      return true;
+  }
+  return false;
+}
+
+void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
+  needs_commit_to_new_surface_ = true;
+  for (auto& sub_surface_entry : pending_sub_surfaces_) {
+    sub_surface_entry.first->SetSurfaceHierarchyNeedsCommitToNewSurfaces();
+  }
 }
 
 void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
@@ -948,7 +754,5 @@ void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
       base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
       layer_size, contents_surface_to_layer_scale, layer_size);
 }
-
-bool Surface::use_surface_layer_ = false;
 
 }  // namespace exo

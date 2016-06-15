@@ -18,13 +18,7 @@
 namespace exo {
 namespace {
 
-class ShellSurfaceTest : public test::ExoTestBase,
-                         public ::testing::WithParamInterface<bool> {
-  void SetUp() override {
-    Surface::SetUseSurfaceLayer(GetParam());
-    test::ExoTestBase::SetUp();
-  }
-};
+using ShellSurfaceTest = test::ExoTestBase;
 
 uint32_t ConfigureFullscreen(uint32_t serial,
                              const gfx::Size& size,
@@ -35,7 +29,7 @@ uint32_t ConfigureFullscreen(uint32_t serial,
   return serial;
 }
 
-TEST_P(ShellSurfaceTest, AcknowledgeConfigure) {
+TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   gfx::Size buffer_size(32, 32);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -70,7 +64,7 @@ TEST_P(ShellSurfaceTest, AcknowledgeConfigure) {
             surface->window()->GetBoundsInRootWindow().origin().ToString());
 }
 
-TEST_P(ShellSurfaceTest, SetParent) {
+TEST_F(ShellSurfaceTest, SetParent) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> parent_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -94,7 +88,7 @@ TEST_P(ShellSurfaceTest, SetParent) {
       wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
 }
 
-TEST_P(ShellSurfaceTest, Maximize) {
+TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -108,7 +102,7 @@ TEST_P(ShellSurfaceTest, Maximize) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
-TEST_P(ShellSurfaceTest, Minimize) {
+TEST_F(ShellSurfaceTest, Minimize) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -121,7 +115,7 @@ TEST_P(ShellSurfaceTest, Minimize) {
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
 }
 
-TEST_P(ShellSurfaceTest, Restore) {
+TEST_F(ShellSurfaceTest, Restore) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -131,10 +125,6 @@ TEST_P(ShellSurfaceTest, Restore) {
   surface->Attach(buffer.get());
   surface->Commit();
   // Note: Remove contents to avoid issues with maximize animations in tests.
-  if (!GetParam()) {
-    surface->Attach(nullptr);
-    surface->Commit();
-  }
   shell_surface->Maximize();
   shell_surface->Restore();
   EXPECT_EQ(
@@ -142,7 +132,7 @@ TEST_P(ShellSurfaceTest, Restore) {
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
 }
 
-TEST_P(ShellSurfaceTest, SetFullscreen) {
+TEST_F(ShellSurfaceTest, SetFullscreen) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -156,7 +146,7 @@ TEST_P(ShellSurfaceTest, SetFullscreen) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
 }
 
-TEST_P(ShellSurfaceTest, SetPinned) {
+TEST_F(ShellSurfaceTest, SetPinned) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -167,7 +157,7 @@ TEST_P(ShellSurfaceTest, SetPinned) {
   EXPECT_TRUE(shell_surface->GetWidget()->IsAlwaysOnTop());
 }
 
-TEST_P(ShellSurfaceTest, SetTitle) {
+TEST_F(ShellSurfaceTest, SetTitle) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -175,7 +165,7 @@ TEST_P(ShellSurfaceTest, SetTitle) {
   surface->Commit();
 }
 
-TEST_P(ShellSurfaceTest, SetApplicationId) {
+TEST_F(ShellSurfaceTest, SetApplicationId) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -187,7 +177,7 @@ TEST_P(ShellSurfaceTest, SetApplicationId) {
                         shell_surface->GetWidget()->GetNativeWindow()));
 }
 
-TEST_P(ShellSurfaceTest, Move) {
+TEST_F(ShellSurfaceTest, Move) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -201,7 +191,7 @@ TEST_P(ShellSurfaceTest, Move) {
   shell_surface.reset();
 }
 
-TEST_P(ShellSurfaceTest, Resize) {
+TEST_F(ShellSurfaceTest, Resize) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -215,7 +205,7 @@ TEST_P(ShellSurfaceTest, Resize) {
   surface.reset();
 }
 
-TEST_P(ShellSurfaceTest, SetGeometry) {
+TEST_F(ShellSurfaceTest, SetGeometry) {
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -234,7 +224,7 @@ TEST_P(ShellSurfaceTest, SetGeometry) {
             surface->window()->bounds().ToString());
 }
 
-TEST_P(ShellSurfaceTest, SetScale) {
+TEST_F(ShellSurfaceTest, SetScale) {
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -256,7 +246,7 @@ void Close(int* close_call_count) {
   (*close_call_count)++;
 }
 
-TEST_P(ShellSurfaceTest, CloseCallback) {
+TEST_F(ShellSurfaceTest, CloseCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -275,7 +265,7 @@ void DestroyShellSurface(std::unique_ptr<ShellSurface>* shell_surface) {
   shell_surface->reset();
 }
 
-TEST_P(ShellSurfaceTest, SurfaceDestroyedCallback) {
+TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -304,7 +294,7 @@ uint32_t Configure(gfx::Size* suggested_size,
   return 0;
 }
 
-TEST_P(ShellSurfaceTest, ConfigureCallback) {
+TEST_F(ShellSurfaceTest, ConfigureCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -348,8 +338,6 @@ TEST_P(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_resizing);
 }
-
-INSTANTIATE_TEST_CASE_P(, ShellSurfaceTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace exo

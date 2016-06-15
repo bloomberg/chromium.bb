@@ -20,8 +20,6 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
-#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -81,18 +79,13 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public aura::WindowObserver,
-                public ui::LayerOwnerDelegate,
-                public ui::CompositorObserver {
+class Surface : public ui::LayerOwnerDelegate {
  public:
   Surface();
   ~Surface() override;
 
   // Type-checking downcast routine.
   static Surface* AsSurface(const aura::Window* window);
-
-  // Sets whether to put the contents in a SurfaceLayer or a TextureLayer.
-  static void SetUseSurfaceLayer(bool use_surface_layer);
 
   aura::Window* window() { return window_.get(); }
 
@@ -201,22 +194,8 @@ class Surface : public aura::WindowObserver,
     return pending_damage_.contains(gfx::RectToSkIRect(damage));
   }
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowAddedToRootWindow(aura::Window* window) override;
-  void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                      aura::Window* new_root) override;
-
   // Overridden from ui::LayerOwnerDelegate:
   void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
-
-  // Overridden from ui::CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override;
-  void OnCompositingAborted(ui::Compositor* compositor) override;
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   void WillDraw(cc::SurfaceId surface_id);
 
@@ -254,24 +233,11 @@ class Surface : public aura::WindowObserver,
   // Sets that all children must create new cc::SurfaceIds for their contents.
   void SetSurfaceHierarchyNeedsCommitToNewSurfaces();
 
-  // Commit the current attached buffer to a TextureLayer.
-  void CommitTextureContents();
-
-  // Commit the current attached buffer to a SurfaceLayer.
-  void CommitSurfaceContents();
-
-  // Set TextureLayer contents to the current buffer.
-  void SetTextureLayerContents(ui::Layer* layer);
-
   // Set SurfaceLayer contents to the current buffer.
   void SetSurfaceLayerContents(ui::Layer* layer);
 
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const { return !!current_buffer_; }
-
-  // This is true if the buffer contents should be put in a SurfaceLayer
-  // rather than a TextureLayer.
-  static bool use_surface_layer_;
 
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
@@ -343,18 +309,8 @@ class Surface : public aura::WindowObserver,
   // callbacks when compositing successfully ends.
   base::TimeTicks last_compositing_start_time_;
 
-  // This is true when the contents of the surface should be updated next time
-  // the compositor successfully ends compositing.
-  bool update_contents_after_successful_compositing_;
-
-  // The compsitor being observer or null if not observing a compositor.
-  ui::Compositor* compositor_;
-
   // Cursor providers. Surface does not own the cursor providers.
   std::set<CursorProvider*> cursor_providers_;
-
-  // Texture size.
-  gfx::Size texture_size_in_dip_;
 
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it
