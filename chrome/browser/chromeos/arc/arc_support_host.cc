@@ -15,9 +15,11 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -27,6 +29,7 @@ const char kCode[] = "code";
 const char kCanEnable[] = "canEnable";
 const char kStatus[] = "status";
 const char kData[] = "data";
+const char kDeviceId[] = "deviceId";
 const char kOn[] = "on";
 const char kPage[] = "page";
 const char kText[] = "text";
@@ -91,6 +94,7 @@ void ArcSupportHost::Start(Client* client) {
 
 void ArcSupportHost::Initialize() {
   DCHECK(client_);
+
   std::unique_ptr<base::DictionaryValue> localized_strings(
       new base::DictionaryValue());
   base::string16 device_name = ash::GetChromeOSDeviceName();
@@ -129,10 +133,17 @@ void ArcSupportHost::Initialize() {
 
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
+  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
+  const std::string device_id = user_manager::known_user::GetDeviceId(
+      multi_user_util::GetAccountIdFromProfile(arc_auth_service->profile()));
+  DCHECK(!device_id.empty());
+
   base::DictionaryValue request;
   std::string request_string;
   request.SetString(kAction, kActionInitialize);
   request.Set(kData, std::move(localized_strings));
+  request.SetString(kDeviceId, device_id);
   base::JSONWriter::Write(request, &request_string);
   client_->PostMessageFromNativeHost(request_string);
 }

@@ -52,6 +52,12 @@ var windowClosedInternally = false;
 var termsReloadTimeout = null;
 
 /**
+ * Stores current device id.
+ * @type {string}
+ */
+var currentDeviceId = null;
+
+/**
  * Closes current window in response to request from native code. This does not
  * issue 'cancelAuthCode' message to native code.
  */
@@ -74,8 +80,10 @@ function sendNativeMessage(code, opt_Props) {
 /**
  * Applies localization for html content and sets terms webview.
  * @param {!Object} data Localized strings and relevant information.
+ * @param {string} deviceId Current device id.
  */
-function initialize(data) {
+function initialize(data, deviceId) {
+  currentDeviceId = deviceId;
   var doc = appWindow.contentWindow.document;
   var loadTimeData = appWindow.contentWindow.loadTimeData;
   loadTimeData.data = data;
@@ -162,7 +170,7 @@ function onNativeMessage(message) {
   }
 
   if (message.action == 'initialize') {
-    initialize(message.data);
+    initialize(message.data, message.deviceId);
   } else if (message.action == 'setMetricsMode') {
     setMetricsMode(message.text, message.canEnable, message.on);
   } else if (message.action == 'closeUI') {
@@ -207,8 +215,8 @@ function showPage(pageDivId) {
                   '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
                   'googleusercontent.com&response_type=code&redirect_uri=oob&' +
                   'scope=https://www.google.com/accounts/OAuthLogin&' +
-                  'device_type=arc_plus_plus&device_id=0&hl=' +
-                  navigator.language;
+                  'device_type=arc_plus_plus&device_id=' + currentDeviceId +
+                  '&hl=' + navigator.language;
   }
   appWindow.show();
 }

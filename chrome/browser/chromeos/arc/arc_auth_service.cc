@@ -367,7 +367,7 @@ void ArcAuthService::Shutdown() {
   pref_change_registrar_.RemoveAll();
   profile_ = nullptr;
   token_service_ = nullptr;
-  account_id_ = "";
+  account_id_.clear();
   SetState(State::NOT_INITIALIZED);
 }
 

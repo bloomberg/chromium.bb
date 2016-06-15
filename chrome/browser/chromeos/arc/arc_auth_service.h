@@ -166,6 +166,7 @@ class ArcAuthService : public ArcService,
 
   // Returns current page that has to be shown in OptIn UI.
   UIPage ui_page() const { return ui_page_; }
+
   // Returns current page status, relevant to the specific page.
   const base::string16& ui_page_status() { return ui_page_status_; }
 
