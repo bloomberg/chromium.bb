@@ -451,6 +451,17 @@ class PortTest(unittest.TestCase):
         self.assertTrue(port.is_wpt_test('imported/wpt/foo/bar.html'))
         self.assertFalse(port.is_wpt_test('http/wpt/foo.html'))
 
+    def test_default_results_directory(self):
+        port = self.make_port(options=optparse.Values({'target': 'Default', 'configuration': 'Release'}))
+        # By default the results directory is in the build directory: out/<target>.
+        self.assertEqual(port.default_results_directory(), '/mock-checkout/out/Default/layout-test-results')
+
+    def test_results_directory(self):
+        port = self.make_port(options=optparse.Values({'results_directory': 'some-directory/results'}))
+        # A results directory can be given as an option, and it is relative to current working directory.
+        self.assertEqual(port._filesystem.cwd, '/')
+        self.assertEqual(port.results_directory(), '/some-directory/results')
+
 
 class NaturalCompareTest(unittest.TestCase):
 
