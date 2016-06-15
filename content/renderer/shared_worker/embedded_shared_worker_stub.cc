@@ -18,6 +18,7 @@
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_content_settings_client_proxy.h"
 #include "ipc/ipc_message_macros.h"
@@ -261,6 +262,11 @@ void EmbeddedSharedWorkerStub::sendDevToolsMessage(
     const blink::WebString& state) {
   worker_devtools_agent_->SendDevToolsMessage(
       session_id, call_id, message, state);
+}
+
+blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
+EmbeddedSharedWorkerStub::createDevToolsMessageLoop() {
+  return DevToolsAgent::createMessageLoopWrapper();
 }
 
 void EmbeddedSharedWorkerStub::Shutdown() {

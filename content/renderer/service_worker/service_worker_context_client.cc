@@ -479,6 +479,11 @@ void ServiceWorkerContextClient::sendDevToolsMessage(
       message.utf8(), state_cookie.utf8());
 }
 
+blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
+ServiceWorkerContextClient::createDevToolsMessageLoop() {
+  return DevToolsAgent::createMessageLoopWrapper();
+}
+
 void ServiceWorkerContextClient::didHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {

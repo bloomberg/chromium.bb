@@ -354,6 +354,11 @@ void WebEmbeddedWorkerImpl::resumeStartup()
         loadShadowPage();
 }
 
+WebDevToolsAgentClient::WebKitClientMessageLoop* WebEmbeddedWorkerImpl::createClientMessageLoop()
+{
+    return m_workerContextClient->createDevToolsMessageLoop();
+}
+
 void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 {
     DCHECK(m_mainScriptLoader);

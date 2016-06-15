@@ -126,6 +126,8 @@ class ServiceWorkerContextClient
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state) override;
+  blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
+  createDevToolsMessageLoop() override;
   void didHandleActivateEvent(int request_id,
                               blink::WebServiceWorkerEventResult) override;
   void didHandleExtendableMessageEvent(

@@ -37,6 +37,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
+#include "public/web/WebDevToolsAgentClient.h"
 #include <v8.h>
 
 namespace blink {
@@ -106,6 +107,9 @@ public:
 
     // Inspector related messages.
     virtual void sendDevToolsMessage(int sessionId, int callId, const WebString& message, const WebString& state) { }
+
+    // Message loop for debugging.
+    virtual WebDevToolsAgentClient::WebKitClientMessageLoop* createDevToolsMessageLoop() { return nullptr; }
 
     // ServiceWorker specific method.
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }

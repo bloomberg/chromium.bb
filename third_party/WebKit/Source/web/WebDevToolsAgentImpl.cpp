@@ -155,7 +155,10 @@ private:
     ClientMessageLoopAdapter(PassOwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
         : m_runningForDebugBreak(false)
         , m_runningForCreateWindow(false)
-        , m_messageLoop(std::move(messageLoop)) { }
+        , m_messageLoop(std::move(messageLoop))
+    {
+        DCHECK(m_messageLoop.get());
+    }
 
     void run(LocalFrame* frame) override
     {

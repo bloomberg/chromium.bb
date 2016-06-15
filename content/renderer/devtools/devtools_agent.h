@@ -45,6 +45,8 @@ class CONTENT_EXPORT DevToolsAgent
                                          int call_id,
                                          const std::string& message,
                                          const std::string& post_state);
+  static blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
+      createMessageLoopWrapper();
 
   blink::WebDevToolsAgent* GetWebAgent();
 

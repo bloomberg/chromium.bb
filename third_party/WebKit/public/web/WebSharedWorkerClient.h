@@ -32,6 +32,7 @@
 #define WebSharedWorkerClient_h
 
 #include "public/platform/WebMessagePortChannel.h"
+#include "public/web/WebDevToolsAgentClient.h"
 
 namespace blink {
 
@@ -79,6 +80,7 @@ public:
     virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return nullptr; }
 
     virtual void sendDevToolsMessage(int sessionId, int callId, const WebString& message, const WebString& state) { }
+    virtual WebDevToolsAgentClient::WebKitClientMessageLoop* createDevToolsMessageLoop() { return nullptr; }
 };
 
 } // namespace blink
