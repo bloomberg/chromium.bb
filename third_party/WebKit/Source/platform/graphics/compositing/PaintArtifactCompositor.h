@@ -40,7 +40,6 @@ public:
     ~PaintArtifactCompositor();
 
     // Updates the layer tree to match the provided paint artifact.
-    // Creates the root layer if not already done.
     void update(const PaintArtifact&);
 
     // The root layer of the tree managed by this object.
@@ -52,6 +51,8 @@ public:
 
 private:
     class ContentLayerClientImpl;
+
+    void updateInLayerListMode(const PaintArtifact&);
 
     // Builds a leaf layer that represents a single paint chunk.
     // Note: cc::Layer API assumes the layer bounds to start at (0, 0) but the bounding box of

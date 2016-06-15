@@ -321,22 +321,15 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
 
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
-    ASSERT(m_rootLayer);
+    DCHECK(m_rootLayer);
 
     // If the compositor is configured to expect using flat layer lists plus
     // property trees, then we should provide that format.
     cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
     const bool useLayerLists = host && host->settings().use_layer_lists;
-
     if (useLayerLists) {
-        // The root layer must be the owner so that the render surface
-        // validation works. It's expected to own at least the effect node.
-        setMinimalPropertyTrees(host->property_trees(), m_rootLayer->id());
-        m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
-        m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
-        m_rootLayer->SetClipTreeIndex(kSecondaryRootNodeId);
-        m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
-        m_rootLayer->SetScrollTreeIndex(kSecondaryRootNodeId);
+        updateInLayerListMode(paintArtifact);
+        return;
     }
 
     // TODO(jbroman): This should be incremental.
@@ -346,55 +339,26 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     ClipLayerManager clipLayerManager(m_rootLayer.get());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
-        cc::Layer* parent;
-        if (useLayerLists)
-            parent = m_rootLayer.get();
-        else
-            parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
+        cc::Layer* parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
 
         gfx::Vector2dF layerOffset;
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
-        if (useLayerLists) {
-            // This is only good enough to get trivial 2D translations working.
-            // We'll need to actually create more cc transform nodes to do any
-            // more; then we'll express offset-to-transform-parent relative to
-            // that transform node.
-            // TODO(jbroman): ^ Do that.
-            layer->set_offset_to_transform_parent(
-                transformToTransformSpace(paintChunk.properties.transform.get(), nullptr).To2dTranslation()
-                + layerOffset);
-        } else {
-            // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
-            // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
-            gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
-            transform.Translate(layerOffset.x(), layerOffset.y());
-            // If a clip was applied, its origin needs to be cancelled out in
-            // this transform.
-            if (const auto* clip = paintChunk.properties.clip.get()) {
-                FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
-                gfx::Transform undoClipOffset;
-                undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
-                transform.ConcatTransform(undoClipOffset);
-            }
-            layer->SetTransform(transform);
+        // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
+        // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
+        gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
+        transform.Translate(layerOffset.x(), layerOffset.y());
+        // If a clip was applied, its origin needs to be cancelled out in
+        // this transform.
+        if (const auto* clip = paintChunk.properties.clip.get()) {
+            FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
+            gfx::Transform undoClipOffset;
+            undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
+            transform.ConcatTransform(undoClipOffset);
         }
+        layer->SetTransform(transform);
         layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
         layer->SetNeedsDisplay();
         parent->AddChild(layer);
-
-        if (useLayerLists) {
-            layer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
-            layer->SetTransformTreeIndex(kSecondaryRootNodeId);
-            layer->SetClipTreeIndex(kSecondaryRootNodeId);
-            layer->SetEffectTreeIndex(kSecondaryRootNodeId);
-            layer->SetScrollTreeIndex(kSecondaryRootNodeId);
-        }
-    }
-
-    if (useLayerLists) {
-        // Mark the property trees as having been rebuilt.
-        host->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
-        host->property_trees()->needs_rebuild = false;
     }
 }
 
@@ -420,6 +384,47 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
         layer->SetContentsOpaque(true);
     m_contentLayerClients.append(std::move(contentLayerClient));
     return layer;
+}
+
+void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintArtifact)
+{
+    cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
+
+    // The root layer must be the owner so that the render surface
+    // validation works. It's expected to own at least the effect node.
+    setMinimalPropertyTrees(host->property_trees(), m_rootLayer->id());
+    m_rootLayer->RemoveAllChildren();
+    m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+    m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
+    m_rootLayer->SetClipTreeIndex(kSecondaryRootNodeId);
+    m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
+    m_rootLayer->SetScrollTreeIndex(kSecondaryRootNodeId);
+
+    m_contentLayerClients.clear();
+    m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
+    for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
+        gfx::Vector2dF layerOffset;
+        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
+        // This is only good enough to get trivial 2D translations working.
+        // We'll need to actually create more cc transform nodes to do any
+        // more; then we'll express offset-to-transform-parent relative to
+        // that transform node.
+        // TODO(jbroman): ^ Do that.
+        layer->set_offset_to_transform_parent(
+            transformToTransformSpace(paintChunk.properties.transform.get(), nullptr).To2dTranslation()
+            + layerOffset);
+
+        m_rootLayer->AddChild(layer);
+        layer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+        layer->SetTransformTreeIndex(kSecondaryRootNodeId);
+        layer->SetClipTreeIndex(kSecondaryRootNodeId);
+        layer->SetEffectTreeIndex(kSecondaryRootNodeId);
+        layer->SetScrollTreeIndex(kSecondaryRootNodeId);
+    }
+
+    // Mark the property trees as having been rebuilt.
+    host->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
+    host->property_trees()->needs_rebuild = false;
 }
 
 } // namespace blink
