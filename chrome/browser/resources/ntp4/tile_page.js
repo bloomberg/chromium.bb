@@ -705,17 +705,17 @@ cr.define('ntp', function() {
             this.focusableElements_.length;
       }.bind(this);
 
-      switch (e.keyIdentifier) {
-        case 'Right':
-        case 'Left':
-          var direction = e.keyIdentifier == 'Right' ? 1 : -1;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowLeft':
+          var direction = e.key == 'ArrowRight' ? 1 : -1;
           this.focusElementIndex_ = wrap(this.focusElementIndex_ + direction);
           break;
-        case 'Up':
-        case 'Down':
+        case 'ArrowUp':
+        case 'ArrowDown':
           // Look through all focusable elements. Find the first one that is
           // in the same column.
-          var direction = e.keyIdentifier == 'Up' ? -1 : 1;
+          var direction = e.key == 'ArrowUp' ? -1 : 1;
           var currentIndex =
               Array.prototype.indexOf.call(this.focusableElements_,
                                            this.currentFocusElement_);

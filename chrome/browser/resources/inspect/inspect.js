@@ -314,7 +314,7 @@ function populateRemoteTargets(devices) {
             input.value = '';
           }.bind(null, browser.source, browser.id, newPageUrl);
           newPageUrl.addEventListener('keyup', function(handler, event) {
-            if (event.keyIdentifier == 'Enter' && event.target.value)
+            if (event.key == 'Enter' && event.target.value)
               handler();
           }.bind(null, openHandler), true);
 
@@ -590,7 +590,7 @@ function addActionLink(row, text, handler, opt_disabled) {
   link.textContent = text;
   link.addEventListener('click', handler, true);
   function handleKey(e) {
-    if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+    if (e.key == 'Enter' || e.key == ' ') {
       e.preventDefault();
       handler();
     }
@@ -732,7 +732,7 @@ function createConfigLine(port, location) {
       location, 'location', 'IP address and port', validateLocation);
   line.appendChild(locationInput);
   locationInput.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier == 'U+0009' &&  // Tab
+    if (e.key == 'Tab' &&
         !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey &&
         line.classList.contains('fresh') &&
         !line.classList.contains('empty')) {

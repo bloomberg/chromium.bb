@@ -208,7 +208,7 @@ cr.define('wallpapers', function() {
 
     /** @override */
     handleKeyDown: function(e) {
-      if (e.keyIdentifier == 'Enter')
+      if (e.key == 'Enter')
         cr.dispatchSimpleEvent(this.grid_, 'activate');
       else
         GridSelectionController.prototype.handleKeyDown.call(this, e);

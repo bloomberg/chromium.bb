@@ -147,14 +147,14 @@ ISearchUI.prototype = {
    * @return {boolean}
    */
   onKeyDown: function(evt) {
-    switch (evt.keyIdentifier) {
-      case 'Up':
+    switch (evt.key) {
+      case 'ArrowUp':
         this.dir_ = Dir.BACKWARD;
         break;
-      case 'Down':
+      case 'ArrowDown':
         this.dir_ = Dir.FORWARD;
         break;
-      case 'U+001B':  // Escape
+      case 'Escape':
         this.pendingSearchId_ = 0;
         this.background_['endExcursion']();
         Panel.closeMenusAndRestoreFocus();

@@ -54,7 +54,7 @@ TEST_F('CookiesViewWebUITest', 'testNoCloseOnSearchEnter', function() {
   searchBox.dispatchEvent(new KeyboardEvent('keydown', {
     'bubbles': true,
     'cancelable': true,
-    'keyIdentifier': 'Enter'
+    'key': 'Enter'
   }));
   assertTrue(cookiesView.visible);
 });

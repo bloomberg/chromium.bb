@@ -745,13 +745,13 @@ cr.define('options', function() {
      * @private
      */
     handleKeyLeftRight_: function(e) {
-      var id = e.keyIdentifier;
+      var id = e.key;
       if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
         return;
-      if ((id == 'Left' || id == 'Right') && this.expandedItem) {
+      if ((id == 'ArrowLeft' || id == 'ArrowRight') && this.expandedItem) {
         var cs = this.ownerDocument.defaultView.getComputedStyle(this);
         var rtl = cs.direction == 'rtl';
-        if ((!rtl && id == 'Left') || (rtl && id == 'Right'))
+        if ((!rtl && id == 'ArrowLeft') || (rtl && id == 'ArrowRight'))
           this.expandedItem.selectedIndex--;
         else
           this.expandedItem.selectedIndex++;

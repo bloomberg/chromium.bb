@@ -19,7 +19,7 @@ function createEnterKeyboardEvent(type) {
   return new KeyboardEvent(type, {
     'bubbles': true,
     'cancelable': true,
-    'keyIdentifier': 'Enter'
+    'key': 'Enter'
   });
 }
 

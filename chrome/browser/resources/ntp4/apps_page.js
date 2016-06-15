@@ -413,7 +413,7 @@ cr.define('ntp', function() {
      * @private
      */
     onKeydown_: function(e) {
-      if (e.keyIdentifier == 'Enter') {
+      if (e.key == 'Enter') {
         chrome.send('launchApp',
                     [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, '',
                      0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);

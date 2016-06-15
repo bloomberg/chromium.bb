@@ -1263,7 +1263,7 @@ cr.define('options', function() {
 
       actionLink.onclick = hide;
       actionLink.onkeydown = function(e) {
-        if (e.keyIdentifier == 'Enter') {
+        if (e.key == 'Enter') {
           hide();
         }
       };

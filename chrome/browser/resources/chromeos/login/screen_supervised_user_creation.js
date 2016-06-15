@@ -53,12 +53,12 @@ login.createScreen('SupervisedUserCreationScreen',
           hideManagerPasswordError);
 
       this.passwordElement.addEventListener('keydown', function(e) {
-        switch (e.keyIdentifier) {
-          case 'Up':
+        switch (e.key) {
+          case 'ArrowUp':
             managerPodList.selectNextPod(-1);
             e.stopPropagation();
             break;
-          case 'Down':
+          case 'ArrowDown':
             managerPodList.selectNextPod(+1);
             e.stopPropagation();
             break;
@@ -345,8 +345,8 @@ login.createScreen('SupervisedUserCreationScreen',
       });
 
       this.addEventListener('keydown', function(e) {
-        switch (e.keyIdentifier) {
-          case 'Up':
+        switch (e.key) {
+          case 'ArrowUp':
             importList.selectNextPod(-1);
             e.stopPropagation();
             break;
@@ -355,7 +355,7 @@ login.createScreen('SupervisedUserCreationScreen',
               screen.importSupervisedUser_();
             e.stopPropagation();
             break;
-          case 'Down':
+          case 'ArrowDown':
             importList.selectNextPod(+1);
             e.stopPropagation();
             break;
@@ -682,7 +682,7 @@ login.createScreen('SupervisedUserCreationScreen',
                                  moveFocus,
                                  errorHider) {
       element.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter') {
+        if (e.key == 'Enter') {
           var dataValid = true;
           if (validator)
             dataValid = validator(element);

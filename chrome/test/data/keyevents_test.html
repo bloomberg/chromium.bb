@@ -72,7 +72,7 @@ function handleEvent(e) {
     // But Windows and Mac have opposite behavior than Linux.
     // To make the C++ testing code simpler, if it's a modifier key event,
     // then ignores the corresponding modifier attribute by setting it to true.
-    var keyId = evt.keyIdentifier;
+    var keyId = evt.key;
     result += (evt.keyCode + ' ' + evt.charCode + ' ' +
         (keyId == 'Control' ? true : evt.ctrlKey) + ' ' +
         (keyId == 'Shift' ? true : evt.shiftKey) + ' ' +

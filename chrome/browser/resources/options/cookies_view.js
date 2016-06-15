@@ -49,7 +49,7 @@ cr.define('options', function() {
           'search', this.handleSearchQueryChange_.bind(this));
       searchBox.onkeydown = function(e) {
         // Prevent the overlay from handling this event.
-        if (e.keyIdentifier == 'Enter')
+        if (e.key == 'Enter')
           e.stopPropagation();
       };
 

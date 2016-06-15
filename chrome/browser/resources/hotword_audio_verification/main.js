@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var pressFunction = function(e) {
       // Only respond to 'Enter' key presses.
-      if (e.type == 'keyup' && e.keyIdentifier != 'Enter')
+      if (e.type == 'keyup' && e.key != 'Enter')
         return;
 
       var classes = e.target.classList;

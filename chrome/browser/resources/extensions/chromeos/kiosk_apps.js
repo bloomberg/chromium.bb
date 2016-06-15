@@ -71,7 +71,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleAppIdInputKeyPressed_: function(e) {
-      if (e.keyIdentifier == 'Enter' && e.target.value)
+      if (e.key == 'Enter' && e.target.value)
         this.handleAddButtonClick_();
     },
 

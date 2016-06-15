@@ -479,8 +479,8 @@ cr.define('bmm', function() {
 
         // Calling list.focus blurs the input which will stop editing the list
         // item.
-        switch (e.keyIdentifier) {
-          case 'U+001B':  // Esc
+        switch (e.key) {
+          case 'Escape':  // Esc
             labelInput.value = title;
             if (!isFolder)
               urlInput.value = url;
@@ -490,7 +490,7 @@ cr.define('bmm', function() {
             if (listItem.parentNode)
               listItem.parentNode.focus();
             break;
-          case 'U+0009':  // Tab
+          case 'Tab':  // Tab
             // urlInput is the last focusable element in the page.  If we
             // allowed Tab focus navigation and the page loses focus, we
             // couldn't give focus on urlInput programatically. So, we prevent

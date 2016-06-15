@@ -114,7 +114,7 @@ cr.define('ntp', function() {
      * @param {Event} e The KeyboardEvent.
      */
     onKeyDown_: function(e) {
-      if (e.keyIdentifier == 'Enter') {
+      if (e.key == 'Enter') {
         this.onClick_(e);
         e.stopPropagation();
       }
@@ -164,8 +164,8 @@ cr.define('ntp', function() {
      * @private
      */
     onInputKeyDown_: function(e) {
-      switch (e.keyIdentifier) {
-        case 'U+001B':  // Escape cancels edits.
+      switch (e.key) {
+        case 'Escape':  // Escape cancels edits.
           this.input_.value = this.displayTitle;
         case 'Enter':  // Fall through.
           this.input_.blur();

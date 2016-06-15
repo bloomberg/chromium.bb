@@ -480,8 +480,8 @@ cr.define('options', function() {
 
       var endEdit = false;
       var handledKey = true;
-      switch (e.keyIdentifier) {
-        case 'U+001B':  // Esc
+      switch (e.key) {
+        case 'Escape':
           this.editCancelled_ = true;
           endEdit = true;
           break;

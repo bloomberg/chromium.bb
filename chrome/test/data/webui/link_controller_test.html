@@ -90,7 +90,7 @@ function testOpenUrlFromEventForegroundTabMac() {
 function testOpenUrlFromEventForegroundTabEnter() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter',
+    key: 'Enter',
     shiftKey: true,
     ctrlKey: true
   };
@@ -100,7 +100,7 @@ function testOpenUrlFromEventForegroundTabEnter() {
 function testOpenUrlFromEventForegroundTabEnterMac() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter',
+    key: 'Enter',
     shiftKey: true,
     metaKey: true
   };
@@ -139,7 +139,7 @@ function testOpenUrlFromEventBackgroundTabMac() {
 function testOpenUrlFromEventBackgroundTabEnter() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter',
+    key: 'Enter',
     ctrlKey: true
   };
   openUrlFromEventHelper(e, false, cr.LinkKind.BACKGROUND_TAB);
@@ -148,7 +148,7 @@ function testOpenUrlFromEventBackgroundTabEnter() {
 function testOpenUrlFromEventBackgroundTabEnterMac() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter',
+    key: 'Enter',
     metaKey: true
   };
   openUrlFromEventHelper(e, true, cr.LinkKind.BACKGROUND_TAB);
@@ -176,7 +176,7 @@ function testOpenUrlFromEventWindow() {
 function testOpenUrlFromEventWindowEnter() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter',
+    key: 'Enter',
     shiftKey: true
   };
   openUrlFromEventHelper(e, false, cr.LinkKind.WINDOW);
@@ -195,7 +195,7 @@ function testOpenUrlFromEventSelf() {
 function testOpenUrlFromEventSelfEnter() {
   var e = {
     type: 'keydown',
-    keyIdentifier: 'Enter'
+    key: 'Enter'
   };
   openUrlFromEventHelper(e, false, cr.LinkKind.SELF);
 }

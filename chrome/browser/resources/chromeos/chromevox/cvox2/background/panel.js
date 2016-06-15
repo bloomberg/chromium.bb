@@ -494,24 +494,24 @@ Panel.onKeyDown = function(event) {
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
     return;
 
-  switch (event.keyIdentifier) {
-    case 'Left':
+  switch (event.key) {
+    case 'ArrowLeft':
       Panel.advanceActiveMenuBy(-1);
       break;
-    case 'Right':
+    case 'ArrowRight':
       Panel.advanceActiveMenuBy(1);
       break;
-    case 'Up':
+    case 'ArrowUp':
       Panel.advanceItemBy(-1);
       break;
-    case 'Down':
+    case 'ArrowDown':
       Panel.advanceItemBy(1);
       break;
-    case 'U+001B':  // Escape
+    case 'Escape':
       Panel.closeMenusAndRestoreFocus();
       break;
-    case 'Enter':  // Enter
-    case 'U+0020':  // Space
+    case 'Enter':
+    case ' ':  // Space
       Panel.pendingCallback_ = Panel.getCallbackForCurrentItem();
       Panel.closeMenusAndRestoreFocus();
       break;

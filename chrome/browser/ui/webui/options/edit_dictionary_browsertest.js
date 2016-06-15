@@ -107,7 +107,7 @@ TEST_F('EditDictionaryWebUITest', 'testNoCloseOnSearchEnter', function() {
   searchField.dispatchEvent(new KeyboardEvent('keydown', {
     'bubbles': true,
     'cancelable': true,
-    'keyIdentifier': 'Enter'
+    'key': 'Enter'
   }));
   assertTrue(editDictionaryPage.visible);
 });

@@ -732,9 +732,9 @@ cr.define('ntp', function() {
         return;
 
       var direction = 0;
-      if (e.keyIdentifier == 'Left')
+      if (e.key == 'ArrowLeft')
         direction = -1;
-      else if (e.keyIdentifier == 'Right')
+      else if (e.key == 'ArrowRight')
         direction = 1;
       else
         return;

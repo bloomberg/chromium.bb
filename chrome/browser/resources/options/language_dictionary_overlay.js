@@ -63,7 +63,7 @@ cr.define('options', function() {
       this.searchField_.onkeydown = function(e) {
         // Don't propagate enter key events. Otherwise the default button will
         // activate.
-        if (e.keyIdentifier == 'Enter')
+        if (e.key == 'Enter')
           e.stopPropagation();
       };
 

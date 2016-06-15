@@ -108,7 +108,7 @@ cr.define('options.accounts', function() {
      * @param {Event} e The keydown event object.
      */
     handleKeyDown_: function(e) {
-      if (e.keyIdentifier == 'Enter') {
+      if (e.key == 'Enter') {
         var user = this.parse(this.value);
         if (user) {
           var event = new Event('add');

@@ -90,8 +90,7 @@ TEST_F('KioskAppSettingsWebUITest', 'testAddKioskApp', function() {
   appIdInput.value = testAppId;
 
   this.mockHandler.expects(once()).addKioskApp([testAppId]);
-  var keypress = document.createEvent('KeyboardEvents');
-  keypress.initKeyboardEvent('keypress', true, true, null, 'Enter', '');
+  var keypress = new KeyboardEvent('keypress', {cancelable: true, bubbles: true, key: 'Enter'});
   appIdInput.dispatchEvent(keypress);
 });
 

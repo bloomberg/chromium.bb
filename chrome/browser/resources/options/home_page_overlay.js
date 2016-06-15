@@ -45,7 +45,7 @@ cr.define('options', function() {
       urlField.addEventListener('keydown', function(event) {
         // Don't auto-submit when the user selects something from the
         // auto-complete list.
-        if (event.keyIdentifier == 'Enter' && !self.autocompleteList_.hidden)
+        if (event.key == 'Enter' && !self.autocompleteList_.hidden)
           event.stopPropagation();
       });
       urlField.addEventListener('change', this.updateFavicon_.bind(this));

@@ -112,7 +112,7 @@ cr.define('extensions', function() {
       }.bind(this));
 
       this.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter' && e.target != deleteButton)
+        if (e.key == 'Enter' && e.target != deleteButton)
           this.requestActive_();
       });
     },

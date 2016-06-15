@@ -1083,8 +1083,8 @@ cr.define('options.network', function() {
         return;
       }
 
-      if (e.keyIdentifier == 'Enter' ||
-          e.keyIdentifier == 'U+0020' /* Space */) {
+      if (e.key == 'Enter' ||
+          e.key == ' ' /* Space */) {
         var selectedListItem = this.getListItemByIndex(
             this.selectionModel.selectedIndex);
         if (selectedListItem) {

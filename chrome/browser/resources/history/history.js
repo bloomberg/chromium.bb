@@ -502,7 +502,7 @@ Visit.prototype.showMoreFromSite_ = function() {
  */
 Visit.prototype.handleKeydown_ = function(e) {
   // Delete or Backspace should delete the entry if allowed.
-  if (e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'U+007F')
+  if (e.key == 'Backspace' || e.key == 'Delete')
     this.removeEntryFromHistory_(e);
 };
 

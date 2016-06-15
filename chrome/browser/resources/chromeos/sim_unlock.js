@@ -229,7 +229,7 @@ cr.define('mobile', function() {
 
     // PIN input screen.
     $('pin-input').addEventListener('keydown', function(event) {
-      if (event.keyIdentifier == 'Enter') {
+      if (event.key == 'Enter') {
         SimUnlock.submitPin();
         return;
       }
@@ -258,7 +258,7 @@ cr.define('mobile', function() {
 
     // PUK input screen.
     $('puk-input').addEventListener('keydown', function(event) {
-      if (event.keyIdentifier == 'Enter') {
+      if (event.key == 'Enter') {
         SimUnlock.pukEntered($('puk-input').value);
         return;
       }
@@ -279,7 +279,7 @@ cr.define('mobile', function() {
 
     // Change PIN / new PIN screen.
     $('old-pin-input').addEventListener('keydown', function(event) {
-      if (event.keyIdentifier == 'Enter') {
+      if (event.key == 'Enter') {
         if (this.value.length >= SimUnlock.PIN_MIN_LENGTH)
           $('new-pin-input').focus();
         return;
@@ -295,7 +295,7 @@ cr.define('mobile', function() {
     $('old-pin-input').addEventListener('textInput',
                                         SimUnlock.processInput.bind(this));
     $('new-pin-input').addEventListener('keydown', function(event) {
-      if (event.keyIdentifier == 'Enter') {
+      if (event.key == 'Enter') {
         if (this.value.length >= SimUnlock.PIN_MIN_LENGTH)
           $('retype-new-pin-input').focus();
         return;
@@ -328,7 +328,7 @@ cr.define('mobile', function() {
           !oldPinOk;
     });
     $('retype-new-pin-input').addEventListener('keydown', function(event) {
-      if (event.keyIdentifier == 'Enter') {
+      if (event.key == 'Enter') {
         SimUnlock.newPinEntered($('new-pin-input').value,
                                 $('retype-new-pin-input').value);
         return;

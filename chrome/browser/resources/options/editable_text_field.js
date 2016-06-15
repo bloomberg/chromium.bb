@@ -333,8 +333,8 @@ cr.define('options', function() {
         return;
 
       var endEdit;
-      switch (e.keyIdentifier) {
-        case 'U+001B':  // Esc
+      switch (e.key) {
+        case 'Escape':
           this.editCanceled_ = true;
           endEdit = true;
           break;

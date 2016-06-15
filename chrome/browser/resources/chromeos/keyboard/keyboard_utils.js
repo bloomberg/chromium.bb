@@ -18,10 +18,10 @@ keyboard.onKeyIgnore_ = function(event) {
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
-  if (event.keyIdentifier == 'Left' ||
-      event.keyIdentifier == 'Right' ||
-      event.keyIdentifier == 'Up' ||
-      event.keyIdentifier == 'Down') {
+  if (event.key == 'ArrowLeft' ||
+      event.key == 'ArrowRight' ||
+      event.key == 'ArrowUp' ||
+      event.key == 'ArrowDown') {
     event.stopPropagation();
     event.preventDefault();
   }
@@ -53,13 +53,13 @@ keyboard.onKeyDown_ = function(event) {
 
   var needsUpDownKeys = event.target.classList.contains('needs-up-down-keys');
 
-  if (event.keyIdentifier == 'Left' ||
-      (!needsUpDownKeys && event.keyIdentifier == 'Up')) {
+  if (event.key == 'ArrowLeft' ||
+      (!needsUpDownKeys && event.key == 'ArrowUp')) {
     keyboard.raiseKeyFocusPrevious(document.activeElement);
     event.stopPropagation();
     event.preventDefault();
-  } else if (event.keyIdentifier == 'Right' ||
-             (!needsUpDownKeys && event.keyIdentifier == 'Down')) {
+  } else if (event.key == 'ArrowRight' ||
+             (!needsUpDownKeys && event.key == 'ArrowDown')) {
     keyboard.raiseKeyFocusNext(document.activeElement);
     event.stopPropagation();
     event.preventDefault();
