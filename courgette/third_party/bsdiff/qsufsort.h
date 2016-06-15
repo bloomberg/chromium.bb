@@ -1,27 +1,49 @@
-/*
-  qsufsort.h -- Suffix array generation.
+// Copyright 2003, 2004 Colin Percival
+// All rights reserved
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted providing that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+// For the terms under which this work may be distributed, please see
+// the adjoining file "LICENSE".
+//
+// ChangeLog:
+// 2005-05-05 - Use the modified header struct from bspatch.h; use 32-bit
+//              values throughout.
+//                --Benjamin Smedberg <benjamin@smedbergs.us>
+// 2010-05-26 - Use a paged array for V and I. The address space may be too
+//              fragmented for these big arrays to be contiguous.
+//                --Stephen Adams <sra@chromium.org>
+// 2015-08-03 - Extract QSufSort to a separate file as template.
+//                --Samuel Huang <huangs@chromium.org>
+// 2015-08-19 - Optimize split(), add comments.
+//                --Samuel Huang <huangs@chromium.org>
+// 2016-04-27 - Change split() to use Bentley & McIlroy's pivot selection
+//              algorithm, which QSufSort originally used. Reference:
+//              http://www.larsson.dogma.net/qsufsort.c
+//                --Samuel Huang <huangs@chromium.org>
 
-  Copyright 2003 Colin Percival
-
-  For the terms under which this work may be distributed, please see
-  the adjoining file "LICENSE".
-
-  ChangeLog:
-  2005-05-05 - Use the modified header struct from bspatch.h; use 32-bit
-               values throughout.
-                 --Benjamin Smedberg <benjamin@smedbergs.us>
-  2010-05-26 - Use a paged array for V and I. The address space may be too
-               fragmented for these big arrays to be contiguous.
-                 --Stephen Adams <sra@chromium.org>
-  2015-08-03 - Extract QSufSort to a separate file as template.
-                 --Samuel Huang <huangs@chromium.org>
-  2015-08-19 - Optimize split() and search(), add comments.
-                 --Samuel Huang <huangs@chromium.org>
-  2016-04-27 - Change split() to use Bentley & McIlroy's pivot selection
-               algorithm, which QSufSort originally used. Reference:
-               http://www.larsson.dogma.net/qsufsort.c
-                 --Samuel Huang <huangs@chromium.org>
-*/
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
 #define COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_

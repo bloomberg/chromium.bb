@@ -19,13 +19,13 @@ incompatible with the original and it cannot be compiled outside the Chromium
 source tree or the Courgette project.
 
 List of changes made to original code:
-  - wrapped functions in 'courgette' namespace
-  - renamed .c files to .cc
-  - added bsdiff.h header file
-  - changed the code to use streams.h from courgette
-  - changed the encoding of numbers to use the 'varint' encoding
-  - reformatted code to be closer to Google coding standards
-  - renamed variables
-  - added comments
-  - extracted qsufsort into qsufsort.h in 'courgette::qsuf' namespace
-  - added unit tests for qsufsort
+  - Wrapped functions in 'courgette' namespace.
+  - Renamed .c files to .cc files.
+  - Added bsdiff.h header file.
+  - Changed the code to use streams.h from courgette.
+  - Changed the encoding of numbers to use the 'varint' encoding.
+  - Reformatted code to be closer to Google coding standards.
+  - Renamed variables.
+  - Added comments.
+  - Extracted qsufsort into qsufsort.h in 'courgette::qsuf' namespace.
+  - Added unit tests for qsufsort.
