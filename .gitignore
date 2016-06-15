@@ -52,9 +52,6 @@ TAGS
 /build-aux/test-driver
 /build-aux/texinfo.tex
 
-# /build-aux/snippet/
-/build-aux/snippet/
-
 # /contrib/
 /contrib/liblouis.elc
 
