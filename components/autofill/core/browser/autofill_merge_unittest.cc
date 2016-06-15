@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
@@ -197,6 +199,12 @@ AutofillMergeTest::~AutofillMergeTest() {
 
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
+
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(kAutofillProfileCleanup.name,
+                                          std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
 }
 
 void AutofillMergeTest::TearDown() {

@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace base {
+struct Feature;
+}
+
 namespace sync_driver {
 class SyncService;
 }
@@ -14,6 +18,8 @@ class SyncService;
 class PrefService;
 
 namespace autofill {
+
+extern const base::Feature kAutofillProfileCleanup;
 
 // Returns true if autofill should be enabled. See also
 // IsInAutofillSuggestionsDisabledExperiment below.
@@ -24,6 +30,9 @@ bool IsAutofillEnabled(const PrefService* pref_service);
 // still want to run detection code for metrics purposes. This experiment just
 // disables providing suggestions.
 bool IsInAutofillSuggestionsDisabledExperiment();
+
+// Returns whether the Autofill profile cleanup feature is enabled.
+bool IsAutofillProfileCleanupEnabled();
 
 // Returns true if the user should be offered to locally store unmasked cards.
 // This controls whether the option is presented at all rather than the default

@@ -924,8 +924,11 @@ std::string PersonalDataManager::MergeProfile(
       matching_profile_found = true;
       guid = existing_profile->guid();
 
-      // Look for duplicates of |existing_profile| to merge into.
-      FindMergeAndDeleteDuplicateProfiles(existing_profiles, existing_profile);
+      if (IsAutofillProfileCleanupEnabled()) {
+        // Look for duplicates of |existing_profile| to merge into.
+        FindMergeAndDeleteDuplicateProfiles(existing_profiles,
+                                            existing_profile);
+      }
 
       // We set the modification date so that immediate requests for profiles
       // will properly reflect the fact that this profile has been modified

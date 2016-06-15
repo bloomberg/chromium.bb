@@ -11,9 +11,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/metrics/field_trial.h"
@@ -180,6 +182,14 @@ class PersonalDataManagerTest : public testing::Test {
                                                  "syncuser@example.com");
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOfferStoreUnmaskedWalletCards);
+  }
+
+  void EnableAutofillProfileCleanup() {
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(kAutofillProfileCleanup.name,
+                                            std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
   }
 
   void SetupReferenceProfile() {
@@ -4391,6 +4401,7 @@ TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
 // and that all but the resulting profile gets deleted. Also tests that
 // non-similar profiles are not affected by the merge or the delete.
 TEST_F(PersonalDataManagerTest, DedupeOnInsert) {
+  EnableAutofillProfileCleanup();
   // Create saved profiles.
   // Create two very similar profiles that should be deduped. The first one has
   // no company name, while the second has one. The second profile also has
@@ -4490,6 +4501,8 @@ TEST_F(PersonalDataManagerTest, DedupeOnInsert) {
 // delete after merging similar profiles.
 TEST_F(PersonalDataManagerTest,
        FindAndMergeDuplicateProfiles_ProfilesToDelete) {
+  EnableAutofillProfileCleanup();
+
   // Create the profile for which to find duplicates.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
@@ -4555,6 +4568,8 @@ TEST_F(PersonalDataManagerTest,
 // frecency score.
 TEST_F(PersonalDataManagerTest,
        FindAndMergeDuplicateProfiles_MergedProfileValues) {
+  EnableAutofillProfileCleanup();
+
   // Create a saved profile with a higher frecency score.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
