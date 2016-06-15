@@ -1,9 +1,20 @@
 <script>
 onload = function() {
-  if (navigator.platform.indexOf('Linux') != -1)
-    document.body.appendChild(document.createTextNode('Linux'));
-  else if (navigator.platform.indexOf('Win') != -1)
-    document.body.appendChild(document.createTextNode('Windows'));
+  var ua = navigator.userAgent;
+  var textToAppend;
+  if (ua.indexOf('Linux') != -1) {
+    textToAppend = 'Linux';
+  } else if (ua.indexOf('Win') != -1) {
+    textToAppend = 'Windows';
+    // Make result on win7 special.
+    if (ua.indexOf('NT 6.0') != -1 || ua.indexOf('NT 6.1') != -1)
+      textToAppend = ' Vista or 7';
+  } else if (ua.indexOf('Mac OS X 10_11') != -1) {
+    // Make result on Mac 10.11 (the default fallback on mac) special.
+    textToAppend = 'Mac 10.11';
+  }
+  if (textToAppend)
+    document.body.appendChild(document.createTextNode(textToAppend));
 };
 if (window.testRunner)
   testRunner.dumpAsText();
