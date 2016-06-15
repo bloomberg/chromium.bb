@@ -631,6 +631,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool HasCopyRequests() const;
   void ClearCopyRequests();
 
+  int ClosestAncestorWithCopyRequest(int id) const;
+
   void AddMaskOrReplicaLayerId(int id);
   const std::vector<int>& mask_replica_layer_ids() const {
     return mask_replica_layer_ids_;

@@ -5769,6 +5769,69 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
             root_layer->render_surface()->layer_list().at(0)->id());
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
+  const gfx::Transform identity_matrix;
+
+  LayerImpl* root = root_layer();
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  root->SetDrawsContent(true);
+  root->SetMasksToBounds(true);
+
+  LayerImpl* copy_layer = AddChild<LayerImpl>(root);
+  SetLayerPropertiesForTesting(copy_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  copy_layer->SetDrawsContent(true);
+
+  LayerImpl* copy_child = AddChild<LayerImpl>(copy_layer);
+  SetLayerPropertiesForTesting(copy_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(40, 40), gfx::Size(20, 20), true,
+                               false, false);
+  copy_child->SetDrawsContent(true);
+
+  LayerImpl* copy_clip = AddChild<LayerImpl>(copy_layer);
+  SetLayerPropertiesForTesting(copy_clip, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(55, 55), true, false,
+                               false);
+  copy_clip->SetMasksToBounds(true);
+
+  LayerImpl* copy_clipped_child = AddChild<LayerImpl>(copy_clip);
+  SetLayerPropertiesForTesting(copy_clipped_child, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(40, 40),
+                               gfx::Size(20, 20), true, false, false);
+  copy_clipped_child->SetDrawsContent(true);
+
+  LayerImpl* copy_surface = AddChild<LayerImpl>(copy_clip);
+  SetLayerPropertiesForTesting(copy_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(45, 45), gfx::Size(20, 20), true,
+                               false, true);
+  copy_surface->SetDrawsContent(true);
+
+  copy_layer->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(gfx::Rect(100, 100), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_surface->visible_layer_rect());
+
+  // Case 2: When the non root copy request layer is clipped.
+  copy_layer->SetBounds(gfx::Size(50, 50));
+  copy_layer->SetMasksToBounds(true);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(5, 5), copy_surface->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
   LayerImpl* root = root_layer();
   LayerImpl* surface = AddChild<LayerImpl>(root);

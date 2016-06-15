@@ -1625,6 +1625,22 @@ void EffectTree::ClearCopyRequests() {
   set_needs_update(true);
 }
 
+int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
+  DCHECK_GE(id, 0);
+  const EffectNode* node = Node(id);
+  while (node->id > 1) {
+    if (node->data.has_copy_request)
+      return node->id;
+
+    node = parent(node);
+  }
+
+  if (node->data.has_copy_request)
+    return node->id;
+  else
+    return -1;
+}
+
 void EffectTree::AddMaskOrReplicaLayerId(int id) {
   mask_replica_layer_ids_.push_back(id);
 }
