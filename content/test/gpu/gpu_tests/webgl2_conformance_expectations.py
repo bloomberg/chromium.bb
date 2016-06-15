@@ -682,6 +682,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_size.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/single_nested_struct.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/' +
+        'single_nested_struct_array.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/multi_basic_types.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/multi_nested_struct.html',
+        ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
