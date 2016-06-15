@@ -105,15 +105,6 @@ namespace {
 // The border color for MD windows, as well as non-MD popup windows.
 const SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 
-int GetEditLeadingInternalSpace() {
-  // The textfield has 1 px of whitespace before the text.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return 1;
-
-  // For legacy reasons, we only apply this in the RTL case in pre-MD.
-  return base::i18n::IsRTL() ? 1 : 0;
-}
-
 }  // namespace
 
 
@@ -429,6 +420,16 @@ gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
   return origin;
 }
 
+int LocationBarView::GetLocationIconWidth() const {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    constexpr int kVectorIconSize = 16;
+    return kVectorIconSize;
+  }
+  return GetThemeProvider()->GetImageSkiaNamed(
+             AutocompleteMatch::TypeToIcon(
+                 AutocompleteMatchType::URL_WHAT_YOU_TYPED))->width();
+}
+
 void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
   ime_inline_autocomplete_view_->SetText(text);
   ime_inline_autocomplete_view_->SetVisible(!text.empty());
@@ -570,18 +571,13 @@ void LocationBarView::Layout() {
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
   const int edge_thickness = GetHorizontalEdgeThickness();
-  int trailing_edge_item_padding = 0;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    trailing_edge_item_padding =
-        item_padding - edge_thickness - omnibox_view_->GetInsets().right();
-  }
 
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE, item_padding,
-      item_padding - omnibox_view_->GetInsets().left() -
-          GetEditLeadingInternalSpace());
+      item_padding - omnibox_view_->GetInsets().left());
   LocationBarLayout trailing_decorations(
-      LocationBarLayout::RIGHT_EDGE, item_padding, trailing_edge_item_padding);
+      LocationBarLayout::RIGHT_EDGE, item_padding,
+      item_padding - omnibox_view_->GetInsets().right());
 
   const base::string16 keyword(omnibox_view_->model()->keyword());
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
@@ -863,7 +859,6 @@ void LocationBarView::RefreshLocationIcon() {
     return;
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    const int kIconSize = 16;
     security_state::SecurityStateModel::SecurityLevel security_level =
         GetToolbarModel()->GetSecurityLevel(false);
     SkColor icon_color =
@@ -871,7 +866,7 @@ void LocationBarView::RefreshLocationIcon() {
             ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
             : GetSecureTextColor(security_level);
     location_icon_view_->SetImage(gfx::CreateVectorIcon(
-        omnibox_view_->GetVectorIcon(), kIconSize, icon_color));
+        omnibox_view_->GetVectorIcon(), GetLocationIconWidth(), icon_color));
   } else {
     location_icon_view_->SetImage(
         *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));

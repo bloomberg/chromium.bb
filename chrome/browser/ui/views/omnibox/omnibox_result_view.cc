@@ -198,12 +198,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       keyword_icon_(new views::ImageView()),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
-  if (default_icon_size_ == 0) {
-    default_icon_size_ =
-        location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
-            AutocompleteMatch::TypeToIcon(
-                AutocompleteMatchType::URL_WHAT_YOU_TYPED))->width();
-  }
+  if (default_icon_size_ == 0)
+    default_icon_size_ = location_bar_view_->GetLocationIconWidth();
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_->SetImage(GetKeywordIcon());

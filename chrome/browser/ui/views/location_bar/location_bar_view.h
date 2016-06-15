@@ -186,6 +186,9 @@ class LocationBarView : public LocationBar,
   // not where the icons are shown).
   gfx::Point GetOmniboxViewOrigin() const;
 
+  // Returns the width of the location icon.
+  int GetLocationIconWidth() const;
+
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
   // comments on |ime_inline_autocomplete_view_|.
