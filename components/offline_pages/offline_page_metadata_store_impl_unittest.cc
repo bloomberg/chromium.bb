@@ -107,7 +107,7 @@ class OfflinePageMetadataStoreSQLFactory
   }
 };
 
-enum CalledCallback { NONE, LOAD, ADD, REMOVE, DESTROY };
+enum CalledCallback { NONE, LOAD, ADD, REMOVE, RESET };
 enum Status { STATUS_NONE, STATUS_TRUE, STATUS_FALSE };
 
 class OfflinePageMetadataStoreTestBase : public testing::Test {
@@ -509,6 +509,60 @@ TYPED_TEST(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
             this->offline_pages_[0].expiration_time);
   EXPECT_EQ(offline_page.access_count, this->offline_pages_[0].access_count);
   EXPECT_EQ(offline_page.client_id, this->offline_pages_[0].client_id);
+}
+
+TYPED_TEST(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
+  std::unique_ptr<OfflinePageMetadataStore> store(this->BuildStore());
+
+  // Add 2 offline pages.
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
+                               base::FilePath(kFilePath), kFileSize);
+  store->AddOrUpdateOfflinePage(
+      offline_page,
+      base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
+                 base::Unretained(this), ADD));
+  this->PumpLoop();
+  EXPECT_EQ(ADD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+
+  this->ClearResults();
+
+  OfflinePageItem offline_page2(GURL("http://test.com"), 5678LL, kTestClientId2,
+                                base::FilePath(kFilePath), kFileSize);
+  store->AddOrUpdateOfflinePage(
+      offline_page2,
+      base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
+                 base::Unretained(this), ADD));
+  this->PumpLoop();
+  EXPECT_EQ(ADD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+
+  this->ClearResults();
+
+  // Load the store.
+  store->Load(base::Bind(&OfflinePageMetadataStoreTestBase::LoadCallback,
+                         base::Unretained(this)));
+  this->PumpLoop();
+
+  EXPECT_EQ(LOAD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+  EXPECT_EQ(2U, this->offline_pages_.size());
+
+  // Clear all records from the store.
+  store->Reset(base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
+                          base::Unretained(this), RESET));
+  this->PumpLoop();
+  EXPECT_EQ(RESET, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+
+  // Load the store.
+  store->Load(base::Bind(&OfflinePageMetadataStoreTestBase::LoadCallback,
+                         base::Unretained(this)));
+  this->PumpLoop();
+
+  EXPECT_EQ(LOAD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+  ASSERT_EQ(0U, this->offline_pages_.size());
 }
 
 }  // namespace

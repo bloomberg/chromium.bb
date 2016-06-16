@@ -299,7 +299,7 @@ void OfflinePageMetadataStoreSQL::ResetSync(
     std::unique_ptr<sql::Connection> db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const ResetCallback& callback) {
-  const char kSql[] = "DELETE * FROM " OFFLINE_PAGES_TABLE_NAME;
+  const char kSql[] = "DELETE FROM " OFFLINE_PAGES_TABLE_NAME;
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   runner->PostTask(FROM_HERE, base::Bind(callback, statement.Run()));
 }
