@@ -86,6 +86,10 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
 
 bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  surface_manager_->RegisterSurfaceFactoryClient(
+      surface_id_allocator_->id_namespace(), this);
+
   if (!OutputSurface::BindToClient(client))
     return false;
 
@@ -95,8 +99,6 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
-  surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace(), this);
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
   bool init = display_->Initialize(this);

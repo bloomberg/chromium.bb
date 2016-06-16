@@ -110,6 +110,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // thread-specific data for the output surface can be initialized, since from
   // this point to when DetachFromClient() is called the output surface will
   // only be used on the compositor thread.
+  // The caller should call DetachFromClient() on the same thread before
+  // destroying the OutputSurface, even if this fails. And BindToClient should
+  // not be called twice for a given OutputSurface.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
   // Called by the compositor on the compositor thread. This is a place where
