@@ -45,15 +45,25 @@ static INLINE int aom_read(aom_reader *r, int prob) {
   return aom_dk_read(r, prob);
 }
 
-static INLINE int aom_read_bit(aom_reader *r) { return aom_dk_read_bit(r); }
+static INLINE int aom_read_bit(aom_reader *r) {
+  return aom_read(r, 128);  // aom_prob_half
+}
 
 static INLINE int aom_read_literal(aom_reader *r, int bits) {
-  return aom_dk_read_literal(r, bits);
+  int literal = 0, bit;
+
+  for (bit = bits - 1; bit >= 0; bit--) literal |= aom_read_bit(r) << bit;
+
+  return literal;
 }
 
 static INLINE int aom_read_tree(aom_reader *r, const aom_tree_index *tree,
                                 const aom_prob *probs) {
-  return aom_dk_read_tree(r, tree, probs);
+  aom_tree_index i = 0;
+
+  while ((i = tree[i + aom_read(r, probs[i >> 1])]) > 0) continue;
+
+  return -i;
 }
 
 #ifdef __cplusplus

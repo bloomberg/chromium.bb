@@ -32,11 +32,13 @@ static INLINE void aom_write(aom_writer *br, int bit, int probability) {
 }
 
 static INLINE void aom_write_bit(aom_writer *w, int bit) {
-  aom_dk_write_bit(w, bit);
+  aom_write(w, bit, 128);  // aom_prob_half
 }
 
 static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
-  aom_dk_write_literal(w, data, bits);
+  int bit;
+
+  for (bit = bits - 1; bit >= 0; bit--) aom_write_bit(w, 1 & (data >> bit));
 }
 
 #ifdef __cplusplus
