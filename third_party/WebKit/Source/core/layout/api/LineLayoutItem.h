@@ -174,9 +174,9 @@ public:
         return m_layoutObject->length();
     }
 
-    void dirtyLinesFromChangedChild(LineLayoutItem item) const
+    void dirtyLinesFromChangedChild(LineLayoutItem item, MarkingBehavior markingBehaviour = MarkContainerChain) const
     {
-        m_layoutObject->dirtyLinesFromChangedChild(item.layoutObject());
+        m_layoutObject->dirtyLinesFromChangedChild(item.layoutObject(), markingBehaviour);
     }
 
     bool ancestorLineBoxDirty() const

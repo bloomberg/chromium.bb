@@ -1590,7 +1590,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     layoutState.floats().append(FloatWithRect(box));
                     if (box->needsLayout()) {
                         box->layout();
-                        markLinesDirtyInBlockRange(toLayoutBox(o)->logicalTop(), toLayoutBox(o)->logicalBottom());
+                        // Dirty any lineboxes potentially affected by the float, but don't search outside this
+                        // object as we are only interested in dirtying lineboxes to which we may attach the float.
+                        dirtyLinesFromChangedChild(box, MarkOnlyThis);
                     }
                 } else if (isFullLayout || o->needsLayout()) {
                     // Atomic inline.

@@ -1647,7 +1647,7 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     return true;
 }
 
-void LayoutObject::dirtyLinesFromChangedChild(LayoutObject*)
+void LayoutObject::dirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior)
 {
 }
 

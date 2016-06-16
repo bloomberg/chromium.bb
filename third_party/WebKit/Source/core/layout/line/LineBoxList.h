@@ -76,7 +76,7 @@ public:
     void removeLineBox(InlineFlowBox*);
 
     void dirtyLineBoxes();
-    void dirtyLinesFromChangedChild(LineLayoutItem parent, LineLayoutItem child);
+    void dirtyLinesFromChangedChild(LineLayoutItem parent, LineLayoutItem child, bool canDirtyAncestors);
 
     bool hitTest(LineLayoutBoxModel, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
     bool anyLineIntersectsRect(LineLayoutBoxModel, const CullRect&, const LayoutPoint&) const;

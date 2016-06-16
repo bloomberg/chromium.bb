@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 340, 418, 259],
+          "rect": [8, 320, 418, 279],
           "reason": "invalidate paint rectangle"
         },
         {
@@ -52,6 +52,10 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'doubled-up\n'",
           "reason": "full"
         },
         {
@@ -103,6 +107,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'stamping about, and'",
           "reason": "full"
         },
@@ -140,6 +148,10 @@
         },
         {
           "object": "InlineTextBox 'yet had'",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         },
         {

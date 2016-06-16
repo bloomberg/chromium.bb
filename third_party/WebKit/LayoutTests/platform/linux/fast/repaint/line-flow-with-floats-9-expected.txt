@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 80, 418, 519],
+          "rect": [8, 200, 418, 399],
           "reason": "invalidate paint rectangle"
         },
         {
@@ -22,15 +22,7 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox ' twist itself round and look up in her'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
           "reason": "full"
         },
         {
@@ -66,19 +58,7 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'blow with its head, it\n'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'bursting out\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
           "reason": "full"
         },
         {
@@ -90,15 +70,7 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'down,\n'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'face, with\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",
           "reason": "full"
         },
         {
@@ -158,10 +130,6 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'out, and was going to give the hedgehog a'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
           "reason": "full"
         },
@@ -187,10 +155,6 @@
         },
         {
           "object": "InlineTextBox 'stamping about, and'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'straightened\n'",
           "reason": "full"
         },
         {
@@ -254,35 +218,7 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'would'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'yet had'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
           "reason": "full"
         },
         {

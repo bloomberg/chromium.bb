@@ -921,7 +921,7 @@ public:
     PositionWithAffinity createPositionWithAffinity(int offset);
     PositionWithAffinity createPositionWithAffinity(const Position&);
 
-    virtual void dirtyLinesFromChangedChild(LayoutObject*);
+    virtual void dirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior markingBehaviour = MarkContainerChain);
 
     // Set the style of the object and update the state of the object accordingly.
     void setStyle(PassRefPtr<ComputedStyle>);
