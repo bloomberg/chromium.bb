@@ -563,7 +563,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
 }
 
 TEST_F(WindowTest, GetEventHandlerForPointWithOverride) {
-  // If our child is flush to our top-left corner he gets events just inside the
+  // If our child is flush to our top-left corner it gets events just inside the
   // window edges.
   std::unique_ptr<Window> parent(CreateTestWindow(
       SK_ColorWHITE, 1, gfx::Rect(10, 20, 400, 500), root_window()));

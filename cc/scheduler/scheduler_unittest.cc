@@ -952,7 +952,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 1);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
-  // On the deadline, he actions should have occured in the right order.
+  // On the deadline, the actions should have occured in the right order.
   client->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client->num_draws());

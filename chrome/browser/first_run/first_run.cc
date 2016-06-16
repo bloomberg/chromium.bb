@@ -520,8 +520,8 @@ void SetupMasterPrefsFromInstallPrefs(
 
   // If we're suppressing the first-run bubble, set that preference now.
   // Otherwise, wait until the user has completed first run to set it, so the
-  // user is guaranteed to see the bubble iff he or she has completed the first
-  // run process.
+  // user is guaranteed to see the bubble iff they have completed the first run
+  // process.
   if (install_prefs.GetBool(
           installer::master_preferences::kDistroSuppressFirstRunBubble,
           &value) && value)

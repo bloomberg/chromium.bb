@@ -43,7 +43,7 @@ class ApplicationDragAndDropHost {
   virtual void DestroyDragIconProxy() = 0;
 
   // A drag operation could get started. The recipient has to return true if
-  // he wants to take it - e.g. |location_in_screen_poordinates| is over a
+  // it wants to take it - e.g. |location_in_screen_poordinates| is over a
   // target area. The passed |app_id| identifies the application which should
   // get dropped.
   virtual bool StartDrag(const std::string& app_id,

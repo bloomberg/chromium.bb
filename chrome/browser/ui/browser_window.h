@@ -283,8 +283,8 @@ class BrowserWindow : public ui::BaseWindow {
       bool app_modal,
       const base::Callback<void(bool)>& callback) = 0;
 
-  // ThemeService calls this when a user has changed his or her theme,
-  // indicating that it's time to redraw everything.
+  // ThemeService calls this when a user has changed their theme, indicating
+  // that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
 
   // Shows the website settings using the specified information. |virtual_url|

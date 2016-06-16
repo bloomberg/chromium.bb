@@ -36,7 +36,7 @@ void AttemptRelaunch();
 // when no more windows are remaining. On other platforms (the Mac),
 // this will additionally exit the application if all browsers are
 // successfully closed.
-//  Note that he exit process may be interrupted by download or
+//  Note that the exit process may be interrupted by download or
 // unload handler, and the browser may or may not exit.
 void AttemptExit();
 

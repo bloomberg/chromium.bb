@@ -2208,7 +2208,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
                            this, "&RenderFrameHostImpl", (void*)this);
 
   // This may be called more than once (if the user clicks the tab close button
-  // several times, or if she clicks the tab close button then the browser close
+  // several times, or if they click the tab close button then the browser close
   // button), and we only send the message once.
   if (is_waiting_for_beforeunload_ack_) {
     // Some of our close messages could be for the tab, others for cross-site
