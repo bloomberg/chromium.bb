@@ -12,3 +12,10 @@ include_rules = [
   "+net",
   "+sql",
 ]
+
+# Tests can use syncable_prefs
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+components/syncable_prefs",
+  ]
+}

@@ -757,6 +757,7 @@
     ],
     'signin_unittest_sources': [
       'signin/core/browser/account_info_unittest.cc',
+      'signin/core/browser/account_investigator_unittest.cc',
       'signin/core/browser/account_tracker_service_unittest.cc',
       'signin/core/browser/gaia_cookie_manager_service_unittest.cc',
       'signin/core/browser/refresh_token_annotation_request_unittest.cc',
@@ -1537,6 +1538,7 @@
             '<@(user_manager_unittest_sources)',
           ],
           'sources!': [
+            'signin/core/browser/account_investigator_unittest.cc',
             'signin/core/browser/signin_status_metrics_provider_unittest.cc',
             'storage_monitor/storage_monitor_linux_unittest.cc',
           ],

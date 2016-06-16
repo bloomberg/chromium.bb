@@ -30,7 +30,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_gaia_cookie_manager_service.h"
+#include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
@@ -44,6 +44,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -572,7 +573,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, &BuildFakeProfileOAuth2TokenService);
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-        context, &FakeGaiaCookieManagerService::Build);
+        context, &BuildFakeGaiaCookieManagerService);
   }
 
   void SetUpOnMainThread() override {
@@ -1714,7 +1715,7 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
-  void SetCachedToken(IdentityTokenCacheValue& token_data) {
+  void SetCachedToken(const IdentityTokenCacheValue& token_data) {
     ExtensionTokenKey key(
         kExtensionId, "test@example.com", std::set<std::string>());
     id_api()->SetCachedToken(key, token_data);

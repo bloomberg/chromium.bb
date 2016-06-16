@@ -166,4 +166,35 @@ void LogAccountEquality(AccountEquality equality) {
                             static_cast<int>(AccountEquality::HISTOGRAM_COUNT));
 }
 
+void LogCookieJarStableAge(const base::TimeDelta stable_age,
+                           const ReportingType type) {
+  INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS(
+      "Signin.CookieJar.StableAge", type, stable_age.InSeconds(), 1,
+      base::TimeDelta::FromDays(365).InSeconds(), 100);
+}
+
+void LogCookieJarCounts(const int signed_in,
+                        const int signed_out,
+                        const int total,
+                        const ReportingType type) {
+  INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS("Signin.CookieJar.SignedInCount", type,
+                                       signed_in, 1, 10, 10);
+  INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS("Signin.CookieJar.SignedOutCount", type,
+                                       signed_out, 1, 10, 10);
+  INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS("Signin.CookieJar.TotalCount", type,
+                                       total, 1, 10, 10);
+}
+
+void LogAccountRelation(const AccountRelation relation,
+                        const ReportingType type) {
+  INVESTIGATOR_HISTOGRAM_ENUMERATION(
+      "Signin.CookieJar.ChromeAccountRelation", type,
+      static_cast<int>(relation),
+      static_cast<int>(AccountRelation::HISTOGRAM_COUNT));
+}
+
+void LogIsShared(const bool is_shared, const ReportingType type) {
+  INVESTIGATOR_HISTOGRAM_BOOLEAN("Signin.IsShared", type, is_shared);
+}
+
 }  // namespace signin_metrics

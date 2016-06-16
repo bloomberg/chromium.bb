@@ -244,6 +244,42 @@ enum class SignoutDelete : int {
   IGNORE_METRIC,
 };
 
+// This is the relationship between the account used to sign into chrome, and
+// the account(s) used to sign into the content area/cookie jar. This enum
+// gets messy because we're trying to capture quite a few things, if there was
+// a match or not, how many accounts were in the cookie jar, and what state
+// those cookie jar accounts were in (signed out vs signed in). Note that it's
+// not possible to have the same account multiple times in the cookie jar.
+enum class AccountRelation : int {
+  // No signed in or out accounts in the content area. Cannot have a match.
+  EMPTY_COOKIE_JAR = 0,
+  // The cookie jar contains only a single signed out account that matches.
+  NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH,
+  // The cookie jar contains only signed out accounts, one of which matches.
+  NO_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH,
+  // The cookie jar contains one or more signed out accounts, none match.
+  NO_SIGNED_IN_WITH_SIGNED_OUT_NO_MATCH,
+  // The cookie jar contains only a single signed in account that matches.
+  SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT,
+  // There's only one signed in account which matches, and there are one or
+  // more signed out accounts.
+  SINGLE_SINGED_IN_MATCH_WITH_SIGNED_OUT,
+  // There's more than one signed in account, one of which matches. There
+  // could be any configuration of signed out accounts.
+  ONE_OF_SIGNED_IN_MATCH_ANY_SIGNED_OUT,
+  // There's one or more signed in accounts, none of which match. However
+  // there is a match in the signed out accounts.
+  WITH_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH,
+  // There's one or more signed in accounts and any configuration of signed
+  // out accounts. However, none of the accounts match.
+  WITH_SIGNED_IN_NO_MATCH,
+  // Always the last enumerated type.
+  HISTOGRAM_COUNT,
+};
+
+// Different types of reporting. This is used as a histogram suffix.
+enum class ReportingType { PERIODIC, ON_CHANGE };
+
 // Tracks the access point of sign in.
 void LogSigninAccessPointStarted(AccessPoint access_point);
 void LogSigninAccessPointCompleted(AccessPoint access_point);
@@ -313,6 +349,62 @@ void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state);
 // Records the AccountEquality metric when an investigator compares the current
 // and previous id/emails during a signin.
 void LogAccountEquality(AccountEquality equality);
+
+// Records the amount of time since the cookie jar was last changed.
+void LogCookieJarStableAge(const base::TimeDelta stable_age,
+                           const ReportingType type);
+
+// Records three counts for the number of accounts in the cookei jar.
+void LogCookieJarCounts(const int signed_in,
+                        const int signed_out,
+                        const int total,
+                        const ReportingType type);
+
+// Records the relation between the account signed into Chrome, and the
+// account(s) present in the cookie jar.
+void LogAccountRelation(const AccountRelation relation,
+                        const ReportingType type);
+
+// Records if the best guess is that this profile is currently shared or not
+// between multiple users.
+void LogIsShared(const bool is_shared, const ReportingType type);
+
+// These intermediate macros are necessary when we may emit to different
+// histograms from the same logical place in the code. The base histogram macros
+// expand in a way that can only work for a single histogram name, so these
+// allow a single place in the code to fan out for multiple names.
+#define INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS(name, type, sample, min, max, \
+                                             bucket_count)                 \
+  switch (type) {                                                          \
+    case ReportingType::PERIODIC:                                          \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(name "_Periodic", sample, min, max,      \
+                                  bucket_count);                           \
+      break;                                                               \
+    case ReportingType::ON_CHANGE:                                         \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(name "_OnChange", sample, min, max,      \
+                                  bucket_count);                           \
+      break;                                                               \
+  }
+
+#define INVESTIGATOR_HISTOGRAM_BOOLEAN(name, type, sample) \
+  switch (type) {                                          \
+    case ReportingType::PERIODIC:                          \
+      UMA_HISTOGRAM_BOOLEAN(name "_Periodic", sample);     \
+      break;                                               \
+    case ReportingType::ON_CHANGE:                         \
+      UMA_HISTOGRAM_BOOLEAN(name "_OnChange", sample);     \
+      break;                                               \
+  }
+
+#define INVESTIGATOR_HISTOGRAM_ENUMERATION(name, type, sample, boundary_value) \
+  switch (type) {                                                              \
+    case ReportingType::PERIODIC:                                              \
+      UMA_HISTOGRAM_ENUMERATION(name "_Periodic", sample, boundary_value);     \
+      break;                                                                   \
+    case ReportingType::ON_CHANGE:                                             \
+      UMA_HISTOGRAM_ENUMERATION(name "_OnChange", sample, boundary_value);     \
+      break;                                                                   \
+  }
 
 }  // namespace signin_metrics
 

@@ -2812,6 +2812,8 @@
       'browser/signin/about_signin_internals_factory.h',
       'browser/signin/account_fetcher_service_factory.cc',
       'browser/signin/account_fetcher_service_factory.h',
+      'browser/signin/account_investigator_factory.cc',
+      'browser/signin/account_investigator_factory.h',
       'browser/signin/account_reconcilor_factory.cc',
       'browser/signin/account_reconcilor_factory.h',
       'browser/signin/account_tracker_service_factory.cc',

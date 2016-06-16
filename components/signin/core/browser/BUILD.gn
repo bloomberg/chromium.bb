@@ -16,6 +16,8 @@ source_set("browser") {
     "account_info.h",
     "account_info_fetcher.cc",
     "account_info_fetcher.h",
+    "account_investigator.cc",
+    "account_investigator.h",
     "account_reconcilor.cc",
     "account_reconcilor.h",
     "account_tracker_service.cc",
@@ -118,6 +120,8 @@ source_set("test_support") {
     "fake_account_fetcher_service.h",
     "fake_auth_status_provider.cc",
     "fake_auth_status_provider.h",
+    "fake_gaia_cookie_manager_service.cc",
+    "fake_gaia_cookie_manager_service.h",
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
     "fake_signin_manager.cc",
@@ -141,6 +145,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_info_unittest.cc",
+    "account_investigator_unittest.cc",
     "account_tracker_service_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
     "refresh_token_annotation_request_unittest.cc",
@@ -154,11 +159,15 @@ source_set("unit_tests") {
     ":test_support",
     "//components/os_crypt:test_support",
     "//components/signin/core/common",
+    "//components/syncable_prefs:test_support",
     "//testing/gmock",
   ]
 
   if (is_chromeos) {
-    sources -= [ "signin_status_metrics_provider_unittest.cc" ]
+    sources -= [
+      "account_investigator_unittest.cc",
+      "signin_status_metrics_provider_unittest.cc",
+    ]
   }
 }
 

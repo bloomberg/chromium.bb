@@ -51584,6 +51584,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.CookieJar.ChromeAccountRelation" enum="AccountRelation">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The relation between the account signed into chrome, and the account(s) in
+    the cookie jar. This metric is never recorded when not signed into chrome.
+  </summary>
+</histogram>
+
+<histogram name="Signin.CookieJar.SignedInCount" units="accounts">
+  <owner>skym@chromium.org</owner>
+  <summary>The number of signed in accounts in the cookie jar.</summary>
+</histogram>
+
+<histogram name="Signin.CookieJar.SignedOutCount" units="accounts">
+  <owner>skym@chromium.org</owner>
+  <summary>The number of signed out accounts in the cookie jar.</summary>
+</histogram>
+
+<histogram name="Signin.CookieJar.StableAge" units="seconds">
+  <owner>skym@chromium.org</owner>
+  <summary>The amount of time since the cookie jar last changed.</summary>
+</histogram>
+
+<histogram name="Signin.CookieJar.TotalCount" units="accounts">
+  <owner>skym@chromium.org</owner>
+  <summary>The total number of accounts in the cookie jar.</summary>
+</histogram>
+
 <histogram name="Signin.DuringFirstRun">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -51606,6 +51634,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the general type of signin that is occuring in relation to previous
     signin and local data.
+  </summary>
+</histogram>
+
+<histogram name="Signin.IsShared" enum="BooleanIsShared">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Current best guess if this device is shared between multiple users.
   </summary>
 </histogram>
 
@@ -64102,6 +64137,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Sign in clicked"/>
 </enum>
 
+<enum name="AccountRelation" type="int">
+  <int value="0" label="Empty cookie jar"/>
+  <int value="1" label="No signed in, single signed out match"/>
+  <int value="2" label="No signed in, one of multiple signed out match"/>
+  <int value="3" label="No signed in with signed out, no match"/>
+  <int value="4" label="Single signed in match, no signed out"/>
+  <int value="5" label="Signle signed in match with signed out"/>
+  <int value="6" label="One of multiple signed in match, any signed out"/>
+  <int value="7" label="With signed in, one of signed out match"/>
+  <int value="8" label="With signed in, no match"/>
+</enum>
+
 <enum name="ActionAfterDoubleTap" type="int">
   <int value="0" label="Navigated Back"/>
   <int value="1" label="Stopped Navigation"/>
@@ -66018,6 +66065,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanIsPhishing" type="int">
   <int value="0" label="Not phishing"/>
   <int value="1" label="Is phishing"/>
+</enum>
+
+<enum name="BooleanIsShared" type="int">
+  <int value="0" label="Not Shared"/>
+  <int value="1" label="Is Shared"/>
 </enum>
 
 <enum name="BooleanLoaded" type="int">
@@ -92512,6 +92564,19 @@ To add a new entry, add it with any value and run test to compute valid value.
 <!-- Histogram suffixes list -->
 
 <histogram_suffixes_list>
+
+<histogram_suffixes name="AccountInvestigationReportingType">
+  <suffix name="OnChange"
+      label="Driven from a change in signin status or change in content area
+             GAIA accounts."/>
+  <suffix name="Periodic" label="Emitted once per 24 hours."/>
+  <affected-histogram name="Signin.CookieJar.ChromeAccountRelation"/>
+  <affected-histogram name="Signin.CookieJar.SignedInCount"/>
+  <affected-histogram name="Signin.CookieJar.SignedOutCount"/>
+  <affected-histogram name="Signin.CookieJar.StableAge"/>
+  <affected-histogram name="Signin.CookieJar.TotalCount"/>
+  <affected-histogram name="Signin.IsShared"/>
+</histogram_suffixes>
 
 <histogram_suffixes name="ActiveNetworkState">
   <suffix name="Offline"

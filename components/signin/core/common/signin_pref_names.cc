@@ -14,6 +14,18 @@ const char kAccountIdMigrationState[] = "account_id_migration_state";
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 
+// A hash of the GAIA accounts present in the content area. Order does not
+// affect the hash, but signed in/out status will. Stored as the Base64 string.
+const char kGaiaCookieHash[] = "gaia_cookie.hash";
+
+// The last time that kGaiaCookieHash was last updated. Stored as a double that
+// should be converted into base::Time.
+const char kGaiaCookieChangedTime[] = "gaia_cookie.changed_time";
+
+// The last time that periodic reporting occured, to allow us to report as close
+// to once per intended interval as possible, through restarts. Stored as a
+// double that should be converted into base::Time.
+const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 
 // The profile's hosted domain; empty if unset;
 // AccountTrackerService::kNoHostedDomainFound if there is none.
