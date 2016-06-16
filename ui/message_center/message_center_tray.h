@@ -50,8 +50,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
   // message center).
   void MarkMessageCenterHidden();
 
-  void ToggleMessageCenterBubble();
-
   // Causes an update if the popup bubble is already shown.
   void ShowPopupBubble();
 
