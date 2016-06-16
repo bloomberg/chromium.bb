@@ -1266,8 +1266,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
       paint.setStrokeWidth(1);
       gfx::RectF focus_rect(GetLocalBounds());
       focus_rect.Inset(gfx::InsetsF(0.5f));
-      canvas->DrawRoundRect(focus_rect, BackgroundWith1PxBorder::kCornerRadius,
-                            paint);
+      canvas->DrawRoundRect(
+          focus_rect, BackgroundWith1PxBorder::kCornerRadius + 0.5f, paint);
     }
     if (!is_popup_mode_)
       return;  // The background and border are painted by our Background.
