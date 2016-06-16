@@ -10,6 +10,8 @@
 
 #import <CoreBluetooth/CoreBluetooth.h>
 
+@class MockCBCharacteristic;
+
 // This class mocks the behavior of a CBService.
 @interface MockCBService : NSObject
 
@@ -17,7 +19,13 @@
 @property(readonly, nonatomic) BOOL isPrimary;
 @property(readonly, nonatomic) CBService* service;
 
-- (instancetype)initWithCBUUID:(CBUUID*)uuid primary:(BOOL)isPrimary;
+- (instancetype)initWithPeripheral:(CBPeripheral*)peripheral
+                            CBUUID:(CBUUID*)uuid
+                           primary:(BOOL)isPrimary;
+
+// Creates and adds a mock characteristic.
+- (void)addCharacteristicWithUUID:(CBUUID*)cb_uuid properties:(int)properties;
+- (void)removeCharacteristicMock:(MockCBCharacteristic*)characteristic_mock;
 
 @end
 
