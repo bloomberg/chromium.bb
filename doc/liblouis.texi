@@ -908,8 +908,8 @@ decpoint . 46
 
 @opcode{hyphen, character dots}
 This opcode defines the hyphen, that is, the character used in
-compound words such as have-nots. The back-translator uses it to
-determine the end of individual words.
+compound words such as @samp{have-nots}. The back-translator uses it
+to determine the end of individual words.
 
 @end table
 
