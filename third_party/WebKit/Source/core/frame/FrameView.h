@@ -917,6 +917,7 @@ private:
 
     bool m_needsScrollbarsUpdate;
     bool m_suppressAdjustViewSize;
+    bool m_inPluginUpdate;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

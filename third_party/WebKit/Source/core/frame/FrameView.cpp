@@ -162,6 +162,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
+    , m_inPluginUpdate(false)
 {
     ASSERT(m_frame);
     init();
@@ -1805,8 +1806,9 @@ void FrameView::layoutOrthogonalWritingModeRoots()
 
 void FrameView::scheduleRelayout()
 {
-    ASSERT(m_frame->view() == this);
-    RELEASE_ASSERT(!isInPerformLayout());
+    DCHECK(m_frame->view() == this);
+    CHECK(!isInPerformLayout());
+    CHECK(!m_inPluginUpdate);
 
     if (!m_layoutSchedulingEnabled)
         return;
@@ -1828,8 +1830,9 @@ void FrameView::scheduleRelayout()
 
 void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
 {
-    ASSERT(m_frame->view() == this);
-    RELEASE_ASSERT(!isInPerformLayout());
+    DCHECK(m_frame->view() == this);
+    CHECK(!isInPerformLayout());
+    CHECK(!m_inPluginUpdate);
 
     // FIXME: Should this call shouldScheduleLayout instead?
     if (!m_frame->document()->isActive())
@@ -2633,13 +2636,15 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews. We
     // should have a way to only run these other Documents to the same lifecycle stage
     // as this frame.
-    const ChildrenWidgetSet* viewChildren = children();
-    for (const Member<Widget>& child : *viewChildren) {
-        if ((*child).isPluginContainer())
-            toPluginView(child.get())->updateAllLifecyclePhases();
+    {
+        TemporaryChange<bool> t(m_inPluginUpdate, true);
+        const ChildrenWidgetSet* viewChildren = children();
+        for (const Member<Widget>& child : *viewChildren) {
+            if ((*child).isPluginContainer())
+                toPluginView(child.get())->updateAllLifecyclePhases();
+        }
+        checkDoesNotNeedLayout();
     }
-
-    checkDoesNotNeedLayout();
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
