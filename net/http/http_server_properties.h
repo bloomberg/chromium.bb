@@ -308,9 +308,6 @@ class NET_EXPORT HttpServerProperties {
   virtual void ConfirmAlternativeService(
       const AlternativeService& alternative_service) = 0;
 
-  // Clear all alternative services for |origin|.
-  virtual void ClearAlternativeServices(const url::SchemeHostPort& origin) = 0;
-
   // Returns all alternative service mappings.
   // Returned alternative services may have empty hostnames.
   virtual const AlternativeServiceMap& alternative_service_map() const = 0;

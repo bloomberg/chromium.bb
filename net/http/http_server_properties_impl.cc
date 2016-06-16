@@ -407,9 +407,12 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
   AlternativeServiceMap::iterator it = alternative_service_map_.Peek(origin);
 
   if (alternative_service_info_vector.empty()) {
-    bool found = it != alternative_service_map_.end();
-    ClearAlternativeServices(origin);
-    return found;
+    RemoveCanonicalHost(origin);
+    if (it == alternative_service_map_.end())
+      return false;
+
+    alternative_service_map_.Erase(it);
+    return true;
   }
 
   bool changed = true;
@@ -506,17 +509,6 @@ void HttpServerPropertiesImpl::ConfirmAlternativeService(
     return;
   broken_alternative_services_.erase(alternative_service);
   recently_broken_alternative_services_.erase(alternative_service);
-}
-
-void HttpServerPropertiesImpl::ClearAlternativeServices(
-    const url::SchemeHostPort& origin) {
-  RemoveCanonicalHost(origin);
-
-  AlternativeServiceMap::iterator it = alternative_service_map_.Peek(origin);
-  if (it == alternative_service_map_.end()) {
-    return;
-  }
-  alternative_service_map_.Erase(it);
 }
 
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()

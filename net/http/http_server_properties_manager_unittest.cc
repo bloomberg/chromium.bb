@@ -782,27 +782,6 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, ClearAlternativeServices) {
-  ExpectPrefsUpdate();
-  ExpectScheduleUpdatePrefsOnNetworkThread();
-
-  url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
-  http_server_props_manager_->SetAlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
-  ExpectScheduleUpdatePrefsOnNetworkThread();
-  http_server_props_manager_->ClearAlternativeServices(spdy_server_mail);
-  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
-  http_server_props_manager_->ClearAlternativeServices(spdy_server_mail);
-
-  // Run the task.
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
-
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-}
-
 TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   ExpectPrefsUpdate();
 

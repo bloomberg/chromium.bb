@@ -776,7 +776,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
   EXPECT_EQ(2u, impl_.GetAlternativeServices(http_server).size());
 
   // Clear Alt-Svc list for |http_server|.
-  impl_.ClearAlternativeServices(http_server);
+  impl_.SetAlternativeServices(http_server, AlternativeServiceInfoVector());
+
   EXPECT_EQ(0u, impl_.GetAlternativeServices(http_server).size());
   EXPECT_EQ(2u, impl_.GetAlternativeServices(https_server).size());
 }
@@ -800,7 +801,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service);
   EXPECT_EQ(alternative_service2, it->second[1].alternative_service);
 
-  impl_.ClearAlternativeServices(test_server);
+  impl_.SetAlternativeServices(test_server, AlternativeServiceInfoVector());
   EXPECT_TRUE(map.empty());
 }
 
@@ -837,9 +838,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   impl_.MarkAlternativeServiceBroken(alternative_service);
   ASSERT_TRUE(HasAlternativeService(test_server));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  // ClearAlternativeServices should leave a broken alternative service marked
+  // SetAlternativeServices should leave a broken alternative service marked
   // as such.
-  impl_.ClearAlternativeServices(test_server);
+  impl_.SetAlternativeServices(test_server, AlternativeServiceInfoVector());
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
@@ -908,7 +909,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
                                                    1234);
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
-  impl_.ClearAlternativeServices(canonical_server);
+  impl_.SetAlternativeServices(canonical_server,
+                               AlternativeServiceInfoVector());
   EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
