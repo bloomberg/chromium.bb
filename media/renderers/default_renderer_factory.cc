@@ -83,7 +83,7 @@ ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
                                             &video_decoders);
     }
     video_decoders.push_back(
-        new GpuVideoDecoder(gpu_factories, request_surface_cb));
+        new GpuVideoDecoder(gpu_factories, request_surface_cb, media_log_));
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)

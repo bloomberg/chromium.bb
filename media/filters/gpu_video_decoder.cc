@@ -23,6 +23,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/surface_manager.h"
@@ -73,11 +74,13 @@ GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
-                                 const RequestSurfaceCB& request_surface_cb)
+                                 const RequestSurfaceCB& request_surface_cb,
+                                 scoped_refptr<MediaLog> media_log)
     : needs_bitstream_conversion_(false),
       factories_(factories),
-      state_(kNormal),
       request_surface_cb_(request_surface_cb),
+      media_log_(media_log),
+      state_(kNormal),
       decoder_texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
       next_picture_buffer_id_(0),
@@ -125,11 +128,18 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
 // callsite to always be called with the same stat name (can't parameterize it).
 static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
     const VideoDecoder::InitCB& cb,
+    scoped_refptr<MediaLog> media_log,
     bool success) {
   // TODO(xhwang): Report |success| directly.
   PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;
   UMA_HISTOGRAM_ENUMERATION(
       "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX + 1);
+
+  if (!success) {
+    media_log->RecordRapporWithSecurityOrigin(
+        "Media.OriginUrl.GpuVideoDecoderInitFailure");
+  }
+
   cb.Run(success);
 }
 
@@ -162,7 +172,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb =
       base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
-                 BindToCurrentLoop(init_cb));
+                 BindToCurrentLoop(init_cb), media_log_);
 
 #if !defined(OS_ANDROID)
   if (config.is_encrypted()) {
@@ -174,7 +184,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
-           << "GVD with config: " << config.AsHumanReadableString();
+           << " GVD with config: " << config.AsHumanReadableString();
 
   // TODO(posciak): destroy and create a new VDA on codec/profile change
   // (http://crbug.com/260224).

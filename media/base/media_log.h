@@ -47,6 +47,11 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   // Retrieve an error message, if any.
   virtual std::string GetLastErrorMessage();
 
+  // Records the domain and registry of the current frame security origin to a
+  // Rappor privacy-preserving metric. See:
+  //   https://www.chromium.org/developers/design-documents/rappor
+  virtual void RecordRapporWithSecurityOrigin(const std::string& metric);
+
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
   std::unique_ptr<MediaLogEvent> CreateBooleanEvent(MediaLogEvent::Type type,

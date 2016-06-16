@@ -46,8 +46,9 @@ class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  explicit GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
-                           const RequestSurfaceCB& request_surface_cb);
+  GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
+                  const RequestSurfaceCB& request_surface_cb,
+                  scoped_refptr<MediaLog> media_log);
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -158,6 +159,12 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   GpuVideoAcceleratorFactories* factories_;
 
+  // For requesting a suface to render to. If this is null the VDA will return
+  // normal video frames and not render them to a surface.
+  RequestSurfaceCB request_surface_cb_;
+
+  scoped_refptr<MediaLog> media_log_;
+
   // Populated during Initialize() (on success) and unchanged until an error
   // occurs.
   std::unique_ptr<VideoDecodeAccelerator> vda_;
@@ -173,10 +180,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   State state_;
 
   VideoDecoderConfig config_;
-
-  // For requesting a suface to render to. If this is null the VDA will return
-  // normal video frames and not render them to a surface.
-  RequestSurfaceCB request_surface_cb_;
 
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the

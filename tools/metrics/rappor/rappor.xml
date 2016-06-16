@@ -917,6 +917,15 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.GpuVideoDecoderInitFailure"
+    type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player but
+    seeing a failure when trying to initialize the GpuVideoDecoder.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.HLS" type="ETLD_PLUS_ONE">
   <owner>watk@chromium.org</owner>
   <summary>

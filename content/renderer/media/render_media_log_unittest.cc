@@ -17,7 +17,7 @@ namespace content {
 class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
-      : log_(new RenderMediaLog()),
+      : log_(new RenderMediaLog(GURL("http://foo.com"))),
         tick_clock_(new base::SimpleTestTickClock()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
     log_->SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));

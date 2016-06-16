@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
+#include "url/gurl.h"
 
 namespace base {
 class TickClock;
@@ -32,11 +33,12 @@ namespace content {
 // It must be constructed on the render thread.
 class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  public:
-  RenderMediaLog();
+  explicit RenderMediaLog(const GURL& security_origin);
 
   // MediaLog implementation.
   void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override;
   std::string GetLastErrorMessage() override;
+  void RecordRapporWithSecurityOrigin(const std::string& metric) override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
@@ -49,6 +51,9 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // Posted as a delayed task on |task_runner_| to throttle ipc message
   // frequency.
   void SendQueuedMediaEvents();
+
+  // Security origin of the current frame.
+  const GURL security_origin_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

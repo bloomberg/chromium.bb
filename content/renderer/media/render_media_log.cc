@@ -13,6 +13,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 
 namespace {
@@ -34,8 +36,9 @@ void Log(media::MediaLogEvent* event) {
 
 namespace content {
 
-RenderMediaLog::RenderMediaLog()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+RenderMediaLog::RenderMediaLog(const GURL& security_origin)
+    : security_origin_(security_origin),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       tick_clock_(new base::DefaultTickClock()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
       ipc_send_pending_(false) {
@@ -116,6 +119,17 @@ std::string RenderMediaLog::GetLastErrorMessage() {
   if (last_media_error_log_entry_)
     result << MediaEventToLogString(*last_media_error_log_entry_);
   return result.str();
+}
+
+void RenderMediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RenderMediaLog::RecordRapporWithSecurityOrigin,
+                              this, metric));
+    return;
+  }
+
+  GetContentClient()->renderer()->RecordRapporURL(metric, security_origin_);
 }
 
 void RenderMediaLog::SendQueuedMediaEvents() {

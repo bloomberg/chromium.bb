@@ -154,6 +154,10 @@ std::string MediaLog::GetLastErrorMessage() {
   return "";
 }
 
+void MediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
+  NOTIMPLEMENTED() << "Default MediaLog doesn't support rappor reporting.";
+}
+
 std::unique_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
   std::unique_ptr<MediaLogEvent> event(new MediaLogEvent);
   event->id = id_;
