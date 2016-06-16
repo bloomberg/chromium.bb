@@ -42,6 +42,7 @@ TAGS
 /build-aux/ar-lib
 /build-aux/compile
 /build-aux/config.guess
+/build-aux/config.rpath
 /build-aux/config.sub
 /build-aux/depcomp
 /build-aux/install-sh
@@ -50,9 +51,6 @@ TAGS
 /build-aux/missing
 /build-aux/test-driver
 /build-aux/texinfo.tex
-
-# /build-aux/snippet/
-/build-aux/snippet/
 
 # /contrib/
 /contrib/liblouis.elc
@@ -200,6 +198,10 @@ TAGS
 /tools/gnulib/string.h
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
+/tools/gnulib/unistr.h
+/tools/gnulib/unistr/.dirstamp
+/tools/gnulib/unitypes.h
+/tools/gnulib/unused-parameter.h
 /tools/gnulib/warn-on-use.h
 
 # stuff used with /tools/lou_compare

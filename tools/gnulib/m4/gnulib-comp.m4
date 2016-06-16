@@ -42,6 +42,7 @@ AC_DEFUN([gl_tools_EARLY],
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
+  AC_REQUIRE([AM_PROG_CC_C_O])
   # Code from module absolute-header:
   # Code from module errno:
   # Code from module error:
@@ -51,16 +52,19 @@ AC_DEFUN([gl_tools_EARLY],
   # Code from module getopt-posix:
   # Code from module gettext-h:
   # Code from module include_next:
+  # Code from module inline:
   # Code from module intprops:
   # Code from module malloc-gnu:
   # Code from module malloc-posix:
   # Code from module msvc-inval:
   # Code from module msvc-nothrow:
+  # Code from module multiarch:
   # Code from module nocrash:
   # Code from module progname:
   # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
+  # Code from module snippet/unused-parameter:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
   # Code from module stdarg:
@@ -69,7 +73,9 @@ AC_DEFUN([gl_tools_EARLY],
   dnl gl_PROG_CC_C99 arranges for this.  With older Autoconf gl_PROG_CC_C99
   dnl shouldn't hurt, though installers are on their own to set c99 mode.
   gl_PROG_CC_C99
+  # Code from module stdbool:
   # Code from module stddef:
+  # Code from module stdint:
   # Code from module stdio:
   # Code from module stdlib:
   # Code from module strerror:
@@ -79,6 +85,12 @@ AC_DEFUN([gl_tools_EARLY],
   # Code from module strnlen:
   # Code from module sys_types:
   # Code from module unistd:
+  # Code from module unistr/base:
+  # Code from module unistr/u16-mbtoucr:
+  # Code from module unistr/u16-to-u8:
+  # Code from module unistr/u32-to-u8:
+  # Code from module unistr/u8-uctomb:
+  # Code from module unitypes:
   # Code from module verify:
   # Code from module version-etc:
 ])
@@ -128,6 +140,7 @@ AC_DEFUN([gl_tools_INIT],
   AC_SUBST([GNULIB_GL_GL_TOOLS_UNISTD_H_GETOPT])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_INLINE
   gl_FUNC_MALLOC_GNU
   if test $REPLACE_MALLOC = 1; then
     AC_LIBOBJ([malloc])
@@ -146,11 +159,14 @@ AC_DEFUN([gl_tools_INIT],
   if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
     AC_LIBOBJ([msvc-nothrow])
   fi
+  gl_MULTIARCH
   AC_CHECK_DECLS([program_invocation_name], [], [], [#include <errno.h>])
   AC_CHECK_DECLS([program_invocation_short_name], [], [], [#include <errno.h>])
   gt_TYPE_SSIZE_T
   gl_STDARG_H
+  AM_STDBOOL_H
   gl_STDDEF_H
+  gl_STDINT_H
   gl_STDIO_H
   gl_STDLIB_H
   gl_FUNC_STRERROR
@@ -180,6 +196,14 @@ AC_DEFUN([gl_tools_INIT],
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_UNISTD_H
+  gl_LIBUNISTRING_LIBHEADER([0.9.4], [unistr.h])
+  gl_MODULE_INDICATOR([unistr/u16-mbtoucr])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u16-mbtoucr])
+  gl_LIBUNISTRING_MODULE([0.9.3], [unistr/u16-to-u8])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u32-to-u8])
+  gl_MODULE_INDICATOR([unistr/u8-uctomb])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-uctomb])
+  gl_LIBUNISTRING_LIBHEADER([0.9.4], [unitypes.h])
   gl_VERSION_ETC
   # End of code from modules
   m4_ifval(gl_tools_LIBSOURCES_LIST, [
@@ -320,6 +344,7 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   build-aux/snippet/_Noreturn.h
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
+  build-aux/snippet/unused-parameter.h
   build-aux/snippet/warn-on-use.h
   lib/errno.in.h
   lib/error.c
@@ -338,7 +363,9 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   lib/progname.c
   lib/progname.h
   lib/stdarg.in.h
+  lib/stdbool.in.h
   lib/stddef.in.h
+  lib/stdint.in.h
   lib/stdio.in.h
   lib/stdlib.in.h
   lib/strerror-override.c
@@ -350,6 +377,13 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   lib/sys_types.in.h
   lib/unistd.c
   lib/unistd.in.h
+  lib/unistr.in.h
+  lib/unistr/u16-mbtoucr.c
+  lib/unistr/u16-to-u8.c
+  lib/unistr/u32-to-u8.c
+  lib/unistr/u8-uctomb-aux.c
+  lib/unistr/u8-uctomb.c
+  lib/unitypes.in.h
   lib/verify.h
   lib/version-etc.c
   lib/version-etc.h
@@ -362,14 +396,20 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/inline.m4
+  m4/libunistring-base.m4
+  m4/longlong.m4
   m4/malloc.m4
   m4/msvc-inval.m4
   m4/msvc-nothrow.m4
+  m4/multiarch.m4
   m4/nocrash.m4
   m4/off_t.m4
   m4/ssize_t.m4
   m4/stdarg.m4
+  m4/stdbool.m4
   m4/stddef_h.m4
+  m4/stdint.m4
   m4/stdio_h.m4
   m4/stdlib_h.m4
   m4/strerror.m4
