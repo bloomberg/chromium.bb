@@ -146,7 +146,7 @@ def GetEmail(prompt):
       last_email = last_email_file.readline().strip("\n")
       last_email_file.close()
       prompt += " [%s]" % last_email
-    except IOError, e:
+    except IOError as e:
       pass
   email = raw_input(prompt + ": ").strip()
   if email:
@@ -154,7 +154,7 @@ def GetEmail(prompt):
       last_email_file = open(last_email_file_name, "w")
       last_email_file.write(email)
       last_email_file.close()
-    except IOError, e:
+    except IOError as e:
       pass
   else:
     email = last_email
@@ -288,7 +288,7 @@ class AbstractRpcServer(object):
       response_dict = dict(x.split("=")
                            for x in response_body.split("\n") if x)
       return response_dict["Auth"]
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       if e.code == 403:
         body = e.read()
         response_dict = dict(x.split("=", 1) for x in body.split("\n") if x)
@@ -313,7 +313,7 @@ class AbstractRpcServer(object):
                               (self.host, urllib.urlencode(args)))
     try:
       response = self.opener.open(req)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       response = e
     if (response.code != 302 or
         response.info()["location"] != continue_location):
@@ -357,7 +357,7 @@ class AbstractRpcServer(object):
           }
           auth_token = self._GetAuthToken(credentials[0], credentials[1],
                                           internal=True)
-        except ClientLoginError, exc:
+        except ClientLoginError as exc:
           e = exc
       if e:
         print('', file=sys.stderr)
@@ -450,7 +450,7 @@ class AbstractRpcServer(object):
           response = f.read()
           f.close()
           return response
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
           if tries > 3:
             raise
           elif e.code in (302, 401, 403):
@@ -999,7 +999,7 @@ class VersionControlSystem(object):
                                             [("data", filename, content)])
       try:
         response_body = rpc_server.Send(url, body, content_type=ctype)
-      except urllib2.HTTPError, e:
+      except urllib2.HTTPError as e:
         response_body = ("Failed to upload file for %s. Got %d status code." %
             (filename, e.code))
 
@@ -2069,7 +2069,7 @@ def UploadSeparatePatches(issue, rpc_server, patchset, data, options):
 
     try:
       response_body = rpc_server.Send(url, body, content_type=ctype)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       response_body = ("Failed to upload patch for %s. Got %d status code." %
           (filename, e.code))
 
@@ -2133,8 +2133,8 @@ def GuessVCSName(options):
       out, returncode = RunShellWithReturnCode(command)
       if returncode == 0:
         return (vcs_type, out.strip())
-    except OSError, (errcode, message):
-      if errcode != errno.ENOENT:  # command not found code
+    except OSError as e:
+      if e.errno != errno.ENOENT:  # command not found code
         raise
 
   # Mercurial has a command to get the base directory of a repository
