@@ -240,12 +240,13 @@ class MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide :
   }
 };
 
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenWhilePlaying)
+// Disabled pending crbug.com/619096.
+// INCLUDE_TEST_FROM_BASE_CLASS(
+//     MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
+//     TestSessionInactiveWhenHiddenAfterContentPause)
+// INCLUDE_TEST_FROM_BASE_CLASS(
+//     MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
+//     TestSessionInactiveWhenHiddenWhilePlaying)
 
 // AndroidPipeline + NosuspendOnHide
 class MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide :
@@ -257,11 +258,10 @@ class MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide :
   }
 };
 
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
-    TestSessionSuspendedWhenHiddenAfterContentPause)
-
 // Disabled pending crbug.com/619096.
+// INCLUDE_TEST_FROM_BASE_CLASS(
+//     MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
+//     TestSessionSuspendedWhenHiddenAfterContentPause)
 //INCLUDE_TEST_FROM_BASE_CLASS(
 //    MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
 //    TestSessionActiveWhenHiddenWhilePlaying)
