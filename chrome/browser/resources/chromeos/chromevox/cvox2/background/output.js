@@ -98,10 +98,12 @@ Output.SPACE = ' ';
  * Metadata about supported automation roles.
  * @const {Object<{msgId: string,
  *                 earconId: (string|undefined),
- *                 inherits: (string|undefined)}>}
+ *                 inherits: (string|undefined),
+ *                 ignoreAncestry: (boolean|undefined)}>}
  * msgId: the message id of the role.
  * earconId: an optional earcon to play when encountering the role.
  * inherits: inherits rules from this role.
+ * ignoreAncestry: don't output ancestry changes when encountering this role.
  * @private
  */
 Output.ROLE_INFO_ = {
@@ -223,26 +225,26 @@ Output.ROLE_INFO_ = {
     inherits: 'abstractContainer'
   },
   menu: {
-    msgId: 'role_menu',
-    earconId: 'LISTBOX',
+    msgId: 'role_menu'
   },
   menuBar: {
     msgId: 'role_menubar',
   },
   menuItem: {
     msgId: 'role_menuitem',
-    earconId: 'BUTTON'
+    ignoreAncestry: true
   },
   menuItemCheckBox: {
     msgId: 'role_menuitemcheckbox',
-    earconId: 'BUTTON'
+    ignoreAncestry: true
   },
   menuItemRadio: {
     msgId: 'role_menuitemradio',
-    earconId: 'BUTTON'
+    ignoreAncestry: true
   },
   menuListOption: {
-    msgId: 'role_menuitem'
+    msgId: 'role_menuitem',
+    ignoreAncestry: true
   },
   menuListPopup: {
     msgId: 'role_menu'
@@ -472,6 +474,17 @@ Output.RULES = {
           '@describe_index($indexInParent, $parentChildCount) ' +
           '$description'
     },
+    menuItemCheckBox: {
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+          '$name $role $checked $description ' +
+          '@describe_index($indexInParent, $parentChildCount) '
+    },
+    menuItemRadio: {
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+          '$if($checked, @describe_radio_selected($name), ' +
+          '@describe_radio_unselected($name)) $description ' +
+          '@describe_index($indexInParent, $parentChildCount) '
+    },
     menuListOption: {
       speak: '$name @role_menuitem ' +
           '@describe_index($indexInParent, $parentChildCount) $description'
@@ -485,7 +498,8 @@ Output.RULES = {
           '$description'
     },
     radioButton: {
-      speak: '$if($checked, @describe_radio_selected($name), ' +
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+          '$if($checked, @describe_radio_selected($name), ' +
           '@describe_radio_unselected($name)) $description'
     },
     radioGroup: {
@@ -1320,6 +1334,11 @@ Output.prototype = {
    * @private
    */
   ancestry_: function(node, prevNode, type, buff) {
+    // Check to see if ancestry output is ignored.
+    if (Output.ROLE_INFO_[node.role] &&
+        Output.ROLE_INFO_[node.role].ignoreAncestry)
+      return;
+
     var prevUniqueAncestors =
         AutomationUtil.getUniqueAncestors(node, prevNode);
     var uniqueAncestors = AutomationUtil.getUniqueAncestors(prevNode, node);
