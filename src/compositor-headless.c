@@ -176,25 +176,6 @@ headless_backend_create_output(struct headless_backend *b,
 	return 0;
 }
 
-static int
-headless_input_create(struct headless_backend *b)
-{
-	weston_seat_init(&b->fake_seat, b->compositor, "default");
-
-	weston_seat_init_pointer(&b->fake_seat);
-
-	if (weston_seat_init_keyboard(&b->fake_seat, NULL) < 0)
-		return -1;
-
-	return 0;
-}
-
-static void
-headless_input_destroy(struct headless_backend *b)
-{
-	weston_seat_release(&b->fake_seat);
-}
-
 static void
 headless_restore(struct weston_compositor *ec)
 {
@@ -205,7 +186,6 @@ headless_destroy(struct weston_compositor *ec)
 {
 	struct headless_backend *b = (struct headless_backend *) ec->backend;
 
-	headless_input_destroy(b);
 	weston_compositor_shutdown(ec);
 
 	free(b);
@@ -223,9 +203,6 @@ headless_backend_create(struct weston_compositor *compositor,
 
 	b->compositor = compositor;
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
-		goto err_free;
-
-	if (headless_input_create(b) < 0)
 		goto err_free;
 
 	b->base.destroy = headless_destroy;
@@ -246,7 +223,6 @@ headless_backend_create(struct weston_compositor *compositor,
 
 err_input:
 	weston_compositor_shutdown(compositor);
-	headless_input_destroy(b);
 err_free:
 	free(b);
 	return NULL;
