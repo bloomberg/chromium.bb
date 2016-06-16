@@ -59,9 +59,6 @@ Polymer({
   ],
 
   ready: function() {
-    this.$.blockList.categorySubtype = settings.PermissionValues.BLOCK;
-    this.$.allowList.categorySubtype = settings.PermissionValues.ALLOW;
-
     this.addWebUIListener('contentSettingCategoryChanged',
         this.defaultValueForCategoryChanged_.bind(this));
 

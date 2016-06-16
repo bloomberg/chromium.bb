@@ -28,6 +28,10 @@ var SiteSettingsBehaviorImpl = {
         settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
+  ready: function() {
+    this.PermissionValues = settings.PermissionValues;
+  },
+
   /**
    * Re-sets the category permission for a given origin.
    * @param {string} primaryPattern The primary pattern to reset the permission

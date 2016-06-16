@@ -35,7 +35,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.PermissionValues = settings.PermissionValues;
     this.addWebUIListener('contentSettingSitePermissionChanged',
         this.sitePermissionChanged_.bind(this));
   },
