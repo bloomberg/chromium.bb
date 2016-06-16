@@ -64,6 +64,7 @@ class MessagePumpMojo;
 namespace mus {
 class CommandBufferClientImpl;
 class CommandBufferLocal;
+class GpuService;
 class GpuState;
 }
 namespace net {
@@ -213,6 +214,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class mojo::common::MessagePumpMojo;
   friend class mus::CommandBufferClientImpl;
   friend class mus::CommandBufferLocal;
+  friend class mus::GpuService;                   // http://crbug.com/620058
   friend class mus::GpuState;
 
   // END ALLOWED USAGE.

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
@@ -56,11 +57,16 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannel(
   int client_id = 0;
   mojom::ChannelHandlePtr channel_handle;
   mojom::GpuInfoPtr gpu_info;
-  if (!gpu_service->EstablishGpuChannel(&client_id, &channel_handle,
-                                        &gpu_info)) {
-    DLOG(WARNING)
-        << "Channel encountered error while establishing gpu channel.";
-    return nullptr;
+  {
+    // TODO(penghuang): Remove the ScopedAllowWait when HW rendering is enabled
+    // in mus chrome.
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    if (!gpu_service->EstablishGpuChannel(&client_id, &channel_handle,
+                                          &gpu_info)) {
+      DLOG(WARNING)
+          << "Channel encountered error while establishing gpu channel.";
+      return nullptr;
+    }
   }
 
   // TODO(penghuang): Get the real gpu info from mus.
