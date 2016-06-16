@@ -9,6 +9,16 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/base/theme_provider.h"
 
+namespace {
+
+// Upper and lower bounds for determining if a theme's colors indicate that
+// it's a "dark" theme. In Material Design, dark themes have controls that are
+// drawn using transparent white instead of a transparent shade of gray.
+const CGFloat kDarkThemeToolbarColorUpperBound = 0.55;
+const CGFloat kDarkThemeTabTextColorLowerBound = 0.7;
+
+}  // namespace
+
 @interface NSWindow (Private)
 - (BOOL)hasKeyAppearance;
 @end
@@ -65,7 +75,7 @@
         [theColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
     if (theColor != nil) {
       // The white componement cutoff is an empirical value.
-      return [theColor whiteComponent] < 0.7;
+      return [theColor whiteComponent] < kDarkThemeToolbarColorUpperBound;
     }
   }
 
@@ -77,7 +87,7 @@
     theColor =
         [theColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
     if (theColor != nil) {
-      return [theColor whiteComponent] >= 0.7;
+      return [theColor whiteComponent] >= kDarkThemeTabTextColorLowerBound;
     }
   }
 
