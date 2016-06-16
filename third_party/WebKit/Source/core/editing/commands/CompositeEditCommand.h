@@ -74,6 +74,9 @@ private:
 
 class CompositeEditCommand : public EditCommand {
 public:
+    enum ShouldPreserveSelection { PreserveSelection, DoNotPreserveSelection };
+    enum ShouldPreserveStyle { PreserveStyle, DoNotPreserveStyle };
+
     ~CompositeEditCommand() override;
 
     // Returns |false| if the command failed.  e.g. It's aborted.
@@ -156,9 +159,8 @@ protected:
 
     void pushAnchorElementDown(Element*, EditingState*);
 
-    // FIXME: preserveSelection and preserveStyle should be enums
-    void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
-    void moveParagraphs(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
+    void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, ShouldPreserveSelection = DoNotPreserveSelection, ShouldPreserveStyle = PreserveStyle, Node* constrainingAncestor = nullptr);
+    void moveParagraphs(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, ShouldPreserveSelection = DoNotPreserveSelection, ShouldPreserveStyle = PreserveStyle, Node* constrainingAncestor = nullptr);
     void moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode, EditingState*);
     void cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* outerNode, Element* blockElement, EditingState*);
     void cleanupAfterDeletion(EditingState*, VisiblePosition destination = VisiblePosition());

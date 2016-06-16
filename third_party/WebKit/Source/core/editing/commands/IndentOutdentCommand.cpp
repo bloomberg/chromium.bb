@@ -231,7 +231,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
     insertNodeBefore(placeholder, splitBlockquoteNode, editingState);
     if (editingState->isAborted())
         return;
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(Position::beforeNode(placeholder)), editingState, true);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(Position::beforeNode(placeholder)), editingState, PreserveSelection);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection

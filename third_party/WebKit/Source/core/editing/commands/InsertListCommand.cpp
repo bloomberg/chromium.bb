@@ -383,7 +383,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         return;
 
     VisiblePosition insertionPoint = createVisiblePosition(Position::beforeNode(placeholder));
-    moveParagraphs(start, end, insertionPoint, editingState, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
+    moveParagraphs(start, end, insertionPoint, editingState, PreserveSelection, PreserveStyle, listChildNode);
 }
 
 static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
@@ -495,7 +495,7 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
     const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
-    moveParagraph(start, end, createVisiblePosition(Position::beforeNode(placeholder)), editingState, true);
+    moveParagraph(start, end, createVisiblePosition(Position::beforeNode(placeholder)), editingState, PreserveSelection);
 }
 
 DEFINE_TRACE(InsertListCommand)

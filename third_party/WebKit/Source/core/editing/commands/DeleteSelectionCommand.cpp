@@ -707,7 +707,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     // removals that it does cause the insertion of *another* placeholder.
     bool needPlaceholder = m_needPlaceholder;
     bool paragraphToMergeIsEmpty = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent();
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, editingState, false, !paragraphToMergeIsEmpty);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, editingState, DoNotPreserveSelection, paragraphToMergeIsEmpty ? DoNotPreserveStyle : PreserveStyle);
     if (editingState->isAborted())
         return;
     m_needPlaceholder = needPlaceholder;

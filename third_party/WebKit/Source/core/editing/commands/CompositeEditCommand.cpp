@@ -1244,14 +1244,14 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     }
 }
 
-void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
+void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, ShouldPreserveSelection shouldPreserveSelection, ShouldPreserveStyle shouldPreserveStyle, Node* constrainingAncestor)
 {
     DCHECK(isStartOfParagraph(startOfParagraphToMove)) << startOfParagraphToMove;
     DCHECK(isEndOfParagraph(endOfParagraphToMove)) << endOfParagraphToMove;
-    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, editingState, preserveSelection, preserveStyle, constrainingAncestor);
+    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, editingState, shouldPreserveSelection, shouldPreserveStyle, constrainingAncestor);
 }
 
-void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
+void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, ShouldPreserveSelection shouldPreserveSelection, ShouldPreserveStyle shouldPreserveStyle, Node* constrainingAncestor)
 {
     if (startOfParagraphToMove.deepEquivalent() == destination.deepEquivalent() || startOfParagraphToMove.isNull())
         return;
@@ -1260,7 +1260,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     int endIndex = -1;
     int destinationIndex = -1;
     bool originalIsDirectional = endingSelection().isDirectional();
-    if (preserveSelection && !endingSelection().isNone()) {
+    if (shouldPreserveSelection == PreserveSelection && !endingSelection().isNone()) {
         VisiblePosition visibleStart = endingSelection().visibleStart();
         VisiblePosition visibleEnd = endingSelection().visibleEnd();
 
@@ -1298,7 +1298,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // anything if we're given an empty paragraph, but an empty paragraph can have style
     // too, <div><b><br></b></div> for example.  Save it so that we can preserve it later.
     EditingStyle* styleInEmptyParagraph = nullptr;
-    if (startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() && preserveStyle) {
+    if (startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() && shouldPreserveStyle == PreserveStyle) {
         styleInEmptyParagraph = EditingStyle::create(startOfParagraphToMove.deepEquivalent());
         styleInEmptyParagraph->mergeTypingStyle(&document());
         // The moved paragraph should assume the block style of the destination.
@@ -1342,7 +1342,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     setEndingSelection(VisibleSelection(destination, originalIsDirectional));
     DCHECK(!endingSelection().isNone());
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MovingParagraph;
-    if (!preserveStyle)
+    if (shouldPreserveStyle == DoNotPreserveStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
     applyCommandToComposite(ReplaceSelectionCommand::create(document(), fragment, options), editingState);
     if (editingState->isAborted())
@@ -1358,7 +1358,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
             return;
     }
 
-    if (!preserveSelection || startIndex == -1)
+    if (shouldPreserveSelection ==  DoNotPreserveSelection || startIndex == -1)
         return;
     Element* documentElement = document().documentElement();
     if (!documentElement)
