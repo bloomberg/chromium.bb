@@ -8,12 +8,6 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "media/base/android/media_jni_registrar.h"
-#include "ui/gl/android/gl_jni_registrar.h"
-#endif
-
 class TestSuiteNoAtExit : public base::TestSuite {
  public:
   TestSuiteNoAtExit(int argc, char** argv) : TestSuite(argc, argv) {}
@@ -26,14 +20,6 @@ class TestSuiteNoAtExit : public base::TestSuite {
 void TestSuiteNoAtExit::Initialize() {
   // Run TestSuite::Initialize first so that logging is initialized.
   base::TestSuite::Initialize();
-
-#if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  // Needed for surface texture support.
-  ui::gl::android::RegisterJni(env);
-  media::RegisterJni(env);
-#endif
 
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.

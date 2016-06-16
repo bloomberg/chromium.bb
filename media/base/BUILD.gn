@@ -519,10 +519,6 @@ source_set("perftests") {
   if (media_use_ffmpeg) {
     sources += [ "demuxer_perftest.cc" ]
   }
-
-  if (is_android) {
-    deps += [ "//ui/gl" ]
-  }
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {

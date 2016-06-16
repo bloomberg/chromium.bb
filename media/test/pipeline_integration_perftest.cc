@@ -75,12 +75,16 @@ TEST(PipelineIntegrationPerfTest, VP9PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear-vp9.webm", "clockless_video_playback_vp9");
 }
 
+// Android doesn't build Theora support.
+#if !defined(OS_ANDROID)
 TEST(PipelineIntegrationPerfTest, TheoraPlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.ogv",
                             "clockless_video_playback_theora");
 }
+#endif
 
-#if defined(USE_PROPRIETARY_CODECS)
+// PipelineIntegrationTests can't play h264 content.
+#if defined(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
 TEST(PipelineIntegrationPerfTest, MP4PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.mp4", "clockless_video_playback_mp4");
 }

@@ -8,10 +8,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 source_set("pipeline_integration_test_base") {
   testonly = true
 
-  # Even if FFmpeg is enabled on Android we don't want these.
-  # TODO(watk): Refactor tests that could be made to run on Android. See
-  # http://crbug.com/570762
-  if (media_use_ffmpeg && !is_android) {
+  if (media_use_ffmpeg) {
     sources = [
       "pipeline_integration_test_base.cc",
       "pipeline_integration_test_base.h",
@@ -35,6 +32,9 @@ source_set("pipeline_integration_test_base") {
 source_set("pipeline_integration_tests") {
   testonly = true
 
+  # Even if FFmpeg is enabled on Android we don't want these.
+  # TODO(watk): Refactor tests that could be made to run on Android. See
+  # http://crbug.com/570762
   if (media_use_ffmpeg && !is_android) {
     sources = [
       "pipeline_integration_test.cc",
@@ -57,7 +57,7 @@ source_set("pipeline_integration_tests") {
 source_set("pipeline_integration_perftests") {
   testonly = true
 
-  if (media_use_ffmpeg && !is_android) {
+  if (media_use_ffmpeg) {
     sources = [
       "pipeline_integration_perftest.cc",
     ]

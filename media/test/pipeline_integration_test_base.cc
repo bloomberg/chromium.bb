@@ -285,7 +285,8 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   video_decoders.push_back(new VpxVideoDecoder());
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+// Android does not have an ffmpeg video decoder.
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
   video_decoders.push_back(new FFmpegVideoDecoder());
 #endif
 

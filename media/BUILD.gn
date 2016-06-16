@@ -732,15 +732,16 @@ test("media_perftests") {
     "//third_party/widevine/cdm:version_h",
     "//ui/gfx:test_support",
   ]
-  if (is_android) {
-    deps += [ "//ui/gl" ]
-  }
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.
   }
 
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
+
+  data = [
+    "test/data/",
+  ]
 }
 
 # For running the subset of media_unittests that might require audio hardware
