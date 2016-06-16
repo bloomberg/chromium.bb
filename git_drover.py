@@ -265,8 +265,9 @@ class _Drover(object):
     repo_status = self._run_git_command(['status', '--porcelain']).splitlines()
     extra_files = [f[3:] for f in repo_status if f[:2] == ' D']
     if extra_files:
-      self._run_git_command(['update-index', '--skip-worktree', '--'] +
-                            extra_files)
+      self._run_git_command_with_stdin(
+          ['update-index', '--skip-worktree', '--stdin'],
+          stdin='\n'.join(extra_files) + '\n')
 
   def _upload_and_land(self):
     if self._dry_run:
@@ -313,6 +314,32 @@ class _Drover(object):
         raise Error(error_message)
       else:
         raise Error('Command %r failed: %s' % (' '.join(args), e))
+
+  def _run_git_command_with_stdin(self, args, stdin):
+    """Runs a git command with a provided stdin.
+
+    Args:
+      args: A list of strings containing the args to pass to git.
+      stdin: A string to provide on stdin.
+
+    Raises:
+      Error: The command failed to complete successfully.
+    """
+    cwd = self._workdir if self._workdir else self._parent_repo
+    logging.debug('Running git %s (cwd %r)', ' '.join('%s' % arg
+                                                      for arg in args), cwd)
+
+    # Discard stderr unless verbose is enabled.
+    stderr = None if self._verbose else _DEV_NULL_FILE
+
+    try:
+      popen = subprocess.Popen(['git'] + args, shell=False, cwd=cwd,
+                               stderr=stderr, stdin=subprocess.PIPE)
+      popen.communicate(stdin)
+      if popen.returncode != 0:
+        raise Error('Command %r failed' % ' '.join(args))
+    except OSError as e:
+      raise Error('Command %r failed: %s' % (' '.join(args), e))
 
 
 def cherry_pick_change(branch, revision, parent_repo, dry_run, verbose=False):

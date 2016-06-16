@@ -37,6 +37,8 @@ class GitDroverTest(auto_stub.TestCase):
     self.mock(__builtins__, 'raw_input', self._get_input)
     self.mock(subprocess, 'check_call', self._check_call)
     self.mock(subprocess, 'check_output', self._check_call)
+    self.real_popen = subprocess.Popen
+    self.mock(subprocess, 'Popen', self._Popen)
     self._commands = []
     self._input = []
     self._fail_on_command = None
@@ -75,7 +77,7 @@ class GitDroverTest(auto_stub.TestCase):
       ]
     self.MANUAL_RESOLVE_PREPARATION_COMMANDS = [
         (['git', 'status', '--porcelain'], self._target_repo),
-        (['git', 'update-index', '--skip-worktree', '--', 'foo', 'bar'],
+        (['git', 'update-index', '--skip-worktree', '--stdin'],
          self._target_repo),
     ]
     self.FINISH_MANUAL_RESOLVE_COMMANDS = [
@@ -112,6 +114,25 @@ class GitDroverTest(auto_stub.TestCase):
     if args == ['git', 'status', '--porcelain']:
       return ' D foo\nUU baz\n D bar\n'
     return ''
+
+  def _Popen(self, args, shell=False, cwd=None, stdin=None, stdout=None,
+             stderr=None):
+    if args == ['git', 'update-index', '--skip-worktree', '--stdin']:
+      self._commands.append((args, cwd))
+      self.assertFalse(shell)
+      self.assertEqual(stdin, subprocess.PIPE)
+      class MockPopen(object):
+        def __init__(self, *args, **kwargs):
+          self.returncode = -999
+        def communicate(self, stdin):
+          if stdin == 'foo\nbar\n':
+            self.returncode = 0
+          else:
+            self.returncode = 1
+      return MockPopen()
+    else:
+      return self.real_popen(args, shell=shell, cwd=cwd, stdin=stdin,
+                             stdout=stdout, stderr=stderr)
 
   def testSuccess(self):
     self._input = ['y', 'y']
