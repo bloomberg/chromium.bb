@@ -582,10 +582,14 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
 }
 
 int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *const xd) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int ctx = av1_get_pred_context_switchable_interp(xd);
-  return SWITCHABLE_INTERP_RATE_FACTOR *
-         cpi->switchable_interp_costs[ctx][mbmi->interp_filter];
+  const AV1_COMMON *const cm = &cpi->common;
+  if (cm->interp_filter == SWITCHABLE) {
+    const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+    const int ctx = av1_get_pred_context_switchable_interp(xd);
+    return SWITCHABLE_INTERP_RATE_FACTOR *
+           cpi->switchable_interp_costs[ctx][mbmi->interp_filter];
+  }
+  return 0;
 }
 
 void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {

@@ -2879,14 +2879,12 @@ static int64_t handle_inter_mode(
 #else
   DECLARE_ALIGNED(16, uint8_t, tmp_buf[MAX_MB_PLANE * 64 * 64]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-  int pred_exists = 0;
-  int intpel_mv;
-  int64_t rd, tmp_rd, best_rd = INT64_MAX;
-  int best_needs_copy = 0;
+  int64_t rd = INT64_MAX;
   uint8_t *orig_dst[MAX_MB_PLANE];
   int orig_dst_stride[MAX_MB_PLANE];
-  int rs = 0;
-  InterpFilter best_filter = SWITCHABLE;
+  uint8_t *tmp_dst[MAX_MB_PLANE];
+  int tmp_dst_stride[MAX_MB_PLANE];
+  InterpFilter assign_filter = SWITCHABLE;
   uint8_t skip_txfm[MAX_MB_PLANE << 2] = { 0 };
   int64_t bsse[MAX_MB_PLANE << 2] = { 0 };
 
@@ -2909,39 +2907,14 @@ static int64_t handle_inter_mode(
   int64_t best_distortion = INT64_MAX;
   MB_MODE_INFO best_mbmi;
 #endif  // CONFIG_MOTION_VAR
+  int tmp_rate;
+  int64_t tmp_dist;
+  int rs;
 
 #if CONFIG_REF_MV
   mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame,
                                        bsize, -1);
 #endif
-
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    tmp_buf = CONVERT_TO_BYTEPTR(tmp_buf16);
-  } else {
-    tmp_buf = (uint8_t *)tmp_buf16;
-  }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
-  if (pred_filter_search) {
-    InterpFilter af = SWITCHABLE, lf = SWITCHABLE;
-    if (xd->up_available) af = xd->mi[-xd->mi_stride]->mbmi.interp_filter;
-    if (xd->left_available) lf = xd->mi[-1]->mbmi.interp_filter;
-
-    if ((this_mode != NEWMV) || (af == lf)) best_filter = af;
-  }
-
-  if (is_comp_pred) {
-    if (frame_mv[refs[0]].as_int == INVALID_MV ||
-        frame_mv[refs[1]].as_int == INVALID_MV)
-      return INT64_MAX;
-
-    if (cpi->sf.adaptive_mode_search) {
-      if (single_filter[this_mode][refs[0]] ==
-          single_filter[this_mode][refs[1]])
-        best_filter = single_filter[this_mode][refs[0]];
-    }
-  }
 
   if (this_mode == NEWMV) {
     int rate_mv;
@@ -3025,11 +2998,22 @@ static int64_t handle_inter_mode(
   }
 #endif
 
-  // do first prediction into the destination buffer. Do the next
-  // prediction into a temporary buffer. Then keep track of which one
-  // of these currently holds the best predictor, and use the other
-  // one for future predictions. In the end, copy from tmp_buf to
-  // dst if necessary.
+// do first prediction into the destination buffer. Do the next
+// prediction into a temporary buffer. Then keep track of which one
+// of these currently holds the best predictor, and use the other
+// one for future predictions. In the end, copy from tmp_buf to
+// dst if necessary.
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    tmp_buf = CONVERT_TO_BYTEPTR(tmp_buf16);
+  } else {
+    tmp_buf = (uint8_t *)tmp_buf16;
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  for (i = 0; i < MAX_MB_PLANE; i++) {
+    tmp_dst[i] = tmp_buf + i * 64 * 64;
+    tmp_dst_stride[i] = 64;
+  }
   for (i = 0; i < MAX_MB_PLANE; i++) {
     orig_dst[i] = xd->plane[i].dst.buf;
     orig_dst_stride[i] = xd->plane[i].dst.stride;
@@ -3052,122 +3036,96 @@ static int64_t handle_inter_mode(
       mbmi->mode != NEARESTMV)
     return INT64_MAX;
 
-  pred_exists = 0;
-  // Are all MVs integer pel for Y and UV
-  intpel_mv = !mv_has_subpel(&mbmi->mv[0].as_mv);
-  if (is_comp_pred) intpel_mv &= !mv_has_subpel(&mbmi->mv[1].as_mv);
+  if (cm->interp_filter == SWITCHABLE) {
+    if (pred_filter_search) {
+      InterpFilter af = SWITCHABLE, lf = SWITCHABLE;
+      if (xd->up_available) af = xd->mi[-xd->mi_stride]->mbmi.interp_filter;
+      if (xd->left_available) lf = xd->mi[-1]->mbmi.interp_filter;
 
-  if (cm->interp_filter != BILINEAR) {
+      if (this_mode != NEWMV || af == lf) assign_filter = af;
+    }
+
+    if (is_comp_pred) {
+      if (frame_mv[refs[0]].as_int == INVALID_MV ||
+          frame_mv[refs[1]].as_int == INVALID_MV) {
+        return INT64_MAX;
+      }
+      if (cpi->sf.adaptive_mode_search) {
+        if (single_filter[this_mode][refs[0]] ==
+            single_filter[this_mode][refs[1]]) {
+          assign_filter = single_filter[this_mode][refs[0]];
+        }
+      }
+    }
     if (x->source_variance < cpi->sf.disable_filter_search_var_thresh) {
-      best_filter = EIGHTTAP;
-    } else if (best_filter == SWITCHABLE) {
-      int newbest;
-      int tmp_rate_sum = 0;
-      int64_t tmp_dist_sum = 0;
+      assign_filter = EIGHTTAP;
+    }
+  } else {
+    assign_filter = cm->interp_filter;
+  }
 
-      for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
-        int j;
-        int64_t rs_rd;
+  mbmi->interp_filter = assign_filter == SWITCHABLE ? EIGHTTAP : assign_filter;
+  rs = av1_get_switchable_rate(cpi, xd);
+  av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
+  model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &skip_txfm_sb,
+                  &skip_sse_sb);
+  rd = RDCOST(x->rdmult, x->rddiv, rs + tmp_rate, tmp_dist);
+  memcpy(skip_txfm, x->skip_txfm, sizeof(skip_txfm));
+  memcpy(bsse, x->bsse, sizeof(bsse));
+
+  if (assign_filter == SWITCHABLE) {
+    // do interp_filter search
+    if (is_interp_needed(xd)) {
+      InterpFilter best_filter = mbmi->interp_filter;
+      int best_in_temp = 0;
+      restore_dst_buf(xd, tmp_dst, tmp_dst_stride);
+      for (i = EIGHTTAP + 1; i < SWITCHABLE_FILTERS; ++i) {
         int tmp_skip_sb = 0;
         int64_t tmp_skip_sse = INT64_MAX;
-
+        int64_t tmp_rd;
+        int tmp_rs;
         mbmi->interp_filter = i;
-        rs = av1_get_switchable_rate(cpi, xd);
-        rs_rd = RDCOST(x->rdmult, x->rddiv, rs, 0);
+        tmp_rs = av1_get_switchable_rate(cpi, xd);
+        av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
+        model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &tmp_skip_sb,
+                        &tmp_skip_sse);
+        tmp_rd = RDCOST(x->rdmult, x->rddiv, tmp_rs + tmp_rate, tmp_dist);
 
-        if (i > 0 && intpel_mv) {
-          rd = RDCOST(x->rdmult, x->rddiv, tmp_rate_sum, tmp_dist_sum);
-          if (cm->interp_filter == SWITCHABLE) rd += rs_rd;
-        } else {
-          int rate_sum = 0;
-          int64_t dist_sum = 0;
-          if (i > 0 && cpi->sf.adaptive_interp_filter_search &&
-              (cpi->sf.interp_filter_search_mask & (1 << i))) {
-            rate_sum = INT_MAX;
-            dist_sum = INT64_MAX;
-            continue;
-          }
-
-          if ((cm->interp_filter == SWITCHABLE && (!i || best_needs_copy)) ||
-              (cm->interp_filter != SWITCHABLE &&
-               (cm->interp_filter == mbmi->interp_filter ||
-                (i == 0 && intpel_mv)))) {
-            restore_dst_buf(xd, orig_dst, orig_dst_stride);
-          } else {
-            for (j = 0; j < MAX_MB_PLANE; j++) {
-              xd->plane[j].dst.buf = tmp_buf + j * 64 * 64;
-              xd->plane[j].dst.stride = 64;
-            }
-          }
-          av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
-          model_rd_for_sb(cpi, bsize, x, xd, &rate_sum, &dist_sum, &tmp_skip_sb,
-                          &tmp_skip_sse);
-
-          rd = RDCOST(x->rdmult, x->rddiv, rate_sum, dist_sum);
-          if (cm->interp_filter == SWITCHABLE) rd += rs_rd;
-
-          if (i == 0 && intpel_mv) {
-            tmp_rate_sum = rate_sum;
-            tmp_dist_sum = dist_sum;
-          }
-        }
-
-        if (i == 0 && cpi->sf.use_rd_breakout && ref_best_rd < INT64_MAX) {
-          if (rd / 2 > ref_best_rd) {
-            restore_dst_buf(xd, orig_dst, orig_dst_stride);
-            return INT64_MAX;
-          }
-        }
-        newbest = i == 0 || rd < best_rd;
-
-        if (newbest) {
-          best_rd = rd;
+        if (tmp_rd < rd) {
+          rd = tmp_rd;
           best_filter = mbmi->interp_filter;
-          if (cm->interp_filter == SWITCHABLE && i && !intpel_mv)
-            best_needs_copy = !best_needs_copy;
-        }
-
-        if ((cm->interp_filter == SWITCHABLE && newbest) ||
-            (cm->interp_filter != SWITCHABLE &&
-             cm->interp_filter == mbmi->interp_filter)) {
-          pred_exists = 1;
-          tmp_rd = best_rd;
-
           skip_txfm_sb = tmp_skip_sb;
           skip_sse_sb = tmp_skip_sse;
           memcpy(skip_txfm, x->skip_txfm, sizeof(skip_txfm));
           memcpy(bsse, x->bsse, sizeof(bsse));
+          best_in_temp = !best_in_temp;
+          if (best_in_temp) {
+            restore_dst_buf(xd, orig_dst, orig_dst_stride);
+          } else {
+            restore_dst_buf(xd, tmp_dst, tmp_dst_stride);
+          }
         }
       }
-      restore_dst_buf(xd, orig_dst, orig_dst_stride);
-    }
-  }
-  // Set the appropriate filter
-  mbmi->interp_filter =
-      cm->interp_filter != SWITCHABLE ? cm->interp_filter : best_filter;
-  rs = cm->interp_filter == SWITCHABLE ? av1_get_switchable_rate(cpi, xd) : 0;
-
-  if (pred_exists) {
-    if (best_needs_copy) {
-      // again temporarily set the buffers to local memory to prevent a memcpy
-      for (i = 0; i < MAX_MB_PLANE; i++) {
-        xd->plane[i].dst.buf = tmp_buf + i * 64 * 64;
-        xd->plane[i].dst.stride = 64;
+      if (best_in_temp) {
+        restore_dst_buf(xd, tmp_dst, tmp_dst_stride);
+      } else {
+        restore_dst_buf(xd, orig_dst, orig_dst_stride);
       }
+      mbmi->interp_filter = best_filter;
+    } else {
+      int best_rs = av1_get_switchable_rate(cpi, xd);
+      int tmp_rs;
+      InterpFilter best_filter = mbmi->interp_filter;
+      for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
+        mbmi->interp_filter = i;
+        tmp_rs = av1_get_switchable_rate(cpi, xd);
+        if (tmp_rs < best_rs) {
+          best_rs = tmp_rs;
+          best_filter = i;
+        }
+      }
+      mbmi->interp_filter = best_filter;
     }
-    rd = tmp_rd + RDCOST(x->rdmult, x->rddiv, rs, 0);
-  } else {
-    int tmp_rate;
-    int64_t tmp_dist;
-    // Handles the special case when a filter that is not in the
-    // switchable list (ex. bilinear) is indicated at the frame level, or
-    // skip condition holds.
-    av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
-    model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &skip_txfm_sb,
-                    &skip_sse_sb);
-    rd = RDCOST(x->rdmult, x->rddiv, rs + tmp_rate, tmp_dist);
-    memcpy(skip_txfm, x->skip_txfm, sizeof(skip_txfm));
-    memcpy(bsse, x->bsse, sizeof(bsse));
   }
 
   if (!is_comp_pred) single_filter[this_mode][refs[0]] = mbmi->interp_filter;
@@ -3187,7 +3145,7 @@ static int64_t handle_inter_mode(
     }
   }
 
-  if (cm->interp_filter == SWITCHABLE) *rate2 += rs;
+  *rate2 += av1_get_switchable_rate(cpi, xd);
 #if CONFIG_MOTION_VAR
   rate2_nocoeff = *rate2;
 #endif  // CONFIG_MOTION_VAR
@@ -4853,8 +4811,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
       rate2 += rate;
       distortion2 += distortion;
 
-      if (cm->interp_filter == SWITCHABLE)
-        rate2 += av1_get_switchable_rate(cpi, xd);
+      rate2 += av1_get_switchable_rate(cpi, xd);
 
       if (!mode_excluded)
         mode_excluded = comp_pred ? cm->reference_mode == SINGLE_REFERENCE

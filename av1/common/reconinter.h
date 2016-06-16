@@ -218,6 +218,61 @@ void av1_build_prediction_by_left_preds(AV1_COMMON *cm, MACROBLOCKD *xd,
 void av1_build_obmc_inter_predictors_sb(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col);
 #endif  // CONFIG_MOTION_VAR
+static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
+                                          const MACROBLOCKD *const xd,
+                                          int dir) {
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int ref = (dir >> 1);
+
+  if (bsize >= BLOCK_8X8) {
+    if (dir & 0x01) {
+      if (mbmi->mv[ref].as_mv.col & SUBPEL_MASK) return 1;
+    } else {
+      if (mbmi->mv[ref].as_mv.row & SUBPEL_MASK) return 1;
+    }
+  } else {
+    int plane;
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+      const PARTITION_TYPE bp = BLOCK_8X8 - bsize;
+      const struct macroblockd_plane *const pd = &xd->plane[plane];
+      const int have_vsplit = bp != PARTITION_HORZ;
+      const int have_hsplit = bp != PARTITION_VERT;
+      const int num_4x4_w = 2 >> ((!have_vsplit) | pd->subsampling_x);
+      const int num_4x4_h = 2 >> ((!have_hsplit) | pd->subsampling_y);
+
+      int x, y;
+      for (y = 0; y < num_4x4_h; ++y) {
+        for (x = 0; x < num_4x4_w; ++x) {
+          const MV mv = average_split_mvs(pd, mi, ref, y * 2 + x);
+          if (dir & 0x01) {
+            if (mv.col & SUBPEL_MASK) return 1;
+          } else {
+            if (mv.row & SUBPEL_MASK) return 1;
+          }
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+static INLINE int is_interp_needed(const MACROBLOCKD *const xd) {
+  MODE_INFO *const mi = xd->mi[0];
+  const int is_compound = has_second_ref(&mi->mbmi);
+  int ref;
+  for (ref = 0; ref < 1 + is_compound; ++ref) {
+    int row_col;
+    for (row_col = 0; row_col < 2; ++row_col) {
+      const int dir = (ref << 1) + row_col;
+      if (has_subpel_mv_component(mi, xd, dir)) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
