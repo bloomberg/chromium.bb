@@ -269,17 +269,17 @@ void IconLabelBubbleView::SetLabelBackgroundColor(
 
 int IconLabelBubbleView::GetOuterPadding(bool leading) const {
   if (ui::MaterialDesignController::IsModeMaterial())
-    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+    return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
 
   return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
          GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
-         (leading ? 0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING));
+         (leading ? 0 : kTrailingPaddingPreMd);
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
-             : GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_SPACING);
+             : GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {
@@ -307,7 +307,7 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
         GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
     // Amount of space to leave after the separator (dp).
     const int kPostSeparatorSpacing =
-        (GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) +
+        (GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) +
          kExtraTrailingPadding + post_chip_spacing) /
             2 -
         post_chip_spacing;

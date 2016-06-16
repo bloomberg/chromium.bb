@@ -12,13 +12,6 @@ enum LayoutConstant {
   // Vertical offset from top of content to the top of find bar.
   FIND_BAR_TOOLBAR_OVERLAP,
 
-  // Horizontal spacing between the icon and label in an IconLabelBubbleView.
-  ICON_LABEL_VIEW_INTERNAL_SPACING,
-
-  // Horizontal padding from the trailing edge of the label to the trailing edge
-  // of an IconLabelBubbleView.
-  ICON_LABEL_VIEW_TRAILING_PADDING,
-
   // The thickness of the location bar's border.
   LOCATION_BAR_BORDER_THICKNESS,
 

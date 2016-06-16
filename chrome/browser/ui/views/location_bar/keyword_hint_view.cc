@@ -57,7 +57,9 @@ TabKeyBubbleView::~TabKeyBubbleView() {}
 
 gfx::Size TabKeyBubbleView::GetPreferredSize() const {
   gfx::Size size = views::Label::GetPreferredSize();
-  size.Enlarge(2 * GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING), 0);
+  constexpr int kPaddingInsideBorder = 5;
+  // Even though the border is 1 px thick visibly, it takes 1 DIP logically.
+  size.Enlarge(2 * (kPaddingInsideBorder + 1), 0);
   return size;
 }
 

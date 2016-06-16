@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -650,7 +651,7 @@ void OmniboxResultView::Layout() {
   int icon_x = start_x;
   if (!ui::MaterialDesignController::IsModeMaterial() &&
       (icon.width() != default_icon_size_))
-    icon_x += GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+    icon_x += IconLabelBubbleView::kTrailingPaddingPreMd;
   icon_bounds_.SetRect(icon_x, (GetContentLineHeight() - icon.height()) / 2,
                        icon.width(), icon.height());
 

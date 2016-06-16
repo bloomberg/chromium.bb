@@ -31,6 +31,8 @@ class Painter;
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropHostView {
  public:
+  static constexpr int kTrailingPaddingPreMd = 2;
+
   IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
                       SkColor parent_background_color,
