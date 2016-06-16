@@ -290,10 +290,9 @@ void HidReceiveFunction::OnFinished(bool success,
     DCHECK_GE(size, 1u);
     int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
 
-    Respond(
-        TwoArguments(base::MakeUnique<base::FundamentalValue>(report_id),
-                     base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer(
-                         buffer->data() + 1, size - 1))));
+    Respond(TwoArguments(base::MakeUnique<base::FundamentalValue>(report_id),
+                         base::BinaryValue::CreateWithCopiedBuffer(
+                             buffer->data() + 1, size - 1)));
   } else {
     Respond(Error(kErrorTransfer));
   }
@@ -350,8 +349,8 @@ void HidReceiveFeatureReportFunction::OnFinished(
     scoped_refptr<net::IOBuffer> buffer,
     size_t size) {
   if (success) {
-    Respond(OneArgument(base::WrapUnique(
-        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size))));
+    Respond(OneArgument(
+        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size)));
   } else {
     Respond(Error(kErrorTransfer));
   }

@@ -89,9 +89,9 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
     break;
   case CastMessage_PayloadType_BINARY:
     if (message_proto.has_payload_binary())
-      value.reset(base::BinaryValue::CreateWithCopiedBuffer(
-        message_proto.payload_binary().data(),
-        message_proto.payload_binary().size()));
+      value = base::BinaryValue::CreateWithCopiedBuffer(
+          message_proto.payload_binary().data(),
+          message_proto.payload_binary().size());
     break;
   default:
     // Unknown payload type. value will remain unset.

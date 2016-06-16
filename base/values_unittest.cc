@@ -127,7 +127,7 @@ TEST(ValuesTest, BinaryValue) {
 
   char stack_buffer[42];
   memset(stack_buffer, '!', 42);
-  binary.reset(BinaryValue::CreateWithCopiedBuffer(stack_buffer, 42));
+  binary = BinaryValue::CreateWithCopiedBuffer(stack_buffer, 42);
   ASSERT_TRUE(binary.get());
   ASSERT_TRUE(binary->GetBuffer());
   ASSERT_NE(stack_buffer, binary->GetBuffer());

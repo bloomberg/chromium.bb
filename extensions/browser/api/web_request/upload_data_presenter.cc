@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/web_request/form_data_parser.h"
@@ -44,10 +45,10 @@ namespace extensions {
 namespace subtle {
 
 void AppendKeyValuePair(const char* key,
-                        base::Value* value,
+                        std::unique_ptr<base::Value> value,
                         base::ListValue* list) {
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-  dictionary->SetWithoutPathExpansion(key, value);
+  dictionary->SetWithoutPathExpansion(key, std::move(value));
   list->Append(std::move(dictionary));
 }
 
@@ -97,7 +98,7 @@ void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
 void RawDataPresenter::FeedNextFile(const std::string& filename) {
   // Insert the file path instead of the contents, which may be too large.
   subtle::AppendKeyValuePair(keys::kRequestBodyRawFileKey,
-                             new base::StringValue(filename),
+                             base::MakeUnique<base::StringValue>(filename),
                              list_.get());
 }
 

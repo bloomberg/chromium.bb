@@ -716,9 +716,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
 
 void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* data) {
-  BinaryValue* result = BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(data->front()), data->size());
-  SetResult(base::WrapUnique(result));
+  SetResult(BinaryValue::CreateWithCopiedBuffer(
+      reinterpret_cast<const char*>(data->front()), data->size()));
   SendResponse(true);
 }
 
@@ -842,9 +841,7 @@ void WallpaperPrivateGetThumbnailFunction::FileNotLoaded() {
 
 void WallpaperPrivateGetThumbnailFunction::FileLoaded(
     const std::string& data) {
-  BinaryValue* thumbnail = BinaryValue::CreateWithCopiedBuffer(data.c_str(),
-                                                               data.size());
-  SetResult(base::WrapUnique(thumbnail));
+  SetResult(BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
   SendResponse(true);
 }
 

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 using base::BinaryValue;
@@ -43,8 +42,6 @@ bool IdltestSendArrayBufferViewFunction::RunSync() {
 
 bool IdltestGetArrayBufferFunction::RunSync() {
   std::string hello = "hello world";
-  BinaryValue* output =
-      BinaryValue::CreateWithCopiedBuffer(hello.c_str(), hello.size());
-  SetResult(base::WrapUnique(output));
+  SetResult(BinaryValue::CreateWithCopiedBuffer(hello.c_str(), hello.size()));
   return true;
 }

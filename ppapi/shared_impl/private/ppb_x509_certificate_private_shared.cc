@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
@@ -21,9 +23,9 @@ PPB_X509Certificate_Fields::PPB_X509Certificate_Fields(
 
 void PPB_X509Certificate_Fields::SetField(
     PP_X509Certificate_Private_Field field,
-    base::Value* value) {
+    std::unique_ptr<base::Value> value) {
   uint32_t index = static_cast<uint32_t>(field);
-  bool success = values_.Set(index, value);
+  bool success = values_.Set(index, std::move(value));
   DCHECK(success);
 }
 

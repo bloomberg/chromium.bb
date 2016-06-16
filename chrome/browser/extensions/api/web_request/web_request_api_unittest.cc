@@ -600,8 +600,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawFileKey,
-      new base::StringValue(std::string()),
-      &raw);
+      base::MakeUnique<base::StringValue>(std::string()), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),

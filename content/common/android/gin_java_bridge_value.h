@@ -58,7 +58,7 @@ class GinJavaBridgeValue {
  private:
   explicit GinJavaBridgeValue(Type type);
   explicit GinJavaBridgeValue(const base::BinaryValue* value);
-  base::BinaryValue* SerializeToBinaryValue();
+  std::unique_ptr<base::BinaryValue> SerializeToBinaryValue();
 
   base::Pickle pickle_;
 

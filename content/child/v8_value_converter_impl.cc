@@ -515,8 +515,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ArrayBuffer(
   }
 
   if (data)
-    return base::WrapUnique(
-        base::BinaryValue::CreateWithCopiedBuffer(data, length));
+    return base::BinaryValue::CreateWithCopiedBuffer(data, length);
   else
     return nullptr;
 }

@@ -164,9 +164,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   dict.SetString("string", "some string");
   dict.SetBoolean("nested.bool", true);
   dict.SetInteger("nested.int", 9);
-  dict.Set(
-      "some_binary",
-      base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4)));
+  dict.Set("some_binary", base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
   {
     std::unique_ptr<base::ListValue> dict_list(new base::ListValue());
     dict_list->AppendString("string");
@@ -187,8 +185,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   list.AppendString("string");
   list.AppendDouble(42.1);
   list.AppendBoolean(true);
-  list.Append(
-      base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4)));
+  list.Append(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
   {
     std::unique_ptr<base::DictionaryValue> list_dict(
         new base::DictionaryValue());

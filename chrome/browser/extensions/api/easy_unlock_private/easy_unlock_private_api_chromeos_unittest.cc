@@ -101,7 +101,8 @@ class TestableGetPermitAccessFunction
 
 // Converts a string to a base::BinaryValue value whose buffer contains the
 // string data without the trailing '\0'.
-base::BinaryValue* StringToBinaryValue(const std::string& value) {
+std::unique_ptr<base::BinaryValue> StringToBinaryValue(
+    const std::string& value) {
   return base::BinaryValue::CreateWithCopiedBuffer(value.data(),
                                                    value.length());
 }

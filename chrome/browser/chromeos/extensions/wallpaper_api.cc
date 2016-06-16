@@ -11,7 +11,6 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
@@ -230,16 +229,16 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* original_data,
     base::RefCountedBytes* thumbnail_data) {
   std::unique_ptr<BinaryValue> original_result =
-      base::WrapUnique(BinaryValue::CreateWithCopiedBuffer(
+      BinaryValue::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(original_data->front()),
-          original_data->size()));
+          original_data->size());
   std::unique_ptr<BinaryValue> thumbnail_result =
-      base::WrapUnique(BinaryValue::CreateWithCopiedBuffer(
+      BinaryValue::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(thumbnail_data->front()),
-          thumbnail_data->size()));
+          thumbnail_data->size());
 
   if (params_->details.thumbnail) {
-    SetResult(base::WrapUnique(thumbnail_result->DeepCopy()));
+    SetResult(thumbnail_result->CreateDeepCopy());
     SendResponse(true);
   }
 

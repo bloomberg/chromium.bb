@@ -35,10 +35,9 @@ namespace subtle {
 
 // Helpers shared with unit-tests.
 
-// Appends a dictionary {'key': 'value'} to |list|. |list| becomes the owner of
-// |value|.
+// Appends a dictionary {'key': 'value'} to |list|.
 void AppendKeyValuePair(const char* key,
-                        base::Value* value,
+                        std::unique_ptr<base::Value> value,
                         base::ListValue* list);
 
 }  // namespace subtle

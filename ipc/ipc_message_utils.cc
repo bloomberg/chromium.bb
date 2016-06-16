@@ -298,7 +298,9 @@ bool ReadValue(const base::Pickle* m,
       int length;
       if (!iter->ReadData(&data, &length))
         return false;
-      *value = base::BinaryValue::CreateWithCopiedBuffer(data, length);
+      std::unique_ptr<base::BinaryValue> val =
+          base::BinaryValue::CreateWithCopiedBuffer(data, length);
+      *value = val.release();
       break;
     }
     case base::Value::TYPE_DICTIONARY: {

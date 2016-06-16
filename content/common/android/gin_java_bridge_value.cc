@@ -4,8 +4,6 @@
 
 #include "content/common/android/gin_java_bridge_value.h"
 
-#include "base/memory/ptr_util.h"
-
 namespace content {
 
 namespace {
@@ -30,7 +28,7 @@ struct Header : public base::Pickle::Header {
 // static
 std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateUndefinedValue() {
   GinJavaBridgeValue gin_value(TYPE_UNDEFINED);
-  return base::WrapUnique(gin_value.SerializeToBinaryValue());
+  return gin_value.SerializeToBinaryValue();
 }
 
 // static
@@ -38,7 +36,7 @@ std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
     float in_value) {
   GinJavaBridgeValue gin_value(TYPE_NONFINITE);
   gin_value.pickle_.WriteFloat(in_value);
-  return base::WrapUnique(gin_value.SerializeToBinaryValue());
+  return gin_value.SerializeToBinaryValue();
 }
 
 // static
@@ -52,7 +50,7 @@ std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateObjectIDValue(
     int32_t in_value) {
   GinJavaBridgeValue gin_value(TYPE_OBJECT_ID);
   gin_value.pickle_.WriteInt(in_value);
-  return base::WrapUnique(gin_value.SerializeToBinaryValue());
+  return gin_value.SerializeToBinaryValue();
 }
 
 // static
@@ -122,7 +120,8 @@ GinJavaBridgeValue::GinJavaBridgeValue(const base::BinaryValue* value)
   DCHECK(ContainsGinJavaBridgeValue(value));
 }
 
-base::BinaryValue* GinJavaBridgeValue::SerializeToBinaryValue() {
+std::unique_ptr<base::BinaryValue>
+GinJavaBridgeValue::SerializeToBinaryValue() {
   return base::BinaryValue::CreateWithCopiedBuffer(
       reinterpret_cast<const char*>(pickle_.data()), pickle_.size());
 }

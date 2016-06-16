@@ -129,14 +129,11 @@ TEST(JSONWriterTest, BinaryValues) {
   EXPECT_EQ("[5,2]", output_js);
 
   DictionaryValue binary_dict;
-  binary_dict.Set(
-      "a", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+  binary_dict.Set("a", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   binary_dict.SetInteger("b", 5);
-  binary_dict.Set(
-      "c", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+  binary_dict.Set("c", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   binary_dict.SetInteger("d", 2);
-  binary_dict.Set(
-      "e", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+  binary_dict.Set("e", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   EXPECT_FALSE(JSONWriter::Write(binary_dict, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
       binary_dict, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));
