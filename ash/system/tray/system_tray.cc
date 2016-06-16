@@ -67,9 +67,6 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/tray/media_security/multi_profile_media_tray_item.h"
 #include "ui/message_center/message_center.h"
-#elif defined(OS_WIN)
-#include "ash/system/win/audio/tray_audio_win.h"
-#include "media/audio/win/core_audio_util_win.h"
 #endif
 
 using views::TrayBubbleView;
@@ -213,8 +210,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
-  if (media::CoreAudioUtil::IsSupported())
-    AddTrayItem(new TrayAudioWin(this));
   AddTrayItem(tray_update_);
   AddTrayItem(tray_date_);
 #endif
