@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -42,7 +43,7 @@ const int64_t kPushTimeUs = 2 * kMicrosecondsPerSecond;
 const int64_t kStartPts = 0;
 const int64_t kRenderingDelayGracePeriodUs = 250 * 1000;
 const int64_t kMaxRenderingDelayErrorUs = 200;
-const int kNumEffectsStreams = 3;
+const int kNumEffectsStreams = 1;
 
 void IgnoreEos() {}
 
@@ -56,6 +57,22 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   void Initialize();
   void Start();
   void Stop();
+
+  int64_t max_rendering_delay_error_us() {
+    return max_rendering_delay_error_us_;
+  }
+
+  int64_t max_positive_rendering_delay_error_us() {
+    return max_positive_rendering_delay_error_us_;
+  }
+
+  int64_t max_negative_rendering_delay_error_us() {
+    return max_negative_rendering_delay_error_us_;
+  }
+
+  int64_t average_rendering_delay_error_us() {
+    return total_rendering_delay_error_us_ / sample_count_;
+  }
 
  private:
   void FeedBuffer();
@@ -84,6 +101,11 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   const AudioConfig config_;
   const bool effects_only_;
   const base::Closure eos_cb_;
+  int64_t max_rendering_delay_error_us_;
+  int64_t max_positive_rendering_delay_error_us_;
+  int64_t max_negative_rendering_delay_error_us_;
+  int64_t total_rendering_delay_error_us_;
+  size_t sample_count_;
   bool feeding_completed_;
   std::unique_ptr<TaskRunnerImpl> task_runner_;
   std::unique_ptr<MediaPipelineBackend> backend_;
@@ -138,6 +160,11 @@ BufferFeeder::BufferFeeder(const AudioConfig& config,
     : config_(config),
       effects_only_(effects_only),
       eos_cb_(eos_cb),
+      max_rendering_delay_error_us_(0),
+      max_positive_rendering_delay_error_us_(0),
+      max_negative_rendering_delay_error_us_(0),
+      total_rendering_delay_error_us_(0),
+      sample_count_(0),
       feeding_completed_(false),
       task_runner_(new TaskRunnerImpl()),
       decoder_(nullptr),
@@ -228,8 +255,17 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
     if (pushed_us_ > kRenderingDelayGracePeriodUs) {
       int64_t error =
           next_push_playback_timestamp_ - expected_next_push_playback_timestamp;
-      EXPECT_LT(std::abs(error), kMaxRenderingDelayErrorUs)
-          << "Bad rendering delay after " << pushed_us_ << " us";
+      max_rendering_delay_error_us_ =
+          std::max(max_rendering_delay_error_us_, std::abs(error));
+      total_rendering_delay_error_us_ += std::abs(error);
+      if (error >= 0) {
+        max_positive_rendering_delay_error_us_ =
+            std::max(max_positive_rendering_delay_error_us_, error);
+      } else {
+        max_negative_rendering_delay_error_us_ =
+            std::min(max_negative_rendering_delay_error_us_, error);
+      }
+      sample_count_++;
     }
   }
   pushed_us_ += last_push_length_us_;
@@ -250,7 +286,7 @@ MultizoneBackendTest::~MultizoneBackendTest() {}
 void MultizoneBackendTest::Initialize(int sample_rate) {
   AudioConfig config;
   config.codec = kCodecPCM;
-  config.sample_format = kSampleFormatPlanarF32;
+  config.sample_format = kSampleFormatS32;
   config.channel_number = 2;
   config.bytes_per_channel = 4;
   config.samples_per_second = sample_rate;
@@ -291,6 +327,15 @@ void MultizoneBackendTest::OnEndOfStream() {
     feeder->Stop();
 
   base::MessageLoop::current()->QuitWhenIdle();
+
+  EXPECT_LT(audio_feeder_->max_rendering_delay_error_us(),
+            kMaxRenderingDelayErrorUs)
+      << "Max positive rendering delay error: "
+      << audio_feeder_->max_positive_rendering_delay_error_us()
+      << "\nMax negative rendering delay error: "
+      << audio_feeder_->max_negative_rendering_delay_error_us()
+      << "\nAverage rendering delay error: "
+      << audio_feeder_->average_rendering_delay_error_us();
 }
 
 TEST_P(MultizoneBackendTest, RenderingDelay) {
