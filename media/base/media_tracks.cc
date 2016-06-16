@@ -65,24 +65,4 @@ const VideoDecoderConfig& MediaTracks::getVideoConfig(
   return invalidConfig;
 }
 
-const AudioDecoderConfig& MediaTracks::getFirstAudioConfig() const {
-  for (const auto& track : tracks()) {
-    if (track->type() == MediaTrack::Audio) {
-      return getAudioConfig(track->bytestream_track_id());
-    }
-  }
-  static AudioDecoderConfig invalidConfig;
-  return invalidConfig;
-}
-
-const VideoDecoderConfig& MediaTracks::getFirstVideoConfig() const {
-  for (const auto& track : tracks()) {
-    if (track->type() == MediaTrack::Video) {
-      return getVideoConfig(track->bytestream_track_id());
-    }
-  }
-  static VideoDecoderConfig invalidConfig;
-  return invalidConfig;
-}
-
 }  // namespace media

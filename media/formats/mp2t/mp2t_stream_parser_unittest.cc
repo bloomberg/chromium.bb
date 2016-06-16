@@ -118,14 +118,26 @@ class Mp2tStreamParserTest : public testing::Test {
 
   bool OnNewConfig(std::unique_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& tc) {
-    const AudioDecoderConfig& ac = tracks->getFirstAudioConfig();
-    const VideoDecoderConfig& vc = tracks->getFirstVideoConfig();
-    DVLOG(1) << "OnNewConfig: media tracks count=" << tracks->tracks().size()
-             << ", audio=" << ac.IsValidConfig()
-             << ", video=" << vc.IsValidConfig();
+    DVLOG(1) << "OnNewConfig: got " << tracks->tracks().size() << " tracks";
+    bool found_audio_track = false;
+    bool found_video_track = false;
+    for (const auto& track : tracks->tracks()) {
+      const auto& track_id = track->bytestream_track_id();
+      if (track->type() == MediaTrack::Audio) {
+        found_audio_track = true;
+        EXPECT_TRUE(tracks->getAudioConfig(track_id).IsValidConfig());
+      } else if (track->type() == MediaTrack::Video) {
+        found_video_track = true;
+        EXPECT_TRUE(tracks->getVideoConfig(track_id).IsValidConfig());
+      } else {
+        // Unexpected track type.
+        LOG(ERROR) << "Unexpected track type " << track->type();
+        EXPECT_TRUE(false);
+      }
+    }
+    EXPECT_TRUE(found_audio_track);
+    EXPECT_EQ(has_video_, found_video_track);
     config_count_++;
-    EXPECT_TRUE(ac.IsValidConfig());
-    EXPECT_EQ(vc.IsValidConfig(), has_video_);
     return true;
   }
 
@@ -185,7 +197,8 @@ class Mp2tStreamParserTest : public testing::Test {
 
   void OnKeyNeeded(EmeInitDataType type,
                    const std::vector<uint8_t>& init_data) {
-    NOTREACHED() << "OnKeyNeeded not expected in the Mpeg2 TS parser";
+    LOG(ERROR) << "OnKeyNeeded not expected in the Mpeg2 TS parser";
+    EXPECT_TRUE(false);
   }
 
   void OnNewSegment() {
@@ -194,7 +207,8 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
   void OnEndOfSegment() {
-    NOTREACHED() << "OnEndOfSegment not expected in the Mpeg2 TS parser";
+    LOG(ERROR) << "OnEndOfSegment not expected in the Mpeg2 TS parser";
+    EXPECT_TRUE(false);
   }
 
   void InitializeParser() {

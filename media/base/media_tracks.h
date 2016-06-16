@@ -48,11 +48,6 @@ class MEDIA_EXPORT MediaTracks {
   const VideoDecoderConfig& getVideoConfig(
       StreamParser::TrackId bytestream_track_id) const;
 
-  // TODO(servolk): These are temporary helpers useful until all code paths are
-  // converted to properly handle multiple media tracks.
-  const AudioDecoderConfig& getFirstAudioConfig() const;
-  const VideoDecoderConfig& getFirstVideoConfig() const;
-
  private:
   MediaTracksCollection tracks_;
   std::map<StreamParser::TrackId, AudioDecoderConfig> audio_configs_;

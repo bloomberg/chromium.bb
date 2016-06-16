@@ -117,12 +117,24 @@ class MP4StreamParserTest : public testing::Test {
                   const StreamParser::TextTrackConfigMap& tc) {
     configs_received_ = true;
     CHECK(tracks.get());
+    DVLOG(1) << "NewConfigF: got " << tracks->tracks().size() << " tracks";
+    for (const auto& track : tracks->tracks()) {
+      const auto& track_id = track->bytestream_track_id();
+      if (track->type() == MediaTrack::Audio) {
+        audio_decoder_config_ = tracks->getAudioConfig(track_id);
+        DVLOG(1) << "Audio track " << track_id << " config="
+                 << (audio_decoder_config_.IsValidConfig()
+                         ? audio_decoder_config_.AsHumanReadableString()
+                         : "INVALID");
+      } else if (track->type() == MediaTrack::Video) {
+        video_decoder_config_ = tracks->getVideoConfig(track_id);
+        DVLOG(1) << "Video track " << track_id << " config="
+                 << (video_decoder_config_.IsValidConfig()
+                         ? video_decoder_config_.AsHumanReadableString()
+                         : "INVALID");
+      }
+    }
     media_tracks_ = std::move(tracks);
-    audio_decoder_config_ = media_tracks_->getFirstAudioConfig();
-    video_decoder_config_ = media_tracks_->getFirstVideoConfig();
-    DVLOG(1) << "NewConfigF: track count=" << media_tracks_->tracks().size()
-             << " audio=" << audio_decoder_config_.IsValidConfig()
-             << " video=" << video_decoder_config_.IsValidConfig();
     return true;
   }
 
@@ -158,7 +170,7 @@ class MP4StreamParserTest : public testing::Test {
         (audio == kNoDecodeTimestamp() ||
          (video != kNoDecodeTimestamp() && audio > video)) ? video : audio;
 
-    DCHECK(second_highest_timestamp != kNoDecodeTimestamp());
+    EXPECT_NE(second_highest_timestamp, kNoDecodeTimestamp());
 
     if (lower_bound_ != kNoDecodeTimestamp() &&
         second_highest_timestamp < lower_bound_) {

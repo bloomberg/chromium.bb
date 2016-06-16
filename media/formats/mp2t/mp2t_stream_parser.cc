@@ -579,7 +579,7 @@ void Mp2tStreamParser::OnEmitAudioBuffer(
 
   // Ignore the incoming buffer if it is not associated with any config.
   if (buffer_queue_chain_.empty()) {
-    NOTREACHED() << "Cannot provide buffers before configs";
+    LOG(ERROR) << "Cannot provide buffers before configs";
     return;
   }
 

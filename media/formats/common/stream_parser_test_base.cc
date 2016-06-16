@@ -89,11 +89,12 @@ void StreamParserTestBase::OnInitDone(
 bool StreamParserTestBase::OnNewConfig(
     std::unique_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_config) {
-  DVLOG(1) << __FUNCTION__ << " media tracks count=" << tracks->tracks().size();
+  DVLOG(1) << __FUNCTION__ << ": got " << tracks->tracks().size() << " tracks";
   EXPECT_EQ(tracks->tracks().size(), 1u);
-  EXPECT_TRUE(tracks->getFirstAudioConfig().IsValidConfig());
-  EXPECT_FALSE(tracks->getFirstVideoConfig().IsValidConfig());
-  last_audio_config_ = tracks->getFirstAudioConfig();
+  const auto& track = tracks->tracks()[0];
+  EXPECT_EQ(track->type(), MediaTrack::Audio);
+  last_audio_config_ = tracks->getAudioConfig(track->bytestream_track_id());
+  EXPECT_TRUE(last_audio_config_.IsValidConfig());
   return true;
 }
 
