@@ -19,11 +19,12 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
-// Extra padding to place at the end of the chip when the label is showing.
-const int kExtraTrailingPadding = 7;
+// Amount of space on either side of the separator that appears after the label.
+constexpr int kSpaceBesideSeparator = 8;
 
 SkColor CalculateImageColor(gfx::ImageSkia* image) {
   // We grab the color of the middle pixel of the image, which we treat as
@@ -229,18 +230,27 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   // is necessary to animate |total_width| even when the background is hidden
   // as long as the animation is still shrinking.
   if (ShouldShowBackground() || shrinking) {
-    const int extra_trailing_padding =
-        ui::MaterialDesignController::IsModeMaterial() ? kExtraTrailingPadding
-                                                       : 0;
+    // On scale factors < 2, we reserve 1 DIP for the 1 px separator.  For
+    // higher scale factors, we simply take the separator px out of the
+    // kSpaceBesideSeparator region before the separator, as that results in a
+    // width closer to the desired gap than if we added a whole DIP for the
+    // separator px.  (For scale 2, the two methods have equal error: 1 px.)
+    const views::Widget* widget = GetWidget();
+    // There may be no widget in tests.
+    const int separator_width =
+        (widget && widget->GetCompositor()->device_scale_factor() >= 2) ? 0 : 1;
+    const int post_label_width = ui::MaterialDesignController::IsModeMaterial()
+        ? (kSpaceBesideSeparator + separator_width + GetPostSeparatorPadding())
+        : GetOuterPadding(false);
+
     // |multiplier| grows from zero to one, stays equal to one and then shrinks
     // to zero again. The view width should correspondingly grow from zero to
     // fully showing both label and icon, stay there, then shrink to just large
     // enough to show the icon. We don't want to shrink all the way back to
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
-    const int max_width = MinimumWidthForImageWithBackgroundShown() +
-                          GetInternalSpacing() + label_width +
-                          extra_trailing_padding;
+    const int max_width = GetImageTrailingEdge() + GetInternalSpacing() +
+                          label_width + post_label_width;
     const int current_width = WidthMultiplier() * max_width;
     size.set_width(shrinking ? std::max(current_width, size.width())
                              : current_width);
@@ -249,8 +259,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 }
 
 int IconLabelBubbleView::MinimumWidthForImageWithBackgroundShown() const {
-  return GetOuterPadding(true) + image_->GetPreferredSize().width() +
-         GetOuterPadding(false);
+  return GetImageTrailingEdge() + GetOuterPadding(false);
 }
 
 void IconLabelBubbleView::SetLabelBackgroundColor(
@@ -276,10 +285,20 @@ int IconLabelBubbleView::GetOuterPadding(bool leading) const {
          (leading ? 0 : kTrailingPaddingPreMd);
 }
 
+int IconLabelBubbleView::GetImageTrailingEdge() const {
+  return GetOuterPadding(true) + image_->GetPreferredSize().width();
+}
+
 int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
              : GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+}
+
+int IconLabelBubbleView::GetPostSeparatorPadding() const {
+  // The location bar will add LOCATION_BAR_HORIZONTAL_PADDING after us.
+  return kSpaceBesideSeparator -
+         GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {
@@ -301,25 +320,15 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
     const SkColor separator_color = SkColorSetA(
         plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
 
-    // Amount of padding that is built into the whatever view comes after this
-    // one in the location bar (e.g. omnibox textfield).
-    int post_chip_spacing =
-        GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-    // Amount of space to leave after the separator (dp).
-    const int kPostSeparatorSpacing =
-        (GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) +
-         kExtraTrailingPadding + post_chip_spacing) /
-            2 -
-        post_chip_spacing;
-    // Height of the separator (dp).
-    const int kSeparatorHeight = 16;
     gfx::Rect bounds(GetLocalBounds());
-    bounds.Inset(kPostSeparatorSpacing,
+    const int kSeparatorHeight = 16;
+    bounds.Inset(GetPostSeparatorPadding(),
                  (bounds.height() - kSeparatorHeight) / 2);
 
-    // 1px at all scale factors.
+    // Draw the 1 px separator.
     gfx::ScopedCanvas scoped_canvas(canvas);
     const float scale = canvas->UndoDeviceScaleFactor();
+    // Keep the separator aligned on a pixel center.
     const gfx::RectF pixel_aligned_bounds =
         gfx::ScaleRect(gfx::RectF(bounds), scale) - gfx::Vector2dF(0.5f, 0);
     canvas->DrawLine(pixel_aligned_bounds.top_right(),

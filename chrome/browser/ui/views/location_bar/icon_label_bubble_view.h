@@ -112,8 +112,14 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // (or image, if the label is invisible) to the trailing edge of the view.
   int GetOuterPadding(bool leading) const;
 
+  // Horizontal position of the image trailing edge (i.e. just after the image).
+  int GetImageTrailingEdge() const;
+
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
+
+  // Padding after the separator.
+  int GetPostSeparatorPadding() const;
 
   // views::View:
   const char* GetClassName() const override;
