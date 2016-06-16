@@ -232,7 +232,7 @@ class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
 
   COMMIT_B = {
     'some/files/file2': {
-      'mode': 0755,
+      'mode': 0o0755,
       'data': 'file2 - vanilla\n'},
     'some/files/empty': {'data': 'not anymore'},
     'some/files/file3': {'data': 'file3'},

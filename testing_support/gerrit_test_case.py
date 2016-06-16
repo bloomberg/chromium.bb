@@ -155,7 +155,7 @@ class GerritTestCase(unittest.TestCase):
     """Sets up the gerrit instances in a class-specific temp dir."""
     # Create gerrit instance.
     gerrit_dir = tempfile.mkdtemp()
-    os.chmod(gerrit_dir, 0700)
+    os.chmod(gerrit_dir, 0o0700)
     gi = cls.gerrit_instance = cls._create_gerrit_instance(gerrit_dir)
 
     # Set netrc file for http authentication.
@@ -188,7 +188,7 @@ class GerritTestCase(unittest.TestCase):
 
   def setUp(self):
     self.tempdir = tempfile.mkdtemp()
-    os.chmod(self.tempdir, 0700)
+    os.chmod(self.tempdir, 0o0700)
 
   def tearDown(self):
     if TEARDOWN:

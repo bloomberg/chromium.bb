@@ -175,7 +175,7 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
 
   COMMIT_C = {
     'some/files/file2': {
-      'mode': 0755,
+      'mode': 0o0755,
       'data': 'file2 - vanilla\n'},
   }
 
@@ -750,7 +750,7 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
 
   COMMIT_C = {
     'some/files/file2': {
-      'mode': 0755,
+      'mode': 0o0755,
       'data': 'file2 - vanilla'},
   }
 
