@@ -731,6 +731,10 @@ class ChromeSDKCommand(command.CliCommand):
       # Enable debug fission for GN.
       gn_args['use_debug_fission'] = True
 
+    # For SimpleChrome, we use the binutils that comes bundled within Chrome.
+    # We should not use the binutils from the host system.
+    gn_args['linux_use_bundled_binutils'] = True
+
     gyp_dict['host_clang'] = 1
     # Need to reset these after the env vars have been fixed by
     # _SetupTCEnvironment.
