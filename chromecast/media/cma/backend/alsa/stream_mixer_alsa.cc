@@ -541,6 +541,10 @@ void StreamMixerAlsa::Start() {
 }
 
 void StreamMixerAlsa::Stop() {
+  for (auto* observer : loopback_observers_) {
+    observer->OnLoopbackInterrupted();
+  }
+
   alsa_->PcmStatusFree(pcm_status_);
   pcm_status_ = nullptr;
   alsa_->PcmHwParamsFree(pcm_hw_params_);
@@ -853,6 +857,9 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
   while (frames_left) {
     int frames_or_error;
     while ((frames_or_error = alsa_->PcmWritei(pcm_, data, frames_left)) < 0) {
+      for (auto* observer : loopback_observers_) {
+        observer->OnLoopbackInterrupted();
+      }
       RETURN_REPORT_ERROR(PcmRecover, pcm_, frames_or_error,
                           kPcmRecoverIsSilent);
     }

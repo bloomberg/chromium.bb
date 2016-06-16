@@ -49,10 +49,17 @@ class CHROMECAST_EXPORT CastMediaShlib {
                                  uint8_t* data,
                                  int length) = 0;
 
+    // Called if the loopback data is not continuous (ie, does not accurately
+    // represent the actual output) for any reason. For example, if there is an
+    // output underflow, or if output is disabled due to no output streams.
+    // This method could be called from any thread.
+    virtual void OnLoopbackInterrupted() = 0;
+
     // Called once this observer has been fully removed by a call to
     // RemoveLoopbackAudioObserver(). After this is called, no more calls to
-    // OnLoopbackAudio() will be made for this observer unless it is added
-    // again. This method could be called from any thread.
+    // OnLoopbackAudio() or OnLoopbackInterrupted() will be made for this
+    // observer unless it is added again. This method could be called from any
+    // thread.
     virtual void OnRemoved() = 0;
 
    protected:
