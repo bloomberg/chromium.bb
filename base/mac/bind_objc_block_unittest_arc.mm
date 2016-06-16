@@ -11,17 +11,19 @@
 #include "base/callback_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// See bind_objc_block_unittest_arc.mm for why this is necessary. Remove once
-// gyp support is dropped.
-void BindObjcBlockUnittestArcLinkerWorkaround();
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+// This free-function is there to ensure that the object file in not discarded
+// at link time when building with gyp (it is required because targets is built
+// as a static library with gyp and not source set which cause the object file
+// to be discarded if no symbol is used). Remove once gyp support is dropped.
+void BindObjcBlockUnittestArcLinkerWorkaround() {}
 
 namespace {
 
-TEST(BindObjcBlockTest, EnableARCTests) {
-  BindObjcBlockUnittestArcLinkerWorkaround();
-}
-
-TEST(BindObjcBlockTest, TestScopedClosureRunnerExitScope) {
+TEST(BindObjcBlockTestARC, TestScopedClosureRunnerExitScope) {
   int run_count = 0;
   int* ptr = &run_count;
   {
@@ -33,7 +35,7 @@ TEST(BindObjcBlockTest, TestScopedClosureRunnerExitScope) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(BindObjcBlockTest, TestScopedClosureRunnerRelease) {
+TEST(BindObjcBlockTestARC, TestScopedClosureRunnerRelease) {
   int run_count = 0;
   int* ptr = &run_count;
   base::Closure c;
@@ -49,19 +51,19 @@ TEST(BindObjcBlockTest, TestScopedClosureRunnerRelease) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(BindObjcBlockTest, TestReturnValue) {
+TEST(BindObjcBlockTestARC, TestReturnValue) {
   const int kReturnValue = 42;
   base::Callback<int(void)> c = base::BindBlock(^{return kReturnValue;});
   EXPECT_EQ(kReturnValue, c.Run());
 }
 
-TEST(BindObjcBlockTest, TestArgument) {
+TEST(BindObjcBlockTestARC, TestArgument) {
   const int kArgument = 42;
   base::Callback<int(int)> c = base::BindBlock(^(int a){return a + 1;});
   EXPECT_EQ(kArgument + 1, c.Run(kArgument));
 }
 
-TEST(BindObjcBlockTest, TestTwoArguments) {
+TEST(BindObjcBlockTestARC, TestTwoArguments) {
   std::string result;
   std::string* ptr = &result;
   base::Callback<void(const std::string&, const std::string&)> c =
@@ -72,7 +74,7 @@ TEST(BindObjcBlockTest, TestTwoArguments) {
   EXPECT_EQ(result, "fortytwo");
 }
 
-TEST(BindObjcBlockTest, TestThreeArguments) {
+TEST(BindObjcBlockTestARC, TestThreeArguments) {
   std::string result;
   std::string* ptr = &result;
   base::Callback<void(const std::string&,
@@ -87,7 +89,7 @@ TEST(BindObjcBlockTest, TestThreeArguments) {
   EXPECT_EQ(result, "sixtimesnine");
 }
 
-TEST(BindObjcBlockTest, TestSixArguments) {
+TEST(BindObjcBlockTestARC, TestSixArguments) {
   std::string result1;
   std::string* ptr = &result1;
   int result2;

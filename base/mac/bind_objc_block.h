@@ -45,8 +45,11 @@ R RunBlock(base::mac::ScopedBlock<R(^)(Args...)> block, Args... args) {
 // note above).
 template<typename R, typename... Args>
 base::Callback<R(Args...)> BindBlock(R(^block)(Args...)) {
-  return base::Bind(&base::internal::RunBlock<R, Args...>,
-                    base::mac::ScopedBlock<R(^)(Args...)>(Block_copy(block)));
+  return base::Bind(
+      &base::internal::RunBlock<R, Args...>,
+      base::mac::ScopedBlock<R (^)(Args...)>(
+          base::mac::internal::ScopedBlockTraits<R (^)(Args...)>::Retain(
+              block)));
 }
 
 }  // namespace base

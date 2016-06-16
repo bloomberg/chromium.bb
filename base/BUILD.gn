@@ -435,6 +435,7 @@ component("base") {
     "mac/scoped_nsautorelease_pool.h",
     "mac/scoped_nsautorelease_pool.mm",
     "mac/scoped_nsobject.h",
+    "mac/scoped_nsobject.mm",
     "mac/scoped_objc_class_swizzler.h",
     "mac/scoped_objc_class_swizzler.mm",
     "mac/scoped_sending_event.h",
@@ -1403,6 +1404,7 @@ component("base") {
       "mac/mach_logging.h",
       "mac/objc_property_releaser.h",
       "mac/objc_property_releaser.mm",
+      "mac/scoped_block.h",
       "mac/scoped_mach_port.cc",
       "mac/scoped_mach_port.h",
       "mac/scoped_mach_vm.cc",
@@ -1410,8 +1412,10 @@ component("base") {
       "mac/scoped_nsautorelease_pool.h",
       "mac/scoped_nsautorelease_pool.mm",
       "mac/scoped_nsobject.h",
+      "mac/scoped_nsobject.mm",
       "mac/scoped_objc_class_swizzler.h",
       "mac/scoped_objc_class_swizzler.mm",
+      "mac/scoped_typeref.h",
       "memory/shared_memory_posix.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
@@ -1683,6 +1687,23 @@ bundle_data("base_unittests_bundle_data") {
     "{{bundle_resources_dir}}/" +
         "{{source_root_relative_dir}}/{{source_file_part}}",
   ]
+}
+
+if (is_ios || is_mac) {
+  source_set("base_unittests_arc") {
+    testonly = true
+    set_sources_assignment_filter([])
+    sources = [
+      "mac/bind_objc_block_unittest_arc.mm",
+      "mac/scoped_nsobject_unittest_arc.mm",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+    configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      ":base",
+      "//testing/gtest",
+    ]
+  }
 }
 
 test("base_unittests") {
@@ -1969,6 +1990,10 @@ test("base_unittests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
+
+  if (is_ios || is_mac) {
+    deps += [ ":base_unittests_arc" ]
+  }
 
   public_deps = [
     ":base_unittests_bundle_data",

@@ -9,6 +9,12 @@
 
 #include "base/mac/scoped_typeref.h"
 
+#if defined(__has_feature) && __has_feature(objc_arc)
+#define BASE_MAC_BRIDGE_CAST(TYPE, VALUE) (__bridge TYPE)(VALUE)
+#else
+#define BASE_MAC_BRIDGE_CAST(TYPE, VALUE) VALUE
+#endif
+
 namespace base {
 namespace mac {
 
@@ -17,8 +23,13 @@ namespace internal {
 template <typename B>
 struct ScopedBlockTraits {
   static B InvalidValue() { return nullptr; }
-  static B Retain(B block) { return Block_copy(block); }
-  static void Release(B block) { Block_release(block); }
+  static B Retain(B block) {
+    return BASE_MAC_BRIDGE_CAST(
+        B, Block_copy(BASE_MAC_BRIDGE_CAST(const void*, block)));
+  }
+  static void Release(B block) {
+    Block_release(BASE_MAC_BRIDGE_CAST(const void*, block));
+  }
 };
 
 }  // namespace internal
@@ -31,5 +42,7 @@ using ScopedBlock = ScopedTypeRef<B, internal::ScopedBlockTraits<B>>;
 
 }  // namespace mac
 }  // namespace base
+
+#undef BASE_MAC_BRIDGE_CAST
 
 #endif  // BASE_MAC_SCOPED_BLOCK_H_

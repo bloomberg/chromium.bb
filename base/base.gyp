@@ -639,6 +639,11 @@
         'module_dir': 'base'
       },
       'conditions': [
+        ['OS == "ios" or OS == "mac"', {
+          'dependencies': [
+            'base_unittests_arc',
+          ],
+        }],
         ['OS == "android"', {
           'dependencies': [
             'android/jni_generator/jni_generator.gyp:jni_generator_tests',
@@ -1756,6 +1761,33 @@
           ],
           'sources': [
             'base_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+    ['OS == "ios" or OS == "mac"', {
+      'targets': [
+        {
+          'target_name': 'base_unittests_arc',
+          'type': 'static_library',
+          'dependencies': [
+            'base',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'sources': [
+            'mac/bind_objc_block_unittest_arc.mm',
+            'mac/scoped_nsobject_unittest_arc.mm'
+          ],
+          'xcode_settings': {
+            'CLANG_ENABLE_OBJC_ARC': 'YES',
+          },
+          'target_conditions': [
+            ['OS == "ios" and _toolset != "host"', {
+              'sources/': [
+                ['include', 'mac/bind_objc_block_unittest_arc\\.mm$'],
+                ['include', 'mac/scoped_nsobject_unittest_arc\\.mm$'],
+              ],
+            }]
           ],
         },
       ],
