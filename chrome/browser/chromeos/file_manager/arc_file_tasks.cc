@@ -22,6 +22,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
@@ -189,13 +190,15 @@ void OnArcHandlerList(
     return;
   }
 
+  mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers_filtered =
+      arc::ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
   std::vector<arc::ActivityIconLoader::ActivityName> activity_names;
-  for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers)
+  for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers_filtered)
     activity_names.emplace_back(handler->package_name, handler->activity_name);
 
   icon_loader->GetActivityIcons(
       activity_names, base::Bind(&OnArcIconLoaded, base::Passed(&result_list),
-                                 callback, base::Passed(&handlers)));
+                                 callback, base::Passed(&handlers_filtered)));
 }
 
 // Called after icon data for ARC apps are loaded. Proceeds to OnArcIconEncoded.

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/google/core/browser/google_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
@@ -17,8 +18,8 @@ namespace arc {
 
 namespace {
 
-const int kMinInstanceVersion = 2;  // see intent_helper.mojom
-const int kMaxValueLen = 2048;
+constexpr int kMinInstanceVersion = 2;  // see intent_helper.mojom
+constexpr int kMaxValueLen = 2048;
 
 bool GetQueryValue(const GURL& url,
                    const std::string& key_to_find,
@@ -106,7 +107,7 @@ mojom::IntentHelperInstance* LinkHandlerModelImpl::GetIntentHelper() {
 
 void LinkHandlerModelImpl::OnUrlHandlerList(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
-  handlers_ = std::move(handlers);
+  handlers_ = ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
 
   bool icon_info_notified = false;
   if (icon_loader_) {

@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
@@ -47,6 +48,14 @@ class ArcIntentHelperBridge : public ArcService,
 
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
+
+  // Returns false if |package_name| is for the intent_helper apk.
+  static bool IsIntentHelperPackage(const std::string& package_name);
+
+  // Filters out handlers that belong to the intent_helper apk and returns
+  // a new array.
+  static mojo::Array<mojom::UrlHandlerInfoPtr> FilterOutIntentHelper(
+      mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
 
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;

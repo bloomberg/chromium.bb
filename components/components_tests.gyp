@@ -1521,6 +1521,7 @@
             'arc/arc_bridge_service_unittest.cc',
             'arc/ime/arc_ime_service_unittest.cc',
             'arc/intent_helper/activity_icon_loader_unittest.cc',
+            'arc/intent_helper/arc_intent_helper_bridge_unittest.cc',
             'arc/intent_helper/font_size_util_unittest.cc',
             'arc/intent_helper/link_handler_model_impl_unittest.cc',
             'pairing/message_buffer_unittest.cc',

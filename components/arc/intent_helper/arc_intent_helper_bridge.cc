@@ -18,6 +18,12 @@
 
 namespace arc {
 
+namespace {
+
+constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
+
+}  // namespace
+
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,
     const scoped_refptr<ActivityIconLoader>& icon_loader)
@@ -68,6 +74,25 @@ std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
   if (!impl->Init(url))
     return nullptr;
   return std::move(impl);
+}
+
+// static
+bool ArcIntentHelperBridge::IsIntentHelperPackage(
+    const std::string& package_name) {
+  return package_name == kArcIntentHelperPackageName;
+}
+
+// static
+mojo::Array<mojom::UrlHandlerInfoPtr>
+ArcIntentHelperBridge::FilterOutIntentHelper(
+    mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
+  mojo::Array<mojom::UrlHandlerInfoPtr> handlers_filtered;
+  for (auto& handler : handlers) {
+    if (IsIntentHelperPackage(handler->package_name.get()))
+      continue;
+    handlers_filtered.push_back(std::move(handler));
+  }
+  return handlers_filtered;
 }
 
 }  // namespace arc
