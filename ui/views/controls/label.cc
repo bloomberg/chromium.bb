@@ -345,7 +345,8 @@ bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
 }
 
 void Label::OnEnabledChanged() {
-  RecalculateColors();
+  ApplyTextColors();
+  View::OnEnabledChanged();
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
@@ -495,7 +496,7 @@ void Label::MaybeBuildRenderTextLines() {
     for (size_t i = lines_.size(); i < lines.size(); ++i)
       lines_.back()->SetText(lines_.back()->text() + lines[i]);
   }
-  RecalculateColors();
+  ApplyTextColors();
 }
 
 gfx::Rect Label::GetFocusBounds() {
@@ -574,6 +575,11 @@ void Label::RecalculateColors() {
                                     background_color_) :
       requested_disabled_color_;
 
+  ApplyTextColors();
+  SchedulePaint();
+}
+
+void Label::ApplyTextColors() {
   SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
   bool subpixel_rendering_suppressed =
       SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_;
@@ -581,7 +587,6 @@ void Label::RecalculateColors() {
     lines_[i]->SetColor(color);
     lines_[i]->set_subpixel_rendering_suppressed(subpixel_rendering_suppressed);
   }
-  SchedulePaint();
 }
 
 void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {

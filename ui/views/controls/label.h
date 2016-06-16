@@ -180,7 +180,11 @@ class VIEWS_EXPORT Label : public View {
   // Get the text size for the current layout.
   gfx::Size GetTextSize() const;
 
+  // Updates |actual_{enabled,disabled}_color_| from requested colors.
   void RecalculateColors();
+
+  // Applies |actual_{enabled,disabled}_color_| to |lines_|.
+  void ApplyTextColors();
 
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
