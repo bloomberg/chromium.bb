@@ -60,6 +60,8 @@ struct PaymentResponse {
 
   PaymentAddress? shipping_address;
   string? shipping_option_id;
+  string? payer_email;
+  string? payer_phone;
 };
 
 interface PaymentRequestClient {

@@ -4217,6 +4217,8 @@ interface PaymentResponse
     attribute @@toStringTag
     getter details
     getter methodName
+    getter payerEmail
+    getter payerPhone
     getter shippingAddress
     getter totalAmount
     method complete
