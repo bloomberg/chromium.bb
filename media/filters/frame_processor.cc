@@ -185,6 +185,10 @@ void FrameProcessor::SetSequenceMode(bool sequence_mode) {
   if (sequence_mode) {
     DCHECK(kNoTimestamp() != group_end_timestamp_);
     group_start_timestamp_ = group_end_timestamp_;
+  } else if (sequence_mode_) {
+    // We're switching from 'sequence' to 'segments' mode. Be safe and signal a
+    // new coded frame group on the next frame emitted.
+    coded_frame_group_last_dts_ = kNoDecodeTimestamp();
   }
 
   // Step 8: Update the attribute to new mode.
@@ -292,10 +296,13 @@ void FrameProcessor::Reset() {
     itr->second->Reset();
   }
 
-  // Maintain current |in_coded_frame_group_| state for Reset() during
-  // sequence mode. Reset it here only if in segments mode.
+  // Maintain current |coded_frame_group_last_dts_| state for Reset() during
+  // sequence mode. Reset it here only if in segments mode. In sequence mode,
+  // the current coded frame group may be continued across Reset() operations to
+  // allow the stream to coaelesce what might otherwise be gaps in the buffered
+  // ranges. See also the declaration for |coded_frame_group_last_dts_|.
   if (!sequence_mode_) {
-    in_coded_frame_group_ = false;
+    coded_frame_group_last_dts_ = kNoDecodeTimestamp();
     return;
   }
 
@@ -601,7 +608,7 @@ bool FrameProcessor::ProcessFrame(
           decode_timestamp - track_last_decode_timestamp;
       if (track_dts_delta < base::TimeDelta() ||
           track_dts_delta > 2 * track_buffer->last_frame_duration()) {
-        DCHECK(in_coded_frame_group_);
+        DCHECK(coded_frame_group_last_dts_ != kNoDecodeTimestamp());
         // 6.1. If mode equals "segments": Set group end timestamp to
         //      presentation timestamp.
         //      If mode equals "sequence": Set group start timestamp equal to
@@ -610,13 +617,13 @@ bool FrameProcessor::ProcessFrame(
           group_end_timestamp_ = presentation_timestamp;
           // This triggers a discontinuity so we need to treat the next frames
           // appended within the append window as if they were the beginning of
-          // a new coded frame group.
-          in_coded_frame_group_ = false;
+          // a new coded frame group. |coded_frame_group_last_dts_| is reset in
+          // Reset(), below, for "segments" mode.
         } else {
           DVLOG(3) << __FUNCTION__ << " : Sequence mode discontinuity, GETS: "
                    << group_end_timestamp_.InSecondsF();
-          DCHECK(kNoTimestamp() != group_end_timestamp_);
-          group_start_timestamp_ = group_end_timestamp_;
+          // Reset(), below, performs the "Set group start timestamp equal to
+          // the group end timestamp" operation for "sequence" mode.
         }
 
         // 6.2. - 6.5.:
@@ -704,17 +711,23 @@ bool FrameProcessor::ProcessFrame(
     // If it is the first in a new coded frame group (such as following a
     // discontinuity), notify all the track buffers' streams that a coded frame
     // group is starting.
-    if (!in_coded_frame_group_) {
+    // If in 'sequence' appendMode, also check to make sure we don't need to
+    // signal the start of a new coded frame group in the case where
+    // timestampOffset adjustments by the app may cause this coded frame to be
+    // in the timeline prior to the last frame processed.
+    if (coded_frame_group_last_dts_ == kNoDecodeTimestamp() ||
+        (sequence_mode_ && coded_frame_group_last_dts_ > decode_timestamp)) {
       // First, complete the append to track buffer streams of the previous
       // coded frame group's frames, if any.
       if (!FlushProcessedFrames())
         return false;
 
-      // TODO(acolwell/wolenetz): This should be changed to a presentation
-      // timestamp. See http://crbug.com/402502
+      // TODO(wolenetz): This should be changed to a presentation timestamp. See
+      // http://crbug.com/402502
       NotifyStartOfCodedFrameGroup(decode_timestamp);
-      in_coded_frame_group_ = true;
     }
+
+    coded_frame_group_last_dts_ = decode_timestamp;
 
     DVLOG(3) << __FUNCTION__ << ": Sending processed frame to stream, "
              << "PTS=" << presentation_timestamp.InSecondsF()

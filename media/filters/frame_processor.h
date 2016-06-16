@@ -152,11 +152,17 @@ class MEDIA_EXPORT FrameProcessor {
   // set to false ("segments").
   bool sequence_mode_ = false;
 
-  // Flag to track whether or not the next processed frame is a continuation of
-  // a coded frame group. This flag resets to false upon detection of
-  // discontinuity, and becomes true once a processed coded frame for the
-  // current coded frame group is sent to its track buffer.
-  bool in_coded_frame_group_ = false;
+  // Tracks whether or not the next processed frame is a continuation of a coded
+  // frame group (see https://w3c.github.io/media-source/#coded-frame-group).
+  // Resets to kNoDecodeTimestamp() upon detection of 'segments' mode
+  // discontinuity, parser reset during 'segments' mode, or switching from
+  // 'sequence' to 'segments' mode.
+  // Once a processed coded frame is emitted for the current coded frame group,
+  // tracks the decode timestamp of the last frame emitted.
+  // Explicit setting of timestampOffset will trigger subsequent notification of
+  // a new coded frame start to the tracks' streams, even in 'sequence' mode, if
+  // the resulting frame has a DTS less than this.
+  DecodeTimestamp coded_frame_group_last_dts_ = kNoDecodeTimestamp();
 
   // Tracks the MSE coded frame processing variable of same name.
   // Initially kNoTimestamp(), meaning "unset".

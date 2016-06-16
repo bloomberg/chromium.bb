@@ -248,7 +248,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   // thereof of new coded frame group by the FrameProcessor. See
   // https://crbug.com/580613.
   bool in_coded_frame_group() {
-    return frame_processor_->in_coded_frame_group_;
+    return frame_processor_->coded_frame_group_last_dts_ !=
+           kNoDecodeTimestamp();
   }
 
   base::MessageLoop message_loop_;
@@ -579,6 +580,113 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
     video_->Seek(frame_duration_ * 5);
     video_->StartReturningData();
     CheckReadsThenReadStalls(video_.get(), "50");
+  }
+}
+
+TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
+  // If in 'sequence' mode, a new coded frame group is *only* started if the
+  // processed frame sequence outputs something that goes backwards in DTS
+  // order. This helps retain the intent of 'sequence' mode: it both collapses
+  // gaps as well as allows app to override the timeline placement and so needs
+  // to handle overlap-appends, too.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | HAS_VIDEO);
+  bool using_sequence_mode = GetParam();
+  frame_processor_->SetSequenceMode(using_sequence_mode);
+
+  // Start a coded frame group at time 100ms. Note the jagged start still uses
+  // the coded frame group's start time as the range start for both streams.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 14));
+  SetTimestampOffset(frame_duration_ * 10);
+  ProcessFrames("0K 10K 20K", "10K 20K 30K");
+  EXPECT_EQ(frame_duration_ * 10, timestamp_offset_);
+  EXPECT_TRUE(in_coded_frame_group());
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) }");
+
+  // Test the differentiation between 'sequence' and 'segments' mode results if
+  // the coded frame sequence jumps forward beyond the normal discontinuity
+  // threshold.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 24));
+  SetTimestampOffset(frame_duration_ * 20);
+  ProcessFrames("0K 10K 20K", "10K 20K 30K");
+  EXPECT_EQ(frame_duration_ * 20, timestamp_offset_);
+  EXPECT_TRUE(in_coded_frame_group());
+  if (using_sequence_mode) {
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,230) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,240) }");
+  } else {
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) [200,230) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [200,240) }");
+  }
+
+  // Test the behavior when timestampOffset adjustment causes next frames to be
+  // in the past relative to the previously processed frame and triggers a new
+  // coded frame group, even in 'sequence' mode.
+  base::TimeDelta fifty_five_ms = base::TimeDelta::FromMilliseconds(55);
+  EXPECT_CALL(callbacks_,
+              PossibleDurationIncrease(fifty_five_ms + frame_duration_ * 4));
+  SetTimestampOffset(fifty_five_ms);
+  ProcessFrames("0K 10K 20K", "10K 20K 30K");
+  EXPECT_EQ(fifty_five_ms, timestamp_offset_);
+  EXPECT_TRUE(in_coded_frame_group());
+  // The new audio range is not within SourceBufferStream's coalescing threshold
+  // relative to the next range, but the new video range is within the
+  // threshold.
+  if (using_sequence_mode) {
+    // TODO(wolenetz/chcunningham): The large explicit-timestampOffset-induced
+    // jump forward (from timestamp 130 to 200) while in a sequence mode coded
+    // frame group makes our adjacency threshold in SourceBuffer, based on
+    // max-interbuffer-distance-within-coded-frame-group, very lenient.
+    // This causes [55,85) to merge with [100,230) here for audio, and similar
+    // for video. See also https://crbug.com/620523.
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [55,230) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [55,240) }");
+  } else {
+    CheckExpectedRangesByTimestamp(audio_.get(),
+                                   "{ [55,85) [100,130) [200,230) }");
+    // Note that the range adjacency logic used in this case is doesn't consider
+    // DTS 85 to be close enough to [100,140), since the first DTS in video
+    // range [100,140) is actually 110. The muxed data started a coded frame
+    // group at time 100, but actual DTS is used for adjacency checks while
+    // appending.
+    CheckExpectedRangesByTimestamp(video_.get(),
+                                   "{ [55,95) [100,140) [200,240) }");
+  }
+
+  // Verify the buffers.
+  audio_->AbortReads();
+  audio_->Seek(fifty_five_ms);
+  audio_->StartReturningData();
+  video_->AbortReads();
+  video_->Seek(fifty_five_ms);
+  video_->StartReturningData();
+  if (using_sequence_mode) {
+    CheckReadsThenReadStalls(
+        audio_.get(),
+        "55:0 65:10 75:20 100:0 110:10 120:20 200:0 210:10 220:20");
+    CheckReadsThenReadStalls(
+        video_.get(),
+        "65:10 75:20 85:30 110:10 120:20 130:30 210:10 220:20 230:30");
+  } else {
+    CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
+    CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
+    audio_->AbortReads();
+    audio_->Seek(frame_duration_ * 10);
+    audio_->StartReturningData();
+    video_->AbortReads();
+    video_->Seek(frame_duration_ * 10);
+    video_->StartReturningData();
+    CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
+    CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
+    audio_->AbortReads();
+    audio_->Seek(frame_duration_ * 20);
+    audio_->StartReturningData();
+    video_->AbortReads();
+    video_->Seek(frame_duration_ * 20);
+    video_->StartReturningData();
+    CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
+    CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
   }
 }
 
