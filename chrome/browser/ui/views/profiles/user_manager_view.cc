@@ -25,6 +25,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -85,8 +86,11 @@ ReauthDelegate::ReauthDelegate(UserManagerView* parent,
 ReauthDelegate::~ReauthDelegate() {}
 
 gfx::Size ReauthDelegate::GetPreferredSize() const {
-  return gfx::Size(UserManager::kReauthDialogWidth,
-                   UserManager::kReauthDialogHeight);
+  return switches::UsePasswordSeparatedSigninFlow() ?
+      gfx::Size(UserManager::kReauthDialogWidth,
+                UserManager::kReauthDialogHeight) :
+      gfx::Size(UserManager::kPasswordCombinedReauthDialogWidth,
+                UserManager::kPasswordCombinedReauthDialogHeight);
 }
 
 bool ReauthDelegate::CanResize() const {

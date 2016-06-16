@@ -59,8 +59,15 @@ class UserManager {
   static const int kWindowWidth = 800;
   static const int kWindowHeight = 600;
 
-  static const int kReauthDialogWidth = 360;
-  static const int kReauthDialogHeight = 440;
+  // Dimensions of the reauth dialog displaying the old-style signin flow with
+  // the username and password challenge on the same form.
+  static const int kPasswordCombinedReauthDialogHeight = 440;
+  static const int kPasswordCombinedReauthDialogWidth = 360;
+
+  // Dimensions of the reauth dialog displaying the password-separated signin
+  // flow.
+  static const int kReauthDialogHeight = 512;
+  static const int kReauthDialogWidth =  448;
 
   // This class observes the WebUI used in the UserManager to perform online
   // reauthentication of locked profiles. It is concretely implemented in
