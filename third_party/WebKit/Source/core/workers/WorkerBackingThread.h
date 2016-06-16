@@ -18,8 +18,8 @@ class WebThread;
 class WebThreadSupportingGC;
 
 // WorkerBackingThread represents a WebThread with Oilpan and V8 potentially
-// shared by multiple WebWorker scripts. A WebWorker needs to call initialize()
-// to using V8 and Oilpan functionalities, and call detach() when the script
+// shared by multiple WebWorker scripts. A WebWorker needs to call attach() when
+// attaching itself to the backing thread, and call detach() when the script
 // no longer needs the thread.
 // A WorkerBackingThread represents a WebThread while a WorkerThread corresponds
 // to a web worker. There is one-to-one correspondence between WorkerThread and
@@ -37,12 +37,21 @@ public:
 
     ~WorkerBackingThread();
 
-    // initialize() and shutdown() attaches and detaches Oilpan and V8 to / from
-    // the caller worker script, respectively. A worker script must not call
-    // any function after calling shutdown().
+    // attach() and detach() attaches and detaches Oilpan and V8 to / from
+    // the caller worker script, respectively. attach() and detach() increments
+    // and decrements m_workerScriptCount. attach() initializes Oilpan and V8
+    // when m_workerScriptCount is 0. detach() terminates Oilpan and V8 when
+    // m_workerScriptCount is 1. A worker script must not call any function
+    // after calling detach().
     // They should be called from |this| thread.
-    void initialize();
-    void shutdown();
+    void attach();
+    void detach();
+
+    unsigned workerScriptCount()
+    {
+        MutexLocker locker(m_mutex);
+        return m_workerScriptCount;
+    }
 
     WebThreadSupportingGC& backingThread()
     {
@@ -58,9 +67,14 @@ public:
 private:
     WorkerBackingThread(const char* name, bool shouldCallGCOnShutdown);
     WorkerBackingThread(WebThread*, bool shouldCallGCOnSHutdown);
+    void initialize();
+    void shutdown();
 
+    // Protects |m_workerScriptCount|.
+    Mutex m_mutex;
     OwnPtr<WebThreadSupportingGC> m_backingThread;
     v8::Isolate* m_isolate = nullptr;
+    unsigned m_workerScriptCount = 0;
     bool m_isOwningThread;
     bool m_shouldCallGCOnShutdown;
 };

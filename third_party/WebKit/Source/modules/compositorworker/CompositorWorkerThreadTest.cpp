@@ -106,6 +106,7 @@ public:
     void TearDown() override
     {
         m_page.reset();
+        CompositorWorkerThread::terminateExecution();
         CompositorWorkerThread::clearSharedBackingThread();
     }
 
@@ -141,6 +142,7 @@ public:
 private:
     void executeScriptInWorker(WorkerThread* worker, WaitableEvent* waitEvent)
     {
+        EXPECT_GT(worker->workerBackingThread().workerScriptCount(), 0u);
         WorkerOrWorkletScriptController* scriptController = worker->workerGlobalScope()->scriptController();
         bool evaluateResult = scriptController->evaluate(ScriptSourceCode("var counter = 0; ++counter;"));
         ASSERT_UNUSED(evaluateResult, evaluateResult);
@@ -172,9 +174,7 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst)
 
     // Create the second worker and immediately destroy the first worker.
     OwnPtr<CompositorWorkerThread> secondWorker = createCompositorWorker();
-    // We don't use terminateAndWait here to avoid forcible termination.
-    firstWorker->terminate();
-    firstWorker->waitForShutdownForTesting();
+    firstWorker->terminateAndWait();
 
     // Wait until the second worker is initialized. Verify that the second worker is using the same
     // thread and Isolate as the first worker.
@@ -196,18 +196,21 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
 {
     // Create the first worker, wait until it is initialized, and terminate it.
     OwnPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker();
+    WorkerBackingThread* workerBackingThread = &compositorWorker->workerBackingThread();
     WebThreadSupportingGC* firstThread = &compositorWorker->workerBackingThread().backingThread();
     checkWorkerCanExecuteScript(compositorWorker.get());
 
-    // We don't use terminateAndWait here to avoid forcible termination.
-    compositorWorker->terminate();
-    compositorWorker->waitForShutdownForTesting();
+    ASSERT_EQ(2u, workerBackingThread->workerScriptCount());
+    compositorWorker->terminateAndWait();
+
+    ASSERT_EQ(1u, workerBackingThread->workerScriptCount());
 
     // Create the second worker. The backing thread is same.
     compositorWorker = createCompositorWorker();
     WebThreadSupportingGC* secondThread = &compositorWorker->workerBackingThread().backingThread();
     EXPECT_EQ(firstThread, secondThread);
     checkWorkerCanExecuteScript(compositorWorker.get());
+    ASSERT_EQ(2u, workerBackingThread->workerScriptCount());
 
     compositorWorker->terminateAndWait();
 }
@@ -222,6 +225,7 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
 
     // Request termination of the first worker and create the second worker
     // as soon as possible.
+    EXPECT_EQ(2u, firstWorker->workerBackingThread().workerScriptCount());
     firstWorker->terminate();
     // We don't wait for its termination.
     // Note: We rely on the assumption that the termination steps don't run

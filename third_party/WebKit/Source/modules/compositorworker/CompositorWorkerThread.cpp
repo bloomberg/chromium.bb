@@ -15,7 +15,6 @@
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -40,10 +39,20 @@ public:
             s_instance = new BackingThreadHolder;
     }
 
+    static void terminateExecution()
+    {
+        MutexLocker locker(holderInstanceMutex());
+        if (s_instance && s_instance->m_initialized) {
+            s_instance->thread()->isolate()->TerminateExecution();
+            s_instance->m_terminatingExecution = true;
+        }
+    }
+
     static void clear()
     {
         MutexLocker locker(holderInstanceMutex());
         if (s_instance) {
+            DCHECK(!s_instance->m_initialized || s_instance->m_terminatingExecution);
             s_instance->shutdownAndWait();
             delete s_instance;
             s_instance = nullptr;
@@ -76,8 +85,8 @@ private:
     void initializeOnThread()
     {
         MutexLocker locker(holderInstanceMutex());
-        DCHECK(!m_initialized);
-        m_thread->initialize();
+        DCHECK_EQ(0u, m_thread->workerScriptCount()) << "BackingThreadHolder should be the first to attach to WorkerBackingThread";
+        m_thread->attach();
         m_initialized = true;
     }
 
@@ -91,11 +100,13 @@ private:
 
     void shutdownOnThread(WaitableEvent* doneEvent)
     {
-        m_thread->shutdown();
+        DCHECK_EQ(1u, m_thread->workerScriptCount()) << "BackingThreadHolder should be the last to detach from WorkerBackingThread";
+        m_thread->detach();
         doneEvent->signal();
     }
 
     OwnPtr<WorkerBackingThread> m_thread;
+    bool m_terminatingExecution = false;
     bool m_initialized = false;
 
     static BackingThreadHolder* s_instance;
@@ -138,6 +149,12 @@ void CompositorWorkerThread::ensureSharedBackingThread()
 {
     DCHECK(isMainThread());
     BackingThreadHolder::ensureInstance();
+}
+
+void CompositorWorkerThread::terminateExecution()
+{
+    DCHECK(isMainThread());
+    BackingThreadHolder::terminateExecution();
 }
 
 void CompositorWorkerThread::clearSharedBackingThread()

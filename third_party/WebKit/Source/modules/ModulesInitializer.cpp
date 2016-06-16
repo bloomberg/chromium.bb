@@ -65,6 +65,7 @@ void ModulesInitializer::shutdown()
 {
     ASSERT(isInitialized());
     DatabaseManager::terminateDatabaseThread();
+    CompositorWorkerThread::terminateExecution();
     CoreInitializer::shutdown();
     CompositorWorkerThread::clearSharedBackingThread();
 }
