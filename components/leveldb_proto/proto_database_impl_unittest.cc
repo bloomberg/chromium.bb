@@ -42,12 +42,9 @@ class MockDB : public LevelDB {
   MOCK_METHOD1(Init, bool(const base::FilePath&));
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
+  MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
 
-  MockDB() : LevelDB(kTestLevelDBClientName) {
-    ON_CALL(*this, Init(_)).WillByDefault(Return(true));
-    ON_CALL(*this, Save(_, _)).WillByDefault(Return(true));
-    ON_CALL(*this, Load(_)).WillByDefault(Return(true));
-  }
+  MockDB() : LevelDB(kTestLevelDBClientName) {}
 };
 
 class MockDatabaseCaller {
@@ -60,6 +57,10 @@ class MockDatabaseCaller {
     LoadCallback1(success, entries.get());
   }
   MOCK_METHOD2(LoadCallback1, void(bool, std::vector<TestProto>*));
+  void GetCallback(bool success, std::unique_ptr<TestProto> entry) {
+    GetCallback1(success, entry.get());
+  }
+  MOCK_METHOD2(GetCallback1, void(bool, TestProto*));
 };
 
 }  // namespace
@@ -198,6 +199,95 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(
       base::Bind(&MockDatabaseCaller::LoadCallback, base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+ACTION_P(SetGetEntry, model) {
+  const std::string& key = arg0;
+  bool* found = arg1;
+  std::string* output = arg2;
+  auto it = model.find(key);
+  if (it == model.end()) {
+    *found = false;
+  } else {
+    *found = true;
+    *output = it->second.SerializeAsString();
+  }
+  return true;
+}
+
+ACTION_P(VerifyGetEntry, expected) {
+  TestProto* actual = arg1;
+  EXPECT_EQ(expected.SerializeAsString(), actual->SerializeAsString());
+}
+
+TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  MockDatabaseCaller caller;
+  EntryMap model = GetSmallModel();
+
+  EXPECT_CALL(*mock_db, Init(_));
+  EXPECT_CALL(caller, InitCallback(_));
+  db_->InitWithDatabase(
+      base::WrapUnique(mock_db), path,
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  std::string key("1");
+  ASSERT_TRUE(model.count(key));
+  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(SetGetEntry(model));
+  EXPECT_CALL(caller, GetCallback1(true, _))
+      .WillOnce(VerifyGetEntry(model[key]));
+  db_->GetEntry(key, base::Bind(&MockDatabaseCaller::GetCallback,
+                                base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProtoDatabaseImplTest, TestDBGetNotFound) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  MockDatabaseCaller caller;
+  EntryMap model = GetSmallModel();
+
+  EXPECT_CALL(*mock_db, Init(_));
+  EXPECT_CALL(caller, InitCallback(_));
+  db_->InitWithDatabase(
+      base::WrapUnique(mock_db), path,
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  std::string key("does_not_exist");
+  ASSERT_FALSE(model.count(key));
+  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(SetGetEntry(model));
+  EXPECT_CALL(caller, GetCallback1(true, nullptr));
+  db_->GetEntry(key, base::Bind(&MockDatabaseCaller::GetCallback,
+                                base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProtoDatabaseImplTest, TestDBGetFailure) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  MockDatabaseCaller caller;
+  EntryMap model = GetSmallModel();
+
+  EXPECT_CALL(*mock_db, Init(_));
+  EXPECT_CALL(caller, InitCallback(_));
+  db_->InitWithDatabase(
+      base::WrapUnique(mock_db), path,
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  std::string key("does_not_exist");
+  ASSERT_FALSE(model.count(key));
+  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(Return(false));
+  EXPECT_CALL(caller, GetCallback1(false, nullptr));
+  db_->GetEntry(key, base::Bind(&MockDatabaseCaller::GetCallback,
+                                base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }

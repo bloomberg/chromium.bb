@@ -39,6 +39,9 @@ class FakeDB : public ProtoDatabase<T> {
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
+  void GetEntry(
+      const std::string& key,
+      const typename ProtoDatabase<T>::GetCallback& callback) override;
   void Destroy(
       const typename ProtoDatabase<T>::DestroyCallback& callback) override;
 
@@ -47,6 +50,8 @@ class FakeDB : public ProtoDatabase<T> {
   void InitCallback(bool success);
 
   void LoadCallback(bool success);
+
+  void GetCallback(bool success);
 
   void UpdateCallback(bool success);
 
@@ -58,11 +63,17 @@ class FakeDB : public ProtoDatabase<T> {
       std::unique_ptr<typename std::vector<T>> entries,
       bool success);
 
+  static void RunGetCallback(
+      const typename ProtoDatabase<T>::GetCallback& callback,
+      std::unique_ptr<T> entry,
+      bool success);
+
   base::FilePath dir_;
   EntryMap* db_;
 
   Callback init_callback_;
   Callback load_callback_;
+  Callback get_callback_;
   Callback update_callback_;
 };
 
@@ -107,6 +118,18 @@ void FakeDB<T>::LoadEntries(
 }
 
 template <typename T>
+void FakeDB<T>::GetEntry(
+    const std::string& key,
+    const typename ProtoDatabase<T>::GetCallback& callback) {
+  std::unique_ptr<T> entry;
+  auto it = db_->find(key);
+  if (it != db_->end())
+    entry.reset(new T(it->second));
+
+  get_callback_ = base::Bind(RunGetCallback, callback, base::Passed(&entry));
+}
+
+template <typename T>
 void FakeDB<T>::Destroy(
     const typename ProtoDatabase<T>::DestroyCallback& callback) {
 }
@@ -129,6 +152,12 @@ void FakeDB<T>::LoadCallback(bool success) {
 }
 
 template <typename T>
+void FakeDB<T>::GetCallback(bool success) {
+  get_callback_.Run(success);
+  get_callback_.Reset();
+}
+
+template <typename T>
 void FakeDB<T>::UpdateCallback(bool success) {
   update_callback_.Run(success);
   update_callback_.Reset();
@@ -141,6 +170,15 @@ void FakeDB<T>::RunLoadCallback(
     std::unique_ptr<typename std::vector<T>> entries,
     bool success) {
   callback.Run(success, std::move(entries));
+}
+
+// static
+template <typename T>
+void FakeDB<T>::RunGetCallback(
+    const typename ProtoDatabase<T>::GetCallback& callback,
+    std::unique_ptr<T> entry,
+    bool success) {
+  callback.Run(success, std::move(entry));
 }
 
 // static

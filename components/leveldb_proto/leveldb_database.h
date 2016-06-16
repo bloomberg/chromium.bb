@@ -44,6 +44,7 @@ class LevelDB {
   virtual bool Save(const base::StringPairs& pairs_to_save,
                     const std::vector<std::string>& keys_to_remove);
   virtual bool Load(std::vector<std::string>* entries);
+  virtual bool Get(const std::string& key, bool* found, std::string* entry);
 
   static bool Destroy(const base::FilePath& database_dir);
 

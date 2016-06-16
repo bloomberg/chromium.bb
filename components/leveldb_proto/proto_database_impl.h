@@ -53,6 +53,9 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
+  void GetEntry(
+      const std::string& key,
+      const typename ProtoDatabase<T>::GetCallback& callback) override;
   void Destroy(
       const typename ProtoDatabase<T>::DestroyCallback& callback) override;
 
@@ -94,6 +97,14 @@ void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
                      const bool* success,
                      std::unique_ptr<std::vector<T>> entries) {
   callback.Run(*success, std::move(entries));
+}
+
+template <typename T>
+void RunGetCallback(const typename ProtoDatabase<T>::GetCallback& callback,
+                    const bool* success,
+                    const bool* found,
+                    std::unique_ptr<T> entry) {
+  callback.Run(*success, *found ? std::move(entry) : nullptr);
 }
 
 template <typename T>
@@ -157,6 +168,26 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
     }
 
     entries->push_back(entry);
+  }
+}
+
+template <typename T>
+void GetEntryFromTaskRunner(LevelDB* database,
+                            const std::string& key,
+                            T* entry,
+                            bool* found,
+                            bool* success) {
+  DCHECK(success);
+  DCHECK(found);
+  DCHECK(entry);
+
+  std::string serialized_entry;
+  *success = database->Get(key, found, &serialized_entry);
+
+  if (success && !entry->ParseFromString(serialized_entry)) {
+    *found = false;
+    DLOG(WARNING) << "Unable to parse leveldb_proto entry";
+    // TODO(cjhopman): Decide what to do about un-parseable entries.
   }
 }
 
@@ -252,6 +283,26 @@ void ProtoDatabaseImpl<T>::LoadEntries(
                             base::Unretained(db_.get()), entries_ptr, success),
       base::Bind(RunLoadCallback<T>, callback, base::Owned(success),
                  base::Passed(&entries)));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::GetEntry(
+    const std::string& key,
+    const typename ProtoDatabase<T>::GetCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool* success = new bool(false);
+  bool* found = new bool(false);
+
+  std::unique_ptr<T> entry(new T());
+  // Get this pointer before entry is base::Passed() so we can use it below.
+  T* entry_ptr = entry.get();
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(GetEntryFromTaskRunner<T>, base::Unretained(db_.get()), key,
+                 entry_ptr, found, success),
+      base::Bind(RunGetCallback<T>, callback, base::Owned(success),
+                 base::Owned(found), base::Passed(&entry)));
 }
 
 }  // namespace leveldb_proto

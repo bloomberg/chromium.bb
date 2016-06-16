@@ -123,4 +123,25 @@ bool LevelDB::Load(std::vector<std::string>* entries) {
   return true;
 }
 
+bool LevelDB::Get(const std::string& key, bool* found, std::string* entry) {
+  DFAKE_SCOPED_LOCK(thread_checker_);
+  if (!db_)
+    return false;
+
+  leveldb::ReadOptions options;
+  leveldb::Status status = db_->Get(options, key, entry);
+  if (status.ok()) {
+    *found = true;
+    return true;
+  }
+  if (status.IsNotFound()) {
+    *found = false;
+    return true;
+  }
+
+  DLOG(WARNING) << "Failed loading leveldb_proto entry with key \"" << key
+                << "\": " << status.ToString();
+  return false;
+}
+
 }  // namespace leveldb_proto
