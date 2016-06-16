@@ -161,6 +161,7 @@ executable("views_examples_with_content_exe") {
   defines = [ "VIEWS_EXAMPLES_WITH_CONTENT_IMPLEMENTATION" ]
 
   deps = [
+    ":copy_content_resources",
     ":views_examples_with_content_lib",
     "//base",
     "//build/config/sanitizers:deps",
@@ -175,4 +176,16 @@ executable("views_examples_with_content_exe") {
     configs += [ "//build/config/win:windowed" ]
     configs -= [ "//build/config/win:console" ]
   }
+}
+
+copy("copy_content_resources") {
+  deps = [
+    "//content:resources",
+  ]
+  sources = [
+    "$root_gen_dir/content/content_resources.pak",
+  ]
+  outputs = [
+    "$root_out_dir/content_resources.pak",
+  ]
 }
