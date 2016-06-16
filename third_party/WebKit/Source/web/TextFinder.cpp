@@ -230,6 +230,9 @@ void TextFinder::stopFindingAndClearSelection()
 
 void TextFinder::reportFindInPageResultToAccessibility(int identifier)
 {
+    if (!m_activeMatch)
+        return;
+
     AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(ownerFrame().frame()->document()->existingAXObjectCache());
     if (!axObjectCache)
         return;
