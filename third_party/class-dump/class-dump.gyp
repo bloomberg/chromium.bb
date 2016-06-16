@@ -181,11 +181,6 @@
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
         ],
-        'xcode_settings': {
-          'OTHER_LDFLAGS': [
-            '-lcrypto',
-          ],
-        },
       },
       'include_dirs': [
         'src/Source',

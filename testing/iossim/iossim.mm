@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Appkit/Appkit.h>
 #include <asl.h>
 #import <Foundation/Foundation.h>
 #include <libgen.h>
@@ -23,6 +24,17 @@
 
 @class DVTStackBacktrace;
 #import "DVTFoundation.h"
+
+// TODO(crbug.com/619982): The latest Xcode beta does not include the proper
+// headers to use or compile iossim.  Define them here so iossim can compile for
+// now. Unwind this #ifdef if future betas work, or replace and remove iossim.
+#if defined(__MAC_10_12) && __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_12
+@class SimDevice;
+@class SimDevicePasteboardConnection;
+@class SimDeviceNotificationManager;
+@class SimMachPortServer;
+@class SimPasteboardItem;
+#endif
 
 @protocol SimBridge;
 @class DVTSimulatorApplication;
@@ -56,6 +68,21 @@
        didStart:(BOOL)started
       withError:(NSError*)error;
 @end
+
+// TODO(crbug.com/619982): The latest Xcode beta does not include the proper
+// headers to use or compile iossim.  Define them here so iossim can compile for
+// now. Unwind this #ifdef if future betas work, or replace and remove iossim.
+#if defined(__MAC_10_12) && __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_12
+@class SimRuntime;
+@interface DTiPhoneSimulatorSystemRoot : NSObject<NSCopying> {
+  SimRuntime* _runtime;
+}
++ (id)rootWithSDKVersion:(id)arg1;
+@property(readonly) SimRuntime* runtime;
+@property(readonly, copy) NSString* sdkVersion;
+@end
+#endif
+
 #import "DVTiPhoneSimulatorRemoteClient.h"
 
 // An undocumented system log key included in messages from launchd. The value
