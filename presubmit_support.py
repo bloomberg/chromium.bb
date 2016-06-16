@@ -16,7 +16,7 @@ import cpplint
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
 import contextlib
-import fnmatch
+import fnmatch  # Exposed through the API.
 import glob
 import inspect
 import itertools
@@ -348,6 +348,7 @@ class InputApi(object):
     self.cPickle = cPickle
     self.cpplint = cpplint
     self.cStringIO = cStringIO
+    self.fnmatch = fnmatch
     self.glob = glob.glob
     self.json = json
     self.logging = logging.getLogger('PRESUBMIT')
