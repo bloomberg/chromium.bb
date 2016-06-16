@@ -897,9 +897,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
             alternative_service_vector[1].port);
 
   // Verify the canonical suffix.
-  EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(test_server.host()));
+  EXPECT_EQ(".c.youtube.com", *impl_.GetCanonicalSuffix(test_server.host()));
   EXPECT_EQ(".c.youtube.com",
-            impl_.GetCanonicalSuffix(canonical_server.host()));
+            *impl_.GetCanonicalSuffix(canonical_server.host()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {

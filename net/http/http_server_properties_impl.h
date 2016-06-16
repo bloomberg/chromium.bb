@@ -69,9 +69,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   // unittests.
   static std::string GetFlattenedSpdyServer(const HostPortPair& host_port_pair);
 
-  // Returns the canonical host suffix for |host|, or std::string() if none
+  // Returns the canonical host suffix for |host|, or nullptr if none
   // exists.
-  std::string GetCanonicalSuffix(const std::string& host);
+  const std::string* GetCanonicalSuffix(const std::string& host) const;
 
   // -----------------------------
   // HttpServerProperties methods:

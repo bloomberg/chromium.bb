@@ -106,12 +106,11 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
   }
 
   // Attempt to find canonical servers. Canonical suffix only apply to HTTPS.
-  uint16_t canonical_port = 443;
-  const char* canonical_scheme = "https";
-  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canonical_suffixes_[i];
-    url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
-                                         canonical_port);
+  const uint16_t kCanonicalPort = 443;
+  const char* kCanonicalScheme = "https";
+  for (const std::string& canonical_suffix : canonical_suffixes_) {
+    url::SchemeHostPort canonical_server(kCanonicalScheme, canonical_suffix,
+                                         kCanonicalPort);
     // If we already have a valid canonical server, we're done.
     if (ContainsKey(canonical_host_to_origin_map_, canonical_server) &&
         (alternative_service_map_.Peek(
@@ -124,7 +123,7 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     for (AlternativeServiceMap::const_iterator it =
              alternative_service_map_.begin();
          it != alternative_service_map_.end(); ++it) {
-      if (base::EndsWith(it->first.host(), canonical_suffixes_[i],
+      if (base::EndsWith(it->first.host(), canonical_suffix,
                          base::CompareCase::INSENSITIVE_ASCII) &&
           it->first.scheme() == canonical_server.scheme()) {
         canonical_host_to_origin_map_[canonical_server] = it->first;
@@ -307,18 +306,17 @@ void HttpServerPropertiesImpl::MaybeForceHTTP11(const HostPortPair& server,
   }
 }
 
-std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
-    const std::string& host) {
+const std::string* HttpServerPropertiesImpl::GetCanonicalSuffix(
+    const std::string& host) const {
   // If this host ends with a canonical suffix, then return the canonical
   // suffix.
-  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canonical_suffixes_[i];
-    if (base::EndsWith(host, canonical_suffixes_[i],
+  for (const std::string& canonical_suffix : canonical_suffixes_) {
+    if (base::EndsWith(host, canonical_suffix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-      return canonical_suffix;
+      return &canonical_suffix;
     }
   }
-  return std::string();
+  return nullptr;
 }
 
 AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
@@ -439,20 +437,15 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
 
   // If this host ends with a canonical suffix, then set it as the
   // canonical host.
-  const char* canonical_scheme = "https";
-  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canonical_suffixes_[i];
-    // canonical suffixes only apply to HTTPS.
-    if (origin.scheme() == canonical_scheme &&
-        base::EndsWith(origin.host(), canonical_suffixes_[i],
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
+  const char* kCanonicalScheme = "https";
+  if (origin.scheme() == kCanonicalScheme) {
+    const std::string* canonical_suffix = GetCanonicalSuffix(origin.host());
+    if (canonical_suffix != nullptr) {
+      url::SchemeHostPort canonical_server(kCanonicalScheme, *canonical_suffix,
                                            origin.port());
       canonical_host_to_origin_map_[canonical_server] = origin;
-      break;
     }
   }
-
   return changed;
 }
 
@@ -713,21 +706,17 @@ HttpServerPropertiesImpl::GetAlternateProtocolIterator(
 HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
 HttpServerPropertiesImpl::GetCanonicalHost(
     const url::SchemeHostPort& server) const {
-  const char* canonical_scheme = "https";
-  if (server.scheme() != canonical_scheme)
+  const char* kCanonicalScheme = "https";
+  if (server.scheme() != kCanonicalScheme)
     return canonical_host_to_origin_map_.end();
 
-  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canonical_suffixes_[i];
-    if (base::EndsWith(server.host(), canonical_suffixes_[i],
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
-                                           server.port());
-      return canonical_host_to_origin_map_.find(canonical_server);
-    }
-  }
+  const std::string* canonical_suffix = GetCanonicalSuffix(server.host());
+  if (canonical_suffix == nullptr)
+    return canonical_host_to_origin_map_.end();
 
-  return canonical_host_to_origin_map_.end();
+  url::SchemeHostPort canonical_server(kCanonicalScheme, *canonical_suffix,
+                                       server.port());
+  return canonical_host_to_origin_map_.find(canonical_server);
 }
 
 void HttpServerPropertiesImpl::RemoveCanonicalHost(

@@ -953,12 +953,12 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     if (notbroken_alternative_service_info_vector.empty()) {
       continue;
     }
-    std::string canonical_suffix =
+    const std::string* canonical_suffix =
         http_server_properties_impl_->GetCanonicalSuffix(server.host());
-    if (!canonical_suffix.empty()) {
-      if (persisted_map.find(canonical_suffix) != persisted_map.end())
+    if (canonical_suffix != nullptr) {
+      if (persisted_map.find(*canonical_suffix) != persisted_map.end())
         continue;
-      persisted_map[canonical_suffix] = true;
+      persisted_map[*canonical_suffix] = true;
     }
     alternative_service_map->Put(server,
                                  notbroken_alternative_service_info_vector);
