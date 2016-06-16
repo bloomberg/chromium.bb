@@ -470,35 +470,78 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
       },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
     net::ProxyInfo data_reduction_proxy_info;
     std::string data_reduction_proxy;
     base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-    if (tests[i].used_data_reduction_proxy)
+    if (test.used_data_reduction_proxy)
       data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
     else
       data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
-    {
-      // Main frame loaded. Lo-Fi should be used.
-      net::HttpRequestHeaders headers;
-      net::ProxyRetryInfoMap proxy_retry_info;
+    // Main frame loaded. Lo-Fi should be used.
+    net::HttpRequestHeaders headers;
+    net::ProxyRetryInfoMap proxy_retry_info;
 
-      std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
-          GURL("http://www.google.com/"), nullptr, std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
-      lofi_decider()->SetIsUsingLoFiMode(tests[i].lofi_on);
-      network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
-                                                  data_reduction_proxy_info,
-                                                  proxy_retry_info, &headers);
-      DataReductionProxyData* data =
-          DataReductionProxyData::GetData(*fake_request.get());
-      if (!tests[i].used_data_reduction_proxy) {
-        EXPECT_FALSE(data);
-      } else {
-        EXPECT_TRUE(data);
-        EXPECT_TRUE(data->used_data_reduction_proxy());
-        EXPECT_EQ(tests[i].lofi_on, data->lofi_requested());
-      }
+    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+        GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
+    lofi_decider()->SetIsUsingLoFiMode(test.lofi_on);
+    network_delegate()->NotifyBeforeSendHeaders(
+        request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetData(*request.get());
+    if (!test.used_data_reduction_proxy) {
+      EXPECT_FALSE(data);
+    } else {
+      EXPECT_TRUE(data);
+      EXPECT_TRUE(data->used_data_reduction_proxy());
+      EXPECT_EQ(test.lofi_on, data->lofi_requested());
+    }
+  }
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       RequestDataHoldbackConfigurations) {
+  const struct {
+    bool data_reduction_proxy_enabled;
+    bool used_direct;
+  } tests[] = {
+      {
+          false, true,
+      },
+      {
+          false, false,
+      },
+      {
+          true, false,
+      },
+      {
+          true, true,
+      },
+  };
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
+  for (const auto& test : tests) {
+    net::ProxyInfo data_reduction_proxy_info;
+    if (test.used_direct)
+      data_reduction_proxy_info.UseDirect();
+    else
+      data_reduction_proxy_info.UseNamedProxy("some.other.proxy");
+    config()->SetStateForTest(test.data_reduction_proxy_enabled, true);
+    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+        GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
+    request->set_method("GET");
+    net::HttpRequestHeaders headers;
+    net::ProxyRetryInfoMap proxy_retry_info;
+    network_delegate()->NotifyBeforeSendHeaders(
+        request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetData(*request.get());
+    if (!test.data_reduction_proxy_enabled || !test.used_direct) {
+      EXPECT_FALSE(data);
+    } else {
+      EXPECT_TRUE(data);
+      EXPECT_TRUE(data->used_data_reduction_proxy());
     }
   }
 }

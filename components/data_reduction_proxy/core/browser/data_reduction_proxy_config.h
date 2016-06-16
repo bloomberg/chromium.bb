@@ -195,6 +195,10 @@ class DataReductionProxyConfig
   // saver proxy is reachable.
   bool enabled_by_user_and_reachable() const;
 
+  // Gets the ProxyConfig that would be used ignoring the holdback experiment.
+  // This should only be used for logging purposes.
+  net::ProxyConfig ProxyConfigIgnoringHoldback() const;
+
  protected:
   // Virtualized for mocking. Records UMA containing the result of requesting
   // the secure proxy check.

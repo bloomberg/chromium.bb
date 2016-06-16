@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -184,6 +186,23 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
 
   // Verify that bad proxy list is empty.
   EXPECT_EQ(0UL, bad_proxy_list.size());
+}
+
+TEST_F(DataReductionProxyIODataTest, HoldbackConfiguresProxies) {
+  net::TestURLRequestContext context(false);
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                           DataReductionProxyParams::kFallbackAllowed |
+                           DataReductionProxyParams::kPromoAllowed |
+                           DataReductionProxyParams::kHoldback)
+          .WithURLRequestContext(&context)
+          .SkipSettingsInitialization()
+          .Build();
+
+  EXPECT_TRUE(drp_test_context->test_params()->proxies_for_http().size() > 0);
+  EXPECT_FALSE(
+      drp_test_context->test_params()->proxies_for_http().front().is_direct());
 }
 
 }  // namespace data_reduction_proxy

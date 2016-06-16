@@ -6,6 +6,8 @@
 
 #include "base/time/time.h"
 #include "net/base/url_util.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_info.h"
 
 #if defined(USE_GOOGLE_API_KEYS)
 #include "google_apis/google_api_keys.h"
@@ -19,7 +21,7 @@ namespace {
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
 #endif
-}
+}  // namespace
 
 bool IsMethodIdempotent(const std::string& method) {
   return method == "GET" || method == "OPTIONS" || method == "HEAD" ||
@@ -35,6 +37,25 @@ GURL AddApiKeyToUrl(const GURL& url) {
   }
 #endif
   return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
+}
+
+bool EligibleForDataReductionProxy(const net::ProxyInfo& proxy_info,
+                                   const GURL& url,
+                                   const std::string& method) {
+  return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
+         !url.SchemeIsWSOrWSS() && IsMethodIdempotent(method);
+}
+
+bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
+                                 const net::ProxyRetryInfoMap& proxy_retry_info,
+                                 const GURL& url,
+                                 net::ProxyInfo* data_reduction_proxy_info) {
+  DCHECK(data_reduction_proxy_info);
+  if (!proxy_config.is_valid())
+    return false;
+  proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
+  data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
+  return !data_reduction_proxy_info->proxy_server().is_direct();
 }
 
 namespace protobuf_parser {

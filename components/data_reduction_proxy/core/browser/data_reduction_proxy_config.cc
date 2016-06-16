@@ -927,4 +927,13 @@ base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   return base::TimeTicks::Now();
 }
 
+net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
+  std::vector<net::ProxyServer> proxies_for_http =
+      config_values_->proxies_for_http();
+  if (!enabled_by_user_ || proxies_for_http.empty())
+    return net::ProxyConfig::CreateDirect();
+  return configurator_->CreateProxyConfig(!secure_proxy_allowed_,
+                                          proxies_for_http);
+}
+
 }  // namespace data_reduction_proxy

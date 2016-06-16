@@ -33,6 +33,16 @@ void DataReductionProxyConfigurator::Enable(
     bool secure_transport_restricted,
     const std::vector<net::ProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  net::ProxyConfig config =
+      CreateProxyConfig(secure_transport_restricted, proxies_for_http);
+  data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
+      net_log_, secure_transport_restricted, proxies_for_http);
+  config_ = config;
+}
+
+net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
+    bool secure_transport_restricted,
+    const std::vector<net::ProxyServer>& proxies_for_http) const {
   net::ProxyConfig config;
   config.proxy_rules().type =
       net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
@@ -56,9 +66,7 @@ void DataReductionProxyConfigurator::Enable(
   // config will return invalid.
   net::ProxyConfig::ID unused_id = 1;
   config.set_id(unused_id);
-  data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
-      net_log_, secure_transport_restricted, proxies_for_http);
-  config_ = config;
+  return config;
 }
 
 void DataReductionProxyConfigurator::Disable() {

@@ -135,6 +135,14 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // transformations.
   void RecordLoFiTransformationType(LoFiTransformationType type);
 
+  // Returns whether |request| would have used the data reduction proxy server
+  // if the holdback fieldtrial weren't enabled. |proxy_info| is the list of
+  // proxies being used, and |proxy_retry_info| contains a list of bad proxies.
+  bool WasEligibleWithoutHoldback(
+      const net::URLRequest& request,
+      const net::ProxyInfo& proxy_info,
+      const net::ProxyRetryInfoMap& proxy_retry_info) const;
+
   // Total size of all content that has been received over the network.
   int64_t total_received_bytes_;
 
