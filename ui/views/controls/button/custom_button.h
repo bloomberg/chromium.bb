@@ -17,8 +17,6 @@
 
 namespace views {
 
-class InkDropDelegate;
-
 // A button with custom rendering. The base of ImageButton and LabelButton.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain, unless in accessibility mode. Call
@@ -184,12 +182,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
 
   // True when a button click should trigger an animation action on
   // ink_drop_delegate().
-  // TODO(bruthig): Use an InkDropAction enum and drop the flag.
   bool has_ink_drop_action_on_click_;
-
-  // The animation action to trigger on ink_drop_delegate() when the button
-  // is clicked.
-  InkDropState ink_drop_action_on_click_;
 
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.

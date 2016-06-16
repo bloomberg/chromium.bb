@@ -19,7 +19,6 @@ class AppMenu;
 class AppMenuModel;
 
 namespace views {
-class InkDropDelegate;
 class LabelButtonBorder;
 class MenuListener;
 }

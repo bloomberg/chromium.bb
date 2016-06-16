@@ -24,7 +24,6 @@ class MenuModel;
 }
 
 namespace views {
-class InkDropDelegate;
 class MenuModelAdapter;
 class MenuRunner;
 }

@@ -12,6 +12,7 @@
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
+class InkDropButtonListener;
 class ShelfView;
 
 // Button used for items on the launcher, except for the AppList.
@@ -37,7 +38,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
     STATE_HIDDEN = 1 << 5,
   };
 
-  explicit ShelfButton(ShelfView* shelf_view);
+  ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view);
   ~ShelfButton() override;
 
   // Sets the image to display for this entry.
@@ -53,6 +54,9 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
 
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;
+
+  // Called when user started dragging the shelf button.
+  void OnDragStarted();
 
   // Overrides to views::CustomButton:
   void ShowContextMenu(const gfx::Point& p,
@@ -77,6 +81,12 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // views::CustomButton overrides:
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
+  bool ShouldShowInkDropHighlight() const override;
+  void NotifyClick(const ui::Event& event) override;
+
   // Sets the icon image with a shadow.
   void SetShadowedImage(const gfx::ImageSkia& bitmap);
 
@@ -89,6 +99,8 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
 
   // Updates the status bar (bitmap, orientation, visibility).
   void UpdateBar();
+
+  InkDropButtonListener* listener_;
 
   // The shelf view hosting this button.
   ShelfView* shelf_view_;

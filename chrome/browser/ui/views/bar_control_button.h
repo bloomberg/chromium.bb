@@ -15,10 +15,6 @@ namespace gfx {
 enum class VectorIconId;
 }
 
-namespace views {
-class InkDropDelegate;
-}
-
 // A class for buttons that control bars (find bar, download shelf, etc.). The
 // button has an image and no text.
 class BarControlButton : public views::ImageButton {

@@ -53,7 +53,6 @@ class ThemeProvider;
 }
 
 namespace views {
-class ButtonInkDropDelegate;
 class ImageButton;
 class Label;
 class LabelButton;

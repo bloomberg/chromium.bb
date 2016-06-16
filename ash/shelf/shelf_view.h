@@ -12,6 +12,7 @@
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
+#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
@@ -19,6 +20,7 @@
 #include "base/observer_list.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -58,7 +60,7 @@ extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT;
 
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
-                             public views::ButtonListener,
+                             public InkDropButtonListener,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
@@ -138,6 +140,10 @@ class ASH_EXPORT ShelfView : public views::View,
   bool Drag(const gfx::Point& location_in_screen_coordinates) override;
   void EndDrag(bool cancel) override;
 
+  // Returns true if |event| on the shelf item is going to activate the item.
+  // Used to determine whether a pending ink drop should be shown or not.
+  bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
+
   // The shelf buttons use the Pointer interface to enable item reordering.
   enum Pointer { NONE, DRAG_AND_DROP, MOUSE, TOUCH };
   void PointerPressedOnButton(views::View* view,
@@ -170,6 +176,9 @@ class ASH_EXPORT ShelfView : public views::View,
     DRAGGABLE,     // Item can be dragged, but will snap always back to origin.
     NOT_REMOVABLE, // Item is fixed and can never be removed.
   };
+
+  // Minimum distance before drag starts.
+  static const int kMinimumDragDistance;
 
   // Returns true when this ShelfView is used for Overflow Bubble.
   // In this mode, it does not show app list, panel and overflow button.
@@ -277,16 +286,20 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
 
-  // Overridden from views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Overridden from InkDropButtonListener:
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
 
   // Show a list of all running items for this shelf |item|; it only shows a
   // menu if there are multiple running items. |source| specifies the view
   // responsible for showing the menu, and the bubble will point towards it.
   // The |event_flags| are the flags of the event which triggered this menu.
-  void ShowListMenuForView(const ShelfItem& item,
+  // Returns |true| if a menu is shown.
+  bool ShowListMenuForView(const ShelfItem& item,
                            views::View* source,
-                           const ui::Event& event);
+                           const ui::Event& event,
+                           views::InkDrop* ink_drop);
 
   // Overridden from views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
@@ -439,7 +452,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // True if the event is a repost event from a event which has just closed the
   // menu of the same shelf item.
-  bool is_repost_event_;
+  bool is_repost_event_on_same_item_;
 
   // Record the index for the last pressed shelf item. This variable is used to
   // check if a repost event occurs on the same shelf item as previous one. If

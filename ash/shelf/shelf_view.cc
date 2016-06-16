@@ -69,9 +69,6 @@ const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT = 3;
 // Default amount content is inset on the left edge.
 const int kDefaultLeadingInset = 8;
 
-// Minimum distance before drag starts.
-const int kMinimumDragDistance = 8;
-
 // Additional spacing for the left and right side of icons.
 const int kHorizontalIconSpacing = 2;
 
@@ -362,6 +359,9 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
+// static
+const int ShelfView::kMinimumDragDistance = 8;
+
 ShelfView::ShelfView(ShelfModel* model,
                      ShelfDelegate* delegate,
                      WmShelf* wm_shelf,
@@ -394,7 +394,7 @@ ShelfView::ShelfView(ShelfModel* model,
       overflow_mode_(false),
       main_shelf_(nullptr),
       dragged_off_from_overflow_to_shelf_(false),
-      is_repost_event_(false),
+      is_repost_event_on_same_item_(false),
       last_pressed_index_(-1) {
   DCHECK(model_);
   DCHECK(wm_shelf_);
@@ -718,6 +718,29 @@ void ShelfView::EndDrag(bool cancel) {
   drag_and_drop_shelf_id_ = 0;
 }
 
+bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
+  if (dragging())
+    return false;
+
+  // Ignore if we are already in a pointer event sequence started with a repost
+  // event on the same shelf item. See crbug.com/343005 for more detail.
+  if (is_repost_event_on_same_item_)
+    return false;
+
+  // Don't activate the item twice on double-click. Otherwise the window starts
+  // animating open due to the first click, then immediately minimizes due to
+  // the second click. The user most likely intended to open or minimize the
+  // item once, not do both.
+  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
+    return false;
+
+  // Ignore if this is a repost event on the last pressed shelf item.
+  int index = view_model_->GetIndexOfView(view);
+  if (index == -1)
+    return false;
+  return !IsRepostEvent(event) || last_pressed_index_ != index;
+}
+
 void ShelfView::PointerPressedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {
@@ -725,17 +748,18 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     return;
 
   int index = view_model_->GetIndexOfView(view);
-  if (index == -1)
-    return;
+  if (index == -1 || view_model_->view_size() <= 1)
+    return;  // View is being deleted, ignore request.
 
   ShelfItemDelegate* item_delegate =
       item_manager_->GetShelfItemDelegate(model_->items()[index].id);
-  if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
-    return;  // View is being deleted or not draggable, ignore request.
+  if (!item_delegate->IsDraggable())
+    return;  // View is not draggable, ignore request.
 
   // Only when the repost event occurs on the same shelf item, we should ignore
   // the call in ShelfView::ButtonPressed(...).
-  is_repost_event_ = IsRepostEvent(event) && (last_pressed_index_ == index);
+  is_repost_event_on_same_item_ =
+      IsRepostEvent(event) && (last_pressed_index_ == index);
 
   CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
   drag_view_ = static_cast<ShelfButton*>(view);
@@ -765,8 +789,7 @@ void ShelfView::PointerDraggedOnButton(views::View* view,
 void ShelfView::PointerReleasedOnButton(views::View* view,
                                         Pointer pointer,
                                         bool canceled) {
-  // Reset |is_repost_event| to false.
-  is_repost_event_ = false;
+  is_repost_event_on_same_item_ = false;
 
   if (canceled) {
     CancelDrag(-1);
@@ -997,7 +1020,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_DIALOG:
     case TYPE_APP_PANEL:
     case TYPE_IME_MENU: {
-      ShelfButton* button = new ShelfButton(this);
+      ShelfButton* button = new ShelfButton(this, this);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -1005,7 +1028,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this);
+      view = new AppListButton(this, this);
       break;
     }
 
@@ -1049,6 +1072,8 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   // Move the view to the front so that it appears on top of other views.
   ReorderChildView(drag_view_, -1);
   bounds_animator_->StopAnimatingView(drag_view_);
+
+  drag_view_->OnDragStarted();
 }
 
 void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
@@ -1674,11 +1699,9 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  // Do not handle mouse release during drag.
-  if (dragging())
-    return;
-
+void ShelfView::ButtonPressed(views::Button* sender,
+                              const ui::Event& event,
+                              views::InkDrop* ink_drop) {
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
     shelf_button_pressed_metric_tracker_.ButtonPressed(
@@ -1686,26 +1709,14 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     return;
   }
 
-  int view_index = view_model_->GetIndexOfView(sender);
-  // May be -1 while in the process of animating closed.
-  if (view_index == -1)
-    return;
-
-  // If the menu was just closed by the same event as this one, we ignore
-  // the call and don't open the menu again. See crbug.com/343005 for more
-  // detail.
-  if (is_repost_event_)
+  // None of the checks in ShouldEventActivateButton() affects overflow button.
+  // So, it is safe to be checked after handling overflow button.
+  if (!ShouldEventActivateButton(sender, event))
     return;
 
   // Record the index for the last pressed shelf item.
-  last_pressed_index_ = view_index;
-
-  // Don't activate the item twice on double-click. Otherwise the window starts
-  // animating open due to the first click, then immediately minimizes due to
-  // the second click. The user most likely intended to open or minimize the
-  // item once, not do both.
-  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
-    return;
+  last_pressed_index_ = view_model_->GetIndexOfView(sender);
+  DCHECK_LT(-1, last_pressed_index_);
 
   {
     ScopedTargetRootWindow scoped_target(
@@ -1714,11 +1725,11 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
     if (event.IsShiftDown()) {
       slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
-            ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
     }
 
     // Collect usage statistics before we decide what to do with the click.
-    switch (model_->items()[view_index].type) {
+    switch (model_->items()[last_pressed_index_].type) {
       case TYPE_APP_SHORTCUT:
       case TYPE_WINDOWED_APP:
       case TYPE_PLATFORM_APP:
@@ -1743,20 +1754,25 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     }
 
     ShelfItemDelegate::PerformedAction performed_action =
-        item_manager_->GetShelfItemDelegate(model_->items()[view_index].id)
+        item_manager_
+            ->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
             ->ItemSelected(event);
 
     shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
                                                        performed_action);
 
-    if (performed_action != ShelfItemDelegate::kNewWindowCreated)
-      ShowListMenuForView(model_->items()[view_index], sender, event);
+    if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
+        !ShowListMenuForView(model_->items()[last_pressed_index_], sender,
+                             event, ink_drop)) {
+      ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+    }
   }
 }
 
-void ShelfView::ShowListMenuForView(const ShelfItem& item,
+bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     views::View* source,
-                                    const ui::Event& event) {
+                                    const ui::Event& event,
+                                    views::InkDrop* ink_drop) {
   ShelfItemDelegate* item_delegate =
       item_manager_->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::MenuModel> list_menu_model(
@@ -1765,16 +1781,23 @@ void ShelfView::ShowListMenuForView(const ShelfItem& item,
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
   if (!list_menu_model.get() || list_menu_model->GetItemCount() <= 5)
-    return;
+    return false;
 
+  ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
   context_menu_id_ = item.id;
   ShowMenu(list_menu_model.get(), source, gfx::Point(), false,
            ui::GetMenuSourceTypeForEvent(event));
+  // Menu is run synchronously, the menu is closed now and we need to go to
+  // the deactivated state.
+  ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
+  return true;
 }
 
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
+  last_pressed_index_ = -1;
+
   const ShelfItem* item = ShelfItemForView(source);
   if (!item) {
     Shell::GetInstance()->ShowContextMenu(point, source_type);
@@ -1884,11 +1907,9 @@ bool ShelfView::IsRepostEvent(const ui::Event& event) {
   if (closing_event_time_.is_null())
     return false;
 
-  base::TimeTicks last_closing_event_time = closing_event_time_;
-  closing_event_time_ = base::TimeTicks();
   // If the current (press down) event is a repost event, the time stamp of
   // these two events should be the same.
-  return last_closing_event_time == event.time_stamp();
+  return closing_event_time_ == event.time_stamp();
 }
 
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {

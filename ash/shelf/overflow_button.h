@@ -12,13 +12,13 @@
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
-
+class InkDropButtonListener;
 class Shelf;
 
 // Shelf overflow chevron button.
 class OverflowButton : public views::CustomButton {
  public:
-  OverflowButton(views::ButtonListener* listener, Shelf* shelf);
+  OverflowButton(InkDropButtonListener* listener, Shelf* shelf);
   ~OverflowButton() override;
 
   void OnShelfAlignmentChanged();
@@ -26,6 +26,9 @@ class OverflowButton : public views::CustomButton {
  private:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+
+  // views::CustomButton:
+  void NotifyClick(const ui::Event& event) override;
 
   // Helper functions to paint the background and foreground of the button
   // at |bounds|.
@@ -56,6 +59,7 @@ class OverflowButton : public views::CustomButton {
   gfx::ImageSkia left_image_;
   gfx::ImageSkia right_image_;
 
+  InkDropButtonListener* listener_;
   Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);

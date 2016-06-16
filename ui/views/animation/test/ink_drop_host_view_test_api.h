@@ -22,6 +22,7 @@ class InkDropHostViewTestApi {
   ~InkDropHostViewTestApi();
 
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop);
+  InkDrop* ink_drop() { return host_view_->ink_drop(); }
 
  private:
   // The InkDropHostView to provide internal access to.

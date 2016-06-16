@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
 
 namespace {
@@ -98,6 +99,13 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   shelf_view_->bounds_animator_->RemoveObserver(observer.get());
 }
 
+void ShelfViewTestAPI::CloseMenu() {
+  if (!shelf_view_->launcher_menu_runner_)
+    return;
+
+  shelf_view_->launcher_menu_runner_->Cancel();
+}
+
 OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
   return shelf_view_->overflow_bubble_.get();
 }
@@ -118,9 +126,14 @@ int ShelfViewTestAPI::GetButtonSpacing() {
   return GetShelfConstant(SHELF_BUTTON_SPACING);
 }
 
+int ShelfViewTestAPI::GetMinimumDragDistance() const {
+  return ShelfView::kMinimumDragDistance;
+}
+
 void ShelfViewTestAPI::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  return shelf_view_->ButtonPressed(sender, event);
+                                     const ui::Event& event,
+                                     views::InkDrop* ink_drop) {
+  return shelf_view_->ButtonPressed(sender, event, ink_drop);
 }
 
 bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,

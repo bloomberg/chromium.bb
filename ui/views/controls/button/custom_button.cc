@@ -408,7 +408,6 @@ CustomButton::CustomButton(ButtonListener* listener)
       request_focus_on_press_(false),
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
-      ink_drop_action_on_click_(InkDropState::ACTION_TRIGGERED),
       hide_ink_drop_when_showing_context_menu_(true),
       ink_drop_base_color_(gfx::kPlaceholderColor) {
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
@@ -462,7 +461,7 @@ bool CustomButton::ShouldEnterHoveredState() {
 
 void CustomButton::NotifyClick(const ui::Event& event) {
   if (has_ink_drop_action_on_click_)
-    AnimateInkDrop(ink_drop_action_on_click_);
+    AnimateInkDrop(InkDropState::ACTION_TRIGGERED);
   Button::NotifyClick(event);
 }
 

@@ -11,6 +11,7 @@
 
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
+#include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -24,6 +25,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/material_design_controller_test_api.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -35,9 +37,12 @@
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -47,11 +52,16 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
+
+using testing::ElementsAre;
+using testing::IsEmpty;
 
 namespace ash {
 namespace test {
@@ -470,7 +480,9 @@ class ShelfViewTest : public AshTestBase {
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), 0, 0);
-    test_api_->ButtonPressed(button, release_event);
+    test_api_->ButtonPressed(
+        button, release_event,
+        views::test::InkDropHostViewTestApi(button).ink_drop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 
@@ -481,7 +493,9 @@ class ShelfViewTest : public AshTestBase {
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
-    test_api_->ButtonPressed(button, release_event);
+    test_api_->ButtonPressed(
+        button, release_event,
+        views::test::InkDropHostViewTestApi(button).ink_drop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 
@@ -1994,6 +2008,283 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
 INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
 INSTANTIATE_TEST_CASE_P(VisibleBounds, ShelfViewVisibleBoundsTest,
     testing::Bool());
+
+namespace {
+
+// An InkDrop implementation that wraps another InkDrop instance to keep track
+// of state changes requested on it. Note that this will only track transitions
+// routed through AnimateToState() and not the ones performed directly on the
+// ripple inside the contained |ink_drop|.
+class InkDropSpy : public views::InkDrop {
+ public:
+  explicit InkDropSpy(std::unique_ptr<views::InkDrop> ink_drop)
+      : ink_drop_(std::move(ink_drop)) {}
+  ~InkDropSpy() override {}
+
+  std::vector<views::InkDropState> GetAndResetRequestedStates() {
+    std::vector<views::InkDropState> requested_states;
+    requested_states.swap(requested_states_);
+    return requested_states;
+  }
+
+  // views::InkDrop:
+  views::InkDropState GetTargetInkDropState() const override {
+    return ink_drop_->GetTargetInkDropState();
+  }
+  void AnimateToState(views::InkDropState ink_drop_state) override {
+    requested_states_.push_back(ink_drop_state);
+    ink_drop_->AnimateToState(ink_drop_state);
+  }
+  void SnapToActivated() override { ink_drop_->SnapToActivated(); }
+  void SetHovered(bool is_hovered) override {
+    ink_drop_->SetHovered(is_hovered);
+  }
+  void SetFocused(bool is_focused) override {
+    ink_drop_->SetFocused(is_focused);
+  }
+
+  std::unique_ptr<views::InkDrop> ink_drop_;
+  std::vector<views::InkDropState> requested_states_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InkDropSpy);
+};
+
+// A menu model that contains minimum number of items needed for a menu to be
+// shown on a shelf item.
+class TestShelfMenuModel : public ShelfMenuModel,
+                           public ui::SimpleMenuModel::Delegate {
+ public:
+  TestShelfMenuModel() : ShelfMenuModel(this) { Build(); }
+  ~TestShelfMenuModel() override {}
+
+ private:
+  void Build() {
+    // A menu is expected to have at least 6 items. Three spacing separators,
+    // one title, and at least two more items.
+    AddSeparator(ui::SPACING_SEPARATOR);
+    AddItem(0, base::ASCIIToUTF16("Title"));
+    AddSeparator(ui::SPACING_SEPARATOR);
+    AddItem(1, base::ASCIIToUTF16("Item 1"));
+    AddItem(2, base::ASCIIToUTF16("Item 2"));
+    AddSeparator(ui::SPACING_SEPARATOR);
+  }
+
+  // ShelfMenuModel:
+  bool IsCommandActive(int command_id) const override { return false; }
+
+  // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdChecked(int command_id) const override { return false; }
+  bool IsCommandIdEnabled(int command_id) const override {
+    return command_id != 0;
+  }
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
+    return false;
+  }
+  void ExecuteCommand(int command_id, int event_flags) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestShelfMenuModel);
+};
+
+// A ShelfItemDelegate that returns a menu for the shelf item.
+class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
+ public:
+  ListMenuShelfItemDelegate() : TestShelfItemDelegate(nullptr) {}
+  ~ListMenuShelfItemDelegate() override {}
+
+ private:
+  // TestShelfItemDelegate:
+  ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
+    return new TestShelfMenuModel;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
+};
+
+}  // namespace
+
+class ShelfViewInkDropTest : public ShelfViewTest {
+ public:
+  ShelfViewInkDropTest() : ink_drop_(nullptr), browser_button_(nullptr) {}
+  ~ShelfViewInkDropTest() override {}
+
+  void SetUp() override {
+    ShelfViewTest::SetUp();
+
+    // TODO(mohsen): Ideally, we would want to set material mode before calling
+    // ShelfViewTest::SetUp() so that everything is set up with the correct
+    // material mode. Currently, this is not possible as it expects material
+    // mode be UNINITIALIZED. (See https://crbug.com/620093)
+    ash_md_controller_.reset(new ash::test::MaterialDesignControllerTestAPI(
+        ash::MaterialDesignController::MATERIAL_NORMAL));
+
+    browser_button_ = test_api_->GetButton(browser_index_);
+
+    views::InkDropImpl* ink_drop_impl = new views::InkDropImpl(browser_button_);
+    ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
+    views::test::InkDropHostViewTestApi(browser_button_)
+        .SetInkDrop(base::WrapUnique(ink_drop_));
+  }
+
+  void TearDown() override {
+    ash_md_controller_.reset();
+
+    ShelfViewTest::TearDown();
+  }
+
+ protected:
+  std::unique_ptr<ash::test::MaterialDesignControllerTestAPI>
+      ash_md_controller_;
+
+  InkDropSpy* ink_drop_;
+  ShelfButton* browser_button_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewInkDropTest);
+};
+
+// Tests that clicking on a shelf item that does not show a menu transitions ink
+// drop states correctly.
+TEST_F(ShelfViewInkDropTest, WithoutMenuPressRelease) {
+  views::CustomButton* button = browser_button_;
+  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location, ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMousePressed(press_event);
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
+                               press_location, ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseReleased(release_event);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_TRIGGERED));
+}
+
+// Tests that dragging outside of a shelf item transitions ink drop states
+// correctly.
+TEST_F(ShelfViewInkDropTest, WithoutMenuPressDragReleaseOutside) {
+  views::CustomButton* button = browser_button_;
+  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location, ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMousePressed(press_event);
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  press_location.Offset(test_api_->GetMinimumDragDistance() / 2, 0);
+  ui::MouseEvent drag_event_small(ui::ET_MOUSE_DRAGGED, press_location,
+                                  press_location, ui::EventTimeForNow(),
+                                  ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event_small);
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+
+  press_location.Offset(test_api_->GetMinimumDragDistance(), 0);
+  ui::MouseEvent drag_event_large(ui::ET_MOUSE_DRAGGED, press_location,
+                                  press_location, ui::EventTimeForNow(),
+                                  ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event_large);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
+                               press_location, ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseReleased(release_event);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+}
+
+// Tests that dragging outside of a shelf item and back transitions ink drop
+// states correctly.
+TEST_F(ShelfViewInkDropTest, WithoutMenuPressDragReleaseInside) {
+  views::CustomButton* button = browser_button_;
+  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location, ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMousePressed(press_event);
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  press_location.Offset(test_api_->GetMinimumDragDistance() * 2, 0);
+  ui::MouseEvent drag_event_outside(ui::ET_MOUSE_DRAGGED, press_location,
+                                    press_location, ui::EventTimeForNow(),
+                                    ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event_outside);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  press_location.Offset(-test_api_->GetMinimumDragDistance() * 2, 0);
+  ui::MouseEvent drag_event_inside(ui::ET_MOUSE_DRAGGED, press_location,
+                                   press_location, ui::EventTimeForNow(),
+                                   ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event_inside);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
+                               press_location, ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseReleased(release_event);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+}
+
+// Tests that clicking on a shelf item that shows an app list menu transitions
+// ink drop state correctly.
+TEST_F(ShelfViewInkDropTest, WithMenuPressRelease) {
+  // Set a delegate for the shelf item that returns an app list menu.
+  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
+  ListMenuShelfItemDelegate* list_menu_delegate = new ListMenuShelfItemDelegate;
+  item_manager_->SetShelfItemDelegate(browser_shelf_id,
+                                      base::WrapUnique(list_menu_delegate));
+
+  views::CustomButton* button = browser_button_;
+  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location, ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMousePressed(press_event);
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ShelfViewTestAPI::CloseMenu,
+                            base::Unretained(test_api_.get())));
+
+  // Mouse release will spawn a menu which will then get closed by the above
+  // posted task.
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
+                               press_location, ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseReleased(release_event);
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED,
+                          views::InkDropState::DEACTIVATED));
+}
 
 }  // namespace test
 }  // namespace ash

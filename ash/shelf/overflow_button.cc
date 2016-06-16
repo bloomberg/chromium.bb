@@ -9,6 +9,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -30,8 +31,11 @@
 
 namespace ash {
 
-OverflowButton::OverflowButton(views::ButtonListener* listener, Shelf* shelf)
-    : CustomButton(listener), bottom_image_(nullptr), shelf_(shelf) {
+OverflowButton::OverflowButton(InkDropButtonListener* listener, Shelf* shelf)
+    : CustomButton(nullptr),
+      bottom_image_(nullptr),
+      listener_(listener),
+      shelf_(shelf) {
   if (MaterialDesignController::IsShelfMaterial()) {
     bottom_image_md_ =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
@@ -55,6 +59,12 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = CalculateButtonBounds();
   PaintBackground(canvas, bounds);
   PaintForeground(canvas, bounds);
+}
+
+void OverflowButton::NotifyClick(const ui::Event& event) {
+  CustomButton::NotifyClick(event);
+  if (listener_)
+    listener_->ButtonPressed(this, event, ink_drop());
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
@@ -96,7 +106,7 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   const gfx::ImageSkia* image = nullptr;
 
-  switch(shelf_->alignment()) {
+  switch (shelf_->alignment()) {
     case SHELF_ALIGNMENT_LEFT:
       if (left_image_.isNull()) {
         left_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(

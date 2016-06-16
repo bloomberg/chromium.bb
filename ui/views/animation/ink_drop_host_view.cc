@@ -101,6 +101,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
 InkDropHostView::InkDropHostView()
     : ink_drop_(new InkDropStub()),
       ink_drop_size_(kInkDropSize, kInkDropSize),
+      old_paint_to_layer_(false),
       destroying_(false) {}
 
 InkDropHostView::~InkDropHostView() {
@@ -110,6 +111,7 @@ InkDropHostView::~InkDropHostView() {
 }
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  old_paint_to_layer_ = layer() != nullptr;
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
   layer()->Add(ink_drop_layer);
@@ -123,7 +125,7 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   if (destroying_)
     return;
   layer()->Remove(ink_drop_layer);
-  SetPaintToLayer(false);
+  SetPaintToLayer(old_paint_to_layer_);
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {

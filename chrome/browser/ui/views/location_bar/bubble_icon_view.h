@@ -22,7 +22,6 @@ enum class VectorIconId;
 
 namespace views {
 class BubbleDialogDelegateView;
-class InkDropDelegate;
 }
 
 // Represents an icon on the omnibox that shows a bubble when clicked.

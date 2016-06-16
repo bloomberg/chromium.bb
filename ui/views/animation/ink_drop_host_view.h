@@ -79,6 +79,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   gfx::Size ink_drop_size_;
 
+  // Determines whether the view was already painting to layer before adding ink
+  // drop layer.
+  bool old_paint_to_layer_;
+
   bool destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);

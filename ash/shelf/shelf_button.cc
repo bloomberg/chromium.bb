@@ -10,6 +10,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -47,6 +49,12 @@ const SkColor kIndicatorColor = SK_ColorWHITE;
 // Canvas scale to ensure that the activity indicator is not pixelated even at
 // the highest possible device scale factors.
 const int kIndicatorCanvasScale = 5;
+
+// Shelf item ripple constants.
+const int kInkDropSmallSize = 48;
+const int kInkDropLargeSize = 60;
+const int kInkDropLargeCornerRadius = 4;
+const SkColor kInkDropBaseColor = SK_ColorWHITE;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -242,14 +250,19 @@ class ShelfButton::BarView : public views::ImageView,
 // static
 const char ShelfButton::kViewClassName[] = "ash/ShelfButton";
 
-ShelfButton::ShelfButton(ShelfView* shelf_view)
-    : CustomButton(shelf_view),
+ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
+    : CustomButton(nullptr),
+      listener_(listener),
       shelf_view_(shelf_view),
       icon_view_(new views::ImageView()),
       bar_(new BarView(shelf_view->shelf())),
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    SetHasInkDrop(true);
+    set_ink_drop_base_color(kInkDropBaseColor);
+  }
 
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -330,6 +343,10 @@ void ShelfButton::ClearState(State state) {
 
 gfx::Rect ShelfButton::GetIconBounds() const {
   return icon_view_->bounds();
+}
+
+void ShelfButton::OnDragStarted() {
+  AnimateInkDrop(views::InkDropState::HIDDEN);
 }
 
 void ShelfButton::ShowContextMenu(const gfx::Point& p,
@@ -479,6 +496,31 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
     default:
       return CustomButton::OnGestureEvent(event);
   }
+}
+
+std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
+  return base::WrapUnique(new views::SquareInkDropRipple(
+      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
+      kInkDropLargeCornerRadius,
+      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
+}
+
+bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {
+  if (!shelf_view_->ShouldEventActivateButton(this, event))
+    return false;
+
+  return CustomButton::ShouldEnterPushedState(event);
+}
+
+bool ShelfButton::ShouldShowInkDropHighlight() const {
+  return false;
+}
+
+void ShelfButton::NotifyClick(const ui::Event& event) {
+  CustomButton::NotifyClick(event);
+  if (listener_)
+    listener_->ButtonPressed(this, event, ink_drop());
 }
 
 void ShelfButton::UpdateState() {

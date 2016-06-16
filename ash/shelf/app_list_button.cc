@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -32,9 +33,11 @@ namespace ash {
 // Radius of the app list button circular background.
 const int kAppListButtonBackgroundRadius = 16;
 
-AppListButton::AppListButton(ShelfView* shelf_view)
-    : views::ImageButton(shelf_view),
+AppListButton::AppListButton(InkDropButtonListener* listener,
+                             ShelfView* shelf_view)
+    : views::ImageButton(nullptr),
       draw_background_as_active_(false),
+      listener_(listener),
       shelf_view_(shelf_view) {
   SetAccessibleName(
       app_list::switches::IsExperimentalAppListEnabled()
@@ -236,6 +239,12 @@ void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
 void AppListButton::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
   state->name = shelf_view_->GetTitleForView(this);
+}
+
+void AppListButton::NotifyClick(const ui::Event& event) {
+  ImageButton::NotifyClick(event);
+  if (listener_)
+    listener_->ButtonPressed(this, event, ink_drop());
 }
 
 void AppListButton::SetDrawBackgroundAsActive(
