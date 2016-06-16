@@ -4,96 +4,250 @@
 <script src="resources/shadow-dom.js"></script>
 
 <div id="test1">
-  <template id="shadowroot" data-mode="open">
-    <slot id="slot" name="slot"></slot>
-  </template>
-  <input id="input" slot="slot">
-</div>
-
-<div id="test2">
-  <template id="shadowroot" data-mode="open">
-    <slot id="slot" name="slot"></slot>
-  </template>
-  <div id="input-parent" slot="slot">
-    <input id="input">
+  <div id="d1">
+    <div id="target"></div>
   </div>
 </div>
 
-<div id="test3">
-  <template id="open_shadow" data-mode="open">
-    <div id="inner_open">
-      <template id="open_shadow_in_open_shadow" data-mode="open">
-        <spen id="target_open" tabindex="0">open</spen>
-      </template>
-    </div>
-  </template>
-</div>
+<script>
+test(() => {
+  let n = createTestTree(test1);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  assert_event_path_equals(log, makeExpectedEventPathLog(['target', 'd1', 'test1']));
+}, 'Event Path without ShadowRoots.');
+</script>
 
-<div id="test4">
-  <template id="closed_shadow" data-mode="closed">
-    <div id="inner_closed">
-      <template id="open_shadow_in_closed_shadow" data-mode="open">
-        <spen id="target_closed" tabindex="0">closed</spen>
-      </template>
-    </div>
-  </template>
+<div id="test2">
+  <div id="host">
+    <template id="sr" data-mode="open">
+      <div id="target"></div>
+    </template>
+  </div>
 </div>
 
 <script>
-function makeExpectedEventPathLog(path) {
-  let expectedLog = [];
-  for (let i of path) {
-    expectedLog.push([i, null, path]);
-  }
-  return expectedLog;
-}
-
-test(() => {
-  const event = new Event('my-event');
-  let dispatched = false;
-  let target = document.createElement('div');
-  target.addEventListener('my-event', (e) => {
-    assert_array_equals(e.composedPath(), [target]);
-    dispatched = true;
-  });
-  assert_array_equals(event.composedPath(), []);
-  target.dispatchEvent(event);
-  assert_true(dispatched);
-  assert_array_equals(event.composedPath(), []);
-}, "Event.composedPath() should return an empty array before/after dispatching an event");
-
-test(() => {
-  let n = createTestTree(test1);
-  removeWhiteSpaceOnlyTextNodes(n.test1);
-  let log = dispatchEventWithLog(n, n.input, new Event('my-event', { bubbles: true, composed: true }));
-  assert_event_path_equals(log, makeExpectedEventPathLog(['input', 'slot', 'shadowroot', 'test1']));
-}, 'Triggered in a slotted element, eventPath should go through shadow tree.');
-
 test(() => {
   let n = createTestTree(test2);
-  removeWhiteSpaceOnlyTextNodes(n.test2);
-  let log = dispatchEventWithLog(n, n.input, new Event('my-event', { bubbles: true, composed: true }));
-  assert_event_path_equals(log, makeExpectedEventPathLog(['input', 'input-parent', 'slot', 'shadowroot', 'test2']));
-}, 'EventPath works fine when event happens to a descendant of a slotted element.');
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  assert_event_path_equals(log, makeExpectedEventPathLog(['target', 'sr', 'host', 'test2']));
+}, 'Event Path with an open ShadowRoot.');
+</script>
 
+<div id="test3">
+  <div id="host">
+    <template id="sr" data-mode="closed">
+      <div id="target"></div>
+    </template>
+  </div>
+</div>
+
+<script>
 test(() => {
   let n = createTestTree(test3);
-  removeWhiteSpaceOnlyTextNodes(n.test3);
-  let log = dispatchEventWithLog(n, n.target_open, new Event('my-event', { bubbles: true, composed: true }));
-  let path = ['target_open', 'open_shadow_in_open_shadow', 'inner_open', 'open_shadow', 'test3']
-  assert_event_path_equals(log, makeExpectedEventPathLog(path));
-}, 'EventPath for Open > Open');
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target','sr', 'host', 'test3'];
+  let path1 = ['host', 'test3'];
+  assert_event_path_equals(log, [['target', null, path],
+                                 ['sr', null, path],
+                                 ['host', null, path1],
+                                 ['test3', null, path1]]);
+}, 'Event Path with a closed ShadowRoot.');
+</script>
 
+<div id="test4">
+  <div id="host1">
+    <template id="sr1" data-mode="open">
+      <div id="host2">
+        <template id="sr2" data-mode="open">
+          <div id="target"></div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
 test(() => {
   let n = createTestTree(test4);
-  removeWhiteSpaceOnlyTextNodes(n.test4);
-  let log = dispatchEventWithLog(n, n.target_closed, new Event('my-event', { bubbles: true, composed: true }));
-  let path = ['target_closed', 'open_shadow_in_closed_shadow', 'inner_closed', 'closed_shadow', 'test4']
-  assert_event_path_equals(log,
-                           [['target_closed', null, path],
-                            ['open_shadow_in_closed_shadow', null, path],
-                            ['inner_closed', null, path],
-                            ['closed_shadow', null, path],
-                            ['test4', null, ['test4']]]);
-}, 'EventPath for Closed > Open');
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  assert_event_path_equals(log, makeExpectedEventPathLog(['target', 'sr2', 'host2', 'sr1', 'host1', 'test4']));
+}, 'Event Path with nested ShadowRoots: open > open.');
+</script>
+
+<div id="test5">
+  <div id="host1">
+    <template id="sr1" data-mode="open">
+      <div id="host2">
+        <template id="sr2" data-mode="closed">
+          <div id="target"></div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test5);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'sr2', 'host2', 'sr1', 'host1', 'test5'];
+  let path1 = ['host2', 'sr1', 'host1', 'test5'];
+  assert_event_path_equals(log, [['target', null, path],
+                                 ['sr2', null, path],
+                                 ['host2', null, path1],
+                                 ['sr1', null, path1],
+                                 ['host1', null, path1],
+                                 ['test5', null, path1]]);
+}, 'Event Path with nested ShadowRoots: open > closed.');
+</script>
+
+<div id="test6">
+  <div id="host1">
+    <template id="sr1" data-mode="closed">
+      <div id="host2">
+        <template id="sr2" data-mode="open">
+          <div id="target"></div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test6);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'sr2', 'host2', 'sr1', 'host1', 'test6'];
+  let path1 = ['host1', 'test6'];
+  assert_event_path_equals(log, [['target', null, path],
+                                 ['sr2', null, path],
+                                 ['host2', null, path],
+                                 ['sr1', null, path],
+                                 ['host1', null, path1],
+                                 ['test6', null, path1]]);
+}, 'Event Path with nested ShadowRoots: closed > open.');
+</script>
+
+<div id="test7">
+  <div id="host1">
+    <template id="sr1" data-mode="closed">
+      <div id="host2">
+        <template id="sr2" data-mode="closed">
+          <div id="target"></div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test7);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'sr2', 'host2', 'sr1', 'host1', 'test7'];
+  let path1 = ['host2', 'sr1', 'host1', 'test7'];
+  let path2 = ['host1', 'test7'];
+  assert_event_path_equals(log, [['target', null, path],
+                                 ['sr2', null, path],
+                                 ['host2', null, path1],
+                                 ['sr1', null, path1],
+                                 ['host1', null, path2],
+                                 ['test7', null, path2]]);
+}, 'Event Path with nested ShadowRoots: closed > closed.');
+</script>
+
+<div id="test8">
+  <div id="host1">
+    <template id="sr1" data-mode="open">
+      <slot id="slot"></slot>
+    </template>
+    <div id="target"></div>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test8);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'slot', 'sr1', 'host1', 'test8'];
+  assert_event_path_equals(log, makeExpectedEventPathLog(path));
+}, 'Event Path with a slot in an open Shadow Root.');
+</script>
+
+<div id="test9">
+  <div id="host1">
+    <template id="sr1" data-mode="closed">
+      <slot id="slot"></slot>
+    </template>
+    <div id="target"></div>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test9);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'slot', 'sr1', 'host1', 'test9'];
+  let path1 = ['target', 'host1', 'test9'];
+  assert_event_path_equals(log, [['target', null, path1],
+                                 ['slot', null, path],
+                                 ['sr1', null, path],
+                                 ['host1', null, path1],
+                                 ['test9', null, path1]]);
+}, 'Event Path with a slot in a closed Shadow Root.');
+</script>
+
+<div id="test10">
+  <div id="host1">
+    <template id="sr1" data-mode="open">
+      <div id="host2">
+        <template id="sr2" data-mode="open">
+          <slot id="slot2"></slot>
+        </template>
+        <slot id="slot1"></slot>
+      </div>
+    </template>
+    <div id="target"></div>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test10);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'slot1', 'slot2', 'sr2', 'host2', 'sr1', 'host1', 'test10'];
+  assert_event_path_equals(log, makeExpectedEventPathLog(path));
+}, 'Event Path with slots in nested ShadowRoots: open > open.');
+</script>
+
+<div id="test11">
+  <div id="host1">
+    <template id="sr1" data-mode="closed">
+      <div id="host2">
+        <template id="sr2" data-mode="closed">
+          <slot id="slot2"></slot>
+        </template>
+        <slot id="slot1"></slot>
+      </div>
+    </template>
+    <div id="target"></div>
+  </div>
+</div>
+
+<script>
+test(() => {
+  let n = createTestTree(test11);
+  let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target', 'slot1', 'slot2', 'sr2', 'host2', 'sr1', 'host1', 'test11'];
+  let path1 = ['target', 'slot1', 'host2', 'sr1', 'host1', 'test11'];
+  let path2 = ['target', 'host1', 'test11'];
+  assert_event_path_equals(log, [['target', null, path2],
+                                 ['slot1', null, path1],
+                                 ['slot2', null, path],
+                                 ['sr2', null, path],
+                                 ['host2', null, path1],
+                                 ['sr1', null, path1],
+                                 ['host1', null, path2],
+                                 ['test11', null, path2]]);
+}, 'Event Path with slots in nested ShadowRoots: closed > closed.');
 </script>
