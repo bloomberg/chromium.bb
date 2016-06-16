@@ -174,7 +174,13 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
 };
 
 // Covers the case of some browser-initiated memory dumps.
-TEST_F(ChildTracingTest, BrowserInitiatedMemoryDumps) {
+#if defined(OS_ANDROID)
+// Flaky on Android. http://crbug.com/620734.
+#define MAYBE_BrowserInitiatedMemoryDumps DISABLED_BrowserInitiatedMemoryDumps
+#else
+#define MAYBE_BrowserInitiatedMemoryDumps BrowserInitiatedMemoryDumps
+#endif
+TEST_F(ChildTracingTest, MAYBE_BrowserInitiatedMemoryDumps) {
   const uint32_t kNumDumps = 3;
 
   EnableTracingWithMemoryDumps();
