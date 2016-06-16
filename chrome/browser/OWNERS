@@ -2,6 +2,8 @@
 # usual OWNERS rules.
 per-file about_flags.cc=*
 
+per-file *_android.*=file://chrome/browser/android/OWNERS
+
 per-file browser_resources.grd=bauerb@chromium.org
 per-file browser_resources.grd=calamity@chromium.org
 per-file browser_resources.grd=dbeam@chromium.org
