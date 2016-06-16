@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.1",
+  "version": "11.2",
   "entries": [
     {
       "id": 1,
@@ -1074,6 +1074,19 @@ LONG_STRING_CONST(
       "multi_gpu_category": "any",
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 112,
+      "description": "Intel HD 3000 driver crashes frequently on Mac",
+      "cr_bugs": [592130],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0116", "0x0126"],
+      "features": [
+        "all"
       ]
     }
   ]
