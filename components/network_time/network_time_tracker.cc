@@ -13,6 +13,8 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
@@ -20,6 +22,7 @@
 #include "components/network_time/network_time_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -31,8 +34,34 @@ namespace network_time {
 
 namespace {
 
+// Time updates happen in two ways. First, other components may call
+// UpdateNetworkTime() if they happen to obtain the time securely.  This will
+// likely be deprecated in favor of the second way, which is scheduled time
+// queries issued by NetworkTimeTracker itself.
+//
+// On startup, the clock state may be read from a pref.  (This, too, may be
+// deprecated.)  After that, the time is checked every
+// |kCheckTimeIntervalSeconds|.  A "check" means the possibility, but not the
+// certainty, of a time query.  A time query may be issued at random, or if the
+// network time is believed to have become inaccurate.
+//
+// After issuing a query, the next check will not happen until
+// |kBackoffMinutes|.  This delay is doubled in the event of an error.
+
 // Minimum number of minutes between time queries.
-const uint32_t kMinimumQueryDelayMinutes = 60;
+const uint32_t kBackoffMinutes = 60;
+
+// Number of seconds between time checks.  This may be overridden via Variations
+// Service.
+// Note that a "check" is not necessarily a network time query!
+const uint32_t kCheckTimeIntervalSeconds = 360;
+
+// Probability that a check will randomly result in a query.  This may
+// be overridden via Variations Service.  Checks are made every
+// |kCheckTimeIntervalSeconds|.  The default values are chosen with
+// the goal of a high probability that a query will be issued every 24
+// hours.
+const float kRandomQueryProbability = .012f;
 
 // Number of time measurements performed in a given network time calculation.
 const uint32_t kNumTimeMeasurements = 7;
@@ -63,9 +92,14 @@ const uint32_t kTimeServerMaxSkewSeconds = 10;
 
 const char kTimeServiceURL[] = "http://clients2.google.com/time/1/current";
 
-// Finch feature that enables network time service querying.
+// Variations Service feature that enables network time service querying.
 const base::Feature kNetworkTimeServiceQuerying{
     "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kVariationsServiceCheckTimeIntervalSeconds[] =
+    "CheckTimeIntervalSeconds";
+const char kVariationsServiceRandomQueryProbability[] =
+    "RandomQueryProbability";
 
 // This is an ECDSA prime256v1 named-curve key.
 const int kKeyVersion = 1;
@@ -110,6 +144,27 @@ class SizeLimitingStringWriter : public net::URLFetcherStringWriter {
   size_t limit_;
 };
 
+base::TimeDelta CheckTimeInterval() {
+  int64_t seconds;
+  const std::string param = variations::GetVariationParamValueByFeature(
+      kNetworkTimeServiceQuerying, kVariationsServiceCheckTimeIntervalSeconds);
+  if (!param.empty() && base::StringToInt64(param, &seconds) && seconds > 0) {
+    return base::TimeDelta::FromSeconds(seconds);
+  }
+  return base::TimeDelta::FromSeconds(kCheckTimeIntervalSeconds);
+}
+
+double RandomQueryProbability() {
+  double probability;
+  const std::string param = variations::GetVariationParamValueByFeature(
+      kNetworkTimeServiceQuerying, kVariationsServiceRandomQueryProbability);
+  if (!param.empty() && base::StringToDouble(param, &probability) &&
+      probability >= 0.0 && probability <= 1.0) {
+    return probability;
+  }
+  return kRandomQueryProbability;
+}
+
 }  // namespace
 
 // static
@@ -125,6 +180,7 @@ NetworkTimeTracker::NetworkTimeTracker(
     scoped_refptr<net::URLRequestContextGetter> getter)
     : server_url_(kTimeServiceURL),
       max_response_size_(1024),
+      backoff_(base::TimeDelta::FromMinutes(kBackoffMinutes)),
       getter_(std::move(getter)),
       loop_(nullptr),
       clock_(std::move(clock)),
@@ -163,7 +219,7 @@ NetworkTimeTracker::NetworkTimeTracker(
   query_signer_ =
       client_update_protocol::Ecdsa::Create(kKeyVersion, public_key);
 
-  QueueTimeQuery(base::TimeDelta::FromMinutes(kMinimumQueryDelayMinutes));
+  QueueCheckTime(base::TimeDelta::FromSeconds(0));
 }
 
 NetworkTimeTracker::~NetworkTimeTracker() {
@@ -213,12 +269,6 @@ void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
   time_mapping.SetDouble(kPrefNetworkTime,
       network_time_at_last_measurement_.ToJsTime());
   pref_service_->Set(prefs::kNetworkTimeMapping, time_mapping);
-
-  // Calls to update the network time can (as of this writing) come from various
-  // sources, e.g. organically from Omaha update checks.  In that even, we may
-  // as well delay the next time server query.  If |UpdateNetworkTime| is ever
-  // made into a private method, this can be removed.
-  query_timer_.Reset();
 }
 
 void NetworkTimeTracker::SetTimeServerURLForTesting(const GURL& url) {
@@ -234,7 +284,7 @@ void NetworkTimeTracker::SetPublicKeyForTesting(const base::StringPiece& key) {
 }
 
 bool NetworkTimeTracker::QueryTimeServiceForTesting() {
-  QueryTimeService();
+  CheckTime();
   loop_ = base::MessageLoop::current();  // Gets Quit on completion.
   return time_fetcher_ != nullptr;
 }
@@ -245,8 +295,8 @@ void NetworkTimeTracker::WaitForFetchForTesting(uint32_t nonce) {
 }
 
 base::TimeDelta NetworkTimeTracker::GetTimerDelayForTesting() const {
-  DCHECK(query_timer_.IsRunning());
-  return query_timer_.GetCurrentDelay();
+  DCHECK(timer_.IsRunning());
+  return timer_.GetCurrentDelay();
 }
 
 bool NetworkTimeTracker::GetNetworkTime(base::Time* network_time,
@@ -282,18 +332,14 @@ bool NetworkTimeTracker::GetNetworkTime(base::Time* network_time,
   return true;
 }
 
-void NetworkTimeTracker::QueryTimeService() {
+void NetworkTimeTracker::CheckTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Do not query the time service if not enabled via Finch.
-  if (!base::FeatureList::IsEnabled(kNetworkTimeServiceQuerying)) {
-    return;
-  }
+  // If NetworkTimeTracker is waking up after a backoff, this will reset the
+  // timer to its default faster frequency.
+  QueueCheckTime(CheckTimeInterval());
 
-  // If GetNetworkTime() returns true, the NetworkTimeTracker thinks it is in
-  // sync, so there is no need to query.
-  base::Time network_time;
-  if (GetNetworkTime(&network_time, nullptr)) {
+  if (!ShouldIssueTimeQuery()) {
     return;
   }
 
@@ -322,6 +368,8 @@ void NetworkTimeTracker::QueryTimeService() {
                               net::LOAD_DO_NOT_SEND_AUTH_DATA);
   time_fetcher_->Start();
   fetch_started_ = tick_clock_->NowTicks();
+
+  timer_.Stop();  // Restarted in OnURLFetchComplete().
 }
 
 bool NetworkTimeTracker::UpdateTimeFromResponse() {
@@ -375,14 +423,16 @@ void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(time_fetcher_);
   DCHECK_EQ(source, time_fetcher_.get());
 
+  // After completion of a query, whether succeeded or failed, go to sleep for a
+  // long time.
   if (!UpdateTimeFromResponse()) {  // On error, back off.
-    DCHECK(query_timer_.IsRunning());
-    base::TimeDelta delay = query_timer_.GetCurrentDelay();
-    if (delay < base::TimeDelta::FromDays(2)) {
-      delay *= 2;
+    if (backoff_ < base::TimeDelta::FromDays(2)) {
+      backoff_ *= 2;
     }
-    QueueTimeQuery(delay);
+  } else {
+    backoff_ = base::TimeDelta::FromMinutes(kBackoffMinutes);
   }
+  QueueCheckTime(backoff_);
   time_fetcher_.reset();
   if (loop_ != nullptr) {
     loop_->QuitWhenIdle();
@@ -390,9 +440,25 @@ void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void NetworkTimeTracker::QueueTimeQuery(base::TimeDelta delay) {
-  query_timer_.Start(FROM_HERE, delay, this,
-                     &NetworkTimeTracker::QueryTimeService);
+void NetworkTimeTracker::QueueCheckTime(base::TimeDelta delay) {
+  timer_.Start(FROM_HERE, delay, this, &NetworkTimeTracker::CheckTime);
+}
+
+bool NetworkTimeTracker::ShouldIssueTimeQuery() {
+  // Do not query the time service if not enabled via Variations Service.
+  if (!base::FeatureList::IsEnabled(kNetworkTimeServiceQuerying)) {
+    return false;
+  }
+
+  // If GetNetworkTime() returns false, synchronization has been lost
+  // and a query is needed.
+  base::Time network_time;
+  if (!GetNetworkTime(&network_time, nullptr)) {
+    return true;
+  }
+
+  // Otherwise, make the decision at random.
+  return base::RandDouble() < RandomQueryProbability();
 }
 
 }  // namespace network_time

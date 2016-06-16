@@ -4,17 +4,23 @@
 
 #include "components/network_time/network_time_tracker.h"
 
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/client_update_protocol/ecdsa.h"
 #include "components/network_time/network_time_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -38,6 +44,8 @@ class NetworkTimeTrackerTest : public testing::Test {
     EXPECT_TRUE(io_thread_.StartWithOptions(thread_options));
     NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
 
+    SetNetworkQueriesWithVariationsService(true, 0.0 /* query probability */);
+
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
         std::unique_ptr<base::TickClock>(tick_clock_), &pref_service_,
@@ -51,8 +59,6 @@ class NetworkTimeTrackerTest : public testing::Test {
     resolution_ = base::TimeDelta::FromMilliseconds(17);
     latency_ = base::TimeDelta::FromMilliseconds(50);
     adjustment_ = 7 * base::TimeDelta::FromMilliseconds(kTicksResolutionMs);
-
-    SetNetworkQueriesWithFinch(true);
   }
 
   void TearDown() override { io_thread_.Stop(); }
@@ -159,12 +165,45 @@ class NetworkTimeTrackerTest : public testing::Test {
   }
 
  protected:
-  void SetNetworkQueriesWithFinch(bool enable) {
+  void SetNetworkQueriesWithVariationsService(bool enable,
+                                              float query_probability) {
+    const std::string kTrialName = "Trial";
+    const std::string kGroupName = "group";
+    const base::Feature kFeature{"NetworkTimeServiceQuerying",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+    // Clear all the things.
     base::FeatureList::ClearInstanceForTesting();
+    variations::testing::ClearAllVariationParams();
+
+    std::map<std::string, std::string> params;
+    params["RandomQueryProbability"] = base::DoubleToString(query_probability);
+    params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
+
+    // There are 3 things here: a FieldTrial, a FieldTrialList, and a
+    // FeatureList.  Don't get confused!  The FieldTrial is reference-counted,
+    // and a reference is held by the FieldTrialList.  The FieldTrialList and
+    // FeatureList are both singletons.  The authorized way to reset the former
+    // for testing is to destruct it (above).  The latter, by contrast, is reset
+    // with |ClearInstanceForTesting|, above.  If this comment was useful to you
+    // please send me a postcard.
+
+    field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
+    field_trial_list_.reset(
+        new base::FieldTrialList(new base::MockEntropyProvider()));
+    // refcounted, and reference held by field_trial_list_.
+    base::FieldTrial* trial = base::FieldTrialList::FactoryGetFieldTrial(
+        kTrialName, 100, kGroupName, 1971, 1, 1,
+        base::FieldTrial::SESSION_RANDOMIZED,
+        nullptr /* default_group_number */);
+    ASSERT_TRUE(
+        variations::AssociateVariationParams(kTrialName, kGroupName, params));
+
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    if (enable) {
-      feature_list->InitializeFromCommandLine("NetworkTimeServiceQuerying", "");
-    }
+    feature_list->RegisterFieldTrialOverride(
+        kFeature.name, enable ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                              : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+        trial);
     base::FeatureList::SetInstance(std::move(feature_list));
   }
 
@@ -176,6 +215,7 @@ class NetworkTimeTrackerTest : public testing::Test {
   base::SimpleTestClock* clock_;
   base::SimpleTestTickClock* tick_clock_;
   TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<NetworkTimeTracker> tracker_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
 };
@@ -396,6 +436,9 @@ TEST_F(NetworkTimeTrackerTest, SerializeWithWallClockAdvance) {
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
   base::Time out_network_time;
   EXPECT_FALSE(tracker_->GetNetworkTime(&out_network_time, nullptr));
+  // First query should happen soon.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0),
+            tracker_->GetTimerDelayForTesting());
 
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::GoodTimeResponseHandler));
@@ -414,20 +457,38 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
 }
 
 TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
+  test_server_->RegisterRequestHandler(
+      base::Bind(&NetworkTimeTrackerTest::GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server_->Start());
+  tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
+
+  SetNetworkQueriesWithVariationsService(true, 0.0);
   base::Time in_network_time = clock_->Now();
   UpdateNetworkTime(in_network_time, resolution_, latency_,
                     tick_clock_->NowTicks());
-  EXPECT_FALSE(
-      tracker_->QueryTimeServiceForTesting());  // No query should be started.
+
+  // No query should be started so long as NetworkTimeTracker is synced, but the
+  // next check should happen soon.
+  EXPECT_FALSE(tracker_->QueryTimeServiceForTesting());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(6),
+            tracker_->GetTimerDelayForTesting());
+
+  SetNetworkQueriesWithVariationsService(true, 1.0);
+  EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
+  tracker_->WaitForFetchForTesting(123123123);
+  EXPECT_EQ(base::TimeDelta::FromMinutes(60),
+            tracker_->GetTimerDelayForTesting());
 }
 
 TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileFeatureDisabled) {
   // Disable network time queries and check that a query is not sent.
-  SetNetworkQueriesWithFinch(false);
+  SetNetworkQueriesWithVariationsService(false, 0.0);
   EXPECT_FALSE(tracker_->QueryTimeServiceForTesting());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(6),
+            tracker_->GetTimerDelayForTesting());
 
   // Enable time queries and check that a query is sent.
-  SetNetworkQueriesWithFinch(true);
+  SetNetworkQueriesWithVariationsService(true, 0.0);
   EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
   tracker_->WaitForFetchForTesting(123123123);
 }

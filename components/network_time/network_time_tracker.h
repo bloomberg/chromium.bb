@@ -94,9 +94,9 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   base::TimeDelta GetTimerDelayForTesting() const;
 
  private:
-  // If synchronization has been lost, sends a query to the secure time service.
+  // Checks whether a network time query should be issued, and issues one if so.
   // Upon response, execution resumes in |OnURLFetchComplete|.
-  void QueryTimeService();
+  void CheckTime();
 
   // Updates network time from a time server response, returning true
   // if successful.
@@ -107,12 +107,21 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Sets the next time query to be run at the specified time.
-  void QueueTimeQuery(base::TimeDelta delay);
+  void QueueCheckTime(base::TimeDelta delay);
+
+  // Returns true if there's sufficient reason to suspect that
+  // NetworkTimeTracker does not know what time it is.  This returns true
+  // unconditionally every once in a long while, just to be on the safe side.
+  bool ShouldIssueTimeQuery();
 
   // State variables for internally-managed secure time service queries.
   GURL server_url_;
   size_t max_response_size_;
-  base::RepeatingTimer query_timer_;
+  base::TimeDelta backoff_;
+  // Timer that runs CheckTime().  All backoff and delay is implemented by
+  // changing the delay of this timer, with the result that CheckTime() may
+  // assume that if it runs, it is eligible to issue a time query.
+  base::RepeatingTimer timer_;
   scoped_refptr<net::URLRequestContextGetter> getter_;
   std::unique_ptr<net::URLFetcher> time_fetcher_;
   base::TimeTicks fetch_started_;

@@ -15,6 +15,7 @@ static_library("network_time") {
     "//base:i18n",
     "//components/client_update_protocol",
     "//components/prefs",
+    "//components/variations",
     "//net",
   ]
 }
@@ -31,6 +32,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/client_update_protocol",
     "//components/prefs:test_support",
+    "//components/variations",
     "//net",
     "//net:test_support",
     "//testing/gtest",
