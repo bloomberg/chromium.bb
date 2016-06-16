@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -35,6 +36,8 @@ DataReductionProxyService::DataReductionProxyService(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::TimeDelta& commit_delay)
     : url_request_context_getter_(request_context_getter),
+      pingback_client_(
+          new DataReductionProxyPingbackClient(request_context_getter)),
       settings_(settings),
       prefs_(prefs),
       db_data_owner_(new DBDataOwner(std::move(store))),

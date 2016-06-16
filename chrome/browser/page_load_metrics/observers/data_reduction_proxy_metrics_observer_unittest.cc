@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
@@ -13,8 +14,12 @@
 #include "chrome/browser/renderer_host/chrome_navigation_data.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+
+namespace data_reduction_proxy {
 
 namespace {
 
@@ -35,129 +40,220 @@ data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
   return data;
 }
 
-}  // namespace
-
-class DataReductionProxyMetricsObserverWrapper
-    : public page_load_metrics::PageLoadMetricsObserver {
+// Pingback client responsible for recording the timing information it receives
+// from a SendPingback call.
+class TestPingbackClient
+    : public data_reduction_proxy::DataReductionProxyPingbackClient {
  public:
-  DataReductionProxyMetricsObserverWrapper(
-      data_reduction_proxy::DataReductionProxyMetricsObserver* observer,
-      content::WebContents* web_contents,
-      bool data_reduction_proxy_used,
-      bool lofi_used)
-      : observer_(observer),
-        web_contents_(web_contents),
-        data_reduction_proxy_used_(data_reduction_proxy_used),
-        lofi_used_(lofi_used) {}
+  TestPingbackClient()
+      : data_reduction_proxy::DataReductionProxyPingbackClient(nullptr),
+        send_pingback_called_(false) {}
+  ~TestPingbackClient() override {}
 
-  ~DataReductionProxyMetricsObserverWrapper() override {}
-
-  // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnCommit(content::NavigationHandle* navigation_handle) override {
-    data_reduction_proxy::DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
-    data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
-    data->set_lofi_requested(lofi_used_);
-    observer_->OnCommit(navigation_handle);
+  void SendPingback(
+      const data_reduction_proxy::DataReductionProxyData& data,
+      const data_reduction_proxy::DataReductionProxyPageLoadTiming& timing)
+      override {
+    timing_.reset(
+        new data_reduction_proxy::DataReductionProxyPageLoadTiming(timing));
+    send_pingback_called_ = true;
   }
 
-  void OnFirstContentfulPaint(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override {
-    observer_->OnFirstContentfulPaint(timing, info);
+  data_reduction_proxy::DataReductionProxyPageLoadTiming* timing() const {
+    return timing_.get();
+  }
+
+  bool send_pingback_called() const { return send_pingback_called_; }
+
+  void Reset() {
+    send_pingback_called_ = false;
+    timing_.reset();
   }
 
  private:
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyMetricsObserver>
-      observer_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyPageLoadTiming>
+      timing_;
+  bool send_pingback_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPingbackClient);
+};
+
+}  // namespace
+
+// DataReductionProxyMetricsObserver responsible for modifying data about the
+// navigation in OnCommit. It is also responsible for using a passed in
+// DataReductionProxyPingbackClient instead of the default.
+class TestDataReductionProxyMetricsObserver
+    : public DataReductionProxyMetricsObserver {
+ public:
+  TestDataReductionProxyMetricsObserver(content::WebContents* web_contents,
+                                        TestPingbackClient* pingback_client,
+                                        bool data_reduction_proxy_used,
+                                        bool lofi_used)
+      : web_contents_(web_contents),
+        pingback_client_(pingback_client),
+        data_reduction_proxy_used_(data_reduction_proxy_used),
+        lofi_used_(lofi_used) {}
+
+  ~TestDataReductionProxyMetricsObserver() override {}
+
+  // page_load_metrics::PageLoadMetricsObserver implementation:
+  void OnCommit(content::NavigationHandle* navigation_handle) override {
+    DataReductionProxyData* data =
+        DataForNavigationHandle(web_contents_, navigation_handle);
+    data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
+    data->set_lofi_requested(lofi_used_);
+    DataReductionProxyMetricsObserver::OnCommit(navigation_handle);
+  }
+
+  DataReductionProxyPingbackClient* GetPingbackClient() const override {
+    return pingback_client_;
+  }
+
+ private:
   content::WebContents* web_contents_;
+  TestPingbackClient* pingback_client_;
   bool data_reduction_proxy_used_;
   bool lofi_used_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyMetricsObserver);
 };
 
 class DataReductionProxyMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
   DataReductionProxyMetricsObserverTest()
-      : data_reduction_proxy_used_(false), is_using_lofi_(false) {}
+      : pingback_client_(new TestPingbackClient()),
+        data_reduction_proxy_used_(false),
+        is_using_lofi_(false) {}
+
+  void ResetTest() {
+    // Reset to the default testing state. Does not reset histogram state.
+    timing_.navigation_start = base::Time::FromDoubleT(1);
+    timing_.response_start = base::TimeDelta::FromSeconds(2);
+    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(3);
+    timing_.first_image_paint = base::TimeDelta::FromSeconds(4);
+    timing_.load_event_start = base::TimeDelta::FromSeconds(5);
+    PopulateRequiredTimingFields(&timing_);
+  }
+
+  void RunTest(bool data_reduction_proxy_used, bool is_using_lofi) {
+    data_reduction_proxy_used_ = data_reduction_proxy_used;
+    is_using_lofi_ = is_using_lofi;
+    NavigateAndCommit(GURL(kDefaultTestUrl));
+    SimulateTimingUpdate(timing_);
+    pingback_client_->Reset();
+
+    // Navigate again to force OnComplete, which happens when a new navigation
+    // occurs.
+    NavigateAndCommit(GURL(kDefaultTestUrl2));
+  }
+
+  void ValidateTimes() {
+    EXPECT_TRUE(pingback_client_->send_pingback_called());
+    EXPECT_EQ(timing_.navigation_start,
+              pingback_client_->timing()->navigation_start);
+    EXPECT_EQ(timing_.first_contentful_paint,
+              pingback_client_->timing()->first_contentful_paint);
+    EXPECT_EQ(timing_.response_start,
+              pingback_client_->timing()->response_start);
+    EXPECT_EQ(timing_.load_event_start,
+              pingback_client_->timing()->load_event_start);
+    EXPECT_EQ(timing_.first_image_paint,
+              pingback_client_->timing()->first_image_paint);
+  }
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::WrapUnique(new DataReductionProxyMetricsObserverWrapper(
-            new data_reduction_proxy::DataReductionProxyMetricsObserver(),
-            web_contents(), data_reduction_proxy_used_, is_using_lofi_)));
+        base::WrapUnique(new TestDataReductionProxyMetricsObserver(
+            web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
+            is_using_lofi_)));
   }
 
+  std::unique_ptr<TestPingbackClient> pingback_client_;
+  page_load_metrics::PageLoadTiming timing_;
+
+ private:
   bool data_reduction_proxy_used_;
   bool is_using_lofi_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserverTest);
 };
 
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = base::TimeDelta::FromSeconds(1);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  // Navigate again to force UMA. UMA is not recorded until OnComplete, which
-  // happens when a new navigation occurs.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ResetTest();
+  // Verify that when the data reduction proxy was not used, no UMA is reported.
+  RunTest(false, false);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxy,
-      0);
+      internal::kHistogramFirstContentfulPaintDataReductionProxy, 0);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxyLoFiOn,
-      0);
+      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 0);
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = base::TimeDelta::FromSeconds(1);
-  PopulateRequiredTimingFields(&timing);
-
-  data_reduction_proxy_used_ = true;
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  // Navigate again to force UMA. UMA is not recorded until OnComplete, which
-  // happens when a new navigation occurs.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ResetTest();
+  // Verify that when the data reduction proxy was used, but lofi was not used,
+  // the correpsonding UMA is reported.
+  RunTest(true, false);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxy,
-      1);
+      internal::kHistogramFirstContentfulPaintDataReductionProxy, 1);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxyLoFiOn,
-      0);
+      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 0);
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = base::TimeDelta::FromSeconds(1);
-  PopulateRequiredTimingFields(&timing);
-
-  data_reduction_proxy_used_ = true;
-  is_using_lofi_ = true;
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  // Navigate again to force UMA. UMA is not recorded until OnComplete, which
-  // happens when a new navigation occurs.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ResetTest();
+  // Verify that when the data reduction proxy was used and lofi was used, both
+  // histograms are reported.
+  RunTest(true, true);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxy,
-      1);
+      internal::kHistogramFirstContentfulPaintDataReductionProxy, 1);
   histogram_tester().ExpectTotalCount(
-      data_reduction_proxy::internal::
-          kHistogramFirstContentfulPaintDataReductionProxyLoFiOn,
-      1);
+      internal::kHistogramFirstContentfulPaintDataReductionProxyLoFiOn, 1);
 }
+
+TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
+  ResetTest();
+  // Verify that when data reduction proxy was used the correct timing
+  // information is sent to SendPingback.
+  RunTest(true, false);
+  ValidateTimes();
+
+  ResetTest();
+  // Verify that when data reduction proxy was used but first image paint is
+  // zero, the correct timing information is sent to SendPingback.
+  timing_.first_image_paint = base::TimeDelta::FromSeconds(0);
+  RunTest(true, false);
+  ValidateTimes();
+
+  ResetTest();
+  // Verify that when data reduction proxy was used but first contentful paint
+  // is zero, SendPingback is not called.
+  timing_.first_contentful_paint = base::TimeDelta::FromSeconds(0);
+  RunTest(true, false);
+  ValidateTimes();
+
+  ResetTest();
+  // Verify that when data reduction proxy was used but load event start is
+  // zero, SendPingback is not called.
+  timing_.load_event_start = base::TimeDelta::FromSeconds(0);
+  RunTest(true, false);
+  ValidateTimes();
+
+  ResetTest();
+  // Verify that when data reduction proxy was not used, SendPingback is not
+  // called.
+  RunTest(false, false);
+  EXPECT_FALSE(pingback_client_->send_pingback_called());
+
+  ResetTest();
+  // Verify that when the holdback experiment is enabled, no pingback is sent.
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
+  RunTest(true, false);
+  EXPECT_FALSE(pingback_client_->send_pingback_called());
+}
+
+}  //  namespace data_reduction_proxy

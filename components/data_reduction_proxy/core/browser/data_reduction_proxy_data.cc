@@ -19,6 +19,8 @@ std::unique_ptr<DataReductionProxyData> DataReductionProxyData::DeepCopy()
   std::unique_ptr<DataReductionProxyData> copy(new DataReductionProxyData());
   copy->used_data_reduction_proxy_ = used_data_reduction_proxy_;
   copy->lofi_requested_ = lofi_requested_;
+  copy->session_key_ = session_key_;
+  copy->original_request_url_ = original_request_url_;
   return copy;
 }
 

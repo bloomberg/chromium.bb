@@ -28,6 +28,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -202,8 +203,12 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   // if needed.
   DataReductionProxyData* data =
       DataReductionProxyData::GetDataAndCreateIfNecessary(request);
-  if (data)
+  if (data) {
     data->set_used_data_reduction_proxy(true);
+    data->set_session_key(
+        data_reduction_proxy_request_options_->GetSecureSession());
+    data->set_original_request_url(request->original_url());
+  }
 
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider()) {

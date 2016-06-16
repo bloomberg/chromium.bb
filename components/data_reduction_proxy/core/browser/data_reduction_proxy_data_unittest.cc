@@ -12,6 +12,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace data_reduction_proxy {
 
@@ -38,6 +39,15 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   EXPECT_TRUE(data->lofi_requested());
   data->set_lofi_requested(false);
   EXPECT_FALSE(data->lofi_requested());
+
+  EXPECT_EQ(std::string(), data->session_key());
+  EXPECT_EQ(GURL(std::string()), data->original_request_url());
+  std::string session_key = "test-key";
+  data->set_session_key(session_key);
+  EXPECT_EQ(session_key, data->session_key());
+  GURL test_url("test-url");
+  data->set_original_request_url(test_url);
+  EXPECT_EQ(test_url, data->original_request_url());
 }
 
 TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
@@ -77,12 +87,18 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    static const char kSessionKey[] = "test-key";
+    static const GURL kTestURL("test-url");
     std::unique_ptr<DataReductionProxyData> data(new DataReductionProxyData());
     data->set_used_data_reduction_proxy(tests[i].data_reduction_used);
     data->set_lofi_requested(tests[i].lofi_on);
+    data->set_session_key(kSessionKey);
+    data->set_original_request_url(kTestURL);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
     EXPECT_EQ(tests[i].lofi_on, copy->lofi_requested());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
+    EXPECT_EQ(kSessionKey, copy->session_key());
+    EXPECT_EQ(kTestURL, copy->original_request_url());
   }
 }
 

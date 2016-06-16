@@ -6,9 +6,11 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DATA_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;
@@ -23,15 +25,27 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   DataReductionProxyData();
 
   // Whether the DataReductionProxy was used for this request or navigation.
-  bool used_data_reduction_proxy() { return used_data_reduction_proxy_; }
+  bool used_data_reduction_proxy() const { return used_data_reduction_proxy_; }
   void set_used_data_reduction_proxy(bool used_data_reduction_proxy) {
     used_data_reduction_proxy_ = used_data_reduction_proxy;
   }
 
   // Whether Lo-Fi was requested for this request or navigation.
-  bool lofi_requested() { return lofi_requested_; }
+  bool lofi_requested() const { return lofi_requested_; }
   void set_lofi_requested(bool lofi_requested) {
     lofi_requested_ = lofi_requested;
+  }
+
+  // The session key used for this request.
+  std::string session_key() const { return session_key_; }
+  void set_session_key(const std::string& session_key) {
+    session_key_ = session_key;
+  }
+
+  // The URL of the request before redirects.
+  GURL original_request_url() const { return original_request_url_; }
+  void set_original_request_url(const GURL& original_request_url) {
+    original_request_url_ = original_request_url;
   }
 
   // Returns the Data from the URLRequest's UserData.
@@ -53,6 +67,12 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // Whether Lo-Fi was requested for this request or navigation.
   bool lofi_requested_;
+
+  // The session key used for this request or navigation.
+  std::string session_key_;
+
+  // The URL of the request before redirects.
+  GURL original_request_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyData);
 };

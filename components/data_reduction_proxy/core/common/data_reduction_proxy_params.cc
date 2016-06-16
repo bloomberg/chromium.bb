@@ -48,6 +48,10 @@ const char kTrustedSpdyProxyFieldTrialName[] = "DataReductionTrustedSpdyProxy";
 const char kClientConfigURL[] =
     "https://datasaver.googleapis.com/v1/clientConfigs";
 
+// Default URL for sending pageload metrics.
+const char kPingbackURL[] =
+    "https://datasaver.googleapis.com/v1/metrics:recordPageloadMetrics";
+
 // The name of the server side experiment field trial.
 const char kServerExperimentsFieldTrial[] =
     "DataReductionProxyServerExperiments";
@@ -159,6 +163,11 @@ bool AreLoFiPreviewsEnabledViaFlags() {
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFiPreview);
 }
 
+bool IsForcePingbackEnabledViaFlags() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyForcePingback);
+}
+
 bool WarnIfNoDataReductionProxy() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           data_reduction_proxy::switches::
@@ -202,6 +211,26 @@ GURL GetConfigServiceURL() {
   LOG(WARNING) << "The following client config URL specified at the "
                << "command-line or variation is invalid: " << url;
   return GURL(kClientConfigURL);
+}
+
+GURL GetPingbackURL() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string url;
+  if (command_line->HasSwitch(switches::kDataReductionPingbackURL)) {
+    url =
+        command_line->GetSwitchValueASCII(switches::kDataReductionPingbackURL);
+  }
+
+  if (url.empty())
+    return GURL(kPingbackURL);
+
+  GURL result(url);
+  if (result.is_valid())
+    return result;
+
+  LOG(WARNING) << "The following page load metrics URL specified at the "
+               << "command-line or variation is invalid: " << url;
+  return GURL(kPingbackURL);
 }
 
 bool ShouldForceEnableDataReductionProxy() {

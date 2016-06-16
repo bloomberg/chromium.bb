@@ -8,5 +8,6 @@ proto_library("data_reduction_proxy_proto") {
   sources = [
     "client_config.proto",
     "data_store.proto",
+    "pageload_metrics.proto",
   ]
 }

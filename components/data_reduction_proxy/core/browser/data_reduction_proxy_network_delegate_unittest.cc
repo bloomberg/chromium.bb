@@ -485,6 +485,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
     lofi_decider()->SetIsUsingLoFiMode(test.lofi_on);
+    io_data()->request_options()->SetSecureSession("fake-session");
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
     DataReductionProxyData* data =
@@ -494,6 +495,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     } else {
       EXPECT_TRUE(data);
       EXPECT_TRUE(data->used_data_reduction_proxy());
+      EXPECT_EQ(GURL("http://www.google.com/"), data->original_request_url());
+      EXPECT_EQ("fake-session", data->session_key());
       EXPECT_EQ(test.lofi_on, data->lofi_requested());
     }
   }

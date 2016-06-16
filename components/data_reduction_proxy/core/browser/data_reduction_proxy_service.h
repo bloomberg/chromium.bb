@@ -40,6 +40,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyCompressionStats;
 class DataReductionProxyEventStore;
 class DataReductionProxyIOData;
+class DataReductionProxyPingbackClient;
 class DataReductionProxyServiceObserver;
 class DataReductionProxySettings;
 
@@ -149,6 +150,10 @@ class DataReductionProxyService
     return url_request_context_getter_;
   }
 
+  DataReductionProxyPingbackClient* pingback_client() const {
+    return pingback_client_.get();
+  }
+
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
  private:
@@ -175,6 +180,8 @@ class DataReductionProxyService
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
 
   std::unique_ptr<DataReductionProxyEventStore> event_store_;
+
+  std::unique_ptr<DataReductionProxyPingbackClient> pingback_client_;
 
   DataReductionProxySettings* settings_;
 

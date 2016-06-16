@@ -47,6 +47,8 @@ const char kDataReductionProxyLoFiValueDisabled[] = "disabled";
 const char kDataReductionProxyLoFiValueSlowConnectionsOnly[] =
     "slow-connections-only";
 
+const char kDataReductionPingbackURL[] = "data-reduction-proxy-pingback-url";
+
 // Sets a secure proxy check URL to test before committing to using the Data
 // Reduction Proxy. Note this check does not go through the Data Reduction
 // Proxy.
@@ -82,6 +84,10 @@ const char kEnableDataReductionProxyCarrierTest[] =
 // via a flag or field trial.
 const char kEnableDataReductionProxyLoFiPreview[] =
     "enable-data-reduction-proxy-lo-fi-preview";
+
+// Enables sending a pageload metrics pingback after every page load.
+const char kEnableDataReductionProxyForcePingback[] =
+    "enable-data-reduction-proxy-force-pingback";
 
 }  // namespace switches
 }  // namespace data_reduction_proxy
