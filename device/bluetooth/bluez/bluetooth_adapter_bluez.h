@@ -177,12 +177,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Send a notification for this characteristic that its value has been
   // updated. If the service that owns that characteristic is not registered,
-  // this method will return false. Setting |device| to nullptr will send the
-  // notification to all connected devices.
-  bool SendValueChanged(const device::BluetoothDevice* device,
-                        BluetoothLocalGattCharacteristicBlueZ* characteristic,
-                        const std::vector<uint8_t>& value,
-                        bool indicate);
+  // this method will return false.
+  bool SendValueChanged(BluetoothLocalGattCharacteristicBlueZ* characteristic,
+                        const std::vector<uint8_t>& value);
 
   // Returns the object path of the adapter.
   dbus::ObjectPath GetApplicationObjectPath() const;

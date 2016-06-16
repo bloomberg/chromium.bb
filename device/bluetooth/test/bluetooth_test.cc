@@ -28,23 +28,6 @@ const std::string BluetoothTestBase::kTestUUIDGenericAttribute = "1801";
 const std::string BluetoothTestBase::kTestUUIDImmediateAlert = "1802";
 const std::string BluetoothTestBase::kTestUUIDLinkLoss = "1803";
 
-BluetoothTestBase::NotificationType::NotificationType() : indicate(false) {}
-
-BluetoothTestBase::NotificationType::NotificationType(
-    std::string device_path,
-    std::vector<uint8_t> value,
-    bool indicate)
-    : device_path(device_path), value(value), indicate(indicate) {}
-
-BluetoothTestBase::NotificationType::NotificationType(
-    const NotificationType& obj) {
-  this->device_path = obj.device_path;
-  this->value = obj.value;
-  this->indicate = obj.indicate;
-}
-
-BluetoothTestBase::NotificationType::~NotificationType() {}
-
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 
 BluetoothTestBase::~BluetoothTestBase() {
@@ -92,11 +75,10 @@ bool BluetoothTestBase::SimulateLocalGattCharacteristicNotificationsRequest(
   return false;
 }
 
-BluetoothTestBase::NotificationType
-BluetoothTestBase::LastNotifactionValueForCharacteristic(
+std::vector<uint8_t> BluetoothTestBase::LastNotifactionValueForCharacteristic(
     BluetoothLocalGattCharacteristic* characteristic) {
   NOTIMPLEMENTED();
-  return NotificationType();
+  return std::vector<uint8_t>();
 }
 
 std::vector<BluetoothLocalGattService*>

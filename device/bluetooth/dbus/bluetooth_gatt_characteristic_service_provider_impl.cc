@@ -113,9 +113,7 @@ BluetoothGattCharacteristicServiceProviderImpl::
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::SendValueChanged(
-    const dbus::ObjectPath& /* device_path */,
-    const std::vector<uint8_t>& value,
-    bool /* indicate */) {
+    const std::vector<uint8_t>& value) {
   // Running a test, don't actually try to write to use DBus.
   if (!bus_)
     return;

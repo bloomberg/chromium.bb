@@ -136,10 +136,8 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
 }
 
 void BluetoothGattApplicationServiceProvider::SendValueChanged(
-    const dbus::ObjectPath& device_path,
     const dbus::ObjectPath& characteristic_path,
-    const std::vector<uint8_t>& value,
-    bool indicate) {
+    const std::vector<uint8_t>& value) {
   auto characteristic = std::find_if(
       characteristic_providers_.begin(), characteristic_providers_.end(),
       [&](const std::unique_ptr<BluetoothGattCharacteristicServiceProvider>&
@@ -149,7 +147,7 @@ void BluetoothGattApplicationServiceProvider::SendValueChanged(
                << characteristic_path.value();
     return;
   }
-  characteristic->get()->SendValueChanged(device_path, value, indicate);
+  characteristic->get()->SendValueChanged(value);
 }
 
 // static

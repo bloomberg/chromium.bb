@@ -373,9 +373,8 @@ TEST_F(BluetoothGattApplicationServiceProviderTest, SendValueChanged) {
       app_provider.get(), "characteristic0", kServicePath);
 
   std::vector<uint8_t> kNewValue = {0x13, 0x37, 0xba, 0xad, 0xf0};
-  app_provider->SendValueChanged(dbus::ObjectPath(),
-                                 dbus::ObjectPath(kCharacteristicPath),
-                                 kNewValue, false);
+  app_provider->SendValueChanged(dbus::ObjectPath(kCharacteristicPath),
+                                 kNewValue);
   // TODO(rkc): Write a test implementation of dbus::Bus and
   // dbus::ExportedObject so we can capture the actual signal that is sent and
   // verify its contents.

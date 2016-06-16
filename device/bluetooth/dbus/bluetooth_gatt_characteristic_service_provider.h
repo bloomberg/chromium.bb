@@ -38,9 +38,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
 
   // Send a PropertyChanged signal to notify the Bluetooth daemon that the value
   // of the "Value" property has changed to |value|.
-  virtual void SendValueChanged(const dbus::ObjectPath& device_path,
-                                const std::vector<uint8_t>& value,
-                                bool indicate) = 0;
+  virtual void SendValueChanged(const std::vector<uint8_t>& value) = 0;
 
   // Writes the characteristics's properties into the provided writer. If
   // value is not null, it is written also, otherwise no value property is

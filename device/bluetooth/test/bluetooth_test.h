@@ -41,19 +41,6 @@ class BluetoothTestBase : public testing::Test {
  public:
   enum class Call { EXPECTED, NOT_EXPECTED };
 
-  struct NotificationType {
-    NotificationType();
-    NotificationType(std::string device_path,
-                     std::vector<uint8_t> value,
-                     bool indicate);
-    NotificationType(const NotificationType& obj);
-    ~NotificationType();
-
-    std::string device_path;
-    std::vector<uint8_t> value;
-    bool indicate;
-  };
-
   static const std::string kTestAdapterName;
   static const std::string kTestAdapterAddress;
 
@@ -276,7 +263,7 @@ class BluetoothTestBase : public testing::Test {
 
   // Returns the value for the last notification that was sent on this
   // characteristic.
-  virtual NotificationType LastNotifactionValueForCharacteristic(
+  virtual std::vector<uint8_t> LastNotifactionValueForCharacteristic(
       BluetoothLocalGattCharacteristic* characteristic);
 
   // Remembers |descriptor|'s platform specific object to be used in a
