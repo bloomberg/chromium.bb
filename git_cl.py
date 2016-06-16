@@ -2835,8 +2835,10 @@ def LoadCodereviewSettingsFromFile(fileobj):
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
 
   if 'GERRIT_SQUASH_UPLOADS' in keyvals:
-    RunGit(['config', 'gerrit.squash-uploads',
-            keyvals['GERRIT_SQUASH_UPLOADS']])
+    cur = RunGit(['config', '--bool', 'gerrit.squash-uploads'], error_ok=True)
+    if not cur:  # Set the value only if it wasn't set by the user manually.
+      RunGit(['config', 'gerrit.squash-uploads',
+              keyvals['GERRIT_SQUASH_UPLOADS']])
 
   if 'GERRIT_SKIP_ENSURE_AUTHENTICATED' in keyvals:
     RunGit(['config', 'gerrit.skip-ensure-authenticated',
