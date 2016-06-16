@@ -317,8 +317,6 @@ void TraceConfig::InitializeDefault() {
   enable_sampling_ = false;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
-  excluded_categories_.push_back("*Debug");
-  excluded_categories_.push_back("*Test");
 }
 
 void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {

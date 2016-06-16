@@ -188,7 +188,8 @@ class BASE_EXPORT TraceConfig {
   std::string ToCategoryFilterString() const;
 
   // Returns true if at least one category in the list is enabled by this
-  // trace config.
+  // trace config. This is used to determine if the category filters are
+  // enabled in the TRACE_* macros.
   bool IsCategoryGroupEnabled(const char* category_group) const;
 
   // Merges config with the current TraceConfig
@@ -207,7 +208,6 @@ class BASE_EXPORT TraceConfig {
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyFormat);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
                            TraceConfigFromInvalidLegacyStrings);
-  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, ConstructDefaultTraceConfig);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidString);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromInvalidString);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
@@ -215,6 +215,8 @@ class BASE_EXPORT TraceConfig {
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromMemoryConfigString);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, LegacyStringToMemoryDumpConfig);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, EmptyMemoryDumpConfigTest);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
+                           EmptyAndAsteriskCategoryFilterString);
 
   // The default trace config, used when none is provided.
   // Allows all non-disabled-by-default categories through, except if they end
@@ -253,7 +255,10 @@ class BASE_EXPORT TraceConfig {
   void WriteCategoryFilterString(const StringList& delays,
                                  std::string* out) const;
 
-  // Returns true if category is enable according to this trace config.
+  // Returns true if the category is enabled according to this trace config.
+  // This tells whether a category is enabled from the TraceConfig's
+  // perspective. Please refer to IsCategoryGroupEnabled() to determine if a
+  // category is enabled from the tracing runtime's perspective.
   bool IsCategoryEnabled(const char* category_name) const;
 
   static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
