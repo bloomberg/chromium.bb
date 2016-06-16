@@ -20,9 +20,16 @@ test(() => {
   let n = createTestTree(test1);
   removeWhiteSpaceOnlyTextNodes(n.test1);
   let log = dispatchEventWithLog(n, n.input, new Event('my-event', { bubbles: true, compsoed: true }));
+  let path = ['input', 'slot', 'slot-parent', 'content', 'shadowroot-v0', 'host',
+              'shadowroot-v1', 'test1'];
   assert_event_path_equals(log,
-                           makeExpectedEventPathLog(
-                             ['input', 'slot', 'slot-parent', 'content', 'shadowroot-v0', 'host',
-                              'shadowroot-v1', 'test1']));
+                           [['input', 'input', null, path],
+                            ['slot', 'input', null, path],
+                            ['slot-parent', 'input', null, path],
+                            ['content', 'input', null, path],
+                            ['shadowroot-v0', 'input', null, path],
+                            ['host', 'input', null, path],
+                            ['shadowroot-v1', 'input', null, path],
+                            ['test1', 'input', null, path]]);
 }, 'EventPath works fine with v0 insertion points & v1 slots.');
 </script>

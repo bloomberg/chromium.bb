@@ -23,8 +23,8 @@ function assertScoped(event) {
   let log = dispatchEventWithLog(nodes, nodes.target, event);
   let expectedPath = ['target', 'shadowRoot'];
   assert_event_path_equals(log,
-                           [['target', null, expectedPath],
-                            ['shadowRoot', null, expectedPath]]);
+                           [['target', 'target', null, expectedPath],
+                            ['shadowRoot', 'target', null, expectedPath]]);
 }
 
 function assertComposed(event) {
@@ -32,9 +32,9 @@ function assertComposed(event) {
   let log = dispatchEventWithLog(nodes, nodes.target, event);
   let expectedPath = ['target', 'shadowRoot', 'host'];
   assert_event_path_equals(log,
-                           [['target', null, expectedPath],
-                            ['shadowRoot', null, expectedPath],
-                            ['host', null, expectedPath]]);
+                           [['target', 'target', null, expectedPath],
+                            ['shadowRoot', 'target', null, expectedPath],
+                            ['host', 'host', null, expectedPath]]);
 }
 
 test(() => {
@@ -66,9 +66,9 @@ function assertUAComposed(eventType, callback) {
   let log = dispatchUAEventWithLog(nodes, nodes.target, eventType, callback);
   let expectedPath = ['target', 'shadowRoot', 'host'];
   assert_event_path_equals(log,
-                           [['target', null, expectedPath],
-                            ['shadowRoot', null, expectedPath],
-                            ['host', null, expectedPath]]);
+                           [['target', 'target', null, expectedPath],
+                            ['shadowRoot', 'target', null, expectedPath],
+                            ['host', 'host', null, expectedPath]]);
 }
 
 test(() => {

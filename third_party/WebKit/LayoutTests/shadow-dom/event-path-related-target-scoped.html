@@ -15,7 +15,7 @@ test(() => {
                                  new FocusEvent('test', { bubbles: true, relatedTarget: nodes['input2']}));
   let expectedPath = ['input1', 'shadowRoot'];
   assert_event_path_equals(log,
-                           [['input1', 'input2', expectedPath],
-                            ['shadowRoot', 'input2', expectedPath]]);
+                           [['input1', 'input1', 'input2', expectedPath],
+                            ['shadowRoot', 'input1', 'input2', expectedPath]]);
 }, 'An event should stop at the common ancestor of target and relatedTarget.');
 </script>

@@ -122,7 +122,9 @@ function dispatchEventWithLog(nodes, target, event) {
         continue;
       attachedNodes.push(node);
       node.addEventListener(event.type, (e) => {
+        // Record [currentTarget, target, relatedTarget, composedPath()]
         log.push([id,
+                  labelFor(e.target),
                   e.relatedTarget ? labelFor(e.relatedTarget) : null,
                   e.composedPath().map((n) => {
                     return labelFor(n);
@@ -134,6 +136,7 @@ function dispatchEventWithLog(nodes, target, event) {
   return log;
 }
 
+// TODO(hayato): Merge this into dispatchEventWithLog
 function dispatchUAEventWithLog(nodes, target, eventType, callback) {
 
   function labelFor(e) {
@@ -152,7 +155,9 @@ function dispatchUAEventWithLog(nodes, target, eventType, callback) {
         continue;
       attachedNodes.push(node);
       node.addEventListener(eventType, (e) => {
+        // Record [currentTarget, target, relatedTarget, composedPath()]
         log.push([id,
+                  labelFor(e.target),
                   e.relatedTarget ? labelFor(e.relatedTarget) : null,
                   e.composedPath().map((n) => {
                     return labelFor(n);
@@ -164,17 +169,9 @@ function dispatchUAEventWithLog(nodes, target, eventType, callback) {
   return log;
 }
 
-function makeExpectedEventPathLog(path) {
-  let expectedLog = [];
-  for (let i of path) {
-    expectedLog.push([i, null, path]);
-  }
-  return expectedLog;
-}
-
 function debugEventLog(log) {
   for (let i = 0; i < log.length; i++) {
-    console.log('[' + i + '] currentTarget: ' + log[i][0] + ' relatedTarget: ' + log[i][1] + ' composedPath(): ' + log[i][2]);
+    console.log('[' + i + '] currentTarget: ' + log[i][0] + ' target: ' + log[i][1] + ' relatedTarget: ' + log[i][2] + ' composedPath(): ' + log[i][3]);
   }
 }
 
@@ -189,7 +186,8 @@ function assert_event_path_equals(actual, expected) {
   assert_equals(actual.length, expected.length);
   for (let i = 0; i < actual.length; ++i) {
     assert_equals(actual[i][0], expected[i][0], 'currentTarget at ' + i + ' should be same');
-    assert_equals(actual[i][1], expected[i][1], 'relatedTarget at ' + i + ' should be same');
-    assert_array_equals(actual[i][2], expected[i][2], 'composedPath at ' + i + ' should be same');
+    assert_equals(actual[i][1], expected[i][1], 'target at ' + i + ' should be same');
+    assert_equals(actual[i][2], expected[i][2], 'relatedTarget at ' + i + ' should be same');
+    assert_array_equals(actual[i][3], expected[i][3], 'composedPath at ' + i + ' should be same');
   }
 }
