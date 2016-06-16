@@ -2060,11 +2060,11 @@ The valid additional options for a test are as follows:
 @table @samp
 @item xfail
 Whether a test is expected to fail. If you expect a test to fail, set
-this to @samp{true}. If you prefer you can also specifiy a reason for
+this to @samp{true}. If you prefer you can also specify a reason for
 the failure:
 
 @example
-  - [Hello, ⠨, @{xfail: Testcase is not complete@}]
+  - [Hello, ⠨, @{xfail: Test case is not complete@}]
 @end example
 
 If you expect a test case to pass then just don't mark it with
@@ -2860,9 +2860,9 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  capsign begcaps endcaps letsign noletsign largesign typeform
 @c  LocalWords:  noletsignbefore noletsignafter compbrl firstwordital
 @c  LocalWords:  lenitalphrase doubleOpcode lastworditalbefore firstletterital
-@c  LocalWords:  lastworditalafter lastletterital firstwordbold
+@c  LocalWords:  lastworditalafter lastletterital firstwordbold UTF
 @c  LocalWords:  singleletterital lastwordboldbefore lastwordboldafter
-@c  LocalWords:  firstletterbold lastletterbold lenboldphrase
+@c  LocalWords:  firstletterbold lastletterbold lenboldphrase filll
 @c  LocalWords:  singleletterbold firstwordunder lastwordunderbefore
 @c  LocalWords:  lastwordunderafter firstletterunder lastletterunder
 @c  LocalWords:  singleletterunder lenunderphrase begcomp endcomp decpoint texi
@@ -2880,4 +2880,15 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
 @c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
-@c  LocalWords:  YAML Doctests JSON logLevels
+@c  LocalWords:  YAML Doctests JSON logLevels nocontractsign OSX DLL
+@c  LocalWords:  MERCHANTABILITY registerLogCallback setLogLevel brf
+@c  LocalWords:  cindex chardefs xhtml pxref dec multi hyph dic Aa al
+@c  LocalWords:  mrow mfrac emphclass transnote subsubsection begemph
+@c  LocalWords:  endemph emphletter begemphword endemphword www cd th
+@c  LocalWords:  lenemphphrase begemphphrase endemphphrase andthe se
+@c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
+@c  LocalWords:  h's brl testtrans UCS asis libyaml doctests url yaml
+@c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
+@c  LocalWords:  dotsIO otherTrans ucBrl abc doctest inString enum cp
+@c  LocalWords:  outbufbuf logcallback fprint lbu EOF checkTable fn
+@c  LocalWords:  ispell
