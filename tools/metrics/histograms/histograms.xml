@@ -78485,6 +78485,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Abort reported before navigation start"/>
   <int value="6"
       label="Multiple aborted provisional loads at navigation start"/>
+  <int value="7"
+      label="User input received while not tracking a relevant committed load"/>
 </enum>
 
 <enum name="InterruptReason" type="int">
