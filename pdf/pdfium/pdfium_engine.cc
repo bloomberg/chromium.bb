@@ -2671,7 +2671,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
 
   if (index < num_pages)
     pages_[index]->set_available(true);
-  if (!default_page_size_.GetArea())
+  if (default_page_size_.IsEmpty())
     default_page_size_ = GetPageSize(index);
   return true;
 }

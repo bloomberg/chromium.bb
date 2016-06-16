@@ -1445,7 +1445,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
   engine_->PageOffsetUpdated(available_area_.point());
   engine_->PluginSizeUpdated(available_area_.size());
 
-  if (!document_size_.GetArea())
+  if (document_size_.IsEmpty())
     return;
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
 }
