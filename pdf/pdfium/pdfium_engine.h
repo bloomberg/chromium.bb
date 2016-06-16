@@ -218,7 +218,7 @@ class PDFiumEngine : public PDFEngine,
   // and needs a password, |needs_password| will be set to true.
   bool TryLoadingDoc(const std::string& password, bool* needs_password);
 
-  // Ask the user for the document password and then continue loading the
+  // Asks the user for the document password and then continue loading the
   // document.
   void GetPasswordAndLoad();
 
@@ -230,17 +230,19 @@ class PDFiumEngine : public PDFEngine,
   // there is no password. If there is no password, then |password| is empty.
   void ContinueLoadingDocument(const std::string& password);
 
-  // Finish loading the document and notify the client that the document has
-  // been loaded. This should only be run after |doc_| has been loaded and the
-  // document is fully downloaded. If this has been run once, it will result in
-  // a no-op.
+  // Finishes loading the document. Recalculate the document size if there were
+  // pages that were not previously available.
+  // Also notifies the client that the document has been loaded.
+  // This should only be called after |doc_| has been loaded and the document is
+  // fully downloaded.
+  // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
 
   // Loads information about the pages in the document and calculate the
   // document size.
   void LoadPageInfo(bool reload);
 
-  // Calculate which pages should be displayed right now.
+  // Calculates which pages should be displayed right now.
   void CalculateVisiblePages();
 
   // Returns true iff the given page index is visible.  CalculateVisiblePages
