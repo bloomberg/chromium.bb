@@ -319,8 +319,6 @@ crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-pic
 crbug.com/593567 [ Debug ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 
-crbug.com/619366 [ Mac ] fast/forms/select/menulist-no-overflow.html [ NeedsManualRebaseline ]
-
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-empty.html [ Failure ]
 crbug.com/484632 [ Win7 ] transforms/2d/zoom-menulist.html [ Failure ]
 crbug.com/484632 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ Failure ]
