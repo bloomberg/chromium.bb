@@ -9,7 +9,6 @@
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,12 +33,11 @@ base::LazyInstance<crashpad::CrashpadClient>::Leaky g_crashpad_client =
 void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations) {
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
-  base::FilePath exe_file;
-  CHECK(PathService::Get(base::FILE_EXE, &exe_file));
+  wchar_t exe_file[MAX_PATH] = {};
+  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
   base::string16 product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
-      exe_file.value(), &product_name, &version, &special_build,
-      &channel_name);
+      exe_file, &product_name, &version, &special_build, &channel_name);
   (*annotations)["prod"] = base::UTF16ToUTF8(product_name);
   (*annotations)["ver"] = base::UTF16ToUTF8(version);
   (*annotations)["channel"] = base::UTF16ToUTF8(channel_name);
@@ -56,12 +54,11 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool browser_process,
                                               bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
-  bool result;
+  bool result = false;
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
   const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-
   if (initial_client) {
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
 
@@ -82,8 +79,11 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     // isn't present in the environment then the default URL will remain.
     env->GetVar(kServerUrlVar, &url);
 
-    base::FilePath exe_file;
-    CHECK(PathService::Get(base::FILE_EXE, &exe_file));
+    wchar_t exe_file_path[MAX_PATH] = {};
+    CHECK(
+        ::GetModuleFileName(nullptr, exe_file_path, arraysize(exe_file_path)));
+
+    base::FilePath exe_file(exe_file_path);
 
     bool is_per_user_install =
         crash_reporter_client->GetIsPerUserInstall(exe_file.value());
@@ -100,18 +100,14 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     std::vector<std::string> arguments;
     if (embedded_handler) {
       arguments.push_back(std::string("--type=") + switches::kCrashpadHandler);
-
-      if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument) {
-        // The prefetch argument added here has to be documented in
-        // chrome_switches.cc, below the kPrefetchArgument* constants. A
-        // constant can't be used here because crashpad can't depend on Chrome.
-        arguments.push_back("/prefetch:7");
-      }
+      // The prefetch argument added here has to be documented in
+      // chrome_switches.cc, below the kPrefetchArgument* constants. A
+      // constant can't be used here because crashpad can't depend on Chrome.
+      arguments.push_back("/prefetch:7");
     } else {
       base::FilePath exe_dir = exe_file.DirName();
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
-
     // TODO(scottmg): See https://crashpad.chromium.org/bug/23.
     arguments.push_back("--no-rate-limit");
 
@@ -135,7 +131,6 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
   if (result) {
     result = g_crashpad_client.Get().UseHandler();
   }
-
   return database_path;
 }
 
@@ -203,15 +198,15 @@ int __declspec(dllexport) CrashForException(
 HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
     HANDLE process) {
   return CreateRemoteThread(
-      process, NULL, 0, crash_reporter::internal::DumpProcessWithoutCrashThread,
-      0, 0, NULL);
+      process, nullptr, 0,
+      crash_reporter::internal::DumpProcessWithoutCrashThread, 0, 0, nullptr);
 }
 
 HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
     HANDLE process) {
   return CreateRemoteThread(
-      process, NULL, 0, crash_reporter::internal::DumpForHangDebuggingThread, 0,
-      0, NULL);
+      process, nullptr, 0, crash_reporter::internal::DumpForHangDebuggingThread,
+      0, 0, nullptr);
 }
 
 #if defined(ARCH_CPU_X86_64)

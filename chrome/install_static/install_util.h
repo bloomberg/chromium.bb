@@ -58,6 +58,8 @@ extern const char kGpuProcess[];
 extern const char kPpapiPluginProcess[];
 extern const char kRendererProcess[];
 extern const char kUtilityProcess[];
+extern const char kProcessType[];
+extern const char kCrashpadHandler[];
 
 // Returns true if |exe_path| points to a Chrome installed in an SxS
 // installation.
@@ -202,6 +204,12 @@ std::vector<base::string16> TokenizeString16(const base::string16& str,
 bool CompareVersionStrings(const std::string& version1,
                            const std::string& version2,
                            int* result);
+
+// We assume that the command line |command_line| contains multiple switches
+// with the format --<switch name>=<switch value>. This function returns the
+// value of the |switch_name| passed in.
+std::string GetSwitchValueFromCommandLine(const std::string& command_line,
+                                          const std::string& switch_name);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

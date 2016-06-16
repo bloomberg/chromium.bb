@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/macros.h"

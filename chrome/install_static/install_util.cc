@@ -66,6 +66,8 @@ const char kGpuProcess[] = "gpu-process";
 const char kPpapiPluginProcess[] = "ppapi";
 const char kRendererProcess[] = "renderer";
 const char kUtilityProcess[] = "utility";
+const char kProcessType[] = "type";
+const char kCrashpadHandler[] = "crashpad-handler";
 
 namespace {
 
@@ -898,6 +900,55 @@ bool CompareVersionStrings(const std::string& version1,
   // Here it means that both versions are equal.
   *result = 0;
   return true;
+}
+
+std::string GetSwitchValueFromCommandLine(const std::string& command_line,
+                                          const std::string& switch_name) {
+  assert(!command_line.empty());
+  assert(!switch_name.empty());
+
+  // We don't handle command lines with quoted strings. For e.g. something like
+  // --ignored=" --type=renderer ", which we used for Google Desktop.
+  if (command_line.find('"') != std::string::npos) {
+    assert(false);
+    return std::string();
+  }
+
+  std::string command_line_copy = command_line;
+  // Remove leading and trailing spaces.
+  TrimT<std::string>(&command_line_copy);
+
+  // Find the switch in the command line. If we don't find the switch, return
+  // an empty string.
+  std::string switch_token = "--";
+  switch_token += switch_name;
+  switch_token += "=";
+  size_t switch_offset = command_line_copy.find(switch_token);
+  if (switch_offset == std::string::npos)
+    return std::string();
+
+  // The format is "--<switch name>=blah". Look for a space after the
+  // "--<switch name>=" string. If we don't find a space assume that the switch
+  // value ends at the end of the command line.
+  size_t switch_value_start_offset = switch_offset + switch_token.length();
+  if (std::string(kWhiteSpaces).find(
+          command_line_copy[switch_value_start_offset]) != std::string::npos) {
+    switch_value_start_offset = command_line_copy.find_first_not_of(
+        GetWhiteSpacesForType<std::string>(), switch_value_start_offset);
+    if (switch_value_start_offset == std::string::npos)
+      return std::string();
+  }
+  size_t switch_value_end_offset =
+      command_line_copy.find_first_of(GetWhiteSpacesForType<std::string>(),
+                                      switch_value_start_offset);
+  if (switch_value_end_offset == std::string::npos)
+    switch_value_end_offset = command_line_copy.length();
+
+  std::string switch_value = command_line_copy.substr(
+      switch_value_start_offset,
+      switch_value_end_offset - (switch_offset + switch_token.length()));
+  TrimT<std::string>(&switch_value);
+  return switch_value;
 }
 
 }  // namespace install_static

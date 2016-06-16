@@ -22,7 +22,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -368,8 +367,11 @@ void ReadMainModuleAnnotationsForKasko(
 
   // The executable name is the same for the browser process and the crash
   // reporter.
-  base::FilePath exe_path;
-  base::PathService::Get(base::FILE_EXE, &exe_path);
+  wchar_t exe_file[MAX_PATH] = {};
+  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+
+  base::FilePath exe_path(exe_file);
+
   HMODULE module = GetModuleInProcess(process_handle.Get(),
                                       exe_path.BaseName().value().c_str());
   if (!module)

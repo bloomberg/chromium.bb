@@ -22,8 +22,13 @@ windows_manifest("chrome_elf_manifest") {
   type = "dll"
 }
 
+# We should move chrome_result_codes.h to another target which does not bring
+# in the world.
 shared_library("chrome_elf") {
   sources = [
+    "//chrome/app/chrome_crash_reporter_client_win.cc",
+    "//chrome/app/chrome_crash_reporter_client_win.h",
+    "//chrome/common/chrome_result_codes.h",
     "chrome_elf.def",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
@@ -34,12 +39,27 @@ shared_library("chrome_elf") {
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
     ":common",
+    "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
+    "//components/crash/content/app",
+    "//components/crash/core/common",
+    "//content/public/common:result_codes",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
-  ldflags = [ "/NODEFAULTLIB:user32.lib" ]
+  ldflags = [
+    "/NODEFAULTLIB:user32.lib",
+    "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:psapi.dll",
+    "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:winhttp.dll",
+    "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:ws2_32.dll",
+  ]
   if (current_cpu == "x86") {
     # Don"t set an x64 base address (to avoid breaking HE-ASLR).
     ldflags += [ "/BASE:0x01c20000" ]
