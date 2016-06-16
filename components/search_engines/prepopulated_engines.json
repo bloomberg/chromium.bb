@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 90
+    "kCurrentDataVersion": 91
   },
 
   // The following engines are included in country lists and are added to the
