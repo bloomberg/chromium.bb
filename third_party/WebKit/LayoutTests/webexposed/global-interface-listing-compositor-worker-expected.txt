@@ -18,6 +18,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method size
 [Worker] interface CompositorProxy
 [Worker]     attribute @@toStringTag
+[Worker]     getter initialized
 [Worker]     getter opacity
 [Worker]     getter scrollLeft
 [Worker]     getter scrollTop

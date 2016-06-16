@@ -804,6 +804,7 @@ interface CompositionEvent : UIEvent
     method initCompositionEvent
 interface CompositorProxy
     attribute @@toStringTag
+    getter initialized
     getter opacity
     getter scrollLeft
     getter scrollTop

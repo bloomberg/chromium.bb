@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class CompositorMutableStateProvider;
+
 class CompositorMutator : public GarbageCollectedFinalized<CompositorMutator> {
 public:
     virtual ~CompositorMutator() {}
@@ -19,7 +21,7 @@ public:
     // connected CompositorWorkers.
     // Returns true if any animation callbacks requested an animation frame
     // (i.e. should be reinvoked next frame).
-    virtual bool mutate(double monotonicTimeNow) = 0;
+    virtual bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*) = 0;
 };
 
 } // namespace blink

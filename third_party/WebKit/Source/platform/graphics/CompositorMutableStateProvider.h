@@ -6,9 +6,9 @@
 #define CompositorMutableStateProvider_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/PassOwnPtr.h"
 
 #include <cstdint>
+#include <memory>
 
 namespace cc {
 class LayerTreeImpl;
@@ -26,9 +26,10 @@ public:
     CompositorMutableStateProvider(cc::LayerTreeImpl*, CompositorMutations*);
     ~CompositorMutableStateProvider();
 
-    PassOwnPtr<CompositorMutableState> getMutableStateFor(uint64_t elementId);
+    std::unique_ptr<CompositorMutableState> getMutableStateFor(uint64_t elementId);
+
 private:
-    cc::LayerTreeImpl* m_state;
+    cc::LayerTreeImpl* m_tree;
     CompositorMutations* m_mutations;
 };
 

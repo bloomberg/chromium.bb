@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class CompositorMutableStateProvider;
 class CompositorMutatorImpl;
 class CompositorWorkerGlobalScope;
 class WorkerGlobalScope;
@@ -29,7 +30,7 @@ public:
 
     // Runs the animation frame callback for the frame starting at the given time.
     // Returns true if another animation frame was requested (i.e. should be reinvoked next frame).
-    bool mutate(double monotonicTimeNow);
+    bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
 
     // CompositorProxyClient:
     void setGlobalScope(WorkerGlobalScope*) override;

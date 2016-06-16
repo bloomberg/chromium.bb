@@ -16,6 +16,12 @@ DOMMatrix* DOMMatrix::create(DOMMatrixReadOnly* other)
     return new DOMMatrix(other->matrix(), other->is2D());
 }
 
+DOMMatrix* DOMMatrix::create(const SkMatrix44& matrix)
+{
+    TransformationMatrix transformationMatrix(matrix);
+    return new DOMMatrix(transformationMatrix, transformationMatrix.isAffine());
+}
+
 DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
 {
     m_matrix = TransformationMatrix::create(matrix);

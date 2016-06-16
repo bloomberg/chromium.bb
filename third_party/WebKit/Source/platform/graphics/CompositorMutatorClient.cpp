@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "platform/TraceEvent.h"
+#include "base/trace_event/trace_event.h"
+#include "cc/trees/layer_tree_impl.h"
+#include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
@@ -28,13 +30,15 @@ CompositorMutatorClient::~CompositorMutatorClient()
 }
 
 bool CompositorMutatorClient::Mutate(
-    base::TimeTicks monotonicTime)
+    base::TimeTicks monotonicTime,
+    cc::LayerTreeImpl* treeImpl)
 {
     TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
     double monotonicTimeNow = (monotonicTime - base::TimeTicks()).InSecondsF();
     if (!m_mutations)
         m_mutations = adoptPtr(new CompositorMutations);
-    bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow);
+    CompositorMutableStateProvider compositorState(treeImpl, m_mutations.get());
+    bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow, &compositorState);
     return shouldReinvoke;
 }
 

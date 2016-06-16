@@ -1,5 +1,4 @@
-var proxy;
-onmessage = function(event) {
-    proxy = event.data;
-    postMessage('started');
+self.onmessage = function(msg) {
+  var proxy = msg.data;
+  postMessage('started');
 }

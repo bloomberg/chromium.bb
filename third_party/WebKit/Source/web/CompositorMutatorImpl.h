@@ -39,7 +39,7 @@ public:
     }
 
     // CompositorMutator implementation.
-    bool mutate(double monotonicTimeNow) override;
+    bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*) override;
 
     void registerProxyClient(CompositorProxyClientImpl*);
 

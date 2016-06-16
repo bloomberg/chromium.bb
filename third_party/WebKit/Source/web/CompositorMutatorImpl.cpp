@@ -56,7 +56,7 @@ CompositorMutatorImpl* CompositorMutatorImpl::create()
     return new CompositorMutatorImpl();
 }
 
-bool CompositorMutatorImpl::mutate(double monotonicTimeNow)
+bool CompositorMutatorImpl::mutate(double monotonicTimeNow, CompositorMutableStateProvider* stateProvider)
 {
     TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::mutate");
     bool needToReinvoke = false;
@@ -64,7 +64,7 @@ bool CompositorMutatorImpl::mutate(double monotonicTimeNow)
     // callbacks if none of the proxies in the global scope are affected by
     // m_mutations.
     for (CompositorProxyClientImpl* client : m_proxyClients) {
-        if (client->mutate(monotonicTimeNow))
+        if (client->mutate(monotonicTimeNow, stateProvider))
             needToReinvoke = true;
     }
 

@@ -25,7 +25,7 @@ public:
     void setNeedsMutate();
 
     // cc::LayerTreeMutator
-    bool Mutate(base::TimeTicks monotonicTime) override;
+    bool Mutate(base::TimeTicks monotonicTime, cc::LayerTreeImpl*) override;
     void SetClient(cc::LayerTreeMutatorClient*) override;
     base::Closure TakeMutations() override;
 

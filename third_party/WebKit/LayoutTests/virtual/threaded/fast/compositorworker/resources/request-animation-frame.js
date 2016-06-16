@@ -1,3 +1,3 @@
-requestAnimationFrame(function(ts) {
+self.requestAnimationFrame(function(ts) {
     self.postMessage(ts);
 });

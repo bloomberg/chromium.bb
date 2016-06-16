@@ -178,7 +178,7 @@ double CompositorProxy::opacity(ExceptionState& exceptionState) const
         return 0.0;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kOpacity, exceptionState))
         return 0.0;
-    return m_opacity;
+    return m_state->opacity();
 }
 
 double CompositorProxy::scrollLeft(ExceptionState& exceptionState) const
@@ -187,7 +187,7 @@ double CompositorProxy::scrollLeft(ExceptionState& exceptionState) const
         return 0.0;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kScrollLeft, exceptionState))
         return 0.0;
-    return m_scrollLeft;
+    return m_state->scrollLeft();
 }
 
 double CompositorProxy::scrollTop(ExceptionState& exceptionState) const
@@ -196,7 +196,7 @@ double CompositorProxy::scrollTop(ExceptionState& exceptionState) const
         return 0.0;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kScrollTop, exceptionState))
         return 0.0;
-    return m_scrollTop;
+    return m_state->scrollTop();
 }
 
 DOMMatrix* CompositorProxy::transform(ExceptionState& exceptionState) const
@@ -205,7 +205,7 @@ DOMMatrix* CompositorProxy::transform(ExceptionState& exceptionState) const
         return nullptr;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kTransform, exceptionState))
         return nullptr;
-    return m_transform;
+    return DOMMatrix::create(m_state->transform());
 }
 
 void CompositorProxy::setOpacity(double opacity, ExceptionState& exceptionState)
@@ -214,8 +214,7 @@ void CompositorProxy::setOpacity(double opacity, ExceptionState& exceptionState)
         return;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kOpacity, exceptionState))
         return;
-    m_opacity = std::min(1., std::max(0., opacity));
-    m_mutatedProperties |= CompositorMutableProperty::kTransform;
+    m_state->setOpacity(std::min(1., std::max(0., opacity)));
 }
 
 void CompositorProxy::setScrollLeft(double scrollLeft, ExceptionState& exceptionState)
@@ -224,8 +223,7 @@ void CompositorProxy::setScrollLeft(double scrollLeft, ExceptionState& exception
         return;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kScrollLeft, exceptionState))
         return;
-    m_scrollLeft = scrollLeft;
-    m_mutatedProperties |= CompositorMutableProperty::kScrollLeft;
+    m_state->setScrollLeft(scrollLeft);
 }
 
 void CompositorProxy::setScrollTop(double scrollTop, ExceptionState& exceptionState)
@@ -234,8 +232,7 @@ void CompositorProxy::setScrollTop(double scrollTop, ExceptionState& exceptionSt
         return;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kScrollTop, exceptionState))
         return;
-    m_scrollTop = scrollTop;
-    m_mutatedProperties |= CompositorMutableProperty::kScrollTop;
+    m_state->setScrollTop(scrollTop);
 }
 
 void CompositorProxy::setTransform(DOMMatrix* transform, ExceptionState& exceptionState)
@@ -244,17 +241,24 @@ void CompositorProxy::setTransform(DOMMatrix* transform, ExceptionState& excepti
         return;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kTransform, exceptionState))
         return;
-    m_transform = transform;
-    m_mutatedProperties |= CompositorMutableProperty::kTransform;
+    m_state->setTransform(TransformationMatrix::toSkMatrix44(transform->matrix()));
+}
+
+void CompositorProxy::takeCompositorMutableState(std::unique_ptr<CompositorMutableState> state)
+{
+    m_state = std::move(state);
 }
 
 bool CompositorProxy::raiseExceptionIfNotMutable(uint32_t property, ExceptionState& exceptionState) const
 {
-    if (m_connected && (m_compositorMutableProperties & property))
-        return false;
-    exceptionState.throwDOMException(NoModificationAllowedError,
-        m_connected ? "Attempted to mutate non-mutable attribute." : "Attempted to mutate attribute on a disconnected proxy.");
-    return true;
+    if (!m_connected)
+        exceptionState.throwDOMException(NoModificationAllowedError, "Attempted to mutate attribute on a disconnected proxy.");
+    else if (!(m_compositorMutableProperties & property))
+        exceptionState.throwDOMException(NoModificationAllowedError, "Attempted to mutate non-mutable attribute.");
+    else if (!m_state)
+        exceptionState.throwDOMException(NoModificationAllowedError, "Attempted to mutate attribute on an uninitialized proxy.");
+
+    return exceptionState.hadException();
 }
 
 void CompositorProxy::disconnect()

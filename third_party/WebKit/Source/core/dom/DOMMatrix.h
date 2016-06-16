@@ -14,6 +14,7 @@ class DOMMatrix : public DOMMatrixReadOnly {
 public:
     static DOMMatrix* create();
     static DOMMatrix* create(DOMMatrixReadOnly*);
+    static DOMMatrix* create(const SkMatrix44&);
 
     void setA(double value) { m_matrix->setM11(value); }
     void setB(double value) { m_matrix->setM12(value); }

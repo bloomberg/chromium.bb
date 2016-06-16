@@ -16,7 +16,8 @@
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -79,7 +80,7 @@ TEST_F(CompositorMutableStateTest, NoMutableState)
 
     CompositorMutations mutations;
     CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
-    OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(42));
+    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(42));
     EXPECT_FALSE(state);
 }
 
@@ -97,7 +98,7 @@ TEST_F(CompositorMutableStateTest, MutableStateNoMutableProperties)
 
     CompositorMutations mutations;
     CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
-    OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(42));
+    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(42));
     EXPECT_FALSE(state);
 }
 
@@ -129,7 +130,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     CompositorMutations mutations;
     CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
 
-    OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
+    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
     EXPECT_TRUE(state.get());
 
     EXPECT_EQ(1.0, rootLayer()->Opacity());
