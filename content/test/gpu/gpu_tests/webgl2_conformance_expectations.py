@@ -175,6 +175,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth_pbo.html',
         ['win', 'intel'], bug=617449)
+    self.Flaky('deqp/functional/gles3/lifetime.html',
+        ['win', 'intel'], bug=620379)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_depth.html',
         ['win', 'intel'], bug=614418)
