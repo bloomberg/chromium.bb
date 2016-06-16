@@ -85,8 +85,8 @@ TEST_F(MojoCdmAllocatorTest, MaxFreeBuffers) {
 }
 
 TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
-  const size_t kHeight = 16;
-  const size_t kWidth = 9;
+  const int kHeight = 16;
+  const int kWidth = 9;
   const VideoPixelFormat kFormat = PIXEL_FORMAT_I420;
   const gfx::Size kSize(kHeight, kWidth);
   const size_t kBufferSize = VideoFrame::AllocationSize(kFormat, kSize);
@@ -95,21 +95,21 @@ TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
   std::unique_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
   video_frame->SetFormat(cdm::kI420);
   video_frame->SetSize(cdm::Size(kHeight, kWidth));
-  video_frame->SetStride(
-      VideoFrameImpl::kYPlane,
-      VideoFrame::RowBytes(VideoFrame::kYPlane, kFormat, kWidth));
-  video_frame->SetStride(
-      VideoFrameImpl::kUPlane,
-      VideoFrame::RowBytes(VideoFrame::kUPlane, kFormat, kWidth));
-  video_frame->SetStride(
-      VideoFrameImpl::kVPlane,
-      VideoFrame::RowBytes(VideoFrame::kVPlane, kFormat, kWidth));
+  video_frame->SetStride(VideoFrameImpl::kYPlane,
+                         static_cast<uint32_t>(VideoFrame::RowBytes(
+                             VideoFrame::kYPlane, kFormat, kWidth)));
+  video_frame->SetStride(VideoFrameImpl::kUPlane,
+                         static_cast<uint32_t>(VideoFrame::RowBytes(
+                             VideoFrame::kUPlane, kFormat, kWidth)));
+  video_frame->SetStride(VideoFrameImpl::kVPlane,
+                         static_cast<uint32_t>(VideoFrame::RowBytes(
+                             VideoFrame::kVPlane, kFormat, kWidth)));
   EXPECT_EQ(nullptr, video_frame->FrameBuffer());
 
   // Now create a buffer to hold the frame and assign it to the VideoFrameImpl.
   cdm::Buffer* buffer = CreateCdmBuffer(kBufferSize);
   EXPECT_EQ(0u, GetAvailableBufferCount());
-  buffer->SetSize(kBufferSize);
+  buffer->SetSize(static_cast<uint32_t>(kBufferSize));
   video_frame->SetFrameBuffer(buffer);
   EXPECT_NE(nullptr, video_frame->FrameBuffer());
 

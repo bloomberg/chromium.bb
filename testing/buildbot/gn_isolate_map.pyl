@@ -384,6 +384,10 @@
     "label": "//media/mojo/services:media_mojo_shell_unittests",
     "type": "console_test_launcher",
   },
+  "media_mojo_unittests": {
+    "label": "//media/mojo:media_mojo_unittests",
+    "type": "console_test_launcher",
+  },
   "media_blink_unittests": {
     "label": "//media/blink:media_blink_unittests",
     "type": "windowed_test_launcher",
