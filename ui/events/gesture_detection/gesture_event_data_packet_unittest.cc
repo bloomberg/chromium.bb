@@ -15,6 +15,7 @@ namespace {
 
 const float kTouchX = 13.7f;
 const float kTouchY = 14.2f;
+const uint32_t uniqueTouchEventId = 1234U;
 
 GestureEventData CreateGesture(EventType type) {
   return GestureEventData(GestureEventDetails(type),
@@ -27,12 +28,14 @@ GestureEventData CreateGesture(EventType type) {
                           kTouchY + 10.f,
                           1,
                           gfx::RectF(kTouchX - 1.f, kTouchY - 1.f, 2.f, 2.f),
-                          EF_NONE);
+                          EF_NONE,
+                          uniqueTouchEventId);
 }
 
 }  // namespace
 
-bool GestureEquals(const GestureEventData& lhs, const GestureEventData& rhs) {
+bool GestureEqualsExceptForTouchId(const GestureEventData& lhs,
+                                   const GestureEventData& rhs) {
   return lhs.type() == rhs.type() &&
          lhs.motion_event_id == rhs.motion_event_id &&
          lhs.primary_tool_type == rhs.primary_tool_type &&
@@ -47,11 +50,15 @@ bool PacketEquals(const GestureEventDataPacket& lhs,
       lhs.timestamp() != rhs.timestamp() ||
       lhs.gesture_source() != rhs.gesture_source() ||
       lhs.touch_location() != rhs.touch_location() ||
-      lhs.raw_touch_location() != rhs.raw_touch_location())
+      lhs.raw_touch_location() != rhs.raw_touch_location() ||
+      lhs.unique_touch_event_id() != rhs.unique_touch_event_id())
     return false;
 
   for (size_t i = 0; i < lhs.gesture_count(); ++i) {
-    if (!GestureEquals(lhs.gesture(i), rhs.gesture(i)))
+    if (!GestureEqualsExceptForTouchId(lhs.gesture(i), rhs.gesture(i)))
+      return false;
+    if (lhs.gesture(i).unique_touch_event_id !=
+        rhs.gesture(i).unique_touch_event_id)
       return false;
   }
 
@@ -79,7 +86,9 @@ TEST_F(GestureEventDataPacketTest, Basic) {
     packet.Push(gesture);
     const size_t index = (i - ET_GESTURE_TYPE_START);
     ASSERT_EQ(index + 1U, packet.gesture_count());
-    EXPECT_TRUE(GestureEquals(gesture, packet.gesture(index)));
+    EXPECT_TRUE(GestureEqualsExceptForTouchId(gesture, packet.gesture(index)));
+    EXPECT_EQ(packet.unique_touch_event_id(),
+              packet.gesture(index).unique_touch_event_id);
   }
 }
 

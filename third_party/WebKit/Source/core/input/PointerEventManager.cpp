@@ -455,8 +455,6 @@ void PointerEventManager::dispatchTouchPointerEvents(
             touchInfo.targetFrame = touchInfo.touchNode->document().frame();
         }
 
-        WebInputEventResult result = WebInputEventResult::NotHandled;
-
         // Do not send pointer events for stationary touches or null targetFrame
         if (touchInfo.touchNode && touchInfo.targetFrame
             && touchPoint.state() != PlatformTouchPoint::TouchStationary
@@ -475,15 +473,22 @@ void PointerEventManager::dispatchTouchPointerEvents(
                 touchInfo.touchNode ?
                     touchInfo.touchNode->document().domWindow() : nullptr);
 
-            result = sendTouchPointerEvent(touchInfo.touchNode, pointerEvent);
+            WebInputEventResult result = sendTouchPointerEvent(touchInfo.touchNode, pointerEvent);
+
+            // If a pointerdown has been canceled, queue the unique id to allow
+            // suppressing mouse events from gesture events. For mouse events
+            // fired from GestureTap & GestureLongPress (which are triggered by
+            // single touches only), it is enough to queue the ids only for
+            // primary pointers.
+            // TODO(mustaq): What about other cases (e.g. GestureTwoFingerTap)?
+            if (result != WebInputEventResult::NotHandled
+                && pointerEvent->type() == EventTypeNames::pointerdown
+                && pointerEvent->isPrimary()) {
+                m_touchIdsForCanceledPointerdowns.append(event.uniqueTouchEventId());
+            }
         }
-        // TODO(crbug.com/507408): Right now we add the touch point only if
-        // its pointer event is NotHandled (e.g. preventDefault is called in
-        // the pointer event listener). This behavior needs to change as it
-        // may create some inconsistent touch event sequence.
-        if (result == WebInputEventResult::NotHandled) {
-            touchInfos.append(touchInfo);
-        }
+
+        touchInfos.append(touchInfo);
     }
 }
 
@@ -599,6 +604,7 @@ void PointerEventManager::clear()
     m_touchEventManager.clear();
     m_inCanceledStateForPointerTypeTouch = false;
     m_pointerEventFactory.clear();
+    m_touchIdsForCanceledPointerdowns.clear();
     m_nodeUnderPointer.clear();
     m_pointerCaptureTarget.clear();
     m_pendingPointerCaptureTarget.clear();
@@ -772,6 +778,22 @@ bool PointerEventManager::isActive(const int pointerId) const
 bool PointerEventManager::isAnyTouchActive() const
 {
     return m_touchEventManager.isAnyTouchActive();
+}
+
+bool PointerEventManager::primaryPointerdownCanceled(uint32_t uniqueTouchEventId)
+{
+    // It's safe to assume that uniqueTouchEventIds won't wrap back to 0 from
+    // 2^32-1 (>4.2 billion): even with a generous 100 unique ids per touch
+    // sequence & one sequence per 10 second, it takes 13+ years to wrap back.
+    while (!m_touchIdsForCanceledPointerdowns.isEmpty()) {
+        uint32_t firstId = m_touchIdsForCanceledPointerdowns.first();
+        if (firstId > uniqueTouchEventId)
+            return false;
+        m_touchIdsForCanceledPointerdowns.takeFirst();
+        if (firstId == uniqueTouchEventId)
+            return true;
+    }
+    return false;
 }
 
 DEFINE_TRACE(PointerEventManager)

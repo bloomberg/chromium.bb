@@ -28,7 +28,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    float raw_y,
                    size_t touch_point_count,
                    const gfx::RectF& bounding_box,
-                   int flags);
+                   int flags,
+                   uint32_t unique_touch_event_id);
   GestureEventData(EventType type, const GestureEventData&);
   GestureEventData(const GestureEventData& other);
 
@@ -43,6 +44,11 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
   float raw_x;
   float raw_y;
   int flags;
+
+  // The unique id of the touch event that released the gesture event. This
+  // field gets a non-zero from the corresponding field in
+  // GestureEventDataPacket at the moment the gesture is pushed into the packet.
+  uint32_t unique_touch_event_id;
 
  private:
   friend class GestureEventDataPacket;

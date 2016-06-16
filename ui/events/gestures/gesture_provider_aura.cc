@@ -42,18 +42,20 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   return true;
 }
 
-void GestureProviderAura::OnTouchEventAck(uint32_t unique_event_id,
-                                          bool event_consumed) {
+void GestureProviderAura::OnTouchEventAck(uint32_t unique_touch_event_id,
+    bool event_consumed) {
   DCHECK(pending_gestures_.empty());
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
-  filtered_gesture_provider_.OnTouchEventAck(unique_event_id, event_consumed);
+  filtered_gesture_provider_.OnTouchEventAck(unique_touch_event_id,
+      event_consumed);
 }
 
-void GestureProviderAura::OnGestureEvent(
-    const GestureEventData& gesture) {
-  std::unique_ptr<ui::GestureEvent> event(new ui::GestureEvent(
-      gesture.x, gesture.y, gesture.flags, gesture.time, gesture.details));
+void GestureProviderAura::OnGestureEvent(const GestureEventData& gesture) {
+  std::unique_ptr<ui::GestureEvent> event(
+      new ui::GestureEvent(gesture.x, gesture.y, gesture.flags,
+                           gesture.time, gesture.details,
+                           gesture.unique_touch_event_id));
 
   if (!handling_event_) {
     // Dispatching event caused by timer.

@@ -1,0 +1,87 @@
+Verifies that canceling pointerdowns for touches correctly suppresses mouseevents.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+=== With primary pointerdown uncanceled ===
+-- Tap with paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+-- Tap without paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+=== With primary pointerdown canceled ===
+-- Tap with paired GEs --
+Received pointerdown primary,canceled
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received click 
+-- Tap without paired GEs --
+Received pointerdown primary,canceled
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received pointerdown primary,canceled
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+=== With primary pointerdown uncanceled ===
+-- Tap with paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+-- Tap without paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received pointerdown primary
+Received touchstart 
+Received pointerup primary
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

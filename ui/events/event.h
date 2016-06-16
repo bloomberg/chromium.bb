@@ -988,11 +988,14 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 
 class EVENTS_EXPORT GestureEvent : public LocatedEvent {
  public:
+    // The constructor takes a default unique_touch_id of zero to support many
+    // (80+) existing tests that doesn't care about this id.
   GestureEvent(float x,
                float y,
                int flags,
                base::TimeTicks time_stamp,
-               const GestureEventDetails& details);
+               const GestureEventDetails& details,
+               uint32_t unique_touch_event_id = 0);
 
   // Create a new GestureEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -1007,8 +1010,19 @@ class EVENTS_EXPORT GestureEvent : public LocatedEvent {
 
   const GestureEventDetails& details() const { return details_; }
 
+  uint32_t unique_touch_event_id() const {
+    return unique_touch_event_id_;
+  }
+
  private:
   GestureEventDetails details_;
+
+  // The unique id of the touch event that caused the gesture event to be
+  // dispatched. This field gets a non-zero value only for gestures that are
+  // released through TouchDispositionGestureFilter::SendGesture. The gesture
+  // events that aren't fired directly in response to processing a touch-event
+  // (e.g. timer fired ones), this id is zero. See crbug.com/618738.
+  uint32_t unique_touch_event_id_;
 };
 
 }  // namespace ui

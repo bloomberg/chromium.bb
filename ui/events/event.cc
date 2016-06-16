@@ -1277,13 +1277,15 @@ GestureEvent::GestureEvent(float x,
                            float y,
                            int flags,
                            base::TimeTicks time_stamp,
-                           const GestureEventDetails& details)
+                           const GestureEventDetails& details,
+                           uint32_t unique_touch_event_id)
     : LocatedEvent(details.type(),
                    gfx::PointF(x, y),
                    gfx::PointF(x, y),
                    time_stamp,
                    flags | EF_FROM_TOUCH),
-      details_(details) {}
+      details_(details),
+      unique_touch_event_id_(unique_touch_event_id) {}
 
 GestureEvent::~GestureEvent() {
 }

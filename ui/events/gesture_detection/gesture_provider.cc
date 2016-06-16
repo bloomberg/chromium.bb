@@ -509,7 +509,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                             raw_y,
                             touch_point_count,
                             bounding_box,
-                            flags);
+                            flags,
+                            0U);
   }
 
   GestureEventData CreateGesture(EventType type,
@@ -525,9 +526,18 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                                  int flags) const {
     GestureEventDetails details(type);
     details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
-    return GestureEventData(details, motion_event_id, primary_tool_type, time,
-                            x, y, raw_x, raw_y, touch_point_count, bounding_box,
-                            flags);
+    return GestureEventData(details,
+                            motion_event_id,
+                            primary_tool_type,
+                            time,
+                            x,
+                            y,
+                            raw_x,
+                            raw_y,
+                            touch_point_count,
+                            bounding_box,
+                            flags,
+                            0U);
   }
 
   GestureEventData CreateGesture(const GestureEventDetails& details,
@@ -542,7 +552,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                             event.GetRawY(),
                             event.GetPointerCount(),
                             GetBoundingBox(event, details.type()),
-                            event.GetFlags());
+                            event.GetFlags(),
+                            0U);
   }
 
   GestureEventData CreateGesture(EventType type,

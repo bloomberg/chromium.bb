@@ -43,11 +43,15 @@ public:
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
     bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
 
+    uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
+
 protected:
     Vector<PlatformTouchPoint> m_touchPoints;
     DispatchType m_dispatchType;
     bool m_causesScrollingIfUncanceled;
     bool m_dispatchedDuringFling;
+
+    uint32_t m_uniqueTouchEventId;
 };
 
 } // namespace blink

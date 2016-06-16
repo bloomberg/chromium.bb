@@ -226,7 +226,8 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
                                       base::TimeTicks timestamp,
                                       const gfx::PointF& location,
                                       const gfx::PointF& raw_location,
-                                      int flags) {
+                                      int flags,
+                                      uint32_t unique_touch_event_id) {
   WebGestureEvent gesture;
   gesture.timeStampSeconds = ui::EventTimeStampToSeconds(timestamp);
   gesture.x = gfx::ToFlooredInt(location.x());
@@ -247,6 +248,8 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       gesture.sourceDevice = blink::WebGestureDeviceUninitialized;
       break;
   }
+
+  gesture.uniqueTouchEventId = unique_touch_event_id;
 
   switch (details.type()) {
     case ET_GESTURE_SHOW_PRESS:
@@ -350,7 +353,8 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
     const GestureEventData& data) {
   return CreateWebGestureEvent(data.details, data.time,
                                gfx::PointF(data.x, data.y),
-                               gfx::PointF(data.raw_x, data.raw_y), data.flags);
+                               gfx::PointF(data.raw_x, data.raw_y), data.flags,
+                               data.unique_touch_event_id);
 }
 
 std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(

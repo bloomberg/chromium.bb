@@ -271,7 +271,7 @@ class TouchDispositionGestureFilterTest
         details, 0, MotionEvent::TOOL_TYPE_FINGER, base::TimeTicks(), x, y, 0,
         0, 1,
         gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter),
-        kDefaultEventFlags);
+        kDefaultEventFlags, 0U);
   }
 
  private:

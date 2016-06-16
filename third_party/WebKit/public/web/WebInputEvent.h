@@ -488,6 +488,15 @@ public:
     int globalX;
     int globalY;
     WebGestureDevice sourceDevice;
+
+    // If the WebGestureEvent has sourceDevice=WebGestureDeviceTouchscreen, this
+    // field contains the unique identifier for the touch event that released
+    // this event at TouchDispositionGestureFilter. If the WebGestureEvents was
+    // not released through a touch event (e.g. timer-released gesture events or
+    // gesture events with sourceDevice!=WebGestureDeviceTouchscreen), the field
+    // contains 0. See crbug.com/618738.
+    uint32_t uniqueTouchEventId;
+
     // This field exists to allow BrowserPlugin to mark GestureScroll events as
     // 'resent' to handle the case where an event is not consumed when first
     // encountered; it should be handled differently by the plugin when it is
@@ -634,7 +643,8 @@ public:
     // dispatched.
     bool dispatchedDuringFling;
 
-    // A unique identifier for the touch event.
+    // A unique identifier for the touch event. Valid ids start at one and
+    // increase monotonically. Zero means an unknown id.
     uint32_t uniqueTouchEventId;
 
     WebTouchEvent()

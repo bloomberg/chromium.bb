@@ -136,7 +136,6 @@ class EventSender {
   bool IsFlinging() const;
   void GestureScrollFirstPoint(int x, int y);
 
-  bool GetMovedBeyondSlopRegionArg(gin::Arguments* args);
   void TouchStart(gin::Arguments* args);
   void TouchMove(gin::Arguments* args);
   void TouchCancel(gin::Arguments* args);
@@ -175,7 +174,11 @@ class EventSender {
 
   void DoLeapForward(int milliseconds);
 
-  void SendCurrentTouchEvent(blink::WebInputEvent::Type, bool);
+  void GetOptionalTouchArgs(gin::Arguments* args,
+                            bool& moved_beyond_slop_region,
+                            uint32_t& unique_touch_event_id);
+  uint32_t GetUniqueTouchEventId(gin::Arguments* args);
+  void SendCurrentTouchEvent(blink::WebInputEvent::Type, gin::Arguments* args);
 
   void GestureEvent(blink::WebInputEvent::Type,
                     gin::Arguments*);

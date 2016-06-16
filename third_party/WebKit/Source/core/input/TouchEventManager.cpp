@@ -444,15 +444,6 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
     if (!reHitTestTouchPointsIfNeeded(event, touchInfos))
         return WebInputEventResult::NotHandled;
 
-    // Note that the disposition of any pointer events affects only the generation of touch
-    // events. If all pointer events were handled (and hence no touch events were fired), that
-    // is still equivalent to the touch events going unhandled because pointer event handler
-    // don't block scroll gesture generation.
-
-    // TODO(crbug.com/507408): If PE handlers always call preventDefault, we won't see TEs until after
-    // scrolling starts because the scrolling would suppress upcoming PEs. This sudden "break" in TE
-    // suppression can make the visible TEs inconsistent (e.g. touchmove without a touchstart).
-
     bool allTouchesReleased = true;
     for (const auto& point : event.touchPoints()) {
         if (point.state() != PlatformTouchPoint::TouchReleased

@@ -45,9 +45,15 @@ green received pointerenter at phase=target
 green received pointerdown at phase=target
 lightgreen received pointerdown at phase=bubbling
 grey received pointerdown at phase=bubbling
+green received touchstart at phase=target
+lightgreen received touchstart at phase=bubbling
+grey received touchstart at phase=bubbling
 green received pointermove at phase=target
 lightgreen received pointermove at phase=bubbling
 grey received pointermove at phase=bubbling
+green received touchmove at phase=target
+lightgreen received touchmove at phase=bubbling
+grey received touchmove at phase=bubbling
 green received pointerup at phase=target
 lightgreen received pointerup at phase=bubbling
 grey received pointerup at phase=bubbling
@@ -57,6 +63,9 @@ grey received pointerout at phase=bubbling
 green received pointerleave at phase=target
 lightgreen received pointerleave at phase=target
 grey received pointerleave at phase=target
+green received touchend at phase=target
+lightgreen received touchend at phase=bubbling
+grey received touchend at phase=bubbling
 
 --- test PE params for single-touch ---
 green received pointerover at phase=target

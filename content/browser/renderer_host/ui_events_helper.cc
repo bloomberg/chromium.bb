@@ -90,9 +90,9 @@ bool MakeUITouchEventsFromWebTouchEvents(
 
 blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
     const ui::GestureEvent& event) {
-  return ui::CreateWebGestureEvent(event.details(), event.time_stamp(),
-                                   event.location_f(), event.root_location_f(),
-                                   event.flags());
+  return ui::CreateWebGestureEvent(
+      event.details(), event.time_stamp(), event.location_f(),
+      event.root_location_f(), event.flags(), event.unique_touch_event_id());
 }
 
 }  // namespace content

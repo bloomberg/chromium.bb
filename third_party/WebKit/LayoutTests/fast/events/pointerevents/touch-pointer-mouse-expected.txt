@@ -1,0 +1,75 @@
+Verifies that canceling pointerdowns for touches correctly suppresses mouseevents.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+=== With primary pointerdown uncanceled ===
+-- Tap with paired GEs --
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+-- Tap without paired GEs --
+Received touchstart 
+Received touchend 
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+=== With primary pointerdown canceled ===
+-- Tap with paired GEs --
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+-- Tap without paired GEs --
+Received touchstart 
+Received touchend 
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+=== With primary pointerdown uncanceled ===
+-- Tap with paired GEs --
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+-- Tap without paired GEs --
+Received touchstart 
+Received touchend 
+Received touchstart 
+Received touchend 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+Received mousemove 
+Received mousedown 
+Received mouseup 
+Received click 
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

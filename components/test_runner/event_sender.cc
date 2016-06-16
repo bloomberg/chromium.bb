@@ -1937,38 +1937,20 @@ void EventSender::GestureScrollFirstPoint(int x, int y) {
   current_gesture_location_ = WebPoint(x, y);
 }
 
-bool EventSender::GetMovedBeyondSlopRegionArg(gin::Arguments* args) {
-  std::string arg;
-  if (args->PeekNext().IsEmpty())
-    return false;
-
-  if(args->PeekNext()->IsString() && args->GetNext(&arg)) {
-    if (arg == "movedBeyondSlopRegion")
-      return true;
-  }
-
-  args->ThrowError();
-  return false;
-}
-
 void EventSender::TouchStart(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::TouchStart,
-                        GetMovedBeyondSlopRegionArg(args));
+  SendCurrentTouchEvent(WebInputEvent::TouchStart, args);
 }
 
 void EventSender::TouchMove(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::TouchMove,
-                        GetMovedBeyondSlopRegionArg(args));
+  SendCurrentTouchEvent(WebInputEvent::TouchMove, args);
 }
 
 void EventSender::TouchCancel(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::TouchCancel,
-                        GetMovedBeyondSlopRegionArg(args));
+  SendCurrentTouchEvent(WebInputEvent::TouchCancel, args);
 }
 
 void EventSender::TouchEnd(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::TouchEnd,
-                        GetMovedBeyondSlopRegionArg(args));
+  SendCurrentTouchEvent(WebInputEvent::TouchEnd, args);
 }
 
 void EventSender::NotifyStartOfTouchScroll() {
@@ -2216,8 +2198,36 @@ void EventSender::DoLeapForward(int milliseconds) {
   time_offset_ms_ += milliseconds;
 }
 
+void EventSender::GetOptionalTouchArgs(gin::Arguments* args,
+                                       bool& moved_beyond_slop_region,
+                                       uint32_t& unique_touch_event_id) {
+  moved_beyond_slop_region = false;
+  if(!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
+    std::string arg;
+    if (args->GetNext(&arg) && arg == "movedBeyondSlopRegion")
+      moved_beyond_slop_region = true;
+    else
+      args->ThrowError();
+  }
+
+  unique_touch_event_id = GetUniqueTouchEventId(args);
+  return;
+}
+
+uint32_t EventSender::GetUniqueTouchEventId(gin::Arguments* args) {
+  uint32_t unique_touch_event_id;
+  if(!args->PeekNext().IsEmpty() && args->GetNext(&unique_touch_event_id))
+    return unique_touch_event_id;
+
+  return 0;
+}
+
 void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
-                                        bool movedBeyondSlopRegion) {
+                                        gin::Arguments* args) {
+  bool moved_beyond_slop_region;
+  uint32_t unique_touch_event_id;
+  GetOptionalTouchArgs(args, moved_beyond_slop_region, unique_touch_event_id);
+
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
@@ -2230,7 +2240,8 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
                                  ? WebInputEvent::Blocking
                                  : WebInputEvent::EventNonBlocking;
   touch_event.timeStampSeconds = GetCurrentEventTimeSec();
-  touch_event.movedBeyondSlopRegion = movedBeyondSlopRegion;
+  touch_event.movedBeyondSlopRegion = moved_beyond_slop_region;
+  touch_event.uniqueTouchEventId = unique_touch_event_id;
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)
     touch_event.touches[i] = touch_points_[i];
@@ -2428,25 +2439,6 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.y = y;
       break;
     case WebInputEvent::GestureLongPress:
-      event.x = x;
-      event.y = y;
-      if (!args->PeekNext().IsEmpty()) {
-        float width;
-        if (!args->GetNext(&width)) {
-          args->ThrowError();
-          return;
-        }
-        event.data.longPress.width = width;
-        if (!args->PeekNext().IsEmpty()) {
-          float height;
-          if (!args->GetNext(&height)) {
-            args->ThrowError();
-            return;
-          }
-          event.data.longPress.height = height;
-        }
-      }
-      break;
     case WebInputEvent::GestureLongTap:
       event.x = x;
       event.y = y;
@@ -2490,6 +2482,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
     default:
       NOTREACHED();
   }
+
+  event.uniqueTouchEventId = GetUniqueTouchEventId(args);
 
   event.globalX = event.x;
   event.globalY = event.y;

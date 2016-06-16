@@ -1043,6 +1043,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         webGestureEvent.data.scrollBegin.deltaXHint = 100;
         webGestureEvent.data.scrollBegin.deltaYHint = 10;
         webGestureEvent.data.scrollBegin.deltaHintUnits = WebGestureEvent::Pixels;
+        webGestureEvent.uniqueTouchEventId = 12345U;
 
         PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
         EXPECT_EQ(PlatformGestureSourceTouchpad, platformGestureBuilder.source());
@@ -1056,6 +1057,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         EXPECT_EQ(100, platformGestureBuilder.deltaX());
         EXPECT_EQ(10, platformGestureBuilder.deltaY());
         EXPECT_EQ(ScrollGranularity::ScrollByPixel, platformGestureBuilder.deltaUnits());
+        EXPECT_EQ(12345U, platformGestureBuilder.uniqueTouchEventId());
     }
 
     {
@@ -1070,6 +1072,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         webGestureEvent.data.scrollEnd.inertialPhase = WebGestureEvent::NonMomentumPhase;
         webGestureEvent.data.scrollEnd.synthetic = true;
         webGestureEvent.data.scrollEnd.deltaUnits = WebGestureEvent::Page;
+        webGestureEvent.uniqueTouchEventId = 12345U;
 
         PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
         EXPECT_EQ(PlatformGestureSourceTouchpad, platformGestureBuilder.source());
@@ -1081,6 +1084,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         EXPECT_EQ(ScrollInertialPhaseNonMomentum, platformGestureBuilder.inertialPhase());
         EXPECT_TRUE(platformGestureBuilder.synthetic());
         EXPECT_EQ(ScrollGranularity::ScrollByPage, platformGestureBuilder.deltaUnits());
+        EXPECT_EQ(12345U, platformGestureBuilder.uniqueTouchEventId());
     }
 }
 

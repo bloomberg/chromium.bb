@@ -21,7 +21,8 @@ TEST(BlinkEventUtilTest, NoScalingWith1DSF) {
                             base::TimeTicks(),
                             gfx::PointF(1.f, 1.f),
                             gfx::PointF(1.f, 1.f),
-                            0);
+                            0,
+                            0U);
   EXPECT_FALSE(ScaleWebInputEvent(event, 1.f));
   EXPECT_TRUE(ScaleWebInputEvent(event, 2.f));
 }

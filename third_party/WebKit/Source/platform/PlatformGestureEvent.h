@@ -208,6 +208,8 @@ public:
         }
     }
 
+    uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
+
 protected:
     IntPoint m_position;
     IntPoint m_globalPosition;
@@ -237,6 +239,8 @@ protected:
             float m_scale;
         } m_pinchUpdate;
     } m_data;
+
+    uint32_t m_uniqueTouchEventId;
 };
 
 } // namespace blink

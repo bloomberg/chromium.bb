@@ -246,6 +246,7 @@ private:
 
     HitTestRequest::HitTestRequestType getHitTypeForGestureType(PlatformEvent::EventType);
     void applyTouchAdjustment(PlatformGestureEvent*, HitTestResult*);
+    WebInputEventResult handleGestureTapDown(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureLongPress(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureLongTap(const GestureEventWithHitTestResults&);
@@ -393,6 +394,11 @@ private:
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;
     Member<Element> m_lastDeferredTapElement;
+
+    // Set on GestureTapDown if the |pointerdown| event corresponding to the
+    // triggering |touchstart| event was canceled. This suppresses mouse event
+    // firing for the current gesture sequence (i.e. until next GestureTapDown).
+    bool m_suppressMouseEventsFromGestures;
 };
 
 } // namespace blink

@@ -344,6 +344,8 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     case WebGestureDeviceUninitialized:
         NOTREACHED();
     }
+
+    m_uniqueTouchEventId = e.uniqueTouchEventId;
 }
 
 // MakePlatformKeyboardEvent --------------------------------------------------
@@ -491,6 +493,7 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
 
     m_dispatchType = toPlatformDispatchType(event.dispatchType);
+    m_uniqueTouchEventId = event.uniqueTouchEventId;
 }
 
 static FloatPoint convertAbsoluteLocationForLayoutObjectFloat(const LayoutPoint& location, const LayoutItem layoutItem)

@@ -82,8 +82,10 @@ GestureEventDataPacket& GestureEventDataPacket::operator=(
   return *this;
 }
 
-void GestureEventDataPacket::Push(const GestureEventData& gesture) {
-  DCHECK_NE(ET_UNKNOWN, gesture.type());
+void GestureEventDataPacket::Push(const GestureEventData& original_gesture) {
+  DCHECK_NE(ET_UNKNOWN, original_gesture.type());
+  GestureEventData gesture(original_gesture);
+  gesture.unique_touch_event_id = unique_touch_event_id_;
   gestures_->push_back(gesture);
 }
 
@@ -99,7 +101,8 @@ GestureEventDataPacket GestureEventDataPacket::FromTouchTimeout(
     const GestureEventData& gesture) {
   GestureEventDataPacket packet(gesture.time, TOUCH_TIMEOUT,
                                 gfx::PointF(gesture.x, gesture.y),
-                                gfx::PointF(gesture.raw_x, gesture.raw_y), 0);
+                                gfx::PointF(gesture.raw_x, gesture.raw_y),
+                                gesture.unique_touch_event_id);
   packet.Push(gesture);
   return packet;
 }

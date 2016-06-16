@@ -18,7 +18,6 @@ namespace blink {
 class LocalFrame;
 class Document;
 class PlatformTouchEvent;
-class PointerEventWithTarget;
 
 // This class takes care of dispatching all touch events and
 // maintaining related states.

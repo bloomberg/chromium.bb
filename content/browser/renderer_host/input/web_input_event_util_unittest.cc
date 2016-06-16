@@ -108,7 +108,8 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
                              raw_pos.y(),
                              touch_points,
                              rect,
-                             flags);
+                             flags,
+                             0U);
 
   blink::WebGestureEvent web_event =
       ui::CreateWebGestureEventFromGestureEventData(event);

@@ -48,6 +48,8 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
   static GestureEventDataPacket FromTouchTimeout(
       const GestureEventData& gesture);
 
+  // Pushes into the GestureEventDataPacket a copy of |gesture| that has the
+  // same unique_touch_event_id as the data packet.
   void Push(const GestureEventData& gesture);
 
   const base::TimeTicks& timestamp() const { return timestamp_; }
