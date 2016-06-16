@@ -60,8 +60,14 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
         return_value=list_history)
     self.PatchObject(git, 'Commit', return_value='change_id')
 
+  def testValidatePFQBuild(self):
+    """Test ValidatePFQBuild."""
+    self.SetupCommandMock(self.cmd_args)
+    db = cidb.CIDBConnection('cred_dir')
+    self.assertEqual('100', self.cmd_mock.inst.ValidatePFQBuild(100, db))
+
   def testPassedPFQBuildId(self):
-    """test a passed PFQ build_id"""
+    """Test a passed PFQ build_id"""
     self.SetupCommandMock(self.cmd_args)
     local_mock_pfq_info = copy.deepcopy(self.mock_pfq_info)
     local_mock_pfq_info['status'] = constants.BUILDER_STATUS_PASSED
@@ -69,7 +75,6 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
         return_value=local_mock_pfq_info)
     self.assertRaises(cros_uprevchrome.InvalidPFQBuildIdExcpetion,
                       self.cmd_mock.inst.Run)
-    self.mock_pfq_info['status'] = constants.BUILDER_STATUS_FAILED
 
   def testPassedPFQBuildHistory(self):
     """Test a failed PFQ build_id with one followed PFQ which is passed."""
