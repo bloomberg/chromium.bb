@@ -631,6 +631,9 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
     UnloadChromeVox();
   }
   UpdateBrailleImeState();
+
+  // ChromeVox focus highlighting overrides the other focus highlighting.
+  UpdateFocusHighlightFromPref();
 }
 
 void AccessibilityManager::LoadChromeVox() {
