@@ -41,3 +41,20 @@ class BattOrPowerMobileSites(_BattOrBenchmark):
   @classmethod
   def Name(cls):
     return 'BattOr.BattOrCases'
+
+
+@benchmark.Disabled('android') # crbug.com/618330
+class BattOrPowerMobileSites(_BattOrBenchmark):
+  page_set = page_sets.power_cases.PowerCasesPageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    options = timeline_based_measurement.Options()
+    options.config.enable_battor_trace = True
+    options.config.enable_chrome_trace = False
+    options.config.SetMinimalOverheadFilter()
+    options.SetTimelineBasedMetric('powerMetric')
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'battor.battor_cases.no_chrome_trace'
