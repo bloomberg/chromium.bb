@@ -37,7 +37,7 @@ namespace {
 // This view sort of looks like a tab key.
 class TabKeyBubbleView : public views::Label {
  public:
-  TabKeyBubbleView();
+  explicit TabKeyBubbleView(const gfx::FontList& font_list);
   ~TabKeyBubbleView() override;
 
  private:
@@ -47,8 +47,8 @@ class TabKeyBubbleView : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(TabKeyBubbleView);
 };
 
-TabKeyBubbleView::TabKeyBubbleView()
-    : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY)) {
+TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list)
+    : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY), font_list) {
   SetBorder(views::Border::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 }
@@ -77,8 +77,7 @@ KeywordHintView::KeywordHintView(Profile* profile,
   leading_label_ =
       CreateLabel(font_list, text_color, background_color);
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    TabKeyBubbleView* tab_key = new TabKeyBubbleView();
-    tab_key->SetFontList(bubble_font_list);
+    TabKeyBubbleView* tab_key = new TabKeyBubbleView(bubble_font_list);
     tab_key->SetEnabledColor(text_color);
     bool inverted = color_utils::IsDark(background_color);
     SkColor tab_bg_color =
