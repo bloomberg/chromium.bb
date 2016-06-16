@@ -82,6 +82,7 @@ cr.define('settings_people_page_sync_page', function() {
           passwordsEnforced: false,
           passwordsRegistered: true,
           passwordsSynced: true,
+          paymentsIntegrationEnabled: true,
           preferencesEnforced: false,
           preferencesRegistered: true,
           preferencesSynced: true,

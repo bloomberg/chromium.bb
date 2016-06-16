@@ -20,6 +20,7 @@
 #include "chrome/grit/settings_chromium_strings.h"
 #include "chrome/grit/settings_google_chrome_strings.h"
 #include "chrome/grit/settings_strings.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -760,6 +761,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
     {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+    {"enablePaymentsIntegrationCheckboxLabel",
+     IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
     {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
     {"manageSyncedDataDescription",
      IDS_SETTINGS_MANAGE_SYNCED_DATA_DESCRIPTION},
@@ -788,6 +791,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+  html_source->AddString("autofillHelpURL", autofill::kHelpURL);
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);
   std::string sync_dashboard_url =

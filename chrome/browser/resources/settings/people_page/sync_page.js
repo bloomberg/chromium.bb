@@ -173,6 +173,10 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.selectedPage_ = settings.PageStatus.CONFIGURE;
 
+    // If autofill is not registered or synced, force Payments integration off.
+    if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced)
+      this.set('syncPrefs.paymentsIntegrationEnabled', false);
+
     // Hide the new passphrase box if the sync data has been encrypted.
     if (this.syncPrefs.encryptAllData)
       this.creatingNewPassphrase_ = false;
@@ -195,13 +199,14 @@ Polymer({
       this.set('syncPrefs.bookmarksSynced', true);
       this.set('syncPrefs.passwordsSynced', true);
       this.set('syncPrefs.tabsSynced', true);
+      this.set('syncPrefs.paymentsIntegrationEnabled', true);
     }
 
     this.onSingleSyncDataTypeChanged_();
   },
 
   /**
-   * Handler for when any sync data type checkbox is changed.
+   * Handler for when any sync data type checkbox is changed (except autofill).
    * @private
    */
   onSingleSyncDataTypeChanged_: function() {
@@ -212,6 +217,17 @@ Polymer({
   /** @private */
   onManageSyncedDataTap_: function() {
     window.open(loadTimeData.getString('syncDashboardUrl'));
+  },
+
+  /**
+   * Handler for when the autofill data type checkbox is changed.
+   * @private
+   */
+  onAutofillDataTypeChanged_: function() {
+    this.set('syncPrefs.paymentsIntegrationEnabled',
+             this.syncPrefs.autofillSynced);
+
+    this.onSingleSyncDataTypeChanged_();
   },
 
   /**
@@ -317,6 +333,16 @@ Polymer({
    */
   shouldSyncCheckboxBeDisabled_: function(syncAllDataTypes, enforced) {
     return syncAllDataTypes || enforced;
+  },
+
+  /**
+   * @param {boolean} syncAllDataTypes
+   * @param {boolean} autofillSynced
+   * @return {boolean} Whether the sync checkbox should be disabled.
+   */
+  shouldPaymentsCheckboxBeDisabled_: function(
+      syncAllDataTypes, autofillSynced) {
+    return syncAllDataTypes || !autofillSynced;
   },
 
   /**

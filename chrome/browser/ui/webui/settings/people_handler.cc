@@ -35,6 +35,8 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -73,6 +75,7 @@ struct SyncConfigInfo {
   bool encrypt_all;
   bool sync_everything;
   syncer::ModelTypeSet data_types;
+  bool payments_integration_enabled;
   std::string passphrase;
   bool set_new_passphrase;
 };
@@ -80,6 +83,7 @@ struct SyncConfigInfo {
 SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
       sync_everything(false),
+      payments_integration_enabled(false),
       set_new_passphrase(false) {}
 
 SyncConfigInfo::~SyncConfigInfo() {}
@@ -94,6 +98,13 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 
   if (!result->GetBoolean("syncAllDataTypes", &config->sync_everything)) {
     DLOG(ERROR) << "GetConfiguration() not passed a syncAllDataTypes value";
+    return false;
+  }
+
+  if (!result->GetBoolean("paymentsIntegrationEnabled",
+                          &config->payments_integration_enabled)) {
+    DLOG(ERROR) << "GetConfiguration() not passed a paymentsIntegrationEnabled "
+                << "value";
     return false;
   }
 
@@ -376,6 +387,10 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   SyncConfigInfo configuration;
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
+                           configuration.payments_integration_enabled);
 
   // Start configuring the ProfileSyncService using the configuration passed
   // to us from the JS layer.
@@ -807,6 +822,7 @@ void PeopleHandler::PushSyncPrefs() {
   //   syncAllDataTypes: true if the user wants to sync everything
   //   <data_type>Registered: true if the associated data type is supported
   //   <data_type>Synced: true if the user wants to sync that specific data type
+  //   paymentsIntegrationEnabled: true if the user wants Payments integration
   //   encryptionEnabled: true if sync supports encryption
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
@@ -831,8 +847,12 @@ void PeopleHandler::PushSyncPrefs() {
     // TODO(treib): How do we want to handle pref groups, i.e. when only some of
     // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
-  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
+  PrefService* pref_service = profile_->GetPrefs();
+  sync_driver::SyncPrefs sync_prefs(pref_service);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
+  args.SetBoolean(
+      "paymentsIntegrationEnabled",
+      pref_service->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled));
   args.SetBoolean("encryptAllData", service->IsEncryptEverythingEnabled());
   args.SetBoolean("encryptAllDataAllowed",
                   service->IsEncryptEverythingAllowed());

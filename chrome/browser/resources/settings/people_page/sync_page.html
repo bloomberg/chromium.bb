@@ -48,13 +48,17 @@
                   syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]">
             $i18n{appCheckboxLabel}
           </paper-checkbox>
+
+          <!-- Autofill has a special on-change handler to deal with
+               Payments integriation. -->
           <paper-checkbox checked="{{syncPrefs.autofillSynced}}"
-              on-change="onSingleSyncDataTypeChanged_" class="list-item"
+              on-change="onAutofillDataTypeChanged_" class="list-item"
               hidden="[[!syncPrefs.autofillRegistered]]"
               disabled="[[shouldSyncCheckboxBeDisabled_(
                   syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]">
             $i18n{autofillCheckboxLabel}
           </paper-checkbox>
+
           <paper-checkbox checked="{{syncPrefs.bookmarksSynced}}"
               on-change="onSingleSyncDataTypeChanged_" class="list-item"
               hidden="[[!syncPrefs.bookmarksRegistered]]"
@@ -103,6 +107,20 @@
               disabled="[[shouldSyncCheckboxBeDisabled_(
                   syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]">
             $i18n{openTabsCheckboxLabel}
+          </paper-checkbox>
+
+          <!-- The Payments integration checkbox is a special case in many ways.
+               It's visible only if autofill is registered. It's disabled and
+               unchecked if autofill is unchecked.-->
+          <paper-checkbox checked="{{syncPrefs.paymentsIntegrationEnabled}}"
+              on-change="onSingleSyncDataTypeChanged_" class="list-item"
+              hidden="[[!syncPrefs.autofillRegistered]]"
+              disabled="[[shouldPaymentsCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.autofillSynced)]]">
+            $i18n{enablePaymentsIntegrationCheckboxLabel}
+            <a href="$i18nRaw{autofillHelpURL}" target="_blank">
+              $i18n{learnMore}
+            </a>
           </paper-checkbox>
         </div>
 

@@ -55,6 +55,7 @@ settings.SyncStatus;
  *   passwordsEnforced: boolean,
  *   passwordsRegistered: boolean,
  *   passwordsSynced: boolean,
+ *   paymentsIntegrationEnabled: boolean,
  *   preferencesEnforced: boolean,
  *   preferencesRegistered: boolean,
  *   preferencesSynced: boolean,
