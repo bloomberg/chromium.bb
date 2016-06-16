@@ -133,8 +133,13 @@ struct UsbDeviceDescriptor {
   uint16_t vendor_id = 0;
   uint16_t product_id = 0;
   uint16_t device_version = 0;
+  uint8_t num_configurations = 0;
   std::vector<UsbConfigDescriptor> configurations;
 };
+
+void ReadUsbDescriptors(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    const base::Callback<void(std::unique_ptr<UsbDeviceDescriptor>)>& callback);
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
                               base::string16* output);

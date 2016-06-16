@@ -33,191 +33,212 @@ void ExpectStringDescriptors(
   EXPECT_EQ(base::ASCIIToUTF16("String 3"), (*string_map)[3]);
 }
 
+const uint8_t kDeviceDescriptor[] = {0x12, 0x01, 0x10, 0x03, 0xFF, 0xFF,
+                                     0xFF, 0x09, 0x34, 0x12, 0x78, 0x56,
+                                     0x00, 0x01, 0x01, 0x02, 0x03, 0x02};
+
+const uint8_t kConfig1Descriptor[] = {
+    // Config 1
+    0x09, 0x02, 0x38, 0x00, 0x02, 0x01, 0x01, 0x01, 0x10,
+    // Interface Association (0 + 1)
+    0x08, 0x0B, 0x00, 0x02, 0xFF, 0xFF, 0xFF, 0x00,
+    // Interface 0
+    0x09, 0x04, 0x00, 0x00, 0x03, 0x12, 0x34, 0x56, 0x02,
+    // Endpoint 1 IN
+    0x07, 0x05, 0x81, 0x02, 0x00, 0x02, 0x00,
+    // Endpoint 2 IN
+    0x07, 0x05, 0x82, 0x03, 0x00, 0x02, 0x04,
+    // Endpoint 3 OUT
+    0x07, 0x05, 0x03, 0x13, 0x00, 0x02, 0x04,
+    // Interface 1
+    0x09, 0x04, 0x01, 0x00, 0x00, 0x78, 0x9A, 0xAB, 0x03,
+};
+
+const uint8_t kConfig2Descriptor[] = {
+    // Config 2
+    0x09, 0x02, 0x29, 0x00, 0x01, 0x02, 0x04, 0x03, 0x20,
+    // Interface 0
+    0x09, 0x04, 0x00, 0x00, 0x00, 0xCD, 0xEF, 0x01, 0x04,
+    // Interface 0 (alternate 1)
+    0x09, 0x04, 0x00, 0x01, 0x02, 0xCD, 0xEF, 0x01, 0x05,
+    // Endpoint 1 IN
+    0x07, 0x05, 0x81, 0x01, 0x00, 0x04, 0x08,
+    // Endpoint 2 OUT
+    0x07, 0x05, 0x02, 0x11, 0x00, 0x04, 0x08,
+};
+
+void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
+  // Config 1
+  EXPECT_EQ(1, config.configuration_value);
+  EXPECT_FALSE(config.self_powered);
+  EXPECT_FALSE(config.remote_wakeup);
+  EXPECT_EQ(16, config.maximum_power);
+  ASSERT_EQ(2u, config.interfaces.size());
+  EXPECT_EQ(8u, config.extra_data.size());
+  // Interface 0
+  EXPECT_EQ(0, config.interfaces[0].interface_number);
+  EXPECT_EQ(0, config.interfaces[0].alternate_setting);
+  EXPECT_EQ(0x12, config.interfaces[0].interface_class);
+  EXPECT_EQ(0x34, config.interfaces[0].interface_subclass);
+  EXPECT_EQ(0x56, config.interfaces[0].interface_protocol);
+  ASSERT_EQ(3u, config.interfaces[0].endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[0].extra_data.size());
+  EXPECT_EQ(0, config.interfaces[0].first_interface);
+  // Endpoint 1 IN
+  EXPECT_EQ(0x81, config.interfaces[0].endpoints[0].address);
+  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[0].endpoints[0].direction);
+  EXPECT_EQ(512, config.interfaces[0].endpoints[0].maximum_packet_size);
+  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+            config.interfaces[0].endpoints[0].synchronization_type);
+  EXPECT_EQ(USB_TRANSFER_BULK, config.interfaces[0].endpoints[0].transfer_type);
+  EXPECT_EQ(USB_USAGE_RESERVED, config.interfaces[0].endpoints[0].usage_type);
+  EXPECT_EQ(0, config.interfaces[0].endpoints[0].polling_interval);
+  EXPECT_EQ(0u, config.interfaces[0].endpoints[0].extra_data.size());
+  // Endpoint 2 IN
+  EXPECT_EQ(0x82, config.interfaces[0].endpoints[1].address);
+  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[0].endpoints[1].direction);
+  EXPECT_EQ(512, config.interfaces[0].endpoints[1].maximum_packet_size);
+  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+            config.interfaces[0].endpoints[1].synchronization_type);
+  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
+            config.interfaces[0].endpoints[1].transfer_type);
+  EXPECT_EQ(USB_USAGE_PERIODIC, config.interfaces[0].endpoints[1].usage_type);
+  EXPECT_EQ(4, config.interfaces[0].endpoints[1].polling_interval);
+  EXPECT_EQ(0u, config.interfaces[0].endpoints[1].extra_data.size());
+  // Endpoint 3 OUT
+  EXPECT_EQ(0x03, config.interfaces[0].endpoints[2].address);
+  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
+            config.interfaces[0].endpoints[2].direction);
+  EXPECT_EQ(512, config.interfaces[0].endpoints[2].maximum_packet_size);
+  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+            config.interfaces[0].endpoints[2].synchronization_type);
+  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
+            config.interfaces[0].endpoints[2].transfer_type);
+  EXPECT_EQ(USB_USAGE_NOTIFICATION,
+            config.interfaces[0].endpoints[2].usage_type);
+  EXPECT_EQ(4, config.interfaces[0].endpoints[2].polling_interval);
+  EXPECT_EQ(0u, config.interfaces[0].endpoints[2].extra_data.size());
+  // Interface 1
+  EXPECT_EQ(1, config.interfaces[1].interface_number);
+  EXPECT_EQ(0, config.interfaces[1].alternate_setting);
+  EXPECT_EQ(0x78, config.interfaces[1].interface_class);
+  EXPECT_EQ(0x9A, config.interfaces[1].interface_subclass);
+  EXPECT_EQ(0xAB, config.interfaces[1].interface_protocol);
+  ASSERT_EQ(0u, config.interfaces[1].endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[1].extra_data.size());
+  EXPECT_EQ(0, config.interfaces[1].first_interface);
+}
+
+void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
+  // Config 2
+  EXPECT_EQ(2, config.configuration_value);
+  EXPECT_TRUE(config.self_powered);
+  EXPECT_FALSE(config.remote_wakeup);
+  EXPECT_EQ(32, config.maximum_power);
+  ASSERT_EQ(2u, config.interfaces.size());
+  EXPECT_EQ(0u, config.extra_data.size());
+  // Interface 0
+  EXPECT_EQ(0, config.interfaces[0].interface_number);
+  EXPECT_EQ(0, config.interfaces[0].alternate_setting);
+  EXPECT_EQ(0xCD, config.interfaces[0].interface_class);
+  EXPECT_EQ(0xEF, config.interfaces[0].interface_subclass);
+  EXPECT_EQ(0x01, config.interfaces[0].interface_protocol);
+  ASSERT_EQ(0u, config.interfaces[0].endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[0].extra_data.size());
+  EXPECT_EQ(0, config.interfaces[0].first_interface);
+  // Interface 0 (alternate 1)
+  EXPECT_EQ(0, config.interfaces[1].interface_number);
+  EXPECT_EQ(1, config.interfaces[1].alternate_setting);
+  EXPECT_EQ(0xCD, config.interfaces[1].interface_class);
+  EXPECT_EQ(0xEF, config.interfaces[1].interface_subclass);
+  EXPECT_EQ(0x01, config.interfaces[1].interface_protocol);
+  ASSERT_EQ(2u, config.interfaces[1].endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[1].extra_data.size());
+  EXPECT_EQ(0, config.interfaces[1].first_interface);
+  // Endpoint 1 IN
+  EXPECT_EQ(0x81, config.interfaces[1].endpoints[0].address);
+  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[1].endpoints[0].direction);
+  EXPECT_EQ(1024, config.interfaces[1].endpoints[0].maximum_packet_size);
+  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+            config.interfaces[1].endpoints[0].synchronization_type);
+  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
+            config.interfaces[1].endpoints[0].transfer_type);
+  EXPECT_EQ(USB_USAGE_DATA, config.interfaces[1].endpoints[0].usage_type);
+  EXPECT_EQ(8, config.interfaces[1].endpoints[0].polling_interval);
+  EXPECT_EQ(0u, config.interfaces[1].endpoints[0].extra_data.size());
+  // Endpoint 2 OUT
+  EXPECT_EQ(0x02, config.interfaces[1].endpoints[1].address);
+  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
+            config.interfaces[1].endpoints[1].direction);
+  EXPECT_EQ(1024, config.interfaces[1].endpoints[1].maximum_packet_size);
+  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+            config.interfaces[1].endpoints[1].synchronization_type);
+  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
+            config.interfaces[1].endpoints[1].transfer_type);
+  EXPECT_EQ(USB_USAGE_FEEDBACK, config.interfaces[1].endpoints[1].usage_type);
+  EXPECT_EQ(8, config.interfaces[1].endpoints[1].polling_interval);
+  EXPECT_EQ(0u, config.interfaces[1].endpoints[1].extra_data.size());
+}
+
+void ExpectDeviceDescriptor(const UsbDeviceDescriptor& descriptor) {
+  // Device
+  EXPECT_EQ(0x0310, descriptor.usb_version);
+  EXPECT_EQ(0xFF, descriptor.device_class);
+  EXPECT_EQ(0xFF, descriptor.device_subclass);
+  EXPECT_EQ(0xFF, descriptor.device_protocol);
+  EXPECT_EQ(0x1234, descriptor.vendor_id);
+  EXPECT_EQ(0x5678, descriptor.product_id);
+  EXPECT_EQ(0x0100, descriptor.device_version);
+  ASSERT_EQ(2u, descriptor.configurations.size());
+  ExpectConfig1Descriptor(descriptor.configurations[0]);
+  ExpectConfig2Descriptor(descriptor.configurations[1]);
+}
+
+void OnReadDescriptors(std::unique_ptr<UsbDeviceDescriptor> descriptor) {
+  ASSERT_TRUE(descriptor);
+  ExpectDeviceDescriptor(*descriptor);
+}
+
 class UsbDescriptorsTest : public ::testing::Test {};
 
-TEST_F(UsbDescriptorsTest, ParseConfigs) {
-  const std::vector<uint8_t> kConfigDescriptors{
-      // Device
-      0x12, 0x01, 0x10, 0x03, 0xFF, 0xFF, 0xFF, 0x09, 0x34, 0x12, 0x78, 0x56,
-      0x00, 0x01, 0x01, 0x02, 0x03, 0x02,
-      // Config 1
-      0x09, 0x02, 0x38, 0x00, 0x02, 0x01, 0x01, 0x01, 0x10,
-      // Interface Association (0 + 1)
-      0x08, 0x0B, 0x00, 0x02, 0xFF, 0xFF, 0xFF, 0x00,
-      // Interface 0
-      0x09, 0x04, 0x00, 0x00, 0x03, 0x12, 0x34, 0x56, 0x02,
-      // Endpoint 1 IN
-      0x07, 0x05, 0x81, 0x02, 0x00, 0x02, 0x00,
-      // Endpoint 2 IN
-      0x07, 0x05, 0x82, 0x03, 0x00, 0x02, 0x04,
-      // Endpoint 3 OUT
-      0x07, 0x05, 0x03, 0x13, 0x00, 0x02, 0x04,
-      // Interface 1
-      0x09, 0x04, 0x01, 0x00, 0x00, 0x78, 0x9A, 0xAB, 0x03,
-      // Config 2
-      0x09, 0x02, 0x29, 0x00, 0x01, 0x02, 0x04, 0x03, 0x20,
-      // Interface 0
-      0x09, 0x04, 0x00, 0x00, 0x00, 0xCD, 0xEF, 0x01, 0x04,
-      // Interface 0 (alternate 1)
-      0x09, 0x04, 0x00, 0x01, 0x02, 0xCD, 0xEF, 0x01, 0x05,
-      // Endpoint 1 IN
-      0x07, 0x05, 0x81, 0x01, 0x00, 0x04, 0x08,
-      // Endpoint 2 OUT
-      0x07, 0x05, 0x02, 0x11, 0x00, 0x04, 0x08,
-  };
+TEST_F(UsbDescriptorsTest, ParseDescriptor) {
+  std::vector<uint8_t> buffer;
+  buffer.insert(buffer.end(), kDeviceDescriptor,
+                kDeviceDescriptor + sizeof(kDeviceDescriptor));
+  buffer.insert(buffer.end(), kConfig1Descriptor,
+                kConfig1Descriptor + sizeof(kConfig1Descriptor));
+  buffer.insert(buffer.end(), kConfig2Descriptor,
+                kConfig2Descriptor + sizeof(kConfig2Descriptor));
 
-  UsbDeviceDescriptor desc;
-  ASSERT_TRUE(desc.Parse(kConfigDescriptors));
+  UsbDeviceDescriptor descriptor;
+  ASSERT_TRUE(descriptor.Parse(buffer));
+  ExpectDeviceDescriptor(descriptor);
+}
 
-  // Device
-  EXPECT_EQ(0x0310, desc.usb_version);
-  EXPECT_EQ(0xFF, desc.device_class);
-  EXPECT_EQ(0xFF, desc.device_subclass);
-  EXPECT_EQ(0xFF, desc.device_protocol);
-  EXPECT_EQ(0x1234, desc.vendor_id);
-  EXPECT_EQ(0x5678, desc.product_id);
-  EXPECT_EQ(0x0100, desc.device_version);
-  ASSERT_EQ(2u, desc.configurations.size());
-  // Config 1
-  EXPECT_EQ(1, desc.configurations[0].configuration_value);
-  EXPECT_FALSE(desc.configurations[0].self_powered);
-  EXPECT_FALSE(desc.configurations[0].remote_wakeup);
-  EXPECT_EQ(16, desc.configurations[0].maximum_power);
-  ASSERT_EQ(2u, desc.configurations[0].interfaces.size());
-  EXPECT_EQ(8u, desc.configurations[0].extra_data.size());
-  // Interface 0
-  EXPECT_EQ(0, desc.configurations[0].interfaces[0].interface_number);
-  EXPECT_EQ(0, desc.configurations[0].interfaces[0].alternate_setting);
-  EXPECT_EQ(0x12, desc.configurations[0].interfaces[0].interface_class);
-  EXPECT_EQ(0x34, desc.configurations[0].interfaces[0].interface_subclass);
-  EXPECT_EQ(0x56, desc.configurations[0].interfaces[0].interface_protocol);
-  ASSERT_EQ(3u, desc.configurations[0].interfaces[0].endpoints.size());
-  EXPECT_EQ(0u, desc.configurations[0].interfaces[0].extra_data.size());
-  EXPECT_EQ(0, desc.configurations[0].interfaces[0].first_interface);
-  // Endpoint 1 IN
-  EXPECT_EQ(0x81, desc.configurations[0].interfaces[0].endpoints[0].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND,
-            desc.configurations[0].interfaces[0].endpoints[0].direction);
-  EXPECT_EQ(
-      512,
-      desc.configurations[0].interfaces[0].endpoints[0].maximum_packet_size);
-  EXPECT_EQ(
-      USB_SYNCHRONIZATION_NONE,
-      desc.configurations[0].interfaces[0].endpoints[0].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_BULK,
-            desc.configurations[0].interfaces[0].endpoints[0].transfer_type);
-  EXPECT_EQ(USB_USAGE_RESERVED,
-            desc.configurations[0].interfaces[0].endpoints[0].usage_type);
-  EXPECT_EQ(0,
-            desc.configurations[0].interfaces[0].endpoints[0].polling_interval);
-  EXPECT_EQ(
-      0u, desc.configurations[0].interfaces[0].endpoints[0].extra_data.size());
-  // Endpoint 2 IN
-  EXPECT_EQ(0x82, desc.configurations[0].interfaces[0].endpoints[1].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND,
-            desc.configurations[0].interfaces[0].endpoints[1].direction);
-  EXPECT_EQ(
-      512,
-      desc.configurations[0].interfaces[0].endpoints[1].maximum_packet_size);
-  EXPECT_EQ(
-      USB_SYNCHRONIZATION_NONE,
-      desc.configurations[0].interfaces[0].endpoints[1].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
-            desc.configurations[0].interfaces[0].endpoints[1].transfer_type);
-  EXPECT_EQ(USB_USAGE_PERIODIC,
-            desc.configurations[0].interfaces[0].endpoints[1].usage_type);
-  EXPECT_EQ(4,
-            desc.configurations[0].interfaces[0].endpoints[1].polling_interval);
-  EXPECT_EQ(
-      0u, desc.configurations[0].interfaces[0].endpoints[1].extra_data.size());
-  // Endpoint 3 OUT
-  EXPECT_EQ(0x03, desc.configurations[0].interfaces[0].endpoints[2].address);
-  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
-            desc.configurations[0].interfaces[0].endpoints[2].direction);
-  EXPECT_EQ(
-      512,
-      desc.configurations[0].interfaces[0].endpoints[2].maximum_packet_size);
-  EXPECT_EQ(
-      USB_SYNCHRONIZATION_NONE,
-      desc.configurations[0].interfaces[0].endpoints[2].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
-            desc.configurations[0].interfaces[0].endpoints[2].transfer_type);
-  EXPECT_EQ(USB_USAGE_NOTIFICATION,
-            desc.configurations[0].interfaces[0].endpoints[2].usage_type);
-  EXPECT_EQ(4,
-            desc.configurations[0].interfaces[0].endpoints[2].polling_interval);
-  EXPECT_EQ(
-      0u, desc.configurations[0].interfaces[0].endpoints[2].extra_data.size());
-  // Interface 1
-  EXPECT_EQ(1, desc.configurations[0].interfaces[1].interface_number);
-  EXPECT_EQ(0, desc.configurations[0].interfaces[1].alternate_setting);
-  EXPECT_EQ(0x78, desc.configurations[0].interfaces[1].interface_class);
-  EXPECT_EQ(0x9A, desc.configurations[0].interfaces[1].interface_subclass);
-  EXPECT_EQ(0xAB, desc.configurations[0].interfaces[1].interface_protocol);
-  ASSERT_EQ(0u, desc.configurations[0].interfaces[1].endpoints.size());
-  EXPECT_EQ(0u, desc.configurations[0].interfaces[1].extra_data.size());
-  EXPECT_EQ(0, desc.configurations[0].interfaces[1].first_interface);
-  // Config 2
-  EXPECT_EQ(2, desc.configurations[1].configuration_value);
-  EXPECT_TRUE(desc.configurations[1].self_powered);
-  EXPECT_FALSE(desc.configurations[1].remote_wakeup);
-  EXPECT_EQ(32, desc.configurations[1].maximum_power);
-  ASSERT_EQ(2u, desc.configurations[1].interfaces.size());
-  EXPECT_EQ(0u, desc.configurations[1].extra_data.size());
-  // Interface 0
-  EXPECT_EQ(0, desc.configurations[1].interfaces[0].interface_number);
-  EXPECT_EQ(0, desc.configurations[1].interfaces[0].alternate_setting);
-  EXPECT_EQ(0xCD, desc.configurations[1].interfaces[0].interface_class);
-  EXPECT_EQ(0xEF, desc.configurations[1].interfaces[0].interface_subclass);
-  EXPECT_EQ(0x01, desc.configurations[1].interfaces[0].interface_protocol);
-  ASSERT_EQ(0u, desc.configurations[1].interfaces[0].endpoints.size());
-  EXPECT_EQ(0u, desc.configurations[1].interfaces[0].extra_data.size());
-  EXPECT_EQ(0, desc.configurations[1].interfaces[0].first_interface);
-  // Interface 0 (alternate 1)
-  EXPECT_EQ(0, desc.configurations[1].interfaces[1].interface_number);
-  EXPECT_EQ(1, desc.configurations[1].interfaces[1].alternate_setting);
-  EXPECT_EQ(0xCD, desc.configurations[1].interfaces[1].interface_class);
-  EXPECT_EQ(0xEF, desc.configurations[1].interfaces[1].interface_subclass);
-  EXPECT_EQ(0x01, desc.configurations[1].interfaces[1].interface_protocol);
-  ASSERT_EQ(2u, desc.configurations[1].interfaces[1].endpoints.size());
-  EXPECT_EQ(0u, desc.configurations[1].interfaces[1].extra_data.size());
-  EXPECT_EQ(0, desc.configurations[1].interfaces[1].first_interface);
-  // Endpoint 1 IN
-  EXPECT_EQ(0x81, desc.configurations[1].interfaces[1].endpoints[0].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND,
-            desc.configurations[1].interfaces[1].endpoints[0].direction);
-  EXPECT_EQ(
-      1024,
-      desc.configurations[1].interfaces[1].endpoints[0].maximum_packet_size);
-  EXPECT_EQ(
-      USB_SYNCHRONIZATION_NONE,
-      desc.configurations[1].interfaces[1].endpoints[0].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
-            desc.configurations[1].interfaces[1].endpoints[0].transfer_type);
-  EXPECT_EQ(USB_USAGE_DATA,
-            desc.configurations[1].interfaces[1].endpoints[0].usage_type);
-  EXPECT_EQ(8,
-            desc.configurations[1].interfaces[1].endpoints[0].polling_interval);
-  EXPECT_EQ(
-      0u, desc.configurations[1].interfaces[1].endpoints[0].extra_data.size());
-  // Endpoint 2 OUT
-  EXPECT_EQ(0x02, desc.configurations[1].interfaces[1].endpoints[1].address);
-  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
-            desc.configurations[1].interfaces[1].endpoints[1].direction);
-  EXPECT_EQ(
-      1024,
-      desc.configurations[1].interfaces[1].endpoints[1].maximum_packet_size);
-  EXPECT_EQ(
-      USB_SYNCHRONIZATION_NONE,
-      desc.configurations[1].interfaces[1].endpoints[1].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
-            desc.configurations[1].interfaces[1].endpoints[1].transfer_type);
-  EXPECT_EQ(USB_USAGE_FEEDBACK,
-            desc.configurations[1].interfaces[1].endpoints[1].usage_type);
-  EXPECT_EQ(8,
-            desc.configurations[1].interfaces[1].endpoints[1].polling_interval);
-  EXPECT_EQ(
-      0u, desc.configurations[1].interfaces[1].endpoints[1].extra_data.size());
+TEST_F(UsbDescriptorsTest, ReadDescriptors) {
+  scoped_refptr<MockUsbDeviceHandle> device_handle(
+      new MockUsbDeviceHandle(nullptr));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0100, 0x0000, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kDeviceDescriptor, sizeof(kDeviceDescriptor)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0201, 0x0000, _,
+                              _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          InvokeCallback(kConfig1Descriptor, sizeof(kConfig1Descriptor)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0202, 0x0000, _,
+                              _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          InvokeCallback(kConfig2Descriptor, sizeof(kConfig2Descriptor)));
+
+  ReadUsbDescriptors(device_handle, base::Bind(&OnReadDescriptors));
 }
 
 TEST_F(UsbDescriptorsTest, NoInterfaceAssociations) {
