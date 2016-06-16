@@ -300,39 +300,28 @@ void HandleNewWindow() {
       false /* is_incognito */);
 }
 
-bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate,
-                      const ui::Accelerator& previous_accelerator,
-                      bool current_accelerator_is_deprecated) {
-  if (current_accelerator_is_deprecated) {
-    // We only allow next IME to be triggered if the previous is accelerator key
-    // is ONLY either Shift, Alt, Enter or Space.
-    // The first six cases below are to avoid conflicting accelerators that
-    // contain Alt+Shift (like Alt+Shift+Tab or Alt+Shift+S) to trigger next IME
-    // when the wrong order of key sequences is pressed. crbug.com/527154.
-    // The latter two cases are needed for CJK IME users who tend to press Enter
-    // (or Space) and Shift+Alt almost at the same time to commit an IME string
-    // and then switch from the IME to the English layout. This allows these
-    // users to trigger NEXT_IME even if they press Shift+Alt before releasing
-    // Enter. crbug.com/139556.
-    // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
-    const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
-    switch (previous_key_code) {
-      case ui::VKEY_SHIFT:
-      case ui::VKEY_LSHIFT:
-      case ui::VKEY_RSHIFT:
-      case ui::VKEY_MENU:
-      case ui::VKEY_LMENU:
-      case ui::VKEY_RMENU:
-      case ui::VKEY_RETURN:
-      case ui::VKEY_SPACE:
-        break;
-
-      default:
-        return false;
-    }
-  }
-
+bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
   return ime_control_delegate && ime_control_delegate->CanCycleIme();
+}
+
+// We must avoid showing the Deprecated NEXT_IME notification erronously.
+bool ShouldShowDeprecatedNextImeNotification(
+    const ui::Accelerator& previous_accelerator) {
+  // We only show the deprecation notification if the previous accelerator key
+  // is ONLY either Shift, or Alt.
+  const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
+  switch (previous_key_code) {
+    case ui::VKEY_SHIFT:
+    case ui::VKEY_LSHIFT:
+    case ui::VKEY_RSHIFT:
+    case ui::VKEY_MENU:
+    case ui::VKEY_LMENU:
+    case ui::VKEY_RMENU:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
@@ -878,10 +867,17 @@ bool AcceleratorController::AcceleratorPressed(
         // Record UMA stats.
         RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
 
-        // We always display the notification as long as this entry exists.
-        ShowDeprecatedAcceleratorNotification(
-            data->uma_histogram_name, data->notification_message_id,
-            data->old_shortcut_id, data->new_shortcut_id);
+        // We always display the notification as long as this entry exists,
+        // except for NEXT_IME, we must check to avoid showing it for the wrong
+        // shortcut, as Alt+Shift is tricky and trigger the action on release.
+        if (action != NEXT_IME ||
+            (action == NEXT_IME &&
+             ShouldShowDeprecatedNextImeNotification(
+                 accelerator_history_->previous_accelerator()))) {
+          ShowDeprecatedAcceleratorNotification(
+              data->uma_histogram_name, data->notification_message_id,
+              data->old_shortcut_id, data->new_shortcut_id);
+        }
 
         if (!data->deprecated_enabled)
           return false;
@@ -1014,18 +1010,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleMagnifyScreen();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
-    case NEXT_IME: {
-#if defined(OS_CHROMEOS)
-      bool accelerator_is_deprecated =
-          (deprecated_accelerators_.count(accelerator) != 0);
-#else
-      // On non-chromeos, the NEXT_IME deprecated accelerators are always used.
-      bool accelerator_is_deprecated = true;
-#endif  // defined(OS_CHROMEOS)
-
-      return CanHandleNextIme(ime_control_delegate_.get(), previous_accelerator,
-                              accelerator_is_deprecated);
-    }
+    case NEXT_IME:
+      return CanHandleNextIme(ime_control_delegate_.get());
     case PREVIOUS_IME:
       return CanHandlePreviousIme(ime_control_delegate_.get());
     case SCALE_UI_RESET:

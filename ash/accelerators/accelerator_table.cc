@@ -98,18 +98,6 @@ const AcceleratorData kAcceleratorData[] = {
   // |kDeprecatedAccelerators|, and above in the CrOS accelerators as
   // Search+Esc.
   { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
-  // The below keys have been deprecated on ChromeOS and were replaced above by
-  // Ctrl+Shift+Space. crbug.com/535004.
-  // We have to define 3 entries for Shift+Alt. VKEY_[LR]MENU might be sent to
-  // the accelerator controller when RenderWidgetHostViewAura is focused, and
-  // VKEY_MENU might be when it's not (e.g. when NativeWidgetAura is focused).
-  { false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  { false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  { false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  // The same is true for Alt+Shift.
-  { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
-  { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
-  { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
@@ -246,7 +234,7 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
     IDS_DEPRECATED_NEXT_IME_MSG,
     IDS_SHORTCUT_NEXT_IME_OLD,
     IDS_SHORTCUT_NEXT_IME_NEW,
-    true
+    false  // Old accelerator has been disabled.
   }
 };
 
@@ -449,6 +437,8 @@ const AcceleratorAction kNonrepeatableActions[] = {
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
     EXIT,
+    NEXT_IME,
+    PREVIOUS_IME,
     OPEN_FEEDBACK_PAGE,
     PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
     ROTATE_SCREEN,

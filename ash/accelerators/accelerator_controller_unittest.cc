@@ -1035,141 +1035,41 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   // Test IME shortcuts.
-  {
-     ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
-    control_space_down.set_type(ui::ET_KEY_PRESSED);
-    ui::Accelerator control_space_up(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
-    control_space_up.set_type(ui::ET_KEY_RELEASED);
-    const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
-    const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
-    const ui::Accelerator wide_half_1(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE);
-    const ui::Accelerator wide_half_2(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE);
-    const ui::Accelerator hangul(ui::VKEY_HANGUL, ui::EF_NONE);
-    EXPECT_FALSE(ProcessInController(control_space_down));
-    EXPECT_FALSE(ProcessInController(control_space_up));
-    EXPECT_FALSE(ProcessInController(convert));
-    EXPECT_FALSE(ProcessInController(non_convert));
-    EXPECT_FALSE(ProcessInController(wide_half_1));
-    EXPECT_FALSE(ProcessInController(wide_half_2));
-    EXPECT_FALSE(ProcessInController(hangul));
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-    GetController()->SetImeControlDelegate(
-        std::unique_ptr<ImeControlDelegate>(delegate));
-    EXPECT_EQ(0, delegate->handle_previous_ime_count());
-    EXPECT_TRUE(ProcessInController(control_space_down));
-    EXPECT_EQ(1, delegate->handle_previous_ime_count());
-    EXPECT_TRUE(ProcessInController(control_space_up));
-    EXPECT_EQ(1, delegate->handle_previous_ime_count());
-    EXPECT_EQ(0, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(convert));
-    EXPECT_EQ(1, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(non_convert));
-    EXPECT_EQ(2, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(wide_half_1));
-    EXPECT_EQ(3, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(wide_half_2));
-    EXPECT_EQ(4, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(hangul));
-    EXPECT_EQ(5, delegate->handle_switch_ime_count());
-  }
-
-  // Test IME shortcuts that are triggered on key release.
-  {
-    const ui::Accelerator shift_alt_press(ui::VKEY_MENU,
-                                          ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-    const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT,
-                                          ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-    GetController()->SetImeControlDelegate(
-        std::unique_ptr<ImeControlDelegate>(delegate));
-    EXPECT_EQ(0, delegate->handle_next_ime_count());
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(1, delegate->handle_next_ime_count());
-    EXPECT_FALSE(ProcessInController(alt_shift_press));
-    EXPECT_TRUE(ProcessInController(alt_shift));
-    EXPECT_EQ(2, delegate->handle_next_ime_count());
-
-    // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
-    // released.
-    const ui::Accelerator shift_alt_x_press(
-        ui::VKEY_X,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt_x(ui::VKEY_X,
-                                         ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_x_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_x));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(3, delegate->handle_next_ime_count());
-
-    // But we _should_ if X is either VKEY_RETURN or VKEY_SPACE.
-    // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
-    const ui::Accelerator shift_alt_return_press(
-        ui::VKEY_RETURN,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt_return(
-        ui::VKEY_RETURN,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_return_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_return));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(4, delegate->handle_next_ime_count());
-
-    const ui::Accelerator shift_alt_space_press(
-        ui::VKEY_SPACE,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt_space(
-        ui::VKEY_SPACE,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_space_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_space));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(5, delegate->handle_next_ime_count());
-  }
-
-#if defined(OS_CHROMEOS)
-  // Test IME shortcuts again with unnormalized accelerators (Chrome OS only).
-  {
-    const ui::Accelerator shift_alt_press(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-    const ReleaseAccelerator shift_alt(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-    const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-    const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-    GetController()->SetImeControlDelegate(
-        std::unique_ptr<ImeControlDelegate>(delegate));
-    EXPECT_EQ(0, delegate->handle_next_ime_count());
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(1, delegate->handle_next_ime_count());
-    EXPECT_FALSE(ProcessInController(alt_shift_press));
-    EXPECT_TRUE(ProcessInController(alt_shift));
-    EXPECT_EQ(2, delegate->handle_next_ime_count());
-
-    // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
-    // released.
-    const ui::Accelerator shift_alt_x_press(
-        ui::VKEY_X,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt_x(ui::VKEY_X,
-                                         ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-
-    EXPECT_FALSE(ProcessInController(shift_alt_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_x_press));
-    EXPECT_FALSE(ProcessInController(shift_alt_x));
-    EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(3, delegate->handle_next_ime_count());
-  }
-#endif
+  ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  control_space_down.set_type(ui::ET_KEY_PRESSED);
+  ui::Accelerator control_space_up(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  control_space_up.set_type(ui::ET_KEY_RELEASED);
+  const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
+  const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
+  const ui::Accelerator wide_half_1(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE);
+  const ui::Accelerator wide_half_2(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE);
+  const ui::Accelerator hangul(ui::VKEY_HANGUL, ui::EF_NONE);
+  EXPECT_FALSE(ProcessInController(control_space_down));
+  EXPECT_FALSE(ProcessInController(control_space_up));
+  EXPECT_FALSE(ProcessInController(convert));
+  EXPECT_FALSE(ProcessInController(non_convert));
+  EXPECT_FALSE(ProcessInController(wide_half_1));
+  EXPECT_FALSE(ProcessInController(wide_half_2));
+  EXPECT_FALSE(ProcessInController(hangul));
+  DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
+  GetController()->SetImeControlDelegate(
+      std::unique_ptr<ImeControlDelegate>(delegate));
+  EXPECT_EQ(0, delegate->handle_previous_ime_count());
+  EXPECT_TRUE(ProcessInController(control_space_down));
+  EXPECT_EQ(1, delegate->handle_previous_ime_count());
+  EXPECT_TRUE(ProcessInController(control_space_up));
+  EXPECT_EQ(1, delegate->handle_previous_ime_count());
+  EXPECT_EQ(0, delegate->handle_switch_ime_count());
+  EXPECT_TRUE(ProcessInController(convert));
+  EXPECT_EQ(1, delegate->handle_switch_ime_count());
+  EXPECT_TRUE(ProcessInController(non_convert));
+  EXPECT_EQ(2, delegate->handle_switch_ime_count());
+  EXPECT_TRUE(ProcessInController(wide_half_1));
+  EXPECT_EQ(3, delegate->handle_switch_ime_count());
+  EXPECT_TRUE(ProcessInController(wide_half_2));
+  EXPECT_EQ(4, delegate->handle_switch_ime_count());
+  EXPECT_TRUE(ProcessInController(hangul));
+  EXPECT_EQ(5, delegate->handle_switch_ime_count());
 }
 
 // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
@@ -1184,66 +1084,6 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
       ui::VKEY_SPACE,
       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
   EXPECT_FALSE(ProcessInController(shift_alt_space_press));
-}
-
-// Makes sure that the next IME accelerators doesn't conflict with other
-// accelerators that contain Alt+Shift when the wrong sequence is pressed.
-// crbug.com/527154.
-TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsNoConflict) {
-  DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
-  GetController()->SetImeControlDelegate(
-      std::unique_ptr<ImeControlDelegate>(delegate));
-  ui::test::EventGenerator& generator = GetEventGenerator();
-
-  // Correct sequence of a conflicting accelerator must not trigger next IME.
-  // Alt (press) + Shift (press) + S (press) + S (release) + Shift (release) +
-  // Alt (release).
-  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
-  EXPECT_EQ(0, delegate->handle_next_ime_count());
-
-  // Neither wrong sequences.
-  // Wrong sequence 1:
-  // Alt (press) + Shift (press) + S (press) + Shift (release) + S (release) +
-  // Alt (release).
-  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_S, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
-  EXPECT_EQ(0, delegate->handle_next_ime_count());
-
-  // Wrong sequence 2:
-  // Alt (press) + Shift (press) + S (press) + Alt (release) + S (release) +
-  // Shift (release).
-  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_S, ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
-  EXPECT_EQ(0, delegate->handle_next_ime_count());
-
-  // The two possible sequences of Alt+Shift both work for triggering the next
-  // IME.
-  // 1- Alt (press) + Shift (press) + Shift (release) + Alt (release).
-  generator.PressKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
-  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
-  EXPECT_EQ(1, delegate->handle_next_ime_count());
-
-  // 2- Shift (press) + Alt (press) + Alt (release) + Shift (release).
-  generator.PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  generator.PressKey(ui::VKEY_MENU,  ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
-  EXPECT_EQ(2, delegate->handle_next_ime_count());
 }
 
 TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
