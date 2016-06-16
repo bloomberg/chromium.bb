@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +41,13 @@ public class BackgroundOfflinerTaskTest {
     public void testIncomingTask() {
         BackgroundOfflinerTask task =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
-        task.processBackgroundRequests(mTaskExtras);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
+        task.processBackgroundRequests(mTaskExtras, waiter);
 
         // Check with ShadowBackgroundBackgroundSchedulerProcessor that startProcessing got called.
         assertTrue(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+
+        // TODO(dougarnett): Call processor callback and verify waiter signaled.
     }
 
     @Test

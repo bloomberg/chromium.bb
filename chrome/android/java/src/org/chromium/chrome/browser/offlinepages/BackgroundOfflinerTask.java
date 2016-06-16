@@ -19,9 +19,6 @@ import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerPr
 public class BackgroundOfflinerTask {
     private static final String TAG = "BGOfflinerTask";
 
-    /** Interface to use to report task completion.  */
-    private ChromeBackgroundServiceWaiter mWaiter;
-
     public BackgroundOfflinerTask(BackgroundSchedulerProcessor bridge) {
         mBridge = bridge;
     }
@@ -39,8 +36,7 @@ public class BackgroundOfflinerTask {
      */
     public boolean startBackgroundRequests(Context context, Bundle bundle,
                                            ChromeBackgroundServiceWaiter waiter) {
-        mWaiter = waiter;
-        processBackgroundRequests(bundle);
+        processBackgroundRequests(bundle, waiter);
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
@@ -56,7 +52,8 @@ public class BackgroundOfflinerTask {
     // TODO(petewil): Change back to private when UMA works in the test, and test
     // startBackgroundRequests instead of this method.
     @VisibleForTesting
-    public void processBackgroundRequests(Bundle bundle) {
+    public void processBackgroundRequests(
+            Bundle bundle, final ChromeBackgroundServiceWaiter waiter) {
         // TODO(petewil): Nothing is holding the Wake Lock.  We need some solution to
         // keep hold of it.  Options discussed so far are having a fresh set of functions
         // to grab and release a countdown latch, or holding onto the wake lock ourselves,
@@ -74,7 +71,7 @@ public class BackgroundOfflinerTask {
             public void onResult(Boolean result) {
                 // Release the wake lock.
                 Log.d(TAG, "onProcessingDone");
-                mWaiter.onWaitDone();
+                waiter.onWaitDone();
             }
         };
 
