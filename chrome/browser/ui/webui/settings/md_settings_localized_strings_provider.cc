@@ -760,6 +760,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
     {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+    {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
+    {"manageSyncedDataDescription",
+     IDS_SETTINGS_MANAGE_SYNCED_DATA_DESCRIPTION},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"encryptWithGoogleCredentialsLabel",
@@ -787,15 +790,16 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);
-  std::string disconnect_help_url =
+  std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kSyncGoogleDashboardURL),
           g_browser_process->GetApplicationLocale())
           .spec();
+  html_source->AddString("syncDashboardUrl", sync_dashboard_url);
   html_source->AddString(
       "syncDisconnectExplanation",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                 base::ASCIIToUTF16(disconnect_help_url)));
+                                 base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "activityControlsUrl",
       base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL));

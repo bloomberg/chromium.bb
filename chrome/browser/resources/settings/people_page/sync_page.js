@@ -209,6 +209,11 @@ Polymer({
         this.handlePageStatusChanged_.bind(this));
   },
 
+  /** @private */
+  onManageSyncedDataTap_: function() {
+    window.open(loadTimeData.getString('syncDashboardUrl'));
+  },
+
   /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
