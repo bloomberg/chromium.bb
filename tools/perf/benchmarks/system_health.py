@@ -25,7 +25,7 @@ class _SystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()
-    options.config.SetTracingCategoryFilter(
+    options.config.chrome_trace_config.SetTracingCategoryFilter(
         tracing_category_filter.TracingCategoryFilter(','.join(
             self.TRACING_CATEGORIES)))
     options.SetTimelineBasedMetric('SystemHealthMetrics')

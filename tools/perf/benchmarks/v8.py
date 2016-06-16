@@ -212,7 +212,7 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
     # Trigger periodic light memory dumps every 20 ms.
     memory_dump_config = tracing_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('light', 20)
-    options.config.SetMemoryDumpConfig(memory_dump_config)
+    options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
     options.SetTimelineBasedMetric('memoryMetric')
     return options
 

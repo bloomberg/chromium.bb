@@ -14,7 +14,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options()
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
-    options.config.SetMinimalOverheadFilter()
+    options.config.chrome_trace_config.SetMinimalOverheadFilter()
     options.SetTimelineBasedMetric('powerMetric')
     return options
 
