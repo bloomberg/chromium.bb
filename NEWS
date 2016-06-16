@@ -5,6 +5,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - The YAML tests now allow for an optional test description. See the
   documentation for more details.
 ** Bug fixes
+- Stop buffer overrun in lou_getProgramPath, and also free memory
+  after usage. Thanks to Michael Curran.
 ** Other changes
 - Improvements to the test suite:
   - Output is printed to stderr. This helps with locating errors when
