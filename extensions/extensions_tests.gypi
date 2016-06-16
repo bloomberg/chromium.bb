@@ -64,6 +64,7 @@
       'browser/api/mime_handler_private/mime_handler_private_unittest.cc',
       'browser/api/networking_config/networking_config_service_chromeos_unittest.cc',
       'browser/api/power/power_api_unittest.cc',
+      'browser/api/runtime/restart_after_delay_api_unittest.cc',
       'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
       'browser/api/sockets_udp/sockets_udp_api_unittest.cc',
       'browser/api/storage/settings_quota_unittest.cc',
