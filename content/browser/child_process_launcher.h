@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 #if defined(OS_WIN)
@@ -69,12 +70,17 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // the callback won't be called.  If the process is still running by the time
   // this object destructs, it will be terminated.
   // Takes ownership of cmd_line.
+  //
+  // If |process_error_callback| is provided, it will be called if a Mojo error
+  // is encountered when processing messages from the child process. This
+  // callback must be safe to call from any thread.
   ChildProcessLauncher(
       SandboxedProcessLauncherDelegate* delegate,
       base::CommandLine* cmd_line,
       int child_process_id,
       Client* client,
       const std::string& mojo_child_token,
+      const mojo::edk::ProcessErrorCallback& process_error_callback,
       bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
 
@@ -152,6 +158,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   int exit_code_;
   ZygoteHandle zygote_;
   bool starting_;
+  const mojo::edk::ProcessErrorCallback process_error_callback_;
+
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.
   const bool terminate_child_on_shutdown_;

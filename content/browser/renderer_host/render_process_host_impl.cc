@@ -784,7 +784,10 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         new RendererSandboxedProcessLauncherDelegate(channel_.get()), cmd_line,
-        GetID(), this, child_token_));
+        GetID(), this, child_token_,
+        base::Bind(&RenderProcessHostImpl::OnMojoError,
+                   weak_factory_.GetWeakPtr(),
+                   base::ThreadTaskRunnerHandle::Get())));
 
     fast_shutdown_started_ = false;
   }
@@ -2804,6 +2807,27 @@ void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
 
     rvh->OnWebkitPreferencesChanged();
   }
+}
+
+// static
+void RenderProcessHostImpl::OnMojoError(
+    base::WeakPtr<RenderProcessHostImpl> process,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const std::string& error) {
+  if (!task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&RenderProcessHostImpl::OnMojoError,
+                                     process, task_runner, error));
+  }
+  if (!process)
+    return;
+  LOG(ERROR) << "Terminating render process for bad Mojo message: " << error;
+
+  // The ReceivedBadMessage call below will trigger a DumpWithoutCrashing. Alias
+  // enough information here so that we can determine what the bad message was.
+  base::debug::Alias(&error);
+  bad_message::ReceivedBadMessage(process.get(),
+                                  bad_message::RPH_MOJO_PROCESS_ERROR);
 }
 
 }  // namespace content

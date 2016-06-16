@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
@@ -369,6 +370,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
   base::FilePath GetEventLogFilePathWithExtensions(const base::FilePath& file);
 #endif
+
+  static void OnMojoError(
+      base::WeakPtr<RenderProcessHostImpl> process,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::string& error);
 
   // IPC::Senders which live as long as this RPH and provide safe, opaque
   // access to ChannelProxy SendNow() and SendOnIOThread() respectively.

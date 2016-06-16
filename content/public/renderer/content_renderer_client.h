@@ -73,6 +73,7 @@ class DocumentState;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
+class ServiceRegistry;
 class SynchronousCompositor;
 struct WebPluginInfo;
 
@@ -350,6 +351,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // from the worker thread.
   virtual void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) {}
+
+  // Adds service factories to the process-wide ServiceRegistry the host is
+  // connected to.
+  virtual void RegisterProcessMojoServices(ServiceRegistry* service_registry) {}
 };
 
 }  // namespace content

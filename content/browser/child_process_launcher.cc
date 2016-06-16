@@ -396,12 +396,14 @@ ChildProcessLauncher::ChildProcessLauncher(
     int child_process_id,
     Client* client,
     const std::string& mojo_child_token,
+    const mojo::edk::ProcessErrorCallback& process_error_callback,
     bool terminate_on_shutdown)
     : client_(client),
       termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
       exit_code_(RESULT_CODE_NORMAL_EXIT),
       zygote_(nullptr),
       starting_(true),
+      process_error_callback_(process_error_callback),
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER)
@@ -560,7 +562,8 @@ void ChildProcessLauncher::Notify(ZygoteHandle zygote,
     // Set up Mojo IPC to the new process.
     mojo::edk::ChildProcessLaunched(process_.Handle(),
                                     std::move(mojo_host_platform_handle_),
-                                    mojo_child_token_);
+                                    mojo_child_token_,
+                                    process_error_callback_);
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

@@ -820,6 +820,9 @@ void RenderThreadImpl::Init(
   base::DiscardableMemoryAllocator::SetInstance(
       ChildThreadImpl::discardable_shared_memory_manager());
 
+  GetContentClient()->renderer()->RegisterProcessMojoServices(
+      service_registry());
+
   service_registry()->AddService(base::Bind(CreateRenderFrameSetup));
   service_registry()->AddService(base::Bind(CreateEmbeddedWorkerSetup));
 

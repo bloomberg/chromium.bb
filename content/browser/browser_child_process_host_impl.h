@@ -11,7 +11,10 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
@@ -117,6 +120,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // on the IO thread.
   bool IsProcessLaunched() const;
 
+  static void OnMojoError(
+      base::WeakPtr<BrowserChildProcessHostImpl> process,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::string& error);
+
 #if defined(OS_WIN)
   // ObjectWatcher::Delegate implementation.
   void OnObjectSignaled(HANDLE object) override;
@@ -140,6 +148,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   bool is_channel_connected_;
   bool notify_child_disconnected_;
+
+  base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_;
 };
 
 }  // namespace content

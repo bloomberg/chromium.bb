@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -11,9 +12,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_mojo_service.mojom.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -42,11 +45,17 @@ class RenderProcessHostTest : public ContentBrowserTest,
   RenderProcessHostTest() : process_exits_(0), host_destructions_(0) {}
 
  protected:
+  void set_process_exit_callback(const base::Closure& callback) {
+    process_exit_callback_ = callback;
+  }
+
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
                            base::TerminationStatus status,
                            int exit_code) override {
     ++process_exits_;
+    if (!process_exit_callback_.is_null())
+      process_exit_callback_.Run();
   }
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     ++host_destructions_;
@@ -54,6 +63,7 @@ class RenderProcessHostTest : public ContentBrowserTest,
 
   int process_exits_;
   int host_destructions_;
+  base::Closure process_exit_callback_;
 };
 
 // Sometimes the renderer process's ShutdownRequest (corresponding to the
@@ -196,6 +206,35 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(&shell_closer);
     rph->RemoveObserver(&observer_logger);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  NavigateToURL(shell(), test_url);
+  RenderProcessHost* rph =
+      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+
+  host_destructions_ = 0;
+  process_exits_ = 0;
+  rph->AddObserver(this);
+
+  mojom::TestMojoServicePtr service;
+  rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&service));
+
+  base::RunLoop run_loop;
+  set_process_exit_callback(run_loop.QuitClosure());
+
+  // Should reply with a bad message and cause process death.
+  service->DoSomething([]{});
+
+  run_loop.Run();
+
+  EXPECT_EQ(1, process_exits_);
+  EXPECT_EQ(0, host_destructions_);
+  if (!host_destructions_)
+    rph->RemoveObserver(this);
 }
 
 }  // namespace
