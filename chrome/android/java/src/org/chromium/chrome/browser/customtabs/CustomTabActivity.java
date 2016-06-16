@@ -91,6 +91,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     private boolean mRecordedStartupUma;
     private boolean mHasCreatedTabEarly;
+    private boolean mIsInitialStart = true;
     private CustomTabObserver mTabObserver;
 
     private String mPrerenderedUrl;
@@ -424,6 +425,13 @@ public class CustomTabActivity extends ChromeActivity {
             RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
                     externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
         }
+
+        if (getSavedInstanceState() != null || !mIsInitialStart) {
+            RecordUserAction.record("CustomTabs.StartedReopened");
+        } else {
+            RecordUserAction.record("CustomTabs.StartedInitially");
+        }
+        mIsInitialStart = false;
     }
 
     @Override

@@ -2870,6 +2870,20 @@ should be able to be added at any place in this file.
   <description>Close button of the CustomTabActivity was clicked.</description>
 </action>
 
+<action name="CustomTabs.StartedInitially">
+  <owner>tedchoc@chromium.org</owner>
+  <description>A CustomTabActivity was stared for the first time.</description>
+</action>
+
+<action name="CustomTabs.StartedReopened">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A CustomTabActivity was started by reopening a previously created instance.
+    This can happen if you send a CCT to the background via the home button and
+    reselect it from Android Overview.
+  </description>
+</action>
+
 <action name="CustomTabs.SystemBack">
   <owner>dfalcantara@chromium.org</owner>
   <description>
