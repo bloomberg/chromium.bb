@@ -658,6 +658,16 @@ letter sign is not used. By default the characters apostrophe
 @code{noletsignafter} entry is used the characters in all entries are
 combined.
 
+@opcode{nocontractsign, dots}
+
+The dots in this opcode are used to indicate a letter or a sequence of
+letters that are not a contraction, e.g. @samp{CD}. The opcode is
+similar to the @opcoderef{letsign}.
+
+@c FIXME: In what way is the nocontractsign opcode different from the
+@c letsign opcode, apart from apparently being a more focused version of
+@c letsign?
+
 @opcode{numsign, dots}
 The translator inserts this indicator before numbers made up of digits
 defined with the @opcoderef{litdigit} to show that they are a number
