@@ -21,7 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <config.h>
+#include "config.h"
 
 #include <stdbool.h>
 #include <stdint.h>
