@@ -184,8 +184,9 @@ def GetCppArrayArgWrapperType(kind):
     pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
     return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
-    return "mojo::Map<%s, %s> " % (GetCppArrayArgWrapperType(kind.key_kind),
-                                   GetCppArrayArgWrapperType(kind.value_kind))
+    pattern = "mojo::WTFMap<%s, %s>" if _for_blink else "mojo::Map<%s, %s>"
+    return pattern % (GetCppArrayArgWrapperType(kind.key_kind),
+                      GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     raise Exception("Arrays of interfaces not yet supported!")
   if mojom.IsInterfaceRequestKind(kind):
@@ -220,8 +221,9 @@ def GetCppWrapperType(kind):
     pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
     return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
-    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
-                                  GetCppArrayArgWrapperType(kind.value_kind))
+    pattern = "mojo::WTFMap<%s, %s>" if _for_blink else "mojo::Map<%s, %s>"
+    return pattern % (GetCppArrayArgWrapperType(kind.key_kind),
+                      GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):

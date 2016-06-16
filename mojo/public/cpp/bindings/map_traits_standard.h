@@ -36,11 +36,13 @@ struct MapTraits<Map<K, V>> {
   static V& GetValue(Iterator& iterator) { return iterator->second; }
   static const V& GetValue(ConstIterator& iterator) { return iterator->second; }
 
-  static void Insert(Map<K, V>& input, const K& key, V&& value) {
+  static bool Insert(Map<K, V>& input, const K& key, V&& value) {
     input.insert(key, std::forward<V>(value));
+    return true;
   }
-  static void Insert(Map<K, V>& input, const K& key, const V& value) {
+  static bool Insert(Map<K, V>& input, const K& key, const V& value) {
     input.insert(key, value);
+    return true;
   }
 
   static void SetToEmpty(Map<K, V>* output) { output->SetToEmpty(); }

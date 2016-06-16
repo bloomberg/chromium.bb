@@ -39,6 +39,11 @@ class TestWTFImpl : public TestWTF {
     callback.Run(std::move(arr));
   }
 
+  void EchoStringMap(Map<String, String> str_map,
+                     const EchoStringMapCallback& callback) override {
+    callback.Run(std::move(str_map));
+  }
+
  private:
   Binding<TestWTF> binding_;
 };
@@ -62,6 +67,16 @@ WTFArray<WTF::String> ConstructStringArray() {
   return strs;
 }
 
+WTFMap<WTF::String, WTF::String> ConstructStringMap() {
+  WTFMap<WTF::String, WTF::String> str_map;
+  // A null string as value.
+  str_map.insert("0", WTF::String());
+  str_map.insert("1", kHelloWorld);
+  str_map.insert("2", WTF::String::fromUTF8(kUTF8HelloWorld));
+
+  return str_map;
+}
+
 }  // namespace
 
 TEST_F(WTFTypesTest, Serialization_WTFArrayToWTFArray) {
@@ -80,7 +95,7 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToWTFArray) {
                                                  &validate_params, &context);
 
   WTFArray<WTF::String> strs2;
-  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, &context);
 
   EXPECT_TRUE(strs.Equals(strs2));
 }
@@ -101,7 +116,7 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
                                                  &validate_params, &context);
 
   WTF::Vector<WTF::String> strs2;
-  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, &context);
 
   EXPECT_EQ(strs, strs2);
 }
@@ -121,13 +136,73 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
                                                  &validate_params, &context);
 
   Array<mojo::String> strs2;
-  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, &context);
 
   ASSERT_EQ(4u, strs2.size());
   EXPECT_TRUE(strs2[0].is_null());
   EXPECT_TRUE("" == strs2[1]);
   EXPECT_TRUE(kHelloWorld == strs2[2]);
   EXPECT_TRUE(kUTF8HelloWorld == strs2[3]);
+}
+
+TEST_F(WTFTypesTest, Serialization_WTFMapToWTFMap) {
+  using WTFType = WTFMap<WTF::String, WTF::String>;
+  using MojomType = Map<mojo::String, mojo::String>;
+
+  WTFType str_map = ConstructStringMap();
+  WTFType cloned_str_map = str_map.Clone();
+
+  mojo::internal::SerializationContext context;
+  size_t size =
+      mojo::internal::PrepareToSerialize<MojomType>(cloned_str_map, &context);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+  typename MojomType::Data_* data;
+  mojo::internal::ContainerValidateParams validate_params(
+      new mojo::internal::ContainerValidateParams(
+          0, false,
+          new mojo::internal::ContainerValidateParams(0, false, nullptr)),
+      new mojo::internal::ContainerValidateParams(
+          0, true,
+          new mojo::internal::ContainerValidateParams(0, false, nullptr)));
+  mojo::internal::Serialize<MojomType>(cloned_str_map, &buf, &data,
+                                       &validate_params, &context);
+
+  WTFType str_map2;
+  mojo::internal::Deserialize<MojomType>(data, &str_map2, &context);
+
+  EXPECT_TRUE(str_map.Equals(str_map2));
+}
+
+TEST_F(WTFTypesTest, Serialization_WTFMapToMojoMap) {
+  using WTFType = WTFMap<WTF::String, WTF::String>;
+  using MojomType = Map<mojo::String, mojo::String>;
+
+  WTFType str_map = ConstructStringMap();
+
+  mojo::internal::SerializationContext context;
+  size_t size =
+      mojo::internal::PrepareToSerialize<MojomType>(str_map, &context);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+  typename MojomType::Data_* data;
+  mojo::internal::ContainerValidateParams validate_params(
+      new mojo::internal::ContainerValidateParams(
+          0, false,
+          new mojo::internal::ContainerValidateParams(0, false, nullptr)),
+      new mojo::internal::ContainerValidateParams(
+          0, true,
+          new mojo::internal::ContainerValidateParams(0, false, nullptr)));
+  mojo::internal::Serialize<MojomType>(str_map, &buf, &data, &validate_params,
+                                       &context);
+
+  MojomType str_map2;
+  mojo::internal::Deserialize<MojomType>(data, &str_map2, &context);
+
+  ASSERT_EQ(3u, str_map2.size());
+  EXPECT_TRUE(str_map2["0"].is_null());
+  EXPECT_TRUE(kHelloWorld == str_map2["1"]);
+  EXPECT_TRUE(kUTF8HelloWorld == str_map2["2"]);
 }
 
 TEST_F(WTFTypesTest, SendString) {
@@ -171,10 +246,39 @@ TEST_F(WTFTypesTest, SendStringArray) {
     //   - serialized;
     //   - deserialized as mojo::WTFArray<WTF::String>.
     ptr->EchoStringArray(std::move(arrs[i]),
-                         [&loop, &expected_arr, &i](WTFArray<WTF::String> arr) {
+                         [&loop, &expected_arr](WTFArray<WTF::String> arr) {
                            EXPECT_TRUE(expected_arr.Equals(arr));
                            loop.Quit();
                          });
+    loop.Run();
+  }
+}
+
+TEST_F(WTFTypesTest, SendStringMap) {
+  blink::TestWTFPtr ptr;
+  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
+
+  WTFMap<WTF::String, WTF::String> maps[3];
+  // maps[0] is empty.
+  // maps[1] is null.
+  maps[1] = nullptr;
+  maps[2] = ConstructStringMap();
+
+  for (size_t i = 0; i < arraysize(maps); ++i) {
+    WTFMap<WTF::String, WTF::String> expected_map = maps[i].Clone();
+    base::RunLoop loop;
+    // Test that a mojo::WTFMap<WTF::String, WTF::String> is unchanged after the
+    // following conversion:
+    //   - serialized;
+    //   - deserialized as mojo::Map<mojo::String, mojo::String>;
+    //   - serialized;
+    //   - deserialized as mojo::WTFMap<WTF::String, WTF::String>.
+    ptr->EchoStringMap(
+        std::move(maps[i]),
+        [&loop, &expected_map](WTFMap<WTF::String, WTF::String> map) {
+          EXPECT_TRUE(expected_map.Equals(map));
+          loop.Quit();
+        });
     loop.Run();
   }
 }

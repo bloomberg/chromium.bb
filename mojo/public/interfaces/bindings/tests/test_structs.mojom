@@ -113,7 +113,8 @@ struct ScopedConstants {
 // decoded successfully.
 
 struct MapKeyTypes {
-  map<bool, bool> f0;
+  // TODO(yzshen): WTF::HashMap doesn't support bool as key.
+  // map<bool, bool> f0;
   map<int8, int8> f1;
   map<uint8, uint8> f2;
   map<int16, int16> f3;

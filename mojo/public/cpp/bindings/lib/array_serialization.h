@@ -259,7 +259,7 @@ struct ArraySerializer<MojomType,
   using Traits = ArrayTraits<UserType>;
   using Data = typename MojomType::Data_;
 
-  static_assert(std::is_same<bool, typename UserType::Element>::value,
+  static_assert(std::is_same<bool, typename Traits::Element>::value,
                 "Incorrect array serializer");
 
   static size_t GetSerializedSize(UserTypeIterator* input,

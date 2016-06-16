@@ -9,12 +9,9 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
-#include "mojo/public/cpp/bindings/lib/serialization.h"
-#include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
+#include "mojo/public/cpp/bindings/tests/map_common_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -22,97 +19,15 @@ namespace test {
 
 namespace {
 
-using mojo::internal::Array_Data;
-using mojo::internal::ContainerValidateParams;
-using mojo::internal::FixedBufferForTesting;
-using mojo::internal::Map_Data;
-using mojo::internal::String_Data;
-
-struct StringIntData {
-  const char* string_data;
-  int int_data;
-} kStringIntData[] = {
-      {"one", 1},
-      {"two", 2},
-      {"three", 3},
-      {"four", 4},
-};
-
-const size_t kStringIntDataSize = 4;
-
 using MapTest = testing::Test;
 
-// Tests null and empty maps.
-TEST_F(MapTest, NullAndEmpty) {
-  Map<char, char> map0;
-  EXPECT_TRUE(map0.empty());
-  EXPECT_FALSE(map0.is_null());
-  map0 = nullptr;
-  EXPECT_TRUE(map0.is_null());
-  EXPECT_FALSE(map0.empty());
-
-  Map<char, char> map1(nullptr);
-  EXPECT_TRUE(map1.is_null());
-  EXPECT_FALSE(map1.empty());
-  map1.SetToEmpty();
-  EXPECT_TRUE(map1.empty());
-  EXPECT_FALSE(map1.is_null());
-}
-
-// Tests that basic Map operations work.
-TEST_F(MapTest, InsertWorks) {
-  Map<String, int> map;
-  for (size_t i = 0; i < kStringIntDataSize; ++i)
-    map.insert(kStringIntData[i].string_data, kStringIntData[i].int_data);
-
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    EXPECT_EQ(kStringIntData[i].int_data,
-              map.at(kStringIntData[i].string_data));
-  }
-}
-
-TEST_F(MapTest, TestIndexOperator) {
-  Map<String, int> map;
-  for (size_t i = 0; i < kStringIntDataSize; ++i)
-    map[kStringIntData[i].string_data] = kStringIntData[i].int_data;
-
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    EXPECT_EQ(kStringIntData[i].int_data,
-              map.at(kStringIntData[i].string_data));
-  }
-}
-
-TEST_F(MapTest, TestIndexOperatorAsRValue) {
-  Map<String, int> map;
-  for (size_t i = 0; i < kStringIntDataSize; ++i)
-    map.insert(kStringIntData[i].string_data, kStringIntData[i].int_data);
-
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    EXPECT_EQ(kStringIntData[i].int_data, map[kStringIntData[i].string_data]);
-  }
-}
-
-TEST_F(MapTest, TestIndexOperatorMoveOnly) {
-  ASSERT_EQ(0u, MoveOnlyType::num_instances());
-  mojo::Map<mojo::String, mojo::Array<int32_t>> map;
-  std::vector<MoveOnlyType*> value_ptrs;
-
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    const char* key = kStringIntData[i].string_data;
-    Array<int32_t> array(1);
-    array[0] = kStringIntData[i].int_data;
-    map[key] = std::move(array);
-    EXPECT_TRUE(map);
-  }
-
-  // We now read back that data, to test the behavior of operator[].
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    auto it = map.find(kStringIntData[i].string_data);
-    ASSERT_TRUE(it != map.end());
-    ASSERT_EQ(1u, it->second.size());
-    EXPECT_EQ(kStringIntData[i].int_data, it->second[0]);
-  }
-}
+MAP_COMMON_TEST(Map, NullAndEmpty)
+MAP_COMMON_TEST(Map, InsertWorks)
+MAP_COMMON_TEST(Map, TestIndexOperator)
+MAP_COMMON_TEST(Map, TestIndexOperatorAsRValue)
+MAP_COMMON_TEST(Map, TestIndexOperatorMoveOnly)
+MAP_COMMON_TEST(Map, MapArrayClone)
+MAP_COMMON_TEST(Map, ArrayOfMap)
 
 TEST_F(MapTest, ConstructedFromArray) {
   Array<String> keys(kStringIntDataSize);
@@ -269,83 +184,6 @@ TEST_F(MapTest, MojoToSTL) {
     auto it = stl_map.find(kStringIntData[i].string_data);
     ASSERT_TRUE(it != stl_map.end());
     EXPECT_EQ(kStringIntData[i].int_data, it->second);
-  }
-}
-
-TEST_F(MapTest, MapArrayClone) {
-  Map<String, Array<String>> m;
-  for (size_t i = 0; i < kStringIntDataSize; ++i) {
-    Array<String> s;
-    s.push_back(kStringIntData[i].string_data);
-    m.insert(kStringIntData[i].string_data, std::move(s));
-  }
-
-  Map<String, Array<String>> m2 = m.Clone();
-
-  for (auto it = m2.begin(); it != m2.end(); ++it) {
-    ASSERT_EQ(1u, it->second.size());
-    EXPECT_EQ(it->first, it->second.at(0));
-  }
-}
-
-TEST_F(MapTest, ArrayOfMap) {
-  {
-    Array<Map<int32_t, int8_t>> array(1);
-    array[0].insert(1, 42);
-
-    mojo::internal::SerializationContext context;
-    size_t size =
-        mojo::internal::PrepareToSerialize<Array<Map<int32_t, int8_t>>>(
-            array, &context);
-    FixedBufferForTesting buf(size);
-    Array_Data<Map_Data<int32_t, int8_t>*>* data;
-    ContainerValidateParams validate_params(
-        0, false, new ContainerValidateParams(
-                      new ContainerValidateParams(0, false, nullptr),
-                      new ContainerValidateParams(0, false, nullptr)));
-    mojo::internal::Serialize<Array<Map<int32_t, int8_t>>>(
-        array, &buf, &data, &validate_params, &context);
-
-    Array<Map<int32_t, int8_t>> deserialized_array;
-    mojo::internal::Deserialize<Array<Map<int32_t, int8_t>>>(
-        data, &deserialized_array, &context);
-
-    ASSERT_EQ(1u, deserialized_array.size());
-    ASSERT_EQ(1u, deserialized_array[0].size());
-    ASSERT_EQ(42, deserialized_array[0].at(1));
-  }
-
-  {
-    Array<Map<String, Array<bool>>> array(1);
-    Array<bool> map_value(2);
-    map_value[0] = false;
-    map_value[1] = true;
-    array[0].insert("hello world", std::move(map_value));
-
-    mojo::internal::SerializationContext context;
-    size_t size =
-        mojo::internal::PrepareToSerialize<Array<Map<String, Array<bool>>>>(
-            array, &context);
-    FixedBufferForTesting buf(size);
-    Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
-    ContainerValidateParams validate_params(
-        0, false,
-        new ContainerValidateParams(
-            new ContainerValidateParams(
-                0, false, new ContainerValidateParams(0, false, nullptr)),
-            new ContainerValidateParams(
-                0, false, new ContainerValidateParams(0, false, nullptr))));
-    mojo::internal::Serialize<Array<Map<String, Array<bool>>>>(
-        array, &buf, &data, &validate_params, &context);
-
-    Array<Map<String, Array<bool>>> deserialized_array;
-    mojo::internal::Deserialize<Array<Map<String, Array<bool>>>>(
-        data, &deserialized_array, &context);
-
-    ASSERT_EQ(1u, deserialized_array.size());
-    ASSERT_EQ(1u, deserialized_array[0].size());
-    ASSERT_FALSE(deserialized_array[0].at("hello world")[0]);
-    ASSERT_TRUE(deserialized_array[0].at("hello world")[1]);
   }
 }
 

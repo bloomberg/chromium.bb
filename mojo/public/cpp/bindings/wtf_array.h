@@ -26,10 +26,6 @@ namespace mojo {
 template <typename T>
 class WTFArray {
  public:
-  using Data_ = internal::Array_Data<
-      typename internal::GetDataTypeAsArrayElement<T>::Data>;
-  using Element = T;
-
   // Constructs an empty array.
   WTFArray() : is_null_(false) {}
   // Constructs a null array.

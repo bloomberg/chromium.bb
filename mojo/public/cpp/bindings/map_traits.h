@@ -36,10 +36,12 @@ namespace mojo {
 //     static V& GetValue(CustomIterator& iterator);
 //     static const V& GetValue(CustomConstIterator& iterator);
 //
-//     static void Insert(CustomMap<K, V>& input,
+//     // Returning false results in deserialization failure and causes the
+//     // message pipe receiving it to be disconnected.
+//     static bool Insert(CustomMap<K, V>& input,
 //                        const K& key,
 //                        V&& value);
-//     static void Insert(CustomMap<K, V>& input,
+//     static bool Insert(CustomMap<K, V>& input,
 //                        const K& key,
 //                        const V& value);
 //

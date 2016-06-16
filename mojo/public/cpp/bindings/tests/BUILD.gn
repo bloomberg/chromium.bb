@@ -23,6 +23,7 @@ source_set("tests") {
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "interface_ptr_unittest.cc",
+    "map_common_test.h",
     "map_unittest.cc",
     "message_queue.cc",
     "message_queue.h",
@@ -81,8 +82,10 @@ if (!is_ios) {
       "array_common_test.h",
       "container_test_util.cc",
       "container_test_util.h",
+      "map_common_test.h",
       "variant_test_util.h",
       "wtf_array_unittest.cc",
+      "wtf_map_unittest.cc",
       "wtf_types_unittest.cc",
     ]
 

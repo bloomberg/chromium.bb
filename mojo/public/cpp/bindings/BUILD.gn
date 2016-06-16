@@ -158,8 +158,10 @@ if (!is_ios) {
       "array_traits_wtf_vector.h",
       "lib/string_traits_wtf.cc",
       "lib/wtf_serialization.h",
+      "map_traits_wtf.h",
       "string_traits_wtf.h",
       "wtf_array.h",
+      "wtf_map.h",
     ]
 
     public_deps = [
