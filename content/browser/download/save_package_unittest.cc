@@ -10,10 +10,12 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/download/save_package.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -105,9 +107,10 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     // RenderViewHostImplTestHarness::SetUp.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    save_package_success_ = new SavePackage(contents(),
-        temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
-        temp_dir_.path().AppendASCII("testfile_files"));
+    save_package_success_ =
+        new SavePackage(contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                        temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
+                        temp_dir_.path().AppendASCII("testfile_files"));
 
     // We need to construct a path that is *almost* kMaxFilePathLength long
     long_file_name.reserve(kMaxFilePathLength + long_file_name.length());
@@ -116,14 +119,28 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     long_file_name.resize(
         kMaxFilePathLength - 9 - temp_dir_.path().value().length());
 
-    save_package_fail_ = new SavePackage(contents(),
+    save_package_fail_ = new SavePackage(
+        contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
         temp_dir_.path().AppendASCII(long_file_name + HTML_EXTENSION),
         temp_dir_.path().AppendASCII(long_file_name + "_files"));
   }
 
+  BrowserContext* CreateBrowserContext() override {
+    // This method is invoked after the browser threads have been created and
+    // obviously before the BrowserContext is created. This is the correct time
+    // to create a ResourceDispatcherHostImpl so that our SavePackage objects
+    // can initialize correctly.
+    rdh_.reset(new ResourceDispatcherHostImpl);
+    return RenderViewHostImplTestHarness::CreateBrowserContext();
+  }
+
   void TearDown() override {
+    DeleteContents();
+    base::RunLoop().RunUntilIdle();
+
     save_package_success_ = nullptr;
     save_package_fail_ = nullptr;
+    rdh_.reset();
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -135,6 +152,8 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   scoped_refptr<SavePackage> save_package_fail_;
 
   base::ScopedTempDir temp_dir_;
+
+  std::unique_ptr<ResourceDispatcherHostImpl> rdh_;
 };
 
 static const struct {
@@ -406,9 +425,10 @@ static const struct SuggestedSaveNameTestCase {
 #define MAYBE_TestSuggestedSaveNames TestSuggestedSaveNames
 #endif
 TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
+  GURL url = net::URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
+  NavigateAndCommit(url);
   for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
-    scoped_refptr<SavePackage> save_package(
-        new SavePackage(contents(), base::FilePath(), base::FilePath()));
+    scoped_refptr<SavePackage> save_package(new SavePackage(contents()));
     save_package->page_url_ = GURL(kSuggestedSaveNames[i].page_url);
     save_package->title_ = kSuggestedSaveNames[i].page_title;
 

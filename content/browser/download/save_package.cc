@@ -140,32 +140,32 @@ class SavePackageRequestHandle : public DownloadRequestHandleInterface {
 const base::FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
     FILE_PATH_LITERAL("html");
 
+SavePackage::SavePackage(WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      page_url_(GetUrlToBeSaved(web_contents)),
+      title_(web_contents->GetTitle()),
+      start_tick_(base::TimeTicks::Now()),
+      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
+      unique_id_(GetNextSavePackageId()) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  InternalInit();
+}
+
+// Used for tests.
 SavePackage::SavePackage(WebContents* web_contents,
                          SavePageType save_type,
                          const base::FilePath& file_full_path,
                          const base::FilePath& directory_full_path)
     : WebContentsObserver(web_contents),
-      number_of_frames_pending_response_(0),
-      file_manager_(nullptr),
-      download_manager_(nullptr),
-      download_(nullptr),
       page_url_(GetUrlToBeSaved(web_contents)),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
       title_(web_contents->GetTitle()),
       start_tick_(base::TimeTicks::Now()),
-      finished_(false),
-      user_canceled_(false),
-      disk_error_occurred_(false),
       save_type_(save_type),
-      all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
-      wait_state_(INITIALIZE),
-      unique_id_(GetNextSavePackageId()),
-      wrote_to_completed_file_(false),
-      wrote_to_failed_file_(false) {
+      unique_id_(GetNextSavePackageId()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(page_url_.is_valid());
   DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||
          (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML))
@@ -176,55 +176,6 @@ SavePackage::SavePackage(WebContents* web_contents,
          saved_main_directory_path_.value().length() < kMaxFilePathLength);
   InternalInit();
 }
-
-SavePackage::SavePackage(WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      number_of_frames_pending_response_(0),
-      file_manager_(nullptr),
-      download_manager_(nullptr),
-      download_(nullptr),
-      page_url_(GetUrlToBeSaved(web_contents)),
-      title_(web_contents->GetTitle()),
-      start_tick_(base::TimeTicks::Now()),
-      finished_(false),
-      user_canceled_(false),
-      disk_error_occurred_(false),
-      save_type_(SAVE_PAGE_TYPE_UNKNOWN),
-      all_save_items_count_(0),
-      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
-      wait_state_(INITIALIZE),
-      unique_id_(GetNextSavePackageId()),
-      wrote_to_completed_file_(false),
-      wrote_to_failed_file_(false) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(page_url_.is_valid());
-  InternalInit();
-}
-
-// This is for testing use. Set |finished_| as true because we don't want
-// method Cancel to be be called in destructor in test mode.
-// We also don't call InternalInit().
-SavePackage::SavePackage(WebContents* web_contents,
-                         const base::FilePath& file_full_path,
-                         const base::FilePath& directory_full_path)
-    : WebContentsObserver(web_contents),
-      number_of_frames_pending_response_(0),
-      file_manager_(nullptr),
-      download_manager_(nullptr),
-      download_(nullptr),
-      saved_main_file_path_(file_full_path),
-      saved_main_directory_path_(directory_full_path),
-      start_tick_(base::TimeTicks::Now()),
-      finished_(true),
-      user_canceled_(false),
-      disk_error_occurred_(false),
-      save_type_(SAVE_PAGE_TYPE_UNKNOWN),
-      all_save_items_count_(0),
-      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
-      wait_state_(INITIALIZE),
-      unique_id_(GetNextSavePackageId()),
-      wrote_to_completed_file_(false),
-      wrote_to_failed_file_(false) {}
 
 SavePackage::~SavePackage() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -299,6 +250,7 @@ void SavePackage::InternalInit() {
 bool SavePackage::Init(
     const SavePackageDownloadCreatedCallback& download_created_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(page_url_.is_valid());
   // Set proper running state.
   if (wait_state_ != INITIALIZE)
     return false;
