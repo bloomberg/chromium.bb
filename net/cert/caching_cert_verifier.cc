@@ -86,6 +86,25 @@ bool CachingCertVerifier::SupportsOCSPStapling() {
   return verifier_->SupportsOCSPStapling();
 }
 
+bool CachingCertVerifier::AddEntry(const RequestParams& params,
+                                   int error,
+                                   const CertVerifyResult& verify_result,
+                                   base::Time verification_time) {
+  // If the cache is full, don't bother.
+  if (cache_.size() == cache_.max_entries())
+    return false;
+
+  // If there is an existing entry, don't bother updating it.
+  const CertVerificationCache::value_type* entry =
+      cache_.Get(params, CacheValidityPeriod(base::Time::Now()));
+  if (entry)
+    return false;
+
+  // Otherwise, go and add it.
+  AddResultToCache(params, verification_time, verify_result, error);
+  return true;
+}
+
 CachingCertVerifier::CachedResult::CachedResult() : error(ERR_FAILED) {}
 
 CachingCertVerifier::CachedResult::~CachedResult() {}
@@ -179,6 +198,23 @@ void CachingCertVerifier::AddResultToCache(
       params, cached_result, CacheValidityPeriod(start_time),
       CacheValidityPeriod(start_time,
                           start_time + base::TimeDelta::FromSeconds(kTTLSecs)));
+}
+
+void CachingCertVerifier::VisitEntries(CacheVisitor* visitor) const {
+  DCHECK(visitor);
+
+  CacheValidityPeriod now(base::Time::Now());
+  CacheExpirationFunctor expiration_cmp;
+
+  for (CertVerificationCache::Iterator it(cache_); it.HasNext(); it.Advance()) {
+    if (!expiration_cmp(now, it.expiration()))
+      continue;
+    if (!visitor->VisitEntry(it.key(), it.value().error, it.value().result,
+                             it.expiration().verification_time,
+                             it.expiration().expiration_time)) {
+      break;
+    }
+  }
 }
 
 void CachingCertVerifier::OnCACertChanged(const X509Certificate* cert) {
