@@ -64,7 +64,7 @@
 	       "firstwordunder" "lastwordunderbefore" "lastwordunderafter"
 	       "firstletterunder" "lastletterunder" "singleletterunder"
 	       "begcomp" "endcomp"
-	       "begcaps" "endcaps" "letsign"
+	       "begcaps" "endcaps" "letsign" "nocontractsign"
 	       "exactdots") 'words)
 	    "\\s-+\\([0-9-@]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
