@@ -78,7 +78,7 @@
         height: 0;
       }
 
-      paper-icon-button {
+      paper-header-panel[main] paper-icon-button {
         --iron-icon-fill-color: var(--settings-title-bar-color);
       }
 
@@ -189,12 +189,12 @@
         current-route-titles="{{currentRouteTitles}}">
     </settings-router>
     <paper-drawer-panel drawer-width="256px" id="panel" narrow="{{isNarrow_}}"
-        responsive-width="900px">
+        responsive-width="900px" force-narrow>
       <paper-header-panel drawer id="drawer">
         <paper-toolbar class="toolbar">
-          <div class="heading flex">$i18n{settings}</div>
+          <div class="heading">$i18n{settings}</div>
         </paper-toolbar>
-        <settings-menu current-route="{{currentRoute}}">
+        <settings-menu current-route="{{currentRoute}}" id="sideNav">
         </settings-menu>
       </paper-header-panel>
       <paper-header-panel main>

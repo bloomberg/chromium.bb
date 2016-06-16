@@ -28,7 +28,7 @@ Polymer({
   },
 
   listeners: {
-    'iron-select': 'onIronSelect_',
+    'sideNav.iron-select': 'onIronSelect_',
     'paper-responsive-change': 'onPaperResponsiveChange_',
   },
 
@@ -37,8 +37,10 @@ Polymer({
    * @private
    */
   onIronSelect_: function(e) {
-    if (Polymer.dom(e).path.indexOf(this.$.panel) >= 0)
+    if (Polymer.dom(e).path.indexOf(this.$.panel) >= 0) {
       this.classList.remove('narrowing');
+      this.$.panel.closeDrawer();
+    }
   },
 
   /**
