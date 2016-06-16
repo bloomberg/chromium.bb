@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR/ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+from __future__ import print_function
 import json
 import logging
 import optparse
@@ -72,6 +74,9 @@ class AbstractRebaseliningCommand(Command):
 
     def _delete_from_scm_later(self, path):
         self._scm_changes['delete'].append(path)
+
+    def _print_scm_changes(self):
+        print(json.dumps(self._scm_changes))
 
 
 class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
@@ -174,7 +179,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
     def execute(self, options, args, tool):
         for suffix in options.suffixes.split(','):
             self._copy_existing_baseline(options.builder, options.test, suffix)
-        print json.dumps(self._scm_changes)
+        self._print_scm_changes()
 
 
 class RebaselineTest(BaseInternalRebaselineCommand):
@@ -230,7 +235,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
 
     def execute(self, options, args, tool):
         self._rebaseline_test_and_update_expectations(options)
-        print json.dumps(self._scm_changes)
+        self._print_scm_changes()
 
 
 class OptimizeBaselines(AbstractRebaseliningCommand):
@@ -273,8 +278,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
                 self._delete_from_scm_later(path)
             for path in files_to_add:
                 self._add_to_scm_later(path)
-
-        print json.dumps(self._scm_changes)
+        self._print_scm_changes()
 
 
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
@@ -480,7 +484,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         log_output = '\n'.join(result[2] for result in command_results).replace('\n\n', '\n')
         for line in log_output.split('\n'):
             if line:
-                print >> sys.stderr, line  # FIXME: Figure out how to log properly.
+                _log.error(line)
 
         files_to_add, files_to_delete, lines_to_remove = self._serial_commands(command_results)
         if files_to_delete:
@@ -737,7 +741,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 commit = commit_hash
                 author = parsed_line.group(2)
 
-            bugs.update(re.findall("crbug\.com\/(\d+)", line))
+            bugs.update(re.findall(r"crbug\.com\/(\d+)", line))
             tests.add(test)
 
             if len(tests) >= self.MAX_LINES_TO_REBASELINE:
@@ -888,7 +892,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 tool.executive.run_command(['git', 'pull'])
 
                 self._run_git_cl_command(options, ['land', '-f', '-v'])
-        except:
+        except Exception:
             traceback.print_exc(file=sys.stderr)
         finally:
             if did_switch_branches:
