@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DATE_DATE_VIEW_H_
-#define ASH_SYSTEM_DATE_DATE_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_DATE_DATE_VIEW_H_
+#define ASH_COMMON_SYSTEM_DATE_DATE_VIEW_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/tray/actionable_view.h"
-#include "ash/system/date/tray_date.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -143,4 +143,4 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DATE_DATE_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_DATE_DATE_VIEW_H_

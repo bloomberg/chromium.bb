@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/system_clock_observer.h"
+#include "ash/common/system/chromeos/system_clock_observer.h"
 
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"

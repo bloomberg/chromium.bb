@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/system/date/date_default_view.h"
+#include "ash/common/system/date/date_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/date/date_default_view.h"
-#include "ash/system/date/date_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/command_line.h"
 #include "base/location.h"

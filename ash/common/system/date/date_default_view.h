@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
-#define ASH_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
+#define ASH_COMMON_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/system/chromeos/shutdown_policy_observer.h"
+#include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
@@ -24,7 +24,7 @@ class TrayPopupHeaderButton;
 // shutdown.
 class ASH_EXPORT DateDefaultView : public views::View,
                                    public views::ButtonListener,
-                                   public ash::ShutdownPolicyObserver {
+                                   public ShutdownPolicyObserver {
  public:
   explicit DateDefaultView(LoginStatus login);
 
@@ -55,4 +55,4 @@ class ASH_EXPORT DateDefaultView : public views::View,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_

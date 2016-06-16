@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/date/date_default_view.h"
+#include "ash/common/system/date/date_default_view.h"
 
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/date/date_view.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

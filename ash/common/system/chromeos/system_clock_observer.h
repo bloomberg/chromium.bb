@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
-#define ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
 
 #include "base/macros.h"
 #include "chromeos/dbus/system_clock_client.h"
@@ -35,4 +35,4 @@ class SystemClockObserver
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
