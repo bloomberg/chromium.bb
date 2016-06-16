@@ -164,6 +164,7 @@ bool NotificationPlatformBridgeMac::GetDisplayed(
     bool incognito,
     std::set<std::string>* notifications) const {
   DCHECK(notifications);
+
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
@@ -189,8 +190,17 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
   std::string notificationOrigin =
       base::SysNSStringToUTF8([notification.userInfo
           objectForKey:notification_builder::kNotificationOrigin]);
-  NSNumber* notificationId = [notification.userInfo
+  NSString* notificationId = [notification.userInfo
       objectForKey:notification_builder::kNotificationId];
+  std::string persistentNotificationId =
+      base::SysNSStringToUTF8(notificationId);
+  int64_t persistentId;
+  if (!base::StringToInt64(persistentNotificationId, &persistentId)) {
+    LOG(ERROR) << "Unable to convert notification ID: "
+               << persistentNotificationId << " to integer.";
+    return;
+  }
+
   NSString* profileId = [notification.userInfo
       objectForKey:notification_builder::kNotificationProfileId];
   NSNumber* isIncognito = [notification.userInfo
@@ -241,8 +251,7 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
           operation, base::SysNSStringToUTF8(profileId),
-          [isIncognito boolValue], origin, notificationId.longLongValue,
-          buttonIndex);
+          [isIncognito boolValue], origin, persistentId, buttonIndex);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center
