@@ -111,13 +111,16 @@ void OmniboxPopupModel::SetHoveredLine(size_t line) {
   if (line == hovered_line_)
     return;  // Nothing to do
 
+  // We need to update |hovered_line_| before calling InvalidateLine(), since it
+  // will check it to determine how to draw.
+  const size_t prev_hovered_line = hovered_line_;
+  hovered_line_ = line;
+
   // Make sure the old hovered line is redrawn.  No need to redraw the selected
   // line since selection overrides hover so the appearance won't change.
-  if ((hovered_line_ != kNoMatch) && (hovered_line_ != selected_line_))
-    view_->InvalidateLine(hovered_line_);
+  if ((prev_hovered_line != kNoMatch) && (prev_hovered_line != selected_line_))
+    view_->InvalidateLine(prev_hovered_line);
 
-  // Change the hover to the new line.
-  hovered_line_ = line;
   if (!is_disabling && (hovered_line_ != selected_line_))
     view_->InvalidateLine(hovered_line_);
 }

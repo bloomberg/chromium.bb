@@ -477,7 +477,8 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
 
   *popup_width = parent()->width();
   gfx::Rect location_bar_bounds(bounds());
-  location_bar_bounds.Inset(GetHorizontalEdgeThickness(), 0);
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    location_bar_bounds.Inset(GetHorizontalEdgeThickness(), 0);
   *left_margin = location_bar_bounds.x();
   *right_margin = *popup_width - location_bar_bounds.right();
 }

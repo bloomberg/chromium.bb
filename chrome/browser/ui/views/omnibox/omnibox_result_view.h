@@ -143,10 +143,6 @@ class OmniboxResultView : public views::View,
   // the keyword match will hide even the icon of the regular match.
   bool ShowOnlyKeywordMatch() const;
 
-  // Resets all RenderTexts for contents and description of the |match_| and its
-  // associated keyword match.
-  void ResetRenderTexts() const;
-
   // Initializes |contents_rendertext_| if it is NULL.
   void InitContentsRenderTextIfNecessary() const;
 
@@ -187,13 +183,6 @@ class OmniboxResultView : public views::View,
                               const base::string16& text,
                               int text_type,
                               bool is_bold) const;
-
-  // Returns the necessary margin, if any, at the start and end of the view.
-  // This allows us to keep the icon and text in the view aligned with the
-  // location bar contents. For a left-to-right language, StartMargin()
-  // and EndMargin() correspond to the left and right margins, respectively.
-  int StartMargin() const;
-  int EndMargin() const;
 
   static int default_icon_size_;
 

@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -41,6 +42,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
@@ -227,19 +229,18 @@ SkColor OmniboxResultView::GetColor(
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
   match_.PossiblySwapContentsAndDescriptionForDisplay();
-  ResetRenderTexts();
   animation_->Reset();
   answer_image_ = gfx::ImageSkia();
 
   AutocompleteMatch* associated_keyword_match = match_.associated_keyword.get();
   if (associated_keyword_match) {
-    keyword_icon_->SetImage(GetKeywordIcon());
     if (!keyword_icon_->parent())
       AddChildView(keyword_icon_.get());
   } else if (keyword_icon_->parent()) {
     RemoveChildView(keyword_icon_.get());
   }
 
+  Invalidate();
   if (GetWidget())
     Layout();
 }
@@ -252,12 +253,26 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 }
 
 void OmniboxResultView::Invalidate() {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const ResultViewState state = GetState();
+    if (state == NORMAL) {
+      set_background(nullptr);
+    } else {
+      const SkColor bg_color = GetColor(state, BACKGROUND);
+      set_background(new BackgroundWith1PxBorder(bg_color, bg_color));
+    }
+  }
+
   keyword_icon_->SetImage(GetKeywordIcon());
+
   // While the text in the RenderTexts may not have changed, the styling
   // (color/bold) may need to change. So we reset them to cause them to be
   // recomputed in OnPaint().
-  ResetRenderTexts();
-  SchedulePaint();
+  contents_rendertext_.reset();
+  description_rendertext_.reset();
+  separator_rendertext_.reset();
+  keyword_contents_rendertext_.reset();
+  keyword_description_rendertext_.reset();
 }
 
 void OmniboxResultView::OnSelected() {
@@ -618,14 +633,6 @@ bool OmniboxResultView::ShowOnlyKeywordMatch() const {
       (keyword_icon_->x() <= icon_bounds_.right());
 }
 
-void OmniboxResultView::ResetRenderTexts() const {
-  contents_rendertext_.reset();
-  description_rendertext_.reset();
-  separator_rendertext_.reset();
-  keyword_contents_rendertext_.reset();
-  keyword_description_rendertext_.reset();
-}
-
 void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
   if (!contents_rendertext_) {
     contents_rendertext_.reset(
@@ -635,10 +642,16 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 }
 
 void OmniboxResultView::Layout() {
-  const int horizontal_padding =
+  int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-  const int start_x = StartMargin() + horizontal_padding;
-  const int end_x = width() - EndMargin() - horizontal_padding;
+  // In non-material, the horizontal bounds we're given are indented inside the
+  // omnibox border.  In material, we're given the outside bounds, so we can
+  // match the omnibox border outline shape exactly in OnPaint().  So we have to
+  // inset here to keep the icons lined up.
+  const int border_padding = ui::MaterialDesignController::IsModeMaterial() ?
+    GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) : 0;
+  const int start_x = border_padding + horizontal_padding;
+  const int end_x = width() - border_padding - horizontal_padding;
 
   const gfx::ImageSkia icon = GetIcon();
   // Pre-MD, normal icons are 19 px wide, while extension icons are 16 px wide.
@@ -674,13 +687,17 @@ void OmniboxResultView::Layout() {
 }
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  animation_->SetSlideDuration((width() - StartMargin() - EndMargin()) / 4);
+  animation_->SetSlideDuration(width() / 4);
 }
 
 void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
-  const ResultViewState state = GetState();
-  if (state != NORMAL)
-    canvas->DrawColor(GetColor(state, BACKGROUND));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    View::OnPaint(canvas);
+  } else {
+    const ResultViewState state = GetState();
+    if (state != NORMAL)
+      canvas->DrawColor(GetColor(state, BACKGROUND));
+  }
 
   // NOTE: While animating the keyword match, both matches may be visible.
 
@@ -825,14 +842,4 @@ void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
   destination->ApplyColor(
       GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
   destination->ApplyBaselineStyle(text_style.baseline, range);
-}
-
-int OmniboxResultView::StartMargin() const {
-  return ui::MaterialDesignController::IsModeMaterial() ?
-      model_->start_margin() : 0;
-}
-
-int OmniboxResultView::EndMargin() const {
-  return ui::MaterialDesignController::IsModeMaterial() ?
-      model_->end_margin() : 0;
 }

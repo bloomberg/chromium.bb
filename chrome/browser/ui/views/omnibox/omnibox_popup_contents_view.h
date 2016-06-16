@@ -73,8 +73,6 @@ class OmniboxPopupContentsView : public views::View,
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
   int max_match_contents_width() const { return max_match_contents_width_; }
-  int start_margin() const { return start_margin_; }
-  int end_margin() const { return end_margin_; }
 
  protected:
   OmniboxPopupContentsView(const gfx::FontList& font_list,

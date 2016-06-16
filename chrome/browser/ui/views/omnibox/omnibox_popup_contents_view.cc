@@ -122,14 +122,9 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
   contents_rect.Inset(GetLayoutInsets(OMNIBOX_DROPDOWN));
-  contents_rect.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0, 0);
-
-  // In the non-material dropdown, the colored/clickable regions within the
-  // dropdown are only as wide as the location bar. In the material version,
-  // these are full width, and OmniboxResultView instead insets the icons/text
-  // inside to be aligned with the location bar.
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    contents_rect.Inset(start_margin_, 0, end_margin_, 0);
+  contents_rect.Inset(start_margin_,
+                      views::NonClientFrameView::kClientEdgeThickness,
+                      end_margin_, 0);
 
   int top = contents_rect.y();
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
@@ -152,6 +147,7 @@ bool OmniboxPopupContentsView::IsOpen() const {
 void OmniboxPopupContentsView::InvalidateLine(size_t line) {
   OmniboxResultView* result = result_view_at(line);
   result->Invalidate();
+  result->SchedulePaint();
 
   if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
     result->ShowKeyword(IsSelectedIndex(line) &&
