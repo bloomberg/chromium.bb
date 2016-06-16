@@ -104,10 +104,6 @@ public class ChildProcessService extends Service {
         }
     };
 
-    /* package */ static Context getContext() {
-        return sContext.get();
-    }
-
     @Override
     public void onCreate() {
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
