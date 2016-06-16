@@ -82,12 +82,6 @@ bool FLAGS_quic_cede_correctly = true;
 // AES-GCM.
 bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
 
-// If true, QUIC will use newly refactored TCP sender code.
-bool FLAGS_quic_use_new_tcp_sender = true;
-
-// If true, QUIC connections will defer responding to ACKs to their send alarms.
-bool FLAGS_quic_connection_defer_ack_response = true;
-
 // Resend 0RTT requests in response to an REJ that re-establishes encryption.
 bool FLAGS_quic_reply_to_rej = true;
 
