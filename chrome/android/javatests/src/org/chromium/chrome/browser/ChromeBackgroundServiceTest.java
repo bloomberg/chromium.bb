@@ -34,7 +34,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         private boolean mPrecachingStarted = false;
 
         @Override
-        protected void launchBrowser(Context context) {
+        protected void launchBrowser(Context context, String tag) {
             mDidLaunchBrowser = true;
         }
 

@@ -116,7 +116,9 @@ public class PrecacheController {
             if (isPrecaching() && (!mDeviceState.isPowerConnected(context)
                     || !mDeviceState.isUnmeteredNetworkAvailable(context))) {
                 recordFailureReasons(context);
-                cancelPrecaching();
+                cancelPrecaching(!mDeviceState.isPowerConnected(context)
+                        ? PrecacheUMA.Event.PRECACHE_CANCEL_NO_POWER
+                        : PrecacheUMA.Event.PRECACHE_CANCEL_NO_UNMETERED_NETWORK);
             }
         }
     };
@@ -126,7 +128,7 @@ public class PrecacheController {
         @Override
         public void run() {
             Log.v(TAG, "precache session timed out");
-            cancelPrecaching();
+            cancelPrecaching(PrecacheUMA.Event.PRECACHE_SESSION_TIMEOUT);
         }
     };
 
@@ -155,9 +157,13 @@ public class PrecacheController {
         return sInstance != null;
     }
 
-    /** Schedules a periodic task to precache resources. */
-    public static void schedulePeriodicPrecacheTask(Context context) {
-        if (!canScheduleTasks(context)) return;
+    /**
+     * Schedules a periodic task to precache resources.
+     * @param context The application context.
+     * @return false if the task cannot be scheduled.
+     */
+    public static boolean schedulePeriodicPrecacheTask(Context context) {
+        if (!canScheduleTasks(context)) return true;
 
         PeriodicTask task = new PeriodicTask.Builder()
                 .setPeriod(WAIT_UNTIL_NEXT_PRECACHE_SECONDS)
@@ -167,14 +173,12 @@ public class PrecacheController {
                 .setService(ChromeBackgroundService.class)
                 .setTag(PERIODIC_TASK_TAG)
                 .build();
-        sTaskScheduler.scheduleTask(context, task);
-        // TODO(rajenrant): Track any failure via UMA.
+        return sTaskScheduler.scheduleTask(context, task);
     }
 
     private static void cancelPeriodicPrecacheTask(Context context) {
         Log.v(TAG, "canceling a periodic precache task");
         sTaskScheduler.cancelTask(context, PERIODIC_TASK_TAG);
-        // TODO(rajenrant): Track any failure via UMA.
     }
 
     /**
@@ -197,18 +201,28 @@ public class PrecacheController {
                 .setTag(CONTINUATION_TASK_TAG)
                 .setUpdateCurrent(true)
                 .build();
-        sTaskScheduler.scheduleTask(context, task);
-        // TODO(rajenrant): Track any failure via UMA.
+        if (sTaskScheduler.scheduleTask(context, task)) {
+            PrecacheUMA.record(PrecacheUMA.Event.ONEOFF_TASK_SCHEDULE);
+        } else {
+            PrecacheUMA.record(PrecacheUMA.Event.ONEOFF_TASK_SCHEDULE_FAIL);
+        }
     }
 
     private static void cancelPrecacheCompletionTask(Context context) {
         Log.v(TAG, "canceling a precache completion task");
         sTaskScheduler.cancelTask(context, CONTINUATION_TASK_TAG);
-        // TODO(rajenrant): Track any failure via UMA.
     }
 
+    /**
+     * Called when Chrome package is upgraded to reschedule the precache periodic task.
+     * @param context The application context.
+     */
     public static void rescheduleTasksOnUpgrade(Context context) {
-        schedulePeriodicPrecacheTask(context);
+        if (schedulePeriodicPrecacheTask(context)) {
+            PrecacheUMA.record(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_UPGRADE);
+        } else {
+            PrecacheUMA.record(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_UPGRADE_FAIL);
+        }
     }
 
     @VisibleForTesting
@@ -278,7 +292,7 @@ public class PrecacheController {
             sInstance.runOnInstanceThread(new Runnable() {
                 @Override
                 public void run() {
-                    sInstance.cancelPrecaching();
+                    sInstance.cancelPrecaching(PrecacheUMA.Event.PRECACHE_CANCEL_DISABLED_PREF);
                 }
             });
         }
@@ -332,6 +346,8 @@ public class PrecacheController {
         if (setIsPrecaching(false)) {
             shutdownPrecaching(precachingIncomplete);
         }
+        PrecacheUMA.record(precachingIncomplete ? PrecacheUMA.Event.PRECACHE_SESSION_INCOMPLETE
+                : PrecacheUMA.Event.PRECACHE_SESSION_COMPLETE);
     }
 
     /** {@link PrecacheLauncher} used to run a precache session. */
@@ -349,11 +365,15 @@ public class PrecacheController {
       */
     public int precache(String tag) {
         assert mNonThreadSafe.calledOnValidThread();
+        PrecacheUMA.record(PERIODIC_TASK_TAG.equals(tag)
+                ? PrecacheUMA.Event.PRECACHE_TASK_STARTED_PERIODIC
+                : PrecacheUMA.Event.PRECACHE_TASK_STARTED_ONEOFF);
         Log.v(TAG, "precache task (%s) started", tag);
         if (!isPrecachingEnabled()) {
             Log.v(TAG, "precaching isn't enabled");
             cancelPeriodicPrecacheTask(mAppContext);
             cancelPrecacheCompletionTask(mAppContext);
+            PrecacheUMA.record(PrecacheUMA.Event.DISABLED_IN_PRECACHE_PREF);
             return GcmNetworkManager.RESULT_SUCCESS;
         }
         if (setIsPrecaching(true)) {
@@ -365,6 +385,7 @@ public class PrecacheController {
             return GcmNetworkManager.RESULT_SUCCESS;
         }
         Log.v(TAG, "precache session was already running");
+        PrecacheUMA.record(PrecacheUMA.Event.PRECACHE_TASK_STARTED_DUPLICATE);
         return GcmNetworkManager.RESULT_FAILURE;
     }
 
@@ -379,8 +400,7 @@ public class PrecacheController {
 
                     @Override
                     public void onFailureOrTimedOut() {
-                        // TODO(rajendrant): Add UMA histogram to track this failure.
-                        cancelPrecaching();
+                        cancelPrecaching(PrecacheUMA.Event.SYNC_SERVICE_TIMEOUT);
                     }
                 }, MAX_SYNC_SERVICE_INIT_TIMOUT_MS);
     }
@@ -393,6 +413,7 @@ public class PrecacheController {
         acquirePrecachingWakeLock();
 
         mHandler.postDelayed(mTimeoutRunnable, MAX_PRECACHE_DURATION_SECONDS * 1000);
+        PrecacheUMA.record(PrecacheUMA.Event.PRECACHE_SESSION_STARTED);
 
         // In certain cases, the PrecacheLauncher will skip precaching entirely and call
         // finishPrecaching() before this call to mPrecacheLauncher.start() returns, so the call to
@@ -401,13 +422,17 @@ public class PrecacheController {
         mPrecacheLauncher.start();
     }
 
-    /** Cancels a precache session. */
-    private void cancelPrecaching() {
+    /**
+     * Cancels the current precache session.
+     * @param event the failure reason.
+     */
+    private void cancelPrecaching(int event) {
         Log.v(TAG, "canceling precache session");
         if (setIsPrecaching(false)) {
             mPrecacheLauncher.cancel();
             shutdownPrecaching(true);
         }
+        PrecacheUMA.record(event);
     }
 
     /**
