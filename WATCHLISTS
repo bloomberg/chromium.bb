@@ -81,6 +81,9 @@
     'arc_net': {
       'filepath': 'components/arc/net/',
     },
+    'arc_power': {
+      'filepath': 'components/arc/power/',
+    },
     'ash': {
       'filepath': 'ash/',
     },
@@ -1339,6 +1342,7 @@
     'arc_net': ['abhishekbh@chromium.org',
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],
+    'arc_power': ['ejcaruso+watch@chromium.org'],
     'ash': ['sadrul@chromium.org',
             'kalyan.kondapally@intel.com'],
     'aura': ['sadrul@chromium.org',
