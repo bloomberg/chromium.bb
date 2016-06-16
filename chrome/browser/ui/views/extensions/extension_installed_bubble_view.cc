@@ -230,6 +230,7 @@ void ExtensionInstalledBubbleView::Init() {
   std::unique_ptr<views::BoxLayout> layout(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            views::kRelatedControlVerticalSpacing));
+  layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.
   layout->set_inside_border_insets(gfx::Insets(
       0, GetIconSize().width() + views::kUnrelatedControlHorizontalSpacing, 0,
