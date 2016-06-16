@@ -24,6 +24,11 @@ class ChromeInternalLogSource : public SystemLogsSource {
   void PopulateSyncLogs(SystemLogsResponse* response);
   void PopulateExtensionInfoLogs(SystemLogsResponse* response);
   void PopulateDataReductionProxyLogs(SystemLogsResponse* response);
+
+#if defined(OS_CHROMEOS)
+  void PopulateLocalStateSettings(SystemLogsResponse* response);
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
   void PopulateUsbKeyboardDetected(SystemLogsResponse* response);
 #endif

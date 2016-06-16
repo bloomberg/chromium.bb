@@ -40,6 +40,7 @@ const char kChromeVersionTag[] = "CHROME VERSION";
 #if defined(OS_CHROMEOS)
 const char kChromeEnrollmentTag[] = "ENTERPRISE_ENROLLED";
 const char kHWIDKey[] = "HWID";
+constexpr char kSettingsKey[] = "settings";
 #else
 const char kOsVersionTag[] = "OS VERSION";
 #endif
@@ -118,6 +119,8 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
     (*response)["account_type"] = "child";
 
 #if defined(OS_CHROMEOS)
+  PopulateLocalStateSettings(response.get());
+
   // Get the HWID on the blocking pool and invoke the callback later when done.
   SystemLogsResponse* response_ptr = response.release();
   content::BrowserThread::PostBlockingPoolTaskAndReply(
@@ -202,6 +205,27 @@ void ChromeInternalLogSource::PopulateDataReductionProxyLogs(
   (*response)[kDataReductionProxyKey] = is_data_reduction_proxy_enabled ?
       "enabled" : "disabled";
 }
+
+#if defined(OS_CHROMEOS)
+void ChromeInternalLogSource::PopulateLocalStateSettings(
+    SystemLogsResponse* response) {
+  // Extract the "settings" entry in the local state and serialize back to
+  // a string.
+  std::unique_ptr<base::DictionaryValue> local_state =
+      g_browser_process->local_state()->GetPreferenceValuesOmitDefaults();
+  const base::DictionaryValue* local_state_settings = nullptr;
+  if (!local_state->GetDictionary(kSettingsKey, &local_state_settings)) {
+    VLOG(1) << "Failed to extract the settings entry from Local State.";
+    return;
+  }
+  std::string serialized_settings;
+  JSONStringValueSerializer serializer(&serialized_settings);
+  if (!serializer.Serialize(*local_state_settings))
+    return;
+
+  (*response)["Local State: settings"] = serialized_settings;
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 void ChromeInternalLogSource::PopulateUsbKeyboardDetected(
