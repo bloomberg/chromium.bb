@@ -30,6 +30,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
@@ -577,6 +578,12 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 
 bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
 {
+    const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
+    if (thisBox && thisBox->isFlexItem()) {
+        LayoutFlexibleBox& flexBox = toLayoutFlexibleBox(*parent());
+        if (flexBox.childLogicalHeightForPercentageResolution(*thisBox) != LayoutUnit(-1))
+            return false;
+    }
     Length logicalHeightLength = style()->logicalHeight();
     if (logicalHeightLength.isAuto())
         return true;
