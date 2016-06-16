@@ -2793,7 +2793,7 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 #if defined(OS_CHROMEOS)
 #if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::Get()->AddEmbeddedShellClient(
+    content::MojoShellConnection::GetForProcess()->AddEmbeddedShellClient(
         base::WrapUnique(new chromeos::ChromeInterfaceFactory));
   }
 #endif  // MOJO_SHELL_CLIENT

@@ -211,7 +211,7 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
     content::RenderWidget* widget) {
 #if defined(MOJO_SHELL_CLIENT)
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  if (content::MojoShellConnection::Get() &&
+  if (content::MojoShellConnection::GetForProcess() &&
       cmdline.HasSwitch(switches::kUseMusInRenderer)) {
     return content::RenderWidgetMusConnection::GetOrCreate(
         widget->routing_id());
@@ -740,7 +740,7 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     use_software = true;
 
 #if defined(MOJO_SHELL_CLIENT)
-  if (MojoShellConnection::Get() && !use_software &&
+  if (MojoShellConnection::GetForProcess() && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id());

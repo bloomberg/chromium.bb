@@ -24,11 +24,11 @@ class Navigation : public shell::ShellClient,
   Navigation();
   ~Navigation() override;
 
-  void Init(shell::Connector* connector,
-            content::BrowserContext* browser_context);
-
  private:
   // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
+                  uint32_t instance_id) override;
   bool AcceptConnection(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::ViewFactory>:
@@ -42,12 +42,12 @@ class Navigation : public shell::ShellClient,
   void ViewFactoryLost();
 
   shell::Connector* connector_ = nullptr;
+  std::string client_user_id_;
+
   shell::ShellConnectionRefFactory ref_factory_;
   std::set<std::unique_ptr<shell::ShellConnectionRef>> refs_;
-  content::BrowserContext* browser_context_ = nullptr;
+
   mojo::BindingSet<mojom::ViewFactory> bindings_;
-  std::vector<std::pair<mojom::ViewClientPtr, mojom::ViewRequest>>
-      pending_creates_;
 
   DISALLOW_COPY_AND_ASSIGN(Navigation);
 };

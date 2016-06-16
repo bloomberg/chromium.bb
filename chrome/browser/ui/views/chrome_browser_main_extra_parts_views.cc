@@ -16,6 +16,7 @@
 
 #if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
@@ -48,8 +49,8 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
   content::MojoShellConnection* mojo_shell_connection =
-      content::MojoShellConnection::Get();
-  if (mojo_shell_connection && mojo_shell_connection->UsingExternalShell()) {
+      content::MojoShellConnection::GetForProcess();
+  if (mojo_shell_connection && shell::ShellIsRemote()) {
     window_manager_connection_ = views::WindowManagerConnection::Create(
         mojo_shell_connection->GetConnector(),
         mojo_shell_connection->GetIdentity());

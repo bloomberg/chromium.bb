@@ -34,4 +34,9 @@ mojom::ShellClientRequest GetShellClientRequestFromCommandLine() {
   return request;
 }
 
+bool ShellIsRemote() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrimordialPipeToken);
+}
+
 }  // namespace shell

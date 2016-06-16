@@ -679,10 +679,18 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
+  shell::Connector* connector =
+      BrowserContext::GetShellConnectorFor(browser_context_);
+  // Some embedders may not initialize Mojo or the shell connector for a browser
+  // context (e.g. Android WebView)... so just fall back to the per-process
+  // connector.
+  if (!connector)
+    connector = MojoShellConnection::GetForProcess()->GetConnector();
   mojo_child_connection_.reset(new MojoChildConnection(
       kRendererMojoApplicationName,
       base::StringPrintf("%d_%d", id_, instance_id_++),
-      child_token_));
+      child_token_,
+      connector));
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned

@@ -1502,7 +1502,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
 #if defined(MOJO_SHELL_CLIENT)
-  if (MojoShellConnection::Get() &&
+  if (MojoShellConnection::GetForProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
     mus::Window* mus_window = aura::GetMusWindow(params.context);

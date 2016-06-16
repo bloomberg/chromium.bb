@@ -7,7 +7,7 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mus.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -28,15 +28,13 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get() &&
-      content::MojoShellConnection::Get()->UsingExternalShell()) {
+  if (shell::ShellIsRemote()) {
     BrowserNonClientFrameViewMus* frame_view =
         new BrowserNonClientFrameViewMus(frame, browser_view);
     frame_view->Init();
     return frame_view;
   }
 #endif
-
 #if defined(USE_ASH)
   BrowserNonClientFrameViewAsh* frame_view =
       new BrowserNonClientFrameViewAsh(frame, browser_view);

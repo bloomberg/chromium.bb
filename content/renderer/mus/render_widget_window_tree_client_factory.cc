@@ -32,7 +32,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
       public mojom::RenderWidgetWindowTreeClientFactory {
  public:
   RenderWidgetWindowTreeClientFactoryImpl() {
-    DCHECK(MojoShellConnection::Get());
+    DCHECK(MojoShellConnection::GetForProcess());
   }
 
   ~RenderWidgetWindowTreeClientFactoryImpl() override {}
@@ -68,7 +68,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
 }  // namespace
 
 void CreateRenderWidgetWindowTreeClientFactory() {
-  MojoShellConnection::Get()->AddEmbeddedShellClient(
+  MojoShellConnection::GetForProcess()->AddEmbeddedShellClient(
       base::WrapUnique(new RenderWidgetWindowTreeClientFactoryImpl));
 }
 

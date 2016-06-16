@@ -52,7 +52,7 @@
 #include "ui/gfx/android/device_display_info.h"
 #endif  // OS_ANDROID
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 namespace content {
@@ -270,7 +270,7 @@ enum BlockStatusHistogram {
 bool ShouldDisableHardwareAcceleration() {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
   // TODO(rjkroege): Remove this when https://crbug.com/602519 is fixed.
-  if (IsRunningInMojoShell())
+  if (shell::ShellIsRemote())
     return true;
 #endif
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -56,7 +57,7 @@ mojom::NavigationEntryPtr EntryPtrFromNavEntry(
 }  // namespace
 
 ViewImpl::ViewImpl(shell::Connector* connector,
-                   content::BrowserContext* browser_context,
+                   const std::string& client_user_id,
                    mojom::ViewClientPtr client,
                    mojom::ViewRequest request,
                    std::unique_ptr<shell::ShellConnectionRef> ref)
@@ -64,7 +65,9 @@ ViewImpl::ViewImpl(shell::Connector* connector,
       binding_(this, std::move(request)),
       client_(std::move(client)),
       ref_(std::move(ref)),
-      web_view_(new views::WebView(browser_context)) {
+      web_view_(new views::WebView(
+          content::BrowserContext::GetBrowserContextForShellUserId(
+              client_user_id))) {
   web_view_->GetWebContents()->SetDelegate(this);
   const content::NavigationController* controller =
       &web_view_->GetWebContents()->GetController();
@@ -142,9 +145,12 @@ void ViewImpl::AddNewContents(content::WebContents* source,
   mojom::ViewRequest view_request = GetProxy(&view);
   client_->ViewCreated(std::move(view), GetProxy(&client),
                        disposition == NEW_POPUP, initial_rect, user_gesture);
-  ViewImpl* impl =
-      new ViewImpl(connector_, new_contents->GetBrowserContext(),
-                   std::move(client), std::move(view_request), ref_->Clone());
+
+  const std::string new_user_id =
+      content::BrowserContext::GetShellUserIdFor(
+          new_contents->GetBrowserContext());
+  ViewImpl* impl = new ViewImpl(connector_, new_user_id, std::move(client),
+                                std::move(view_request), ref_->Clone());
   // TODO(beng): This is a bit crappy. should be able to create the ViewImpl
   //             with |new_contents| instead.
   impl->web_view_->SetWebContents(new_contents);

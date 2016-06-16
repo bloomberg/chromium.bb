@@ -25,9 +25,18 @@ content::BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
   return browser_main_parts_;
 }
 
+std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
+    content::BrowserContext* browser_context) {
+  // Unlike Chrome, where there are different browser contexts for each process,
+  // each with their own userid, here there is only one and we should reuse the
+  // same userid as our own process to avoid having to create multiple shell
+  // connections.
+  return content::MojoShellConnection::GetForProcess()->GetIdentity().user_id();
+}
+
 void ContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
-  content::MojoShellConnection::Get()->AddEmbeddedShellClient(
+  content::MojoShellConnection::GetForProcess()->AddEmbeddedShellClient(
       base::WrapUnique(new Navigation));
 }
 

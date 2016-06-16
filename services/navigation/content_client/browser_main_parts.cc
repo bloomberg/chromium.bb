@@ -25,7 +25,7 @@ void BrowserMainParts::ToolkitInitialized() {
 
 void BrowserMainParts::PreMainMessageLoopRun() {
   content::MojoShellConnection* mojo_shell_connection =
-      content::MojoShellConnection::Get();
+      content::MojoShellConnection::GetForProcess();
   if (mojo_shell_connection) {
     window_manager_connection_ = views::WindowManagerConnection::Create(
         mojo_shell_connection->GetConnector(),
@@ -34,7 +34,6 @@ void BrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new content::ShellNetLog("ash_shell"));
   browser_context_.reset(
       new content::ShellBrowserContext(false, net_log_.get()));
-  navigation_->Init(mojo_shell_connection->GetConnector(), browser_context());
 }
 
 void BrowserMainParts::PostMainMessageLoopRun() {

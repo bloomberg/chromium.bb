@@ -10,7 +10,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 namespace chromeos {
@@ -23,11 +23,10 @@ InputDeviceSettings* g_test_instance = nullptr;
 
 std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
 #if defined(MOJO_SHELL_CLIENT)
-  content::MojoShellConnection* conn = content::MojoShellConnection::Get();
-  if (conn && conn->UsingExternalShell())
-    return ui::CreateStubInputController();
-#endif
+  return shell::ShellIsRemote() ? ui::CreateStubInputController() : nullptr;
+#else
   return nullptr;
+#endif
 }
 
 // InputDeviceSettings for Linux without X11 (a.k.a. Ozone).

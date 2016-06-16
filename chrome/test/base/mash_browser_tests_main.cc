@@ -104,12 +104,13 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(MashTestLauncherDelegate);
 };
 
-void CreateMojoShellConnection(MashTestLauncherDelegate* delegate) {
-  const bool is_external_shell = true;
-  content::MojoShellConnection::Create(
-      delegate->GetMojoTestConnectorForSingleProcess()->Init(),
-      is_external_shell);
-  ConnectToDefaultApps(content::MojoShellConnection::Get()->GetConnector());
+std::unique_ptr<content::MojoShellConnection> CreateMojoShellConnection(
+    MashTestLauncherDelegate* delegate) {
+  std::unique_ptr<content::MojoShellConnection> connection(
+      content::MojoShellConnection::Create(
+          delegate->GetMojoTestConnectorForSingleProcess()->Init()));
+  ConnectToDefaultApps(connection->GetConnector());
+  return connection;
 }
 
 }  // namespace

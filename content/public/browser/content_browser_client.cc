@@ -5,6 +5,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/common/sandbox_type.h"
@@ -371,6 +372,11 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     BrowserContext* browser_context,
     const GURL& url) {
   return false;
+}
+
+std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
+    BrowserContext* browser_context) {
+  return base::GenerateGUID();
 }
 
 PresentationServiceDelegate*

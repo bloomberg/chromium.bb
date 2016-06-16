@@ -11,7 +11,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 namespace chrome {
@@ -22,8 +22,7 @@ bool ShouldOpenAshOnStartup() {
 
 bool IsRunningInMash() {
 #if defined(MOJO_SHELL_CLIENT)
-  return content::MojoShellConnection::Get() &&
-         content::MojoShellConnection::Get()->UsingExternalShell();
+  return shell::ShellIsRemote();
 #else
   return false;
 #endif

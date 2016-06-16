@@ -124,6 +124,7 @@ target(chrome_browser_target_type, "ui") {
     "//content/public/common",
     "//crypto",
     "//device/core",
+    "//services/shell/runner/common",
     "//skia",
     "//third_party/cacheinvalidation",
     "//third_party/icu",

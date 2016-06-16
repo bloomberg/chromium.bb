@@ -27,6 +27,10 @@ mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
 // PassShellClientRequestOnCommandLine().
 mojom::ShellClientRequest GetShellClientRequestFromCommandLine();
 
+// Returns true if the ShellClientRequest came via the command line from a shell
+// instance in another process.
+bool ShellIsRemote();
+
 }  // namespace shell
 
 #endif  // SERVICES_SHELL_RUNNER_COMMON_CLIENT_UTIL_H_

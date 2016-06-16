@@ -263,6 +263,7 @@
 #if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 using content::BrowserThread;
@@ -1158,9 +1159,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get() &&
-      content::MojoShellConnection::Get()->UsingExternalShell()) {
-    content::MojoShellConnection::Get()->SetConnectionLostClosure(
+  if (content::MojoShellConnection::GetForProcess() && shell::ShellIsRemote()) {
+    content::MojoShellConnection::GetForProcess()->SetConnectionLostClosure(
         base::Bind(&chrome::SessionEnding));
   }
 #endif

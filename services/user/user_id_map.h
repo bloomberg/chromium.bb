@@ -21,10 +21,11 @@ namespace user_service {
 // TODO(erg): This is a temporary hack until we redo how we initialize mojo
 // applications inside of chrome in general; this system won't work once
 // UserApp gets put in its own sandboxed process.
-void AssociateMojoUserIDWithUserDir(const std::string& user_id,
-                                    const base::FilePath& user_dir);
+void AssociateShellUserIdWithUserDir(const std::string& user_id,
+                                     const base::FilePath& user_dir);
+void ForgetShellUserIdUserDirAssociation(const std::string& user_id);
 
-base::FilePath GetUserDirForUserID(const std::string& user_id);
+base::FilePath GetUserDirForUserId(const std::string& user_id);
 
 }  // namespace user_service
 

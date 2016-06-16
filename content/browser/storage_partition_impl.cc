@@ -464,7 +464,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
 
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
       new DOMStorageContextWrapper(
-          BrowserContext::GetMojoConnectorFor(context),
+          BrowserContext::GetShellConnectorFor(context),
           in_memory ? base::FilePath() : context->GetPath(),
           relative_partition_path, context->GetSpecialStoragePolicy());
 

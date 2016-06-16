@@ -829,7 +829,7 @@ void RenderThreadImpl::Init(
 #if defined(MOJO_SHELL_CLIENT)
   // We may not have a MojoShellConnection object in tests that directly
   // instantiate a RenderThreadImpl.
-  if (MojoShellConnection::Get() &&
+  if (MojoShellConnection::GetForProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer))
     CreateRenderWidgetWindowTreeClientFactory();

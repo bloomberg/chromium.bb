@@ -33,7 +33,7 @@ class ViewImpl : public mojom::View,
                  public views::WidgetDelegate {
  public:
   ViewImpl(shell::Connector* connector,
-           content::BrowserContext* browser_context,
+           const std::string& client_user_id,
            mojom::ViewClientPtr client,
            mojom::ViewRequest request,
            std::unique_ptr<shell::ShellConnectionRef> ref);

@@ -14,6 +14,7 @@
 
 namespace shell {
 class Connection;
+class Connector;
 }
 
 namespace content {
@@ -26,9 +27,11 @@ class MojoChildConnection {
   // Prepares a new child connection for a child process which will be
   // identified to the shell as |application_name|. |instance_id| must be
   // unique among all child connections using the same |application_name|.
+  // |connector| is the connector to use to establish the connection.
   MojoChildConnection(const std::string& application_name,
                       const std::string& instance_id,
-                      const std::string& child_token);
+                      const std::string& child_token,
+                      shell::Connector* connector);
   ~MojoChildConnection();
 
   shell::Connection* connection() const {

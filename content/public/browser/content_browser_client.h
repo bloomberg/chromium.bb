@@ -641,6 +641,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
+  // Generate a Shell user-id for the supplied browser context. Defaults to
+  // returning a random GUID.
+  virtual std::string GetShellUserIdForBrowserContext(
+      BrowserContext* browser_context);
+
   // Allows to register browser Mojo services exposed through the
   // RenderProcessHost.
   virtual void RegisterRenderProcessMojoServices(

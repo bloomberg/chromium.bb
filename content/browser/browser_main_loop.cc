@@ -84,6 +84,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "services/shell/runner/common/client_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "sql/sql_memory_dump_provider.h"
@@ -274,8 +275,8 @@ static void SetUpGLibLogHandler() {
 void WaitForMojoShellInitialize() {
   // TODO(rockot): Remove this. http://crbug.com/594852.
   base::RunLoop wait_loop;
-  MojoShellConnectionImpl::Get()->shell_connection()->set_initialize_handler(
-      wait_loop.QuitClosure());
+  MojoShellConnection::GetForProcess()->GetShellConnection()->
+      set_initialize_handler(wait_loop.QuitClosure());
   wait_loop.Run();
 }
 #endif  // defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
@@ -966,9 +967,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
-  if (IsRunningInMojoShell())
-    MojoShellConnection::Destroy();
-
 #if defined(USE_AURA)
   env_.reset();
 #endif
@@ -1159,20 +1157,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));
 
-  if (IsRunningInMojoShell()) {
-    if (!MojoShellConnectionImpl::CreateUsingFactory()) {
-      mojo::edk::SetParentPipeHandleFromCommandLine();
-      MojoShellConnectionImpl::Create();
-      MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
-    }
-  }
   mojo_shell_context_.reset(new MojoShellContext);
-  if (IsRunningInMojoShell()) {
+  if (shell::ShellIsRemote()) {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     // TODO(rockot): Remove the blocking wait for init.
     // http://crbug.com/594852.
-    MojoShellConnection* mojo_shell_connection = MojoShellConnection::Get();
-    if (mojo_shell_connection)
+    if (MojoShellConnection::GetForProcess())
       WaitForMojoShellInitialize();
 #endif
   }

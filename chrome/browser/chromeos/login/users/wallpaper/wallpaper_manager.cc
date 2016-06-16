@@ -206,7 +206,7 @@ void SetWallpaper(const gfx::ImageSkia& image,
 #if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
-        content::MojoShellConnection::Get()->GetConnector();
+        content::MojoShellConnection::GetForProcess()->GetConnector();
     ash::sysui::mojom::WallpaperControllerPtr wallpaper_controller;
     connector->ConnectToInterface("mojo:ash_sysui", &wallpaper_controller);
     wallpaper_controller->SetWallpaper(*image.bitmap(),

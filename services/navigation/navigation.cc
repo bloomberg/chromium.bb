@@ -17,15 +17,21 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-void Navigation::Init(shell::Connector* connector,
-                      content::BrowserContext* browser_context) {
+void Navigation::Initialize(shell::Connector* connector,
+                            const shell::Identity& identity,
+                            uint32_t instance_id) {
   connector_ = connector;
-  browser_context_ = browser_context;
-  for (auto& pending : pending_creates_)
-    CreateView(std::move(pending.first), std::move(pending.second));
 }
 
 bool Navigation::AcceptConnection(shell::Connection* connection) {
+  std::string remote_user_id = connection->GetRemoteIdentity().user_id();
+  if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
+    LOG(ERROR) << "Must have a separate Navigation service instance for "
+               << "different BrowserContexts.";
+    return false;
+  }
+  client_user_id_ = remote_user_id;
+
   connection->AddInterface<mojom::ViewFactory>(this);
   return true;
 }
@@ -38,12 +44,7 @@ void Navigation::Create(shell::Connection* connection,
 
 void Navigation::CreateView(mojom::ViewClientPtr client,
                             mojom::ViewRequest request) {
-  if (!browser_context_) {
-    pending_creates_.push_back(
-        std::make_pair(std::move(client), std::move(request)));
-    return;
-  }
-  new ViewImpl(connector_, browser_context_, std::move(client),
+  new ViewImpl(connector_, client_user_id_, std::move(client),
                std::move(request), ref_factory_.CreateRef());
 }
 

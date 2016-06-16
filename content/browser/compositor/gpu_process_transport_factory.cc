@@ -56,7 +56,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(MOJO_RUNNER_CLIENT)
-#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "services/shell/runner/common/client_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -185,7 +185,7 @@ std::unique_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(MOJO_RUNNER_CLIENT)
-  if (IsRunningInMojoShell()) {
+  if (shell::ShellIsRemote()) {
     return std::unique_ptr<cc::SoftwareOutputDevice>(
         new SoftwareOutputDeviceMus(compositor));
   }
@@ -250,7 +250,7 @@ static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
 #if defined(MOJO_RUNNER_CLIENT)
   // Chrome running as a mojo app currently can only use software compositing.
   // TODO(rjkroege): http://crbug.com/548451
-  if (IsRunningInMojoShell()) {
+  if (shell::ShellIsRemote()) {
     return false;
   }
 #endif

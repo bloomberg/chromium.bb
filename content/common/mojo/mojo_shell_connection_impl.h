@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,6 @@ namespace content {
 
 class EmbeddedApplicationRunner;
 
-// Returns true for processes launched from an external mojo shell.
-bool IsRunningInMojoShell();
-
 class MojoShellConnectionImpl
     : public MojoShellConnection,
       public shell::ShellClient,
@@ -30,41 +27,14 @@ class MojoShellConnectionImpl
       public shell::mojom::ShellClientFactory {
 
  public:
-  // Creates the MojoShellConnection using MojoShellConnection::Factory. Returns
-  // true if a factory was set and the connection was created, false otherwise.
-  static bool CreateUsingFactory();
-
-  // Creates an instance of this class and stuffs it in TLS on the calling
-  // thread. Retrieve it using MojoShellConnection::Get(). Used only for
-  // external shell.
-  static void Create();
-
-  static std::unique_ptr<MojoShellConnection> CreateInstance(
-      shell::mojom::ShellClientRequest shell_client,
-      bool is_external);
-
-  // Will return null if no connection has been established (either because it
-  // hasn't happened yet or the application was not spawned from the external
-  // Mojo shell).
-  static MojoShellConnectionImpl* Get();
-
-  // Binds the shell connection to a ShellClientFactory request pipe from the
-  // command line. This must only be called once.
-  void BindToRequestFromCommandLine();
-
-  // TODO(rockot): Remove this. http://crbug.com/594852.
-  shell::ShellConnection* shell_connection() { return shell_connection_.get(); }
-
- private:
-  friend class MojoShellConnection;
-
-  explicit MojoShellConnectionImpl(bool external);
+  explicit MojoShellConnectionImpl(shell::mojom::ShellClientRequest request);
   ~MojoShellConnectionImpl() override;
 
+ private:
   // MojoShellConnection:
+  shell::ShellConnection* GetShellConnection() override;
   shell::Connector* GetConnector() override;
   const shell::Identity& GetIdentity() const override;
-  bool UsingExternalShell() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
   void AddEmbeddedShellClient(
       std::unique_ptr<shell::ShellClient> shell_client) override;
@@ -88,7 +58,6 @@ class MojoShellConnectionImpl
   void CreateShellClient(shell::mojom::ShellClientRequest request,
                          const mojo::String& name) override;
 
-  const bool external_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
   mojo::BindingSet<shell::mojom::ShellClientFactory> factory_bindings_;
   std::vector<std::unique_ptr<shell::ShellClient>> embedded_shell_clients_;

@@ -69,6 +69,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "services/shell/runner/common/client_util.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
@@ -400,13 +401,11 @@ void ChildThreadImpl::Init(const Options& options) {
     mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(GetIOTaskRunner()));
     InitializeMojoIPCChannel();
   }
-
-  if (MojoShellConnectionImpl::Get()) {
-    base::ElapsedTimer timer;
-    MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
-    UMA_HISTOGRAM_TIMES("Mojo.Shell.ChildConnectionTime", timer.Elapsed());
+  if (shell::ShellIsRemote()) {
+    MojoShellConnection::SetForProcess(
+        MojoShellConnection::Create(
+            shell::GetShellClientRequestFromCommandLine()));
   }
-
   mojo_application_.reset(new MojoApplication());
   std::string mojo_application_token;
   if (!IsInBrowserProcess()) {
@@ -519,6 +518,9 @@ void ChildThreadImpl::Init(const Options& options) {
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
+  if (MojoShellConnection::GetForProcess())
+    MojoShellConnection::DestroyForProcess();
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif

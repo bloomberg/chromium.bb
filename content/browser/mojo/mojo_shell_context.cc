@@ -28,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "services/catalog/catalog.h"
@@ -40,6 +41,7 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "services/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
 #include "services/user/public/cpp/constants.h"
 
@@ -243,25 +245,31 @@ MojoShellContext::MojoShellContext() {
   catalog_.reset(new catalog::Catalog(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
 
-  if (!IsRunningInMojoShell()) {
+  shell::mojom::ShellClientRequest request;
+  if (shell::ShellIsRemote()) {
+    mojo::edk::SetParentPipeHandleFromCommandLine();
+    request = shell::GetShellClientRequestFromCommandLine();
+  } else {
     shell_.reset(new shell::Shell(std::move(native_runner_factory),
                                   catalog_->TakeShellClient()));
-    MojoShellConnection::Create(
-        shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName),
-        false /* is_external */);
+    request = shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName);
   }
+  MojoShellConnection::SetForProcess(
+      MojoShellConnection::Create(std::move(request)));
 
   ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
-  for (const auto& entry : apps)
-    MojoShellConnection::Get()->AddEmbeddedService(entry.first, entry.second);
+  for (const auto& entry : apps) {
+    MojoShellConnection::GetForProcess()->AddEmbeddedService(entry.first,
+                                                             entry.second);
+  }
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
   GetContentClient()
       ->browser()
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
-    MojoShellConnection::Get()->AddShellClientRequestHandler(
+    MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    true /* use_sandbox */));
@@ -272,21 +280,21 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
-    MojoShellConnection::Get()->AddShellClientRequestHandler(
+    MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    false /* use_sandbox */));
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  MojoShellConnection::Get()->AddShellClientRequestHandler(
+  MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
       "mojo:media", base::Bind(&LaunchAppInGpuProcess, "mojo:media"));
 #endif
 }
 
 MojoShellContext::~MojoShellContext() {
-  if (!IsRunningInMojoShell())
-    MojoShellConnectionImpl::Destroy();
+  if (MojoShellConnection::GetForProcess())
+    MojoShellConnection::DestroyForProcess();
   catalog_.reset();
 }
 
