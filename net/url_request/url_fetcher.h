@@ -99,7 +99,7 @@ class NET_EXPORT URLFetcher {
 
   virtual ~URLFetcher();
 
-  // |url| is the URL to send the request to.
+  // |url| is the URL to send the request to. It must be valid.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
   static std::unique_ptr<URLFetcher> Create(
