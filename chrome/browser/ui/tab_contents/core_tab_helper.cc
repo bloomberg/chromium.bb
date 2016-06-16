@@ -350,12 +350,12 @@ void CoreTabHelper::DoSearchByImageInNewTab(const GURL& src_url,
       result, content::Referrer(), NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false);
   const std::string& content_type = post_content.first;
-  std::string* post_data = &post_content.second;
-  if (!post_data->empty()) {
+  const std::string& post_data = post_content.second;
+  if (!post_data.empty()) {
     DCHECK(!content_type.empty());
     open_url_params.uses_post = true;
-    open_url_params.browser_initiated_post_data =
-        base::RefCountedString::TakeString(post_data);
+    open_url_params.post_data = content::ResourceRequestBody::CreateFromBytes(
+        post_data.data(), post_data.size());
     open_url_params.extra_headers += base::StringPrintf(
         "%s: %s\r\n", net::HttpRequestHeaders::kContentType,
         content_type.c_str());

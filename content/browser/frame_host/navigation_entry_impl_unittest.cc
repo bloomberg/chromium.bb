@@ -213,18 +213,15 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   entry2_->SetIsOverridingUserAgent(true);
   EXPECT_TRUE(entry2_->GetIsOverridingUserAgent());
 
-  // Browser initiated post data
-  EXPECT_EQ(NULL, entry1_->GetBrowserInitiatedPostData());
-  EXPECT_EQ(NULL, entry2_->GetBrowserInitiatedPostData());
+  // Post data
+  EXPECT_FALSE(entry1_->GetPostData());
+  EXPECT_FALSE(entry2_->GetPostData());
   const int length = 11;
-  const unsigned char* raw_data =
-      reinterpret_cast<const unsigned char*>("post\n\n\0data");
-  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
-  scoped_refptr<base::RefCountedBytes> post_data =
-      base::RefCountedBytes::TakeVector(&post_data_vector);
-  entry2_->SetBrowserInitiatedPostData(post_data.get());
-  EXPECT_EQ(post_data->front(),
-      entry2_->GetBrowserInitiatedPostData()->front());
+  const char* raw_data = "post\n\n\0data";
+  scoped_refptr<ResourceRequestBody> post_data =
+      ResourceRequestBody::CreateFromBytes(raw_data, length);
+  entry2_->SetPostData(post_data);
+  EXPECT_EQ(post_data, entry2_->GetPostData());
 }
 
 // Test basic Clone behavior.

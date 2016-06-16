@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/strings/nullable_string16.h"
@@ -77,6 +78,17 @@ CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(
     const std::string& encoded,
     float device_scale_factor,
     ExplodedPageState* exploded);
+
+// Converts results of EncodeResourceRequestBody (passed in as a pair of |data|
+// + |size|) back into a ResourceRequestBodyImpl.  Returns nullptr if the
+// decoding fails (e.g. if |data| is malformed).
+scoped_refptr<ResourceRequestBodyImpl> DecodeResourceRequestBody(
+    const char* data,
+    size_t size);
+
+// Encodes |resource_request_body| into |encoded|.
+std::string EncodeResourceRequestBody(
+    const ResourceRequestBodyImpl& resource_request_body);
 #endif
 
 }  // namespace content

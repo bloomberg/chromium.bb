@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.WindowOpenDisposition;
 
 /**
@@ -290,8 +291,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     }
 
     @Override
-    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition,
-            boolean isRendererInitiated) {
+    public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+            int disposition, boolean isRendererInitiated) {
         mTab.openNewTab(url, extraHeaders, postData, disposition, true, isRendererInitiated);
     }
 

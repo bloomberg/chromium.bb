@@ -239,6 +239,8 @@
       'common/android/hash_set.h',
       'common/android/media_metadata_android.cc',
       'common/android/media_metadata_android.h',
+      'common/android/resource_request_body_android.cc',
+      'common/android/resource_request_body_android.h',
       'common/android/sync_compositor_messages.cc',
       'common/android/sync_compositor_messages.h',
       'common/android/sync_compositor_statics.cc',

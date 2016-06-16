@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -76,6 +75,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/top_controls_state.h"
 #include "jni/Tab_jni.h"
 #include "net/base/escape.h"
@@ -90,7 +90,6 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::ToJavaByteArray;
 using content::BrowserThread;
 using content::GlobalRequestID;
 using content::NavigationController;
@@ -222,15 +221,9 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
     ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
     ScopedJavaLocalRef<jstring> jheaders(
         ConvertUTF8ToJavaString(env, params->extra_headers));
-    ScopedJavaLocalRef<jbyteArray> jpost_data;
-    if (params->uses_post &&
-        params->browser_initiated_post_data.get() &&
-        params->browser_initiated_post_data.get()->size()) {
-      jpost_data = ToJavaByteArray(
-          env, reinterpret_cast<const uint8_t*>(
-                   params->browser_initiated_post_data.get()->front()),
-          params->browser_initiated_post_data.get()->size());
-    }
+    ScopedJavaLocalRef<jobject> jpost_data;
+    if (params->uses_post && params->post_data)
+      jpost_data = params->post_data->ToJavaObject(env);
     Java_Tab_openNewTab(env,
                         jobj.obj(),
                         jurl.obj(),
@@ -519,7 +512,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& j_extra_headers,
-    const JavaParamRef<jbyteArray>& j_post_data,
+    const JavaParamRef<jobject>& j_post_data,
     jint page_transition,
     const JavaParamRef<jstring>& j_referrer_url,
     jint referrer_policy,
@@ -587,11 +580,9 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     }
     if (j_post_data) {
       load_params.load_type =
-          content::NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-      std::vector<uint8_t> post_data;
-      base::android::JavaByteArrayToByteVector(env, j_post_data, &post_data);
-      load_params.browser_initiated_post_data =
-          base::RefCountedBytes::TakeVector(&post_data);
+          content::NavigationController::LOAD_TYPE_HTTP_POST;
+      load_params.post_data =
+          content::ResourceRequestBody::FromJavaObject(env, j_post_data);
     }
     load_params.transition_type =
         ui::PageTransitionFromInt(page_transition);

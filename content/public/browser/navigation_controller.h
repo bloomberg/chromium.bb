@@ -20,12 +20,12 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace base {
 
-class RefCountedMemory;
 class RefCountedString;
 
 }  // namespace base
@@ -65,9 +65,8 @@ class NavigationController {
     // For loads that do not fall into any types below.
     LOAD_TYPE_DEFAULT,
 
-    // An http post load request initiated from browser side.
-    // The post data is passed in |browser_initiated_post_data|.
-    LOAD_TYPE_BROWSER_INITIATED_HTTP_POST,
+    // An http post load request.  The post data is passed in |post_data|.
+    LOAD_TYPE_HTTP_POST,
 
     // Loads a 'data:' scheme URL with specified base URL and a history entry
     // URL. This is only safe to be used for browser-initiated data: URL
@@ -178,10 +177,10 @@ class NavigationController {
     scoped_refptr<base::RefCountedString> data_url_as_string;
 #endif
 
-    // Used in LOAD_TYPE_BROWSER_INITIATED_HTTP_POST loads only. Carries the
-    // post data of the load. Ownership is transferred to NavigationController
-    // after LoadURLWithParams call.
-    scoped_refptr<base::RefCountedMemory> browser_initiated_post_data;
+    // Used in LOAD_TYPE_HTTP_POST loads only. Carries the post data of the
+    // load.  Ownership is transferred to NavigationController after
+    // LoadURLWithParams call.
+    scoped_refptr<ResourceRequestBody> post_data;
 
     // True if this URL should be able to access local resources.
     bool can_load_local_resources;

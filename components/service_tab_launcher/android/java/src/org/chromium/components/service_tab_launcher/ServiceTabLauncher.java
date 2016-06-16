@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 
 /**
  * Tab Launcher to be used to launch new tabs from background Android Services, when it is not
@@ -46,7 +47,7 @@ public abstract class ServiceTabLauncher {
     @CalledByNative
     public abstract void launchTab(Context context, int requestId, boolean incognito, String url,
                                    int disposition, String referrerUrl, int referrerPolicy,
-                                   String extraHeaders, byte[] postData);
+                                   String extraHeaders, ResourceRequestBody postData);
 
     /**
      * Returns the active instance of the ServiceTabLauncher. If none exists, a meta-data key will

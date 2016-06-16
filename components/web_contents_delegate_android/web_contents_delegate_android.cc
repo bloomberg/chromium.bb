@@ -90,14 +90,9 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
         ConvertUTF8ToJavaString(env, url.spec());
     ScopedJavaLocalRef<jstring> extra_headers =
             ConvertUTF8ToJavaString(env, params.extra_headers);
-    ScopedJavaLocalRef<jbyteArray> post_data;
-    if (params.uses_post &&
-        params.browser_initiated_post_data.get() &&
-        params.browser_initiated_post_data.get()->size()) {
-      post_data = base::android::ToJavaByteArray(
-          env, params.browser_initiated_post_data.get()->front_as<uint8_t>(),
-          params.browser_initiated_post_data.get()->size());
-    }
+    ScopedJavaLocalRef<jobject> post_data;
+    if (params.uses_post && params.post_data)
+      post_data = params.post_data->ToJavaObject(env);
     Java_WebContentsDelegateAndroid_openNewTab(env,
                                                obj.obj(),
                                                java_url.obj(),
@@ -119,12 +114,9 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
       params.should_replace_current_entry;
   load_params.is_renderer_initiated = params.is_renderer_initiated;
 
-  // Only allows the browser-initiated navigation to use POST.
-  if (params.uses_post && !params.is_renderer_initiated) {
-    load_params.load_type =
-        content::NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-    load_params.browser_initiated_post_data =
-        params.browser_initiated_post_data;
+  if (params.uses_post) {
+    load_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
+    load_params.post_data = params.post_data;
   }
 
   source->GetController().LoadURLWithParams(load_params);

@@ -68,7 +68,7 @@ void ServiceTabLauncher::LaunchTab(
   ScopedJavaLocalRef<jstring> headers = ConvertUTF8ToJavaString(
       env, params.extra_headers);
 
-  ScopedJavaLocalRef<jbyteArray> post_data;
+  ScopedJavaLocalRef<jobject> post_data;
 
   int request_id = tab_launched_callbacks_.Add(
       new TabLaunchedCallback(callback));

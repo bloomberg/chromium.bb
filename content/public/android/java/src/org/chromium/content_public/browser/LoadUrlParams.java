@@ -6,10 +6,10 @@ package org.chromium.content_public.browser;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.Locale;
@@ -33,7 +33,7 @@ public class LoadUrlParams {
     private Map<String, String> mExtraHeaders;
     private String mVerbatimHeaders;
     int mUaOverrideOption;
-    byte[] mPostData;
+    ResourceRequestBody mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
     String mDataUrlAsString;
@@ -177,9 +177,9 @@ public class LoadUrlParams {
     public static LoadUrlParams createLoadHttpPostParams(
             String url, byte[] postData) {
         LoadUrlParams params = new LoadUrlParams(url);
-        params.setLoadType(LoadURLType.BROWSER_INITIATED_HTTP_POST);
+        params.setLoadType(LoadURLType.HTTP_POST);
         params.setTransitionType(PageTransition.TYPED);
-        params.setPostData(postData);
+        params.setPostData(ResourceRequestBody.createFromBytes(postData));
         return params;
     }
 
@@ -327,19 +327,17 @@ public class LoadUrlParams {
 
     /**
      * Set the post data of this load. This field is ignored unless load type is
-     * LoadURLType.BROWSER_INITIATED_HTTP_POST.
+     * LoadURLType.HTTP_POST.
      * @param postData Post data for this http post load.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public void setPostData(byte[] postData) {
+    public void setPostData(ResourceRequestBody postData) {
         mPostData = postData;
     }
 
     /**
      * @return the data to be sent through POST
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
-    public byte[] getPostData() {
+    public ResourceRequestBody getPostData() {
         return mPostData;
     }
 

@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,13 +80,10 @@ struct NavigateParams {
   std::vector<GURL> redirect_chain;
 
   // Indicates whether this navigation will be sent using POST.
-  // The POST method is limited support for basic POST data by leveraging
-  // NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST.
-  // It is not for things like file uploads.
   bool uses_post;
 
   // The post data when the navigation uses POST.
-  scoped_refptr<base::RefCountedMemory> browser_initiated_post_data;
+  scoped_refptr<content::ResourceRequestBody> post_data;
 
   // Extra headers to add to the request for this page.  Headers are
   // represented as "<name>: <value>" and separated by \r\n.  The entire string

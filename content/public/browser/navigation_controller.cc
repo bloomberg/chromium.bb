@@ -16,7 +16,7 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       frame_tree_node_id(-1),
       is_renderer_initiated(false),
       override_user_agent(UA_OVERRIDE_INHERIT),
-      browser_initiated_post_data(nullptr),
+      post_data(nullptr),
       can_load_local_resources(false),
       should_replace_current_entry(false),
 #if defined(OS_ANDROID)
@@ -42,7 +42,7 @@ NavigationController::LoadURLParams::LoadURLParams(
       transferred_global_request_id(other.transferred_global_request_id),
       base_url_for_data_url(other.base_url_for_data_url),
       virtual_url_for_data_url(other.virtual_url_for_data_url),
-      browser_initiated_post_data(other.browser_initiated_post_data),
+      post_data(other.post_data),
       should_replace_current_entry(false),
 #if defined(OS_ANDROID)
       intent_received_timestamp(other.intent_received_timestamp),
@@ -66,7 +66,7 @@ NavigationController::LoadURLParams::operator=(
   transferred_global_request_id = other.transferred_global_request_id;
   base_url_for_data_url = other.base_url_for_data_url;
   virtual_url_for_data_url = other.virtual_url_for_data_url;
-  browser_initiated_post_data = other.browser_initiated_post_data;
+  post_data = other.post_data;
   should_replace_current_entry = other.should_replace_current_entry;
   should_clear_history_list = other.should_clear_history_list;
 #if defined(OS_ANDROID)

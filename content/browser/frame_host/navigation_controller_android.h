@@ -80,7 +80,7 @@ class CONTENT_EXPORT NavigationControllerAndroid {
       jint referrer_policy,
       jint ua_override_option,
       const base::android::JavaParamRef<jstring>& extra_headers,
-      const base::android::JavaParamRef<jbyteArray>& post_data,
+      const base::android::JavaParamRef<jobject>& j_post_data,
       const base::android::JavaParamRef<jstring>& base_url_for_data_url,
       const base::android::JavaParamRef<jstring>& virtual_url_for_data_url,
       const base::android::JavaParamRef<jstring>& data_url_as_string,

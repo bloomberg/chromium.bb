@@ -130,7 +130,7 @@ void FillNavigateParamsFromOpenURLParams(NavigateParams* nav_params,
   nav_params->should_replace_current_entry =
       params.should_replace_current_entry;
   nav_params->uses_post = params.uses_post;
-  nav_params->browser_initiated_post_data = params.browser_initiated_post_data;
+  nav_params->post_data = params.post_data;
 }
 
 }  // namespace chrome

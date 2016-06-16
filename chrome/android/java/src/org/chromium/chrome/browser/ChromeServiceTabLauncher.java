@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorage
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.client.NavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -41,7 +42,8 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
     @Override
     public void launchTab(final Context context, final int requestId, final boolean incognito,
             final String url, final int disposition, final String referrerUrl,
-            final int referrerPolicy, final String extraHeaders, final byte[] postData) {
+            final int referrerPolicy, final String extraHeaders,
+            final ResourceRequestBody postData) {
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
         // 1. Launch WebAPK if one matches the target URL.

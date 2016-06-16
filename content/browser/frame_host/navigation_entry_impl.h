@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -118,8 +119,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool GetHasPostData() const override;
   void SetPostID(int64_t post_id) override;
   int64_t GetPostID() const override;
-  void SetBrowserInitiatedPostData(const base::RefCountedMemory* data) override;
-  const base::RefCountedMemory* GetBrowserInitiatedPostData() const override;
+  void SetPostData(const scoped_refptr<ResourceRequestBody>& data) override;
+  scoped_refptr<ResourceRequestBody> GetPostData() const override;
   const FaviconStatus& GetFavicon() const override;
   FaviconStatus& GetFavicon() override;
   const SSLStatus& GetSSL() const override;
@@ -160,8 +161,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
-  scoped_refptr<ResourceRequestBodyImpl>
-  ConstructBodyFromBrowserInitiatedPostData() const;
   CommonNavigationParams ConstructCommonNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const scoped_refptr<ResourceRequestBodyImpl>& post_body,
@@ -412,10 +411,9 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // This member is not persisted with session restore because it is transient.
   // If the post request succeeds, this field is cleared since the same
-  // information is stored in |content_state_| above. It is also only shallow
-  // copied with compiler provided copy constructor.
-  // Cleared in |ResetForCommit|.
-  scoped_refptr<const base::RefCountedMemory> browser_initiated_post_data_;
+  // information is stored in PageState. It is also only shallow copied with
+  // compiler provided copy constructor.  Cleared in |ResetForCommit|.
+  scoped_refptr<ResourceRequestBodyImpl> post_data_;
 
   // This is also a transient member (i.e. is not persisted with session
   // restore). The screenshot of a page is taken when navigating away from the

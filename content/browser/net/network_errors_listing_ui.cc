@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"

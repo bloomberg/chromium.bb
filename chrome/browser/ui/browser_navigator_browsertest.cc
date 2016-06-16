@@ -33,6 +33,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -95,7 +96,7 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
   param.url = url;
   param.is_renderer_initiated = !is_browser_initiated;
   param.uses_post = true;
-  param.browser_initiated_post_data = new base::RefCountedStaticMemory(
+  param.post_data = content::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
 
   ui_test_utils::NavigateToURL(&param);
@@ -1402,7 +1403,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(expected_title, title);
 }
 
-// This test verifies that renderer initiated navigations can NOT send requests
+// This test verifies that renderer initiated navigations can also send requests
 // using POST.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        SendRendererInitiatedRequestUsingPOST) {
@@ -1416,7 +1417,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
       embedded_test_server()->GetURL(kEchoTitleCommand), post_data, false,
       &title));
-  EXPECT_NE(expected_title, title);
+  EXPECT_EQ(expected_title, title);
 }
 
 // This test navigates to a data URL that contains BiDi control

@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 
 /**
  * Java peer of the native class of the same name.
@@ -40,8 +41,8 @@ public class WebContentsDelegateAndroid {
      * @param isRendererInitiated Whether or not the renderer initiated this action.
      */
     @CalledByNative
-    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition,
-            boolean isRendererInitiated) {
+    public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+            int disposition, boolean isRendererInitiated) {
     }
 
     @CalledByNative

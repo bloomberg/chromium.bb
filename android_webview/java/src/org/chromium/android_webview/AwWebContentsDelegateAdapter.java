@@ -24,6 +24,7 @@ import android.webkit.ValueCallback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.InvalidateTypes;
+import org.chromium.content_public.common.ResourceRequestBody;
 
 /**
  * Adapts the AwWebContentsDelegate interface to the AwContentsClient interface.
@@ -164,8 +165,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
-    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition,
-            boolean isRendererInitiated) {
+    public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+            int disposition, boolean isRendererInitiated) {
         // This is only called in chrome layers.
         assert false;
     }
