@@ -401,7 +401,7 @@ HotwordService::HotwordService(Profile* profile)
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&HotwordService::InitializeMicrophoneObserver,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 HotwordService::~HotwordService() {
