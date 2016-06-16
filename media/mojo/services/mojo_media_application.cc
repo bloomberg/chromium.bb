@@ -48,9 +48,10 @@ void MojoMediaApplication::Create(
     shell::Connection* connection,
     mojo::InterfaceRequest<mojom::ServiceFactory> request) {
   // The created object is owned by the pipe.
-  new ServiceFactoryImpl(std::move(request), connection->GetRemoteInterfaces(),
-                         media_log_, ref_factory_.CreateRef(),
-                         mojo_media_client_.get());
+  new ServiceFactoryImpl(
+      std::move(request),
+      connection->GetInterfaceRegistry()->GetRemoteInterfaces(), media_log_,
+      ref_factory_.CreateRef(), mojo_media_client_.get());
 }
 
 }  // namespace media

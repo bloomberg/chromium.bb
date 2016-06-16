@@ -45,14 +45,13 @@ class ConnectionImpl : public Connection {
   bool HasCapabilityClass(const std::string& class_name) const override;
   const std::string& GetConnectionName() override;
   const Identity& GetRemoteIdentity() const override;
-  void SetConnectionLostClosure(const mojo::Closure& handler) override;
+  void SetConnectionLostClosure(const base::Closure& handler) override;
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
   uint32_t GetRemoteInstanceID() const override;
   void AddConnectionCompletedClosure(const mojo::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
-  shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
-  InterfaceRegistry* GetLocalRegistry() override;
+  InterfaceRegistry* GetInterfaceRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
   void OnConnectionCompleted(shell::mojom::ConnectResult result,
@@ -67,8 +66,7 @@ class ConnectionImpl : public Connection {
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
   std::vector<mojo::Closure> connection_completed_callbacks_;
 
-  InterfaceRegistry local_registry_;
-  shell::mojom::InterfaceProviderPtr remote_interfaces_;
+  InterfaceRegistry interfaces_;
 
   const CapabilityRequest capability_request_;
   const bool allow_all_interfaces_;

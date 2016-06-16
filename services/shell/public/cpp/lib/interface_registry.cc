@@ -9,20 +9,33 @@
 namespace shell {
 
 InterfaceRegistry::InterfaceRegistry(Connection* connection)
-    : InterfaceRegistry(nullptr, connection) {}
+    : InterfaceRegistry(nullptr, nullptr, connection) {}
 
-InterfaceRegistry::InterfaceRegistry(mojom::InterfaceProviderRequest request,
-                                     Connection* connection)
-    : binding_(this), connection_(connection) {
-  if (!request.is_pending())
-    request = GetProxy(&client_handle_);
-  binding_.Bind(std::move(request));
+InterfaceRegistry::InterfaceRegistry(
+    mojom::InterfaceProviderPtr remote_interfaces,
+    mojom::InterfaceProviderRequest local_interfaces_request,
+    Connection* connection)
+    : binding_(this),
+      connection_(connection),
+      remote_interfaces_(std::move(remote_interfaces)) {
+  if (!local_interfaces_request.is_pending())
+    local_interfaces_request = GetProxy(&client_handle_);
+  binding_.Bind(std::move(local_interfaces_request));
 }
 
 InterfaceRegistry::~InterfaceRegistry() {}
 
 mojom::InterfaceProviderPtr InterfaceRegistry::TakeClientHandle() {
   return std::move(client_handle_);
+}
+
+mojom::InterfaceProvider* InterfaceRegistry::GetRemoteInterfaces() {
+  return remote_interfaces_.get();
+}
+
+void InterfaceRegistry::SetRemoteInterfacesConnectionLostClosure(
+    const base::Closure& connection_lost_closure) {
+  remote_interfaces_.set_connection_error_handler(connection_lost_closure);
 }
 
 // mojom::InterfaceProvider:

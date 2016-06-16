@@ -31,15 +31,18 @@ ConnectionImpl::ConnectionImpl(
       remote_(remote),
       remote_id_(remote_id),
       state_(initial_state),
-      local_registry_(std::move(local_interfaces), this),
-      remote_interfaces_(std::move(remote_interfaces)),
+      interfaces_(std::move(remote_interfaces),
+                  std::move(local_interfaces),
+                  this),
       capability_request_(capability_request),
       allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
                             capability_request.interfaces.count("*") == 1),
       weak_factory_(this) {}
 
 ConnectionImpl::ConnectionImpl()
-    : local_registry_(shell::mojom::InterfaceProviderRequest(), this),
+    : interfaces_(shell::mojom::InterfaceProviderPtr(),
+                  shell::mojom::InterfaceProviderRequest(),
+                  this),
       allow_all_interfaces_(true),
       weak_factory_(this) {}
 
@@ -65,8 +68,8 @@ const Identity& ConnectionImpl::GetRemoteIdentity() const {
   return remote_;
 }
 
-void ConnectionImpl::SetConnectionLostClosure(const mojo::Closure& handler) {
-  remote_interfaces_.set_connection_error_handler(handler);
+void ConnectionImpl::SetConnectionLostClosure(const base::Closure& handler) {
+  interfaces_.SetRemoteInterfacesConnectionLostClosure(handler);
 }
 
 shell::mojom::ConnectResult ConnectionImpl::GetResult() const {
@@ -94,12 +97,8 @@ bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
          capability_request_.interfaces.count(interface_name);
 }
 
-shell::mojom::InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {
-  return remote_interfaces_.get();
-}
-
-InterfaceRegistry* ConnectionImpl::GetLocalRegistry() {
-  return &local_registry_;
+InterfaceRegistry* ConnectionImpl::GetInterfaceRegistry() {
+  return &interfaces_;
 }
 
 base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {

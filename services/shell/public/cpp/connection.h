@@ -71,21 +71,22 @@ class Connection {
   // from the shell prevented the interface from being exposed.
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
-    return GetLocalRegistry()->AddInterface<Interface>(factory);
+    return GetInterfaceRegistry()->AddInterface<Interface>(factory);
   }
   template <typename Interface>
   bool AddInterface(
       const base::Callback<void(mojo::InterfaceRequest<Interface>)>& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-    return GetLocalRegistry()->AddInterface<Interface>(callback, task_runner);
+    return GetInterfaceRegistry()->AddInterface<Interface>(
+        callback, task_runner);
   }
 
-  // Binds |ptr| to an implemention of Interface in the remote application.
+  // Binds |ptr| to an implementation of Interface in the remote application.
   // |ptr| can immediately be used to start sending requests to the remote
   // interface.
   template <typename Interface>
   void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
-    shell::GetInterface(GetRemoteInterfaces(), ptr);
+    GetInterfaceRegistry()->GetInterface(ptr);
   }
 
   // Returns true if the remote application has the specified capability class
@@ -109,7 +110,7 @@ class Connection {
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
-  virtual void SetConnectionLostClosure(const mojo::Closure& handler) = 0;
+  virtual void SetConnectionLostClosure(const base::Closure& handler) = 0;
 
   // Returns the result of the connection. This function should only be called
   // when the connection state is not pending. Call
@@ -137,14 +138,11 @@ class Connection {
   // remote application.
   virtual bool AllowsInterface(const std::string& interface_name) const = 0;
 
-  // Returns the raw proxy to the remote application's InterfaceProvider
-  // interface. Most applications will just use GetInterface() instead.
-  // Caller does not take ownership.
-  virtual mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
+  // Returns the InterfaceRegistry that encapsulates the pair of
+  // InterfaceProviders between this application and the remote.
+  virtual InterfaceRegistry* GetInterfaceRegistry() = 0;
 
  protected:
-  virtual InterfaceRegistry* GetLocalRegistry() = 0;
-
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 
