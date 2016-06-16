@@ -7,6 +7,8 @@
 
 """A git-command for integrating reviews on Rietveld and Gerrit."""
 
+from __future__ import print_function
+
 from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
@@ -83,7 +85,7 @@ settings = None
 
 
 def DieWithError(message):
-  print >> sys.stderr, message
+  print(message, file=sys.stderr)
   sys.exit(1)
 
 
@@ -366,7 +368,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
   )
   print_text.append('To see results here, run:        git cl try-results')
   print_text.append('To see results in browser, run:  git cl web')
-  print '\n'.join(print_text)
+  print('\n'.join(print_text))
 
 
 def fetch_try_jobs(auth_config, changelist, options):
@@ -380,9 +382,9 @@ def fetch_try_jobs(auth_config, changelist, options):
   if authenticator.has_cached_credentials():
     http = authenticator.authorize(httplib2.Http())
   else:
-    print ('Warning: Some results might be missing because %s' %
-           # Get the message on how to login.
-           auth.LoginRequiredError(rietveld_host).message)
+    print('Warning: Some results might be missing because %s' %
+          # Get the message on how to login.
+          (auth.LoginRequiredError(rietveld_host).message,))
     http = httplib2.Http()
 
   http.force_exception_to_status_code = True
@@ -411,7 +413,7 @@ def fetch_try_jobs(auth_config, changelist, options):
 def print_tryjobs(options, builds):
   """Prints nicely result of fetch_try_jobs."""
   if not builds:
-    print 'No tryjobs scheduled'
+    print('No tryjobs scheduled')
     return
 
   # Make a copy, because we'll be modifying builds dictionary.
@@ -426,8 +428,8 @@ def print_tryjobs(options, builds):
         parameters = json.loads(b['parameters_json'])
         name = parameters['builder_name']
       except (ValueError, KeyError) as error:
-        print 'WARNING: failed to get builder name for build %s: %s' % (
-              b['id'], error)
+        print('WARNING: failed to get builder name for build %s: %s' % (
+              b['id'], error))
         name = None
       builder_names_cache[b['id']] = name
       return name
@@ -467,9 +469,9 @@ def print_tryjobs(options, builds):
         builds.pop(b['id'])
         result.append(b)
     if result:
-      print colorize(title)
+      print(colorize(title))
       for b in sorted(result, key=sort_key):
-        print ' ', colorize('\t'.join(map(str, f(b))))
+        print(' ', colorize('\t'.join(map(str, f(b)))))
 
   total = len(builds)
   pop(status='COMPLETED', result='SUCCESS',
@@ -504,7 +506,7 @@ def print_tryjobs(options, builds):
   pop(title='Other:',
       f=lambda b: (get_name(b), 'id=%s' % b['id']))
   assert len(builds) == 0
-  print 'Total: %d tryjobs' % total
+  print('Total: %d tryjobs' % total)
 
 
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
@@ -1121,20 +1123,18 @@ class Changelist(object):
 
     if upstream_git_obj is None:
       if self.GetBranch() is None:
-        print >> sys.stderr, (
-            'ERROR: unable to determine current branch (detached HEAD?)')
+        print('ERROR: unable to determine current branch (detached HEAD?)',
+              file=sys.stderr)
       else:
-        print >> sys.stderr, (
-            'ERROR: no upstream branch')
+        print('ERROR: no upstream branch', file=sys.stderr)
       return False
 
     # Verify the commit we're diffing against is in our current branch.
     upstream_sha = RunGit(['rev-parse', '--verify', upstream_git_obj]).strip()
     common_ancestor = RunGit(['merge-base', upstream_sha, 'HEAD']).strip()
     if upstream_sha != common_ancestor:
-      print >> sys.stderr, (
-          'ERROR: %s is not in the current branch.  You may need to rebase '
-          'your tracking branch' % upstream_sha)
+      print('ERROR: %s is not in the current branch.  You may need to rebase '
+            'your tracking branch' % upstream_sha, file=sys.stderr)
       return False
 
     # List the commits inside the diff, and verify they are all local.
@@ -1150,13 +1150,13 @@ class Changelist(object):
 
     common_commits = set(commits_in_diff) & set(commits_in_remote)
     if common_commits:
-      print >> sys.stderr, (
-          'ERROR: Your diff contains %d commits already in %s.\n'
-          'Run "git log --oneline %s..HEAD" to get a list of commits in '
-          'the diff.  If you are using a custom git flow, you can override'
-          ' the reference used for this check with "git config '
-          'gitcl.remotebranch <git-ref>".' % (
-              len(common_commits), remote_branch, upstream_git_obj))
+      print('ERROR: Your diff contains %d commits already in %s.\n'
+            'Run "git log --oneline %s..HEAD" to get a list of commits in '
+            'the diff.  If you are using a custom git flow, you can override'
+            ' the reference used for this check with "git config '
+            'gitcl.remotebranch <git-ref>".' % (
+                len(common_commits), remote_branch, upstream_git_obj),
+            file=sys.stderr)
       return False
     return True
 
@@ -1389,12 +1389,12 @@ class Changelist(object):
       local_patchset = self.GetPatchset()
       if (latest_patchset and local_patchset and
           local_patchset != latest_patchset):
-        print ('The last upload made from this repository was patchset #%d but '
-               'the most recent patchset on the server is #%d.'
-               % (local_patchset, latest_patchset))
-        print ('Uploading will still work, but if you\'ve uploaded to this '
-               'issue from another machine or branch the patch you\'re '
-               'uploading now might not include those changes.')
+        print('The last upload made from this repository was patchset #%d but '
+              'the most recent patchset on the server is #%d.'
+              % (local_patchset, latest_patchset))
+        print('Uploading will still work, but if you\'ve uploaded to this '
+              'issue from another machine or branch the patch you\'re '
+              'uploading now might not include those changes.')
         ask_for_data('About to upload; enter to confirm.')
 
     print_stats(options.similarity, options.find_copies, git_diff_args)
@@ -1413,10 +1413,10 @@ class Changelist(object):
 
       # Upload all dependencies if specified.
       if options.dependencies:
-        print
-        print '--dependencies has been specified.'
-        print 'All dependent local branches will be re-uploaded.'
-        print
+        print()
+        print('--dependencies has been specified.')
+        print('All dependent local branches will be re-uploaded.')
+        print()
         # Remove the dependencies flag from args so that we do not end up in a
         # loop.
         orig_args.remove('--dependencies')
@@ -1625,9 +1625,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         DieWithError(
             '\nFailed to fetch issue description. HTTP error %d' % e.code)
     except urllib2.URLError as e:
-      print >> sys.stderr, (
-          'Warning: Failed to retrieve CL description due to network '
-          'failure.')
+      print('Warning: Failed to retrieve CL description due to network '
+            'failure.', file=sys.stderr)
       return ''
 
   def GetMostRecentPatchset(self):
@@ -1819,7 +1818,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
                              stdin=patch_data, stdout=subprocess2.VOID)
     except subprocess2.CalledProcessError:
-      print 'Failed to apply the patch'
+      print('Failed to apply the patch')
       return 1
 
     # If we had an issue, commit the current state and register the issue.
@@ -1830,9 +1829,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
                                % {'i': self.GetIssue(), 'p': patchset})])
       self.SetIssue(self.GetIssue())
       self.SetPatchset(patchset)
-      print "Committed patch locally."
+      print('Committed patch locally.')
     else:
-      print "Patch applied to index."
+      print('Patch applied to index.')
     return 0
 
   @staticmethod
@@ -1874,8 +1873,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       if options.message:
         upload_args.extend(['--message', options.message])
       upload_args.extend(['--issue', str(self.GetIssue())])
-      print ('This branch is associated with issue %s. '
-             'Adding patch to that issue.' % self.GetIssue())
+      print('This branch is associated with issue %s. '
+            'Adding patch to that issue.' % self.GetIssue())
     else:
       if options.title:
         upload_args.extend(['--title', options.title])
@@ -1890,7 +1889,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         change_desc.prompt()
 
       if not change_desc.description:
-        print "Description is empty; aborting."
+        print('Description is empty; aborting.')
         return 1
 
       upload_args.extend(['--message', change_desc.description])
@@ -1948,10 +1947,10 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         # A local branch is being tracked.
         local_branch = upstream_branch
         if settings.GetIsSkipDependencyUpload(local_branch):
-          print
-          print ('Skipping dependency patchset upload because git config '
-                 'branch.%s.skip-deps-uploads is set to True.' % local_branch)
-          print
+          print()
+          print('Skipping dependency patchset upload because git config '
+                'branch.%s.skip-deps-uploads is set to True.' % local_branch)
+          print()
         else:
           auth_config = auth.extract_auth_config_from_options(options)
           branch_cl = Changelist(branchref='refs/heads/'+local_branch,
@@ -2576,7 +2575,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     RunGit(git_command)
     new_log_desc = CreateDescriptionFromLog(args)
     if git_footers.get_footer_change_id(new_log_desc):
-      print 'git-cl: Added Change-Id to commit message.'
+      print('git-cl: Added Change-Id to commit message.')
       return new_log_desc
     else:
       DieWithError('ERROR: Gerrit commit-msg hook not installed.')
@@ -2980,11 +2979,11 @@ def CMDbaseurl(parser, args):
   branch = ShortBranchName(branchref)
   _, args = parser.parse_args(args)
   if not args:
-    print("Current base-url:")
+    print('Current base-url:')
     return RunGit(['config', 'branch.%s.base-url' % branch],
                   error_ok=False).strip()
   else:
-    print("Setting base-url to %s" % args[0])
+    print('Setting base-url to %s' % args[0])
     return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
                   error_ok=False).strip()
 
@@ -3099,25 +3098,25 @@ def upload_branch_deps(cl, args):
       branch_name, tracked = tokens
       tracked_to_dependents[tracked].append(branch_name)
 
-  print
-  print 'The dependent local branches of %s are:' % root_branch
+  print()
+  print('The dependent local branches of %s are:' % root_branch)
   dependents = []
   def traverse_dependents_preorder(branch, padding=''):
     dependents_to_process = tracked_to_dependents.get(branch, [])
     padding += '  '
     for dependent in dependents_to_process:
-      print '%s%s' % (padding, dependent)
+      print('%s%s' % (padding, dependent))
       dependents.append(dependent)
       traverse_dependents_preorder(dependent, padding)
   traverse_dependents_preorder(root_branch)
-  print
+  print()
 
   if not dependents:
-    print 'There are no dependent local branches for %s' % root_branch
+    print('There are no dependent local branches for %s' % root_branch)
     return 0
 
-  print ('This command will checkout all dependent branches and run '
-         '"git cl upload".')
+  print('This command will checkout all dependent branches and run '
+        '"git cl upload".')
   ask_for_data('[Press enter to continue or ctrl-C to quit]')
 
   # Add a default patchset title to all upload calls in Rietveld.
@@ -3129,28 +3128,28 @@ def upload_branch_deps(cl, args):
   # Go through all dependents, checkout the branch and upload.
   try:
     for dependent_branch in dependents:
-      print
-      print '--------------------------------------'
-      print 'Running "git cl upload" from %s:' % dependent_branch
+      print()
+      print('--------------------------------------')
+      print('Running "git cl upload" from %s:' % dependent_branch)
       RunGit(['checkout', '-q', dependent_branch])
-      print
+      print()
       try:
         if CMDupload(OptionParser(), args) != 0:
-          print 'Upload failed for %s!' % dependent_branch
+          print('Upload failed for %s!' % dependent_branch)
           failures[dependent_branch] = 1
       except:  # pylint: disable=W0702
         failures[dependent_branch] = 1
-      print
+      print()
   finally:
     # Swap back to the original root branch.
     RunGit(['checkout', '-q', root_branch])
 
-  print
-  print 'Upload complete for dependent branches!'
+  print()
+  print('Upload complete for dependent branches!')
   for dependent_branch in dependents:
     upload_status = 'failed' if failures.get(dependent_branch) else 'succeeded'
-    print '  %s : %s' % (dependent_branch, upload_status)
-  print
+    print('  %s : %s' % (dependent_branch, upload_status))
+  print()
 
   return 0
 
@@ -3174,7 +3173,7 @@ def CMDarchive(parser, args):
   if not branches:
     return 0
 
-  print 'Finding all branches associated with closed issues...'
+  print('Finding all branches associated with closed issues...')
   changes = [Changelist(branchref=b, auth_config=auth_config)
               for b in branches.splitlines()]
   alignment = max(5, max(len(c.GetBranch()) for c in changes))
@@ -3188,15 +3187,15 @@ def CMDarchive(parser, args):
   proposal.sort()
 
   if not proposal:
-    print 'No branches with closed codereview issues found.'
+    print('No branches with closed codereview issues found.')
     return 0
 
   current_branch = GetCurrentBranch()
 
-  print '\nBranches with closed issues that will be archived:\n'
-  print '%*s | %s' % (alignment, 'Branch name', 'Archival tag name')
+  print('\nBranches with closed issues that will be archived:\n')
+  print('%*s | %s' % (alignment, 'Branch name', 'Archival tag name'))
   for next_item in proposal:
-    print '%*s   %s' % (alignment, next_item[0], next_item[1])
+    print('%*s   %s' % (alignment, next_item[0], next_item[1]))
 
   if any(branch == current_branch for branch, _ in proposal):
     print('You are currently on a branch \'%s\' which is associated with a '
@@ -3207,13 +3206,13 @@ def CMDarchive(parser, args):
 
   if not options.force:
     if ask_for_data('\nProceed with deletion (Y/N)? ').lower() != 'y':
-      print 'Aborted.'
+      print('Aborted.')
       return 1
 
   for branch, tagname in proposal:
     RunGit(['tag', tagname, branch])
     RunGit(['branch', '-D', branch])
-  print '\nJob\'s done!'
+  print('\nJob\'s done!')
 
   return 0
 
@@ -3248,19 +3247,19 @@ def CMDstatus(parser, args):
   if options.field:
     cl = Changelist(auth_config=auth_config)
     if options.field.startswith('desc'):
-      print cl.GetDescription()
+      print(cl.GetDescription())
     elif options.field == 'id':
       issueid = cl.GetIssue()
       if issueid:
-        print issueid
+        print(issueid)
     elif options.field == 'patch':
       patchset = cl.GetPatchset()
       if patchset:
-        print patchset
+        print(patchset)
     elif options.field == 'url':
       url = cl.GetIssueURL()
       if url:
-        print url
+        print(url)
     return 0
 
   branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
@@ -3271,7 +3270,7 @@ def CMDstatus(parser, args):
   changes = [
       Changelist(branchref=b, auth_config=auth_config)
       for b in branches.splitlines()]
-  print 'Branches associated with reviews:'
+  print('Branches associated with reviews:')
   output = get_cl_statuses(changes,
                            fine_grained=not options.fast,
                            max_processes=options.maxjobs)
@@ -3295,21 +3294,21 @@ def CMDstatus(parser, args):
       color = ''
       reset = ''
     status_str = '(%s)' % status if status else ''
-    print '  %*s : %s%s %s%s' % (
+    print('  %*s : %s%s %s%s' % (
           alignment, ShortBranchName(branch), color, url,
-          status_str, reset)
+          status_str, reset))
 
   cl = Changelist(auth_config=auth_config)
-  print
-  print 'Current branch:',
-  print cl.GetBranch()
+  print()
+  print('Current branch:',)
+  print(cl.GetBranch())
   if not cl.GetIssue():
-    print 'No issue assigned.'
+    print('No issue assigned.')
     return 0
-  print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
+  print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
   if not options.fast:
-    print 'Issue description:'
-    print cl.GetDescription(pretty=True)
+    print('Issue description:')
+    print(cl.GetDescription(pretty=True))
   return 0
 
 
@@ -3357,8 +3356,8 @@ def CMDissue(parser, args):
     for issue in args:
       if not issue:
         continue
-      print 'Branch for issue number %s: %s' % (
-          issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',)))
+      print('Branch for issue number %s: %s' % (
+          issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',))))
   else:
     cl = Changelist(codereview=options.forced_codereview)
     if len(args) > 0:
@@ -3368,7 +3367,7 @@ def CMDissue(parser, args):
         DieWithError('Pass a number to set the issue or none to list it.\n'
                      'Maybe you want to run git cl status?')
       cl.SetIssue(issue)
-    print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
+    print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
   return 0
 
 
@@ -3417,11 +3416,11 @@ def CMDcomments(parser, args):
       color = Fore.MAGENTA
     else:
       color = Fore.BLUE
-    print '\n%s%s  %s%s' % (
+    print('\n%s%s  %s%s' % (
         color, message['date'].split('.', 1)[0], message['sender'],
-        Fore.RESET)
+        Fore.RESET))
     if message['text'].strip():
-      print '\n'.join('  ' + l for l in message['text'].splitlines())
+      print('\n'.join('  ' + l for l in message['text'].splitlines()))
   if options.json_file:
     with open(options.json_file, 'wb') as f:
       json.dump(summary, f)
@@ -3460,7 +3459,7 @@ def CMDdescription(parser, args):
   description = ChangeDescription(cl.GetDescription())
 
   if options.display:
-    print description.description
+    print(description.description)
     return 0
 
   if options.new_description:
@@ -3505,7 +3504,7 @@ def CMDlint(parser, args):
     import cpplint
     import cpplint_chromium
   except ImportError:
-    print "Your depot_tools is missing cpplint.py and/or cpplint_chromium.py."
+    print('Your depot_tools is missing cpplint.py and/or cpplint_chromium.py.')
     return 1
 
   # Change the current working directory before calling lint so that it
@@ -3517,7 +3516,7 @@ def CMDlint(parser, args):
     change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not files:
-      print "Cannot lint an empty CL"
+      print('Cannot lint an empty CL')
       return 1
 
     # Process cpplints arguments if any.
@@ -3532,15 +3531,15 @@ def CMDlint(parser, args):
     for filename in filenames:
       if white_regex.match(filename):
         if black_regex.match(filename):
-          print "Ignoring file %s" % filename
+          print('Ignoring file %s' % filename)
         else:
           cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level,
                               extra_check_functions)
       else:
-        print "Skipping file %s" % filename
+        print('Skipping file %s' % filename)
   finally:
     os.chdir(previous_cwd)
-  print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
+  print('Total errors found: %d\n' % cpplint._cpplint_state.error_count)
   if cpplint._cpplint_state.error_count != 0:
     return 1
   return 0
@@ -3557,7 +3556,7 @@ def CMDpresubmit(parser, args):
   auth_config = auth.extract_auth_config_from_options(options)
 
   if not options.force and git_common.is_dirty_git_tree('presubmit'):
-    print 'use --force to check even if tree is dirty.'
+    print('use --force to check even if tree is dirty.')
     return 1
 
   cl = Changelist(auth_config=auth_config)
@@ -3809,16 +3808,16 @@ def SendUpstream(parser, args, cmd):
   current = cl.GetBranch()
   remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
   if not settings.GetIsGitSvn() and remote == '.':
-    print
-    print 'Attempting to push branch %r into another local branch!' % current
-    print
-    print 'Either reparent this branch on top of origin/master:'
-    print '  git reparent-branch --root'
-    print
-    print 'OR run `git rebase-update` if you think the parent branch is already'
-    print 'committed.'
-    print
-    print '  Current parent: %r' % upstream_branch
+    print()
+    print('Attempting to push branch %r into another local branch!' % current)
+    print()
+    print('Either reparent this branch on top of origin/master:')
+    print('  git reparent-branch --root')
+    print()
+    print('OR run `git rebase-update` if you think the parent branch is ')
+    print('already committed.')
+    print()
+    print('  Current parent: %r' % upstream_branch)
     return 1
 
   if not args or cmd == 'land':
@@ -3827,7 +3826,7 @@ def SendUpstream(parser, args, cmd):
 
   if options.contributor:
     if not re.match('^.*\s<\S+@\S+>$', options.contributor):
-      print "Please provide contibutor as 'First Last <email@example.com>'"
+      print("Please provide contibutor as 'First Last <email@example.com>'")
       return 1
 
   base_branch = args[0]
@@ -3841,9 +3840,9 @@ def SendUpstream(parser, args, cmd):
   upstream_commits = RunGit(['rev-list', '^' + cl.GetBranchRef(),
                              base_branch]).splitlines()
   if upstream_commits:
-    print ('Base branch "%s" has %d commits '
-           'not in this branch.' % (base_branch, len(upstream_commits)))
-    print 'Run "git merge %s" before attempting to %s.' % (base_branch, cmd)
+    print('Base branch "%s" has %d commits '
+          'not in this branch.' % (base_branch, len(upstream_commits)))
+    print('Run "git merge %s" before attempting to %s.' % (base_branch, cmd))
     return 1
 
   # This is the revision `svn dcommit` will commit on top of.
@@ -3861,10 +3860,10 @@ def SendUpstream(parser, args, cmd):
 
     extra_commits = RunGit(['rev-list', '^' + svn_head, base_svn_head])
     if extra_commits:
-      print ('This branch has %d additional commits not upstreamed yet.'
-             % len(extra_commits.splitlines()))
-      print ('Upstream "%s" or rebase this branch on top of the upstream trunk '
-             'before attempting to %s.' % (base_branch, cmd))
+      print('This branch has %d additional commits not upstreamed yet.'
+            % len(extra_commits.splitlines()))
+      print('Upstream "%s" or rebase this branch on top of the upstream trunk '
+            'before attempting to %s.' % (base_branch, cmd))
       return 1
 
   merge_base = RunGit(['merge-base', base_branch, 'HEAD']).strip()
@@ -3899,8 +3898,8 @@ def SendUpstream(parser, args, cmd):
     if not cl.GetIssue() and options.bypass_hooks:
       change_desc = ChangeDescription(CreateDescriptionFromLog([merge_base]))
     else:
-      print 'No description set.'
-      print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
+      print('No description set.')
+      print('Visit %s/edit to set it.' % (cl.GetIssueURL()))
       return 1
 
   # Keep a separate copy for the commit message, because the commit message
@@ -4018,7 +4017,7 @@ def SendUpstream(parser, args, cmd):
       RunGit(['branch', '-D', CHERRY_PICK_BRANCH])
 
   if not revision:
-    print 'Failed to push. If this persists, please file a bug.'
+    print('Failed to push. If this persists, please file a bug.')
     return 1
 
   killed = False
@@ -4040,8 +4039,8 @@ def SendUpstream(parser, args, cmd):
             'Committed: %s%s' % (viewvc_url, revision))
       elif revision:
         change_desc.append_footer('Committed: %s' % (revision,))
-    print ('Closing issue '
-           '(you may be prompted for your codereview password)...')
+    print('Closing issue '
+          '(you may be prompted for your codereview password)...')
     cl.UpdateDescription(change_desc.description)
     cl.CloseIssue()
     props = cl.GetIssueProperties()
@@ -4057,10 +4056,9 @@ def SendUpstream(parser, args, cmd):
 
   if pushed_to_pending:
     _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    print 'The commit is in the pending queue (%s).' % pending_ref
-    print (
-        'It will show up on %s in ~1 min, once it gets a Cr-Commit-Position '
-        'footer.' % branch)
+    print('The commit is in the pending queue (%s).' % pending_ref)
+    print('It will show up on %s in ~1 min, once it gets a Cr-Commit-Position '
+          'footer.' % branch)
 
   hook = POSTUPSTREAM_HOOK_PATTERN % cmd
   if os.path.isfile(hook):
@@ -4070,9 +4068,9 @@ def SendUpstream(parser, args, cmd):
 
 
 def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
-  print
-  print 'Waiting for commit to be landed on %s...' % real_ref
-  print '(If you are impatient, you may Ctrl-C once without harm)'
+  print()
+  print('Waiting for commit to be landed on %s...' % real_ref)
+  print('(If you are impatient, you may Ctrl-C once without harm)')
   target_tree = RunGit(['rev-parse', '%s:' % pushed_commit]).strip()
   current_rev = RunGit(['rev-parse', local_base_ref]).strip()
   mirror = settings.GetGitMirror(remote)
@@ -4090,7 +4088,7 @@ def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
     commits = RunGit(['rev-list', '%s..%s' % (current_rev, to_rev)])
     for commit in commits.splitlines():
       if RunGit(['rev-parse', '%s:' % commit]).strip() == target_tree:
-        print 'Found commit on %s' % real_ref
+        print('Found commit on %s' % real_ref)
         return commit
 
     current_rev = to_rev
@@ -4111,51 +4109,49 @@ def PushToGitPending(remote, pending_ref, upstream_ref):
   attempts_left = max_attempts
   while attempts_left:
     if attempts_left != max_attempts:
-      print 'Retrying, %d attempts left...' % (attempts_left - 1,)
+      print('Retrying, %d attempts left...' % (attempts_left - 1,))
     attempts_left -= 1
 
     # Fetch. Retry fetch errors.
-    print 'Fetching pending ref %s...' % pending_ref
+    print('Fetching pending ref %s...' % pending_ref)
     code, out = RunGitWithCode(
         ['retry', 'fetch', remote, '+%s:%s' % (pending_ref, local_pending_ref)])
     if code:
-      print 'Fetch failed with exit code %d.' % code
+      print('Fetch failed with exit code %d.' % code)
       if out.strip():
-        print out.strip()
+        print(out.strip())
       continue
 
     # Try to cherry pick. Abort on merge conflicts.
-    print 'Cherry-picking commit on top of pending ref...'
+    print('Cherry-picking commit on top of pending ref...')
     RunGitWithCode(['checkout', local_pending_ref], suppress_stderr=True)
     code, out = RunGitWithCode(['cherry-pick', cherry])
     if code:
-      print (
-          'Your patch doesn\'t apply cleanly to ref \'%s\', '
-          'the following files have merge conflicts:' % pending_ref)
-      print RunGit(['diff', '--name-status', '--diff-filter=U']).strip()
-      print 'Please rebase your patch and try again.'
+      print('Your patch doesn\'t apply cleanly to ref \'%s\', '
+            'the following files have merge conflicts:' % pending_ref)
+      print(RunGit(['diff', '--name-status', '--diff-filter=U']).strip())
+      print('Please rebase your patch and try again.')
       RunGitWithCode(['cherry-pick', '--abort'])
       return code, out
 
     # Applied cleanly, try to push now. Retry on error (flake or non-ff push).
-    print 'Pushing commit to %s... It can take a while.' % pending_ref
+    print('Pushing commit to %s... It can take a while.' % pending_ref)
     code, out = RunGitWithCode(
         ['retry', 'push', '--porcelain', remote, 'HEAD:%s' % pending_ref])
     if code == 0:
       # Success.
-      print 'Commit pushed to pending ref successfully!'
+      print('Commit pushed to pending ref successfully!')
       return code, out
 
-    print 'Push failed with exit code %d.' % code
+    print('Push failed with exit code %d.' % code)
     if out.strip():
-      print out.strip()
+      print(out.strip())
     if IsFatalPushFailure(out):
-      print (
-          'Fatal push error. Make sure your .netrc credentials and git '
-          'user.email are correct and you have push access to the repo.')
+      print('Fatal push error. Make sure your .netrc credentials and git '
+            'user.email are correct and you have push access to the repo.')
       return code, out
 
-  print 'All attempts to push to pending ref failed.'
+  print('All attempts to push to pending ref failed.')
   return code, out
 
 
@@ -4357,12 +4353,12 @@ def CMDtree(parser, args):
   _, args = parser.parse_args(args)
   status = GetTreeStatus()
   if 'unset' == status:
-    print 'You must configure your tree status URL by running "git cl config".'
+    print('You must configure your tree status URL by running "git cl config".')
     return 2
 
-  print "The tree is %s" % status
-  print
-  print GetTreeStatusReason()
+  print('The tree is %s' % status)
+  print()
+  print(GetTreeStatusReason())
   if status != 'open':
     return 1
   return 0
@@ -4529,11 +4525,10 @@ def CMDtry(parser, args):
 
   for builders in masters.itervalues():
     if any('triggered' in b for b in builders):
-      print >> sys.stderr, (
-          'ERROR You are trying to send a job to a triggered bot. This type of'
-          ' bot requires an\ninitial job from a parent (usually a builder).  '
-          'Instead send your job to the parent.\n'
-          'Bot list: %s' % builders)
+      print('ERROR You are trying to send a job to a triggered bot. This type '
+            'of bot requires an\ninitial job from a parent (usually a builder).'
+            '  Instead send your job to the parent.\n'
+            'Bot list: %s' % builders, file=sys.stderr)
       return 1
 
   patchset = cl.GetMostRecentPatchset()
@@ -4548,12 +4543,12 @@ def CMDtry(parser, args):
     try:
       trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
     except BuildbucketResponseException as ex:
-      print 'ERROR: %s' % ex
+      print('ERROR: %s' % ex)
       return 1
     except Exception as e:
       stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-      print 'ERROR: Exception when trying to trigger tryjobs: %s\n%s' % (
-          e, stacktrace)
+      print('ERROR: Exception when trying to trigger tryjobs: %s\n%s' %
+            (e, stacktrace))
       return 1
   else:
     try:
@@ -4569,10 +4564,10 @@ def CMDtry(parser, args):
 
     for (master, builders) in sorted(masters.iteritems()):
       if master:
-        print 'Master: %s' % master
+        print('Master: %s' % master)
       length = max(len(builder) for builder in builders)
       for builder in sorted(builders):
-        print '  %*s: %s' % (length, builder, ','.join(builders[builder]))
+        print('  %*s: %s' % (length, builder, ','.join(builders[builder])))
   return 0
 
 
@@ -4609,12 +4604,12 @@ def CMDtry_results(parser, args):
   try:
     jobs = fetch_try_jobs(auth_config, cl, options)
   except BuildbucketResponseException as ex:
-    print 'Buildbucket error: %s' % ex
+    print('Buildbucket error: %s' % ex)
     return 1
   except Exception as e:
     stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-    print 'ERROR: Exception when trying to fetch tryjobs: %s\n%s' % (
-        e, stacktrace)
+    print('ERROR: Exception when trying to fetch tryjobs: %s\n%s' %
+          (e, stacktrace))
     return 1
   print_tryjobs(options, jobs)
   return 0
@@ -4633,12 +4628,12 @@ def CMDupstream(parser, args):
     branch = cl.GetBranch()
     RunGit(['branch', '--set-upstream', branch, args[0]])
     cl = Changelist()
-    print "Upstream branch set to " + cl.GetUpstreamBranch()
+    print('Upstream branch set to %s' % (cl.GetUpstreamBranch(),))
 
     # Clear configured merge-base, if there is one.
     git_common.remove_merge_base(branch)
   else:
-    print cl.GetUpstreamBranch()
+    print(cl.GetUpstreamBranch())
   return 0
 
 
@@ -4650,7 +4645,7 @@ def CMDweb(parser, args):
 
   issue_url = Changelist().GetIssueURL()
   if not issue_url:
-    print >> sys.stderr, 'ERROR No issue to open'
+    print('ERROR No issue to open', file=sys.stderr)
     return 1
 
   webbrowser.open(issue_url)
@@ -4916,9 +4911,9 @@ def CMDformat(parser, args):
       if opts.dry_run and stdout:
         return_value = 2
     except dart_format.NotFoundError as e:
-      print ('Warning: Unable to check Dart code formatting. Dart SDK not ' +
-             'found in this checkout. Files in other languages are still ' +
-             'formatted.')
+      print('Warning: Unable to check Dart code formatting. Dart SDK not '
+            'found in this checkout. Files in other languages are still '
+            'formatted.')
 
   # Format GN build files. Always run on full build files for canonical form.
   if gn_diff_files:
@@ -4962,19 +4957,19 @@ def CMDcheckout(parser, args):
   for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
     branches.extend(find_issues(cls.IssueSettingSuffix()))
   if len(branches) == 0:
-    print 'No branch found for issue %s.' % target_issue
+    print('No branch found for issue %s.' % target_issue)
     return 1
   if len(branches) == 1:
     RunGit(['checkout', branches[0]])
   else:
-    print 'Multiple branches match issue %s:' % target_issue
+    print('Multiple branches match issue %s:' % target_issue)
     for i in range(len(branches)):
-      print '%d: %s' % (i, branches[i])
+      print('%d: %s' % (i, branches[i]))
     which = raw_input('Choose by index: ')
     try:
       RunGit(['checkout', branches[int(which)]])
     except (IndexError, ValueError):
-      print 'Invalid selection, not checking out any branch.'
+      print('Invalid selection, not checking out any branch.')
       return 1
 
   return 0
@@ -4982,11 +4977,11 @@ def CMDcheckout(parser, args):
 
 def CMDlol(parser, args):
   # This command is intentionally undocumented.
-  print zlib.decompress(base64.b64decode(
+  print(zlib.decompress(base64.b64decode(
       'eNptkLEOwyAMRHe+wupCIqW57v0Vq84WqWtXyrcXnCBsmgMJ+/SSAxMZgRB6NzE'
       'E2ObgCKJooYdu4uAQVffUEoE1sRQLxAcqzd7uK2gmStrll1ucV3uZyaY5sXyDd9'
       'JAnN+lAXsOMJ90GANAi43mq5/VeeacylKVgi8o6F1SC63FxnagHfJUTfUYdCR/W'
-      'Ofe+0dHL7PicpytKP750Fh1q2qnLVof4w8OZWNY'))
+      'Ofe+0dHL7PicpytKP750Fh1q2qnLVof4w8OZWNY')))
   return 0
 
 
@@ -5008,9 +5003,8 @@ class OptionParser(optparse.OptionParser):
 
 def main(argv):
   if sys.hexversion < 0x02060000:
-    print >> sys.stderr, (
-        '\nYour python version %s is unsupported, please upgrade.\n' %
-        sys.version.split(' ', 1)[0])
+    print('\nYour python version %s is unsupported, please upgrade.\n' %
+          (sys.version.split(' ', 1)[0],), file=sys.stderr)
     return 2
 
   # Reload settings.
