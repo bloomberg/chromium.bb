@@ -971,8 +971,7 @@ class SavePageOriginalVsSavedComparisonTest
       content::SavePageType save_page_type,
       const GURL& url,
       int expected_number_of_frames,
-      const std::vector<std::string>& expected_substrings,
-      bool skip_verification_of_original_page = false) {
+      const std::vector<std::string>& expected_substrings) {
     // Navigate to the test page and verify if test expectations
     // are met (this is mostly a sanity check - a failure to meet
     // expectations would probably mean that there is a test bug
@@ -980,10 +979,8 @@ class SavePageOriginalVsSavedComparisonTest
     ui_test_utils::NavigateToURL(browser(), url);
     DLOG(INFO) << "Verifying test expectations for original page... : "
                << GetCurrentTab(browser())->GetLastCommittedURL();
-    if (!skip_verification_of_original_page) {
-      AssertExpectationsAboutCurrentTab(expected_number_of_frames,
-                                        expected_substrings);
-    }
+    AssertExpectationsAboutCurrentTab(expected_number_of_frames,
+                                      expected_substrings);
 
     // Save the page.
     base::FilePath full_file_name, dir;
@@ -1071,12 +1068,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSite) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
 
-  // TODO(lukasza/paulmeyer): crbug.com/457440: Can enable verification
-  // of the original page once find-in-page works for OOP frames.
-  bool skip_verification_of_original_page = true;
-
-  TestOriginalVsSavedPage(save_page_type, url, 3, expected_substrings,
-                          skip_verification_of_original_page);
+  TestOriginalVsSavedPage(save_page_type, url, 3, expected_substrings);
 }
 
 // Test compares original-vs-saved for a page with <object> elements.
