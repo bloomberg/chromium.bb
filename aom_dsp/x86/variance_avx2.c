@@ -45,7 +45,7 @@ unsigned int aom_variance16x16_avx2(const uint8_t *src, int src_stride,
   int sum;
   variance_avx2(src, src_stride, ref, ref_stride, 16, 16, sse, &sum,
                 aom_get16x16var_avx2, 16);
-  return *sse - (((unsigned int)sum * sum) >> 8);
+  return *sse - (((uint32_t)((int64_t)sum * sum)) >> 8);
 }
 
 unsigned int aom_mse16x16_avx2(const uint8_t *src, int src_stride,
