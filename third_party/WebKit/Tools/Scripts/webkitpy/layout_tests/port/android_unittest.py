@@ -39,7 +39,7 @@ from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
-from webkitpy.tool.mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 
 # Type of tombstone test which the mocked Android Debug Bridge should execute.
 VALID_TOMBSTONE_TEST_TYPE = 0

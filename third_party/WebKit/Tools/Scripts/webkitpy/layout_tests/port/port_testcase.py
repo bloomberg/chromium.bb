@@ -43,7 +43,7 @@ from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.layout_tests.port.base import TestConfiguration
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
-from webkitpy.tool.mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 
 
 # FIXME: get rid of this fixture

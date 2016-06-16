@@ -32,7 +32,7 @@ import os.path
 import BaseHTTPServer
 
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.tool.servers.reflectionhandler import ReflectionHandler
+from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 
 
 STATE_NEEDS_REBASELINE = 'needs_rebaseline'
@@ -160,7 +160,10 @@ def _move_test_baselines(test_file, extensions_to_move, source_platform, destina
 
 
 def get_test_baselines(test_file, test_config):
+
     # FIXME: This seems like a hack. This only seems used to access the Port.expected_baselines logic.
+    # Also, abstract method path_to_apache is not overidden; this will be fixed if this function is changed
+    # to not use a sub-class of Port. pylint: disable=abstract-method
     class AllPlatformsPort(Port):
 
         def __init__(self, host):
@@ -213,7 +216,7 @@ class RebaselineHTTPRequestHandler(ReflectionHandler):
         "util.js",
     ])
 
-    STATIC_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__), "data", "rebaselineserver")
+    STATIC_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__), "data", "rebaseline_server")
 
     def results_json(self):
         self._serve_json(self.server.results_json)
@@ -240,7 +243,7 @@ class RebaselineHTTPRequestHandler(ReflectionHandler):
             baseline_target,
             baseline_move_to,
             self.server.test_config,
-            log=lambda l: log.append(l))
+            log=log.append)
 
         if success:
             test_json['state'] = STATE_REBASELINE_SUCCEEDED

@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import flakytests
-
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.layout_package import bot_test_expectations
-from webkitpy.tool.commands.commandtest import CommandsTest
-from webkitpy.tool.mocktool import MockTool, MockOptions
+from webkitpy.tool.commands import flaky_tests
+from webkitpy.tool.commands.command_test import CommandsTest
+from webkitpy.tool.mock_tool import MockTool, MockOptions
 
 
 class FakeBotTestExpectations(object):
@@ -61,7 +60,7 @@ class FlakyTestsTest(CommandsTest):
         })
 
     def test_merge_lines(self):
-        command = flakytests.FlakyTests()
+        command = flaky_tests.FlakyTests()
         factory = FakeBotTestExpectationsFactory(self.fake_builders_list())
 
         lines = command._collect_expectation_lines(['foo-builder', 'bar-builder'], factory)
@@ -70,14 +69,14 @@ class FlakyTestsTest(CommandsTest):
         self.assertEqual(lines[0].specifiers, ['Mac', 'Linux'])
 
     def test_integration(self):
-        command = flakytests.FlakyTests()
+        command = flaky_tests.FlakyTests()
         tool = MockTool()
         tool.builders = self.fake_builders_list()
         command.expectations_factory = FakeBotTestExpectationsFactory
         options = MockOptions(upload=True)
-        expected_stdout = flakytests.FlakyTests.OUTPUT % (
-            flakytests.FlakyTests.HEADER,
+        expected_stdout = flaky_tests.FlakyTests.OUTPUT % (
+            flaky_tests.FlakyTests.HEADER,
             '',
-            flakytests.FlakyTests.FLAKINESS_DASHBOARD_URL % '') + '\n'
+            flaky_tests.FlakyTests.FLAKINESS_DASHBOARD_URL % '') + '\n'
 
         self.assert_execute_outputs(command, options=options, tool=tool, expected_stdout=expected_stdout)

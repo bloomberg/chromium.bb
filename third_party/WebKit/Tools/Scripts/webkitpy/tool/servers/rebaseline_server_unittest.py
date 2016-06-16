@@ -33,8 +33,8 @@ from webkitpy.common.net import layouttestresults_unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.layout_package.json_results_generator import strip_json_wrapper
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.tool.commands.rebaselineserver import TestConfig, RebaselineServer
-from webkitpy.tool.servers import rebaselineserver
+from webkitpy.tool.commands.rebaseline_server import TestConfig, RebaselineServer
+from webkitpy.tool.servers import rebaseline_server
 
 
 class RebaselineTestTest(unittest.TestCase):
@@ -211,20 +211,21 @@ class RebaselineTestTest(unittest.TestCase):
         server = RebaselineServer()
         server._test_config = get_test_config()
         server._gather_baselines(results_json)
-        self.assertEqual(results_json['tests'][
-                         'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html']['state'], 'needs_rebaseline')
+        self.assertEqual(
+            results_json['tests']['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html']['state'],
+            'needs_rebaseline')
         self.assertNotIn('prototype-chocolate.html', results_json['tests'])
 
     def _assertRebaseline(self, test_files, results_files, test_name, baseline_target,
                           baseline_move_to, expected_success, expected_log):
         log = []
         test_config = get_test_config(test_files, results_files)
-        success = rebaselineserver._rebaseline_test(
+        success = rebaseline_server._rebaseline_test(
             test_name,
             baseline_target,
             baseline_move_to,
             test_config,
-            log=lambda l: log.append(l))
+            log=log.append)
         self.assertEqual(expected_log, log)
         self.assertEqual(expected_success, success)
 
@@ -240,7 +241,7 @@ class GetActualResultFilesTest(unittest.TestCase):
         ))
         self.assertItemsEqual(
             ('text-actual.txt',),
-            rebaselineserver._get_actual_result_files(
+            rebaseline_server._get_actual_result_files(
                 'fast/text.html', test_config))
 
 
@@ -290,22 +291,25 @@ class GetBaselinesTest(unittest.TestCase):
             expected_baselines={'base': {'.txt': True}})
 
     def _assertBaselines(self, test_files, test_name, expected_baselines):
-        actual_baselines = rebaselineserver.get_test_baselines(test_name, get_test_config(test_files))
+        actual_baselines = rebaseline_server.get_test_baselines(test_name, get_test_config(test_files))
         self.assertEqual(expected_baselines, actual_baselines)
 
 
-def get_test_config(test_files=[], result_files=[]):
+def get_test_config(test_files=None, result_files=None):
+    test_files = test_files or []
+    result_files = result_files or []
     host = MockHost()
     port = host.port_factory.get()
     layout_tests_directory = port.layout_tests_dir()
     results_directory = port.results_directory()
 
-    for file in test_files:
-        host.filesystem.write_binary_file(host.filesystem.join(layout_tests_directory, file), '')
-    for file in result_files:
-        host.filesystem.write_binary_file(host.filesystem.join(results_directory, file), '')
+    for filename in test_files:
+        host.filesystem.write_binary_file(host.filesystem.join(layout_tests_directory, filename), '')
+    for filename in result_files:
+        host.filesystem.write_binary_file(host.filesystem.join(results_directory, filename), '')
 
     class TestMacPort(Port):
+        # Abstract method path_to_apache not implemented - pylint: disable=abstract-method
         port_name = "mac"
         FALLBACK_PATHS = {'': ['mac']}
 

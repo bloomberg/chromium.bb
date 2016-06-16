@@ -39,8 +39,6 @@ from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 
 from webkitpy.layout_tests.port.port_testcase import TestWebKitPort
 
-from webkitpy.tool.mocktool import MockOptions
-
 
 class BrowserTestDriverTest(unittest.TestCase):
 

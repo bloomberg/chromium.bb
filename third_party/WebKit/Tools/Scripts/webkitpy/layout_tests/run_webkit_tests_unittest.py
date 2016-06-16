@@ -50,7 +50,6 @@ from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.tool import grammar
-from webkitpy.tool.mocktool import MockOptions
 
 
 def parse_args(extra_args=None, tests_included=False, new_results=False, print_nothing=True):

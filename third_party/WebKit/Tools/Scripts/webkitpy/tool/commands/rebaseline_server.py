@@ -33,8 +33,8 @@ images and text) and allows one-click rebaselining of tests."""
 from webkitpy.common.host import Host
 from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.layout_tests.layout_package import json_results_generator
-from webkitpy.tool.commands.abstractlocalservercommand import AbstractLocalServerCommand
-from webkitpy.tool.servers.rebaselineserver import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
+from webkitpy.tool.commands.abstract_local_server_command import AbstractLocalServerCommand
+from webkitpy.tool.servers.rebaseline_server import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
 
 
 class TestConfig(object):
@@ -56,6 +56,10 @@ class RebaselineServer(AbstractLocalServerCommand):
     argument_names = "/path/to/results/directory"
 
     server = RebaselineHTTPServer
+
+    def __init__(self):
+        super(RebaselineServer, self).__init__()
+        self._test_config = None
 
     def _gather_baselines(self, results_json):
         # Rebaseline server and it's associated JavaScript expected the tests subtree to

@@ -6,7 +6,7 @@ from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
-from webkitpy.tool.mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 
 
 class _FakeOptimizer(BaselineOptimizer):

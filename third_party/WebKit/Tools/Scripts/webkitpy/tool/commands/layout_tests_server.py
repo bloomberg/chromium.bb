@@ -29,8 +29,8 @@
 
 """Starts a local HTTP server which can run layout tests (given a list of layout tests to be run)"""
 
-from webkitpy.tool.commands.abstractlocalservercommand import AbstractLocalServerCommand
-from webkitpy.tool.servers.layouttestsserver import LayoutTestsHTTPServer
+from webkitpy.tool.commands.abstract_local_server_command import AbstractLocalServerCommand
+from webkitpy.tool.servers.layout_tests_server import LayoutTestsHTTPServer
 
 
 class LayoutTestsServer(AbstractLocalServerCommand):

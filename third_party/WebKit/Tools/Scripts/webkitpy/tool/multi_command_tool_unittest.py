@@ -31,7 +31,7 @@ import unittest
 from optparse import make_option
 
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.tool.multicommandtool import MultiCommandTool, TryAgain
+from webkitpy.tool.multi_command_tool import MultiCommandTool, TryAgain
 from webkitpy.tool.commands import Command
 
 

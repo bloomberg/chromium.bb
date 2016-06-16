@@ -1433,7 +1433,8 @@ class Port(object):
     def path_to_apache(self):
         """Returns the full path to the apache binary.
 
-        This is needed only by ports that use the apache_http_server module."""
+        This is needed only by ports that use the apache_http_server module.
+        """
         raise NotImplementedError('Port.path_to_apache')
 
     def path_to_apache_config_file(self):

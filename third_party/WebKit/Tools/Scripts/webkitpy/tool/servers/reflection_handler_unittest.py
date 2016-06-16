@@ -28,21 +28,22 @@
 
 import unittest
 
-from webkitpy.tool.servers.reflectionhandler import ReflectionHandler
+from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 
 
 class TestReflectionHandler(ReflectionHandler):
     STATIC_FILE_DIRECTORY = "/"
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=super-init-not-called
         self.static_files_served = set()
         self.errors_sent = set()
         self.functions_run = set()
+        self.path = None
 
     def _serve_static_file(self, name):
         self.static_files_served.add(name)
 
-    def send_error(self, code, description):
+    def send_error(self, code, message=None):
         self.errors_sent.add(code)
 
     def function_one(self):
@@ -64,7 +65,7 @@ class WriteConvertingLogger(object):
 
 class TestReflectionHandlerServeXML(ReflectionHandler):
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=super-init-not-called
         self.requestline = False
         self.client_address = '127.0.0.1'
         self.request_version = '1'

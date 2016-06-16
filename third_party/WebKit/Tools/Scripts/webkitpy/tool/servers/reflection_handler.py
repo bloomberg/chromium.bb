@@ -68,6 +68,11 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return json.loads(self.read_entity_body())
 
     def _handle_request(self):
+        # The query attribute is used in subclasses. If we want to set it in the constructor,
+        # we have to override the superclass constructor, although the docs
+        # (https://docs.python.org/2/library/basehttpserver.html) say "Subclasses should
+        # not need to override or extend the __init__() method."
+        # pylint: disable=attribute-defined-outside-init
         if "?" in self.path:
             path, query_string = self.path.split("?", 1)
             self.query = cgi.parse_qs(query_string)
@@ -97,8 +102,8 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def quitquitquit(self):
         self._serve_text("Server quit.\n")
         # Shutdown has to happen on another thread from the server's thread,
-        # otherwise there's a deadlock
-        threading.Thread(target=lambda: self.server.shutdown()).start()
+        # otherwise there's a deadlock.
+        threading.Thread(target=self.server.shutdown).start()
 
     def _send_access_control_header(self):
         if self.allow_cross_origin_requests:

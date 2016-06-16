@@ -110,7 +110,7 @@ Flakiness dashboard: %s
         port = tool.port_factory.get()
         # Skip any tests which are mentioned in the dashboard but not in our checkout:
         fs = tool.filesystem
-        lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
+        lines = [line for line in lines if fs.exists(fs.join(port.layout_tests_dir(), line.path))]
 
         test_names = [line.name for line in lines]
         flakiness_dashboard_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)

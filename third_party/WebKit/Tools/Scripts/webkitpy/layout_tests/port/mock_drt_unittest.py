@@ -36,10 +36,10 @@ from webkitpy.layout_tests.port import mock_drt
 from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.port.factory import PortFactory
-from webkitpy.tool import mocktool
+from webkitpy.tool.mock_tool import MockOptions
 
 
-mock_options = mocktool.MockOptions(configuration='Release')
+mock_options = MockOptions(configuration='Release')
 
 
 class MockDRTPortTest(port_testcase.PortTestCase):

@@ -35,13 +35,12 @@ from subprocess import STDOUT
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.tool.servers.reflectionhandler import ReflectionHandler
+from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 
 
 class LayoutTestsHTTPServer(BaseHTTPServer.HTTPServer):
 
-    def __init__(self, httpd_port, config):
-        server_name = ""
+    def __init__(self, httpd_port, _):
         server_address = ("", httpd_port)
         BaseHTTPServer.HTTPServer.__init__(self, server_address, LayoutTestsServerHTTPRequestHandler)
 

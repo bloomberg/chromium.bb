@@ -49,6 +49,7 @@ class CommitAnnouncer(SingleServerIRCBot):
             'ping': self.ping,
             'quit': self.stop,
         }
+        self.last_commit = None
 
     def start(self):
         if not self._update():

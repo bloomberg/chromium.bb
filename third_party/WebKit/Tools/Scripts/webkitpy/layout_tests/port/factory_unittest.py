@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.tool.mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
 

@@ -25,8 +25,8 @@
 
 import unittest
 
-from webkitpy.tool.bot.commitannouncer import CommitAnnouncer
-from webkitpy.tool.mocktool import MockTool
+from webkitpy.tool.bot.commit_announcer import CommitAnnouncer
+from webkitpy.tool.mock_tool import MockTool
 
 
 class CommitAnnouncerTest(unittest.TestCase):

@@ -29,7 +29,7 @@
 
 from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import port_testcase
-from webkitpy.tool.mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 
 
 class MacPortTest(port_testcase.PortTestCase):

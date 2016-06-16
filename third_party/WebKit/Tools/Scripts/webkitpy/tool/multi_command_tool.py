@@ -37,7 +37,7 @@ import sys
 
 from webkitpy.tool.commands.command import Command
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
-from webkitpy.tool.commands.helpcommand import HelpCommand
+from webkitpy.tool.commands.help_command import HelpCommand
 
 _log = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class MultiCommandTool(object):
         return command.show_in_main_help
 
     def should_execute_command(self, command):  # Argument may be used in subclasses - pylint: disable=unused-argument
-        return True
+        return (True, None)
 
     def _add_global_options(self, option_parser):
         global_options = self.global_options or []
@@ -125,7 +125,8 @@ class MultiCommandTool(object):
     def handle_global_options(self, options):
         pass
 
-    def main(self, argv=sys.argv):
+    def main(self, argv=None):
+        argv = argv or sys.argv
         (command_name, args) = self._split_command_name_from_args(argv[1:])
 
         option_parser = self._create_option_parser()
@@ -148,7 +149,7 @@ class MultiCommandTool(object):
             try:
                 result = command.check_arguments_and_execute(options, args, self)
                 break
-            except TryAgain as e:
+            except TryAgain:
                 pass
 
         self.command_completed()

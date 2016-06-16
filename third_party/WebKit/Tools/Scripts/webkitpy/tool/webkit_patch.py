@@ -32,7 +32,7 @@
 from optparse import make_option
 
 from webkitpy.common.host import Host
-from webkitpy.tool.multicommandtool import MultiCommandTool
+from webkitpy.tool.multi_command_tool import MultiCommandTool
 from webkitpy.tool import commands
 
 

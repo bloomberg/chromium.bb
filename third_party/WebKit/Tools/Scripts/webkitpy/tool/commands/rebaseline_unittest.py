@@ -11,7 +11,7 @@ from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline import *
-from webkitpy.tool.mocktool import MockTool, MockOptions
+from webkitpy.tool.mock_tool import MockTool, MockOptions
 
 
 class BaseTestCase(unittest.TestCase):

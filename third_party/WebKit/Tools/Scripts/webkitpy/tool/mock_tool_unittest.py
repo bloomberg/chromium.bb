@@ -28,7 +28,7 @@
 
 import unittest
 
-from mocktool import MockOptions
+from webkitpy.tool.mock_tool import MockOptions
 
 
 class MockOptionsTest(unittest.TestCase):
