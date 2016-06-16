@@ -53,13 +53,6 @@ namespace {
 const char kLoadSchemasBackgroundTaskTokenName[] =
     "load_managed_storage_schemas_token";
 
-// The Legacy Browser Support was the first user of the policy-for-extensions
-// API, and relied on behavior that will be phased out. If this extension is
-// present then its policies will be loaded in a special way.
-// TODO(joaodasilva): remove this for M35. http://crbug.com/325349
-const char kLegacyBrowserSupportExtensionId[] =
-    "heildphpnddilhkemkielfhnkaagiabh";
-
 // Only extension settings are stored in the managed namespace - not apps.
 const ValueStoreFactory::ModelType kManagedModelType =
     ValueStoreFactory::ModelType::EXTENSION;
@@ -182,11 +175,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
 
 bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
     const Extension* extension) const {
-  if (extension->manifest()->HasPath(manifest_keys::kStorageManagedSchema))
-    return true;
-
-  // TODO(joaodasilva): remove this by M35.
-  return extension->id() == kLegacyBrowserSupportExtensionId;
+  return extension->manifest()->HasPath(manifest_keys::kStorageManagedSchema);
 }
 
 // static

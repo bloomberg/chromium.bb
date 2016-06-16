@@ -52,15 +52,7 @@ namespace {
 
 const char kKeyMandatory[] = "policy";
 const char kKeyRecommended[] = "recommended";
-const char kKeySchema[] = "schema";
 const char kKeyThirdParty[] = "3rdparty";
-
-// The Legacy Browser Support was the first user of the policy-for-extensions
-// API, and relied on behavior that will be phased out. If this extension is
-// present then its policies will be loaded in a special way.
-// TODO(joaodasilva): remove this for M35. http://crbug.com/325349
-const char kLegacyBrowserSupportExtensionId[] =
-    "heildphpnddilhkemkielfhnkaagiabh";
 
 // The web store url that is the only trusted source for extensions.
 const char kExpectedWebStoreUrl[] =
@@ -99,39 +91,6 @@ enum DomainCheckErrors {
   DOMAIN_CHECK_ERROR_DS_BIND = 1,
   DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
-
-// If the LBS extension is found and contains a schema in the registry then this
-// function is used to patch it, and make it compliant. The fix is to
-// add an "items" attribute to lists that don't declare it.
-std::string PatchSchema(const std::string& schema) {
-  base::JSONParserOptions options = base::JSON_PARSE_RFC;
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(schema, options);
-  base::DictionaryValue* dict = NULL;
-  base::DictionaryValue* properties = NULL;
-  if (!json ||
-      !json->GetAsDictionary(&dict) ||
-      !dict->GetDictionary(schema::kProperties, &properties)) {
-    return schema;
-  }
-
-  for (base::DictionaryValue::Iterator it(*properties);
-       !it.IsAtEnd(); it.Advance()) {
-    base::DictionaryValue* policy_schema = NULL;
-    std::string type;
-    if (properties->GetDictionary(it.key(), &policy_schema) &&
-        policy_schema->GetString(schema::kType, &type) &&
-        type == schema::kArray &&
-        !policy_schema->HasKey(schema::kItems)) {
-      std::unique_ptr<base::DictionaryValue> items(new base::DictionaryValue());
-      items->SetString(schema::kType, schema::kString);
-      policy_schema->Set(schema::kItems, items.release());
-    }
-  }
-
-  std::string serialized;
-  base::JSONWriter::Write(*json, &serialized);
-  return serialized;
-}
 
 // Verifies that untrusted policies contain only safe values. Modifies the
 // |policy| in place.
@@ -624,20 +583,6 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
         continue;
       }
       Schema schema = *schema_from_map;
-
-      if (!schema.valid() &&
-          policy_namespace.domain == POLICY_DOMAIN_EXTENSIONS &&
-          policy_namespace.component_id == kLegacyBrowserSupportExtensionId) {
-        // TODO(joaodasilva): remove this special treatment for LBS by M35.
-        std::string schema_json;
-        const base::Value* value = component->second->GetValue(kKeySchema);
-        if (value && value->GetAsString(&schema_json)) {
-          std::string error;
-          schema = Schema::Parse(PatchSchema(schema_json), &error);
-          if (!schema.valid())
-            LOG(WARNING) << "Invalid schema in the registry for LBS: " << error;
-        }
-      }
 
       // Parse policy.
       for (size_t j = 0; j < arraysize(kLevels); j++) {

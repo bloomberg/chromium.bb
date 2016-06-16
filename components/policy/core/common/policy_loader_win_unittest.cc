@@ -57,7 +57,6 @@ const wchar_t kPathSep[] = L"\\";
 const wchar_t kThirdParty[] = L"3rdparty";
 const wchar_t kMandatory[] = L"policy";
 const wchar_t kRecommended[] = L"recommended";
-const char kSchema[] = "schema";
 const wchar_t kTestPolicyKey[] = L"chrome.policy.key";
 
 // Installs |value| in the given registry |path| and |hive|, under the key
@@ -1188,46 +1187,6 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
   expected_b.SetInteger("policy 1", 2);
   expected.Get(ns_b).LoadFrom(&expected_b, POLICY_LEVEL_MANDATORY,
                               POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
-  EXPECT_TRUE(Matches(expected));
-}
-
-TEST_F(PolicyLoaderWinTest, LBSSupport) {
-  const PolicyNamespace ns(
-      POLICY_DOMAIN_EXTENSIONS, "heildphpnddilhkemkielfhnkaagiabh");
-  schema_registry_.RegisterComponent(ns, Schema());
-
-  const char kIncompleteSchema[] =
-      "{"
-       "  \"type\": \"object\","
-       "  \"properties\": {"
-       "    \"url_list\": { \"type\": \"array\" },"
-       "    \"url_greylist\": { \"type\": \"array\" }"
-       "  }"
-      "}";
-
-  const base::string16 kPathSuffix =
-      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions");
-
-  base::ListValue list;
-  list.AppendString("youtube.com");
-  base::DictionaryValue policy;
-  policy.Set("url_list", list.DeepCopy());
-  policy.SetString("alternative_browser_path", "c:\\legacy\\browser.exe");
-  base::DictionaryValue root;
-  root.Set(base::UTF16ToUTF8(kMandatory), policy.DeepCopy());
-  root.SetString(kSchema, kIncompleteSchema);
-  EXPECT_TRUE(InstallValue(root, HKEY_LOCAL_MACHINE,
-                           kPathSuffix, base::ASCIIToUTF16(ns.component_id)));
-
-  PolicyBundle expected;
-  PolicyMap& expected_policy = expected.Get(ns);
-  expected_policy.Set(
-      "alternative_browser_path", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_PLATFORM,
-      base::WrapUnique(new base::StringValue("c:\\legacy\\browser.exe")),
-      nullptr);
-  expected_policy.Set("url_list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_PLATFORM, list.CreateDeepCopy(), nullptr);
   EXPECT_TRUE(Matches(expected));
 }
 
