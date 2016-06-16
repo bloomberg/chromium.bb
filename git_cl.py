@@ -1323,7 +1323,7 @@ class Changelist(object):
           default_presubmit=None, may_prompt=may_prompt,
           rietveld_obj=self._codereview_impl.GetRieveldObjForPresubmit(),
           gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit())
-    except presubmit_support.PresubmitFailure, e:
+    except presubmit_support.PresubmitFailure as e:
       DieWithError(
           ('%s\nMaybe your depot_tools is out of date?\n'
            'If all fails, contact maruel@') % e)
@@ -1713,7 +1713,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     try:
       return self.RpcServer().set_flag(
           self.GetIssue(), self.GetPatchset(), flag, value)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       if e.code == 404:
         DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
       if e.code == 403:
@@ -4851,7 +4851,7 @@ def CMDformat(parser, args):
     # Locate the clang-format binary in the checkout
     try:
       clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
-    except clang_format.NotFoundError, e:
+    except clang_format.NotFoundError as e:
       DieWithError(e)
 
     if opts.full:
@@ -4867,7 +4867,7 @@ def CMDformat(parser, args):
       try:
         script = clang_format.FindClangFormatScriptInChromiumTree(
             'clang-format-diff.py')
-      except clang_format.NotFoundError, e:
+      except clang_format.NotFoundError as e:
         DieWithError(e)
 
       cmd = [sys.executable, script, '-p0']
@@ -5023,7 +5023,7 @@ def main(argv):
     return dispatcher.execute(OptionParser(), argv)
   except auth.AuthenticationError as e:
     DieWithError(str(e))
-  except urllib2.HTTPError, e:
+  except urllib2.HTTPError as e:
     if e.code != 500:
       raise
     DieWithError(
