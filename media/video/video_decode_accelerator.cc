@@ -9,8 +9,13 @@
 
 namespace media {
 
+VideoDecodeAccelerator::Config::Config() = default;
+VideoDecodeAccelerator::Config::Config(const Config& config) = default;
+
 VideoDecodeAccelerator::Config::Config(VideoCodecProfile video_codec_profile)
     : profile(video_codec_profile) {}
+
+VideoDecodeAccelerator::Config::~Config() = default;
 
 std::string VideoDecodeAccelerator::Config::AsHumanReadableString() const {
   std::ostringstream s;

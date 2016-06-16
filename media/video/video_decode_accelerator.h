@@ -115,11 +115,14 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
       IMPORT,
     };
 
-    Config() = default;
+    Config();
+    Config(const Config& config);
 
     // Intentional converting constructor.
     // TODO(watk): Make this explicit.
     Config(VideoCodecProfile profile);
+
+    ~Config();
 
     std::string AsHumanReadableString() const;
 
@@ -145,6 +148,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     gfx::Size initial_expected_coded_size = gfx::Size(320, 240);
 
     OutputMode output_mode = OutputMode::ALLOCATE;
+
+    // The list of picture buffer formats that the client knows how to use. An
+    // empty list means any format is supported.
+    std::vector<VideoPixelFormat> supported_output_formats;
   };
 
   // Interface for collaborating with picture interface to provide memory for

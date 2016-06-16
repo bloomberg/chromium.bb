@@ -32,6 +32,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
@@ -622,6 +623,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   client_ = client;
 
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+
+  if (!config.supported_output_formats.empty() &&
+      !ContainsValue(config.supported_output_formats, PIXEL_FORMAT_NV12))
+    share_nv12_textures_ = false;
 
   bool profile_supported = false;
   for (const auto& supported_profile : kSupportedProfiles) {
