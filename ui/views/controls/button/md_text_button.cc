@@ -18,6 +18,13 @@ namespace views {
 
 namespace {
 
+// Inset between clickable region border and button contents (text).
+const int kHorizontalPadding = 12;
+const int kVerticalPadding = 6;
+
+// Minimum size to reserve for the button contents.
+const int kMinWidth = 48;
+
 // The amount to enlarge the focus border in all directions relative to the
 // button.
 const int kFocusBorderOutset = -2;
@@ -43,13 +50,6 @@ class MdFocusRing : public views::View {
   DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
 };
 
-// Inset between clickable region border and button contents (text).
-const int kHorizontalPadding = 12;
-const int kVerticalPadding = 6;
-
-// Minimum size to reserve for the button contents.
-const int kMinWidth = 48;
-
 LabelButton* CreateButton(ButtonListener* listener,
                           const base::string16& text,
                           bool md) {
@@ -59,6 +59,15 @@ LabelButton* CreateButton(ButtonListener* listener,
   LabelButton* button = new LabelButton(listener, text);
   button->SetStyle(CustomButton::STYLE_BUTTON);
   return button;
+}
+
+const gfx::FontList& GetMdFontList() {
+  static base::LazyInstance<gfx::FontList>::Leaky font_list =
+      LAZY_INSTANCE_INITIALIZER;
+  const gfx::Font::Weight min_weight = gfx::Font::Weight::MEDIUM;
+  if (font_list.Get().GetFontWeight() < min_weight)
+    font_list.Get() = font_list.Get().DeriveWithWeight(min_weight);
+  return font_list.Get();
 }
 
 }  // namespace
@@ -180,6 +189,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   SetMinSize(gfx::Size(kMinWidth, 0));
   SetFocusPainter(nullptr);
   label()->SetAutoColorReadabilityEnabled(false);
+  SetFontList(GetMdFontList());
 
   AddChildView(focus_ring_);
   focus_ring_->SetVisible(false);
