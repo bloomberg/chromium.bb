@@ -74,6 +74,7 @@
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
@@ -323,17 +324,18 @@ bool ShouldServiceRequest(int process_type,
 
   // Check if the renderer is permitted to upload the requested files.
   if (request_data.request_body.get()) {
-    const std::vector<ResourceRequestBody::Element>* uploads =
+    const std::vector<ResourceRequestBodyImpl::Element>* uploads =
         request_data.request_body->elements();
-    std::vector<ResourceRequestBody::Element>::const_iterator iter;
+    std::vector<ResourceRequestBodyImpl::Element>::const_iterator iter;
     for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == ResourceRequestBody::Element::TYPE_FILE &&
+      if (iter->type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
           !policy->CanReadFile(child_id, iter->path())) {
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->path().value();
         return false;
       }
-      if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
+      if (iter->type() ==
+          ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
         storage::FileSystemURL url =
             filter->file_system_context()->CrackURL(iter->filesystem_url());
         if (!policy->CanReadFileSystemFile(child_id, url)) {
@@ -397,12 +399,12 @@ storage::BlobStorageContext* GetBlobStorageContext(
 }
 
 void AttachRequestBodyBlobDataHandles(
-    ResourceRequestBody* body,
+    ResourceRequestBodyImpl* body,
     storage::BlobStorageContext* blob_context) {
   DCHECK(blob_context);
   for (size_t i = 0; i < body->elements()->size(); ++i) {
-    const ResourceRequestBody::Element& element = (*body->elements())[i];
-    if (element.type() != ResourceRequestBody::Element::TYPE_BLOB)
+    const ResourceRequestBodyImpl::Element& element = (*body->elements())[i];
+    if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB)
       continue;
     std::unique_ptr<storage::BlobDataHandle> handle =
         blob_context->GetBlobDataFromUUID(element.blob_uuid());
@@ -1820,8 +1822,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       0,
       request_id_,
       render_frame_route_id,
-      false,  // is_main_frame
-      false,  // parent_is_main_frame
+      false,             // is_main_frame
+      false,             // parent_is_main_frame
       RESOURCE_TYPE_SUB_RESOURCE,
       ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
@@ -2200,7 +2202,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
   // Resolve elements from request_body and prepare upload data.
-  ResourceRequestBody* body = info.common_params.post_data.get();
+  ResourceRequestBodyImpl* body = info.common_params.post_data.get();
   if (body) {
     AttachRequestBodyBlobDataHandles(body, blob_context);
     // TODO(davidben): The FileSystemContext is null here. In the case where

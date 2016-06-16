@@ -46,7 +46,8 @@ void CheckWillStartRequestOnUIThread(
     int render_process_id,
     int render_frame_host_id,
     const std::string& method,
-    const scoped_refptr<content::ResourceRequestBody>& resource_request_body,
+    const scoped_refptr<content::ResourceRequestBodyImpl>&
+        resource_request_body,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
     ui::PageTransition transition,

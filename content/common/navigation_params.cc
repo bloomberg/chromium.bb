@@ -51,7 +51,7 @@ CommonNavigationParams::CommonNavigationParams(
     LoFiState lofi_state,
     const base::TimeTicks& navigation_start,
     std::string method,
-    const scoped_refptr<ResourceRequestBody>& post_data)
+    const scoped_refptr<ResourceRequestBodyImpl>& post_data)
     : url(url),
       referrer(referrer),
       transition(transition),

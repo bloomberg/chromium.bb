@@ -25,7 +25,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class NavigatorDelegate;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 struct NavigationRequestInfo;
@@ -161,7 +161,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Returns the POST body associated with this navigation.  This will be
   // null for GET and/or other non-POST requests (or if a response to a POST
   // request was a redirect that changed the method to GET - for example 302).
-  const scoped_refptr<ResourceRequestBody>& resource_request_body() const {
+  const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body() const {
     return resource_request_body_;
   }
 
@@ -180,7 +180,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // the caller to cancel the navigation or let it proceed.
   void WillStartRequest(
       const std::string& method,
-      scoped_refptr<content::ResourceRequestBody> resource_request_body,
+      scoped_refptr<content::ResourceRequestBodyImpl> resource_request_body,
       const Referrer& sanitized_referrer,
       bool has_user_gesture,
       ui::PageTransition transition,
@@ -291,7 +291,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The POST body associated with this navigation.  This will be null for GET
   // and/or other non-POST requests (or if a response to a POST request was a
   // redirect that changed the method to GET - for example 302).
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<ResourceRequestBodyImpl> resource_request_body_;
 
   // The state the navigation is in.
   State state_;

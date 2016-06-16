@@ -611,7 +611,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   // Set up post data.
   const char raw_data[] = "post \0\ndata";
   const size_t length = arraysize(raw_data);
-  scoped_refptr<ResourceRequestBody> post_data(new ResourceRequestBody);
+  scoped_refptr<ResourceRequestBodyImpl> post_data(new ResourceRequestBodyImpl);
   post_data->AppendBytes(raw_data, length);
   common_params.post_data = post_data;
 

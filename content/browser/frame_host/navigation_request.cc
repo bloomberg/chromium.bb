@@ -18,7 +18,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_data.h"
@@ -82,7 +82,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                              GetContentClient()->GetUserAgent());
 
   // Fill POST data in the request body.
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<ResourceRequestBodyImpl> request_body;
   if (frame_entry.method() == "POST")
     request_body = frame_entry.GetPostData();
 

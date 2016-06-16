@@ -13,7 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/frame_messages.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
@@ -255,13 +255,13 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
     bool is_external_protocol) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
 
-  scoped_refptr<ResourceRequestBody> resource_request_body;
+  scoped_refptr<ResourceRequestBodyImpl> resource_request_body;
   std::string method = "GET";
   if (is_post) {
     method = "POST";
 
     std::string body = "test=body";
-    resource_request_body = new ResourceRequestBody();
+    resource_request_body = new ResourceRequestBodyImpl();
     resource_request_body->AppendBytes(body.data(), body.size());
   }
 
@@ -304,7 +304,7 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
 
 void NavigationHandleImpl::WillStartRequest(
     const std::string& method,
-    scoped_refptr<content::ResourceRequestBody> resource_request_body,
+    scoped_refptr<content::ResourceRequestBodyImpl> resource_request_body,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
     ui::PageTransition transition,

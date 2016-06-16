@@ -28,7 +28,7 @@ class URLRequest;
 
 namespace content {
 
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBodyImpl> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
   // Called via custom URLRequestJobFactory.
@@ -107,7 +107,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   FetchRedirectMode redirect_mode_;
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
-  scoped_refptr<ResourceRequestBody> body_;
+  scoped_refptr<ResourceRequestBodyImpl> body_;
   ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;

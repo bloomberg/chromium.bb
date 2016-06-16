@@ -31,7 +31,6 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
-#include "content/common/resource_request_body.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"

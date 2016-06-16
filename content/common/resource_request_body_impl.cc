@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
@@ -12,18 +12,16 @@ using blink::WebString;
 
 namespace content {
 
-ResourceRequestBody::ResourceRequestBody()
-    : identifier_(0) {
-}
+ResourceRequestBodyImpl::ResourceRequestBodyImpl() : identifier_(0) {}
 
-void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
+void ResourceRequestBodyImpl::AppendBytes(const char* bytes, int bytes_len) {
   if (bytes_len > 0) {
     elements_.push_back(Element());
     elements_.back().SetToBytes(bytes, bytes_len);
   }
 }
 
-void ResourceRequestBody::AppendFileRange(
+void ResourceRequestBodyImpl::AppendFileRange(
     const base::FilePath& file_path,
     uint64_t offset,
     uint64_t length,
@@ -33,12 +31,12 @@ void ResourceRequestBody::AppendFileRange(
                                       expected_modification_time);
 }
 
-void ResourceRequestBody::AppendBlob(const std::string& uuid) {
+void ResourceRequestBodyImpl::AppendBlob(const std::string& uuid) {
   elements_.push_back(Element());
   elements_.back().SetToBlob(uuid);
 }
 
-void ResourceRequestBody::AppendFileSystemFileRange(
+void ResourceRequestBodyImpl::AppendFileSystemFileRange(
     const GURL& url,
     uint64_t offset,
     uint64_t length,
@@ -48,7 +46,6 @@ void ResourceRequestBody::AppendFileSystemFileRange(
                                            expected_modification_time);
 }
 
-ResourceRequestBody::~ResourceRequestBody() {
-}
+ResourceRequestBodyImpl::~ResourceRequestBodyImpl() {}
 
 }  // namespace content

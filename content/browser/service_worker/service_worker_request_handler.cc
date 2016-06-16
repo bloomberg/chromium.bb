@@ -14,7 +14,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
@@ -66,7 +66,7 @@ void FinalizeHandlerInitialization(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body) {
   if (skip_service_worker) {
     // TODO(horo): Does this work properly for PlzNavigate?
     if (ServiceWorkerUtils::IsMainResourceType(resource_type)) {
@@ -101,7 +101,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body) {
   CHECK(IsBrowserSideNavigationEnabled());
 
   // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
@@ -153,7 +153,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   if (!request->url().SchemeIsHTTPOrHTTPS() &&

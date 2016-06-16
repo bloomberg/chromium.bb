@@ -317,7 +317,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   ResourceDispatcher* dispatcher() { return dispatcher_.get(); }
 
   int StartAsync(const RequestInfo& request_info,
-                 ResourceRequestBody* request_body,
+                 ResourceRequestBodyImpl* request_body,
                  TestRequestPeer::Context* peer_context) {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));

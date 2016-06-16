@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
@@ -50,20 +50,21 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url);
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
   CommonNavigationParams();
-  CommonNavigationParams(const GURL& url,
-                         const Referrer& referrer,
-                         ui::PageTransition transition,
-                         FrameMsg_Navigate_Type::Value navigation_type,
-                         bool allow_download,
-                         bool should_replace_current_entry,
-                         base::TimeTicks ui_timestamp,
-                         FrameMsg_UILoadMetricsReportType::Value report_type,
-                         const GURL& base_url_for_data_url,
-                         const GURL& history_url_for_data_url,
-                         LoFiState lofi_state,
-                         const base::TimeTicks& navigation_start,
-                         std::string method,
-                         const scoped_refptr<ResourceRequestBody>& post_data);
+  CommonNavigationParams(
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition,
+      FrameMsg_Navigate_Type::Value navigation_type,
+      bool allow_download,
+      bool should_replace_current_entry,
+      base::TimeTicks ui_timestamp,
+      FrameMsg_UILoadMetricsReportType::Value report_type,
+      const GURL& base_url_for_data_url,
+      const GURL& history_url_for_data_url,
+      LoFiState lofi_state,
+      const base::TimeTicks& navigation_start,
+      std::string method,
+      const scoped_refptr<ResourceRequestBodyImpl>& post_data);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -123,7 +124,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   std::string method;
 
   // Body of HTTP POST request.
-  scoped_refptr<ResourceRequestBody> post_data;
+  scoped_refptr<ResourceRequestBodyImpl> post_data;
 };
 
 // Provided by the renderer ----------------------------------------------------

@@ -35,7 +35,7 @@ struct RedirectInfo;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ResourceSchedulingFilter;
 struct ResourceResponseInfo;
 struct RequestInfo;
@@ -67,14 +67,14 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // interrupt this method. Errors are reported via the status field of the
   // response parameter.
   void StartSync(const RequestInfo& request_info,
-                 ResourceRequestBody* request_body,
+                 ResourceRequestBodyImpl* request_body,
                  SyncLoadResponse* response);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.
   // Returns the request id.
   virtual int StartAsync(const RequestInfo& request_info,
-                         ResourceRequestBody* request_body,
+                         ResourceRequestBodyImpl* request_body,
                          std::unique_ptr<RequestPeer> peer);
 
   // Removes a request from the |pending_requests_| list, returning true if the
@@ -224,7 +224,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   std::unique_ptr<ResourceRequest> CreateRequest(
       const RequestInfo& request_info,
-      ResourceRequestBody* request_body,
+      ResourceRequestBodyImpl* request_body,
       GURL* frame_origin);
 
   IPC::Sender* message_sender_;

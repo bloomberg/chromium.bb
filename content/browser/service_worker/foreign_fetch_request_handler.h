@@ -31,7 +31,7 @@ class BlobStorageContext;
 namespace content {
 
 class ResourceContext;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body,
+      scoped_refptr<ResourceRequestBodyImpl> body,
       bool initiated_in_secure_context);
 
   // Returns the handler attached to |request|. This may return null
@@ -89,7 +89,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBodyImpl> body);
 
   // Called when a ServiceWorkerRegistration has (or hasn't) been found for the
   // request being handled.
@@ -115,7 +115,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   FetchRedirectMode redirect_mode_;
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
-  scoped_refptr<ResourceRequestBody> body_;
+  scoped_refptr<ResourceRequestBodyImpl> body_;
 
   base::WeakPtr<ServiceWorkerURLRequestJob> job_;
   scoped_refptr<ServiceWorkerVersion> target_worker_;

@@ -29,7 +29,7 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
@@ -131,9 +131,9 @@ class ServiceWorkerURLRequestJob::BlobConstructionWaiter {
     num_pending_request_body_blobs_ = 0;
     callback_ = callback;
 
-    for (const ResourceRequestBody::Element& element :
+    for (const ResourceRequestBodyImpl::Element& element :
          *(owner_->body_->elements())) {
-      if (element.type() != ResourceRequestBody::Element::TYPE_BLOB)
+      if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB)
         continue;
 
       std::unique_ptr<storage::BlobDataHandle> handle =
@@ -182,7 +182,7 @@ class ServiceWorkerURLRequestJob::BlobConstructionWaiter {
   // Owns and must outlive |this|.
   ServiceWorkerURLRequestJob* owner_;
 
-  scoped_refptr<ResourceRequestBody> body_;
+  scoped_refptr<ResourceRequestBodyImpl> body_;
   base::Callback<void(bool)> callback_;
   size_t num_pending_request_body_blobs_ = 0;
   Phase phase_ = Phase::INITIAL;
@@ -208,7 +208,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body,
+    scoped_refptr<ResourceRequestBodyImpl> body,
     ServiceWorkerFetchType fetch_type,
     Delegate* delegate)
     : net::URLRequestJob(request, network_delegate),
@@ -572,9 +572,9 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   std::vector<std::unique_ptr<storage::BlobDataSnapshot>> snapshots;
   // TODO(dmurph): Allow blobs to be added below, so that the context can
   // efficiently re-use blob items for the new blob.
-  std::vector<const ResourceRequestBody::Element*> resolved_elements;
-  for (const ResourceRequestBody::Element& element : (*body_->elements())) {
-    if (element.type() != ResourceRequestBody::Element::TYPE_BLOB) {
+  std::vector<const ResourceRequestBodyImpl::Element*> resolved_elements;
+  for (const ResourceRequestBodyImpl::Element& element : (*body_->elements())) {
+    if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB) {
       resolved_elements.push_back(&element);
       continue;
     }
@@ -598,26 +598,26 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 
   storage::BlobDataBuilder blob_builder(uuid);
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
-    const ResourceRequestBody::Element& element = *resolved_elements[i];
+    const ResourceRequestBodyImpl::Element& element = *resolved_elements[i];
     if (total_size != std::numeric_limits<uint64_t>::max() &&
         element.length() != std::numeric_limits<uint64_t>::max())
       total_size += element.length();
     else
       total_size = std::numeric_limits<uint64_t>::max();
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
         blob_builder.AppendData(element.bytes(), element.length());
         break;
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE:
         blob_builder.AppendFile(element.path(), element.offset(),
                                 element.length(),
                                 element.expected_modification_time());
         break;
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case ResourceRequestBodyImpl::Element::TYPE_BLOB:
         // Blob elements should be resolved beforehand.
         NOTREACHED();
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
         blob_builder.AppendFileSystemFile(element.filesystem_url(),
                                           element.offset(), element.length(),
                                           element.expected_modification_time());

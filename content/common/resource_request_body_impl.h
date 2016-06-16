@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
-#define CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
+#ifndef CONTENT_COMMON_RESOURCE_REQUEST_BODY_IMPL_H_
+#define CONTENT_COMMON_RESOURCE_REQUEST_BODY_IMPL_H_
 
 #include <stdint.h>
 
@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_request_body.h"
 #include "storage/common/data_element.h"
 #include "url/gurl.h"
 
@@ -24,13 +25,12 @@ namespace content {
 
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
-class CONTENT_EXPORT ResourceRequestBody
-    : public base::RefCountedThreadSafe<ResourceRequestBody>,
-      public base::SupportsUserData {
+class CONTENT_EXPORT ResourceRequestBodyImpl : public ResourceRequestBody,
+                                               public base::SupportsUserData {
  public:
   typedef storage::DataElement Element;
 
-  ResourceRequestBody();
+  ResourceRequestBodyImpl();
 
   void AppendBytes(const char* bytes, int bytes_len);
   void AppendFileRange(const base::FilePath& file_path,
@@ -56,15 +56,14 @@ class CONTENT_EXPORT ResourceRequestBody
   int64_t identifier() const { return identifier_; }
 
  private:
-  friend class base::RefCountedThreadSafe<ResourceRequestBody>;
-  ~ResourceRequestBody() override;
+  ~ResourceRequestBodyImpl() override;
 
   std::vector<Element> elements_;
   int64_t identifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceRequestBody);
+  DISALLOW_COPY_AND_ASSIGN(ResourceRequestBodyImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
+#endif  // CONTENT_COMMON_RESOURCE_REQUEST_BODY_IMPL_H_

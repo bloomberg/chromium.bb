@@ -33,7 +33,7 @@ namespace content {
 
 class ResourceContext;
 class ResourceMessageFilter;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
@@ -55,7 +55,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBodyImpl> body);
 
   // Attaches a newly created handler if the given |request| needs to
   // be handled by ServiceWorker.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBodyImpl> body);
 
   // Returns the handler attached to |request|. This may return NULL
   // if no handler is attached.

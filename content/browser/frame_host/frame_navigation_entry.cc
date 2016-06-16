@@ -83,7 +83,8 @@ void FrameNavigationEntry::set_document_sequence_number(
   document_sequence_number_ = document_sequence_number;
 }
 
-scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData() const {
+scoped_refptr<ResourceRequestBodyImpl> FrameNavigationEntry::GetPostData()
+    const {
   DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
   if (method_ != "POST")
     return nullptr;

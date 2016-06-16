@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -63,10 +63,10 @@ void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
 //----------------------------------------------------------------------------
 
 void AppendReferencedFilesFromHttpBody(
-    const std::vector<ResourceRequestBody::Element>& elements,
+    const std::vector<ResourceRequestBodyImpl::Element>& elements,
     std::vector<base::NullableString16>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type() == ResourceRequestBody::Element::TYPE_FILE)
+    if (elements[i].type() == ResourceRequestBodyImpl::Element::TYPE_FILE)
       referenced_files->push_back(
           base::NullableString16(elements[i].path().AsUTF16Unsafe(), false));
   }
@@ -397,11 +397,11 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
   WriteAndValidateVectorSize(*http_body.request_body->elements(), obj);
   for (const auto& element : *http_body.request_body->elements()) {
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
         WriteInteger(blink::WebHTTPBody::Element::TypeData, obj);
         WriteData(element.bytes(), static_cast<int>(element.length()), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE:
         WriteInteger(blink::WebHTTPBody::Element::TypeFile, obj);
         WriteString(
             base::NullableString16(element.path().AsUTF16Unsafe(), false), obj);
@@ -409,19 +409,19 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
         WriteInteger(blink::WebHTTPBody::Element::TypeFileSystemURL, obj);
         WriteGURL(element.filesystem_url(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case ResourceRequestBodyImpl::Element::TYPE_BLOB:
         WriteInteger(blink::WebHTTPBody::Element::TypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
       default:
         NOTREACHED();
         continue;
@@ -436,7 +436,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
   if (!ReadBoolean(obj))
     return;
 
-  http_body->request_body = new ResourceRequestBody();
+  http_body->request_body = new ResourceRequestBodyImpl();
   int num_elements = ReadInteger(obj);
   for (int i = 0; i < num_elements; ++i) {
     int type = ReadInteger(obj);

@@ -32,7 +32,7 @@
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/child/fixed_received_data.h"
@@ -522,7 +522,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.report_raw_headers = request.reportRawHeaders();
   request_info.loading_web_task_runner.reset(web_task_runner_->clone());
 
-  scoped_refptr<ResourceRequestBody> request_body =
+  scoped_refptr<ResourceRequestBodyImpl> request_body =
       GetRequestBodyForWebURLRequest(request).get();
 
   // PlzNavigate: during navigation, the renderer should request a stream which

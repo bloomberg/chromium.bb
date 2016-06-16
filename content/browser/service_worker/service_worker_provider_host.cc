@@ -18,7 +18,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -349,7 +349,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body) {
   if (IsHostToRunningServiceWorker()) {
     return std::unique_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerContextRequestHandler(

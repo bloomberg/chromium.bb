@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -114,7 +114,7 @@ struct CONTENT_EXPORT ResourceRequest {
       REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY;
 
   // Optional resource request body (may be null).
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<ResourceRequestBodyImpl> request_body;
 
   bool download_to_file = false;
 

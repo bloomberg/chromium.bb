@@ -15,7 +15,7 @@
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/common_param_traits.h"
@@ -86,8 +86,8 @@ struct ParamTraits<net::LoadTimingInfo> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<content::ResourceRequestBody> > {
-  typedef scoped_refptr<content::ResourceRequestBody> param_type;
+struct ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>> {
+  typedef scoped_refptr<content::ResourceRequestBodyImpl> param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

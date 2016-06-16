@@ -12,7 +12,7 @@
 #include "base/strings/nullable_string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -24,7 +24,7 @@ namespace content {
 
 struct CONTENT_EXPORT ExplodedHttpBody {
   base::NullableString16 http_content_type;
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<ResourceRequestBodyImpl> request_body;
   bool contains_passwords;
 
   ExplodedHttpBody();

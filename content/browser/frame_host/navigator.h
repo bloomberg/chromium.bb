@@ -29,7 +29,7 @@ class NavigationControllerImpl;
 class NavigationEntryImpl;
 class NavigationRequest;
 class RenderFrameHostImpl;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class StreamHandle;
 struct BeginNavigationParams;
 struct CommonNavigationParams;
@@ -132,7 +132,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       const std::string& method,
-      scoped_refptr<ResourceRequestBody> post_body) {}
+      scoped_refptr<ResourceRequestBodyImpl> post_body) {}
 
   // PlzNavigate
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If

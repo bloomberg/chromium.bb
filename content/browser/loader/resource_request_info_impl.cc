@@ -157,7 +157,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_async,
     bool is_using_lofi,
     const std::string& original_headers,
-    const scoped_refptr<ResourceRequestBody> body)
+    const scoped_refptr<ResourceRequestBodyImpl> body)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
       process_type_(process_type),

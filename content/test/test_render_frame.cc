@@ -5,7 +5,7 @@
 #include "content/test/test_render_frame.h"
 
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 

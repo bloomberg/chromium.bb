@@ -23,7 +23,6 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body.h"
 #include "content/common/savable_subframe.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"

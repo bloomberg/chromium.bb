@@ -389,8 +389,9 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
+void ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::GetSize(
+    base::PickleSizer* s,
+    const param_type& p) {
   GetParamSize(s, p.get() != NULL);
   if (p.get()) {
     GetParamSize(s, *p->elements());
@@ -398,7 +399,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::GetSize(
   }
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
+void ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::Write(
     base::Pickle* m,
     const param_type& p) {
   WriteParam(m, p.get() != NULL);
@@ -408,7 +409,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
+bool ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
@@ -423,15 +424,16 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
   int64_t identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;
-  *r = new content::ResourceRequestBody;
+  *r = new content::ResourceRequestBodyImpl;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
   return true;
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Log(
-    const param_type& p, std::string* l) {
-  l->append("<ResourceRequestBody>");
+void ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<ResourceRequestBodyImpl>");
 }
 
 void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::GetSize(

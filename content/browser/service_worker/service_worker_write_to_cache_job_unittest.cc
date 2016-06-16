@@ -21,7 +21,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -312,7 +312,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         provider_id, false, FETCH_REQUEST_MODE_NO_CORS,
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_FRAME_TYPE_NONE, scoped_refptr<ResourceRequestBody>());
+        REQUEST_CONTEXT_FRAME_TYPE_NONE,
+        scoped_refptr<ResourceRequestBodyImpl>());
   }
 
   int NextProviderId() { return next_provider_id_++; }

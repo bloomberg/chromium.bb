@@ -272,7 +272,7 @@ bool NavigatorImpl::NavigateToEntry(
     NavigationController::ReloadType reload_type,
     bool is_same_document_history_load,
     bool is_pending_entry,
-    const scoped_refptr<ResourceRequestBody>& post_body) {
+    const scoped_refptr<ResourceRequestBodyImpl>& post_body) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   GURL dest_url = frame_entry.url();
@@ -731,7 +731,7 @@ void NavigatorImpl::RequestTransferURL(
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
     const std::string& method,
-    scoped_refptr<ResourceRequestBody> post_body) {
+    scoped_refptr<ResourceRequestBodyImpl> post_body) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();

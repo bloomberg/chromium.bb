@@ -30,7 +30,7 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -96,7 +96,7 @@ class MockHttpProtocolHandler
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         RESOURCE_TYPE_MAIN_FRAME, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        scoped_refptr<ResourceRequestBody>(), ServiceWorkerFetchType::FETCH,
+        scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
         delegate_);
     job_->ForwardToServiceWorker();
     return job_;

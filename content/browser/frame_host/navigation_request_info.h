@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
 #include "url/origin.h"

@@ -18,7 +18,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
@@ -570,12 +570,12 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   return copy;
 }
 
-scoped_refptr<ResourceRequestBody>
+scoped_refptr<ResourceRequestBodyImpl>
 NavigationEntryImpl::ConstructBodyFromBrowserInitiatedPostData() const {
-  scoped_refptr<ResourceRequestBody> browser_initiated_post_body;
+  scoped_refptr<ResourceRequestBodyImpl> browser_initiated_post_body;
   if (GetHasPostData()) {
     if (const base::RefCountedMemory* memory = GetBrowserInitiatedPostData()) {
-      browser_initiated_post_body = new ResourceRequestBody();
+      browser_initiated_post_body = new ResourceRequestBodyImpl();
       browser_initiated_post_body->AppendBytes(memory->front_as<char>(),
                                                memory->size());
     }
@@ -585,7 +585,7 @@ NavigationEntryImpl::ConstructBodyFromBrowserInitiatedPostData() const {
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const FrameNavigationEntry& frame_entry,
-    const scoped_refptr<ResourceRequestBody>& post_body,
+    const scoped_refptr<ResourceRequestBodyImpl>& post_body,
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,

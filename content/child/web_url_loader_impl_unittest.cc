@@ -68,7 +68,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   // TestDispatcher implementation:
 
   int StartAsync(const RequestInfo& request_info,
-                 ResourceRequestBody* request_body,
+                 ResourceRequestBodyImpl* request_body,
                  std::unique_ptr<RequestPeer> peer) override {
     EXPECT_FALSE(peer_);
     peer_ = std::move(peer);

@@ -41,11 +41,11 @@ void ExpectEquality(const std::vector<T>& a, const std::vector<T>& b) {
 }
 
 template <>
-void ExpectEquality(const ResourceRequestBody::Element& a,
-                    const ResourceRequestBody::Element& b) {
+void ExpectEquality(const ResourceRequestBodyImpl::Element& a,
+                    const ResourceRequestBodyImpl::Element& b) {
   EXPECT_EQ(a.type(), b.type());
-  if (a.type() == ResourceRequestBody::Element::TYPE_BYTES &&
-      b.type() == ResourceRequestBody::Element::TYPE_BYTES) {
+  if (a.type() == ResourceRequestBodyImpl::Element::TYPE_BYTES &&
+      b.type() == ResourceRequestBodyImpl::Element::TYPE_BYTES) {
     EXPECT_EQ(std::string(a.bytes(), a.length()),
               std::string(b.bytes(), b.length()));
   }
@@ -119,7 +119,7 @@ class PageStateSerializationTest : public testing::Test {
 
   void PopulateHttpBody(ExplodedHttpBody* http_body,
                         std::vector<base::NullableString16>* referenced_files) {
-    http_body->request_body = new ResourceRequestBody();
+    http_body->request_body = new ResourceRequestBodyImpl();
     http_body->request_body->set_identifier(12345);
     http_body->contains_passwords = false;
     http_body->http_content_type = NS16("text/foo");
@@ -163,7 +163,7 @@ class PageStateSerializationTest : public testing::Test {
 
     if (!is_child) {
       frame_state->http_body.http_content_type = NS16("foo/bar");
-      frame_state->http_body.request_body = new ResourceRequestBody();
+      frame_state->http_body.request_body = new ResourceRequestBodyImpl();
       frame_state->http_body.request_body->set_identifier(789);
 
       std::string test_body("first data block");

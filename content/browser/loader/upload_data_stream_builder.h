@@ -27,7 +27,7 @@ class BlobStorageContext;
 
 namespace content {
 
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 
 class CONTENT_EXPORT UploadDataStreamBuilder {
  public:
@@ -35,14 +35,14 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   //
   // If |body| contains any blob references, the caller is responsible for
   // making sure them outlive the returned value of UploadDataStream. We do this
-  // by binding the BlobDataHandles of them to ResourceRequestBody in
+  // by binding the BlobDataHandles of them to ResourceRequestBodyImpl in
   // ResourceDispatcherHostImpl::BeginRequest().
   //
   // |file_system_context| is used to create a FileStreamReader for files with
   // filesystem URLs.  |file_task_runner| is used to perform file operations
   // when the data gets uploaded.
   static std::unique_ptr<net::UploadDataStream> Build(
-      ResourceRequestBody* body,
+      ResourceRequestBodyImpl* body,
       storage::BlobStorageContext* blob_context,
       storage::FileSystemContext* file_system_context,
       base::SingleThreadTaskRunner* file_task_runner);

@@ -220,16 +220,16 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
 }
 
 WebHTTPBody GetWebHTTPBodyForRequestBody(
-    const scoped_refptr<ResourceRequestBody>& input) {
+    const scoped_refptr<ResourceRequestBodyImpl>& input) {
   WebHTTPBody http_body;
   http_body.initialize();
   http_body.setIdentifier(input->identifier());
   for (const auto& element : *input->elements()) {
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
         http_body.appendData(WebData(element.bytes(), element.length()));
         break;
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE:
         http_body.appendFileRange(
             element.path().AsUTF16Unsafe(), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
@@ -237,7 +237,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
                 : -1,
             element.expected_modification_time().ToDoubleT());
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
         http_body.appendFileSystemURLRange(
             element.filesystem_url(), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
@@ -245,11 +245,11 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
                 : -1,
             element.expected_modification_time().ToDoubleT());
         break;
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case ResourceRequestBodyImpl::Element::TYPE_BLOB:
         http_body.appendBlob(WebString::fromUTF8(element.blob_uuid()));
         break;
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
       default:
         NOTREACHED();
         break;
@@ -258,9 +258,9 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
   return http_body;
 }
 
-scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
+scoped_refptr<ResourceRequestBodyImpl> GetRequestBodyForWebURLRequest(
     const blink::WebURLRequest& request) {
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<ResourceRequestBodyImpl> request_body;
 
   if (request.httpBody().isNull()) {
     return request_body;
@@ -273,9 +273,10 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
   return GetRequestBodyForWebHTTPBody(request.httpBody());
 }
 
-scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
+scoped_refptr<ResourceRequestBodyImpl> GetRequestBodyForWebHTTPBody(
     const blink::WebHTTPBody& httpBody) {
-  scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody();
+  scoped_refptr<ResourceRequestBodyImpl> request_body =
+      new ResourceRequestBodyImpl();
   size_t i = 0;
   WebHTTPBody::Element element;
   while (httpBody.elementAt(i++, element)) {

@@ -10,7 +10,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/common/resource_request_body.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -58,7 +58,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body,
+    scoped_refptr<ResourceRequestBodyImpl> body,
     bool initiated_in_secure_context) {
   if (!context_wrapper) {
     return;
@@ -157,7 +157,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body)
+    scoped_refptr<ResourceRequestBodyImpl> body)
     : context_(context),
       blob_storage_context_(blob_storage_context),
       resource_type_(resource_type),

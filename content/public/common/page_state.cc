@@ -87,12 +87,12 @@ PageState PageState::CreateForTesting(
   if (optional_body_data || optional_body_file_path) {
     if (optional_body_data) {
       std::string body_data(optional_body_data);
-      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body = new ResourceRequestBodyImpl();
       state.top.http_body.request_body->AppendBytes(body_data.data(),
                                                     body_data.size());
     }
     if (optional_body_file_path) {
-      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body = new ResourceRequestBodyImpl();
       state.top.http_body.request_body->AppendFileRange(
           *optional_body_file_path,
           0, std::numeric_limits<uint64_t>::max(),

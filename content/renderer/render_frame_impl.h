@@ -146,7 +146,7 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class ResourceRequestBody;
+class ResourceRequestBodyImpl;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
 class WakeLockDispatcher;
