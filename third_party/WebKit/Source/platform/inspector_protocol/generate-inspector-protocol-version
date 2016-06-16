@@ -229,7 +229,7 @@ def load_schema(file, domains):
         return
     input_file = open(file, "r")
     json_string = input_file.read()
-    parsed_json = json.loads(json_string, object_pairs_hook=collections.OrderedDict)
+    parsed_json = json.loads(json_string)
     domains += parsed_json["domains"]
     return parsed_json["version"]
 
