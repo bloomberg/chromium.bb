@@ -765,7 +765,6 @@ class TestGitCl(TestCase):
 
     calls = [
         ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
-        ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
     ]
     # If issue is given, then description is fetched from Gerrit instead.
     if issue is None:
