@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.os.Bundle;
 
+import org.chromium.chrome.browser.ChromeBackgroundService;
+
 /**
  * Class to put our custom task information into the task bundle.
  */
@@ -16,6 +18,7 @@ public class TaskExtrasPacker {
     /** Puts current time into the input bundle. */
     public static void packTimeInBundle(Bundle bundle) {
         bundle.putLong(SCHEDULED_TIME_TAG, System.currentTimeMillis());
+        bundle.putBoolean(ChromeBackgroundService.HOLD_WAKELOCK, true);
     }
 
     /** Extracts the time we put into the bundle. */

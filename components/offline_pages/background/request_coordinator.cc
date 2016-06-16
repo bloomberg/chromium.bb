@@ -74,11 +74,6 @@ void RequestCoordinator::UpdateRequestCallback(
 
 // Called by the request picker when a request has been picked.
 void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
-  Scheduler::TriggerCondition conditions;
-
-  // Ensure that the scheduler has actively scheduled a task.
-  scheduler_->Schedule(conditions);
-
   // Send the request on to the offliner.
   SendRequestToOffliner(request);
 }
@@ -153,7 +148,6 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 
   // Start a request if we have time.
   TryNextRequest();
-
 }
 
 }  // namespace offline_pages

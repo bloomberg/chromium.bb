@@ -30,14 +30,28 @@ import org.chromium.chrome.browser.precache.PrecacheController;
  * {@link ChromeBackgroundService} is scheduled through the {@link GcmNetworkManager} when the
  * browser needs to be launched for scheduled tasks, or in response to changing network or power
  * conditions.
+ *
+ * If HOLD_WAKELOCK is set to true in a bundle in the task params, then the ChromeBackgroundService
+ * will wait until the task reports done before returning control to the {@link GcmNetworkManager}.
+ * This both guarantees that the wakelock keeps chrome awake and that the GcmNetworkManager does not
+ * start another task in place of the one just started.  The GcmNetworkManager can start more than
+ * one task concurrently, thought, so it does not guarantee that a different task won't start.
  */
 public class ChromeBackgroundService extends GcmTaskService {
     private static final String TAG = "BackgroundService";
+    /** Bundle key to use to specify we should block the GcmNetworkManager thread until the task on
+     * the UI thread is done before returning to the GcmNetworkManager.
+     */
+    public static final String HOLD_WAKELOCK = "HoldWakelock";
+    private static final int WAKELOCK_TIMEOUT_SECONDS = 4 * 60;
+
+    private BackgroundOfflinerTask mBackgroundOfflinerTask;
 
     @Override
     @VisibleForTesting
     public int onRunTask(final TaskParams params) {
         Log.i(TAG, "[" + params.getTag() + "] Woken up at " + new java.util.Date().toString());
+        final ChromeBackgroundServiceWaiter waiter = getWaiterIfNeeded(params.getExtras());
         final Context context = this;
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -48,7 +62,7 @@ public class ChromeBackgroundService extends GcmTaskService {
                         break;
 
                     case OfflinePageUtils.TASK_TAG:
-                        handleOfflinePageBackgroundLoad(context, params.getExtras());
+                        handleOfflinePageBackgroundLoad(context, params.getExtras(), waiter);
                         break;
 
                     case SnippetsLauncher.TASK_TAG_WIFI_CHARGING:
@@ -77,6 +91,9 @@ public class ChromeBackgroundService extends GcmTaskService {
                 }
             }
         });
+        // If needed, block the GcmNetworkManager thread until the UI thread has finished its work.
+        waitForTaskIfNeeded(waiter);
+
         return GcmNetworkManager.RESULT_SUCCESS;
     }
 
@@ -133,18 +150,45 @@ public class ChromeBackgroundService extends GcmTaskService {
         PrecacheController.get(context).precache(tag);
     }
 
-    @VisibleForTesting
-    protected void handleOfflinePageBackgroundLoad(Context context, Bundle bundle) {
+    private void handleOfflinePageBackgroundLoad(
+            Context context, Bundle bundle, ChromeBackgroundServiceWaiter waiter) {
         if (!LibraryLoader.isInitialized()) {
             launchBrowser(context);
         }
 
         // Call BackgroundTask, provide context.
-        BackgroundOfflinerTask task =
-                new BackgroundOfflinerTask(new BackgroundSchedulerProcessorImpl());
-        task.startBackgroundRequests(context, bundle);
+        if (mBackgroundOfflinerTask == null) {
+            mBackgroundOfflinerTask =
+                    new BackgroundOfflinerTask(new BackgroundSchedulerProcessorImpl());
+        }
+        mBackgroundOfflinerTask.startBackgroundRequests(context, bundle, waiter);
         // TODO(petewil) if processBackgroundRequest returns false, return RESTART_RESCHEDULE
         // to the GcmNetworkManager
+    }
+
+    /**
+     * If the bundle contains the special HOLD_WAKELOCK key set to true, then we create a
+     * CountDownLatch for use later in the wait step, and set its initial count to one.
+     */
+    @VisibleForTesting
+    public ChromeBackgroundServiceWaiter getWaiterIfNeeded(Bundle bundle) {
+        // If wait_needed is set to true, wait.
+        if (bundle != null && bundle.getBoolean(HOLD_WAKELOCK, false)) {
+            return new ChromeBackgroundServiceWaiter(WAKELOCK_TIMEOUT_SECONDS);
+        }
+        return null;
+    }
+
+    /**
+     * Some tasks need to block the GcmNetworkManager thread (and thus hold the wake lock) until the
+     * task is done.  If we have a waiter, then start waiting.
+     */
+    @VisibleForTesting
+    public void waitForTaskIfNeeded(ChromeBackgroundServiceWaiter waiter) {
+        if (waiter != null) {
+            // Block current thread until the onWaitDone method is called, or a timeout occurs.
+            waiter.startWaiting();
+        }
     }
 
     @VisibleForTesting

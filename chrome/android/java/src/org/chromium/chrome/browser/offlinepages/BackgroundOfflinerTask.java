@@ -8,13 +8,19 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerProcessor;
 
 /**
  * Handles servicing of background offlining requests coming via the GcmNetworkManager.
  */
 public class BackgroundOfflinerTask {
+    private static final String TAG = "BGOfflinerTask";
+
+    /** Interface to use to report task completion.  */
+    private ChromeBackgroundServiceWaiter mWaiter;
 
     public BackgroundOfflinerTask(BackgroundSchedulerProcessor bridge) {
         mBridge = bridge;
@@ -31,7 +37,9 @@ public class BackgroundOfflinerTask {
      *
      * @returns true for success
      */
-    public boolean startBackgroundRequests(Context context, Bundle bundle) {
+    public boolean startBackgroundRequests(Context context, Bundle bundle,
+                                           ChromeBackgroundServiceWaiter waiter) {
+        mWaiter = waiter;
         processBackgroundRequests(bundle);
 
         // Gather UMA data to measure how often the user's machine is amenable to background
@@ -64,7 +72,9 @@ public class BackgroundOfflinerTask {
              */
             @Override
             public void onResult(Boolean result) {
-                // TODO(petewil): Release the wake lock.
+                // Release the wake lock.
+                Log.d(TAG, "onProcessingDone");
+                mWaiter.onWaitDone();
             }
         };
 
