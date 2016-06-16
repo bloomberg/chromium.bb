@@ -74,6 +74,17 @@ cr.define('cr_toolbar_search_field', function() {
         assertEquals(['query1', '', 'query2'].join(), searches.join());
       });
 
+      test('notifies on setValue', function() {
+        MockInteractions.tap(field);
+        field.setValue('foo');
+        field.setValue('');
+        field.setValue('bar');
+        // Expecting identical query to be ignored.
+        field.setValue('bar');
+        field.setValue('baz');
+        assertEquals(['foo', '', 'bar', 'baz'].join(), searches.join());
+      });
+
       test('blur does not close field when a search is active', function() {
         MockInteractions.tap(field);
         simulateSearch('test');

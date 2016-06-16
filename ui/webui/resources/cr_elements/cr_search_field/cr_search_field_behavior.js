@@ -44,14 +44,14 @@ var CrSearchFieldBehavior = {
   },
 
   /**
-   * Sets the value of the search field, if it exists.
+   * Sets the value of the search field.
    * @param {string} value
    */
   setValue: function(value) {
     // Use bindValue when setting the input value so that changes propagate
     // correctly.
     this.$.searchInput.bindValue = value;
-    this.hasSearchText = value != '';
+    this.onValueChanged_(value);
   },
 
   showAndFocus: function() {
@@ -65,7 +65,16 @@ var CrSearchFieldBehavior = {
   },
 
   onSearchTermSearch: function() {
-    var newValue = this.getValue();
+    this.onValueChanged_(this.getValue());
+  },
+
+  /**
+   * Updates the internal state of the search field based on a change that has
+   * already happened.
+   * @param {string} newValue
+   * @private
+   */
+  onValueChanged_: function(newValue) {
     if (newValue == this.lastValue_)
       return;
 
@@ -88,7 +97,6 @@ var CrSearchFieldBehavior = {
 
     this.setValue('');
     this.$.searchInput.blur();
-    this.onSearchTermSearch();
   },
 
   /** @private */
