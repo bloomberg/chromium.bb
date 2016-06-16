@@ -88,6 +88,9 @@ enum WMEventType {
   // Bounds of the work area has changed. This will not occur when the work
   // area has changed as a result of DISPLAY_BOUNDS_CHANGED.
   WM_EVENT_WORKAREA_BOUNDS_CHANGED,
+
+  // A user requested to pin a window.
+  WM_EVENT_PIN,
 };
 
 class ASH_EXPORT WMEvent {

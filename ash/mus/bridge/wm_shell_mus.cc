@@ -265,6 +265,10 @@ void WmShellMus::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
 }
 
+void WmShellMus::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+  wm_shell_common_->NotifyPinnedStateChanged(pinned_window);
+}
+
 // static
 bool WmShellMus::IsActivationParent(::mus::Window* window) {
   return window && IsActivatableShellWindowId(

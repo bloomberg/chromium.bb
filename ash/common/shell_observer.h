@@ -49,6 +49,9 @@ class ASH_EXPORT ShellObserver {
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
                                         WmWindow* root_window) {}
 
+  // Invoked when |pinned_window| enter or exit pinned mode.
+  virtual void OnPinnedStateChanged(WmWindow* pinned_window) {}
+
   // Called when the overview mode is about to be started (before the windows
   // get re-arranged).
   virtual void OnOverviewModeStarting() {}

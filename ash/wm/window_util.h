@@ -49,6 +49,9 @@ ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
+// Pins the window on top of other windows.
+ASH_EXPORT void PinWindow(aura::Window* window);
+
 // Moves |window| to the root window where the |event| occured if it is not
 // already in the same root window. Returns true if |window| was moved.
 ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,

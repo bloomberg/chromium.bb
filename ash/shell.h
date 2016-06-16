@@ -474,6 +474,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.
+  // TODO(hidehiko): Rename this to NotifyFullscreenStateChanged.
   void NotifyFullscreenStateChange(bool is_fullscreen, WmWindow* root_window);
 
   // Creates a modal background (a partially-opaque fullscreen window)

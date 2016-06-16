@@ -73,6 +73,7 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
+  void NotifyPinnedStateChanged(WmWindow* pinned_window) override;
 
  private:
   // Returns true if |window| is a window that can have active children.

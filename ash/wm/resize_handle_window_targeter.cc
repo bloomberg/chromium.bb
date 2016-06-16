@@ -34,7 +34,7 @@ ResizeHandleWindowTargeter::~ResizeHandleWindowTargeter() {
 void ResizeHandleWindowTargeter::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
     wm::WindowStateType old_type) {
-  if (window_state->IsMaximizedOrFullscreen()) {
+  if (window_state->IsMaximizedOrFullscreenOrPinned()) {
     frame_border_inset_ = gfx::Insets();
   } else {
     frame_border_inset_ = gfx::Insets(kResizeInsideBoundsSize,

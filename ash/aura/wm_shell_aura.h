@@ -59,6 +59,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
+  void NotifyPinnedStateChanged(WmWindow* pinned_window) override;
 
  private:
   // aura::client::ActivationChangeObserver:

@@ -64,7 +64,7 @@ bool WindowPositionCanBeManaged(const WmWindow* window) {
   const wm::WindowState* window_state = window->GetWindowState();
   return window_state->window_position_managed() &&
          !window_state->IsMinimized() && !window_state->IsMaximized() &&
-         !window_state->IsFullscreen() &&
+         !window_state->IsFullscreen() && !window_state->IsPinned() &&
          !window_state->bounds_changed_by_user();
 }
 
@@ -489,7 +489,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
          windows[i]->GetLayer()->GetTargetOpacity() == 1.0)) {
       wm::WindowState* window_state = windows[i]->GetWindowState();
       // When any window is maximized we cannot find any free space.
-      if (window_state->IsMaximizedOrFullscreen())
+      if (window_state->IsMaximizedOrFullscreenOrPinned())
         return gfx::Rect(0, 0, 0, 0);
       if (window_state->IsNormalOrSnapped())
         regions.push_back(&windows[i]->GetBounds());

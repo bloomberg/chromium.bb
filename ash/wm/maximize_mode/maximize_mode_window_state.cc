@@ -14,6 +14,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
@@ -59,7 +60,7 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 
 // Returns the maximized/full screen and/or centered bounds of a window.
 gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
-  if (state_object->IsFullscreen())
+  if (state_object->IsFullscreen() || state_object->IsPinned())
     return wm::GetDisplayBoundsInParent(state_object->window());
 
   gfx::Rect bounds_in_parent;
@@ -128,6 +129,9 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_FULLSCREEN:
       UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN, true);
       break;
+    case wm::WM_EVENT_PIN:
+      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED, true);
+      break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
@@ -159,8 +163,8 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
         if (!bounds_in_parent.IsEmpty())
           window_state->SetRestoreBoundsInParent(bounds_in_parent);
       } else if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
-                 current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
-                 current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+                 current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN &&
+                 current_state_type_ != wm::WINDOW_STATE_TYPE_PINNED) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
         gfx::Rect bounds_in_parent =
@@ -222,7 +226,8 @@ void MaximizeModeWindowState::AttachState(
   // Initialize the state to a good preset.
   if (current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
       current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
-      current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+      current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN &&
+      current_state_type_ != wm::WINDOW_STATE_TYPE_PINNED) {
     UpdateWindow(window_state,
                  GetMaximizedOrCenteredWindowType(window_state),
                  true);
@@ -243,8 +248,9 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
                                            bool animated) {
   DCHECK(target_state == wm::WINDOW_STATE_TYPE_MINIMIZED ||
          target_state == wm::WINDOW_STATE_TYPE_MAXIMIZED ||
+         target_state == wm::WINDOW_STATE_TYPE_PINNED ||
          (target_state == wm::WINDOW_STATE_TYPE_NORMAL &&
-              !window_state->CanMaximize()) ||
+          !window_state->CanMaximize()) ||
          target_state == wm::WINDOW_STATE_TYPE_FULLSCREEN);
 
   if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED) {
@@ -272,6 +278,11 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
   window_state->NotifyPreStateTypeChange(old_state_type);
   UpdateBounds(window_state, animated);
   window_state->NotifyPostStateTypeChange(old_state_type);
+
+  if (old_state_type == wm::WINDOW_STATE_TYPE_PINNED ||
+      target_state == wm::WINDOW_STATE_TYPE_PINNED) {
+    WmShell::Get()->NotifyPinnedStateChanged(window_state->window());
+  }
 
   if ((window_state->window()->GetTargetVisibility() ||
        old_state_type == wm::WINDOW_STATE_TYPE_MINIMIZED) &&

@@ -29,4 +29,9 @@ void WmShellCommon::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
 }
 
+void WmShellCommon::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnPinnedStateChanged(pinned_window));
+}
+
 }  // namespace ash

@@ -174,6 +174,10 @@ void WmShellAura::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
 }
 
+void WmShellAura::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+  wm_shell_common_->NotifyPinnedStateChanged(pinned_window);
+}
+
 void WmShellAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,

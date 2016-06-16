@@ -41,6 +41,11 @@ enum WindowStateType {
   // sized by the window manager. (it's newly opened, or pushed to the side
   // due to new window, for example).
   WINDOW_STATE_TYPE_AUTO_POSITIONED,
+
+  // A window is pinned on top of other windows with fullscreenized.
+  // Corresponding shelf should be hidden, also most of windows other than the
+  // pinned one should be hidden.
+  WINDOW_STATE_TYPE_PINNED,
 };
 
 // Utility functions to convert WindowStateType <-> ui::WindowShowState.
@@ -49,9 +54,10 @@ enum WindowStateType {
 ASH_EXPORT WindowStateType ToWindowStateType(ui::WindowShowState state);
 ASH_EXPORT ui::WindowShowState ToWindowShowState(WindowStateType type);
 
-// Returns true if |type| is WINDOW_STATE_TYPE_MAXIMIZED or
-// WINDOW_STATE_TYPE_FULLSCREEN.
-ASH_EXPORT bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type);
+// Returns true if |type| is WINDOW_STATE_TYPE_MAXIMIZED,
+// WINDOW_STATE_TYPE_FULLSCREEN or WINDOW_STATE_TYPE_PINNED.
+ASH_EXPORT bool IsMaximizedOrFullscreenOrPinnedWindowStateType(
+    WindowStateType type);
 
 }  // namespace wm
 }  // namespace ash

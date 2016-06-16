@@ -122,6 +122,11 @@ class ASH_EXPORT WmShell {
   virtual void AddShellObserver(ShellObserver* observer) = 0;
   virtual void RemoveShellObserver(ShellObserver* observer) = 0;
 
+  // Notifies |observers_| when entering or exiting pinned mode for
+  // |pinned_window|. Entering or exiting can be checked by looking at
+  // |pinned_window|'s window state.
+  virtual void NotifyPinnedStateChanged(WmWindow* pinned_window) = 0;
+
  protected:
   WmShell();
   virtual ~WmShell();

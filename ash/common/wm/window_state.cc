@@ -72,14 +72,19 @@ bool WindowState::IsFullscreen() const {
   return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN;
 }
 
-bool WindowState::IsMaximizedOrFullscreen() const {
-  return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN ||
-         GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
+bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
+  return GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED ||
+         GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN ||
+         GetStateType() == WINDOW_STATE_TYPE_PINNED;
 }
 
 bool WindowState::IsSnapped() const {
   return GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
          GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+}
+
+bool WindowState::IsPinned() const {
+  return GetStateType() == WINDOW_STATE_TYPE_PINNED;
 }
 
 bool WindowState::IsNormalStateType() const {

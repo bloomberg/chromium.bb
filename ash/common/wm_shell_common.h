@@ -15,6 +15,7 @@ namespace ash {
 
 class MruWindowTracker;
 class ShellObserver;
+class WmWindow;
 
 // Contains code used by both shell implementations.
 class ASH_EXPORT WmShellCommon {
@@ -33,6 +34,8 @@ class ASH_EXPORT WmShellCommon {
   base::ObserverList<ShellObserver>* shell_observers() {
     return &shell_observers_;
   }
+
+  void NotifyPinnedStateChanged(WmWindow* pinned_window);
 
  private:
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;

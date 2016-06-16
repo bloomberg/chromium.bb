@@ -611,8 +611,8 @@ void ShellSurface::OnPreWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::wm::WindowStateType old_type) {
   ash::wm::WindowStateType new_type = window_state->GetStateType();
-  if (ash::wm::IsMaximizedOrFullscreenWindowStateType(old_type) ||
-      ash::wm::IsMaximizedOrFullscreenWindowStateType(new_type)) {
+  if (ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
+      ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     // When transitioning in/out of maximized or fullscreen mode we need to
     // make sure we have a configure callback before we allow the default
     // cross-fade animations. The configure callback provides a mechanism for
@@ -627,8 +627,8 @@ void ShellSurface::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::wm::WindowStateType old_type) {
   ash::wm::WindowStateType new_type = window_state->GetStateType();
-  if (ash::wm::IsMaximizedOrFullscreenWindowStateType(old_type) ||
-      ash::wm::IsMaximizedOrFullscreenWindowStateType(new_type)) {
+  if (ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
+      ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     Configure();
   }
 

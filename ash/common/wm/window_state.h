@@ -95,8 +95,12 @@ class ASH_EXPORT WindowState {
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
-  bool IsMaximizedOrFullscreen() const;
   bool IsSnapped() const;
+  bool IsPinned() const;
+
+  // True if the window's state type is WINDOW_STATE_TYPE_MAXIMIZED,
+  // WINDOW_STATE_TYPE_FULLSCREEN or WINDOW_STATE_TYPE_PINNED.
+  bool IsMaximizedOrFullscreenOrPinned() const;
 
   // True if the window's state type is WINDOW_STATE_TYPE_NORMAL or
   // WINDOW_STATE_TYPE_DEFAULT.

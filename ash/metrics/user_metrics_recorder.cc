@@ -64,6 +64,8 @@ ActiveWindowStateType GetActiveWindowState() {
       case wm::WINDOW_STATE_TYPE_INACTIVE:
       case wm::WINDOW_STATE_TYPE_END:
       case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
+      case wm::WINDOW_STATE_TYPE_PINNED:
+        // TODO: We probably want to recorde PINNED state.
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;
     }
@@ -144,7 +146,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
       // and completely obscure windows beneath them.
       if ((kShellWindowId_DefaultContainer == current_container_id ||
            kShellWindowId_AlwaysOnTopContainer == current_container_id) &&
-          child_window_state->IsMaximizedOrFullscreen()) {
+          child_window_state->IsMaximizedOrFullscreenOrPinned()) {
         maximized_or_fullscreen_window_present = true;
         break;
       }

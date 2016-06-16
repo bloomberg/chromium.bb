@@ -37,6 +37,7 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
     case WINDOW_STATE_TYPE_INACTIVE:
       return ui::SHOW_STATE_INACTIVE;
     case WINDOW_STATE_TYPE_FULLSCREEN:
+    case WINDOW_STATE_TYPE_PINNED:
       return ui::SHOW_STATE_FULLSCREEN;
     case WINDOW_STATE_TYPE_END:
       NOTREACHED();
@@ -45,9 +46,10 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
   return ui::SHOW_STATE_DEFAULT;
 }
 
-bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type) {
+bool IsMaximizedOrFullscreenOrPinnedWindowStateType(WindowStateType type) {
   return type == WINDOW_STATE_TYPE_MAXIMIZED ||
-         type == WINDOW_STATE_TYPE_FULLSCREEN;
+         type == WINDOW_STATE_TYPE_FULLSCREEN ||
+         type == WINDOW_STATE_TYPE_PINNED;
 }
 
 }  // namespace wm

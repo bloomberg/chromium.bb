@@ -67,6 +67,11 @@ void CenterWindow(aura::Window* window) {
   wm::GetWindowState(window)->OnWMEvent(&event);
 }
 
+void PinWindow(aura::Window* window) {
+  wm::WMEvent event(wm::WM_EVENT_PIN);
+  wm::GetWindowState(window)->OnWMEvent(&event);
+}
+
 bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   views::View* target = static_cast<views::View*>(event.target());
   if (!target)

@@ -833,7 +833,7 @@ void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
   if (!window_state->IsDocked()) {
     if (window != dragged_window_) {
       UndockWindow(window);
-      if (window_state->IsMaximizedOrFullscreen())
+      if (window_state->IsMaximizedOrFullscreenOrPinned())
         RecordUmaAction(DOCKED_ACTION_MAXIMIZE, event_source_);
       else
         RecordUmaAction(DOCKED_ACTION_UNDOCK, event_source_);
