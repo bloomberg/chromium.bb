@@ -524,6 +524,11 @@ UsbDeviceHandleUsbfs::~UsbDeviceHandleUsbfs() {
   DCHECK(!device_) << "Handle must be closed before it is destroyed.";
 }
 
+void UsbDeviceHandleUsbfs::ReleaseFileDescriptor() {
+  ignore_result(fd_.release());
+  delete helper_;
+}
+
 void UsbDeviceHandleUsbfs::CloseBlocking() {
   fd_.reset(-1);
   delete helper_;

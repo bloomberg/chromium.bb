@@ -52,6 +52,7 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   // Handles completion of an open request.
   void OnOpen(const OpenCallback& callback,
               scoped_refptr<device::UsbDeviceHandle> handle);
+  void OnPermissionGrantedForOpen(const OpenCallback& callback, bool granted);
 
   // Device implementation:
   void GetDeviceInfo(const GetDeviceInfoCallback& callback) override;

@@ -24,17 +24,17 @@ UsbDevice::UsbDevice(uint16_t usb_version,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
                      const base::string16& serial_number)
-    : manufacturer_string_(manufacturer_string),
+    : usb_version_(usb_version),
+      device_version_(device_version),
+      manufacturer_string_(manufacturer_string),
       product_string_(product_string),
       serial_number_(serial_number),
       guid_(base::GenerateGUID()),
-      usb_version_(usb_version),
       device_class_(device_class),
       device_subclass_(device_subclass),
       device_protocol_(device_protocol),
       vendor_id_(vendor_id),
-      product_id_(product_id),
-      device_version_(device_version) {}
+      product_id_(product_id) {}
 
 UsbDevice::~UsbDevice() {
 }
@@ -43,6 +43,16 @@ void UsbDevice::CheckUsbAccess(const ResultCallback& callback) {
   // By default assume that access to the device is allowed. This is implemented
   // on Chrome OS by checking with permission_broker.
   callback.Run(true);
+}
+
+void UsbDevice::RequestPermission(const ResultCallback& callback) {
+  // By default assume that access to the device is allowed. This is implemented
+  // on Android by calling android.hardware.usb.UsbManger.requestPermission.
+  callback.Run(true);
+}
+
+bool UsbDevice::permission_granted() const {
+  return true;
 }
 
 void UsbDevice::AddObserver(Observer* observer) {

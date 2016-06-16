@@ -80,6 +80,16 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
+ protected:
+  ~UsbDeviceHandleUsbfs() override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+    return task_runner_;
+  }
+
+  // Stops |helper_| and releases ownership of |fd_| without closing it.
+  void ReleaseFileDescriptor();
+
  private:
   class FileThreadHelper;
   struct Transfer;
@@ -91,8 +101,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
     const UsbInterfaceDescriptor* interface;
   };
 
-  ~UsbDeviceHandleUsbfs() override;
-  void CloseBlocking();
+  virtual void CloseBlocking();
   void SetConfigurationBlocking(int configuration_value,
                                 const ResultCallback& callback);
   void SetConfigurationComplete(int configuration_value,

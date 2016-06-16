@@ -10,11 +10,13 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/usb/usb_configuration_android.h"
-#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_descriptors.h"
+#include "device/usb/usb_device_handle_android.h"
 #include "device/usb/usb_interface_android.h"
+#include "device/usb/usb_service_android.h"
+#include "device/usb/webusb_descriptors.h"
 #include "jni/ChromeUsbDevice_jni.h"
 
-using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
@@ -29,6 +31,8 @@ bool UsbDeviceAndroid::RegisterJNI(JNIEnv* env) {
 // static
 scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     JNIEnv* env,
+    base::WeakPtr<UsbServiceAndroid> service,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const JavaRef<jobject>& usb_device) {
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbDevice_create(env, usb_device.obj());
@@ -45,33 +49,62 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
         env, Java_ChromeUsbDevice_getSerialNumber(env, wrapper.obj()));
   }
   return make_scoped_refptr(new UsbDeviceAndroid(
-      env,
+      env, service,
       0x0200,  // USB protocol version, not provided by the Android API.
       Java_ChromeUsbDevice_getDeviceClass(env, wrapper.obj()),
       Java_ChromeUsbDevice_getDeviceSubclass(env, wrapper.obj()),
       Java_ChromeUsbDevice_getDeviceProtocol(env, wrapper.obj()),
       Java_ChromeUsbDevice_getVendorId(env, wrapper.obj()),
       Java_ChromeUsbDevice_getProductId(env, wrapper.obj()), device_version,
-      manufacturer_string, product_string, serial_number, wrapper));
+      manufacturer_string, product_string, serial_number, blocking_task_runner,
+      wrapper));
+}
+
+void UsbDeviceAndroid::RequestPermission(const ResultCallback& callback) {
+  if (!permission_granted_ && service_) {
+    request_permission_callbacks_.push_back(callback);
+    service_->RequestDevicePermission(j_object_, device_id_);
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, permission_granted_));
+  }
 }
 
 void UsbDeviceAndroid::Open(const OpenCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, nullptr));
+  scoped_refptr<UsbDeviceHandle> device_handle;
+  if (service_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> connection =
+        service_->OpenDevice(env, j_object_);
+    if (!connection.is_null()) {
+      device_handle = UsbDeviceHandleAndroid::Create(
+          env, this, blocking_task_runner_, connection);
+      handles().push_back(device_handle.get());
+    }
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, device_handle));
 }
 
-UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
-                                   uint16_t usb_version,
-                                   uint8_t device_class,
-                                   uint8_t device_subclass,
-                                   uint8_t device_protocol,
-                                   uint16_t vendor_id,
-                                   uint16_t product_id,
-                                   uint16_t device_version,
-                                   const base::string16& manufacturer_string,
-                                   const base::string16& product_string,
-                                   const base::string16& serial_number,
-                                   const JavaRef<jobject>& wrapper)
+bool UsbDeviceAndroid::permission_granted() const {
+  return permission_granted_;
+}
+
+UsbDeviceAndroid::UsbDeviceAndroid(
+    JNIEnv* env,
+    base::WeakPtr<UsbServiceAndroid> service,
+    uint16_t usb_version,
+    uint8_t device_class,
+    uint8_t device_subclass,
+    uint8_t device_protocol,
+    uint16_t vendor_id,
+    uint16_t product_id,
+    uint16_t device_version,
+    const base::string16& manufacturer_string,
+    const base::string16& product_string,
+    const base::string16& serial_number,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    const JavaRef<jobject>& wrapper)
     : UsbDevice(usb_version,
                 device_class,
                 device_subclass,
@@ -82,9 +115,10 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
                 manufacturer_string,
                 product_string,
                 serial_number),
-      device_id_(Java_ChromeUsbDevice_getDeviceId(env, wrapper.obj())) {
-  j_object_.Reset(wrapper);
-
+      blocking_task_runner_(blocking_task_runner),
+      device_id_(Java_ChromeUsbDevice_getDeviceId(env, wrapper.obj())),
+      service_(service),
+      j_object_(wrapper) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
     ScopedJavaLocalRef<jobjectArray> configurations =
         Java_ChromeUsbDevice_getConfigurations(env, j_object_.obj());
@@ -117,5 +151,67 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
 }
 
 UsbDeviceAndroid::~UsbDeviceAndroid() {}
+
+void UsbDeviceAndroid::PermissionGranted(bool granted) {
+  if (granted)
+    Open(base::Bind(&UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors, this));
+  else
+    CallRequestPermissionCallbacks(granted);
+}
+
+void UsbDeviceAndroid::CallRequestPermissionCallbacks(bool granted) {
+  permission_granted_ = granted;
+  std::list<ResultCallback> callbacks;
+  callbacks.swap(request_permission_callbacks_);
+  for (const auto& callback : callbacks)
+    callback.Run(granted);
+}
+
+void UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors(
+    scoped_refptr<UsbDeviceHandle> device_handle) {
+  if (device_handle) {
+    ReadUsbDescriptors(
+        device_handle,
+        base::Bind(&UsbDeviceAndroid::OnReadDescriptors, this, device_handle));
+  } else {
+    CallRequestPermissionCallbacks(false);
+  }
+}
+
+void UsbDeviceAndroid::OnReadDescriptors(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    std::unique_ptr<UsbDeviceDescriptor> descriptor) {
+  if (!descriptor) {
+    device_handle->Close();
+    CallRequestPermissionCallbacks(false);
+    return;
+  }
+
+  usb_version_ = descriptor->usb_version;
+  device_version_ = descriptor->device_version;
+  configurations_ = descriptor->configurations;
+
+  if (usb_version_ >= 0x0210) {
+    ReadWebUsbDescriptors(device_handle,
+                          base::Bind(&UsbDeviceAndroid::OnReadWebUsbDescriptors,
+                                     this, device_handle));
+  } else {
+    device_handle->Close();
+    CallRequestPermissionCallbacks(true);
+  }
+}
+
+void UsbDeviceAndroid::OnReadWebUsbDescriptors(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
+    const GURL& landing_page) {
+  if (allowed_origins)
+    webusb_allowed_origins_ = std::move(allowed_origins);
+  if (landing_page.is_valid())
+    webusb_landing_page_ = landing_page;
+
+  device_handle->Close();
+  CallRequestPermissionCallbacks(true);
+}
 
 }  // namespace device

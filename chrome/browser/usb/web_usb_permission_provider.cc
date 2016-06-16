@@ -82,10 +82,20 @@ bool WebUSBPermissionProvider::HasDevicePermission(
   UsbChooserContext* chooser_context =
       UsbChooserContextFactory::GetForProfile(profile);
 
+  if (!chooser_context->HasDevicePermission(requesting_origin, embedding_origin,
+                                            device)) {
+    return false;
+  }
+
+  // On Android it is not possible to read the WebUSB descriptors until Chrome
+  // has been granted permission to open it. Instead we grant provisional access
+  // to the device and perform the allowed origins check when the client tries
+  // to open it.
+  if (!device->permission_granted())
+    return true;
+
   return FindOriginInDescriptorSet(device->webusb_allowed_origins(),
-                                   requesting_origin, nullptr, nullptr) &&
-         chooser_context->HasDevicePermission(requesting_origin,
-                                              embedding_origin, device);
+                                   requesting_origin, nullptr, nullptr);
 }
 
 bool WebUSBPermissionProvider::HasConfigurationPermission(

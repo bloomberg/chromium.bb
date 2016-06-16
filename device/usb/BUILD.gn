@@ -30,6 +30,8 @@ source_set("usb") {
     "usb_device_filter.h",
     "usb_device_handle.cc",
     "usb_device_handle.h",
+    "usb_device_handle_android.cc",
+    "usb_device_handle_android.h",
     "usb_device_linux.cc",
     "usb_device_linux.h",
     "usb_endpoint_android.cc",
@@ -189,6 +191,7 @@ fuzzer_test("usb_string_read_fuzzer") {
 if (is_android) {
   java_sources_needing_jni = [
     "android/java/src/org/chromium/device/usb/ChromeUsbConfiguration.java",
+    "android/java/src/org/chromium/device/usb/ChromeUsbConnection.java",
     "android/java/src/org/chromium/device/usb/ChromeUsbDevice.java",
     "android/java/src/org/chromium/device/usb/ChromeUsbEndpoint.java",
     "android/java/src/org/chromium/device/usb/ChromeUsbInterface.java",

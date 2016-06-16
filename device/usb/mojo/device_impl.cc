@@ -204,6 +204,17 @@ void DeviceImpl::OnOpen(const OpenCallback& callback,
   callback.Run(handle ? OpenDeviceError::OK : OpenDeviceError::ACCESS_DENIED);
 }
 
+void DeviceImpl::OnPermissionGrantedForOpen(const OpenCallback& callback,
+                                            bool granted) {
+  if (granted && permission_provider_ &&
+      permission_provider_->HasDevicePermission(device_)) {
+    device_->Open(
+        base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
+  } else {
+    callback.Run(OpenDeviceError::ACCESS_DENIED);
+  }
+}
+
 void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
   const UsbConfigDescriptor* config = device_->active_configuration();
   device_info_->active_configuration = config ? config->configuration_value : 0;
@@ -211,11 +222,25 @@ void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
 }
 
 void DeviceImpl::Open(const OpenCallback& callback) {
-  if (device_handle_)
+  if (device_handle_) {
     callback.Run(OpenDeviceError::ALREADY_OPEN);
-  else
+    return;
+  }
+
+  if (!device_->permission_granted()) {
+    device_->RequestPermission(
+        base::Bind(&DeviceImpl::OnPermissionGrantedForOpen,
+                   weak_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  if (permission_provider_ &&
+      permission_provider_->HasDevicePermission(device_)) {
     device_->Open(
         base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
+  } else {
+    callback.Run(OpenDeviceError::ACCESS_DENIED);
+  }
 }
 
 void DeviceImpl::Close(const CloseCallback& callback) {

@@ -31,6 +31,10 @@ final class ChromeUsbDevice {
         Log.v(TAG, "ChromeUsbDevice created.");
     }
 
+    public UsbDevice getDevice() {
+        return mDevice;
+    }
+
     @CalledByNative
     private static ChromeUsbDevice create(UsbDevice device) {
         return new ChromeUsbDevice(device);

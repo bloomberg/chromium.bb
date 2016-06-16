@@ -70,6 +70,8 @@ class UsbChooserDialogAndroid : public device::UsbService::Observer {
 
   void OpenUrl(const std::string& url);
 
+  bool DisplayDevice(scoped_refptr<device::UsbDevice> device) const;
+
   content::RenderFrameHost* const render_frame_host_;
   device::usb::ChooserService::GetPermissionCallback callback_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>

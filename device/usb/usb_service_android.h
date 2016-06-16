@@ -9,11 +9,16 @@
 #include <unordered_map>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "device/usb/usb_device_android.h"
 #include "device/usb/usb_service.h"
 
-namespace device {
+namespace base {
+class SequencedTaskRunner;
+}
 
-class UsbDeviceAndroid;
+namespace device {
 
 // USB service implementation for Android. This is a stub implementation that
 // does not return any devices.
@@ -33,6 +38,18 @@ class UsbServiceAndroid : public UsbService {
   void DeviceDetached(JNIEnv* env,
                       const base::android::JavaRef<jobject>& caller,
                       jint device_id);
+  void DevicePermissionRequestComplete(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& caller,
+      jint device_id,
+      jboolean granted);
+
+  // Called by UsbDeviceAndroid.
+  base::android::ScopedJavaLocalRef<jobject> OpenDevice(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& wrapper);
+  void RequestDevicePermission(const base::android::JavaRef<jobject>& wrapper,
+                               jint device_id);
 
  private:
   void AddDevice(scoped_refptr<UsbDeviceAndroid> device);
@@ -41,6 +58,8 @@ class UsbServiceAndroid : public UsbService {
 
   // Java object org.chromium.device.usb.ChromeUsbService.
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
+
+  base::WeakPtrFactory<UsbServiceAndroid> weak_factory_;
 };
 
 }  // namespace device
