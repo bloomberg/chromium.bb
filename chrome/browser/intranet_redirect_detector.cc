@@ -91,7 +91,8 @@ void IntranetRedirectDetector::FinishSleep() {
     // We don't want these fetches to affect existing state in the profile.
     fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                           net::LOAD_DO_NOT_SAVE_COOKIES |
-                          net::LOAD_DO_NOT_SEND_COOKIES);
+                          net::LOAD_DO_NOT_SEND_COOKIES |
+                          net::LOAD_DO_NOT_SEND_AUTH_DATA);
     fetcher->SetRequestContext(g_browser_process->system_request_context());
     fetcher->Start();
     fetchers_.insert(fetcher);
