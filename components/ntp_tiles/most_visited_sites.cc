@@ -152,6 +152,13 @@ std::string GetSourceHistogramName(
   return std::string();
 }
 
+void AppendSuggestions(MostVisitedSites::SuggestionsVector src,
+                       MostVisitedSites::SuggestionsVector* dst) {
+  dst->insert(dst->end(),
+              std::make_move_iterator(src.begin()),
+              std::make_move_iterator(src.end()));
+}
+
 }  // namespace
 
 MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
@@ -329,7 +336,7 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  SuggestionsPtrVector suggestions;
+  SuggestionsVector suggestions;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
   for (size_t i = 0; i < num_tiles; ++i) {
@@ -341,18 +348,18 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     if (supervisor_->IsBlocked(visited.url))
       continue;
 
-    std::unique_ptr<Suggestion> suggestion(new Suggestion());
-    suggestion->title = visited.title;
-    suggestion->url = visited.url;
-    suggestion->source = TOP_SITES;
-    suggestion->whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
+    Suggestion suggestion;
+    suggestion.title = visited.title;
+    suggestion.url = visited.url;
+    suggestion.source = TOP_SITES;
+    suggestion.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
 
     suggestions.push_back(std::move(suggestion));
   }
 
   received_most_visited_sites_ = true;
   mv_source_ = TOP_SITES;
-  SaveNewSuggestions(&suggestions);
+  SaveNewSuggestions(std::move(suggestions));
   NotifyMostVisitedURLsObserver();
 }
 
@@ -368,42 +375,42 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
-  SuggestionsPtrVector suggestions;
+  SuggestionsVector suggestions;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     if (supervisor_->IsBlocked(GURL(suggestion.url())))
       continue;
 
-    std::unique_ptr<Suggestion> generated_suggestion(new Suggestion());
-    generated_suggestion->title = base::UTF8ToUTF16(suggestion.title());
-    generated_suggestion->url = GURL(suggestion.url());
-    generated_suggestion->source = SUGGESTIONS_SERVICE;
-    generated_suggestion->whitelist_icon_path = GetWhitelistLargeIconPath(
-        GURL(suggestion.url()));
+    Suggestion generated_suggestion;
+    generated_suggestion.title = base::UTF8ToUTF16(suggestion.title());
+    generated_suggestion.url = GURL(suggestion.url());
+    generated_suggestion.source = SUGGESTIONS_SERVICE;
+    generated_suggestion.whitelist_icon_path =
+        GetWhitelistLargeIconPath(GURL(suggestion.url()));
     if (suggestion.providers_size() > 0)
-      generated_suggestion->provider_index = suggestion.providers(0);
+      generated_suggestion.provider_index = suggestion.providers(0);
 
     suggestions.push_back(std::move(generated_suggestion));
   }
 
   received_most_visited_sites_ = true;
   mv_source_ = SUGGESTIONS_SERVICE;
-  SaveNewSuggestions(&suggestions);
+  SaveNewSuggestions(std::move(suggestions));
   NotifyMostVisitedURLsObserver();
 }
 
-MostVisitedSites::SuggestionsPtrVector
+MostVisitedSites::SuggestionsVector
 MostVisitedSites::CreateWhitelistEntryPointSuggestions(
-    const SuggestionsPtrVector& personal_suggestions) {
+    const SuggestionsVector& personal_suggestions) {
   size_t num_personal_suggestions = personal_suggestions.size();
   DCHECK_LE(num_personal_suggestions, static_cast<size_t>(num_sites_));
 
   size_t num_whitelist_suggestions = num_sites_ - num_personal_suggestions;
-  SuggestionsPtrVector whitelist_suggestions;
+  SuggestionsVector whitelist_suggestions;
 
   std::set<std::string> personal_hosts;
   for (const auto& suggestion : personal_suggestions)
-    personal_hosts.insert(suggestion->url.host());
+    personal_hosts.insert(suggestion.url.host());
 
   for (const auto& whitelist : supervisor_->whitelists()) {
     // Skip blacklisted sites.
@@ -419,11 +426,11 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
     if (supervisor_->IsBlocked(whitelist.entry_point))
       continue;
 
-    std::unique_ptr<Suggestion> suggestion(new Suggestion());
-    suggestion->title = whitelist.title;
-    suggestion->url = whitelist.entry_point;
-    suggestion->source = WHITELIST;
-    suggestion->whitelist_icon_path = whitelist.large_icon_path;
+    Suggestion suggestion;
+    suggestion.title = whitelist.title;
+    suggestion.url = whitelist.entry_point;
+    suggestion.source = WHITELIST;
+    suggestion.whitelist_icon_path = whitelist.large_icon_path;
 
     whitelist_suggestions.push_back(std::move(suggestion));
     if (whitelist_suggestions.size() >= num_whitelist_suggestions)
@@ -433,13 +440,13 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
   return whitelist_suggestions;
 }
 
-MostVisitedSites::SuggestionsPtrVector
+MostVisitedSites::SuggestionsVector
 MostVisitedSites::CreatePopularSitesSuggestions(
-    const SuggestionsPtrVector& personal_suggestions,
-    const SuggestionsPtrVector& whitelist_suggestions) {
+    const SuggestionsVector& personal_suggestions,
+    const SuggestionsVector& whitelist_suggestions) {
   // For child accounts popular sites suggestions will not be added.
   if (supervisor_->IsChildProfile())
-    return SuggestionsPtrVector();
+    return SuggestionsVector();
 
   size_t num_suggestions =
       personal_suggestions.size() + whitelist_suggestions.size();
@@ -448,14 +455,14 @@ MostVisitedSites::CreatePopularSitesSuggestions(
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
   size_t num_popular_sites_suggestions = num_sites_ - num_suggestions;
-  SuggestionsPtrVector popular_sites_suggestions;
+  SuggestionsVector popular_sites_suggestions;
 
   if (num_popular_sites_suggestions > 0 && popular_sites_) {
     std::set<std::string> hosts;
     for (const auto& suggestion : personal_suggestions)
-      hosts.insert(suggestion->url.host());
+      hosts.insert(suggestion.url.host());
     for (const auto& suggestion : whitelist_suggestions)
-      hosts.insert(suggestion->url.host());
+      hosts.insert(suggestion.url.host());
     for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
       // Skip blacklisted sites.
       if (top_sites_->IsBlacklisted(popular_site.url))
@@ -465,10 +472,10 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       if (hosts.find(host) != hosts.end())
         continue;
 
-      std::unique_ptr<Suggestion> suggestion(new Suggestion());
-      suggestion->title = popular_site.title;
-      suggestion->url = GURL(popular_site.url);
-      suggestion->source = POPULAR;
+      Suggestion suggestion;
+      suggestion.title = popular_site.title;
+      suggestion.url = GURL(popular_site.url);
+      suggestion.source = POPULAR;
 
       popular_sites_suggestions.push_back(std::move(suggestion));
       if (popular_sites_suggestions.size() >= num_popular_sites_suggestions)
@@ -479,57 +486,37 @@ MostVisitedSites::CreatePopularSitesSuggestions(
 }
 
 void MostVisitedSites::SaveNewSuggestions(
-    SuggestionsPtrVector* personal_suggestions) {
-  SuggestionsPtrVector whitelist_suggestions =
-      CreateWhitelistEntryPointSuggestions(*personal_suggestions);
-  SuggestionsPtrVector popular_sites_suggestions =
-      CreatePopularSitesSuggestions(*personal_suggestions,
+    SuggestionsVector personal_suggestions) {
+  SuggestionsVector whitelist_suggestions =
+      CreateWhitelistEntryPointSuggestions(personal_suggestions);
+  SuggestionsVector popular_sites_suggestions =
+      CreatePopularSitesSuggestions(personal_suggestions,
                                     whitelist_suggestions);
 
-  size_t num_actual_tiles = personal_suggestions->size() +
+  size_t num_actual_tiles = personal_suggestions.size() +
                             whitelist_suggestions.size() +
                             popular_sites_suggestions.size();
   DCHECK_LE(num_actual_tiles, static_cast<size_t>(num_sites_));
 
-  SuggestionsPtrVector merged_suggestions = MergeSuggestions(
-      personal_suggestions, &whitelist_suggestions, &popular_sites_suggestions);
-  DCHECK_EQ(num_actual_tiles, merged_suggestions.size());
-
-  current_suggestions_.resize(merged_suggestions.size());
-  for (size_t i = 0; i < merged_suggestions.size(); ++i)
-    std::swap(*merged_suggestions[i], current_suggestions_[i]);
+  current_suggestions_ = MergeSuggestions(std::move(personal_suggestions),
+                                          std::move(whitelist_suggestions),
+                                          std::move(popular_sites_suggestions));
+  DCHECK_EQ(num_actual_tiles, current_suggestions_.size());
 
   if (received_popular_sites_)
     SaveCurrentSuggestionsToPrefs();
 }
 
 // static
-MostVisitedSites::SuggestionsPtrVector MostVisitedSites::MergeSuggestions(
-    SuggestionsPtrVector* personal_suggestions,
-    SuggestionsPtrVector* whitelist_suggestions,
-    SuggestionsPtrVector* popular_suggestions) {
-  size_t num_personal_suggestions = personal_suggestions->size();
-  size_t num_whitelist_suggestions = whitelist_suggestions->size();
-  size_t num_popular_suggestions = popular_suggestions->size();
-  size_t num_tiles = num_popular_suggestions + num_whitelist_suggestions +
-                     num_personal_suggestions;
-  SuggestionsPtrVector merged_suggestions;
-  AppendSuggestions(personal_suggestions, &merged_suggestions);
-  AppendSuggestions(whitelist_suggestions, &merged_suggestions);
-  AppendSuggestions(popular_suggestions, &merged_suggestions);
-  DCHECK_EQ(num_tiles, merged_suggestions.size());
-
+MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
+    SuggestionsVector personal_suggestions,
+    SuggestionsVector whitelist_suggestions,
+    SuggestionsVector popular_suggestions) {
+  SuggestionsVector merged_suggestions;
+  AppendSuggestions(std::move(personal_suggestions), &merged_suggestions);
+  AppendSuggestions(std::move(whitelist_suggestions), &merged_suggestions);
+  AppendSuggestions(std::move(popular_suggestions), &merged_suggestions);
   return merged_suggestions;
-}
-
-// TODO(treib): Once we use SuggestionsVector (non-Ptr) everywhere, move this
-// into an anonymous namespace.
-// static
-void MostVisitedSites::AppendSuggestions(SuggestionsPtrVector* src,
-                                         SuggestionsPtrVector* dst) {
-  dst->insert(dst->end(),
-              std::make_move_iterator(src->begin()),
-              std::make_move_iterator(src->end()));
 }
 
 void MostVisitedSites::SaveCurrentSuggestionsToPrefs() {

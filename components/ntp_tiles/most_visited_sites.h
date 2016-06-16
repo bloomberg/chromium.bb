@@ -160,9 +160,6 @@ class MostVisitedSites : public history::TopSitesObserver,
  private:
   friend class MostVisitedSitesTest;
 
-  // TODO(treib): use SuggestionsVector in internal functions. crbug.com/601734
-  using SuggestionsPtrVector = std::vector<std::unique_ptr<Suggestion>>;
-
   void BuildCurrentSuggestions();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService
@@ -182,29 +179,25 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Takes the personal suggestions and creates whitelist entry point
   // suggestions if necessary.
-  SuggestionsPtrVector CreateWhitelistEntryPointSuggestions(
-      const SuggestionsPtrVector& personal_suggestions);
+  SuggestionsVector CreateWhitelistEntryPointSuggestions(
+      const SuggestionsVector& personal_suggestions);
 
   // Takes the personal and whitelist suggestions and creates popular
   // suggestions if necessary.
-  SuggestionsPtrVector CreatePopularSitesSuggestions(
-      const SuggestionsPtrVector& personal_suggestions,
-      const SuggestionsPtrVector& whitelist_suggestions);
+  SuggestionsVector CreatePopularSitesSuggestions(
+      const SuggestionsVector& personal_suggestions,
+      const SuggestionsVector& whitelist_suggestions);
 
   // Takes the personal suggestions, creates and merges in whitelist and popular
   // suggestions if appropriate, and saves the new suggestions.
-  void SaveNewSuggestions(SuggestionsPtrVector* personal_suggestions);
+  void SaveNewSuggestions(SuggestionsVector personal_suggestions);
 
   // Workhorse for SaveNewSuggestions above. Implemented as a separate static
   // method for ease of testing.
-  static SuggestionsPtrVector MergeSuggestions(
-      SuggestionsPtrVector* personal_suggestions,
-      SuggestionsPtrVector* whitelist_suggestions,
-      SuggestionsPtrVector* popular_suggestions);
-
-  // Appends suggestions from |src| to |dst|.
-  static void AppendSuggestions(SuggestionsPtrVector* src,
-                                SuggestionsPtrVector* dst);
+  static SuggestionsVector MergeSuggestions(
+      SuggestionsVector personal_suggestions,
+      SuggestionsVector whitelist_suggestions,
+      SuggestionsVector popular_suggestions);
 
   void SaveCurrentSuggestionsToPrefs();
 

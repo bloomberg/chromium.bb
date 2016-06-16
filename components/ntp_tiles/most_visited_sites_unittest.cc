@@ -50,43 +50,41 @@ class MostVisitedSitesTest : public testing::Test {
              const std::vector<TitleURL>& personal_sites,
              const std::vector<bool>& expected_sites_is_personal,
              const std::vector<TitleURL>& expected_sites) {
-    MostVisitedSites::SuggestionsPtrVector personal_suggestions;
+    MostVisitedSites::SuggestionsVector personal_suggestions;
     for (const TitleURL& site : personal_sites)
       personal_suggestions.push_back(MakeSuggestionFrom(site, true, false));
-    MostVisitedSites::SuggestionsPtrVector whitelist_suggestions;
+    MostVisitedSites::SuggestionsVector whitelist_suggestions;
     for (const TitleURL& site : whitelist_entry_points)
       whitelist_suggestions.push_back(MakeSuggestionFrom(site, false, true));
-    MostVisitedSites::SuggestionsPtrVector popular_suggestions;
+    MostVisitedSites::SuggestionsVector popular_suggestions;
     for (const TitleURL& site : popular_sites)
       popular_suggestions.push_back(MakeSuggestionFrom(site, false, false));
-    MostVisitedSites::SuggestionsPtrVector result_suggestions =
-        MostVisitedSites::MergeSuggestions(&personal_suggestions,
-                                           &whitelist_suggestions,
-                                           &popular_suggestions);
+    MostVisitedSites::SuggestionsVector result_suggestions =
+        MostVisitedSites::MergeSuggestions(std::move(personal_suggestions),
+                                           std::move(whitelist_suggestions),
+                                           std::move(popular_suggestions));
     std::vector<TitleURL> result_sites;
     std::vector<bool> result_is_personal;
     result_sites.reserve(result_suggestions.size());
     result_is_personal.reserve(result_suggestions.size());
     for (const auto& suggestion : result_suggestions) {
-      result_sites.push_back(
-          TitleURL(suggestion->title, suggestion->url.spec()));
-      result_is_personal.push_back(suggestion->source !=
+      result_sites.push_back(TitleURL(suggestion.title, suggestion.url.spec()));
+      result_is_personal.push_back(suggestion.source !=
                                    MostVisitedSites::POPULAR);
     }
     EXPECT_EQ(expected_sites_is_personal, result_is_personal);
     EXPECT_EQ(expected_sites, result_sites);
   }
-  static std::unique_ptr<MostVisitedSites::Suggestion> MakeSuggestionFrom(
+  static MostVisitedSites::Suggestion MakeSuggestionFrom(
       const TitleURL& title_url,
       bool is_personal,
       bool whitelist) {
-    std::unique_ptr<MostVisitedSites::Suggestion> suggestion =
-        base::WrapUnique(new MostVisitedSites::Suggestion());
-    suggestion->title = title_url.title;
-    suggestion->url = GURL(title_url.url);
-    suggestion->source = whitelist ? MostVisitedSites::WHITELIST
-                                   : (is_personal ? MostVisitedSites::TOP_SITES
-                                                  : MostVisitedSites::POPULAR);
+    MostVisitedSites::Suggestion suggestion;
+    suggestion.title = title_url.title;
+    suggestion.url = GURL(title_url.url);
+    suggestion.source = whitelist ? MostVisitedSites::WHITELIST
+                                  : (is_personal ? MostVisitedSites::TOP_SITES
+                                                 : MostVisitedSites::POPULAR);
     return suggestion;
   }
 };
