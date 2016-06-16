@@ -998,6 +998,7 @@ class MetaBuildWrapper(object):
       cmdline = [
           self.PathJoin('bin', 'run_%s' % target_name),
           '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
+          '--target-devices-file', '${SWARMING_BOT_FILE}',
           '-v',
       ]
     elif use_x11 and test_type == 'windowed_test_launcher':
