@@ -736,7 +736,7 @@ class PublishUprevChangesStageTest(
                      '_ExtractOverlays', return_value=[['foo'], ['bar']])
     self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
-    self.build_type = constants.PFQ_TYPE
+    self.build_type = constants.CHROME_PFQ_TYPE
 
     self._Prepare()
 
@@ -753,6 +753,7 @@ class PublishUprevChangesStageTest(
     self.RunStage()
     self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
                                            staging_branch=None)
+    self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedChrome'))
 
   def testCheckSlaveUploadPrebuiltsTest(self):
     """Tests for CheckSlaveUploadPrebuiltsTest."""

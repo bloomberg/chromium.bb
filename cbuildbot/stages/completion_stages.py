@@ -1000,3 +1000,5 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     commands.UprevPush(self._build_root, push_overlays,
                        self._run.options.debug,
                        staging_branch=staging_branch)
+    if config_lib.IsMasterChromePFQ(self._run.config) and self.success:
+      self._run.attrs.metadata.UpdateWithDict({'UprevvedChrome': True})
