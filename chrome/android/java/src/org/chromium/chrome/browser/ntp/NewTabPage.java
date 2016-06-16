@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
-import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -396,12 +395,6 @@ public class NewTabPage
         public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {
             if (mIsDestroyed) return;
             mMostVisitedSites.setMostVisitedURLsObserver(observer, numResults);
-        }
-
-        @Override
-        public void getURLThumbnail(String url, ThumbnailCallback thumbnailCallback) {
-            if (mIsDestroyed) return;
-            mMostVisitedSites.getURLThumbnail(url, thumbnailCallback);
         }
 
         @Override

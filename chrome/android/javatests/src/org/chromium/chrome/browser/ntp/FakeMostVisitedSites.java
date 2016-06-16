@@ -48,16 +48,6 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void getURLThumbnail(String url, final ThumbnailCallback callback) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                callback.onMostVisitedURLsThumbnailAvailable(null, true);
-            }
-        });
-    }
-
-    @Override
     public void addBlacklistedUrl(String url) {
         mBlacklistedUrls.add(url);
     }

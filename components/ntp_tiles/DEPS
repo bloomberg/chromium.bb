@@ -8,6 +8,5 @@ include_rules = [
   "+components/suggestions",
   "+components/variations",
   "+net",
-  "+third_party/skia/include",
   "+ui/gfx",
 ]

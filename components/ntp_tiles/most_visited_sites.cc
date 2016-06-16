@@ -25,7 +25,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
 
@@ -68,17 +67,6 @@ enum MostVisitedTileType {
     ICON_DEFAULT,
     NUM_TILE_TYPES,
 };
-
-// May only be called from blocking thread pool.
-std::unique_ptr<SkBitmap> TryFetchLocalThumbnail(
-    const GURL& url,
-    const scoped_refptr<TopSites>& top_sites) {
-  scoped_refptr<base::RefCountedMemory> image;
-  std::unique_ptr<SkBitmap> bitmap;
-  if (top_sites->GetPageThumbnail(url, false, &image))
-    bitmap = gfx::JPEGCodec::Decode(image->front(), image->size());
-  return bitmap;
-}
 
 // Log an event for a given |histogram| at a given element |position|. This
 // routine exists because regular histogram macros are cached thus can't be used
@@ -247,65 +235,6 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   BuildCurrentSuggestions();
   // Also start a request for fresh suggestions.
   suggestions_service_->FetchSuggestionsData();
-}
-
-void MostVisitedSites::GetURLThumbnail(const GURL& url,
-                                       const ThumbnailCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_runner_.get(), FROM_HERE,
-      base::Bind(&TryFetchLocalThumbnail, url, top_sites_),
-      base::Bind(&MostVisitedSites::OnLocalThumbnailFetched,
-                 weak_ptr_factory_.GetWeakPtr(), url, callback));
-}
-
-void MostVisitedSites::OnLocalThumbnailFetched(
-    const GURL& url,
-    const ThumbnailCallback& callback,
-    std::unique_ptr<SkBitmap> bitmap) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (bitmap.get()) {
-    callback.Run(true /* is_local_thumbnail */, bitmap.get());
-    return;
-  }
-
-  // A thumbnail is not locally available for |url|. Make sure it is put in
-  // the list to be fetched at the next visit to this site.
-  top_sites_->AddForcedURL(url, base::Time::Now());
-  // Also fetch a remote thumbnail if possible. PopularSites or the
-  // SuggestionsService can supply a thumbnail download URL.
-  if (popular_sites_) {
-    const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
-    auto it = std::find_if(
-        sites.begin(), sites.end(),
-        [&url](const PopularSites::Site& site) { return site.url == url; });
-    if (it != sites.end() && it->thumbnail_url.is_valid()) {
-      return suggestions_service_->GetPageThumbnailWithURL(
-          url, it->thumbnail_url,
-          base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                     weak_ptr_factory_.GetWeakPtr(), false, callback));
-    }
-  }
-  if (mv_source_ == SUGGESTIONS_SERVICE) {
-    return suggestions_service_->GetPageThumbnail(
-        url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                        weak_ptr_factory_.GetWeakPtr(), false, callback));
-  }
-  // If no bitmap could be fetched and neither PopularSites nor the
-  // SuggestionsService is available then a nullptr is passed to the callback.
-  callback.Run(true /* is_local_thumbnail */, nullptr);
-}
-
-void MostVisitedSites::OnObtainedThumbnail(bool is_local_thumbnail,
-                                           const ThumbnailCallback& callback,
-                                           const GURL& url,
-                                           const gfx::Image& image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const SkBitmap* bitmap = nullptr;
-  if (!image.IsEmpty())
-    bitmap = image.ToSkBitmap();
-  callback.Run(is_local_thumbnail, bitmap);
 }
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.profiles;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -42,22 +40,6 @@ public class MostVisitedSites {
         @CalledByNative("MostVisitedURLsObserver")
         public void onPopularURLsAvailable(
                 String[] urls, String[] faviconUrls, String[] largeIconUrls);
-    }
-
-    /**
-     * Interface for receiving a thumbnail for a most visited site.
-     */
-    public interface ThumbnailCallback {
-        /**
-         * Callback method for fetching thumbnail of a most visited URL.
-         * Parameter may be null.
-         *
-         * @param thumbnail The bitmap thumbnail for the requested URL.
-         * @param isLocalThumbnail Whether the thumbnail was locally captured, as opposed to
-         *                         server-provided.
-         */
-        @CalledByNative("ThumbnailCallback")
-        public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail, boolean isLocalThumbnail);
     }
 
     /**
@@ -111,26 +93,6 @@ public class MostVisitedSites {
     }
 
     /**
-     * Fetches thumbnail bitmap for a url returned by getMostVisitedURLs.
-     *
-     * @param url String representation of url.
-     * @param callback Instance of a callback object.
-     */
-    public void getURLThumbnail(String url, final ThumbnailCallback callback) {
-        ThumbnailCallback wrappedCallback = new ThumbnailCallback() {
-            @Override
-            public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail,
-                    boolean isLocalThumbnail) {
-                // Don't notify callback if we've already been destroyed.
-                if (mNativeMostVisitedSitesBridge != 0) {
-                    callback.onMostVisitedURLsThumbnailAvailable(thumbnail, isLocalThumbnail);
-                }
-            }
-        };
-        nativeGetURLThumbnail(mNativeMostVisitedSitesBridge, url, wrappedCallback);
-    }
-
-    /**
      * Blacklists a URL from the most visited URLs list.
      */
     public void addBlacklistedUrl(String url) {
@@ -166,8 +128,6 @@ public class MostVisitedSites {
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
     private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSitesBridge,
             MostVisitedURLsObserver observer, int numSites);
-    private native void nativeGetURLThumbnail(long nativeMostVisitedSitesBridge, String url,
-            ThumbnailCallback callback);
     private native void nativeAddOrRemoveBlacklistedUrl(
             long nativeMostVisitedSitesBridge, String url,
             boolean addUrl);

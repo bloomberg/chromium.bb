@@ -33,11 +33,6 @@ class MostVisitedSitesBridge {
       const base::android::JavaParamRef<jobject>& j_observer,
       jint num_sites);
 
-  void GetURLThumbnail(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jobject>& j_callback);
   void AddOrRemoveBlacklistedUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

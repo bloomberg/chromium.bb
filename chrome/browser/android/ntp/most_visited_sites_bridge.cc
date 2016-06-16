@@ -41,22 +41,6 @@ using ntp_tiles::MostVisitedSites;
 using ntp_tiles::MostVisitedSitesSupervisor;
 using suggestions::SuggestionsServiceFactory;
 
-namespace {
-
-void CallJavaWithBitmap(
-    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
-    bool is_local_thumbnail,
-    const SkBitmap* bitmap) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_bitmap;
-  if (bitmap)
-    j_bitmap = gfx::ConvertToJavaBitmap(bitmap);
-  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
-      env, j_callback->obj(), j_bitmap.obj(), is_local_thumbnail);
-}
-
-}  // namespace
-
 MostVisitedSitesBridge::SupervisorBridge::SupervisorBridge(Profile* profile)
     : profile_(profile),
       supervisor_observer_(nullptr),
@@ -195,18 +179,6 @@ void MostVisitedSitesBridge::SetMostVisitedURLsObserver(
     jint num_sites) {
   java_observer_.reset(new JavaObserver(env, j_observer));
   most_visited_.SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
-}
-
-void MostVisitedSitesBridge::GetURLThumbnail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_url,
-    const JavaParamRef<jobject>& j_callback_obj) {
-  std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback(
-      new ScopedJavaGlobalRef<jobject>(env, j_callback_obj));
-  auto callback = base::Bind(&CallJavaWithBitmap, base::Passed(&j_callback));
-  GURL url(ConvertJavaStringToUTF8(env, j_url));
-  most_visited_.GetURLThumbnail(url, callback);
 }
 
 void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(

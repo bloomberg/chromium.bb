@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
-import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -167,13 +166,6 @@ public class NewTabPageView extends FrameLayout
          * @param numResults The maximum number of sites to retrieve.
          */
         void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults);
-
-        /**
-         * Gets a cached thumbnail of a URL.
-         * @param url The URL whose thumbnail is being retrieved.
-         * @param thumbnailCallback The callback to be notified when the thumbnail is available.
-         */
-        void getURLThumbnail(String url, ThumbnailCallback thumbnailCallback);
 
         /**
          * Gets the favicon image for a given URL.

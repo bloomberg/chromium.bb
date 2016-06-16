@@ -148,7 +148,6 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   using ThumbnailCallback = base::Callback<
       void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
-  void GetURLThumbnail(const GURL& url, const ThumbnailCallback& callback);
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void RecordTileTypeMetrics(const std::vector<int>& tile_types);
   void RecordOpenedMostVisitedItem(int index, int tile_type);
@@ -214,20 +213,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   void NotifyMostVisitedURLsObserver();
 
   void OnPopularSitesAvailable(bool success);
-
-  // Runs on the UI Thread.
-  void OnLocalThumbnailFetched(
-      const GURL& url,
-      const ThumbnailCallback& callback,
-      std::unique_ptr<SkBitmap> bitmap);
-
-  // Callback for when the thumbnail lookup is complete.
-  // Runs on the UI Thread.
-  void OnObtainedThumbnail(
-      bool is_local_thumbnail,
-      const ThumbnailCallback& callback,
-      const GURL& url,
-      const gfx::Image& bitmap);
 
   // Records thumbnail-related UMA histogram metrics.
   void RecordThumbnailUMAMetrics();
