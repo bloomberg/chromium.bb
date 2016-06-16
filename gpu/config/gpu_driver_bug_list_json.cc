@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.70",
+  "version": "8.71",
   "entries": [
     {
       "id": 1,
@@ -551,6 +551,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
+      "gl_type": "gl",
       "driver_vendor": "Mesa",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
