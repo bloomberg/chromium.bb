@@ -1333,12 +1333,12 @@ handle_escape(struct terminal *terminal)
 	}
 
 	switch (*p) {
-	case '@':    /* ICH */
+	case '@':    /* ICH - Insert <count> blank characters */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		terminal_shift_line(terminal, count);
 		break;
-	case 'A':    /* CUU */
+	case 'A':    /* CUU - Move cursor up <count> rows */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if (terminal->row - count >= terminal->margin_top)
@@ -1346,7 +1346,7 @@ handle_escape(struct terminal *terminal)
 		else
 			terminal->row = terminal->margin_top;
 		break;
-	case 'B':    /* CUD */
+	case 'B':    /* CUD - Move cursor down <count> rows */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if (terminal->row + count <= terminal->margin_bottom)
@@ -1354,7 +1354,7 @@ handle_escape(struct terminal *terminal)
 		else
 			terminal->row = terminal->margin_bottom;
 		break;
-	case 'C':    /* CUF */
+	case 'C':    /* CUF - Move cursor right by <count> columns */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if ((terminal->column + count) < terminal->width)
@@ -1362,7 +1362,7 @@ handle_escape(struct terminal *terminal)
 		else
 			terminal->column = terminal->width - 1;
 		break;
-	case 'D':    /* CUB */
+	case 'D':    /* CUB - Move cursor left <count> columns */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if ((terminal->column - count) >= 0)
@@ -1370,7 +1370,7 @@ handle_escape(struct terminal *terminal)
 		else
 			terminal->column = 0;
 		break;
-	case 'E':    /* CNL */
+	case 'E':    /* CNL - Move cursor down <count> rows, to column 1 */
 		count = set[0] ? args[0] : 1;
 		if (terminal->row + count <= terminal->margin_bottom)
 			terminal->row += count;
@@ -1378,7 +1378,7 @@ handle_escape(struct terminal *terminal)
 			terminal->row = terminal->margin_bottom;
 		terminal->column = 0;
 		break;
-	case 'F':    /* CPL */
+	case 'F':    /* CPL - Move cursour up <count> rows, to column 1 */
 		count = set[0] ? args[0] : 1;
 		if (terminal->row - count >= terminal->margin_top)
 			terminal->row -= count;
@@ -1386,14 +1386,14 @@ handle_escape(struct terminal *terminal)
 			terminal->row = terminal->margin_top;
 		terminal->column = 0;
 		break;
-	case 'G':    /* CHA */
+	case 'G':    /* CHA - Move cursor to column <y> in current row */
 		y = set[0] ? args[0] : 1;
 		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
 
 		terminal->column = y - 1;
 		break;
-	case 'f':    /* HVP */
-	case 'H':    /* CUP */
+	case 'f':    /* HVP - Move cursor to <x, y> */
+	case 'H':    /* CUP - Move cursor to <x, y> (origin at 1,1) */
 		x = (set[1] ? args[1] : 1) - 1;
 		x = x < 0 ? 0 :
 		    (x >= terminal->width ? terminal->width - 1 : x);
@@ -1420,7 +1420,7 @@ handle_escape(struct terminal *terminal)
 		}
 		terminal->column--;
 		break;
-	case 'J':    /* ED */
+	case 'J':    /* ED - Erase display */
 		row = terminal_get_row(terminal, terminal->row);
 		attr_row = terminal_get_attr_row(terminal, terminal->row);
 		if (!set[0] || args[0] == 0 || args[0] > 2) {
@@ -1449,7 +1449,7 @@ handle_escape(struct terminal *terminal)
 					       terminal->end - terminal->start);
 		}
 		break;
-	case 'K':    /* EL */
+	case 'K':    /* EL - Erase line */
 		row = terminal_get_row(terminal, terminal->row);
 		attr_row = terminal_get_attr_row(terminal, terminal->row);
 		if (!set[0] || args[0] == 0 || args[0] > 2) {
@@ -1465,7 +1465,7 @@ handle_escape(struct terminal *terminal)
 			attr_init(attr_row, terminal->curr_attr, terminal->width);
 		}
 		break;
-	case 'L':    /* IL */
+	case 'L':    /* IL - Insert <count> blank lines */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if (terminal->row >= terminal->margin_top &&
@@ -1482,7 +1482,7 @@ handle_escape(struct terminal *terminal)
 				terminal->curr_attr, terminal->width);
 		}
 		break;
-	case 'M':    /* DL */
+	case 'M':    /* DL - Delete <count> lines */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if (terminal->row >= terminal->margin_top &&
@@ -1497,7 +1497,7 @@ handle_escape(struct terminal *terminal)
 			       0, terminal->data_pitch);
 		}
 		break;
-	case 'P':    /* DCH */
+	case 'P':    /* DCH - Delete <count> characters on current line */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		terminal_shift_line(terminal, 0 - count);
@@ -1508,7 +1508,7 @@ handle_escape(struct terminal *terminal)
 	case 'T':    /* SD */
 		terminal_scroll(terminal, 0 - (set[0] ? args[0] : 1));
 		break;
-	case 'X':    /* ECH */
+	case 'X':    /* ECH - Erase <count> characters on current line */
 		count = set[0] ? args[0] : 1;
 		if (count == 0) count = 1;
 		if ((terminal->column + count) > terminal->width)
@@ -1527,7 +1527,7 @@ handle_escape(struct terminal *terminal)
 		}
 		terminal->column++;
 		break;
-	case '`':    /* HPA */
+	case '`':    /* HPA - Move cursor to <y> column in current row */
 		y = set[0] ? args[0] : 1;
 		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
 
@@ -1541,33 +1541,33 @@ handle_escape(struct terminal *terminal)
 				handle_char(terminal, terminal->last_char);
 		terminal->last_char.byte[0] = 0;
 		break;
-	case 'c':    /* Primary DA */
+	case 'c':    /* Primary DA - Answer "I am a VT102" */
 		terminal_write(terminal, "\e[?6c", 5);
 		break;
-	case 'd':    /* VPA */
+	case 'd':    /* VPA - Move cursor to <x> row, current column */
 		x = set[0] ? args[0] : 1;
 		x = x <= 0 ? 1 : x > terminal->height ? terminal->height : x;
 
 		terminal->row = x - 1;
 		break;
-	case 'g':    /* TBC */
+	case 'g':    /* TBC - Clear tab stop(s) */
 		if (!set[0] || args[0] == 0) {
 			terminal->tab_ruler[terminal->column] = 0;
 		} else if (args[0] == 3) {
 			memset(terminal->tab_ruler, 0, terminal->width);
 		}
 		break;
-	case 'h':    /* SM */
+	case 'h':    /* SM - Set mode */
 		for (i = 0; i < 10 && set[i]; i++) {
 			handle_term_parameter(terminal, args[i], 1);
 		}
 		break;
-	case 'l':    /* RM */
+	case 'l':    /* RM - Reset mode */
 		for (i = 0; i < 10 && set[i]; i++) {
 			handle_term_parameter(terminal, args[i], 0);
 		}
 		break;
-	case 'm':    /* SGR */
+	case 'm':    /* SGR - Set attributes */
 		for (i = 0; i < 10; i++) {
 			if (i <= 7 && set[i] && set[i + 1] &&
 				set[i + 2] && args[i + 1] == 5)
@@ -1590,7 +1590,7 @@ handle_escape(struct terminal *terminal)
 			}
 		}
 		break;
-	case 'n':    /* DSR */
+	case 'n':    /* DSR - Status report */
 		i = set[0] ? args[0] : 0;
 		if (i == 0 || i == 5) {
 			terminal_write(terminal, "\e[0n", 4);
@@ -1602,7 +1602,7 @@ handle_escape(struct terminal *terminal)
 			terminal_write(terminal, response, strlen(response));
 		}
  		break;
-	case 'r':
+	case 'r':    /* DECSTBM - Set scrolling region */
 		if (!set[0]) {
 			terminal->margin_top = 0;
 			terminal->margin_bottom = terminal->height-1;
@@ -1629,7 +1629,7 @@ handle_escape(struct terminal *terminal)
 			terminal->column = 0;
 		}
 		break;
-	case 's':
+	case 's':    /* Save cursor location */
 		terminal->saved_row = terminal->row;
 		terminal->saved_column = terminal->column;
 		break;
@@ -1676,7 +1676,7 @@ handle_escape(struct terminal *terminal)
 				fprintf(stderr, "Unimplemented windowOp %d\n", args[0]);
 			break;
 		}
-	case 'u':
+	case 'u':    /* Restore cursor location */
 		terminal->row = terminal->saved_row;
 		terminal->column = terminal->saved_column;
 		break;
@@ -1690,30 +1690,30 @@ static void
 handle_non_csi_escape(struct terminal *terminal, char code)
 {
 	switch(code) {
-	case 'M':    /* RI */
+	case 'M':    /* RI - Reverse linefeed */
 		terminal->row -= 1;
 		if (terminal->row < terminal->margin_top) {
 			terminal->row = terminal->margin_top;
 			terminal_scroll(terminal, -1);
 		}
 		break;
-	case 'E':    /* NEL */
+	case 'E':    /* NEL - Newline */
 		terminal->column = 0;
 		// fallthrough
-	case 'D':    /* IND */
+	case 'D':    /* IND - Linefeed */
 		terminal->row += 1;
 		if (terminal->row > terminal->margin_bottom) {
 			terminal->row = terminal->margin_bottom;
 			terminal_scroll(terminal, +1);
 		}
 		break;
-	case 'c':    /* RIS */
+	case 'c':    /* RIS - Reset*/
 		terminal_init(terminal);
 		break;
-	case 'H':    /* HTS */
+	case 'H':    /* HTS - Set tab stop at current column */
 		terminal->tab_ruler[terminal->column] = 1;
 		break;
-	case '7':    /* DECSC */
+	case '7':    /* DECSC - Save current state */
 		terminal->saved_row = terminal->row;
 		terminal->saved_column = terminal->column;
 		terminal->saved_attr = terminal->curr_attr;
@@ -1722,7 +1722,7 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 		terminal->saved_g0 = terminal->g0;
 		terminal->saved_g1 = terminal->g1;
 		break;
-	case '8':    /* DECRC */
+	case '8':    /* DECRC - Restore state most recently saved by ESC 7 */
 		terminal->row = terminal->saved_row;
 		terminal->column = terminal->saved_column;
 		terminal->curr_attr = terminal->saved_attr;
@@ -1731,10 +1731,10 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 		terminal->g0 = terminal->saved_g0;
 		terminal->g1 = terminal->saved_g1;
 		break;
-	case '=':    /* DECPAM */
+	case '=':    /* DECPAM - Set application keypad mode */
 		terminal->key_mode = KM_APPLICATION;
 		break;
-	case '>':    /* DECPNM */
+	case '>':    /* DECPNM - Set numeric keypad mode */
 		terminal->key_mode = KM_NORMAL;
 		break;
 	default:
