@@ -35,6 +35,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
+    self.Skip('deqp/functional/gles3/fbocolorbuffer/*.html', bug=618408)
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
@@ -67,9 +68,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
-        ['win'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
         ['win'], bug=483282)
 
     self.Fail('deqp/functional/gles3/transformfeedback.html',
@@ -330,9 +328,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelod.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
-
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
@@ -354,8 +349,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlod.html',
-        ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
         ['mac', 'amd'], bug=483282)
 
     # Mac Intel
@@ -409,8 +402,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
         ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
-        ['mac', 'intel'], bug=483282)
 
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
@@ -451,8 +442,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
-        ['linux', 'nvidia', 'opengl'], bug=618408)
     self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['linux', 'nvidia', 'opengl'], bug=618408)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
@@ -469,8 +458,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['linux', 'intel', 'opengl'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
-        ['linux', 'intel', 'opengl'], bug=618408)
     self.Fail('deqp/functional/gles3/shaderderivate.html',
         ['linux', 'intel', 'opengl'], bug=618408)
 
