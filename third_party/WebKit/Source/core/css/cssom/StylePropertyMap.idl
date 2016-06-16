@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
 ] interface StylePropertyMap {
     [RaisesException] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);

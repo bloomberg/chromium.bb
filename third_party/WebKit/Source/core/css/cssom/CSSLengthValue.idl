@@ -7,6 +7,7 @@ enum LengthType {
 };
 
 [
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSLengthValue : CSSStyleValue {
     [RaisesException, NewObject] CSSLengthValue add(CSSLengthValue other);

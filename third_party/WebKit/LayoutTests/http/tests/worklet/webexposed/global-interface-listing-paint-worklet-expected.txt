@@ -1,6 +1,102 @@
 CONSOLE MESSAGE: line 137: interface ByteLengthQueuingStrategy
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method size
+CONSOLE MESSAGE: line 137: interface CSSAngleValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     getter degrees
+CONSOLE MESSAGE: line 137:     getter gradians
+CONSOLE MESSAGE: line 137:     getter radians
+CONSOLE MESSAGE: line 137:     getter turns
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSCalcLength : CSSLengthValue
+CONSOLE MESSAGE: line 137:     getter ch
+CONSOLE MESSAGE: line 137:     getter cm
+CONSOLE MESSAGE: line 137:     getter em
+CONSOLE MESSAGE: line 137:     getter ex
+CONSOLE MESSAGE: line 137:     getter in
+CONSOLE MESSAGE: line 137:     getter mm
+CONSOLE MESSAGE: line 137:     getter pc
+CONSOLE MESSAGE: line 137:     getter percent
+CONSOLE MESSAGE: line 137:     getter pt
+CONSOLE MESSAGE: line 137:     getter px
+CONSOLE MESSAGE: line 137:     getter rem
+CONSOLE MESSAGE: line 137:     getter vh
+CONSOLE MESSAGE: line 137:     getter vmax
+CONSOLE MESSAGE: line 137:     getter vmin
+CONSOLE MESSAGE: line 137:     getter vw
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSKeywordValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     getter keywordValue
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSLengthValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     static method from
+CONSOLE MESSAGE: line 137:     method add
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method divide
+CONSOLE MESSAGE: line 137:     method multiply
+CONSOLE MESSAGE: line 137:     method subtract
+CONSOLE MESSAGE: line 137: interface CSSMatrix : TransformComponent
+CONSOLE MESSAGE: line 137:     getter a
+CONSOLE MESSAGE: line 137:     getter b
+CONSOLE MESSAGE: line 137:     getter c
+CONSOLE MESSAGE: line 137:     getter d
+CONSOLE MESSAGE: line 137:     getter e
+CONSOLE MESSAGE: line 137:     getter f
+CONSOLE MESSAGE: line 137:     getter m11
+CONSOLE MESSAGE: line 137:     getter m12
+CONSOLE MESSAGE: line 137:     getter m13
+CONSOLE MESSAGE: line 137:     getter m14
+CONSOLE MESSAGE: line 137:     getter m21
+CONSOLE MESSAGE: line 137:     getter m22
+CONSOLE MESSAGE: line 137:     getter m23
+CONSOLE MESSAGE: line 137:     getter m24
+CONSOLE MESSAGE: line 137:     getter m31
+CONSOLE MESSAGE: line 137:     getter m32
+CONSOLE MESSAGE: line 137:     getter m33
+CONSOLE MESSAGE: line 137:     getter m34
+CONSOLE MESSAGE: line 137:     getter m41
+CONSOLE MESSAGE: line 137:     getter m42
+CONSOLE MESSAGE: line 137:     getter m43
+CONSOLE MESSAGE: line 137:     getter m44
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSNumberValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     getter value
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSPerspective : TransformComponent
+CONSOLE MESSAGE: line 137:     getter length
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSPositionValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     getter x
+CONSOLE MESSAGE: line 137:     getter y
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSRotation : TransformComponent
+CONSOLE MESSAGE: line 137:     getter angle
+CONSOLE MESSAGE: line 137:     getter x
+CONSOLE MESSAGE: line 137:     getter y
+CONSOLE MESSAGE: line 137:     getter z
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSScale : TransformComponent
+CONSOLE MESSAGE: line 137:     getter x
+CONSOLE MESSAGE: line 137:     getter y
+CONSOLE MESSAGE: line 137:     getter z
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSSimpleLength : CSSLengthValue
+CONSOLE MESSAGE: line 137:     getter type
+CONSOLE MESSAGE: line 137:     getter value
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     setter value
+CONSOLE MESSAGE: line 137: interface CSSSkew : TransformComponent
+CONSOLE MESSAGE: line 137:     getter ax
+CONSOLE MESSAGE: line 137:     getter ay
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSStyleValue
+CONSOLE MESSAGE: line 137:     static method parse
+CONSOLE MESSAGE: line 137:     getter cssString
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSTranslation : TransformComponent
+CONSOLE MESSAGE: line 137:     getter x
+CONSOLE MESSAGE: line 137:     getter y
+CONSOLE MESSAGE: line 137:     getter z
+CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CountQueuingStrategy
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method size
@@ -115,6 +211,31 @@ CONSOLE MESSAGE: line 137:     method cancel
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method getReader
 CONSOLE MESSAGE: line 137:     method tee
+CONSOLE MESSAGE: line 137: interface StylePropertyMap
+CONSOLE MESSAGE: line 137:     method append
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method delete
+CONSOLE MESSAGE: line 137:     method entries
+CONSOLE MESSAGE: line 137:     method forEach
+CONSOLE MESSAGE: line 137:     method get
+CONSOLE MESSAGE: line 137:     method getAll
+CONSOLE MESSAGE: line 137:     method getProperties
+CONSOLE MESSAGE: line 137:     method has
+CONSOLE MESSAGE: line 137:     method keys
+CONSOLE MESSAGE: line 137:     method set
+CONSOLE MESSAGE: line 137:     method values
+CONSOLE MESSAGE: line 137: interface TransformComponent
+CONSOLE MESSAGE: line 137:     getter cssString
+CONSOLE MESSAGE: line 137:     method asMatrix
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method is2DComponent
+CONSOLE MESSAGE: line 137: interface TransformValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method entries
+CONSOLE MESSAGE: line 137:     method forEach
+CONSOLE MESSAGE: line 137:     method is2D
+CONSOLE MESSAGE: line 137:     method keys
+CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: global object

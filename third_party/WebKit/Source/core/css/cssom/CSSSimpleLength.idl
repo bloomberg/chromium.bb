@@ -4,6 +4,7 @@
 
 [
     Constructor(double value, DOMString type),
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CSSSimpleLength : CSSLengthValue {

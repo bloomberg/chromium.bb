@@ -5,6 +5,7 @@
 [
     Constructor(CSSLengthValue x, CSSLengthValue y),
     Constructor(CSSLengthValue x, CSSLengthValue y, CSSLengthValue z),
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CSSTranslation : TransformComponent {

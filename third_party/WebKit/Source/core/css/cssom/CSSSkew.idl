@@ -4,6 +4,7 @@
 
 [
     Constructor(double ax, double ay),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSSkew : TransformComponent {
     readonly attribute double ax;

@@ -4,6 +4,7 @@
 
 [
     Constructor(DOMString keyword),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSKeywordValue : CSSStyleValue {

@@ -5,6 +5,7 @@
 [
     Constructor(double x, double y),
     Constructor(double x, double y, double z),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSScale : TransformComponent {
     readonly attribute double x;

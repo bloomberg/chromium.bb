@@ -1,6 +1,7 @@
 [
     Constructor(CSSLengthValue length),
     Constructor(CalcDictionary calcDictionary),
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CSSCalcLength : CSSLengthValue {

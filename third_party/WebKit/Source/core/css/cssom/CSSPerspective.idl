@@ -4,6 +4,7 @@
 
 [
     Constructor(CSSLengthValue length),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSPerspective : TransformComponent {

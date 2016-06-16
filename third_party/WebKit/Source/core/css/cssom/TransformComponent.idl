@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
 ] interface TransformComponent {
     readonly attribute DOMString cssString;

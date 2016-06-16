@@ -4,6 +4,7 @@ enum CSSAngleUnit {
 
 [
     Constructor(double value, CSSAngleUnit unit),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSAngleValue : CSSStyleValue {

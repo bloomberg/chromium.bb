@@ -5,6 +5,7 @@
 [
     Constructor(double angle),
     Constructor(double angle, double x, double y, double z),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSRotation : TransformComponent {
     readonly attribute double angle;

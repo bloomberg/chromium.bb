@@ -4,6 +4,7 @@
 
 [
     Constructor(double value),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSNumberValue : CSSStyleValue {
     readonly attribute double value;

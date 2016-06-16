@@ -4,6 +4,7 @@
 
 [
     Constructor(CSSLengthValue x, CSSLengthValue y),
+    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSPositionValue : CSSStyleValue {
     readonly attribute CSSLengthValue x;
