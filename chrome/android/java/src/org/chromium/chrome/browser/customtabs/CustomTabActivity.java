@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 
@@ -91,7 +90,6 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mShouldOverridePackage;
 
     private boolean mRecordedStartupUma;
-    private boolean mShouldReplaceCurrentEntry;
     private boolean mHasCreatedTabEarly;
     private CustomTabObserver mTabObserver;
 
@@ -381,14 +379,8 @@ public class CustomTabActivity extends ChromeActivity {
         WebContents webContents =
                 customTabsConnection.takePrerenderedUrl(mSession, url, referrerUrl);
         mHasPrerendered = webContents != null;
-        if (webContents == null) {
-            webContents = customTabsConnection.takeSpareWebContents();
-            // TODO(lizeb): Remove this once crbug.com/521729 is fixed.
-            if (webContents != null) mShouldReplaceCurrentEntry = true;
-        }
-        if (webContents == null) {
-            webContents = WebContentsFactory.createWebContents(false, false);
-        }
+        if (webContents == null) webContents = customTabsConnection.takeSpareWebContents();
+        if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
         tab.initialize(webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding()), false,
                 false);
@@ -472,25 +464,7 @@ public class CustomTabActivity extends ChromeActivity {
         params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(this, intent,
                 PageTransition.LINK | PageTransition.FROM_API));
         mTabObserver.trackNextPageLoadFromTimestamp(timeStamp);
-        if (mShouldReplaceCurrentEntry) params.setShouldReplaceCurrentEntry(true);
-        if (mShouldReplaceCurrentEntry
-                && tab.getWebContents().getNavigationController().getEntryAtIndex(0)
-                == null) {
-            // If the spare web contents has gotten a loadurl but has not committed yet, wait
-            // until commit to start the actual load.
-            tab.getWebContents().addObserver(new WebContentsObserver() {
-                @Override
-                public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame,
-                        String url, int transitionType) {
-                    if (!isMainFrame) return;
-                    tab.loadUrl(params);
-                    tab.getWebContents().removeObserver(this);
-                }
-            });
-        } else {
-            tab.loadUrl(params);
-        }
-        mShouldReplaceCurrentEntry = false;
+        tab.loadUrl(params);
     }
 
     @Override

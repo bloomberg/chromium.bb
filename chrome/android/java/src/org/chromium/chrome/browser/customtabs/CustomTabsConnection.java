@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
@@ -227,22 +226,11 @@ public class CustomTabsConnection {
         return true;
     }
 
-    /**
-     * Creates a spare {@link WebContents}, if none exists.
-     *
-     * Navigating to "about:blank" forces a lot of initialization to take place
-     * here. This improves PLT. This navigation is never registered in the history, as
-     * "about:blank" is filtered by CanAddURLToHistory.
-     *
-     * TODO(lizeb): Replace this with a cleaner method. See crbug.com/521729.
-     */
+    /** Creates a spare {@link WebContents}, if none exists. */
     private void createSpareWebContents() {
         ThreadUtils.assertOnUiThread();
         if (mSpareWebContents != null) return;
-        mSpareWebContents = WebContentsFactory.createWebContents(false, false);
-        if (mSpareWebContents != null) {
-            mSpareWebContents.getNavigationController().loadUrl(new LoadUrlParams("about:blank"));
-        }
+        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
     }
 
     /** @return the URL converted to string, or null if it's invalid. */
@@ -360,15 +348,7 @@ public class CustomTabsConnection {
         return null;
     }
 
-    /**
-     * @return a spare WebContents, or null.
-     *
-     * This WebContents has already navigated to "about:blank". You have to call
-     * {@link LoadUrlParams.setShouldReplaceCurrentEntry(true)} for the next
-     * navigation to ensure that a back navigation doesn't lead to about:blank.
-     *
-     * TODO(lizeb): Update this when crbug.com/521729 is fixed.
-     */
+    /** @return a spare WebContents, or null. */
     WebContents takeSpareWebContents() {
         ThreadUtils.assertOnUiThread();
         WebContents result = mSpareWebContents;

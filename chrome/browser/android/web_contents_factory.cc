@@ -16,13 +16,15 @@ static ScopedJavaLocalRef<jobject> CreateWebContents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jboolean incognito,
-    jboolean initially_hidden) {
+    jboolean initially_hidden,
+    jboolean initialize_renderer) {
   Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (incognito)
     profile = profile->GetOffTheRecordProfile();
 
   content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
+  params.initialize_renderer = static_cast<bool>(initialize_renderer);
   return content::WebContents::Create(params)->GetJavaWebContents();
 }
 
