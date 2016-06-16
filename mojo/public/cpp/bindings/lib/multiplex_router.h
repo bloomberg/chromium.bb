@@ -10,6 +10,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -60,6 +61,10 @@ class MultiplexRouter
   MultiplexRouter(bool set_interface_id_namespace_bit,
                   ScopedMessagePipeHandle message_pipe,
                   scoped_refptr<base::SingleThreadTaskRunner> runner);
+
+  // Sets the master interface name for this router. Only used when reporting
+  // message header or control message validation errors.
+  void SetMasterInterfaceName(const std::string& name);
 
   // ---------------------------------------------------------------------------
   // The following public methods are safe to call from any threads.

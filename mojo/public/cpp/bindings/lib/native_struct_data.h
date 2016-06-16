@@ -13,12 +13,12 @@
 namespace mojo {
 namespace internal {
 
-class BoundsChecker;
 class Buffer;
+class ValidationContext;
 
 class NativeStruct_Data {
  public:
-  static bool Validate(const void* data, BoundsChecker* bounds_checker);
+  static bool Validate(const void* data, ValidationContext* validation_context);
 
   void EncodePointers() {}
   void DecodePointers() {}

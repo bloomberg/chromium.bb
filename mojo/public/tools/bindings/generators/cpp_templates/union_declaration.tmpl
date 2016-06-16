@@ -12,7 +12,7 @@ class {{class_name}} {
   ~{{class_name}}() {}
 
   static bool Validate(const void* data,
-                       mojo::internal::BoundsChecker* bounds_checker,
+                       mojo::internal::ValidationContext* validation_context,
                        bool inlined);
 
   bool is_null() const {

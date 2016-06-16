@@ -325,6 +325,13 @@ MultiplexRouter::~MultiplexRouter() {
   DCHECK(endpoints_.empty());
 }
 
+void MultiplexRouter::SetMasterInterfaceName(const std::string& name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  header_validator_.SetDescription(name + " [master] MessageHeaderValidator");
+  control_message_handler_.SetDescription(
+      name + " [master] PipeControlMessageHandler");
+}
+
 void MultiplexRouter::CreateEndpointHandlePair(
     ScopedInterfaceEndpointHandle* local_endpoint,
     ScopedInterfaceEndpointHandle* remote_endpoint) {

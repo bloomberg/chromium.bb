@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -24,8 +25,8 @@ class FilterChain {
   FilterChain& operator=(FilterChain&& other);
   ~FilterChain();
 
-  template <typename FilterType>
-  inline void Append();
+  template <typename FilterType, typename... Args>
+  inline void Append(Args&&... args);
 
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
@@ -47,9 +48,9 @@ class FilterChain {
   DISALLOW_COPY_AND_ASSIGN(FilterChain);
 };
 
-template <typename FilterType>
-inline void FilterChain::Append() {
-  FilterType* filter = new FilterType(sink_);
+template <typename FilterType, typename... Args>
+inline void FilterChain::Append(Args&&... args) {
+  FilterType* filter = new FilterType(std::forward<Args>(args)..., sink_);
   if (!filters_.empty())
     filters_.back()->set_sink(filter);
   filters_.push_back(filter);

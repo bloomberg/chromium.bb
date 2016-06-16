@@ -50,7 +50,7 @@ class BindingState<Interface, false> {
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!router_);
     internal::FilterChain filters;
-    filters.Append<internal::MessageHeaderValidator>();
+    filters.Append<internal::MessageHeaderValidator>(Interface::Name_);
     filters.Append<typename Interface::RequestValidator_>();
 
     router_ =
@@ -146,6 +146,7 @@ class BindingState<Interface, true> {
     DCHECK(!router_);
 
     router_ = new internal::MultiplexRouter(false, std::move(handle), runner);
+    router_->SetMasterInterfaceName(Interface::Name_);
     stub_.serialization_context()->router = router_;
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 
 namespace mojo {
 
@@ -76,6 +77,10 @@ ScopedMessageHandle Message::TakeMojoMessage() {
   buffer_.reset();
 
   return new_message;
+}
+
+void Message::NotifyBadMessage(const std::string& error) {
+  buffer_->NotifyBadMessage(error);
 }
 
 void Message::CloseHandles() {

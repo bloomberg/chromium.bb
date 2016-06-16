@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
 
@@ -19,6 +20,10 @@ PipeControlMessageHandler::PipeControlMessageHandler(
     : delegate_(delegate) {}
 
 PipeControlMessageHandler::~PipeControlMessageHandler() {}
+
+void PipeControlMessageHandler::SetDescription(const std::string& description) {
+  description_ = description;
+}
 
 // static
 bool PipeControlMessageHandler::IsPipeControlMessage(const Message* message) {
@@ -36,12 +41,16 @@ bool PipeControlMessageHandler::Accept(Message* message) {
   return false;
 }
 
-bool PipeControlMessageHandler::Validate(const Message* message) {
+bool PipeControlMessageHandler::Validate(Message* message) {
+  ValidationContext validation_context(
+      message->data(), message->data_num_bytes(), 0, message, description_);
+
   if (message->name() == pipe_control::kRunOrClosePipeMessageId) {
-    if (!ValidateMessageIsRequestWithoutResponse(message))
+    if (!ValidateMessageIsRequestWithoutResponse(message, &validation_context))
       return false;
     return ValidateMessagePayload<
-        pipe_control::internal::RunOrClosePipeMessageParams_Data>(message);
+        pipe_control::internal::RunOrClosePipeMessageParams_Data>(
+            message, &validation_context);
   }
 
   return false;

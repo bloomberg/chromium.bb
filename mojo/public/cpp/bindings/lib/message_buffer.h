@@ -36,6 +36,8 @@ class MessageBuffer : public Buffer {
 
   ScopedMessageHandle TakeMessage() { return std::move(message_); }
 
+  void NotifyBadMessage(const std::string& error);
+
  private:
   uint32_t data_num_bytes_ = 0;
   ScopedMessageHandle message_;

@@ -7,12 +7,13 @@
 }
 
 // static
-bool {{class_name}}::Validate(const void* data,
-                              mojo::internal::BoundsChecker* bounds_checker) {
+bool {{class_name}}::Validate(
+    const void* data,
+    mojo::internal::ValidationContext* validation_context) {
   if (!data)
     return true;
 
-  if (!ValidateStructHeaderAndClaimMemory(data, bounds_checker))
+  if (!ValidateStructHeaderAndClaimMemory(data, validation_context))
     return false;
 
   // NOTE: The memory backing |object| may be smaller than |sizeof(*object)| if
@@ -37,6 +38,7 @@ bool {{class_name}}::Validate(const void* data,
           break;
 
         ReportValidationError(
+            validation_context,
             mojo::internal::VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
         return false;
       }
@@ -44,6 +46,7 @@ bool {{class_name}}::Validate(const void* data,
   } else if (object->header_.num_bytes <
                  kVersionSizes[arraysize(kVersionSizes) - 1].num_bytes) {
     ReportValidationError(
+        validation_context,
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
     return false;
   }

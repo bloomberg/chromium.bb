@@ -14,7 +14,6 @@ source_set("tests") {
     "bind_task_runner_unittest.cc",
     "binding_callback_unittest.cc",
     "binding_unittest.cc",
-    "bounds_checker_unittest.cc",
     "buffer_unittest.cc",
     "callback_unittest.cc",
     "connector_unittest.cc",
@@ -40,6 +39,7 @@ source_set("tests") {
     "sync_method_unittest.cc",
     "type_conversion_unittest.cc",
     "union_unittest.cc",
+    "validation_context_unittest.cc",
     "validation_unittest.cc",
     "variant_test_util.h",
   ]

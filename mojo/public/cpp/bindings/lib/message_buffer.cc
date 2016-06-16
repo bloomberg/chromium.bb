@@ -61,5 +61,11 @@ void* MessageBuffer::Allocate(size_t delta) {
   return static_cast<void*>(start);
 }
 
+void MessageBuffer::NotifyBadMessage(const std::string& error) {
+  DCHECK(message_.is_valid());
+  MojoResult result = mojo::NotifyBadMessage(message_.get(), error);
+  DCHECK_EQ(result, MOJO_RESULT_OK);
+}
+
 }  // namespace internal
 }  // namespace mojo

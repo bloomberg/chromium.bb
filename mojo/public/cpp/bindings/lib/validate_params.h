@@ -12,7 +12,9 @@
 namespace mojo {
 namespace internal {
 
-using ValidateEnumFunc = bool (*)(int32_t);
+class ValidationContext;
+
+using ValidateEnumFunc = bool (*)(int32_t, ValidationContext*);
 
 class ContainerValidateParams {
  public:

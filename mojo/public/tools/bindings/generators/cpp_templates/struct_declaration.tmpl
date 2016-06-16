@@ -5,7 +5,7 @@ class {{class_name}} {
   static {{class_name}}* New(mojo::internal::Buffer* buf);
 
   static bool Validate(const void* data,
-                       mojo::internal::BoundsChecker* bounds_checker);
+                       mojo::internal::ValidationContext* validation_context);
 
   void EncodePointers();
   void DecodePointers();

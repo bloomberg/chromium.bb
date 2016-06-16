@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace internal {
 
-BoundsChecker::BoundsChecker(const void* data,
-                             uint32_t data_num_bytes,
-                             size_t num_handles)
-    : data_begin_(reinterpret_cast<uintptr_t>(data)),
+ValidationContext::ValidationContext(const void* data,
+                                     uint32_t data_num_bytes,
+                                     size_t num_handles,
+                                     Message* message,
+                                     const base::StringPiece& description)
+    : message_(message),
+      description_(description),
+      data_begin_(reinterpret_cast<uintptr_t>(data)),
       data_end_(data_begin_ + data_num_bytes),
       handle_begin_(0),
       handle_end_(static_cast<uint32_t>(num_handles)) {
@@ -36,10 +41,10 @@ BoundsChecker::BoundsChecker(const void* data,
   }
 }
 
-BoundsChecker::~BoundsChecker() {
+ValidationContext::~ValidationContext() {
 }
 
-bool BoundsChecker::ClaimMemory(const void* position, uint32_t num_bytes) {
+bool ValidationContext::ClaimMemory(const void* position, uint32_t num_bytes) {
   uintptr_t begin = reinterpret_cast<uintptr_t>(position);
   uintptr_t end = begin + num_bytes;
 
@@ -50,7 +55,7 @@ bool BoundsChecker::ClaimMemory(const void* position, uint32_t num_bytes) {
   return true;
 }
 
-bool BoundsChecker::ClaimHandle(const Handle_Data& encoded_handle) {
+bool ValidationContext::ClaimHandle(const Handle_Data& encoded_handle) {
   uint32_t index = encoded_handle.value;
   if (index == kEncodedInvalidHandleValue)
     return true;
@@ -64,15 +69,16 @@ bool BoundsChecker::ClaimHandle(const Handle_Data& encoded_handle) {
   return true;
 }
 
-bool BoundsChecker::IsValidRange(const void* position,
-                                 uint32_t num_bytes) const {
+bool ValidationContext::IsValidRange(const void* position,
+                                     uint32_t num_bytes) const {
   uintptr_t begin = reinterpret_cast<uintptr_t>(position);
   uintptr_t end = begin + num_bytes;
 
   return InternalIsValidRange(begin, end);
 }
 
-bool BoundsChecker::InternalIsValidRange(uintptr_t begin, uintptr_t end) const {
+bool ValidationContext::InternalIsValidRange(uintptr_t begin,
+                                             uintptr_t end) const {
   return end > begin && begin >= data_begin_ && end <= data_end_;
 }
 

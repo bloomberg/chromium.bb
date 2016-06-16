@@ -4,17 +4,17 @@
 
 #include "mojo/public/cpp/bindings/lib/native_struct_data.h"
 
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 namespace mojo {
 namespace internal {
 
 // static
 bool NativeStruct_Data::Validate(const void* data,
-                                 BoundsChecker* bounds_checker) {
+                                 ValidationContext* validation_context) {
   const ContainerValidateParams data_validate_params(0, false, nullptr);
-  return Array_Data<uint8_t>::Validate(data, bounds_checker,
+  return Array_Data<uint8_t>::Validate(data, validation_context,
                                        &data_validate_params);
 }
 

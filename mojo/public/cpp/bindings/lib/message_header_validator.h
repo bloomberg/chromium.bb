@@ -14,8 +14,17 @@ namespace internal {
 class MessageHeaderValidator : public MessageFilter {
  public:
   explicit MessageHeaderValidator(MessageReceiver* sink = nullptr);
+  MessageHeaderValidator(const std::string& description,
+                         MessageReceiver* sink = nullptr);
+
+  // Sets the description associated with this validator. Used for reporting
+  // more detailed validation errors.
+  void SetDescription(const std::string& description);
 
   bool Accept(Message* message) override;
+
+ private:
+  std::string description_;
 };
 
 }  // namespace internal

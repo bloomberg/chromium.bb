@@ -8,13 +8,14 @@
 }
 
 // static
-bool {{class_name}}::Validate(const void* data,
-                              mojo::internal::BoundsChecker* bounds_checker,
-                              bool inlined) {
+bool {{class_name}}::Validate(
+    const void* data,
+    mojo::internal::ValidationContext* validation_context,
+    bool inlined) {
   if (!data)
     return true;
 
-  if (!ValidateUnionHeaderAndClaimMemory(data, inlined, bounds_checker))
+  if (!ValidateUnionHeaderAndClaimMemory(data, inlined, validation_context))
     return false;
 
   const {{class_name}}* object = static_cast<const {{class_name}}*>(data);
@@ -30,6 +31,7 @@ bool {{class_name}}::Validate(const void* data,
 {%- endfor %}
     default: {
       ReportValidationError(
+          validation_context,
           mojo::internal::VALIDATION_ERROR_UNKNOWN_UNION_TAG,
           "unknown tag in {{union.name}}");
       return false;

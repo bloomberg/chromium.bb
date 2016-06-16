@@ -14,11 +14,11 @@
 #include "base/logging.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 
@@ -146,7 +146,7 @@ struct ArraySerializationHelper<T, false> {
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
-                               BoundsChecker* bounds_checker,
+                               ValidationContext* validation_context,
                                const ContainerValidateParams* validate_params) {
     DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
@@ -158,7 +158,7 @@ struct ArraySerializationHelper<T, false> {
 
     // Enum validation.
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!validate_params->validate_enum_func(elements[i]))
+      if (!validate_params->validate_enum_func(elements[i], validation_context))
         return false;
     }
     return true;
@@ -177,7 +177,7 @@ struct ArraySerializationHelper<Handle_Data, false> {
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
-                               BoundsChecker* bounds_checker,
+                               ValidationContext* validation_context,
                                const ContainerValidateParams* validate_params) {
     DCHECK(!validate_params->element_validate_params)
         << "Handle type should not have array validate params";
@@ -185,6 +185,7 @@ struct ArraySerializationHelper<Handle_Data, false> {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!validate_params->element_is_nullable && !elements[i].is_valid()) {
         ReportValidationError(
+            validation_context,
             VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
             MakeMessageWithArrayIndex(
                 "invalid handle in array expecting valid handles",
@@ -192,8 +193,9 @@ struct ArraySerializationHelper<Handle_Data, false> {
                 i).c_str());
         return false;
       }
-      if (!bounds_checker->ClaimHandle(elements[i])) {
-        ReportValidationError(VALIDATION_ERROR_ILLEGAL_HANDLE);
+      if (!validation_context->ClaimHandle(elements[i])) {
+        ReportValidationError(validation_context,
+                              VALIDATION_ERROR_ILLEGAL_HANDLE);
         return false;
       }
     }
@@ -217,11 +219,12 @@ struct ArraySerializationHelper<P*, false> {
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
-                               BoundsChecker* bounds_checker,
+                               ValidationContext* validation_context,
                                const ContainerValidateParams* validate_params) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!validate_params->element_is_nullable && !elements[i].offset) {
         ReportValidationError(
+            validation_context,
             VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
             MakeMessageWithArrayIndex("null in array expecting valid pointers",
                                       header->num_elements,
@@ -229,11 +232,12 @@ struct ArraySerializationHelper<P*, false> {
         return false;
       }
       if (!ValidateEncodedPointer(&elements[i].offset)) {
-        ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+        ReportValidationError(validation_context,
+                              VALIDATION_ERROR_ILLEGAL_POINTER);
         return false;
       }
       if (!ValidateCaller<P>::Run(DecodePointerRaw(&elements[i].offset),
-                                  bounds_checker,
+                                  validation_context,
                                   validate_params->element_validate_params)) {
         return false;
       }
@@ -245,21 +249,21 @@ struct ArraySerializationHelper<P*, false> {
   template <typename T>
   struct ValidateCaller {
     static bool Run(const void* data,
-                    BoundsChecker* bounds_checker,
+                    ValidationContext* validation_context,
                     const ContainerValidateParams* validate_params) {
       DCHECK(!validate_params)
           << "Struct type should not have array validate params";
 
-      return T::Validate(data, bounds_checker);
+      return T::Validate(data, validation_context);
     }
   };
 
   template <typename Key, typename Value>
   struct ValidateCaller<Map_Data<Key, Value>> {
     static bool Run(const void* data,
-                    BoundsChecker* bounds_checker,
+                    ValidationContext* validation_context,
                     const ContainerValidateParams* validate_params) {
-      return Map_Data<Key, Value>::Validate(data, bounds_checker,
+      return Map_Data<Key, Value>::Validate(data, validation_context,
                                             validate_params);
     }
   };
@@ -267,9 +271,9 @@ struct ArraySerializationHelper<P*, false> {
   template <typename T>
   struct ValidateCaller<Array_Data<T>> {
     static bool Run(const void* data,
-                    BoundsChecker* bounds_checker,
+                    ValidationContext* validation_context,
                     const ContainerValidateParams* validate_params) {
-      return Array_Data<T>::Validate(data, bounds_checker, validate_params);
+      return Array_Data<T>::Validate(data, validation_context, validate_params);
     }
   };
 };
@@ -290,18 +294,19 @@ struct ArraySerializationHelper<U, true> {
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
-                               BoundsChecker* bounds_checker,
+                               ValidationContext* validation_context,
                                const ContainerValidateParams* validate_params) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!validate_params->element_is_nullable && elements[i].is_null()) {
         ReportValidationError(
+            validation_context,
             VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
             MakeMessageWithArrayIndex("null in array expecting valid unions",
                                       header->num_elements, i)
                 .c_str());
         return false;
       }
-      if (!ElementType::Validate(elements + i, bounds_checker, true))
+      if (!ElementType::Validate(elements + i, validation_context, true))
         return false;
     }
     return true;
@@ -331,27 +336,31 @@ class Array_Data {
   }
 
   static bool Validate(const void* data,
-                       BoundsChecker* bounds_checker,
+                       ValidationContext* validation_context,
                        const ContainerValidateParams* validate_params) {
     if (!data)
       return true;
     if (!IsAligned(data)) {
-      ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_MISALIGNED_OBJECT);
       return false;
     }
-    if (!bounds_checker->IsValidRange(data, sizeof(ArrayHeader))) {
-      ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
+    if (!validation_context->IsValidRange(data, sizeof(ArrayHeader))) {
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
       return false;
     }
     const ArrayHeader* header = static_cast<const ArrayHeader*>(data);
     if (header->num_elements > Traits::kMaxNumElements ||
         header->num_bytes < Traits::GetStorageSize(header->num_elements)) {
-      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
       return false;
     }
     if (validate_params->expected_num_elements != 0 &&
         header->num_elements != validate_params->expected_num_elements) {
       ReportValidationError(
+          validation_context,
           VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
           MakeMessageWithExpectedArraySize(
               "fixed-size array has wrong number of elements",
@@ -359,14 +368,15 @@ class Array_Data {
               validate_params->expected_num_elements).c_str());
       return false;
     }
-    if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {
-      ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
+    if (!validation_context->ClaimMemory(data, header->num_bytes)) {
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
       return false;
     }
 
     const Array_Data<T>* object = static_cast<const Array_Data<T>*>(data);
     return Helper::ValidateElements(&object->header_, object->storage(),
-                                    bounds_checker, validate_params);
+                                    validation_context, validate_params);
   }
 
   size_t size() const { return header_.num_elements; }

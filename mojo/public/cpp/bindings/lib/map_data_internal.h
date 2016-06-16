@@ -25,48 +25,53 @@ class Map_Data {
   // |validate_params| must have non-null |key_validate_params| and
   // |element_validate_params| members.
   static bool Validate(const void* data,
-                       BoundsChecker* bounds_checker,
+                       ValidationContext* validation_context,
                        const ContainerValidateParams* validate_params) {
     if (!data)
       return true;
 
-    if (!ValidateStructHeaderAndClaimMemory(data, bounds_checker))
+    if (!ValidateStructHeaderAndClaimMemory(data, validation_context))
       return false;
 
     const Map_Data* object = static_cast<const Map_Data*>(data);
     if (object->header_.num_bytes != sizeof(Map_Data) ||
         object->header_.version != 0) {
-      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
 
     if (!ValidateEncodedPointer(&object->keys.offset)) {
-      ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_ILLEGAL_POINTER);
       return false;
     }
     if (!object->keys.offset) {
-      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                             "null key array in map struct");
       return false;
     }
     if (!Array_Data<Key>::Validate(DecodePointerRaw(&object->keys.offset),
-                                   bounds_checker,
+                                   validation_context,
                                    validate_params->key_validate_params)) {
       return false;
     }
 
     if (!ValidateEncodedPointer(&object->values.offset)) {
-      ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_ILLEGAL_POINTER);
       return false;
     }
     if (!object->values.offset) {
-      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                             "null value array in map struct");
       return false;
     }
     if (!Array_Data<Value>::Validate(
             DecodePointerRaw(&object->values.offset),
-            bounds_checker, validate_params->element_validate_params)) {
+            validation_context, validate_params->element_validate_params)) {
       return false;
     }
 
@@ -75,7 +80,8 @@ class Map_Data {
     const ArrayHeader* value_header = static_cast<const ArrayHeader*>(
         DecodePointerRaw(&object->values.offset));
     if (key_header->num_elements != value_header->num_elements) {
-      ReportValidationError(VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP);
+      ReportValidationError(validation_context,
+                            VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP);
       return false;
     }
 

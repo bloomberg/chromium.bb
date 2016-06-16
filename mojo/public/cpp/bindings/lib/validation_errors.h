@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 namespace mojo {
 namespace internal {
@@ -62,12 +63,16 @@ enum ValidationError {
   // Attempted to deserialize a tagged union with an unknown tag.
   VALIDATION_ERROR_UNKNOWN_UNION_TAG,
   // A value of a non-extensible enum type is unknown.
-  VALIDATION_ERROR_UNKNOWN_ENUM_VALUE
+  VALIDATION_ERROR_UNKNOWN_ENUM_VALUE,
+  // Message deserialization failure, for example due to rejection by custom
+  // validation logic.
+  VALIDATION_ERROR_DESERIALIZATION_FAILED,
 };
 
 const char* ValidationErrorToString(ValidationError error);
 
-void ReportValidationError(ValidationError error,
+void ReportValidationError(ValidationContext* context,
+                           ValidationError error,
                            const char* description = nullptr);
 
 // Only used by validation tests and when there is only one thread doing message

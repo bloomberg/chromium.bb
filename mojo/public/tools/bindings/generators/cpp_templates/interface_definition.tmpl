@@ -5,7 +5,8 @@
 {%- set proxy_name = interface.name ~ "Proxy" %}
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
-{%- macro alloc_params(struct, params, message, serialization_context) %}
+{%- macro alloc_params(struct, params, message, serialization_context,
+                       description) %}
   ({{params}})->DecodePointers();
   ({{serialization_context}})->handles.Swap(({{message}})->mutable_handles());
   bool success = true;
@@ -15,8 +16,16 @@
   {{struct.name}}DataView input_data_view({{params}},
                                           {{serialization_context}});
   {{struct_macros.deserialize(struct, "input_data_view", "p_%s", "success")}}
-  if (!success)
+  if (!success) {
+    mojo::internal::ValidationContext validation_context(
+        {{message}}->data(), {{message}}->data_num_bytes(),
+        {{message}}->handles()->size(), {{message}},
+        "{{description}} deserializer");
+    ReportValidationError(
+        &validation_context,
+        mojo::internal::VALIDATION_ERROR_DESERIALIZATION_FAILED);
     return false;
+  }
 {%- endmacro %}
 
 {%- macro pass_params(parameters) %}
@@ -98,7 +107,8 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
           message->mutable_payload());
 
   {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_")}}
+                 "&serialization_context_",
+                 "{{class_name}}::{{method.name}} response")}}
 
 {%-       for param in method.response_parameters %}
 {%-         if param.kind|is_move_only_kind %}
@@ -133,7 +143,8 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
           message->mutable_payload());
 
   {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_")}}
+                 "&serialization_context_",
+                 "{{class_name}}_{{method.name}} response")}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
@@ -294,7 +305,8 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
               message->mutable_payload());
 
       {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_")|indent(4)}}
+          "&serialization_context_", "{{class_name}}::{{method.name}}")
+              |indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
@@ -324,7 +336,8 @@ bool {{class_name}}Stub::AcceptWithResponder(
               message->mutable_payload());
 
       {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_")|indent(4)}}
+          "&serialization_context_", "{{class_name}}::{{method.name}}")|
+              indent(4)}}
       {{class_name}}::{{method.name}}Callback::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(),
@@ -357,8 +370,12 @@ bool {{class_name}}Stub::AcceptWithResponder(
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
   assert(sink_);
 
+  mojo::internal::ValidationContext validation_context(
+    message->data(), message->data_num_bytes(), message->handles()->size(),
+    message, "{{class_name}} RequestValidator");
+
   if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    if (!mojo::internal::ValidateControlRequest(message))
+    if (!mojo::internal::ValidateControlRequest(message, &validation_context))
       return false;
     return sink_->Accept(message);
   }
@@ -367,14 +384,19 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 {%- for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
 {%-   if method.response_parameters != None %}
-      if (!mojo::internal::ValidateMessageIsRequestExpectingResponse(message))
+      if (!mojo::internal::ValidateMessageIsRequestExpectingResponse(
+              message, &validation_context)) {
         return false;
+      }
 {%-   else %}
-      if (!mojo::internal::ValidateMessageIsRequestWithoutResponse(message))
+      if (!mojo::internal::ValidateMessageIsRequestWithoutResponse(
+              message, &validation_context)) {
         return false;
+      }
 {%-   endif %}
       if (!mojo::internal::ValidateMessagePayload<
-               internal::{{class_name}}_{{method.name}}_Params_Data>(message)) {
+               internal::{{class_name}}_{{method.name}}_Params_Data>(
+                  message, &validation_context)) {
         return false;
       }
       return sink_->Accept(message);
@@ -386,6 +408,7 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 
   // Unrecognized message.
   ReportValidationError(
+      &validation_context,
       mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
   return false;
 }
@@ -399,19 +422,24 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
   assert(sink_);
 
+  mojo::internal::ValidationContext validation_context(
+    message->data(), message->data_num_bytes(), message->handles()->size(),
+    message, "{{class_name}} ResponseValidator");
+
   if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    if (!mojo::internal::ValidateControlResponse(message))
+    if (!mojo::internal::ValidateControlResponse(message, &validation_context))
       return false;
     return sink_->Accept(message);
   }
 
-  if (!mojo::internal::ValidateMessageIsResponse(message))
+  if (!mojo::internal::ValidateMessageIsResponse(message, &validation_context))
     return false;
   switch (message->header()->name) {
 {%- for method in interface.methods if method.response_parameters != None %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
       if (!mojo::internal::ValidateMessagePayload<
-               internal::{{class_name}}_{{method.name}}_ResponseParams_Data>(message)) {
+               internal::{{class_name}}_{{method.name}}_ResponseParams_Data>(
+                    message, &validation_context)) {
         return false;
       }
       return sink_->Accept(message);
@@ -423,6 +451,7 @@ bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
 
   // Unrecognized message.
   ReportValidationError(
+      &validation_context,
       mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
   return false;
 }

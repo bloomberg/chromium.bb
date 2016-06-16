@@ -164,7 +164,7 @@ class InterfacePtrState<Interface, false> {
       return;
 
     FilterChain filters;
-    filters.Append<MessageHeaderValidator>();
+    filters.Append<MessageHeaderValidator>(Interface::Name_);
     filters.Append<typename Interface::ResponseValidator_>();
 
     router_ = new Router(std::move(handle_), std::move(filters), false,
@@ -325,6 +325,7 @@ class InterfacePtrState<Interface, true> {
       return;
 
     router_ = new MultiplexRouter(true, std::move(handle_), runner_);
+    router_->SetMasterInterfaceName(Interface::Name_);
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,

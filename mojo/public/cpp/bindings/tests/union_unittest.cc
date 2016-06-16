@@ -12,9 +12,9 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/lib/validation_context.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
@@ -172,10 +172,10 @@ TEST(UnionTest, PodValidation) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   EXPECT_TRUE(
-      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+      internal::PodUnion_Data::Validate(raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -224,8 +224,9 @@ TEST(UnionTest, SerializeIsNullNotInlined) {
 
 TEST(UnionTest, NullValidation) {
   void* buf = nullptr;
-  mojo::internal::BoundsChecker bounds_checker(buf, 0, 0);
-  EXPECT_TRUE(internal::PodUnion_Data::Validate(buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(buf, 0, 0);
+  EXPECT_TRUE(internal::PodUnion_Data::Validate(
+      buf, &validation_context, false));
 }
 
 TEST(UnionTest, OutOfAlignmentValidation) {
@@ -237,9 +238,10 @@ TEST(UnionTest, OutOfAlignmentValidation) {
 
   internal::PodUnion_Data* data =
       reinterpret_cast<internal::PodUnion_Data*>(buf);
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_FALSE(internal::PodUnion_Data::Validate(buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_FALSE(internal::PodUnion_Data::Validate(
+      buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -247,11 +249,11 @@ TEST(UnionTest, OOBValidation) {
   size_t size = sizeof(internal::PodUnion_Data) - 1;
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = internal::PodUnion_Data::New(&buf);
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   void* raw_buf = buf.Leak();
   EXPECT_FALSE(
-      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+      internal::PodUnion_Data::Validate(raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -260,11 +262,11 @@ TEST(UnionTest, UnknownTagValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = internal::PodUnion_Data::New(&buf);
   data->tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(0xFFFFFF);
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   void* raw_buf = buf.Leak();
   EXPECT_FALSE(
-      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+      internal::PodUnion_Data::Validate(raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -281,10 +283,10 @@ TEST(UnionTest, UnknownEnumValueValidation) {
   mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   EXPECT_FALSE(
-      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+      internal::PodUnion_Data::Validate(raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -301,10 +303,10 @@ TEST(UnionTest, UnknownExtensibleEnumValueValidation) {
   mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   EXPECT_TRUE(
-      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+      internal::PodUnion_Data::Validate(raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -369,11 +371,11 @@ TEST(UnionTest, NullStringValidation) {
   internal::ObjectUnion_Data* data = internal::ObjectUnion_Data::New(&buf);
   data->tag = internal::ObjectUnion_Data::ObjectUnion_Tag::F_STRING;
   data->data.unknown = 0x0;
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   void* raw_buf = buf.Leak();
-  EXPECT_FALSE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  EXPECT_FALSE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -383,11 +385,11 @@ TEST(UnionTest, StringPointerOverflowValidation) {
   internal::ObjectUnion_Data* data = internal::ObjectUnion_Data::New(&buf);
   data->tag = internal::ObjectUnion_Data::ObjectUnion_Tag::F_STRING;
   data->data.unknown = 0xFFFFFFFFFFFFFFFF;
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   void* raw_buf = buf.Leak();
-  EXPECT_FALSE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  EXPECT_FALSE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -403,10 +405,10 @@ TEST(UnionTest, StringValidateOOB) {
       reinterpret_cast<mojo::internal::ArrayHeader*>(ptr + *ptr);
   array_header->num_bytes = 20;  // This should go out of bounds.
   array_header->num_elements = 20;
-  mojo::internal::BoundsChecker bounds_checker(data, 32, 0);
+  mojo::internal::ValidationContext validation_context(data, 32, 0);
   void* raw_buf = buf.Leak();
-  EXPECT_FALSE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  EXPECT_FALSE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -511,10 +513,10 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
   data =
       reinterpret_cast<mojo::internal::Array_Data<internal::ObjectUnion_Data>*>(
           new_buf.data());
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   ASSERT_TRUE(mojo::internal::Array_Data<internal::ObjectUnion_Data>::Validate(
-      data, &bounds_checker, &validate_params));
+      data, &validation_context, &validate_params));
 
   data->DecodePointers();
   Array<ObjectUnionPtr> array2;
@@ -600,9 +602,10 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(internal::SmallStruct_Data::Validate(
+      raw_buf, &validation_context));
   free(raw_buf);
 }
 
@@ -625,9 +628,10 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_FALSE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_FALSE(internal::SmallStruct_Data::Validate(
+      raw_buf, &validation_context));
   free(raw_buf);
 }
 
@@ -645,10 +649,10 @@ TEST(UnionTest, Validation_NullUnion_Failure) {
       internal::SmallStructNonNullableUnion_Data::New(&buf);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
   EXPECT_FALSE(internal::SmallStructNonNullableUnion_Data::Validate(
-      raw_buf, &bounds_checker));
+      raw_buf, &validation_context));
   free(raw_buf);
 }
 
@@ -668,9 +672,10 @@ TEST(UnionTest, Validation_NullableUnion) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(internal::SmallStruct_Data::Validate(
+      raw_buf, &validation_context));
   free(raw_buf);
 }
 
@@ -796,10 +801,10 @@ TEST(UnionTest, StructInUnionValidation) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_TRUE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -819,10 +824,10 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_FALSE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_FALSE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -842,10 +847,10 @@ TEST(UnionTest, StructInUnionValidationNullable) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_TRUE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -904,11 +909,11 @@ TEST(UnionTest, ArrayInUnionValidation) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
 
-  EXPECT_TRUE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  EXPECT_TRUE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -971,11 +976,11 @@ TEST(UnionTest, MapInUnionValidation) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
 
-  EXPECT_TRUE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  EXPECT_TRUE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -1030,10 +1035,10 @@ TEST(UnionTest, UnionInUnionValidation) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_TRUE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -1052,10 +1057,10 @@ TEST(UnionTest, UnionInUnionValidationNonNullable) {
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
-  EXPECT_FALSE(
-      internal::ObjectUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 0);
+  EXPECT_FALSE(internal::ObjectUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -1129,10 +1134,10 @@ TEST(UnionTest, HandleInUnionValidation) {
                                             &context);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 1);
-  EXPECT_TRUE(
-      internal::HandleUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 1);
+  EXPECT_TRUE(internal::HandleUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 
@@ -1152,10 +1157,10 @@ TEST(UnionTest, HandleInUnionValidationNull) {
                                             &context);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 1);
-  EXPECT_FALSE(
-      internal::HandleUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  mojo::internal::ValidationContext validation_context(
+      data, static_cast<uint32_t>(size), 1);
+  EXPECT_FALSE(internal::HandleUnion_Data::Validate(
+      raw_buf, &validation_context, false));
   free(raw_buf);
 }
 

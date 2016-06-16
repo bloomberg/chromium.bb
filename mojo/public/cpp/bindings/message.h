@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -98,6 +99,10 @@ class Message {
   // transmission. Note that this invalidates this Message object, taking
   // ownership of its internal storage and any attached handles.
   ScopedMessageHandle TakeMojoMessage();
+
+  // Notifies the system that this message is "bad," in this case meaning it was
+  // rejected by bindings validation code.
+  void NotifyBadMessage(const std::string& error);
 
  private:
   void CloseHandles();

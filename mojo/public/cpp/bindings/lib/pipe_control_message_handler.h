@@ -22,6 +22,10 @@ class PipeControlMessageHandler : public MessageReceiver {
       PipeControlMessageHandlerDelegate* delegate);
   ~PipeControlMessageHandler() override;
 
+  // Sets the description for this handler. Used only when reporting validation
+  // errors.
+  void SetDescription(const std::string& description);
+
   // NOTE: |message| must have passed message header validation.
   static bool IsPipeControlMessage(const Message* message);
 
@@ -35,9 +39,10 @@ class PipeControlMessageHandler : public MessageReceiver {
 
  private:
   // |message| must have passed message header validation.
-  bool Validate(const Message* message);
+  bool Validate(Message* message);
   bool RunOrClosePipe(Message* message);
 
+  std::string description_;
   PipeControlMessageHandlerDelegate* const delegate_;
   SerializationContext context_;
 
