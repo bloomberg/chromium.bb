@@ -536,10 +536,6 @@ class RebaselineJson(AbstractParallelRebaselineCommand):
         ])
 
     def execute(self, options, args, tool):
-        # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
-        _log.error("Rebaseline is broken at the moment. See crbug.com/574272.")
-        return
-
         self._rebaseline(options, json.loads(sys.stdin.read()))
 
 
@@ -579,10 +575,6 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             self._test_prefix_list[test_name][builder_name] = suffixes
 
     def execute(self, options, args, tool):
-        # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
-        _log.error("Rebaseline is broken at the moment. See crbug.com/574272.")
-        return
-
         options.results_directory = None
         self._test_prefix_list = {}
         port_names = tool.port_factory.all_port_names(options.platform)
@@ -620,10 +612,6 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         return self._tool.buildbot.builder_with_name(name)
 
     def execute(self, options, args, tool):
-        # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
-        _log.error("Rebaseline is broken at the moment. See crbug.com/574272.")
-        return
-
         if not args:
             _log.error("Must list tests to rebaseline.")
             return
