@@ -13,6 +13,7 @@ if (use_aura) {
     ]
 
     deps = [
+      ":libcast_graphics_1.0",
       "//chromecast/public",
       "//ui/aura",
       "//ui/display",

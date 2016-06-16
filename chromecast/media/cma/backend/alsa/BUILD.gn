@@ -25,6 +25,7 @@ shared_library("libcast_media_1.0_audio") {
     "cast_media_shlib.cc",
     "media_codec_support_cast_audio.cc",
   ]
+
   deps = [
     ":alsa_cma_backend",
     "//base",
@@ -50,6 +51,8 @@ source_set("alsa_cma_backend") {
     "stream_mixer_alsa_input_impl.cc",
     "stream_mixer_alsa_input_impl.h",
   ]
+
+  libs = [ "asound" ]
 
   deps = [
     ":alsa_features",
