@@ -83,7 +83,7 @@ bool FLAGS_quic_cede_correctly = true;
 bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
 
 // Resend 0RTT requests in response to an REJ that re-establishes encryption.
-bool FLAGS_quic_reply_to_rej = true;
+bool FLAGS_quic_reply_to_rej = false;
 
 // If true, QUIC connections can do bandwidth resumption with an initial window
 // of < 10 packets.
