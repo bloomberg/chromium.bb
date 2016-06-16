@@ -71,6 +71,14 @@ if (pdf_enable_xfa) {
     ]
   }
 
+  fuzzer_test("pdf_css_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_css_fuzzer",
+    ]
+    dict = "dicts/pdf_css.dict"
+  }
+
   fuzzer_test("pdf_fm2js_fuzzer") {
     sources = []
     deps = [
