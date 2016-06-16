@@ -11,6 +11,7 @@
 #include "ash/common/wm_window_observer.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -39,15 +40,15 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     // Makes sure that text is readable with |background_color|.
     void SetBackgroundColor(SkColor background_color);
 
-    void set_top_padding(int top_padding) { top_padding_ = top_padding; }
+    void set_padding(const gfx::Insets& padding) { padding_ = padding; }
 
    protected:
     // views::LabelButton:
     gfx::Rect GetChildAreaBounds() override;
 
    private:
-    // Padding on top of the button.
-    int top_padding_;
+    // Padding on all sides to correctly place the text inside the view.
+    gfx::Insets padding_;
 
     DISALLOW_COPY_AND_ASSIGN(OverviewLabelButton);
   };

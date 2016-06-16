@@ -51,6 +51,11 @@ namespace {
 static const int kWindowMargin = 30;
 static const int kWindowMarginMD = 5;
 
+// Cover the transformed window including the gaps between the windows with a
+// transparent shield to block the input events from reaching the transformed
+// window while in overview.
+static const int kWindowSelectorMargin = kWindowMarginMD * 2;
+
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
 
@@ -86,9 +91,8 @@ static const float kDimmedItemOpacity = 0.5f;
 static const int kSelectorFadeInMilliseconds = 200;
 
 // Calculates the |window| bounds after being transformed to the selector's
-// space. With Material Design at most |title_height| is reserved above the
-// |window|. The returned Rect is in virtual screen coordinates.
-gfx::Rect GetTransformedBounds(WmWindow* window, int title_height) {
+// space. The returned Rect is in virtual screen coordinates.
+gfx::Rect GetTransformedBounds(WmWindow* window) {
   gfx::RectF bounds(
       window->GetRootWindow()->ConvertRectToScreen(window->GetTargetBounds()));
   gfx::Transform new_transform = TransformAboutPivot(
@@ -166,9 +170,7 @@ OverviewCloseButton::~OverviewCloseButton() {
 WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
     views::ButtonListener* listener,
     const base::string16& text)
-    : LabelButton(listener, text),
-      top_padding_(0) {
-}
+    : LabelButton(listener, text) {}
 
 WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {
 }
@@ -180,10 +182,9 @@ void WindowSelectorItem::OverviewLabelButton::SetBackgroundColor(
 
 gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(padding_);
   if (ash::MaterialDesignController::IsOverviewMaterial())
     bounds.Inset(kHorizontalLabelPaddingMD, 0, kHorizontalLabelPaddingMD, 0);
-  else
-    bounds.Inset(0, top_padding_, 0, 0);
   return bounds;
 }
 
@@ -200,11 +201,21 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
  protected:
   // views::View:
   void Layout() override {
+    // Position close button in the top right corner sized to its icon size and
+    // the label in the top left corner as tall as the button and extending to
+    // the button's left edge.
+    // The rest of this container view serves as a shield to prevent input
+    // events from reaching the transformed window in overview.
     gfx::Rect bounds(GetLocalBounds());
-    bounds.Inset(0, 0, bounds.height(), 0);
+    bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
+    const int visible_height = close_button_->GetPreferredSize().height();
+    gfx::Insets label_padding(0, 0, bounds.height() - visible_height,
+                              visible_height);
+    label_->set_padding(label_padding);
     label_->SetBoundsRect(bounds);
-    bounds.set_x(bounds.right());
-    bounds.set_width(bounds.height());
+    bounds.set_x(bounds.right() - visible_height);
+    bounds.set_width(visible_height);
+    bounds.set_height(visible_height);
     close_button_->SetBoundsRect(bounds);
   }
 
@@ -415,8 +426,8 @@ void WindowSelectorItem::UpdateWindowLabel(
   }
 
   gfx::Rect label_bounds = root_window_->ConvertRectFromScreen(window_bounds);
-  window_label_button_view_->set_top_padding(label_bounds.height() -
-                                             kVerticalLabelPadding);
+  window_label_button_view_->set_padding(
+      gfx::Insets(label_bounds.height() - kVerticalLabelPadding, 0, 0, 0));
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
       ScopedOverviewAnimationSettingsFactory::Get()
           ->CreateOverviewAnimationSettings(
@@ -481,8 +492,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 void WindowSelectorItem::UpdateHeaderLayout(
     OverviewAnimationType animation_type) {
   gfx::Rect transformed_window_bounds =
-      root_window_->ConvertRectFromScreen(GetTransformedBounds(
-          GetWindow(), close_button_->GetPreferredSize().height()));
+      root_window_->ConvertRectFromScreen(GetTransformedBounds(GetWindow()));
 
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::Rect label_rect(close_button_->GetPreferredSize());
@@ -498,8 +508,14 @@ void WindowSelectorItem::UpdateHeaderLayout(
         WmLookup::Get()->GetWindowForWidget(window_label_.get());
     WmWindow* window_label_selector_window =
         WmLookup::Get()->GetWindowForWidget(window_label_selector_.get());
-    window_label_window->SetBounds(label_rect);
     window_label_selector_window->SetBounds(label_rect);
+    // |window_label_window| covers both the transformed window and the header
+    // as well as the gap between the windows to prevent events from reaching
+    // the window including its sizing borders.
+    label_rect.set_height(label_rect.height() +
+                          transformed_window_bounds.height());
+    label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
+    window_label_window->SetBounds(label_rect);
     std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
         ScopedOverviewAnimationSettingsFactory::Get()
             ->CreateOverviewAnimationSettings(animation_type,
