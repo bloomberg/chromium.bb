@@ -272,6 +272,7 @@ public:
 
 namespace WTF {
 
+// PtrHash is the default hash for hash tables with Member<>-derived elements.
 template <typename T>
 struct MemberHash : PtrHash<T> {
     STATIC_ONLY(MemberHash);
@@ -282,17 +283,6 @@ struct MemberHash : PtrHash<T> {
 };
 
 template <typename T>
-struct WeakMemberHash : MemberHash<T> {
-    STATIC_ONLY(WeakMemberHash);
-};
-
-template <typename T>
-struct UntracedMemberHash : MemberHash<T> {
-    STATIC_ONLY(UntracedMemberHash);
-};
-
-// PtrHash is the default hash for hash tables with members.
-template <typename T>
 struct DefaultHash<blink::Member<T>> {
     STATIC_ONLY(DefaultHash);
     using Hash = MemberHash<T>;
@@ -301,13 +291,13 @@ struct DefaultHash<blink::Member<T>> {
 template <typename T>
 struct DefaultHash<blink::WeakMember<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = WeakMemberHash<T>;
+    using Hash = MemberHash<T>;
 };
 
 template <typename T>
 struct DefaultHash<blink::UntracedMember<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = UntracedMemberHash<T>;
+    using Hash = MemberHash<T>;
 };
 
 template<typename T>

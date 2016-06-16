@@ -693,25 +693,27 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 namespace WTF {
 
 template <typename T>
-struct PersistentHash : MemberHash<T> {
-    STATIC_ONLY(PersistentHash);
-};
-
-template <typename T>
-struct CrossThreadPersistentHash : MemberHash<T> {
-    STATIC_ONLY(CrossThreadPersistentHash);
-};
-
-template <typename T>
 struct DefaultHash<blink::Persistent<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = PersistentHash<T>;
+    using Hash = MemberHash<T>;
+};
+
+template <typename T>
+struct DefaultHash<blink::WeakPersistent<T>> {
+    STATIC_ONLY(DefaultHash);
+    using Hash = MemberHash<T>;
 };
 
 template <typename T>
 struct DefaultHash<blink::CrossThreadPersistent<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = CrossThreadPersistentHash<T>;
+    using Hash = MemberHash<T>;
+};
+
+template <typename T>
+struct DefaultHash<blink::CrossThreadWeakPersistent<T>> {
+    STATIC_ONLY(DefaultHash);
+    using Hash = MemberHash<T>;
 };
 
 template<typename T>
