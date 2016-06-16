@@ -4,10 +4,22 @@
 
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 
-#include "base/logging.h"
+#include "base/bind.h"
+#include "chromeos/dbus/arc_obb_mounter_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 
 namespace arc {
+
+namespace {
+
+// Used to convert mojo Callback to VoidDBusMethodCallback.
+void RunMojoCallback(const mojo::Callback<void(bool)>& callback,
+                     chromeos::DBusMethodCallStatus result) {
+  callback.Run(result == chromeos::DBUS_METHOD_CALL_SUCCESS);
+}
+
+}  // namespace
 
 ArcObbMounterBridge::ArcObbMounterBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
@@ -29,16 +41,15 @@ void ArcObbMounterBridge::MountObb(const mojo::String& obb_file,
                                    const mojo::String& target_path,
                                    int32_t owner_gid,
                                    const MountObbCallback& callback) {
-  // TODO(hashimoto): Implement this. crbug.com/613480
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->MountObb(
+      obb_file.get(), target_path.get(), owner_gid,
+      base::Bind(&RunMojoCallback, callback));
 }
 
 void ArcObbMounterBridge::UnmountObb(const mojo::String& target_path,
                                      const UnmountObbCallback& callback) {
-  // TODO(hashimoto): Implement this. crbug.com/613480
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->UnmountObb(
+      target_path.get(), base::Bind(&RunMojoCallback, callback));
 }
 
 }  // namespace arc
