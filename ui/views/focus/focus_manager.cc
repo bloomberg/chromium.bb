@@ -517,7 +517,8 @@ void FocusManager::ViewRemoved(View* removed) {
   // clear the focus.  However, it's not safe to call ClearFocus()
   // (and in turn ClearNativeFocus()) here because ViewRemoved() can
   // be called while the top level widget is being destroyed.
-  if (focused_view_ && removed->Contains(focused_view_))
+  DCHECK(removed);
+  if (removed->Contains(focused_view_))
     SetFocusedView(NULL);
 }
 

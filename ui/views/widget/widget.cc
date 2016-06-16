@@ -1068,7 +1068,7 @@ void Widget::OnNativeWidgetCreated(bool desktop_widget) {
 void Widget::OnNativeWidgetDestroying() {
   // Tell the focus manager (if any) that root_view is being removed
   // in case that the focused view is under this root view.
-  if (GetFocusManager())
+  if (GetFocusManager() && root_view_)
     GetFocusManager()->ViewRemoved(root_view_.get());
   FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetDestroying(this));
   if (non_client_view_)
