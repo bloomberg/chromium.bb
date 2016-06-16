@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2015 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
+#  Copyright (C) 2015,2016 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
 #  Copyright (C) 2015 Sreeja sreeja.param@gmail.com
 #  Copyright (C) 2015 Dipendra Manocha d@saksham.org
 #
@@ -20,7 +20,7 @@
 #  <http://www.gnu.org/licenses/>.
 #
 
-# This table contains braille codes and rules for Mongolian  script.
+# This table contains braille codes and rules for Mongolian script.
 # Contributors: Dipendra Manocha, Sreeja, Tsengel
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
@@ -112,10 +112,6 @@ uplow \x0401\x0451 16
 
 #mongolian symbols
 
-sign →  5-13
-sign ← 46-2
-sign ↓ 126-345
-sign ↑ 234-156
 sign  ` 356
 sign ` 236 dots
 sign  `  356
@@ -146,6 +142,40 @@ sign ‡ 1-6-12456
 sign ♀ 45-1346
 sign ♂ 45-13456
 sign 〃 5-2
+sign ∥ 3456-123
+sign ◦ 5-356
+sign \x27C2 3456-36
+sign \x2228 4-235
+sign ∧ 4-236
+sign ∪ 46-235
+sign ∀ 45-1
+sign ∇ 45-145
+sign ‹ 124568
+sign › 5-8
+sign ≡ 456-123456
+sign ≈ 45-35
+sign ∫ 56-2346
+sign ⌠ 347
+sign ⌡ 1567
+sign ∩ 46-236
+sign ∙ 48
+sign ¯ 4-36
+sign ― 5-6-36
+sign ‗  36
+sign ′ 56-2356
+sign ″ 56-2356-56-2356
+sign ∞ 3456-123456
+sign ∂ 4-145
+sign √ 5-146
+sign α 56-46-1
+sign π 56-46-1234
+sign β 56-46-12
+sign º 145-1245
+sign ¼  3456-1-34-145
+sign ½  3456-1-34-12
+sign ¾  3456-14-34-145
+sign ´  45-34
+sign ● 35
 
 sign \\ 12567                   # 92
 
@@ -157,16 +187,15 @@ sign \x00A5 4-13456             # 165 ¥ yen sign
 
 sign § 4-234-3                  # 167 section sign \x00A7
 
-sign \x00A9 2356-6-14-2356      # 169   © copyright sign
+sign \x00A9 2356-6-14-2356      # 169 © copyright sign
 sign \x00AE 2356-6-1235-2356    # Registered
-punctuation \x00Ad 36           # 173     soft hyphen
-sign \x00B0 356                 # degrees
+# sign \X2116 1345 # NUMERO SIGN
+punctuation \x00Ad 36           # 173 soft hyphen
+sign \x00B0 356 degrees
 sign \x00B4 4
 always \x00B4 4                 # acute accent sign
 sign \x00B5 2-134               # micro sign, (mu)
 sign \x00B6 4-1234-345          # 182  ¶ pilcrow sign
-math \x00D7 5-236               # * sign for mongolian
-math \x00F7 5-34                # Division sign for mongolian
 
 punctuation \x2010 36           # 8208  hyphen
 punctuation \x2011 23478        # 8209  non-breaking hyphen
