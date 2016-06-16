@@ -24,6 +24,7 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -109,6 +110,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput", "Main"})
+    @FlakyTest
     public void testDoesNotHang_getTextAfterKeyboardHides() throws Throwable {
         setComposingText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, 0, 5);
@@ -236,6 +238,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @FlakyTest(message = "crbug.com/603991")
     public void testImeCopy() throws Exception {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
@@ -576,6 +579,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @FlakyTest(message = "crbug.com/603991")
     public void testImeCut() throws Exception {
         commitText("snarful", 1);
         waitAndVerifyUpdateSelection(0, 7, 7, -1, -1);
@@ -667,6 +671,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @FlakyTest(message = "crbug.com/598482")
     public void testImeSelectAndUnSelectAll() throws Exception {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
@@ -766,6 +771,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @FlakyTest
     public void testSwipingText() throws Throwable {
         focusElement("textarea");
 
@@ -1077,6 +1083,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @FlakyTest(message = "crbug.com/598482")
     public void testPastePopupShowAndHide() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
