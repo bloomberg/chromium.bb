@@ -1,0 +1,98 @@
+tables: [unicode.dis, en-ueb-g1.ctb.bak]
+tests:
+  - [°, ⠘⠚]
+  - [–, ⠠⠤]
+  - [—, ⠠⠤]
+  - [―, ⠐⠠⠤]
+  - [±, ⠸⠖]
+  - [¼, ⠼⠁⠌⠙]
+  - [½, ⠼⠁⠌⠃]
+  - [¾, ⠼⠉⠌⠙]
+  - [×, ⠐⠦]
+  - [÷, ⠐⠌]
+  - [´, ⠘⠌]
+  - [¨, ⠘⠒]
+  - [¯, ⠈⠤]
+  - [Àà, ⠠⠘⠡⠁⠘⠡⠁]
+  - [Áá, ⠠⠘⠌⠁⠘⠌⠁]
+  - [Ââ, ⠠⠘⠩⠁⠘⠩⠁]
+  - [Ãã, ⠠⠘⠻⠁⠘⠻⠁]
+  - [Ää, ⠠⠘⠒⠁⠘⠒⠁]
+  - [Åå, ⠠⠘⠫⠁⠘⠫⠁]
+  - [Ææ, ⠠⠁⠠⠘⠖⠑⠁⠘⠖⠑]
+  - [Çç, ⠠⠘⠯⠉⠘⠯⠉]
+  - [Èè, ⠠⠘⠡⠑⠘⠡⠑]
+  - [Éé, ⠠⠘⠌⠑⠘⠌⠑]
+  - [Êê, ⠠⠘⠩⠑⠘⠩⠑]
+  - [Ëë, ⠠⠘⠒⠑⠘⠒⠑]
+  - [Ìì, ⠠⠘⠡⠊⠘⠡⠊]
+  - [Íí, ⠠⠘⠌⠊⠘⠌⠊]
+  - [Îî, ⠠⠘⠩⠊⠘⠩⠊]
+  - [Ïï, ⠠⠘⠒⠊⠘⠒⠊]
+  - [Ðð, ⠠⠼⠫⠼⠫]
+  - [Ññ, ⠠⠘⠻⠝⠘⠻⠝]
+  - [Òò, ⠠⠘⠡⠕⠘⠡⠕]
+  - [Óó, ⠠⠘⠌⠕⠘⠌⠕]
+  - [Ôô, ⠠⠘⠩⠕⠘⠩⠕]
+  - [Õõ, ⠠⠘⠻⠕⠘⠻⠕]
+  - [Öö, ⠠⠘⠒⠕⠘⠒⠕]
+  - [Øø, ⠠⠈⠡⠕⠈⠡⠕]
+  - [Ùù, ⠠⠘⠡⠥⠘⠡⠥]
+  - [Úú, ⠠⠘⠌⠥⠘⠌⠥]
+  - [Ûû, ⠠⠘⠩⠥⠘⠩⠥]
+  - [Üü, ⠠⠘⠒⠥⠘⠒⠥]
+  - [Ýý, ⠠⠘⠌⠽⠘⠌⠽]
+  - [Þþ, ⠠⠼⠮⠼⠮]
+  - [ÿ, ⠰⠘⠒⠽]
+  - [1st, ⠼⠁⠎⠞]
+  - [2nd, ⠼⠃⠝⠙]
+  - [3rd, ⠼⠉⠗⠙]
+  - [4th, ⠼⠙⠞⠓]
+  - - one italic word
+    - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
+    - typeform:
+        italic: '    ++++++     '
+      # Emphasis doesn't always work
+      xfail: true
+  - - two italic words
+    - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
+    - typeform:
+        italic: '++++++++++      '
+      # Emphasis doesn't always work
+      xfail: true
+  - - three italic words
+    - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
+    - typeform:
+        italic: '++++++++++++++++++'
+  - - one bold word
+    - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
+    - typeform:
+        bold: '    ++++     '
+      # Emphasis doesn't always work
+      xfail: true
+  - - two bold words
+    - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
+    - typeform:
+        bold: '++++++++      '
+      # Emphasis doesn't always work
+      xfail: true
+  - - three bold words
+    - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
+    - typeform:
+        bold: '++++++++++++++++'
+  - - one underlined word
+    - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
+    - typeform:
+        underline: '    ++++++++++     '
+      # Emphasis doesn't always work
+      xfail: true
+  - - two underlined words
+    - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
+    - typeform:
+        underline: '++++++++++++++      '
+      # Emphasis doesn't always work
+      xfail: true
+  - - three underlined words
+    - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
+    - typeform:
+        underline: '++++++++++++++++++++++'

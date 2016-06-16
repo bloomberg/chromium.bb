@@ -1,13 +1,19 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.6.6 (2016-3-7)
-
+* Noteworthy changes in release 3.0.0-pre (201?-??-??)
 ** New features
 - The YAML tests now allow for an optional test description. See the
   documentation for more details.
 ** Bug fixes
 ** Other changes
+- Improvements to the test suite:
+  - Output is printed to stderr. This helps with locating errors when
+    testing with the YAML test suite.
+  - typeform is included in output.
 ** Braille table improvements
+- Improved Finish 6-dot braille thanks to Jukka Eerikäinen
+- Improvements to the Chinese braille table thanks to Coscell Kao
+- Improvements to Mongolian thanks to Tsengel Maidar and Sreeja Param
 ** Backwards incompatible changes
 - The json based harness test suite has been removed as its
   functionality has been superceded by the YAML tests. Please use

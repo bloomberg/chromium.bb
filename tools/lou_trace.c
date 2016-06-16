@@ -24,6 +24,7 @@
 #include "louis.h"
 #include <getopt.h>
 #include "progname.h"
+#include "unistr.h"
 #include "version-etc.h"
 
 static int forward_flag = 0;
@@ -75,7 +76,8 @@ get_input(void) {
   static char input_buffer[BUFSIZE];
   size_t input_length;
   input_buffer[0] = 0;
-  fgets(input_buffer, sizeof(input_buffer), stdin);
+  if (!fgets(input_buffer, sizeof(input_buffer), stdin))
+    exit(EXIT_FAILURE);
   input_length = strlen(input_buffer) - 1;
   if (input_length < 0)
     exit(0);
@@ -90,10 +92,15 @@ get_wide_input(widechar * buffer) {
 
 static char *
 print_chars(const widechar * buffer, int length) {
-  static char chars[BUFSIZE];
-  strcpy(chars, &showString(buffer, length)[1]);
-  chars[strlen(chars) - 1] = 0;
-  return chars;
+  static uint8_t result_buf[BUFSIZE];
+  size_t result_len = BUFSIZE - 1;
+#ifndef HAVE_UCS4
+    u16_to_u8(buffer, length, &result_buf, &result_len);
+#else
+    u32_to_u8(buffer, length, &result_buf, &result_len);
+#endif
+  result_buf[result_len] = 0;
+  return result_buf;
 }
 
 static char *

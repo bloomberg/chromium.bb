@@ -61,16 +61,64 @@ tests:
   - # Underlines, p. 39
     - Tietoa saa Näkövammaisten Keskusliitosta.
     - ⠠⠞⠊⠑⠞⠕⠁ ⠎⠁⠁ ⠬⠠⠝⠜⠅⠪⠧⠁⠍⠍⠁⠊⠎⠞⠑⠝ ⠬⠠⠅⠑⠎⠅⠥⠎⠇⠊⠊⠞⠕⠎⠞⠁⠄
-    - {typeform: '00000000000444444444444444444444444444440'}
+    # if the period is not bold then liblouis assumes that the
+    # emphasis stops inside a word and adds an end emphasis indicator.
+    # For that reason the period is also marked up as bold.
+    - {typeform: {bold: '           ++++++++++++++++++++++++++++++'}}
   - # Bold, p. 39
     - Hän kiinnitti huomiota järjestysluvun taivutukseen sanassa tuhannennen.
     - ⠠⠓⠜⠝ ⠅⠊⠊⠝⠝⠊⠞⠞⠊ ⠓⠥⠕⠍⠊⠕⠞⠁ ⠬⠚⠜⠗⠚⠑⠎⠞⠽⠎⠇⠥⠧⠥⠝ ⠞⠁⠊⠧⠥⠞⠥⠅⠎⠑⠑⠝ ⠎⠁⠝⠁⠎⠎⠁ ⠞⠥⠓⠁⠝⠬⠝⠑⠝⠬⠝⠑⠝⠄
-    - {typeform: '00000000000000000000000222222222222220000000000000000000000000002220000'}
+    - typeform:
+        underline: '                       ++++++++++++++                           +++    '
   - # Italic, p. 40
     - Ei kaikki ole kultaa, mikä kiiltää.
     - ⠠⠑⠊ ⠨⠅⠁⠊⠅⠅⠊ ⠕⠇⠑ ⠅⠥⠇⠞⠁⠁⠂ ⠨⠍⠊⠅⠜ ⠅⠊⠊⠇⠞⠜⠜⠄
-    - {typeform: '00011111100000000000001111000000000'}
+    - typeform:
+        italic: '   ++++++             ++++         '
   - # Longer emphasized phrase, p. 39
     - Tämä on yli kolmen sanan testi.
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
-    - {typeform: '0000022222222222222222222222220'}
+    # if the period is not bold then liblouis assumes that the
+    # emphasis stops inside a word and adds an end emphasis indicator.
+    # For that reason the period is also marked up as bold.
+    - typeform:
+        underline: '     ++++++++++++++++++++++++++'
+
+  - # Character additions:
+    # Copyright symbol, registered trademark symbol, trademark symbol.
+    # Not covered by the official specification document, but
+    # conventionally marked as (c), (r) and tm.
+    - © ® ™
+    - ⠦⠉⠴ ⠦⠗⠴ ⠞⠍
+
+  - # Unknown characters.
+    # Not covered by the official specification document, but
+    # conventionally replaced with an asterisk.
+    - გ
+    - ⠔
+
+  - # Emphasis only at the beginning of a word
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠍⠊⠑⠎
+    - typeform:
+        italic: '+++++++       '
+  - # Emphasis only in the middle of a word
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎
+    - typeform:
+        italic: '       +++    '
+  - # Emphasis only at the end of a word. According to a Finish
+    # braille expert this case is not specified, i.e. whether an
+    # indicator is needed if the emphasis ends at word end. So we
+    # assume no indicator is needed
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠏⠜⠜⠨⠍⠊⠑⠎
+    - typeform:
+        italic: '          ++++'
+  - # Emphasis at the beginning and the end of a word, but not in the middle
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - typeform:
+        italic: '+++++++   ++++'
+      xfail: this test also fails in master, i.e. w/o the UEB improvements
+

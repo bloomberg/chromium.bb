@@ -28,10 +28,10 @@
 #include "louis.h"
 
 static int
-ignoreCaseComp (const char *str1, const char *str2, int length)
+ignoreCaseComp (const char *str1, const char *str2, size_t length)
 {
 /* Replaces strncasecmp, which some compilers don't support */
-  int k;
+  size_t k;
   for (k = 0; k < length; k++)
     if ((str1[k] | 32) != (str2[k] | 32))
       break;
@@ -43,7 +43,7 @@ ignoreCaseComp (const char *str1, const char *str2, int length)
 static int
 findAction (const char **actions, const char *action)
 {
-  int actionLength = strlen (action);
+  size_t actionLength = strlen (action);
   int k;
   for (k = 0; actions[k]; k += 2)
     if (actionLength == strlen (actions[k])

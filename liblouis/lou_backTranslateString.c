@@ -327,6 +327,7 @@ backTranslateWithTracing (const char *tableList, const widechar * inbuf,
 static char currentTypeform = plain_text;
 static int nextUpper = 0;
 static int allUpper = 0;
+static int allUpperPhrase = 0;
 static int itsANumber = 0;
 static int itsALetter = 0;
 static int itsCompbrl = 0;
@@ -493,14 +494,22 @@ handleMultind ()
     return 0;
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
-    case CTO_CapitalSign:
-      found = findBrailleIndicatorRule (table->capitalSign);
+    case CTO_SingleLetterCapsRule: // FIXME: make sure this works
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][singleLetterOffset]);
       break;
-    case CTO_BeginCapitalSign:
-      found = findBrailleIndicatorRule (table->beginCapitalSign);
+    // NOTE:  following fixme is based on the names at the time of
+    //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
+    // FIXME: the next two opcodes were begcaps/endcaps,
+    //        and they were aliased to opcodes capsword/capswordstop.
+    //        However, the table attributes they use are
+    //        table->beginCapitalSign and table->endCapitalSign.
+    //        These are actually compiled with firstlettercaps/lastlettercaps.
+    //        Which to use here?
+    case CTO_CapsWordRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordOffset]);
       break;
-    case CTO_EndCapitalSign:
-      found = findBrailleIndicatorRule (table->endCapitalSign);
+    case CTO_CapsWordStopRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordStopOffset]);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
@@ -508,32 +517,32 @@ handleMultind ()
     case CTO_NumberSign:
       found = findBrailleIndicatorRule (table->numberSign);
       break;
-    case CTO_LastWordItalBefore:
-      found = findBrailleIndicatorRule (table->lastWordItalBefore);
+    case CTO_LastWordItalBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastWordBeforeOffset]);
       break;
-    case CTO_BegItal:
-      found = findBrailleIndicatorRule (table->firstLetterItal);
+    case CTO_FirstLetterItalRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][firstLetterOffset]);
       break;
-    case CTO_LastLetterItal:
-      found = findBrailleIndicatorRule (table->lastLetterItal);
+    case CTO_LastLetterItalRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastLetterOffset]);
       break;
-    case CTO_LastWordBoldBefore:
-      found = findBrailleIndicatorRule (table->lastWordBoldBefore);
+    case CTO_LastWordUnderBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastWordBeforeOffset]);
       break;
-    case CTO_FirstLetterBold:
-      found = findBrailleIndicatorRule (table->firstLetterBold);
+    case CTO_FirstLetterUnderRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][firstLetterOffset]);
       break;
-    case CTO_LastLetterBold:
-      found = findBrailleIndicatorRule (table->lastLetterBold);
+    case CTO_LastLetterUnderRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastLetterOffset]);
       break;
-    case CTO_LastWordUnderBefore:
-      found = findBrailleIndicatorRule (table->lastWordUnderBefore);
+    case CTO_LastWordBoldBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastWordBeforeOffset]);
       break;
-    case CTO_FirstLetterUnder:
-      found = findBrailleIndicatorRule (table->firstLetterUnder);
+    case CTO_FirstLetterBoldRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][firstLetterOffset]);
       break;
-    case CTO_EndUnder:
-      found = findBrailleIndicatorRule (table->lastLetterUnder);
+    case CTO_LastLetterBoldRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastLetterOffset]);
       break;
     case CTO_BegComp:
       found = findBrailleIndicatorRule (table->begComp);
@@ -661,12 +670,14 @@ back_selectRule ()
 		      if (itsANumber)
 			return;
 		      break;
-		    case CTO_CapitalRule:
-		    case CTO_BeginCapitalRule:
-		    case CTO_EndCapitalRule:
+		    case CTO_SingleLetterCapsRule:
+		    case CTO_FirstLetterCapsRule:
+		    case CTO_LastLetterCapsRule:
+		    case CTO_CapsWordRule:
+		    case CTO_CapsWordStopRule:
 		    case CTO_FirstLetterItalRule:
 		    case CTO_LastLetterItalRule:
-		    case CTO_LastWordBoldBeforeRule:
+		    case CTO_FirstLetterBoldRule:
 		    case CTO_LastLetterBoldRule:
 		    case CTO_FirstLetterUnderRule:
 		    case CTO_LastLetterUnderRule:
@@ -802,7 +813,7 @@ putchars (const widechar * chars, int count)
 	(back_findCharOrDots (chars[k++], 0))->uppercase;
       nextUpper = 0;
     }
-  if (!allUpper)
+  if (!allUpper && !allUpperPhrase)
     {
       memcpy (&currentOutput[dest], &chars[k], CHARSIZE * (count - k));
       dest += count - k;
@@ -1052,7 +1063,7 @@ backTranslateString ()
 /*Back translation */
   int srcword = 0;
   int destword = 0;		/* last word translated */
-  nextUpper = allUpper = itsANumber = itsALetter = itsCompbrl = 0;
+  nextUpper = allUpper = allUpperPhrase = itsANumber = itsALetter = itsCompbrl = 0;
   previousOpcode = CTO_None;
   src = dest = 0;
   while (src < srcmax)
@@ -1073,18 +1084,28 @@ backTranslateString ()
 	    if (!insertSpace ())
 	      goto failure;
 	  break;
-	case CTO_CapitalRule:
+	case CTO_SingleLetterCapsRule:
 	  nextUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_BeginCapitalRule:
+	case CTO_CapsWordRule:
 	  allUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_EndCapitalRule:
+	case CTO_FirstLetterCapsRule:
+	  allUpperPhrase = 1;
+	  src += currentDotslen;
+	  continue;
+	  break;
+	case CTO_CapsWordStopRule:
 	  allUpper = 0;
+	  src += currentDotslen;
+	  continue;
+	  break;
+	case CTO_LastLetterCapsRule:
+	  allUpperPhrase = 0;
 	  src += currentDotslen;
 	  continue;
 	  break;

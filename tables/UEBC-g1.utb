@@ -28,16 +28,19 @@ include ukchardefs.cti All character definition opcodes
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
-multind 56-6 letsign capsign
+multind 56-6 letsign capsletter
 letsign 56
-capsign 6
-begcaps 6-6
+capsletter 6
+begcapsword 6-6
 #begphasecaps 6-6-6
-endcaps 6-3
-begital 46-2356
-endital 46-3
-begbold 45-2356
-endbold 45-3
+endcapsword 6-3
+emphclass italic
+emphclass underline
+emphclass bold
+begemph italic 46-2356
+endemph italic 46-3
+begemph bold 45-2356
+endemph bold 45-3
 #begnocont 56-56-56
 #endnocont 56-3
 

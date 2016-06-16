@@ -224,14 +224,17 @@ endnum # 3456
 
 # Braille indicators
 numsign 6  number sign, just a dots operand
-capsign 46
-begcaps 46-46
-firstwordital 456-456
-lastworditalbefore 456
-firstletterital 456
-singleletterital 456
-firstwordbold 456-456
-lastwordboldbefore 456
+capsletter 46
+begcapsword 46-46
+emphclass italic
+emphclass underline
+emphclass bold
+begemphphrase italic 456-456
+endemphphrase italic before 456
+begemphword italic 456
+emphletter italic 456
+begemphphrase bold 456-456
+endemphphrase bold before 456
 
 litdigit 0 3456				zéro
 litdigit 1 16					un

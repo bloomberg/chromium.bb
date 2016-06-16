@@ -12,6 +12,7 @@ without any warranty. */
 #include <stdlib.h>
 #include "liblouis.h"
 #include "brl_checks.h"
+#include "default_table.h"
 
 int
 main (int argc, char **argv)

@@ -34,20 +34,24 @@ include da-chardefs8.cti
 # Rules for grade 1 and grade 2
 
 # Emphasis opcodes
-firstwordital 56
-lastworditalafter 56
-firstletterital 56
-lastletterital 56
+emphclass italic
+emphclass underline
+emphclass bold
 
-firstwordbold 56
-lastwordboldafter 56
-firstletterbold 56
-lastletterbold 56
+begemphphrase italic 56
+endemphphrase italic after 56
+begemphword italic 56
+endemphword italic 56
 
-firstwordunder 56
-lastwordunderafter 56
-firstletterunder 56
-lastletterunder 56
+begemphphrase bold 56
+endemphphrase bold after 56
+begemphword bold 56
+endemphword bold 56
+
+begemphphrase underline 56
+endemphphrase underline after 56
+begemphword underline 56
+endemphword underline 56
 
 #always \x2013 36-36
 #always \x0096 36-36

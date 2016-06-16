@@ -1,28 +1,71 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-Copyright (C) 2015 Swiss Library for the Blind, Visually Impaired and Print Disabled
+Copyright (C) 2015, 2016 Christian Egli, Swiss Library for the Blind, Visually Impaired and Print Disabled
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-This library is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
 
 #include <config.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "louis.h"
 #include "error.h"
-#include "liblouis.h"
+#include "progname.h"
+#include "version-etc.h"
 #include "brl_checks.h"
+
+static const struct option longopts[] =
+{
+  { "help", no_argument, NULL, 'h' },
+  { "version", no_argument, NULL, 'v' },
+  { NULL, 0, NULL, 0 }
+};
+
+const char version_etc_copyright[] =
+  "Copyright %s %d Swiss Library for the Blind, Visually Impaired and Print Disabled";
+
+#define AUTHORS "Christian Egli"
+
+static void
+print_help (void)
+{
+  printf ("\
+Usage: %s YAML_TEST_FILE\n", program_name);
+  
+  fputs ("\
+Run the tests defined in the YAML_TEST_FILE. Return 0 if all tests pass\n\
+or 1 if any of the tests fail. The details of failing tests are printed\n\
+to stderr.\n\n", stdout);
+
+  fputs ("\
+  -h, --help          display this help and exit\n\
+  -v, --version       display version information and exit\n", stdout);
+
+  printf ("\n");
+  printf ("Report bugs to %s.\n", PACKAGE_BUGREPORT);
+
+#ifdef PACKAGE_PACKAGER_BUG_REPORTS
+  printf ("Report %s bugs to: %s\n", PACKAGE_PACKAGER, PACKAGE_PACKAGER_BUG_REPORTS);
+#endif
+#ifdef PACKAGE_URL
+  printf ("%s home page: <%s>\n", PACKAGE_NAME, PACKAGE_URL);
+#endif
+}
 
 #define EXIT_SKIPPED 77
 
@@ -46,9 +89,16 @@ int translation_mode = 0;
 int errors = 0;
 int count = 0;
 
+static char** emph_classes = NULL;
+
 void
-simple_error (const char *msg, yaml_event_t *event) {
-  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line, "%s", msg);
+simple_error (const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line ? event->start_mark.line : parser->problem_mark.line, "%s", msg);
+}
+
+void
+yaml_parse_error (yaml_parser_t *parser) {
+  error_at_line(EXIT_FAILURE, 0, file_name, parser->problem_mark.line, "%s", parser->problem);
 }
 
 void
@@ -64,7 +114,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT) ||
       strcmp(event.data.scalar.value, "tables")) {
-    simple_error("tables expected", &event);
+    simple_error("tables expected", parser, &event);
   }
 
   yaml_event_delete(&event);
@@ -79,7 +129,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
   char *p = tables_list;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -90,6 +140,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
     }
     yaml_event_delete(&event);
   }
+  emph_classes = getEmphClasses(tables_list); // get declared emphasis classes
 }
 
 void
@@ -129,7 +180,7 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
     }
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -186,7 +237,7 @@ read_mode (yaml_parser_t *parser) {
     yaml_event_delete(&event);
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_SEQUENCE_END_EVENT)
     yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -219,7 +270,7 @@ read_cursorPos (yaml_parser_t *parser, int len) {
     error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		  "Too many or too few cursor positions (%i) for word of length %i\n", i, len);
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_SEQUENCE_END_EVENT)
     yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -227,9 +278,82 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 }
 
 void
+read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, int len) {
+  yaml_event_t event;
+  int typeform_len;
+
+  if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+    yaml_error(YAML_SCALAR_EVENT, &event);
+  typeform_len = strlen(event.data.scalar.value);
+  if (typeform_len != len)
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Too many or too typeforms (%i) for word of length %i\n", typeform_len, len);
+  update_typeform(event.data.scalar.value, typeform, kind);
+  yaml_event_delete(&event);
+}
+
+formtype*
+read_typeforms (yaml_parser_t *parser, int len) {
+  yaml_event_t event;
+  formtype *typeform = calloc(len, sizeof(formtype));
+  int parse_error = 1;
+
+  if (!yaml_parser_parse(parser, &event) ||
+      (event.type != YAML_MAPPING_START_EVENT))
+    yaml_error(YAML_MAPPING_START_EVENT, &event);
+  yaml_event_delete(&event);
+
+  while ((parse_error = yaml_parser_parse(parser, &event)) &&
+	 (event.type == YAML_SCALAR_EVENT)) {
+    if (!strcmp(event.data.scalar.value, "computer_braille")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, computer_braille, len);
+    } else if (!strcmp(event.data.scalar.value, "word_reset")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, word_reset, len);
+    } else {
+      int i;
+      typeforms kind = plain_text;
+      for (i = 0; emph_classes[i]; i++) {
+        if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
+          yaml_event_delete(&event);
+          switch (i) {
+          case 0: kind = italic; break;
+          case 1: kind = underline; break;
+          case 2: kind = bold; break;
+          case 3: kind = script; break;
+          case 4: kind = trans_note; break;
+          case 5: kind = trans_note_1; break;
+          case 6: kind = trans_note_2; break;
+          case 7: kind = trans_note_3; break;
+          case 8: kind = trans_note_4; break;
+          case 9: kind = trans_note_5; break;
+          default:
+            fprintf(stderr, "CODING ERROR\n");
+            exit(1);
+          }
+          read_typeform_string(parser, typeform, kind, len);
+          break;
+        }
+      }
+      if (kind == plain_text)
+        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+                      "Typeform '%s' was not declared\n", event.data.scalar.value);
+    }
+  }
+  if (!parse_error)
+    yaml_parse_error(parser);
+
+  if (event.type != YAML_MAPPING_END_EVENT)
+    yaml_error(YAML_MAPPING_END_EVENT, &event);
+  yaml_event_delete(&event);
+  return typeform;
+}
+
+void
 read_options (yaml_parser_t *parser, int len,
 	      int *xfail, translationModes *mode,
-	      char **typeform, int **cursorPos) {
+	      formtype **typeform, int **cursorPos) {
   yaml_event_t event;
   char *option_name;
   int parse_error = 1;
@@ -251,11 +375,7 @@ read_options (yaml_parser_t *parser, int len,
       *mode = read_mode(parser);
     } else if (!strcmp(option_name, "typeform")) {
       yaml_event_delete(&event);
-      if (!yaml_parser_parse(parser, &event) ||
-	  (event.type != YAML_SCALAR_EVENT))
-	yaml_error(YAML_SCALAR_EVENT, &event);
-      *typeform = convert_typeform(event.data.scalar.value);
-      yaml_event_delete(&event);
+      *typeform = read_typeforms(parser, len);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
@@ -263,9 +383,10 @@ read_options (yaml_parser_t *parser, int len,
       error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		    "Unsupported option %s", option_name);
     }
+    free(option_name);
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -290,25 +411,25 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   char *translation;
   int xfail = 0;
   translationModes mode = 0;
-  char *typeform = NULL;
+  formtype *typeform = NULL;
   int *cursorPos = NULL;
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    simple_error("Word expected", &event);
+    simple_error("Word expected", parser, &event);
 
   word = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    simple_error("Translation expected", &event);
+    simple_error("Translation expected", parser, &event);
 
   translation = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event))
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
 
   /* Handle an optional description */
   if (event.type == YAML_SCALAR_EVENT) {
@@ -318,7 +439,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     yaml_event_delete(&event);
 
     if (!yaml_parser_parse(parser, &event))
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
   }
 
   if (event.type == YAML_MAPPING_START_EVENT) {
@@ -354,7 +475,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     }
   } else {
     if (xfail != check_with_mode(tables_list, word, typeform,
-				 translation, translation_mode, direction)) {
+				 translation, translation_mode, direction, !xfail)) {
       if (description)
 	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
@@ -379,11 +500,11 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
     yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
-
+  
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -401,13 +522,41 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
   }
 }
 
-#endif
+#endif // HAVE_LIBYAML
 
 int
 main(int argc, char *argv[]) {
-  if (argc != 2) {
-    printf("Usage: %s file.yaml\n", argv[0]);
-    return 0;
+  int optc;
+
+  set_program_name (argv[0]);
+
+  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
+    switch (optc) {
+      /* --help and --version exit immediately, per GNU coding standards.  */
+    case 'v':
+      version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
+      exit (EXIT_SUCCESS);
+      break;
+    case 'h':
+      print_help ();
+      exit (EXIT_SUCCESS);
+      break;
+    default:
+      fprintf (stderr, "Try `%s --help' for more information.\n",
+	       program_name);
+      exit (EXIT_FAILURE);
+      break;
+    }
+
+  if (optind != argc - 1) {
+    /* Print error message and exit.  */
+    if (optind < argc - 1)
+      fprintf (stderr, "%s: extra operand: %s\n", program_name, argv[optind + 1]);
+    else
+      fprintf (stderr, "%s: no YAML test file specified\n", program_name);
+    
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
+    exit (EXIT_FAILURE);
   }
 
 #ifndef HAVE_LIBYAML
@@ -455,9 +604,14 @@ main(int argc, char *argv[]) {
   }
   yaml_event_delete(&event);
 
-  char *tables_list = malloc(sizeof(char) * 512);
+  char *tables_list = malloc(sizeof(char) * MAXSTRING);
+  tables_list[0] = '\0';
   read_tables(&parser, tables_list);
 
+  if (!lou_getTable(tables_list)) {
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Table %s not valid", tables_list);
+  }
   if (!yaml_parser_parse(&parser, &event) ||
       (event.type != YAML_SCALAR_EVENT)) {
     yaml_error(YAML_SCALAR_EVENT, &event);
@@ -470,7 +624,7 @@ main(int argc, char *argv[]) {
     if (!yaml_parser_parse(&parser, &event) ||
 	(event.type != YAML_SCALAR_EVENT) ||
 	strcmp(event.data.scalar.value, "tests")) {
-      simple_error("tests expected", &event);
+      simple_error("tests expected", &parser, &event);
     }
     yaml_event_delete(&event);
     read_tests(&parser, tables_list, direction, hyphenation);
@@ -479,7 +633,7 @@ main(int argc, char *argv[]) {
     yaml_event_delete(&event);
     read_tests(&parser, tables_list, direction, hyphenation);
   } else {
-    simple_error("flags or tests expected", &event);
+    simple_error("flags or tests expected", &parser, &event);
   }
 
   if (!yaml_parser_parse(&parser, &event) ||
@@ -502,6 +656,9 @@ main(int argc, char *argv[]) {
 
   yaml_parser_delete(&parser);
 
+  for (int i = 0; emph_classes[i]; i++)
+    free(emph_classes[i]);
+  free(emph_classes);
   lou_free();
 
   assert(!fclose(file));
@@ -511,6 +668,6 @@ main(int argc, char *argv[]) {
 
   return errors ? 1 : 0;
 
-#endif
+#endif // not HAVE_LIBYAML
 }
 

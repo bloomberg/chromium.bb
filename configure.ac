@@ -116,7 +116,7 @@ AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 AC_ARG_ENABLE(ucs4,
               AC_HELP_STRING(--enable-ucs4, Enable 4 byte-wide characters),
-              [],
+              [AC_DEFINE([HAVE_UCS4], [1], [Define if widechars are ucs4])],
               [enable_ucs4=no])
 
 AC_MSG_CHECKING([whether 4 byte-wide characters should be supported])
@@ -149,6 +149,7 @@ AC_CONFIG_FILES([
         tests/Makefile
         tests/resolve_table.h
         tests/tables/Makefile
+        tests/tables/emphclass/Makefile
         tests/tables/moreTables/Makefile
         tests/tables/resolve_table/Makefile
         tests/tables/resolve_table/dir_1/Makefile
@@ -156,6 +157,7 @@ AC_CONFIG_FILES([
         tests/tables/resolve_table/dir_2/Makefile
 	tests/tablesWithMetadata/Makefile
         tests/doctests/Makefile
+        tests/ueb_test_data/Makefile
         tests/yaml/Makefile
 	python/Makefile
 	python/louis/Makefile

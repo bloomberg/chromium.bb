@@ -39,7 +39,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
    * Give space for additional message (+ strlen(msg))
    * Remember the null terminator (+ 1)
    */
-  int logBufSize = (wlen * ((sizeof(widechar) * 2) + 3)) + 1 + strlen(msg);
+  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + (int)strlen(msg);
   char *logMsg = malloc(logBufSize);
   char *p = logMsg;
   char *formatString;
@@ -55,8 +55,20 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
     {
       p += sprintf(p, formatString, wbuf[i]);
     }
+	*p = '~';
+	p++;
+	*p = ' ';
+	p++;
+	for(i = 0; i < wlen; i++)
+	{
+		if(wbuf[i] & 0xff00)
+			*p = ' ';
+		else
+			*p = (char)wbuf[i];
+		p++;
+	}	
   *p = '\0';
-  logMessage(level, logMsg);
+  logMessage(level, "%s", logMsg);
   free(logMsg);
 }
 
@@ -91,11 +103,6 @@ void logMessage(logLevels level, const char *format, ...)
 #ifdef _WIN32
       double f = 2.3; // Needed to force VC++ runtime floating point support
 #endif
-#ifdef _MSC_VER
-	#if _MSC_VER < 1500
-		#define vsnprintf _vsnprintf
-	#endif
-#endif
       char *s;
       size_t len;
       va_list argp;
@@ -120,13 +127,18 @@ static char initialLogFileName[256] = "";
 void EXPORT_CALL
 lou_logFile (const char *fileName)
 {
+	if(logFile)
+	{
+		fclose(logFile);
+		logFile = NULL;
+	}
   if (fileName == NULL || fileName[0] == 0)
     return;
   if (initialLogFileName[0] == 0)
     strcpy (initialLogFileName, fileName);
-  logFile = fopen (fileName, "wb");
+  logFile = fopen (fileName, "a");
   if (logFile == NULL && initialLogFileName[0] != 0)
-    logFile = fopen (initialLogFileName, "wb");
+    logFile = fopen (initialLogFileName, "a");
   if (logFile == NULL)
     {
       fprintf (stderr, "Cannot open log file %s\n", fileName);
@@ -141,13 +153,14 @@ lou_logPrint (const char *format, ...)
   va_list argp;
   if (format == NULL)
     return;
-  if (logFile == NULL && initialLogFileName[0] != 0)
-    logFile = fopen (initialLogFileName, "wb");
+  if (logFile == NULL)
+    logFile = fopen (initialLogFileName, "a");
   if (logFile == NULL)
     logFile = stderr;
   va_start (argp, format);
   vfprintf (logFile, format, argp);
   fprintf (logFile, "\n");
+  fflush(logFile);
   va_end (argp);
 #endif
 }

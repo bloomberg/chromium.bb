@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "liblouis.h"
 #include "brl_checks.h"
+#include "default_table.h"
 
 /* Note that this test used to fail worse than it does now. The
    current situation isn't hugely critical, though probably still
