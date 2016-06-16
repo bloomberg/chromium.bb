@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 5
+// Next tag: 6
 message MemoryLeakReportProto {
   // The call stack at which the leak was found. This is a list of offsets
   // within the program binary. The first entry is the deepest level of the call
@@ -60,6 +60,14 @@ message MemoryLeakReportProto {
 
   // Parameters used to initialize the leak detector.
   optional Params params = 3;
+
+  // The type of Chrome process on which this leak report was generated.
+  enum ProcessType {
+    UNKNOWN_PROCESS = 0;
+    BROWSER_PROCESS = 1;
+    RENDERER_PROCESS = 2;
+  }
+  optional ProcessType source_process = 5;
 
   //////////////////////////////////////////////////////////////////////////////
 
