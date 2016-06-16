@@ -53,9 +53,9 @@ void CSSPaintImageGeneratorImpl::setDefinition(CSSPaintDefinition* definition)
     m_observer->paintImageGeneratorReady();
 }
 
-PassRefPtr<Image> CSSPaintImageGeneratorImpl::paint(const IntSize& size)
+PassRefPtr<Image> CSSPaintImageGeneratorImpl::paint(const LayoutObject& layoutObject, const IntSize& size)
 {
-    return m_definition ? m_definition->paint(size) : nullptr;
+    return m_definition ? m_definition->paint(layoutObject, size) : nullptr;
 }
 
 const Vector<CSSPropertyID>& CSSPaintImageGeneratorImpl::nativeInvalidationProperties() const

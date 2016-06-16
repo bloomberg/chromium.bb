@@ -22,7 +22,7 @@ public:
     static CSSPaintImageGenerator* create(const String& name, Document&, Observer*);
     ~CSSPaintImageGeneratorImpl() override;
 
-    PassRefPtr<Image> paint(const IntSize&) final;
+    PassRefPtr<Image> paint(const LayoutObject&, const IntSize&) final;
     const Vector<CSSPropertyID>& nativeInvalidationProperties() const final;
     const Vector<AtomicString>& customInvalidationProperties() const final;
 

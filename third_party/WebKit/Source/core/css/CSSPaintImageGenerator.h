@@ -14,6 +14,7 @@ namespace blink {
 
 class Document;
 class Image;
+class LayoutObject;
 
 // Produces a PaintGeneratedImage from a CSS Paint API callback.
 // https://drafts.css-houdini.org/css-paint-api/
@@ -38,7 +39,7 @@ public:
 
     // Invokes the CSS Paint API 'paint' callback. May return a nullptr
     // representing an invalid image if an error occurred.
-    virtual PassRefPtr<Image> paint(const IntSize&) = 0;
+    virtual PassRefPtr<Image> paint(const LayoutObject&, const IntSize&) = 0;
 
     virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
     virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
