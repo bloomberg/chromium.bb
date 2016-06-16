@@ -123,10 +123,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
-  // The origin URLs of forms on the current page that contain account creation
-  // forms as reported by autofill.
-  std::vector<GURL> _accountCreationFormOrigins;
-
   // The origin URLs of forms on the current page that have not been blacklisted
   // by the password manager.
   std::vector<GURL> _allowedGenerationFormOrigins;
@@ -231,7 +227,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
 - (void)clearState {
   [self hideAlert];
-  _accountCreationFormOrigins.clear();
   _allowedGenerationFormOrigins.clear();
   _possibleAccountCreationForm.reset();
   _passwordFields.clear();
@@ -262,13 +257,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
     if (formFieldData.form_control_type == "password")
       passwordFields.push_back(formFieldData);
   return passwordFields;
-}
-
-- (void)registerAccountCreationForms:
-    (const std::vector<autofill::FormData>&)forms {
-  for (const auto& form : forms)
-    _accountCreationFormOrigins.push_back(form.origin);
-  [self determinePasswordGenerationField];
 }
 
 - (void)allowPasswordGenerationForForm:(const autofill::PasswordForm&)form {
@@ -311,8 +299,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
   GURL origin = _possibleAccountCreationForm->origin;
   if (!experimental_flags::UseOnlyLocalHeuristicsForPasswordGeneration()) {
     if (!VectorContainsURL(_allowedGenerationFormOrigins, origin))
-      return;
-    if (!VectorContainsURL(_accountCreationFormOrigins, origin))
       return;
   }
 
