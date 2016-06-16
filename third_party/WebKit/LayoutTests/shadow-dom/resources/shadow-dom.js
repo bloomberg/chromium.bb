@@ -1,17 +1,17 @@
 function removeWhiteSpaceOnlyTextNodes(node)
 {
-    for (var i = 0; i < node.childNodes.length; i++) {
-        var child = node.childNodes[i];
-        if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length == 0) {
-            node.removeChild(child);
-            i--;
-        } else if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-            removeWhiteSpaceOnlyTextNodes(child);
-        }
+  for (var i = 0; i < node.childNodes.length; i++) {
+    var child = node.childNodes[i];
+    if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length == 0) {
+      node.removeChild(child);
+      i--;
+    } else if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      removeWhiteSpaceOnlyTextNodes(child);
     }
-    if (node.shadowRoot) {
-        removeWhiteSpaceOnlyTextNodes(node.shadowRoot);
-    }
+  }
+  if (node.shadowRoot) {
+    removeWhiteSpaceOnlyTextNodes(node.shadowRoot);
+  }
 }
 
 function convertTemplatesToShadowRootsWithin(node) {
