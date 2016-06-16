@@ -2114,7 +2114,7 @@ void EventSender::MouseScrollBy(gin::Arguments* args,
   // TODO(dtapuska): Gestures really should be sent by the MouseWheelEventQueue
   // class in the browser. But since the event doesn't propogate up into
   // the browser generate the events here. See crbug.com/596095.
-  bool send_gestures = false;
+  bool send_gestures = true;
   InitMouseWheelEvent(args, scroll_type, &wheel_event, &send_gestures);
   if (HandleInputEventOnViewOrPopup(wheel_event) ==
           WebInputEventResult::NotHandled &&
@@ -2554,7 +2554,6 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   bool paged = false;
   bool has_precise_scrolling_deltas = false;
   int modifiers = 0;
-  bool can_scroll = true;
   if (!args->PeekNext().IsEmpty()) {
     args->GetNext(&paged);
     if (!args->PeekNext().IsEmpty()) {
@@ -2564,14 +2563,10 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
         args->GetNext(&value);
         modifiers = GetKeyModifiersFromV8(args->isolate(), value);
         if (!args->PeekNext().IsEmpty()) {
-          args->GetNext(&can_scroll);
+          args->GetNext(send_gestures);
         }
       }
     }
-  }
-  if (can_scroll) {
-    can_scroll = false;
-    *send_gestures = true;
   }
 
   InitMouseEvent(WebInputEvent::MouseWheel,
@@ -2585,7 +2580,6 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   event->deltaY = event->wheelTicksY;
   event->scrollByPage = paged;
   event->hasPreciseScrollingDeltas = has_precise_scrolling_deltas;
-  event->canScroll = can_scroll;
   if (scroll_type == MouseScrollType::PIXEL) {
     event->wheelTicksX /= kScrollbarPixelsPerTick;
     event->wheelTicksY /= kScrollbarPixelsPerTick;

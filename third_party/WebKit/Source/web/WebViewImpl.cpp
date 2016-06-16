@@ -948,7 +948,6 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(cons
     wheelEvent.wheelTicksX = 0;
     wheelEvent.wheelTicksY =
         pinchEvent.data.pinchUpdate.scale > 1 ? 1 : -1;
-    wheelEvent.canScroll = false;
 
     return handleInputEvent(wheelEvent);
 }

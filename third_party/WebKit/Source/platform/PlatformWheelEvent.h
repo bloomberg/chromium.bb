@@ -63,7 +63,6 @@ public:
         , m_wheelTicksY(0)
         , m_granularity(ScrollByPixelWheelEvent)
         , m_hasPreciseScrollingDeltas(false)
-        , m_canScroll(true)
         , m_resendingPluginId(-1)
         , m_railsMode(RailsModeFree)
         , m_dispatchType(Blocking)
@@ -89,8 +88,6 @@ public:
 
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
     void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
-    bool canScroll() const { return m_canScroll; }
-    void setCanScroll(bool b) { m_canScroll = b; }
     int resendingPluginId() const { return m_resendingPluginId; }
     RailsMode getRailsMode() const { return m_railsMode; }
     DispatchType dispatchType() const { return m_dispatchType; }
@@ -111,7 +108,6 @@ protected:
     float m_wheelTicksY;
     PlatformWheelEventGranularity m_granularity;
     bool m_hasPreciseScrollingDeltas;
-    bool m_canScroll;
     int m_resendingPluginId;
     RailsMode m_railsMode;
     DispatchType m_dispatchType;

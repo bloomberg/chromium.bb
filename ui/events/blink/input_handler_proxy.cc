@@ -489,10 +489,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         blink::WebGestureDeviceTouchpad,
         cc::MainThreadScrollingReason::kPageBasedScrolling);
 
-  } else if (!wheel_event.canScroll) {
-    // Wheel events with |canScroll| == false will not trigger scrolling,
-    // only event handlers.  Forward to the main thread.
-    result = DID_NOT_HANDLE;
   } else if (ShouldAnimate(wheel_event.hasPreciseScrollingDeltas)) {
     cc::InputHandler::ScrollStatus scroll_status =
         input_handler_->ScrollAnimated(gfx::Point(wheel_event.x, wheel_event.y),

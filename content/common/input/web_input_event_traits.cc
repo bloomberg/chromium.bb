@@ -55,23 +55,15 @@ void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
 }
 
 void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
-  StringAppendF(result,
-                "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
-                " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
-                " Phase: (%d, %d)\n CanRubberband: (%d, %d)\n CanScroll: %d\n}",
-                event.deltaX,
-                event.deltaY,
-                event.wheelTicksX,
-                event.wheelTicksY,
-                event.accelerationRatioX,
-                event.accelerationRatioY,
-                event.scrollByPage,
-                event.hasPreciseScrollingDeltas,
-                event.phase,
-                event.momentumPhase,
-                event.canRubberbandLeft,
-                event.canRubberbandRight,
-                event.canScroll);
+  StringAppendF(
+      result,
+      "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
+      " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
+      " Phase: (%d, %d)\n CanRubberband: (%d, %d)\n}",
+      event.deltaX, event.deltaY, event.wheelTicksX, event.wheelTicksY,
+      event.accelerationRatioX, event.accelerationRatioY, event.scrollByPage,
+      event.hasPreciseScrollingDeltas, event.phase, event.momentumPhase,
+      event.canRubberbandLeft, event.canRubberbandRight);
 }
 
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
@@ -153,8 +145,7 @@ bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
          event.phase == event_to_coalesce.phase &&
          event.momentumPhase == event_to_coalesce.momentumPhase &&
          event.hasPreciseScrollingDeltas ==
-             event_to_coalesce.hasPreciseScrollingDeltas &&
-         event.canScroll == event_to_coalesce.canScroll;
+             event_to_coalesce.hasPreciseScrollingDeltas;
 }
 
 float GetUnacceleratedDelta(float accelerated_delta, float acceleration_ratio) {
@@ -523,6 +514,18 @@ bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
     default:
       return true;
   }
+}
+
+bool WebInputEventTraits::CanCauseScroll(
+    const blink::WebMouseWheelEvent& event) {
+#if defined(USE_AURA)
+  // Scroll events generated from the mouse wheel when the control key is held
+  // don't trigger scrolling. Instead, they may cause zooming.
+  return event.hasPreciseScrollingDeltas ||
+         (event.modifiers & blink::WebInputEvent::ControlKey) == 0;
+#else
+  return true;
+#endif
 }
 
 uint32_t WebInputEventTraits::GetUniqueTouchEventId(

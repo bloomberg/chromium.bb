@@ -40,7 +40,7 @@ WheelEvent* WheelEvent::create(const PlatformWheelEvent& event, AbstractView* vi
         convertDeltaMode(event), view, event.globalPosition(), event.position(),
         event.getModifiers(),
         MouseEvent::platformModifiersToButtons(event.getModifiers()), event.timestamp(),
-        event.canScroll(), event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
+        event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
         static_cast<Event::RailsMode>(event.getRailsMode()),
         event.cancelable());
 }
@@ -50,7 +50,6 @@ WheelEvent::WheelEvent()
     , m_deltaY(0)
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
-    , m_canScroll(true)
     , m_resendingPluginId(-1)
     , m_hasPreciseScrollingDeltas(false)
     , m_railsMode(RailsModeFree)
@@ -64,7 +63,6 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_deltaY(initializer.deltaY() ? initializer.deltaY() : -initializer.wheelDeltaY())
     , m_deltaZ(initializer.deltaZ())
     , m_deltaMode(initializer.deltaMode())
-    , m_canScroll(true)
     , m_resendingPluginId(-1)
     , m_hasPreciseScrollingDeltas(false)
     , m_railsMode(RailsModeFree)
@@ -74,7 +72,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     AbstractView* view, const IntPoint& screenLocation, const IntPoint& windowLocation,
     PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
-    bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
+    int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
     : MouseEvent(EventTypeNames::wheel, true, cancelable, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, modifiers, 0, buttons,
         nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable,
@@ -86,7 +84,6 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaY(-rawDelta.y())
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
-    , m_canScroll(canScroll)
     , m_resendingPluginId(resendingPluginId)
     , m_hasPreciseScrollingDeltas(hasPreciseScrollingDeltas)
     , m_railsMode(railsMode)

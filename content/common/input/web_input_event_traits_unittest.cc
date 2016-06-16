@@ -52,14 +52,11 @@ class WebInputEventTraitsTest : public testing::Test {
     return event;
   }
 
-  static WebMouseWheelEvent CreateMouseWheel(float deltaX,
-                                             float deltaY,
-                                             bool canScroll) {
+  static WebMouseWheelEvent CreateMouseWheel(float deltaX, float deltaY) {
     WebMouseWheelEvent event;
     event.type = WebInputEvent::MouseWheel;
     event.deltaX = deltaX;
     event.deltaY = deltaY;
-    event.canScroll = canScroll;
     return event;
   }
 };
@@ -202,25 +199,16 @@ TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {
 }
 
 TEST_F(WebInputEventTraitsTest, WebMouseWheelEventCoalescing) {
-  WebMouseWheelEvent mouse_wheel_0 =
-      CreateMouseWheel(1, 1, true);
-  WebMouseWheelEvent mouse_wheel_1 =
-      CreateMouseWheel(2, 2, true);
+  WebMouseWheelEvent mouse_wheel_0 = CreateMouseWheel(1, 1);
+  WebMouseWheelEvent mouse_wheel_1 = CreateMouseWheel(2, 2);
 
   // WebMouseWheelEvent objects with same values except different deltaX and
   // deltaY should coalesce.
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));
 
-  mouse_wheel_0 = CreateMouseWheel(1, 1, true);
-  mouse_wheel_1 = CreateMouseWheel(1, 1, false);
-
-  // WebMouseWheelEvent objects with different canScroll values should not
-  // coalesce.
-  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));
-
   // WebMouseWheelEvent objects with different modifiers should not coalesce.
-  mouse_wheel_0 = CreateMouseWheel(1, 1, true);
-  mouse_wheel_1 = CreateMouseWheel(1, 1, true);
+  mouse_wheel_0 = CreateMouseWheel(1, 1);
+  mouse_wheel_1 = CreateMouseWheel(1, 1);
   mouse_wheel_0.modifiers = blink::WebInputEvent::ControlKey;
   mouse_wheel_1.modifiers = blink::WebInputEvent::ShiftKey;
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));
@@ -228,9 +216,9 @@ TEST_F(WebInputEventTraitsTest, WebMouseWheelEventCoalescing) {
 
 // Coalescing preserves the newer timestamp.
 TEST_F(WebInputEventTraitsTest, TimestampCoalescing) {
-  WebMouseWheelEvent mouse_wheel_0 = CreateMouseWheel(1, 1, true);
+  WebMouseWheelEvent mouse_wheel_0 = CreateMouseWheel(1, 1);
   mouse_wheel_0.timeStampSeconds = 5.0;
-  WebMouseWheelEvent mouse_wheel_1 = CreateMouseWheel(2, 2, true);
+  WebMouseWheelEvent mouse_wheel_1 = CreateMouseWheel(2, 2);
   mouse_wheel_1.timeStampSeconds = 10.0;
 
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));

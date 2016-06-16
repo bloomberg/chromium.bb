@@ -29,6 +29,8 @@ class CONTENT_EXPORT WebInputEventTraits {
                        blink::WebInputEvent* event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event);
 
+  static bool CanCauseScroll(const blink::WebMouseWheelEvent& event);
+
   // Return uniqueTouchEventId for WebTouchEvent, otherwise return 0.
   static uint32_t GetUniqueTouchEventId(const blink::WebInputEvent& event);
 };

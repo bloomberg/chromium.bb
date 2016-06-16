@@ -61,11 +61,11 @@ public:
         const FloatPoint& rawDelta, unsigned deltaMode, AbstractView* view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
-        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
+        int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
     {
         return new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
             screenLocation, windowLocation, modifiers, buttons, platformTimeStamp,
-            canScroll, resendingPluginId, hasPreciseScrollingDeltas, railsMode, cancelable);
+            resendingPluginId, hasPreciseScrollingDeltas, railsMode, cancelable);
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -77,7 +77,6 @@ public:
     unsigned deltaMode() const { return m_deltaMode; }
     float ticksX() const { return static_cast<float>(m_wheelDelta.x()) / TickMultiplier; }
     float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
-    bool canScroll() const { return m_canScroll; }
     int resendingPluginId() const { return m_resendingPluginId; }
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
     RailsMode getRailsMode() const { return m_railsMode; }
@@ -96,14 +95,13 @@ private:
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, AbstractView*, const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers, unsigned short buttons, double platformTimeStamp,
-        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode, bool cancelable);
+        int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode, bool cancelable);
 
     IntPoint m_wheelDelta;
     double m_deltaX;
     double m_deltaY;
     double m_deltaZ;
     unsigned m_deltaMode;
-    bool m_canScroll;
     int m_resendingPluginId;
     bool m_hasPreciseScrollingDeltas;
     RailsMode m_railsMode;

@@ -2822,43 +2822,34 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
-  modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey |
-      WebInputEvent::ControlKey;
-  event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 1, modifiers, false);
-  EXPECT_FALSE(contents()->HandleWheelEvent(event));
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-
-  // But whenever the ctrl modifier is applied with canScroll=false, they can
-  // increase/decrease zoom. Except on MacOS where we never want to adjust zoom
+  // But whenever the ctrl modifier is applied zoom can be increased or
+  // decreased. Except on MacOS where we never want to adjust zoom
   // with mousewheel.
   modifiers = WebInputEvent::ControlKey;
   event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 1, modifiers, false);
-  event.canScroll = false;
   bool handled = contents()->HandleWheelEvent(event);
-#if defined(OS_MACOSX)
-  EXPECT_FALSE(handled);
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-#else
+#if defined(USE_AURA)
   EXPECT_TRUE(handled);
   EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
   EXPECT_TRUE(delegate->last_zoom_in());
+#else
+  EXPECT_FALSE(handled);
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 #endif
 
   modifiers = WebInputEvent::ControlKey | WebInputEvent::ShiftKey |
       WebInputEvent::AltKey;
   event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, 2, -5, modifiers, false);
-  event.canScroll = false;
   handled = contents()->HandleWheelEvent(event);
-#if defined(OS_MACOSX)
-  EXPECT_FALSE(handled);
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-#else
+#if defined(USE_AURA)
   EXPECT_TRUE(handled);
   EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
   EXPECT_FALSE(delegate->last_zoom_in());
+#else
+  EXPECT_FALSE(handled);
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 #endif
 
   // Unless there is no vertical movement.

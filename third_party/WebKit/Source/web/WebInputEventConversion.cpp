@@ -231,7 +231,6 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_dispatchType = toPlatformDispatchType(e.dispatchType);
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
-    m_canScroll = e.canScroll;
     m_resendingPluginId = e.resendingPluginId;
     m_railsMode = static_cast<PlatformEvent::RailsMode>(e.railsMode);
 #if OS(MACOSX)
@@ -637,7 +636,6 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     wheelTicksX = event.ticksX();
     wheelTicksY = event.ticksY();
     scrollByPage = event.deltaMode() == WheelEvent::DOM_DELTA_PAGE;
-    canScroll = event.canScroll();
     resendingPluginId = event.resendingPluginId();
     railsMode = static_cast<RailsMode>(event.getRailsMode());
     hasPreciseScrollingDeltas = event.hasPreciseScrollingDeltas();

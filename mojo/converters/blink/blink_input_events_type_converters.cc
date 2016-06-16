@@ -161,7 +161,6 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   // Add support for other wheel modes once ui::WheelEvent has support for them.
   web_event->hasPreciseScrollingDeltas = false;
   web_event->scrollByPage = false;
-  web_event->canScroll = true;
 
   return std::move(web_event);
 }

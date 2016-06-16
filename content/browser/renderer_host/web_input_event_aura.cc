@@ -260,14 +260,6 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
   webkit_event.globalX = screen_point.x();
   webkit_event.globalY = screen_point.y();
 
-  // Scroll events generated from the mouse wheel when the control key is held
-  // don't trigger scrolling. Instead, they may cause zooming.
-  bool from_mouse_wheel = !webkit_event.hasPreciseScrollingDeltas;
-  if ((webkit_event.modifiers & blink::WebInputEvent::ControlKey) &&
-      from_mouse_wheel) {
-    webkit_event.canScroll = false;
-  }
-
   return webkit_event;
 }
 
