@@ -36,6 +36,7 @@ class AccessibilityHighlightManager
  private:
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // content::NotificationObserver overrides:
   void Observe(int type,

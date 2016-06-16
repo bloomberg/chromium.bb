@@ -93,6 +93,11 @@ void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void AccessibilityHighlightManager::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->type() == ui::ET_KEY_PRESSED)
+    UpdateFocusAndCaretHighlights();
+}
+
 void AccessibilityHighlightManager::Observe(
     int type,
     const content::NotificationSource& source,
