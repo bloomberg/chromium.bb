@@ -130,4 +130,11 @@ const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_WIN)
+// Emergency "off switch" for new Windows sandbox security mitigation,
+// sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
+const base::Feature kWinSboxDisableExtensionPoints{
+    "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
