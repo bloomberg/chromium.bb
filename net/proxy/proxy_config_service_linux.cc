@@ -243,6 +243,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     DCHECK(!client_);
     DCHECK(!task_runner_.get());
     task_runner_ = glib_task_runner;
+
     client_ = gconf_client_get_default();
     if (!client_) {
       // It's not clear whether/when this can return NULL.
@@ -812,6 +813,13 @@ bool SettingGetterImplGSettings::LoadAndCheckVersion(
         !libgio_loader_.Load("libgio-2.0.so")) {
       VLOG(1) << "Cannot load gio library. Will fall back to gconf.";
       return false;
+    }
+
+    // g_type_init will be deprecated in 2.36. 2.35 is the development
+    // version for 2.36, hence do not call g_type_init starting 2.35.
+    // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
+    if (libgio_loader_.glib_check_version(2, 35, 0)) {
+      libgio_loader_.g_type_init();
     }
   }
 
