@@ -603,7 +603,8 @@ module_init(struct weston_compositor *ec,
 
 	/* add devices */
 	weston_seat_init_pointer(&test->seat);
-	weston_seat_init_keyboard(&test->seat, NULL);
+	if (weston_seat_init_keyboard(&test->seat, NULL) < 0)
+		return -1;
 	weston_seat_init_touch(&test->seat);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
