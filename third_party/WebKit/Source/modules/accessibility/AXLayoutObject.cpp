@@ -647,6 +647,10 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (m_layoutObject->isLayoutPart())
         return false;
 
+    // Make sure renderers with layers stay in the tree.
+    if (getLayoutObject() && getLayoutObject()->hasLayer() && getNode() && getNode()->hasChildren())
+        return false;
+
     // find out if this element is inside of a label element.
     // if so, it may be ignored because it's the label for a checkbox or radio button
     AXObject* controlObject = correspondingControlForLabelElement();
