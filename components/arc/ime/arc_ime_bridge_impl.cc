@@ -117,6 +117,15 @@ void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   ime_instance->InsertText(base::UTF16ToUTF8(text));
 }
 
+void ArcImeBridgeImpl::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  if (!ime_instance) {
+    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+    return;
+  }
+  ime_instance->OnKeyboardBoundsChanging(new_bounds);
+}
+
 void ArcImeBridgeImpl::OnTextInputTypeChanged(arc::mojom::TextInputType type) {
   delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }

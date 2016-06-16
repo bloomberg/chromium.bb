@@ -27,6 +27,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/events/events.gyp:events_base',
+        '../ui/keyboard/keyboard.gyp:keyboard',
         '../url/url.gyp:url_lib',
       ],
       'sources': [
@@ -142,6 +143,7 @@
         'arc/common/power.mojom',
         'arc/common/process.mojom',
         'arc/common/scale_factor.mojom',
+        'arc/common/screen_rect.mojom',
         'arc/common/storage_manager.mojom',
         'arc/common/video.mojom',
         'arc/common/video_accelerator.mojom',

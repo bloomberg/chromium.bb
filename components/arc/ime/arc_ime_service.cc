@@ -56,6 +56,12 @@ ArcImeService::~ArcImeService() {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
+  // Removing |this| from KeyboardController.
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller_ == keyboard_controller) {
+    keyboard_controller_->RemoveObserver(this);
+  }
 }
 
 void ArcImeService::SetImeBridgeForTesting(
@@ -83,6 +89,13 @@ void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
   if (IsArcWindow(new_window)) {
     arc_windows_.Add(new_window);
     new_window->AddObserver(this);
+  }
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller_ != keyboard_controller) {
+    // Registering |this| as an observer only once per KeyboardController.
+    keyboard_controller_ = keyboard_controller;
+    keyboard_controller_->AddObserver(this);
   }
 }
 
@@ -166,7 +179,19 @@ void ArcImeService::ShowImeIfNeeded() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Oberridden from ui::TextInputClient:
+// Overridden from keyboard::KeyboardControllerObserver
+void ArcImeService::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+  if (focused_arc_window_.windows().empty())
+    return;
+  aura::Window* window = focused_arc_window_.windows().front();
+  // Multiply by the scale factor. To convert from DPI to physical pixels.
+  gfx::Rect bounds_in_px = gfx::ScaleToEnclosingRect(
+      new_bounds, window->layer()->device_scale_factor());
+  ime_bridge_->OnKeyboardBoundsChanging(bounds_in_px);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Overridden from ui::TextInputClient:
 
 void ArcImeService::SetCompositionText(
     const ui::CompositionText& composition) {

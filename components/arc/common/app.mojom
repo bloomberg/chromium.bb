@@ -7,6 +7,7 @@
 module arc.mojom;
 
 import "scale_factor.mojom";
+import "screen_rect.mojom";
 
 // Describes ARC app.
 struct AppInfo {
@@ -14,14 +15,6 @@ struct AppInfo {
   string package_name;
   string activity;
   [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
-};
-
-// Represents a rectangle to specify screen coordinates.
-struct ScreenRect {
-  int32 left;
-  int32 top;
-  int32 right;
-  int32 bottom;
 };
 
 // Next method ID: 7

@@ -4,6 +4,8 @@
 
 module arc.mojom;
 
+import "screen_rect.mojom";
+
 // Represents the type of text input field currently focused.
 [Extensible]
 enum TextInputType {
@@ -38,7 +40,7 @@ struct CompositionSegment {
   bool emphasized;
 };
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   OnTextInputTypeChanged(TextInputType type);
@@ -64,4 +66,10 @@ interface ImeInstance {
 
   // Commits the specified text and clears the composition.
   InsertText(string text);
+
+  // Informs the virtual keyboard bounds on screen is changing.
+  // |new_bounds| Represents a ChromeOS virtual keyboard bounds in ChromeOS
+  // screen coordinate, physical pixel as a unit.
+  // When all members are zero value, virtual keyboard is being hidden.
+  [MinVersion=3] OnKeyboardBoundsChanging(ScreenRect new_bounds);
 };

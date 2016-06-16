@@ -36,6 +36,7 @@ class ArcImeBridgeImpl : public ArcImeBridge,
   void SendSetCompositionText(const ui::CompositionText& composition) override;
   void SendConfirmCompositionText() override;
   void SendInsertText(const base::string16& text) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // arc::mojom::ImeHost overrides:
   void OnTextInputTypeChanged(arc::mojom::TextInputType type) override;

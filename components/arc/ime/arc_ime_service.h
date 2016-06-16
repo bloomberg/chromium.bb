@@ -18,6 +18,8 @@
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class Window;
@@ -38,6 +40,7 @@ class ArcImeService : public ArcService,
                       public aura::EnvObserver,
                       public aura::WindowObserver,
                       public aura::client::FocusChangeObserver,
+                      public keyboard::KeyboardControllerObserver,
                       public ui::TextInputClient {
  public:
   explicit ArcImeService(ArcBridgeService* bridge_service);
@@ -64,6 +67,9 @@ class ArcImeService : public ArcService,
   void OnCursorRectChanged(const gfx::Rect& rect) override;
   void OnCancelComposition() override;
   void ShowImeIfNeeded() override;
+
+  // Overridden from keyboard::KeyboardControllerObserver.
+  void OnKeyboardBoundsChanging(const gfx::Rect& rect) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -110,6 +116,8 @@ class ArcImeService : public ArcService,
   aura::WindowTracker observing_root_windows_;
   aura::WindowTracker arc_windows_;
   aura::WindowTracker focused_arc_window_;
+
+  keyboard::KeyboardController* keyboard_controller_;
 
   ui::InputMethod* test_input_method_;
 
