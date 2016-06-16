@@ -82,7 +82,6 @@ QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
   this.quickView_.close();
 }
 
-
 /**
  * Handles key event on listContainer if it's relevent to quick view.
  *

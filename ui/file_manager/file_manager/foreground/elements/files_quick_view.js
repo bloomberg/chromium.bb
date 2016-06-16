@@ -6,7 +6,7 @@ var FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
-    filePath: String, // TODO(oka): Fill filePath. Show it on toolbar.
+    filePath: String,
     image: String,
     video: String,
     videoPoster: String,
