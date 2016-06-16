@@ -139,7 +139,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       ReserveI420OutputBuffer(dimensions, output_pixel_storage, &y_plane_data,
                               &u_plane_data, &v_plane_data));
   if (!buffer.get()) {
-    DLOG(ERROR) << "Failed to reserve I420 output buffer.";
+    DLOG(WARNING) << "Failed to reserve I420 output buffer.";
     return;
   }
 
