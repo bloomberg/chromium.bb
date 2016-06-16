@@ -58,6 +58,11 @@ function FileManager() {
   this.metadataModel_ = null;
 
   /**
+   * @private {!FileMetadataFormatter}
+   */
+  this.fileMetadataFormatter_ = new FileMetadataFormatter();
+
+  /**
    * @private {ThumbnailModel}
    */
   this.thumbnailModel_ = null;
@@ -560,7 +565,7 @@ FileManager.prototype = /** @struct */ {
                   fileListSelectionModel);
               this.metadataBoxController_ = new MetadataBoxController(
                   this.metadataModel_, quickView.getFilesMetadataBox(),
-                  quickView, this.quickViewModel_);
+                  quickView, this.quickViewModel_, this.fileMetadataFormatter_);
             }
           }.bind(this));
     }
@@ -1031,7 +1036,8 @@ FileManager.prototype = /** @struct */ {
         this.ui_.listContainer,
         assert(this.ui_.detailsContainer),
         this.directoryModel_,
-        this.metadataModel_);
+        this.metadataModel_,
+        this.fileMetadataFormatter_);
 
     // Create task controller.
     this.taskController_ = new TaskController(

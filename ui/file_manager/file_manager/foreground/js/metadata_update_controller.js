@@ -8,13 +8,15 @@
  * @param {!DetailsContainer} detailsContainer
  * @param {!DirectoryModel} directoryModel
  * @param {!MetadataModel} metadataModel
+ * @param {!FileMetadataFormatter} fileMetadataFormatter
  * @constructor
  * @struct
  */
 function MetadataUpdateController(listContainer,
                                   detailsContainer,
                                   directoryModel,
-                                  metadataModel) {
+                                  metadataModel,
+                                  fileMetadataFormatter) {
   /**
    * @private {!DirectoryModel}
    * @const
@@ -38,6 +40,12 @@ function MetadataUpdateController(listContainer,
    * @const
    */
   this.detailsContainer_ = detailsContainer;
+
+  /**
+   * @private {!FileMetadataFormatter}
+   * @const
+   */
+  this.fileMetadataFormatter_ = fileMetadataFormatter;
 
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
@@ -117,6 +125,9 @@ MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
 MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(prefs) {
     var use12hourClock = !prefs.use24hourClock;
+    this.fileMetadataFormatter_.setDateTimeFormat(use12hourClock);
+    // TODO(oka): Remove these two lines, and add fileMetadataFormatter to
+    // constructor for each field instead.
     this.listContainer_.table.setDateTimeFormat(use12hourClock);
     this.detailsContainer_.setDateTimeFormat(use12hourClock);
     this.refreshCurrentDirectoryMetadata();

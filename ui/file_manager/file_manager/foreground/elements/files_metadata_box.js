@@ -6,7 +6,7 @@ var FilesMetadataBox = Polymer({
   is: 'files-metadata-box',
 
   properties: {
-    size: Number,
+    size: String,
     modiifcationTime: String,
     /*
      * TODO(oka): Add the follwoing fields.

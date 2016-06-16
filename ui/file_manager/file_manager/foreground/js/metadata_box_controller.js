@@ -9,11 +9,13 @@
  * @param{!FilesMetadataBox} metadataBox
  * @param{!FilesQuickView} quickView
  * @param{!QuickViewModel} quickViewModel
+ * @param{!FileMetadataFormatter} fileMetadataFormatter
  *
  * @constructor
  */
 function MetadataBoxController(
-    metadataModel, metadataBox, quickView, quickViewModel) {
+    metadataModel, metadataBox, quickView, quickViewModel,
+    fileMetadataFormatter) {
   /**
    * @type {!MetadataModel}
    * @private
@@ -32,6 +34,12 @@ function MetadataBoxController(
    */
   this.quickView_ = quickView;
 
+  /**
+   * @type {!FileMetadataFormatter}
+   * @private
+   */
+  this.fileMetadataFormatter_ = fileMetadataFormatter;
+
   // TODO(oka): Add storage to persist the value of
   // quickViewModel_.metadataBoxActive.
   /**
@@ -39,6 +47,9 @@ function MetadataBoxController(
    * @private
    */
   this.quickViewModel_ = quickViewModel;
+
+  fileMetadataFormatter.addEventListener(
+      'date-time-format-changed', this.updateView_.bind(this));
 
   quickView.addEventListener(
       'metadata-box-active-changed', this.updateView_.bind(this));
@@ -64,8 +75,13 @@ MetadataBoxController.prototype.updateView_ = function() {
   if (!this.quickView_.metadataBoxActive) {
     return;
   }
-  var entry = assert(this.quickViewModel_.getSelectedEntry());
-  this.metadataModel_.get([entry], MetadataBoxController.GENERAL_METADATA_NAME)
+  var entry = this.quickViewModel_.getSelectedEntry();
+  if (!entry)
+    return;
+  this.metadataModel_
+      .get(
+          [entry],
+          MetadataBoxController.GENERAL_METADATA_NAME.concat(['hosted']))
       .then(this.onGeneralMetadataLoaded_.bind(this, entry));
 
   // TODO(oka): Add file type specific metadata.
@@ -80,10 +96,13 @@ MetadataBoxController.prototype.updateView_ = function() {
  */
 MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     entry, items) {
-  // TODO(oka): Format size and modificationTime using fileMetadataFormatter.
   var item = items[0];
-  if (item.size)
-    this.metadataBox_.size = item.size;
-  if (item.modificationTime)
-    this.metadataBox_.modificationTime = item.modificationTime;
+  if (item.size) {
+    this.metadataBox_.size =
+        this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
+  }
+  if (item.modificationTime) {
+    this.metadataBox_.modificationTime =
+        this.fileMetadataFormatter_.formatModDate(item.modificationTime);
+  }
 };

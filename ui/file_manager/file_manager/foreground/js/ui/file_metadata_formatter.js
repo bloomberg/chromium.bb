@@ -5,10 +5,16 @@
 /**
  * Formatter class for file metadatas.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function FileMetadataFormatter() {
   this.setDateTimeFormat(true);
 }
+
+/**
+ * FileMetadataFormatter extends cr.EventTarget.
+ */
+FileMetadataFormatter.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Sets date and time format.
@@ -24,6 +30,7 @@ FileMetadataFormatter.prototype.setDateTimeFormat = function(use12hourClock) {
         year: 'numeric', month: 'short', day: 'numeric',
         hour: 'numeric', minute: 'numeric', hour12: use12hourClock
       });
+  cr.dispatchSimpleEvent(this, 'date-time-format-changed');
 };
 
 /**
