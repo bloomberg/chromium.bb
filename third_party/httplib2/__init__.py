@@ -22,7 +22,7 @@ __contributors__ = ["Thomas Broyer (t.broyer@ltgt.net)",
                     "Sam Ruby",
                     "Louis Nyffenegger"]
 __license__ = "MIT"
-__version__ = "0.8"
+__version__ = "0.9.2"
 
 import re
 import sys
@@ -749,12 +749,27 @@ class ProxyInfo(object):
     bypass_hosts = ()
 
     def __init__(self, proxy_type, proxy_host, proxy_port,
-                 proxy_rdns=None, proxy_user=None, proxy_pass=None):
-        """The parameter proxy_type must be set to one of socks.PROXY_TYPE_XXX
-        constants. For example:
+                 proxy_rdns=True, proxy_user=None, proxy_pass=None):
+        """
+        Args:
+          proxy_type: The type of proxy server.  This must be set to one of
+          socks.PROXY_TYPE_XXX constants.  For example:
 
-        p = ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
-            proxy_host='localhost', proxy_port=8000)
+            p = ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
+              proxy_host='localhost', proxy_port=8000)
+
+          proxy_host: The hostname or IP address of the proxy server.
+
+          proxy_port: The port that the proxy server is running on.
+
+          proxy_rdns: If True (default), DNS queries will not be performed
+          locally, and instead, handed to the proxy to resolve.  This is useful
+          if the network does not allow resolution of non-local names.  In
+          httplib2 0.9 and earlier, this defaulted to False.
+
+          proxy_user: The username used to authenticate with the proxy server.
+
+          proxy_pass: The password used to authenticate with the proxy server.
         """
         self.proxy_type = proxy_type
         self.proxy_host = proxy_host
@@ -871,12 +886,12 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
             proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass = self.proxy_info.astuple()
-        else:
-            use_proxy = False
-        if use_proxy and proxy_rdns:
+
             host = proxy_host
             port = proxy_port
         else:
+            use_proxy = False
+
             host = self.host
             port = self.port
 
@@ -993,12 +1008,12 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
             proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass = self.proxy_info.astuple()
-        else:
-            use_proxy = False
-        if use_proxy and proxy_rdns:
+
             host = proxy_host
             port = proxy_port
         else:
+            use_proxy = False
+
             host = self.host
             port = self.port
 
@@ -1270,8 +1285,9 @@ class Http(object):
                     err = getattr(e, 'args')[0]
                 else:
                     err = e.errno
-                if err == errno.ECONNREFUSED: # Connection refused
-                    raise
+                if err in (errno.ENETUNREACH, errno.EADDRNOTAVAIL) and i < RETRIES:
+                    continue  # retry on potentially transient socket errors
+                raise
             except httplib.HTTPException:
                 # Just because the server closed the connection doesn't apparently mean
                 # that the server didn't send a response.
@@ -1481,7 +1497,7 @@ class Http(object):
             info = email.Message.Message()
             cached_value = None
             if self.cache:
-                cachekey = defrag_uri
+                cachekey = defrag_uri.encode('utf-8')
                 cached_value = self.cache.get(cachekey)
                 if cached_value:
                     # info = email.message_from_string(cached_value)
