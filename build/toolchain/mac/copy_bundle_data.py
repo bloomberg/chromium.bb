@@ -3,11 +3,9 @@
 # found in the LICENSE file.
 
 import argparse
-import errno
 import os
 import shutil
 import sys
-import subprocess
 
 
 def detect_encoding(data, default_encoding='UTF-8'):
@@ -66,27 +64,25 @@ def copy_file(source, dest):
     source: string, path to the source file
     dest: string, path to the destination file
   """
-  try:
-    shutil.rmtree(dest)
-  except OSError as e:
-    if e.errno == errno.ENOENT:
-      pass
-    elif e.errno == errno.ENOTDIR:
-      os.unlink(dest)
-    else:
-      raise
+  if os.path.isdir(source):
+    if os.path.exists(dest):
+      shutil.rmtree(dest)
+    # Copy tree.
+    # TODO(thakis): This copies file attributes like mtime, while the
+    # single-file branch below doesn't. This should probably be changed to
+    # be consistent with the single-file branch.
+    shutil.copytree(source, dest, symlinks=True)
+    return
+
+  if os.path.exists(dest):
+    os.unlink(dest)
 
   _, extension = os.path.splitext(source)
   if extension == '.strings':
     copy_strings_file(source, dest)
     return
 
-  # Strip trailing slashes on the source so rsync copies the source as a
-  # directory.
-  source = source.rstrip('/')
-
-  subprocess.check_call(
-      ['rsync', '--recursive', '--perms', '--links', source, dest])
+  shutil.copy(source, dest)
 
 
 def main():
