@@ -84,7 +84,11 @@ class WebglConformanceValidator(gpu_test_base.ValidatorBase):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidWebGLTestSucceed(tab):
-      raise page_test.Failure(_WebGLTestMessages(tab))
+      is_valid_dump, trace_output = tab.browser.GetStackTrace()
+      messages = _WebGLTestMessages(tab)
+      if is_valid_dump:
+        messages += '\nStack Trace:\n' + trace_output
+      raise page_test.Failure(messages)
 
   def CustomizeBrowserOptions(self, options):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
