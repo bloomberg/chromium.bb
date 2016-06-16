@@ -306,12 +306,6 @@ template("test") {
       if (!defined(info_plist) && !defined(info_plist_target)) {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
-      if (!defined(entitlements_path)) {
-        entitlements_path = "//testing/gtest_ios"
-      }
-      if (!defined(code_signing_identity)) {
-        code_signing_identity = ""
-      }
 
       # TODO(crbug.com/603102): remove this once gyp support is dropped and all
       # application uses the target name as value for BUNDLE_ID_TEST_NAME.

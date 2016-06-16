@@ -6,8 +6,6 @@ import("//build/config/ios/rules.gni")
 
 ios_app_bundle("ios_web_shell") {
   info_plist = "Info.plist"
-  entitlements_path = ""
-  code_signing_identity = ""
 
   sources = [
     "web_exe_main.mm",

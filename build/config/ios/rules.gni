@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
 
 # Generates Info.plist files for Mac apps and frameworks.
@@ -100,6 +101,11 @@ template("ios_info_plist") {
 #       rather than a regular source file, specify the target name in lieu
 #       of info_plist. The two arguments are mutually exclusive.
 #
+#   entitlements_path:
+#       (optional) path to the template to use to generate the application
+#       entitlements by performing variable substitutions, defaults to
+#       $ios_sdk_path/Entitlements.plist.
+#
 #   bundle_extension:
 #       (optional) bundle extension including the dot, default to ".app".
 #
@@ -142,16 +148,21 @@ template("ios_app_bundle") {
   }
 
   _generate_executable = target_name + "_generate_executable"
-  _bundle_data_executable = target_name + "_bundle_data_executable"
+  if (!ios_enable_code_signing) {
+    _bundle_data_executable = target_name + "_bundle_data_executable"
+  }
 
   executable(_generate_executable) {
-    visibility = [ ":$_bundle_data_executable" ]
+    if (ios_enable_code_signing) {
+      visibility = [ ":$_target_name" ]
+    } else {
+      visibility = [ ":$_bundle_data_executable" ]
+    }
     forward_variables_from(invoker,
                            "*",
                            [
                              "assert_no_deps",
                              "bundle_extension",
-                             "code_signing_identity",
                              "data_deps",
                              "entitlements_path",
                              "info_plist",
@@ -172,18 +183,20 @@ template("ios_app_bundle") {
     ldflags += [ "-ObjC" ]
   }
 
-  bundle_data(_bundle_data_executable) {
-    forward_variables_from(invoker, [ "testonly" ])
-    visibility = [ ":$_target_name" ]
-    sources = [
-      "$target_gen_dir/$_output_name",
-    ]
-    outputs = [
-      "{{bundle_executable_dir}}/$_output_name",
-    ]
-    public_deps = [
-      ":$_generate_executable",
-    ]
+  if (!ios_enable_code_signing) {
+    bundle_data(_bundle_data_executable) {
+      forward_variables_from(invoker, [ "testonly" ])
+      visibility = [ ":$_target_name" ]
+      sources = [
+        "$target_gen_dir/$_output_name",
+      ]
+      outputs = [
+        "{{bundle_executable_dir}}/$_output_name",
+      ]
+      public_deps = [
+        ":$_generate_executable",
+      ]
+    }
   }
 
   create_bundle(target_name) {
@@ -199,10 +212,12 @@ template("ios_app_bundle") {
     if (!defined(deps)) {
       deps = []
     }
-    deps += [
-      ":$_bundle_data_executable",
-      ":$_bundle_data_info_plist",
-    ]
+    deps += [ ":$_bundle_data_info_plist" ]
+    if (ios_enable_code_signing) {
+      deps += [ ":$_generate_executable" ]
+    } else {
+      deps += [ ":$_bundle_data_executable" ]
+    }
 
     if (use_ios_simulator) {
       if (!defined(data_deps)) {
@@ -227,13 +242,35 @@ template("ios_app_bundle") {
     bundle_resources_dir = bundle_root_dir
     bundle_executable_dir = bundle_root_dir
     bundle_plugins_dir = "$bundle_root_dir/PlugIns"
-  }
 
-  # TODO(crbug.com/297668):
-  # - add support for codesigning,
-  # - find a way to make "ninja -C out/Default base_unittests.app" work as
-  #   an alias to "ninja -C out/Default base_unittests" (for convenience
-  #   and compatibility with gyp),
+    if (defined(invoker.entitlements_path)) {
+      _entitlements_path = invoker.entitlements_path
+    } else {
+      _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+    }
+
+    if (ios_enable_code_signing) {
+      code_signing_script = "//build/config/ios/codesign.py"
+      code_signing_sources = [
+        _entitlements_path,
+        "$target_gen_dir/$_output_name",
+      ]
+      code_signing_outputs = [
+        "$bundle_root_dir/$_output_name",
+        "$bundle_root_dir/_CodeSignature/CodeResources",
+        "$bundle_root_dir/embedded.mobileprovision",
+      ]
+      code_signing_args = [
+        "-i=" + ios_code_signing_identity,
+        "-b=" + rebase_path("$target_gen_dir/$_output_name", root_build_dir),
+        "-e=" + rebase_path(_entitlements_path, root_build_dir),
+        rebase_path(bundle_root_dir, root_build_dir),
+      ]
+    } else {
+      assert(_entitlements_path != "",
+             "force usage of _entitlements_path to avoid unused variable error")
+    }
+  }
 }
 
 # Template to build an application extension bundle for iOS.
