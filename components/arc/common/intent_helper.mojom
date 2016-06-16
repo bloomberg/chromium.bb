@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 8
 module arc.mojom;
 
 import "scale_factor.mojom";
@@ -43,6 +44,7 @@ struct UrlWithMimeType {
 };
 
 // Handles intents from ARC in Chrome.
+// Next method ID: 4
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -58,7 +60,15 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
+// Next method ID: 9
 interface IntentHelperInstance {
+
+  // Sets the given package as a preferred package. The next time an ACTION_VIEW
+  // intent is sent with a URL that requires disambiguation, instead of opening
+  // the ResolverActivity, this package will be picked if it is on the list.
+  // When multiple packages are set as preferred, the most recent setting wins.
+  [MinVersion=7] AddPreferredPackage@8(string package_name);
+
   // Handles the URL by sending an ACTION_VIEW intent to the package. The
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
