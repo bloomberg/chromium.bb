@@ -4548,6 +4548,21 @@ KURL Document::openSearchDescriptionURL()
             continue;
         if (linkElement->href().isEmpty())
             continue;
+
+        // Count usage; perhaps we can lock this to secure contexts.
+        UseCounter::Feature osdDisposition;
+        RefPtr<SecurityOrigin> target = SecurityOrigin::create(linkElement->href());
+        if (isSecureContext()) {
+            osdDisposition = target->isPotentiallyTrustworthy()
+                ? UseCounter::OpenSearchSecureOriginSecureTarget
+                : UseCounter::OpenSearchSecureOriginInsecureTarget;
+        } else {
+            osdDisposition = target->isPotentiallyTrustworthy()
+                ? UseCounter::OpenSearchInsecureOriginSecureTarget
+                : UseCounter::OpenSearchInsecureOriginInsecureTarget;
+        }
+        UseCounter::count(*this, osdDisposition);
+
         return linkElement->href();
     }
 

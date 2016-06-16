@@ -1210,6 +1210,12 @@ public:
         GetUserMediaPromise = 1402,
         CSSFilterFunctionNoArguments = 1403,
         V8LegacyDateParser = 1404,
+        OpenSearchInsecureOriginInsecureTarget = 1405,
+        OpenSearchInsecureOriginSecureTarget = 1406,
+        OpenSearchSecureOriginInsecureTarget = 1407,
+        OpenSearchSecureOriginSecureTarget = 1408,
+        RegisterProtocolHandlerSecureOrigin = 1409,
+        RegisterProtocolHandlerInsecureOrigin = 1410,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

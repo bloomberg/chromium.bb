@@ -75129,6 +75129,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1402" label="GetUserMediaPromise"/>
   <int value="1403" label="CSSFilterFunctionNoArguments"/>
   <int value="1404" label="V8LegacyDateParser"/>
+  <int value="1405" label="OpenSearchInsecureOriginInsecureTarget"/>
+  <int value="1406" label="OpenSearchInsecureOriginSecureTarget"/>
+  <int value="1407" label="OpenSearchSecureOriginInsecureTarget"/>
+  <int value="1408" label="OpenSearchSecureOriginSecureTarget"/>
+  <int value="1409" label="RegisterProtocolHandlerSecureOrigin"/>
+  <int value="1410" label="RegisterProtocolHandlerInsecureOrigin"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

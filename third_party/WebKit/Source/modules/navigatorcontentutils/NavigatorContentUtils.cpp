@@ -31,6 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -163,6 +164,9 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const 
 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return;
+
+    // Count usage; perhaps we can lock this to secure contexts.
+    UseCounter::count(*document, document->isSecureContext() ? UseCounter::RegisterProtocolHandlerSecureOrigin : UseCounter::RegisterProtocolHandlerInsecureOrigin);
 
     NavigatorContentUtils::from(*navigator.frame())->client()->registerProtocolHandler(scheme, document->completeURL(url), title);
 }
