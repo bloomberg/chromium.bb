@@ -8,7 +8,7 @@ import shutil
 import sys
 
 
-def detect_encoding(data, default_encoding='UTF-8'):
+def DetectEncoding(data, default_encoding='UTF-8'):
   """Detects the encoding used by |data| from the Byte-Order-Mark if present.
 
   Args:
@@ -31,7 +31,7 @@ def detect_encoding(data, default_encoding='UTF-8'):
   return default_encoding
 
 
-def copy_strings_file(source, dest):
+def CopyStringsFile(source, dest, strings_format):
   """Copies a .strings file from |source| to |dest| and convert it to UTF-16.
 
   Args:
@@ -46,18 +46,34 @@ def copy_strings_file(source, dest):
   #     CFPropertyListCreateFromXMLData(): Old-style plist parser: missing
   #     semicolon in dictionary.
   # on invalid files. Do the same kind of validation.
-  from CoreFoundation import CFDataCreate, CFPropertyListCreateFromXMLData
-  cfdata = CFDataCreate(None, data, len(data))
-  _, error = CFPropertyListCreateFromXMLData(None, cfdata, 0, None)
+  import CoreFoundation as CF
+  cfdata = CF.CFDataCreate(None, data, len(data))
+  plist, error = CF.CFPropertyListCreateFromXMLData(None, cfdata, 0, None)
   if error:
     raise ValueError(error)
 
-  encoding = detect_encoding(data)
-  with open(dest, 'wb') as dest_file:
-    dest_file.write(data.decode(encoding).encode('UTF-16'))
+  if strings_format == 'legacy':
+    encoding = DetectEncoding(data)
+    with open(dest, 'wb') as dest_file:
+      dest_file.write(data.decode(encoding).encode('UTF-16'))
+  else:
+    cfformat = {
+      'xml1': CF.kCFPropertyListXMLFormat_v1_0,
+      'binary1': CF.kCFPropertyListBinaryFormat_v1_0,
+    }[strings_format]
+    cfdata, error = CF.CFPropertyListCreateData(
+        None, plist, CF.kCFPropertyListBinaryFormat_v1_0,
+        0, None)
+    if error:
+      raise ValueError(error)
+
+    data = CF.CFDataGetBytes(
+        cfdata, CF.CFRangeMake(0, CF.CFDataGetLength(cfdata)), None)
+    with open(dest, 'wb') as dest_file:
+      dest_file.write(data)
 
 
-def copy_file(source, dest):
+def CopyFile(source, dest, strings_format):
   """Copies a file or directory from |source| to |dest|.
 
   Args:
@@ -79,20 +95,23 @@ def copy_file(source, dest):
 
   _, extension = os.path.splitext(source)
   if extension == '.strings':
-    copy_strings_file(source, dest)
+    CopyStringsFile(source, dest, strings_format)
     return
 
   shutil.copy(source, dest)
 
 
-def main():
+def Main():
   parser = argparse.ArgumentParser(
       description='copy source to destination for the creation of a bundle')
+  parser.add_argument('--strings-format',
+      choices=('xml1', 'binary1', 'legacy'), default='legacy',
+      help='convert .strings file to format (default: %(default)s)')
   parser.add_argument('source', help='path to source file or directory')
   parser.add_argument('dest', help='path to destination')
   args = parser.parse_args()
 
-  copy_file(args.source, args.dest)
+  CopyFile(args.source, args.dest, args.strings_format)
 
 if __name__ == '__main__':
-  main()
+  sys.exit(Main())

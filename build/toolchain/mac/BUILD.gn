@@ -276,9 +276,14 @@ template("mac_toolchain") {
     }
 
     tool("copy_bundle_data") {
+      if (is_ios) {
+        _extra_args = "--strings-format=binary1"
+      } else {
+        _extra_args = ""
+      }
       _tool = rebase_path("//build/toolchain/mac/copy_bundle_data.py",
                           root_build_dir)
-      command = "python $_tool {{source}} {{output}}"
+      command = "python $_tool ${_extra_args} {{source}} {{output}}"
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
