@@ -242,15 +242,7 @@ bool MockRenderProcessHost::InSameStoragePartition(
 }
 
 IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
-  return nullptr;
-}
-
-IPC::Sender* MockRenderProcessHost::GetImmediateSender() {
-  return this;
-}
-
-IPC::Sender* MockRenderProcessHost::GetIOThreadSender() {
-  return this;
+  return NULL;
 }
 
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {

@@ -5,7 +5,6 @@
 #ifndef IPC_IPC_SYNC_MESSAGE_FILTER_H_
 #define IPC_IPC_SYNC_MESSAGE_FILTER_H_
 
-#include <memory>
 #include <set>
 #include <vector>
 
@@ -41,10 +40,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   void OnChannelError() override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const Message& message) override;
-
-  // Like Send but may send immediately (instead of posting to the IPC thread)
-  // if the underlying Channel implements a thread-safe Send.
-  bool SendNow(std::unique_ptr<Message> message);
 
  protected:
   SyncMessageFilter(base::WaitableEvent* shutdown_event,

@@ -318,20 +318,23 @@ void ChannelProxy::Context::ClearChannel() {
   channel_.reset();
 }
 
-bool ChannelProxy::Context::Send(std::unique_ptr<Message> message,
-                                 bool force_io_thread) {
-  if (channel_send_thread_safe_ && !force_io_thread) {
-    base::AutoLock l(channel_lifetime_lock_);
-    if (!channel_)
-      return false;
-    DCHECK(channel_->IsSendThreadSafe());
-    return channel_->Send(message.release());
+void ChannelProxy::Context::SendFromThisThread(Message* message) {
+  base::AutoLock l(channel_lifetime_lock_);
+  if (!channel_)
+    return;
+  DCHECK(channel_->IsSendThreadSafe());
+  channel_->Send(message);
+}
+
+void ChannelProxy::Context::Send(Message* message) {
+  if (channel_send_thread_safe_) {
+    SendFromThisThread(message);
+    return;
   }
 
   ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ChannelProxy::Context::OnSendMessage, this,
-                            base::Passed(&message)));
-  return true;
+                            base::Passed(base::WrapUnique(message))));
 }
 
 bool ChannelProxy::Context::IsChannelSendThreadSafe() const {
@@ -374,7 +377,11 @@ ChannelProxy::ChannelProxy(Context* context)
 ChannelProxy::ChannelProxy(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
-    : ChannelProxy(new Context(listener, ipc_task_runner)) {}
+    : context_(new Context(listener, ipc_task_runner)), did_init_(false) {
+#if defined(ENABLE_IPC_FUZZER)
+  outgoing_message_filter_ = NULL;
+#endif
+}
 
 ChannelProxy::~ChannelProxy() {
   DCHECK(CalledOnValidThread());
@@ -437,15 +444,25 @@ void ChannelProxy::Close() {
 }
 
 bool ChannelProxy::Send(Message* message) {
-  return SendImpl(base::WrapUnique(message), true /* force_io_thread */);
-}
+  DCHECK(did_init_);
 
-bool ChannelProxy::SendNow(std::unique_ptr<Message> message) {
-  return SendImpl(std::move(message), false /* force_io_thread */);
-}
+  // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
+  // tests that call Send() from a wrong thread. See http://crbug.com/163523.
 
-bool ChannelProxy::SendOnIPCThread(std::unique_ptr<Message> message) {
-  return SendImpl(std::move(message), true /* force_io_thread */);
+#ifdef ENABLE_IPC_FUZZER
+  // In IPC fuzzing builds, it is possible to define a filter to apply to
+  // outgoing messages. It will either rewrite the message and return a new
+  // one, freeing the original, or return the message unchanged.
+  if (outgoing_message_filter())
+    message = outgoing_message_filter()->Rewrite(message);
+#endif
+
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
+#endif
+
+  context_->Send(message);
+  return true;
 }
 
 void ChannelProxy::AddFilter(MessageFilter* filter) {
@@ -500,28 +517,6 @@ base::ScopedFD ChannelProxy::TakeClientFileDescriptor() {
 #endif
 
 void ChannelProxy::OnChannelInit() {
-}
-
-bool ChannelProxy::SendImpl(std::unique_ptr<Message> message,
-                            bool force_io_thread) {
-  DCHECK(did_init_);
-
-  // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
-  // tests that call Send() from a wrong thread. See http://crbug.com/163523.
-
-#ifdef ENABLE_IPC_FUZZER
-  // In IPC fuzzing builds, it is possible to define a filter to apply to
-  // outgoing messages. It will either rewrite the message and return a new
-  // one, freeing the original, or return the message unchanged.
-  if (outgoing_message_filter())
-    message.reset(outgoing_message_filter()->Rewrite(message.release()));
-#endif
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::GetInstance()->OnSendMessage(message.get(), context_->channel_id());
-#endif
-
-  return context_->Send(std::move(message), force_io_thread);
 }
 
 //-----------------------------------------------------------------------------

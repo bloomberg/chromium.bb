@@ -233,8 +233,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   // ChannelProxy overrides:
   void OnChannelInit() override;
-  bool SendNow(std::unique_ptr<Message> message) override;
-  bool SendOnIPCThread(std::unique_ptr<Message> message) override;
 
   // Used to signal events between the IPC and listener threads.
   mojo::Watcher dispatch_watcher_;

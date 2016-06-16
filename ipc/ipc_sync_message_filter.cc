@@ -35,7 +35,10 @@ bool SyncMessageFilter::Send(Message* message) {
   if (!message->is_sync()) {
     {
       base::AutoLock auto_lock(lock_);
-      if (!io_task_runner_.get()) {
+      if (sender_ && is_channel_send_thread_safe_) {
+        sender_->Send(message);
+        return true;
+      } else if (!io_task_runner_.get()) {
         pending_messages_.emplace_back(base::WrapUnique(message));
         return true;
       }
@@ -151,19 +154,6 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
   }
 
   return false;
-}
-
-bool SyncMessageFilter::SendNow(std::unique_ptr<Message> message) {
-  if (!message->is_sync()) {
-    base::AutoLock auto_lock(lock_);
-    if (sender_ && is_channel_send_thread_safe_) {
-      sender_->Send(message.release());
-      return true;
-    }
-  }
-
-  // Fall back on default Send behavior.
-  return Send(message.release());
 }
 
 SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event,

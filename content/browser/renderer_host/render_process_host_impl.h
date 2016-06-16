@@ -136,8 +136,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
-  IPC::Sender* GetImmediateSender() override;
-  IPC::Sender* GetIOThreadSender() override;
   void AddFilter(BrowserMessageFilter* filter) override;
   bool FastShutdownForPageCount(size_t count) override;
   bool FastShutdownStarted() const override;
@@ -294,10 +292,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int32_t pending_views_;
 
  private:
-  class SafeSenderProxy;
-
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
-  friend class SafeSenderProxy;
   friend class VisitRelayingRenderProcessHost;
 
   std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy(
@@ -305,9 +300,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();
-
-  // Shared implementation for IPC::Senders exposed by this RPH.
-  bool SendImpl(std::unique_ptr<IPC::Message> message, bool send_now);
 
   // Registers Mojo services to be exposed to the renderer.
   void RegisterMojoServices();
@@ -376,12 +368,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& error);
 
-  // IPC::Senders which live as long as this RPH and provide safe, opaque
-  // access to ChannelProxy SendNow() and SendOnIOThread() respectively.
-  const std::unique_ptr<SafeSenderProxy> immediate_sender_;
-  const std::unique_ptr<SafeSenderProxy> io_thread_sender_;
-
   std::string child_token_;
+
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 
@@ -427,7 +415,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // instead of in the channel so that we ensure they're sent after init related
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
-  std::queue<std::unique_ptr<IPC::Message>> queued_messages_;
+  std::queue<IPC::Message*> queued_messages_;
 
   // The globally-unique identifier for this RPH.
   const int id_;
