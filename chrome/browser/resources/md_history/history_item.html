@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://history/constants.html">
+<link rel="import" href="chrome://history/searched_label.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-item">
@@ -132,7 +133,10 @@
         <span id="time-accessed">[[item.readableTimestamp]]</span>
         <div class="website-icon" id="icon"></div>
         <div id="title-and-domain">
-          <a href="[[item.url]]" id="title" class="website-title"></a>
+          <a href="[[item.url]]" id="title" class="website-title">
+            <history-searched-label title="[[item.title]]"
+                search-term="[[searchTerm]]"></history-searched-label>
+          </a>
           <span id="domain">[[item.domain]]</span>
         </div>
         <iron-icon icon="cr:star" id="bookmark-star"></iron-icon>

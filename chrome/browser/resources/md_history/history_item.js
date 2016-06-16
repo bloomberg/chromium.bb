@@ -28,8 +28,6 @@ cr.define('md_history', function() {
       numberOfItems: {type: Number}
     },
 
-    observers: ['setSearchedTextToBold_(item.title, searchTerm)'],
-
     /**
      * When a history-item is selected the toolbar is notified and increases
      * or decreases its count of selected items accordingly.
@@ -62,41 +60,6 @@ cr.define('md_history', function() {
     showIcon_: function() {
       this.$.icon.style.backgroundImage =
           cr.icon.getFaviconImageSet(this.item.url);
-    },
-
-    /**
-     * Updates the page title. If the result was from a search, highlights any
-     * occurrences of the search term in bold.
-     * @private
-     */
-    // TODO(calamity): Pull this bolding behavior into a separate element for
-    // synced device search.
-    setSearchedTextToBold_: function() {
-      var i = 0;
-      var titleElem = this.$.title;
-      var titleText = this.item.title;
-
-      if (this.searchTerm == '' || this.searchTerm == null) {
-        titleElem.textContent = titleText;
-        return;
-      }
-
-      var re = new RegExp(quoteString(this.searchTerm), 'gim');
-      var match;
-      titleElem.textContent = '';
-      while (match = re.exec(titleText)) {
-        if (match.index > i)
-          titleElem.appendChild(document.createTextNode(
-              titleText.slice(i, match.index)));
-        i = re.lastIndex;
-        // Mark the highlighted text in bold.
-        var b = document.createElement('b');
-        b.textContent = titleText.substring(match.index, i);
-        titleElem.appendChild(b);
-      }
-      if (i < titleText.length)
-        titleElem.appendChild(
-            document.createTextNode(titleText.slice(i)));
     },
 
     selectionNotAllowed_: function() {

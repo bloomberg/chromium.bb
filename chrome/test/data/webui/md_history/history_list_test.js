@@ -142,7 +142,9 @@ cr.define('md_history.history_list_test', function() {
           assertTrue(index != -1);
 
           // Check that the search term is bolded correctly in the history-item.
-          assertGT(title.innerHTML.indexOf('<b>google</b>'), -1);
+          assertGT(
+              title.children[0].$.container.innerHTML.indexOf('<b>google</b>'),
+              -1);
         });
       });
 

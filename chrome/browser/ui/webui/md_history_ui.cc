@@ -96,6 +96,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
   source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
   source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
+  source->AddResourcePath("searched_label.html",
+                          IDR_MD_HISTORY_SEARCHED_LABEL_HTML);
+  source->AddResourcePath("searched_label.js",
+                          IDR_MD_HISTORY_SEARCHED_LABEL_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_MD_HISTORY_SHARED_STYLE_HTML);
   source->AddResourcePath("side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML);

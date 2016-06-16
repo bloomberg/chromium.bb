@@ -127,7 +127,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(
               'http://crbug.com/new',
               Polymer.dom(cards[0].root)
-                  .querySelectorAll('.website-title')[1]
+                  .querySelectorAll('.website-title')[1].children[0].$.container
                   .textContent.trim());
         });
       });

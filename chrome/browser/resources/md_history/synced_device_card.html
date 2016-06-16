@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://history/searched_label.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-synced-device-card">
@@ -91,7 +92,8 @@
             <div id="item-container">
               <div id="icon" class="website-icon"></div>
               <a href="[[tab.url]]" class="website-title" title="[[tab.title]]">
-                [[tab.title]]
+                <history-searched-label title="[[tab.title]]"
+                    search-term="[[searchedTerm]]"></history-searched-label>
               </a>
             </div>
             <div id="window-separator"
