@@ -38,6 +38,12 @@ _bindings_configurations = []
 foreach(config_file, _bindings_configuration_files) {
   _bindings_configurations += [ read_file(config_file, "scope") ]
 }
+foreach(configuration, _bindings_configurations) {
+  foreach(typemap, configuration.typemaps) {
+    # Check that the mojom field of each typemap refers to a mojom that exists.
+    read_file(typemap.mojom, "")
+  }
+}
 
 # Generate C++/JavaScript/Java source files from mojom files. The output files
 # will go under the generated file directory tree with the same path as each
