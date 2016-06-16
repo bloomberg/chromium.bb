@@ -12,7 +12,6 @@ namespace blink {
 
 class InProcessWorkerObjectProxy;
 
-// This class is overridden in unit-tests.
 class MODULES_EXPORT CompositorWorkerThread final : public WorkerThread {
 public:
     static PassOwnPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
@@ -25,15 +24,13 @@ public:
     static void ensureSharedBackingThread();
     static void createSharedBackingThreadForTest();
 
-    // This is called before CoreInitializer::shutdown as shutdown waits for
-    // worker threads that can be blocked by scripts.
-    static void terminateExecution();
     static void clearSharedBackingThread();
 
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
 
     WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    bool isOwningBackingThread() const override { return false; }
 
 private:
     InProcessWorkerObjectProxy& m_workerObjectProxy;

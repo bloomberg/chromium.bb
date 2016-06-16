@@ -61,30 +61,6 @@ WorkerBackingThread::WorkerBackingThread(WebThread* thread, bool shouldCallGCOnS
 
 WorkerBackingThread::~WorkerBackingThread()
 {
-#if DCHECK_IS_ON()
-    MutexLocker locker(m_mutex);
-    DCHECK_EQ(0u, m_workerScriptCount);
-#endif
-}
-
-void WorkerBackingThread::attach()
-{
-    {
-        MutexLocker locker(m_mutex);
-        if (++m_workerScriptCount > 1)
-            return;
-    }
-    initialize();
-}
-
-void WorkerBackingThread::detach()
-{
-    {
-        MutexLocker locker(m_mutex);
-        if (--m_workerScriptCount > 0)
-            return;
-    }
-    shutdown();
 }
 
 void WorkerBackingThread::initialize()

@@ -34,6 +34,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
+#include "platform/WaitableEvent.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -43,7 +44,6 @@
 namespace blink {
 
 class InspectorTaskRunner;
-class WaitableEvent;
 class WorkerBackingThread;
 class WorkerGlobalScope;
 class WorkerInspectorController;
@@ -152,12 +152,21 @@ public:
 
     ExitCode getExitCode();
 
+    void waitForShutdownForTesting() { m_shutdownEvent->wait(); }
+
 protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     // Factory method for creating a new worker context for the thread.
     // Called on the worker thread.
     virtual WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
+
+    // Returns true when this WorkerThread owns the associated
+    // WorkerBackingThread exclusively. If this function returns true, the
+    // WorkerThread initializes / shutdowns the backing thread. Otherwise
+    // workerBackingThread() should be initialized / shutdown properly
+    // out of this class.
+    virtual bool isOwningBackingThread() const { return true; }
 
     // Called on the worker thread.
     virtual void postInitialize() { }
