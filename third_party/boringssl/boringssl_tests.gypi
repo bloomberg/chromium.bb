@@ -419,7 +419,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/newhope/newhope_test.c',
+        'src/crypto/newhope/newhope_test.cc',
         '<@(boringssl_test_support_sources)',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
