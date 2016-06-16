@@ -115,6 +115,11 @@ template("fuzzer_test") {
         configs += invoker.additional_configs
       }
       configs += [ "//testing/libfuzzer:fuzzer_test_config" ]
+
+      # Used by WebRTC to suppress some Clang warnings in their codebase.
+      if (defined(invoker.suppressed_configs)) {
+        configs -= invoker.suppressed_configs
+      }
     }
   } else {
     # noop on unsupported platforms.
