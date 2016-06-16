@@ -1043,13 +1043,7 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
 
   // The width and height might be adjusted by driver.
   // Need to read it back and set to visible_size_.
-  if (device_->Ioctl(VIDIOC_G_CROP, &crop) != 0) {
-    // Some devices haven't supported G_CROP yet, so treat the failure
-    // non-fatal for now.
-    // TODO(kcwu): NOTIFY_ERROR and return false after all devices support it.
-    PLOG(WARNING) << "SetFormats(): ioctl() VIDIOC_G_CROP failed";
-    return true;
-  }
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CROP, &crop);
   visible_size_.SetSize(crop.c.width, crop.c.height);
   DVLOG(3) << "After adjusted by driver, visible_size_="
            << visible_size_.ToString();
