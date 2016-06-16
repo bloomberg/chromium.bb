@@ -87,9 +87,14 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
 }
 
 intptr_t ImageBuffer::s_globalGPUMemoryUsage = 0;
+unsigned ImageBuffer::s_globalAcceleratedImageBufferCount = 0;
 
 ImageBuffer::~ImageBuffer()
 {
+    if (m_gpuMemoryUsage) {
+        DCHECK_GT(s_globalAcceleratedImageBufferCount, 0u);
+        s_globalAcceleratedImageBufferCount--;
+    }
     ImageBuffer::s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
 }
 
@@ -299,7 +304,7 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         return true;
     }
 
-    ASSERT(canvas());
+    DCHECK(canvas());
     RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
     if (!snapshot)
         return false;
@@ -365,11 +370,16 @@ void ImageBuffer::updateGPUMemoryUsage() const
         checkedGPUUsage *= this->size().height();
         intptr_t gpuMemoryUsage = checkedGPUUsage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
 
+        if (!m_gpuMemoryUsage) // was not accelerated before
+            s_globalAcceleratedImageBufferCount++;
+
         s_globalGPUMemoryUsage += (gpuMemoryUsage - m_gpuMemoryUsage);
         m_gpuMemoryUsage = gpuMemoryUsage;
-    } else if (m_gpuMemoryUsage > 0) {
+    } else if (m_gpuMemoryUsage) {
         // In case of switching from accelerated to non-accelerated mode,
         // the GPU memory usage needs to be updated too.
+        DCHECK_GT(s_globalAcceleratedImageBufferCount, 0u);
+        s_globalAcceleratedImageBufferCount--;
         s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
         m_gpuMemoryUsage = 0;
     }

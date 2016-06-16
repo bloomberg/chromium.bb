@@ -89,20 +89,22 @@ const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 // In Skia, we will also limit width/height to 32767.
 const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
+#if OS(ANDROID)
+// We estimate that the max limit for android phones is a quarter of that for
+// desktops based on local experimental results on Android One.
+const int MaxGlobalAcceleratedImageBufferCount = 25;
+#else
+const int MaxGlobalAcceleratedImageBufferCount = 100;
+#endif
+
 // We estimate the max limit of GPU allocated memory for canvases before Chrome
 // becomes laggy by setting the total allocated memory for accelerated canvases
-// to be equivalent to memory used by 80 accelerated canvases, each has a size
+// to be equivalent to memory used by 100 accelerated canvases, each has a size
 // of 1000*500 and 2d context.
 // Each such canvas occupies 4000000 = 1000 * 500 * 2 * 4 bytes, where 2 is the
 // gpuBufferCount in ImageBuffer::updateGPUMemoryUsage() and 4 means four bytes
 // per pixel per buffer.
-#if !OS(ANDROID)
-const int MaxGlobalGPUMemoryUsage = 4000000 * 80;
-#else
-// We estimate that the max limit for android phones is a quarter of that for
-// desktops based on local experimental results on Android One.,
-const int MaxGlobalGPUMemoryUsage = 4000000 * 20;
-#endif
+const int MaxGlobalGPUMemoryUsage = 4000000 * MaxGlobalAcceleratedImageBufferCount;
 
 // A default value of quality argument for toDataURL and toBlob
 // It is in an invalid range (outside 0.0 - 1.0) so that it will not be
@@ -754,6 +756,12 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     // Thus, we should stop allocating more GPU memory to new canvases created
     // when the current memory usage exceeds the threshold.
     if (ImageBuffer::getGlobalGPUMemoryUsage() >= MaxGlobalGPUMemoryUsage)
+        return false;
+
+    // Allocating too many GPU resources can makes us run into the driver's
+    // resource limits. So we need to keep the number of texture resources
+    // under tight control
+    if (ImageBuffer::getGlobalAcceleratedImageBufferCount() >= MaxGlobalAcceleratedImageBufferCount)
         return false;
 
     return true;

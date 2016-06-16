@@ -73,7 +73,8 @@ enum Multiply {
 };
 
 class PLATFORM_EXPORT ImageBuffer {
-    WTF_MAKE_NONCOPYABLE(ImageBuffer); USING_FAST_MALLOC(ImageBuffer);
+    WTF_MAKE_NONCOPYABLE(ImageBuffer);
+    USING_FAST_MALLOC(ImageBuffer);
 public:
     static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
     static PassOwnPtr<ImageBuffer> create(PassOwnPtr<ImageBufferSurface>);
@@ -142,6 +143,7 @@ public:
 
     void updateGPUMemoryUsage() const;
     static intptr_t getGlobalGPUMemoryUsage() { return s_globalGPUMemoryUsage; }
+    static unsigned getGlobalAcceleratedImageBufferCount() { return s_globalAcceleratedImageBufferCount; }
     intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
 
 protected:
@@ -159,6 +161,7 @@ private:
 
     mutable intptr_t m_gpuMemoryUsage;
     static intptr_t s_globalGPUMemoryUsage;
+    static unsigned s_globalAcceleratedImageBufferCount;
 };
 
 struct ImageDataBuffer {

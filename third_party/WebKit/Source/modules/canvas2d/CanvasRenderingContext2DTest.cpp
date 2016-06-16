@@ -80,6 +80,7 @@ protected:
     HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
     CanvasRenderingContext2D* context2d() const { return static_cast<CanvasRenderingContext2D*>(canvasElement().renderingContext()); }
     intptr_t getGlobalGPUMemoryUsage() const { return ImageBuffer::getGlobalGPUMemoryUsage(); }
+    unsigned getGlobalAcceleratedImageBufferCount() const { return ImageBuffer::getGlobalAcceleratedImageBufferCount(); }
     intptr_t getCurrentGPUMemoryUsage() const { return canvasElement().buffer()->getGPUMemoryUsage(); }
 
     void createContext(OpacityMode);
@@ -691,33 +692,39 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas)
     // and 2 is an estimate of num of gpu buffers required
     EXPECT_EQ(800, getCurrentGPUMemoryUsage());
     EXPECT_EQ(800, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
 
     // Switching accelerated mode to non-accelerated mode
     fakeAccelerateSurfacePtr->setIsAccelerated(false);
     canvasElement().buffer()->updateGPUMemoryUsage();
     EXPECT_EQ(0, getCurrentGPUMemoryUsage());
     EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
 
     // Switching non-accelerated mode to accelerated mode
     fakeAccelerateSurfacePtr->setIsAccelerated(true);
     canvasElement().buffer()->updateGPUMemoryUsage();
     EXPECT_EQ(800, getCurrentGPUMemoryUsage());
     EXPECT_EQ(800, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
 
     // Creating a different accelerated image buffer
     OwnPtr<FakeAcceleratedImageBufferSurfaceForTesting> fakeAccelerateSurface2 = adoptPtr(new FakeAcceleratedImageBufferSurfaceForTesting(IntSize(10, 5), NonOpaque));
     OwnPtr<ImageBuffer> imageBuffer2 = ImageBuffer::create(std::move(fakeAccelerateSurface2));
     EXPECT_EQ(800, getCurrentGPUMemoryUsage());
     EXPECT_EQ(1200, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(2u, getGlobalAcceleratedImageBufferCount());
 
     // Tear down the first image buffer that resides in current canvas element
     canvasElement().setSize(IntSize(20, 20));
     Mock::VerifyAndClearExpectations(fakeAccelerateSurfacePtr);
     EXPECT_EQ(400, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
 
     // Tear down the second image buffer
     imageBuffer2.reset();
     EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
 }
 
 TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext)
