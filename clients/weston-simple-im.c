@@ -197,13 +197,13 @@ input_method_keyboard_keymap(void *data,
 	close(fd);
 
 	if (!keyboard->keymap) {
-		fprintf(stderr, "failed to compile keymap\n");
+		fprintf(stderr, "Failed to compile keymap\n");
 		return;
 	}
 
 	keyboard->state = xkb_state_new(keyboard->keymap);
 	if (!keyboard->state) {
-		fprintf(stderr, "failed to create XKB state\n");
+		fprintf(stderr, "Failed to create XKB state\n");
 		xkb_keymap_unref(keyboard->keymap);
 		return;
 	}
@@ -489,7 +489,7 @@ main(int argc, char *argv[])
 
 	simple_im.display = wl_display_connect(NULL);
 	if (simple_im.display == NULL) {
-		fprintf(stderr, "failed to connect to server: %m\n");
+		fprintf(stderr, "Failed to connect to server: %m\n");
 		return -1;
 	}
 
