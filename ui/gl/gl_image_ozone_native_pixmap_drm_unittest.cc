@@ -129,11 +129,15 @@ class GLImageOzoneNativePixmapDrmTestDelegate {
  private:
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageOzoneNativePixmapDrm,
+
+// TODO(crbug.com/618516) - The tests in this file can only be run
+// on a real device, and not on linux desktop builds, so they are
+// disabled until they can correctly detect the environment and do
+INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageOzoneNativePixmapDrm,
                               GLImageTest,
                               GLImageOzoneNativePixmapDrmTestDelegate);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageOzoneNativePixmapDrm,
+INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageOzoneNativePixmapDrm,
                               GLImageBindTest,
                               GLImageOzoneNativePixmapDrmTestDelegate);
 

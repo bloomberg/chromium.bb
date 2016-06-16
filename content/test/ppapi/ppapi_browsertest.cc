@@ -36,7 +36,13 @@ namespace {
     RunTest(STRIP_PREFIXES(test_name)); \
   }
 
-TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
+// Doesn't work in GN CrOS ozone builds yet, http://crbug.com/619765
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#define MAYBE_BrowserFont DISABLED_BrowserFont
+#else
+#define MAYBE_BrowserFont BrowserFont
+#endif
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_BrowserFont)
 
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
@@ -131,7 +137,13 @@ TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Scrollbar)
 TEST_PPAPI_IN_PROCESS(TraceEvent)
 TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
 
-TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
+// Doesn't work in GN CrOS ozone builds yet, http://crbug.com/619765
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#define MAYBE_TrueTypeFont DISABLED_TrueTypeFont
+#else
+#define MAYBE_TrueTypeFont TrueTypeFont
+#endif
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_TrueTypeFont)
 
 TEST_PPAPI_IN_PROCESS(URLUtil)
 TEST_PPAPI_OUT_OF_PROCESS(URLUtil)

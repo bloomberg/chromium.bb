@@ -119,6 +119,13 @@ void SendNativeCommandShift(int key_code) {
 // doesn't have focus. Also test that non-global commands are not treated as
 // global and that keys beyond Ctrl+Shift+[0..9] cannot be auto-assigned by an
 // extension.
+//
+// Doesn't work in GN CrOS ozone builds yet, http://crbug.com/619784
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#define MAYBE_GlobalCommand DISABLED_GlobalCommand
+#else
+#define MAYBE_GlobalCommand GlobalCommand
+#endif
 IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, GlobalCommand) {
   // Load the extension in the non-incognito browser.
   ResultCatcher catcher;
