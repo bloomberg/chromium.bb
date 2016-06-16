@@ -143,6 +143,7 @@ Contexts
 * Letter::
 * Word::
 * Phrase::
+* Symbol::
 
 Testing Translation Tables interactively
 
@@ -735,6 +736,7 @@ handling we have to look at the different contexts that are supported.
 * Letter::
 * Word::
 * Phrase::
+* Symbol::
 @end menu
 
 @node None
@@ -854,6 +856,14 @@ lenemphphrase underline 3
 @end example
 
 @end table
+
+@node Symbol
+@subsubsection Symbol
+UEB has a concept of symbols that need special indication. When the
+translator detects an emphasis sequence that needs to be indicated
+with the rules for a symbol then it will use the dots defined with the
+@opcoderef{emphletter}. To indicate the end of the symbol it will use
+the dots defined in the @opcoderef{endemphword}.
 
 @node Fallback behavior
 @subsection Fallback behavior
