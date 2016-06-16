@@ -33,19 +33,20 @@ namespace system_logs {
 
 namespace {
 
-const char kSyncDataKey[] = "about_sync_data";
-const char kExtensionsListKey[] = "extensions";
-const char kDataReductionProxyKey[] = "data_reduction_proxy";
-const char kChromeVersionTag[] = "CHROME VERSION";
+constexpr char kSyncDataKey[] = "about_sync_data";
+constexpr char kExtensionsListKey[] = "extensions";
+constexpr char kDataReductionProxyKey[] = "data_reduction_proxy";
+constexpr char kChromeVersionTag[] = "CHROME VERSION";
 #if defined(OS_CHROMEOS)
-const char kChromeEnrollmentTag[] = "ENTERPRISE_ENROLLED";
-const char kHWIDKey[] = "HWID";
+constexpr char kChromeEnrollmentTag[] = "ENTERPRISE_ENROLLED";
+constexpr char kHWIDKey[] = "HWID";
 constexpr char kSettingsKey[] = "settings";
+constexpr char kLocalStateSettingsResponseKey[] = "Local State: settings";
 #else
-const char kOsVersionTag[] = "OS VERSION";
+constexpr char kOsVersionTag[] = "OS VERSION";
 #endif
 #if defined(OS_WIN)
-const char kUsbKeyboardDetected[] = "usb_keyboard_detected";
+constexpr char kUsbKeyboardDetected[] = "usb_keyboard_detected";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -223,7 +224,7 @@ void ChromeInternalLogSource::PopulateLocalStateSettings(
   if (!serializer.Serialize(*local_state_settings))
     return;
 
-  (*response)["Local State: settings"] = serialized_settings;
+  (*response)[kLocalStateSettingsResponseKey] = serialized_settings;
 }
 #endif  // defined(OS_CHROMEOS)
 

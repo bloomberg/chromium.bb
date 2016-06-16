@@ -93,7 +93,7 @@ body {
 }
 
 .content #screenshot-image {
-  -webkit-margin-start: 100px;
+  -webkit-margin-start: 150px;
   display: block;
   height: 60px;
   margin-top: 40px;

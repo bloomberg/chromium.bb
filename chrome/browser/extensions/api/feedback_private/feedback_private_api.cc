@@ -31,6 +31,10 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 #endif
@@ -145,8 +149,19 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
   SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
 #if defined(OS_CHROMEOS)
-  SET_STRING("sys-info",
-             IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX);
+  // We must check ArcBridgeService::available() before
+  // ArcAuthService::IsArcEnabled() to avoid crashes in browsertests when
+  // |profile_| is not set in ArcAuthService when ARC is not available.
+  if (arc::ArcBridgeService::Get() &&
+      arc::ArcBridgeService::Get()->available() &&
+      arc::ArcAuthService::Get() &&
+      arc::ArcAuthService::Get()->IsArcEnabled()) {
+    SET_STRING("sys-info",
+               IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC);
+  } else {
+    SET_STRING("sys-info",
+               IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX);
+  }
 #else
   SET_STRING("sys-info", IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
 #endif
