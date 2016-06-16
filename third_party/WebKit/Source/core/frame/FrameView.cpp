@@ -1807,7 +1807,7 @@ void FrameView::layoutOrthogonalWritingModeRoots()
 void FrameView::scheduleRelayout()
 {
     DCHECK(m_frame->view() == this);
-    CHECK(!isInPerformLayout());
+    CHECK(lifecycle().stateAllowsLayoutInvalidation());
     CHECK(!m_inPluginUpdate);
 
     if (!m_layoutSchedulingEnabled)
@@ -1831,7 +1831,7 @@ void FrameView::scheduleRelayout()
 void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
 {
     DCHECK(m_frame->view() == this);
-    CHECK(!isInPerformLayout());
+    CHECK(lifecycle().stateAllowsLayoutInvalidation());
     CHECK(!m_inPluginUpdate);
 
     // FIXME: Should this call shouldScheduleLayout instead?
