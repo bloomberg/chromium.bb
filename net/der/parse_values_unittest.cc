@@ -173,6 +173,12 @@ TEST(ParseValuesTest, TimesCompare) {
   EXPECT_TRUE(time1 < time2);
   EXPECT_TRUE(time2 < time3);
   EXPECT_TRUE(time3 < time4);
+
+  EXPECT_TRUE(time2 > time1);
+  EXPECT_TRUE(time2 >= time1);
+  EXPECT_TRUE(time3 <= time4);
+  EXPECT_TRUE(time1 <= time1);
+  EXPECT_TRUE(time1 >= time1);
 }
 
 struct Uint64TestData {
