@@ -12,6 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
@@ -44,6 +46,7 @@ const char kKeyPublicAccount[] = "publicAccount";
 const char kKeyLegacySupervisedUser[] = "legacySupervisedUser";
 const char kKeyChildUser[] = "childUser";
 const char kKeyDesktopUser[] = "isDesktopUser";
+const char kKeyShowPin[] = "showPin";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -111,6 +114,18 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
                  GetCurrentKeyboardLayout().release());
 }
 
+// Returns true if the PIN keyboard should be displayed for the given |user|.
+bool CanShowPinForUser(user_manager::User* user) {
+  if (!user->is_logged_in())
+    return false;
+
+  PinStorage* pin_storage = PinStorageFactory::GetForUser(user);
+  if (!pin_storage)
+    return false;
+
+  return pin_storage->IsPinAuthenticationAvailable();
+}
+
 }  // namespace
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
@@ -159,6 +174,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeyChildUser, is_child_user);
   user_dict->SetBoolean(kKeyDesktopUser, false);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
+  user_dict->SetBoolean(kKeyShowPin, CanShowPinForUser(user));
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 

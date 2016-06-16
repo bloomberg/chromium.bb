@@ -28,6 +28,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'showBannerMessage',
       'showUserPodCustomIcon',
       'hideUserPodCustomIcon',
+      'disablePinKeyboardForUser',
       'setAuthType',
       'setTouchViewState',
       'setPublicSessionDisplayName',
@@ -196,11 +197,27 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
+     * Loads the PIN keyboard if any of the users can login with a PIN.
+     * @param {array} users Array of user instances.
+     */
+    loadPinKeyboardIfNeeded_: function(users) {
+      for (var i = 0; i < users.length; ++i) {
+        var user = users[i];
+        if (user.showPin) {
+          showPinKeyboardAsync();
+          return;
+        }
+      }
+    },
+
+    /**
      * Loads given users in pod row.
      * @param {array} users Array of user.
      * @param {boolean} showGuest Whether to show guest session button.
      */
     loadUsers: function(users, showGuest) {
+      this.loadPinKeyboardIfNeeded_(users);
+
       $('pod-row').loadPods(users);
       $('login-header-bar').showGuestButton = showGuest;
       // On Desktop, #login-header-bar has a shadow if there are 8+ profiles.
@@ -335,6 +352,23 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setTouchViewState: function(isTouchViewEnabled) {
       $('pod-row').setTouchViewState(isTouchViewEnabled);
+    },
+
+    /**
+     * Hides the PIN keyboard if it's active.
+     * @param {!user} user The user who can no longer enter a PIN.
+     */
+    disablePinKeyboardForUser: function(user) {
+      var pinContainer = $('pin-container');
+
+      // Transition opacity to 0, and when the transition is done hide the
+      // keyboard so it doesn't take layout space.
+      pinContainer.style.opacity = 0;
+      pinContainer.addEventListener('webkitTransitionEnd', function f(e) {
+        pinContainer.removeEventListener('webkitTransitionEnd', f);
+        pinContainer.hidden = true;
+      });
+      ensureTransitionEndEvent(pinContainer);
     },
 
     /**

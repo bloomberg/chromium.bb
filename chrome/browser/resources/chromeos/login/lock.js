@@ -8,9 +8,15 @@
 
 <include src="login_shared.js">
 
-// Lazy load polymer.
-(function() {
+// Asynchronously loads the pin keyboard.
+function showPinKeyboardAsync() {
   'use strict';
+
+  // This function could get called multiple times. Do nothing if we have
+  // already loaded. This check needs to happen before the registerAssets call,
+  // because that will clobber the loaded state.
+  if (cr.ui.login.ResourceLoader.alreadyLoadedAssets('custom-elements'))
+    return;
 
   // Register loader for custom elements.
   cr.ui.login.ResourceLoader.registerAssets({
@@ -29,13 +35,11 @@
   // Loading the PIN element blocks the DOM, which will interrupt any running
   // animations. We load the PIN after an idle notification to allow the pod
   // fly-in animation to complete without interruption.
-  if (loadTimeData.getBoolean('showPin')) {
-    cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
-      cr.ui.login.ResourceLoader.waitUntilLayoutComplete('pin-container',
-                                                         onPinLoaded);
-    });
-  }
-})();
+  cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
+    cr.ui.login.ResourceLoader.waitUntilLayoutComplete('pin-container',
+                                                       onPinLoaded);
+  });
+}
 
 cr.define('cr.ui.Oobe', function() {
   return {

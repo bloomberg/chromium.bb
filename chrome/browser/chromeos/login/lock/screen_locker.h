@@ -65,6 +65,10 @@ class ScreenLocker : public AuthStatusConsumer {
   void OnAuthFailure(const chromeos::AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
 
+  // Called when an account password (not PIN/quick unlock) has been used to
+  // unlock the device.
+  void OnPasswordAuthSuccess(const UserContext& user_context);
+
   // Does actual unlocking once authentication is successful and all blocking
   // animations are done.
   void UnlockOnLoginSuccess();
@@ -142,11 +146,11 @@ class ScreenLocker : public AuthStatusConsumer {
   // Called when screen locker is safe to delete.
   static void ScheduleDeletion();
 
-  // Returns true if |username| is found among logged in users.
-  bool IsUserLoggedIn(const std::string& username);
+  // Returns true if |account_id| is found among logged in users.
+  bool IsUserLoggedIn(const AccountId& account_id) const;
 
   // Looks up user in unlock user list.
-  const user_manager::User* FindUnlockUser(const std::string& user_id);
+  const user_manager::User* FindUnlockUser(const AccountId& account_id);
 
   // ScreenLockerDelegate instance in use.
   std::unique_ptr<ScreenLockerDelegate> delegate_;

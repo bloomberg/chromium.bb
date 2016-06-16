@@ -35,6 +35,8 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -274,6 +276,9 @@ SigninScreenHandler::SigninScreenHandler(
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
 
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
+
   chromeos::input_method::ImeKeyboard* keyboard =
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
@@ -291,6 +296,8 @@ SigninScreenHandler::~SigninScreenHandler() {
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui && oobe_ui_observer_added_)
     oobe_ui->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
   chromeos::input_method::ImeKeyboard* keyboard =
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
@@ -475,8 +482,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
 void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
-  AddCallback("authenticateUserWithPin",
-              &SigninScreenHandler::HandleAuthenticateUserWithPin);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
@@ -886,6 +891,13 @@ void SigninScreenHandler::RefocusCurrentPod() {
   core_oobe_actor_->RefocusCurrentPod();
 }
 
+void SigninScreenHandler::HidePinKeyboardIfNeeded(const AccountId& account_id) {
+  chromeos::PinStorage* pin_storage =
+      chromeos::PinStorageFactory::GetForAccountId(account_id);
+  if (pin_storage && !pin_storage->IsPinAuthenticationAvailable())
+    CallJS("login.AccountPickerScreen.disablePinKeyboardForUser", account_id);
+}
+
 void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
                                         bool last_user_removed) {
   CallJS("login.AccountPickerScreen.removeUser", account_id);
@@ -992,6 +1004,13 @@ void SigninScreenHandler::Observe(int type,
   }
 }
 
+void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
+  for (user_manager::User* user :
+       user_manager::UserManager::Get()->GetUnlockUsers()) {
+    HidePinKeyboardIfNeeded(user->GetAccountId());
+  }
+}
+
 void SigninScreenHandler::OnMaximizeModeStarted() {
   CallJS("login.AccountPickerScreen.setTouchViewState", true);
 }
@@ -1023,17 +1042,8 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   UserContext user_context(account_id);
   user_context.SetKey(Key(password));
   delegate_->Login(user_context, SigninSpecifics());
-}
 
-void SigninScreenHandler::HandleAuthenticateUserWithPin(
-    const AccountId& account_id, const std::string& password) {
-  if (!delegate_)
-    return;
-  DCHECK_EQ(account_id.GetUserEmail(),
-            gaia::SanitizeEmail(account_id.GetUserEmail()));
-
-  // TODO(jdufault): Implement this.
-  NOTIMPLEMENTED();
+  HidePinKeyboardIfNeeded(account_id);
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {

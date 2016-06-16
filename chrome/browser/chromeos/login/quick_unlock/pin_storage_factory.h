@@ -7,8 +7,13 @@
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class Profile;
+
+namespace user_manager {
+class User;
+}
 
 namespace chromeos {
 
@@ -21,6 +26,14 @@ class PinStorageFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the PinStorage instance for |profile|.
   static PinStorage* GetForProfile(Profile* profile);
+
+  // Helper method that finds the PinStorage instance for |user|. This returns
+  // GetForProfile with the profile associated with |user|.
+  static PinStorage* GetForUser(const user_manager::User* user);
+
+  // Helper method that returns the PinStorage instance for |account_id|. This
+  // returns GetForProfile with the profile associated with |account_id|.
+  static PinStorage* GetForAccountId(const AccountId& account_id);
 
   static PinStorageFactory* GetInstance();
 

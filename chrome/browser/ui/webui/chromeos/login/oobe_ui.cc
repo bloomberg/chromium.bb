@@ -111,10 +111,6 @@ const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 
-// Shared parameter with JS that enables or disables the PIN screen. This needs
-// to stay synchronized with the JS definition.
-const char kShowPinKey[] = "showPin";
-
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,
@@ -140,9 +136,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
     source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
                             IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
-
-    // TODO(jdufault): Dynamically show pin when it is enabled.
-    source->AddBoolean(kShowPinKey, false);
   } else {
     source->SetDefaultResource(IDR_LOGIN_HTML);
     source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);

@@ -781,7 +781,7 @@ cr.define('login', function() {
      */
     handlePinSubmitted_: function(e) {
       var pin = e.detail.pin;
-      chrome.send('authenticateUserWithPin', [this.user.username, pin]);
+      chrome.send('authenticateUser', [this.user.username, pin]);
     },
 
     /**
