@@ -19,8 +19,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR
   endif ()
 endif ()
 
+if (MSVC)
+  set(HAVE_CXX11 ON)
+endif ()
+
 # C++11 compile tests.
-if (MSVC OR HAVE_CXX11)
+if (HAVE_CXX11)
   # std::unique_ptr
   check_cxx_source_compiles("
       #include <memory>
@@ -132,9 +136,5 @@ if (NOT HAVE_UNIQUE_PTR
     OR NOT HAVE_RANGED_FOR
     OR NOT HAVE_MOVE_CONSTRUCTORS
     OR NOT HAVE_MEMBER_INITIALIZERS)
-  # TODO(tomfinegan): Update settings at the include site instead of in here.
-  set(ENABLE_TESTS OFF)
-  set(ENABLE_WEBMTS OFF)
-  set(ENABLE_WEBMINFO OFF)
-  message(WARNING "C++11 feature(s) not supported, tests and webmts disabled.")
+  set(HAVE_CXX11 OFF)
 endif ()
