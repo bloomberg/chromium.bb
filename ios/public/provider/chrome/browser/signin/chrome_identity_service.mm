@@ -68,9 +68,6 @@ void ChromeIdentityService::GetAccessToken(
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {}
 
-void ChromeIdentityService::SigninIdentity(ChromeIdentity* identity,
-                                           SigninIdentityCallback callback) {}
-
 void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity,
                                                  GetAvatarCallback callback) {}
 

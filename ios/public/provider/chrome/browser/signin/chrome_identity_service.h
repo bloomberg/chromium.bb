@@ -25,10 +25,6 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Callback passed to method |SigninIdentity()|.
-typedef void (^SigninIdentityCallback)(ChromeIdentity* identity,
-                                       NSError* error);
-
 // Callback passed to method |GetAccessTokenForScopes()| that returns the
 // information of the obtained access token to the caller.
 typedef void (^AccessTokenCallback)(NSString* token,
@@ -142,10 +138,6 @@ class ChromeIdentityService {
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,
                               const AccessTokenCallback& callback);
-
-  // Allow the user to sign in with an identity already seen on this device.
-  virtual void SigninIdentity(ChromeIdentity* identity,
-                              SigninIdentityCallback callback);
 
   // Fetches the profile avatar, from the cache or the network.
   // For high resolution iPads, returns large images (200 x 200) to avoid
