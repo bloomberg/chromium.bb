@@ -1817,7 +1817,7 @@ bool LayoutBlock::tryLayoutDoingPositionedMovementOnly()
     setIntrinsicContentLogicalHeight(contentLogicalHeight());
     computeLogicalHeight(oldHeight, logicalTop(), computedValues);
 
-    if (hasPercentHeightDescendants() && oldHeight != computedValues.m_extent) {
+    if (oldHeight != computedValues.m_extent && (hasPercentHeightDescendants() || isFlexibleBox())) {
         setIntrinsicContentLogicalHeight(oldIntrinsicContentLogicalHeight);
         return false;
     }
