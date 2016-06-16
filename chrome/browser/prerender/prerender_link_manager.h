@@ -17,8 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace content {
 struct Referrer;
 }

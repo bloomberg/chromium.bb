@@ -17,7 +17,6 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/render_process_host.h"
