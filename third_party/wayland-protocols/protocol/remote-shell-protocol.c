@@ -82,8 +82,6 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 	{ "unset_maximized", "2", types + 0 },
 	{ "set_minimized", "2", types + 0 },
 	{ "unset_minimized", "2", types + 0 },
-	{ "set_pin", "3", types + 0 },
-	{ "unset_pin", "3", types + 0 },
 	{ "set_pinned", "3", types + 0 },
 	{ "unset_pinned", "3", types + 0 },
 };
@@ -91,6 +89,6 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
 	"zwp_remote_surface_v1", 3,
 	11, zwp_remote_surface_v1_requests,
-	11, zwp_remote_surface_v1_events,
+	9, zwp_remote_surface_v1_events,
 };
 

@@ -384,10 +384,8 @@ struct zwp_remote_surface_v1_interface {
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MAXIMIZED	4
 #define ZWP_REMOTE_SURFACE_V1_SET_MINIMIZED	5
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED	6
-#define ZWP_REMOTE_SURFACE_V1_SET_PIN	7
-#define ZWP_REMOTE_SURFACE_V1_UNSET_PIN	8
-#define ZWP_REMOTE_SURFACE_V1_SET_PINNED	9
-#define ZWP_REMOTE_SURFACE_V1_UNSET_PINNED	10
+#define ZWP_REMOTE_SURFACE_V1_SET_PINNED	7
+#define ZWP_REMOTE_SURFACE_V1_UNSET_PINNED	8
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -417,14 +415,6 @@ struct zwp_remote_surface_v1_interface {
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED_SINCE_VERSION	2
-/**
- * @ingroup iface_zwp_remote_surface_v1
- */
-#define ZWP_REMOTE_SURFACE_V1_SET_PIN_SINCE_VERSION	3
-/**
- * @ingroup iface_zwp_remote_surface_v1
- */
-#define ZWP_REMOTE_SURFACE_V1_UNSET_PIN_SINCE_VERSION	3
 /**
  * @ingroup iface_zwp_remote_surface_v1
  */
@@ -509,28 +499,6 @@ static inline void
 zwp_remote_surface_v1_send_unset_minimized(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED);
-}
-
-/**
- * @ingroup iface_zwp_remote_surface_v1
- * Sends an set_pin event to the client owning the resource.
- * @param resource_ The client's resource
- */
-static inline void
-zwp_remote_surface_v1_send_set_pin(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_SET_PIN);
-}
-
-/**
- * @ingroup iface_zwp_remote_surface_v1
- * Sends an unset_pin event to the client owning the resource.
- * @param resource_ The client's resource
- */
-static inline void
-zwp_remote_surface_v1_send_unset_pin(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_PIN);
 }
 
 /**

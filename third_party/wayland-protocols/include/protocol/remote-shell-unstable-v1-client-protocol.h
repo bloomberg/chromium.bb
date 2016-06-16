@@ -350,37 +350,15 @@ struct zwp_remote_surface_v1_listener {
 	void (*unset_minimized)(void *data,
 				struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
 	/**
-	 * surface wants to be pinned
-	 *
-	 * The set_pin event is sent by the compositor when the user
-	 * wants the surface to be pinned.
-	 *
-	 * This is only a request that the user intends to make your window
-	 * pinned. The client may choose to ignore this request.
-	 * @since 3
-	 */
-	void (*set_pin)(void *data,
-			struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
-	/**
-	 * surface wants to be unpinned
-	 *
-	 * The unset_pin event is sent by the compositor when the user
-	 * wants the surface to be unpinned.
-	 *
-	 * This is only a request that the user intends to make your window
-	 * unpinned. The client may choose to ignore this request.
-	 * @since 3
-	 */
-	void (*unset_pin)(void *data,
-			  struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
-	/**
 	 * surface was pinned
 	 *
 	 * The set_pinned event is sent by the compositor when the
 	 * surface was pinned.
 	 *
-	 * This is only an event that the pin request was successfully
-	 * done. The client may choose to ignore this event.
+	 * This is an event to notify that the window is pinned in
+	 * compositor. The pin may be triggered by a client's request, or
+	 * some user action directly handled by the compositor. The client
+	 * may choose to ignore this event.
 	 * @since 3
 	 */
 	void (*set_pinned)(void *data,
@@ -391,8 +369,10 @@ struct zwp_remote_surface_v1_listener {
 	 * The unset_pinned event is sent by the compositor when the
 	 * surface was unpinned.
 	 *
-	 * This is only an event that the unpin request was successfully
-	 * done. The client may choose to ignore this event.
+	 * This is an event to notify that the window is unpinned in
+	 * compositor. The unpin may be triggered by a client's request, or
+	 * some user action directly handled by the compositor. The client
+	 * may choose to ignore this event.
 	 * @since 3
 	 */
 	void (*unset_pinned)(void *data,
