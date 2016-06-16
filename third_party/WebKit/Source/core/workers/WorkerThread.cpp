@@ -351,14 +351,6 @@ void WorkerThread::terminateInternal(TerminationMode mode)
 
     // If terminate has already been called.
     if (m_terminated) {
-        if (m_runningDebuggerTask) {
-            // Any debugger task is guaranteed to finish, so we can wait for the
-            // completion even if the synchronous forcible termination is
-            // requested. Shutdown sequence will start after the task.
-            DCHECK(!m_scheduledForceTerminationTask);
-            return;
-        }
-
         // The synchronous forcible termination request should overtake the
         // scheduled termination task because the request will block the main
         // thread and the scheduled termination task never runs.
@@ -393,7 +385,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     // loop. If script execution weren't forbidden, a while(1) loop in JS could
     // keep the thread alive forever.
     //
-    // (1) |m_readyToShutdown|: If this is set, the worker thread has already
+    // (1) |m_readyToShutdown|: It this is set, the worker thread has already
     // noticed that the thread is about to be terminated and the worker global
     // scope is already disposed, so we don't have to explicitly terminate the
     // worker execution.
@@ -594,13 +586,11 @@ void WorkerThread::performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThread
     ThreadDebugger::idleStarted(isolate());
     {
         MutexLocker lock(m_threadStateMutex);
-        if (!m_terminated) {
-            m_runningDebuggerTask = false;
+        m_runningDebuggerTask = false;
+
+        if (!m_terminated)
             return;
-        }
         // terminate() was called. Shutdown sequence will start soon.
-        // Keep |m_runningDebuggerTask| to prevent forcible termination from the
-        // main thread before shutdown preparation.
     }
     // Stop further worker tasks to run after this point.
     prepareForShutdownOnWorkerThread();

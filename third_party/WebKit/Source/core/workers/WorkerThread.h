@@ -164,7 +164,6 @@ protected:
 
 private:
     friend class WorkerThreadTest;
-    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerTaskIsRunning);
 
     class ForceTerminationTask;
     class WorkerMicrotaskRunner;
@@ -190,6 +189,8 @@ private:
     void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
     void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void performDebuggerTaskDontWaitOnWorkerThread();
+
+    void setForceTerminationDelayInMsForTesting(long long forceTerminationDelayInMs) { m_forceTerminationDelayInMs = forceTerminationDelayInMs; }
 
     bool m_started = false;
     bool m_terminated = false;
