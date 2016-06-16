@@ -55,10 +55,6 @@ class BookmarkBarInstructionsView : public views::View,
   views::Label* instructions_;
   views::Link* import_link_;
 
-  // The baseline of the child views. This is -1 if none of the views support a
-  // baseline.
-  int baseline_;
-
   // Have the colors of the child views been updated? This is initially false
   // and set to true once we have a valid ThemeProvider.
   bool updated_colors_;

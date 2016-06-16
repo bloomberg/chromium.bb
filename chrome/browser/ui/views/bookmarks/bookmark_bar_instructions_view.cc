@@ -40,7 +40,6 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
     : delegate_(delegate),
       instructions_(NULL),
       import_link_(NULL),
-      baseline_(-1),
       updated_colors_(false) {
   instructions_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARKS_NO_ITEMS));
@@ -62,22 +61,14 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
 }
 
 gfx::Size BookmarkBarInstructionsView::GetPreferredSize() const {
-  int ascent = 0, descent = 0, height = 0, width = 0;
+  int height = 0, width = 0;
   for (int i = 0; i < child_count(); ++i) {
     const views::View* view = child_at(i);
     gfx::Size pref = view->GetPreferredSize();
-    int baseline = view->GetBaseline();
-    if (baseline != -1) {
-      ascent = std::max(ascent, baseline);
-      descent = std::max(descent, pref.height() - baseline);
-    } else {
-      height = std::max(pref.height(), height);
-    }
+    height = std::max(pref.height(), height);
     width += pref.width();
   }
   width += (child_count() - 1) * GetViewPadding();
-  if (ascent != 0)
-    height = std::max(ascent + descent, height);
   return gfx::Size(width, height);
 }
 
@@ -87,14 +78,8 @@ void BookmarkBarInstructionsView::Layout() {
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
     gfx::Size pref = view->GetPreferredSize();
-    int baseline = view->GetBaseline();
-    int y;
-    if (baseline != -1 && baseline_ != -1)
-      y = baseline_ - baseline;
-    else
-      y = (height() - pref.height()) / 2;
     int view_width = std::min(remaining_width, pref.width());
-    view->SetBounds(x, y, view_width, pref.height());
+    view->SetBounds(x, 0, view_width, height());
     x += view_width + GetViewPadding();
     remaining_width = std::max(0, width() - x);
   }
