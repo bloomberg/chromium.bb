@@ -633,6 +633,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
                           LidEventReceived(open, timestamp));
         break;
       }
+      case power_manager::InputEvent_Type_TABLET_MODE_ON:
+      case power_manager::InputEvent_Type_TABLET_MODE_OFF: {
+        bool on =
+            (proto.type() == power_manager::InputEvent_Type_TABLET_MODE_ON);
+        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
+                          TabletModeEventReceived(on, timestamp));
+        break;
+      }
     }
   }
 

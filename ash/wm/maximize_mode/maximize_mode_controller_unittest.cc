@@ -141,6 +141,12 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     TriggerBaseAndLidUpdate(base_vector, lid_vector);
   }
 
+  void HoldDeviceVertical() {
+    gfx::Vector3dF base_vector(9.8f, 0.0f, 0.0f);
+    gfx::Vector3dF lid_vector(9.8f, 0.0f, 0.0f);
+    TriggerBaseAndLidUpdate(base_vector, lid_vector);
+  }
+
   void OpenLid() {
     maximize_mode_controller()->LidEventReceived(true /* open */,
         maximize_mode_controller()->tick_clock_->NowTicks());
@@ -153,6 +159,11 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   bool WasLidOpenedRecently() {
     return maximize_mode_controller()->WasLidOpenedRecently();
+  }
+
+  void SetTabletMode(bool on) {
+    maximize_mode_controller()->TabletModeEventReceived(
+        on, maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool AreEventsBlocked() {
@@ -264,6 +275,32 @@ TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
   // 3 seconds after lid open.
   AdvanceTickClock(base::TimeDelta::FromSeconds(2));
   EXPECT_FALSE(WasLidOpenedRecently());
+}
+
+TEST_F(MaximizeModeControllerTest, TabletModeTransition) {
+  OpenLidToAngle(90.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  // Unstable reading. This should not trigger maximize mode.
+  HoldDeviceVertical();
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  // When tablet mode switch is on it should force maximize mode even if the
+  // reading is not stable.
+  SetTabletMode(true);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  // After tablet mode switch is off it should stay in maximize mode if the
+  // reading is not stable.
+  SetTabletMode(false);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  // Should leave maximize mode when the lid angle is small enough.
+  OpenLidToAngle(90.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
 // Verify the maximize mode enter/exit thresholds for stable angles.

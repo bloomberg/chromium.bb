@@ -101,9 +101,11 @@ bool IsAngleBetweenAccelerometerReadingsStable(
 
 MaximizeModeController::MaximizeModeController()
     : have_seen_accelerometer_data_(false),
-      lid_open_past_180_(false),
       touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
+#if defined(OS_CHROMEOS)
+      tablet_mode_switch_is_on_(false),
+#endif
       lid_is_closed_(false) {
   WmShell::Get()->AddShellObserver(this);
   Shell* shell = Shell::GetInstance();
@@ -152,6 +154,8 @@ bool MaximizeModeController::CanEnterMaximizeMode() {
              switches::kAshEnableTouchViewTesting);
 }
 
+// TODO(jcliang): Hide or remove EnableMaximizeModeWindowManager
+// (http://crbug.com/620241).
 void MaximizeModeController::EnableMaximizeModeWindowManager(
     bool should_enable) {
   bool is_enabled = !!maximize_mode_window_manager_.get();
@@ -225,6 +229,14 @@ void MaximizeModeController::LidEventReceived(bool open,
   LeaveMaximizeMode();
 }
 
+void MaximizeModeController::TabletModeEventReceived(
+    bool on,
+    const base::TimeTicks& time) {
+  tablet_mode_switch_is_on_ = on;
+  if (on && !IsMaximizeModeWindowManagerEnabled())
+    EnterMaximizeMode();
+}
+
 void MaximizeModeController::SuspendImminent() {
   // The system is about to suspend, so record TouchView usage interval metrics
   // based on whether TouchView mode is currently active.
@@ -257,6 +269,10 @@ void MaximizeModeController::HandleHingeRotation(
                                         (kHingeVerticalSmoothingMaximum -
                                          kHingeVerticalSmoothingStart)));
 
+  // We cannot trust the computed lid angle when the device is held vertically.
+  bool is_angle_reliable =
+      largest_hinge_acceleration <= kHingeVerticalSmoothingMaximum;
+
   base_smoothed_.Scale(smoothing_ratio);
   base_reading.Scale(1.0f - smoothing_ratio);
   base_smoothed_.Add(base_reading);
@@ -264,6 +280,9 @@ void MaximizeModeController::HandleHingeRotation(
   lid_smoothed_.Scale(smoothing_ratio);
   lid_reading.Scale(1.0f - smoothing_ratio);
   lid_smoothed_.Add(lid_reading);
+
+  if (tablet_mode_switch_is_on_)
+    return;
 
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
@@ -278,7 +297,7 @@ void MaximizeModeController::HandleHingeRotation(
   if (lid_angle < 0.0f)
     lid_angle += 360.0f;
 
-  bool is_angle_stable = lid_angle >= kMinStableAngle &&
+  bool is_angle_stable = is_angle_reliable && lid_angle >= kMinStableAngle &&
                          lid_angle <= kMaxStableAngle;
 
   // Clear the last_lid_open_time_ for a stable reading so that there is less
@@ -288,14 +307,12 @@ void MaximizeModeController::HandleHingeRotation(
     last_lid_open_time_ = base::TimeTicks();
 
   // Toggle maximize mode on or off when corresponding thresholds are passed.
-  if (lid_open_past_180_ && is_angle_stable &&
+  if (IsMaximizeModeWindowManagerEnabled() && is_angle_stable &&
       lid_angle <= kExitMaximizeModeAngle) {
-    lid_open_past_180_ = false;
     LeaveMaximizeMode();
-  } else if (!lid_open_past_180_ && !lid_is_closed_ &&
+  } else if (!IsMaximizeModeWindowManagerEnabled() && !lid_is_closed_ &&
              lid_angle >= kEnterMaximizeModeAngle &&
              (is_angle_stable || !WasLidOpenedRecently())) {
-    lid_open_past_180_ = true;
     EnterMaximizeMode();
   }
 }
