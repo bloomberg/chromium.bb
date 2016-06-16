@@ -1099,10 +1099,16 @@ NSFont* OmniboxViewMac::GetNormalFieldFont() {
 }
 
 NSFont* OmniboxViewMac::GetBoldFieldFont() {
+  // Request a bold font, then make it larger. ResourceBundle will do the
+  // opposite which makes a large system normal font a non-system bold font.
+  // That gives a different baseline to making the non-system bold font larger.
+  // And while the omnibox locks the baseline in ApplyTextStyle(),
+  // OmniboxPopupCellData does not.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb
-      .GetFontWithDelta(kOmniboxNormalFontSizeDelta, gfx::Font::NORMAL,
-                        gfx::Font::Weight::BOLD)
+      .GetFontWithDelta(0, gfx::Font::NORMAL, gfx::Font::Weight::BOLD)
+      .Derive(kOmniboxNormalFontSizeDelta, gfx::Font::NORMAL,
+              gfx::Font::Weight::BOLD)
       .GetNativeFont();
 }
 
