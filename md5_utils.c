@@ -145,12 +145,24 @@ void MD5Final(md5byte digest[16], struct MD5Context *ctx) {
 #define MD5STEP(f, w, x, y, z, in, s) \
   (w += f(x, y, z) + in, w = (w << s | w >> (32 - s)) + x)
 
+#if defined(__clang__) && defined(__has_attribute)
+#if __has_attribute(no_sanitize)
+#define AOM_NO_UNSIGNED_OVERFLOW_CHECK \
+  __attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
+#endif
+
+#ifndef AOM_NO_UNSIGNED_OVERFLOW_CHECK
+#define AOM_NO_UNSIGNED_OVERFLOW_CHECK
+#endif
+
 /*
  * The core of the MD5 algorithm, this alters an existing MD5 hash to
  * reflect the addition of 16 longwords of new data.  MD5Update blocks
  * the data and converts bytes into longwords for this routine.
  */
-void MD5Transform(UWORD32 buf[4], UWORD32 const in[16]) {
+AOM_NO_UNSIGNED_OVERFLOW_CHECK void MD5Transform(UWORD32 buf[4],
+                                                 UWORD32 const in[16]) {
   register UWORD32 a, b, c, d;
 
   a = buf[0];
