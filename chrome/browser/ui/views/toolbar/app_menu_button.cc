@@ -43,8 +43,9 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       margin_trailing_(0),
       weak_factory_(this) {
-  SetHasInkDrop(true);
-  if (!ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial())
+    SetHasInkDrop(true);
+  else
     icon_painter_.reset(new AppMenuIconPainter(this));
 }
 

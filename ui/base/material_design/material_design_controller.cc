@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/material_design/material_design_controller.h"
+
 #include <string>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)

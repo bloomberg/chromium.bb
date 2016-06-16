@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/ink_drop_factory.h"
-
 #include <memory>
 
 #include "base/macros.h"
@@ -11,23 +9,25 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 
 namespace views {
+namespace test {
 
-class InkDropFactoryTest
-    : public testing::TestWithParam<
-          testing::tuple<ui::MaterialDesignController::Mode>> {
+// Enumeration of all the different InkDrop types.
+enum InkDropType { INK_DROP_STUB, INK_DROP_IMPL };
+
+class InkDropTest : public testing::TestWithParam<testing::tuple<InkDropType>> {
  public:
-  InkDropFactoryTest();
-  ~InkDropFactoryTest();
+  InkDropTest();
+  ~InkDropTest();
 
  protected:
   // A dummy InkDropHost required to create an InkDrop.
@@ -37,37 +37,27 @@ class InkDropFactoryTest
   std::unique_ptr<InkDrop> ink_drop_;
 
  private:
-  // Extracts and returns the material design mode from the test parameters.
-  ui::MaterialDesignController::Mode GetMaterialMode() const;
+  // Extracts and returns the InkDropType from the test parameters.
+  InkDropType GetInkDropType() const;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   // Required by base::Timer's.
   std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
-      material_design_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropFactoryTest);
+  DISALLOW_COPY_AND_ASSIGN(InkDropTest);
 };
 
-InkDropFactoryTest::InkDropFactoryTest() : ink_drop_(nullptr) {
-  // Any call by a previous test to MaterialDesignController::GetMode() will
-  // initialize and cache the mode. This ensures that these tests will run from
-  // a non-initialized state.
-  material_design_state_.reset(
-      new ui::test::MaterialDesignControllerTestAPI(GetMaterialMode()));
-  ink_drop_.reset(
-      InkDropFactory::CreateInkDrop(&test_ink_drop_host_).release());
-
+InkDropTest::InkDropTest() : ink_drop_(nullptr) {
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
 
-  switch (GetMaterialMode()) {
-    case ui::MaterialDesignController::NON_MATERIAL:
+  switch (InkDropType()) {
+    case INK_DROP_STUB:
+      ink_drop_.reset(new InkDropStub());
       break;
-    case ui::MaterialDesignController::MATERIAL_NORMAL:
-    case ui::MaterialDesignController::MATERIAL_HYBRID:
+    case INK_DROP_IMPL:
+      ink_drop_.reset(new InkDropImpl(&test_ink_drop_host_));
       // The Timer's used by the InkDropImpl class require a
       // base::ThreadTaskRunnerHandle instance.
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
@@ -78,31 +68,26 @@ InkDropFactoryTest::InkDropFactoryTest() : ink_drop_(nullptr) {
   }
 }
 
-InkDropFactoryTest::~InkDropFactoryTest() {
-  material_design_state_.reset();
-}
+InkDropTest::~InkDropTest() {}
 
-ui::MaterialDesignController::Mode InkDropFactoryTest::GetMaterialMode() const {
+InkDropType InkDropTest::GetInkDropType() const {
   return testing::get<0>(GetParam());
 }
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
-    ,
-    InkDropFactoryTest,
-    testing::Values(ui::MaterialDesignController::NON_MATERIAL,
-                    ui::MaterialDesignController::MATERIAL_NORMAL,
-                    ui::MaterialDesignController::MATERIAL_HYBRID));
+INSTANTIATE_TEST_CASE_P(,
+                        InkDropTest,
+                        testing::Values(INK_DROP_STUB, INK_DROP_IMPL));
 
-TEST_P(InkDropFactoryTest,
+TEST_P(InkDropTest,
        VerifyInkDropLayersRemovedAfterDestructionWhenRippleIsActive) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_.reset();
   EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
 }
 
-TEST_P(InkDropFactoryTest,
+TEST_P(InkDropTest,
        VerifyInkDropLayersRemovedAfterDestructionWhenHoverIsActive) {
   test_ink_drop_host_.set_should_show_highlight(true);
   ink_drop_->SetHovered(true);
@@ -110,44 +95,44 @@ TEST_P(InkDropFactoryTest,
   EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
 }
 
-TEST_P(InkDropFactoryTest, StateIsHiddenInitially) {
+TEST_P(InkDropTest, StateIsHiddenInitially) {
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, TypicalQuickAction) {
+TEST_P(InkDropTest, TypicalQuickAction) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, CancelQuickAction) {
+TEST_P(InkDropTest, CancelQuickAction) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, TypicalSlowAction) {
+TEST_P(InkDropTest, TypicalSlowAction) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ALTERNATE_ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ALTERNATE_ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, CancelSlowAction) {
+TEST_P(InkDropTest, CancelSlowAction) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ALTERNATE_ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, TypicalQuickActivated) {
+TEST_P(InkDropTest, TypicalQuickActivated) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ACTIVATED);
   ink_drop_->AnimateToState(InkDropState::DEACTIVATED);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
-TEST_P(InkDropFactoryTest, TypicalSlowActivated) {
+TEST_P(InkDropTest, TypicalSlowActivated) {
   ink_drop_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ALTERNATE_ACTION_PENDING);
   ink_drop_->AnimateToState(InkDropState::ACTIVATED);
@@ -155,4 +140,5 @@ TEST_P(InkDropFactoryTest, TypicalSlowActivated) {
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }
 
+}  // namespace test
 }  // namespace views

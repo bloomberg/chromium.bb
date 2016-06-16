@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/bar_control_button.h"
 
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -19,7 +20,7 @@ const int kButtonExtraTouchSize = 4;
 
 BarControlButton::BarControlButton(views::ButtonListener* listener)
     : views::ImageButton(listener), id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
-  SetHasInkDrop(true);
+  SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

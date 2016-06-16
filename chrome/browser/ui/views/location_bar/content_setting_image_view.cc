@@ -44,8 +44,9 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_state_(0.0),
       bubble_view_(nullptr),
       suppress_mouse_released_action_(false) {
-  SetHasInkDrop(true);
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetHasInkDrop(true);
+  } else {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);

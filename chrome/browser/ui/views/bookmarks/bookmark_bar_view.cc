@@ -205,7 +205,7 @@ class BookmarkButtonBase : public views::LabelButton {
                      const base::string16& title)
       : LabelButton(listener, title) {
     SetElideBehavior(kElideBehavior);
-    SetHasInkDrop(true);
+    SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
     set_has_ink_drop_action_on_click(true);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -331,7 +331,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
                          views::MenuButtonListener* menu_button_listener,
                          bool show_menu_marker)
       : MenuButton(title, menu_button_listener, show_menu_marker) {
-    SetHasInkDrop(true);
+    SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {

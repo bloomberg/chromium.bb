@@ -9,8 +9,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_factory.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
@@ -192,7 +192,7 @@ bool InkDropHostView::ShouldShowInkDropForFocus() const {
 
 void InkDropHostView::SetHasInkDrop(bool has_an_ink_drop) {
   if (has_an_ink_drop) {
-    ink_drop_ = InkDropFactory::CreateInkDrop(this);
+    ink_drop_.reset(new InkDropImpl(this));
     gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
   } else {
     gesture_handler_.reset();

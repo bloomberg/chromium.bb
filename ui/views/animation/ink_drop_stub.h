@@ -4,12 +4,13 @@
 
 #include "base/macros.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 // A stub implementation of an InkDrop that can be used when no visuals should
 // be shown. e.g. material design is enabled.
-class InkDropStub : public InkDrop {
+class VIEWS_EXPORT InkDropStub : public InkDrop {
  public:
   InkDropStub();
   ~InkDropStub() override;

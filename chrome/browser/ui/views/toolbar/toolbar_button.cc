@@ -37,11 +37,12 @@ ToolbarButton::ToolbarButton(Profile* profile,
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
-  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
-  if (ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetHasInkDrop(true);
     SetFocusPainter(nullptr);
+  }
 }
 
 ToolbarButton::~ToolbarButton() {}

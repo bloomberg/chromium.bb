@@ -24,11 +24,12 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   AddChildView(image_);
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
-  if (ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetHasInkDrop(true);
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  else
+  } else {
     image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  SetHasInkDrop(true);
+  }
 }
 
 BubbleIconView::~BubbleIconView() {}
