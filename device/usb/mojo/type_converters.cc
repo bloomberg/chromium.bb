@@ -230,7 +230,7 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   info->manufacturer_name = base::UTF16ToUTF8(device.manufacturer_string());
   info->product_name = base::UTF16ToUTF8(device.product_string());
   info->serial_number = base::UTF16ToUTF8(device.serial_number());
-  const device::UsbConfigDescriptor* config = device.GetActiveConfiguration();
+  const device::UsbConfigDescriptor* config = device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
   info->configurations = mojo::Array<device::usb::ConfigurationInfoPtr>::From(
       device.configurations());

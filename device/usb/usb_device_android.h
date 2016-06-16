@@ -21,7 +21,6 @@ class UsbDeviceAndroid : public UsbDevice {
 
   // UsbDevice:
   void Open(const OpenCallback& callback) override;
-  const UsbConfigDescriptor* GetActiveConfiguration() const override;
 
   jint device_id() const { return device_id_; }
 

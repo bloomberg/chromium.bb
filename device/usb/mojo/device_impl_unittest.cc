@@ -147,8 +147,7 @@ class USBDeviceImplTest : public testing::Test {
   USBDeviceImplTest()
       : message_loop_(new base::MessageLoop),
         is_device_open_(false),
-        allow_reset_(false),
-        current_config_(0) {}
+        allow_reset_(false) {}
 
   ~USBDeviceImplTest() override {}
 
@@ -181,9 +180,6 @@ class USBDeviceImplTest : public testing::Test {
     // established by the test.
     ON_CALL(mock_device(), Open(_))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::OpenMockHandle));
-    ON_CALL(mock_device(), GetActiveConfiguration())
-        .WillByDefault(
-            Invoke(this, &USBDeviceImplTest::GetActiveConfiguration));
     ON_CALL(mock_handle(), Close())
         .WillByDefault(Invoke(this, &USBDeviceImplTest::CloseMockHandle));
     ON_CALL(mock_handle(), SetConfiguration(_, _))
@@ -218,6 +214,7 @@ class USBDeviceImplTest : public testing::Test {
     const UsbConfigDescriptor& config = builder.config();
     DCHECK(!ContainsKey(mock_configs_, config.configuration_value));
     mock_configs_.insert(std::make_pair(config.configuration_value, config));
+    mock_device_->AddMockConfig(config);
   }
 
   void AddMockInboundData(const std::vector<uint8_t>& data) {
@@ -254,20 +251,10 @@ class USBDeviceImplTest : public testing::Test {
     is_device_open_ = false;
   }
 
-  const UsbConfigDescriptor* GetActiveConfiguration() {
-    if (current_config_ == 0) {
-      return nullptr;
-    } else {
-      const auto it = mock_configs_.find(current_config_);
-      EXPECT_TRUE(it != mock_configs_.end());
-      return &it->second;
-    }
-  }
-
   void SetConfiguration(uint8_t value,
                         const UsbDeviceHandle::ResultCallback& callback) {
     if (mock_configs_.find(value) != mock_configs_.end()) {
-      current_config_ = value;
+      mock_device_->ActiveConfigurationChanged(value);
       callback.Run(true);
     } else {
       callback.Run(false);
@@ -432,7 +419,6 @@ class USBDeviceImplTest : public testing::Test {
   bool allow_reset_;
 
   std::map<uint8_t, UsbConfigDescriptor> mock_configs_;
-  uint8_t current_config_;
 
   std::queue<std::vector<uint8_t>> mock_inbound_data_;
   std::queue<std::vector<uint8_t>> mock_outbound_data_;
@@ -638,8 +624,6 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_device(), GetActiveConfiguration());
-
   {
     // Try to claim an invalid interface and expect failure.
     base::RunLoop loop;
@@ -648,7 +632,6 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(), ClaimInterface(1, _));
   EXPECT_CALL(permission_provider(), HasFunctionPermission(1, 1, _));
 
@@ -734,7 +717,6 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
 
-  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
   EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
@@ -774,7 +756,6 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   AddMockOutboundData(fake_data);
 
-  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(),
               ControlTransfer(USB_DIRECTION_OUTBOUND, UsbDeviceHandle::STANDARD,
                               UsbDeviceHandle::INTERFACE, 5, 6, 7, _, _, 0, _));

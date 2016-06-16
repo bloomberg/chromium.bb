@@ -346,9 +346,7 @@ void UsbDeviceHandleUsbfs::Close() {
   // see if the handle is closed.
   for (const auto& transfer : transfers_)
     CancelTransfer(transfer.get(), USB_TRANSFER_CANCELLED);
-#if !defined(OS_ANDROID)
-  static_cast<UsbDeviceLinux*>(device_.get())->HandleClosed(this);
-#endif
+  device_->HandleClosed(this);
   device_ = nullptr;
   blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::CloseBlocking, this));
@@ -553,10 +551,7 @@ void UsbDeviceHandleUsbfs::SetConfigurationComplete(
     bool success,
     const ResultCallback& callback) {
   if (success && device_) {
-#if !defined(OS_ANDROID)
-    static_cast<UsbDeviceLinux*>(device_.get())
-        ->ActiveConfigurationChanged(configuration_value);
-#endif
+    device_->ActiveConfigurationChanged(configuration_value);
     // TODO(reillyg): If all interfaces are unclaimed before a new configuration
     // is set then this will do nothing. Investigate.
     RefreshEndpointInfo();
@@ -790,7 +785,7 @@ void UsbDeviceHandleUsbfs::TransferComplete(
 void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
   endpoints_.clear();
 
-  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device_->active_configuration();
   if (!config)
     return;
 

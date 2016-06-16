@@ -23,15 +23,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "device/core/device_client.h"
+#include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
-#include "device/usb/usb_service.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 using device::DeviceClient;
+using device::MockUsbService;
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
@@ -405,13 +406,16 @@ class MockUsbDevice : public UsbDevice {
                   0x0100,  // device_version
                   base::UTF8ToUTF16(kDeviceManufacturer),
                   base::UTF8ToUTF16(kDeviceModel),
-                  base::UTF8ToUTF16(kDeviceSerial)),
-        config_desc_(1, false, false, 0) {
+                  base::UTF8ToUTF16(kDeviceSerial)) {
+    UsbConfigDescriptor config_desc(1, false, false, 0);
     UsbInterfaceDescriptor interface_desc(0, 0, T::kClass, T::kSubclass,
                                           T::kProtocol);
     interface_desc.endpoints.emplace_back(0x81, 0x02, 512, 0);
     interface_desc.endpoints.emplace_back(0x01, 0x02, 512, 0);
-    config_desc_.interfaces.push_back(interface_desc);
+    config_desc.interfaces.push_back(interface_desc);
+    configurations_.push_back(config_desc);
+    if (T::kConfigured)
+      ActiveConfigurationChanged(1);
   }
 
   void Open(const OpenCallback& callback) override {
@@ -420,50 +424,10 @@ class MockUsbDevice : public UsbDevice {
                                             new MockUsbDeviceHandle<T>(this))));
   }
 
-  const UsbConfigDescriptor* GetActiveConfiguration() const override {
-    return T::kConfigured ? &config_desc_ : nullptr;
-  }
-
   std::set<int> claimed_interfaces_;
 
  protected:
   virtual ~MockUsbDevice() {}
-
- private:
-  UsbConfigDescriptor config_desc_;
-};
-
-class MockUsbService : public UsbService {
- public:
-  MockUsbService() {
-    devices_.push_back(new MockUsbDevice<AndroidTraits>());
-  }
-
-  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  void GetDevices(const GetDevicesCallback& callback) override {
-    callback.Run(devices_);
-  }
-
-  std::vector<scoped_refptr<UsbDevice> > devices_;
-};
-
-class MockBreakingUsbService : public MockUsbService {
- public:
-  MockBreakingUsbService() {
-    devices_.clear();
-    devices_.push_back(new MockUsbDevice<BreakingAndroidTraits>());
-  }
-};
-
-class MockNoConfigUsbService : public MockUsbService {
- public:
-  MockNoConfigUsbService() {
-    devices_.push_back(new MockUsbDevice<NoConfigTraits>());
-  }
 };
 
 class MockUsbServiceForCheckingTraits : public MockUsbService {
@@ -558,7 +522,9 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   }
 
   virtual std::unique_ptr<MockUsbService> CreateMockService() {
-    return base::WrapUnique(new MockUsbService());
+    std::unique_ptr<MockUsbService> service(new MockUsbService());
+    service->AddDevice(new MockUsbDevice<AndroidTraits>());
+    return service;
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
@@ -588,14 +554,19 @@ class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
 class AndroidBreakingUsbTest : public AndroidUsbDiscoveryTest {
  protected:
   std::unique_ptr<MockUsbService> CreateMockService() override {
-    return base::WrapUnique(new MockBreakingUsbService());
+    std::unique_ptr<MockUsbService> service(new MockUsbService());
+    service->AddDevice(new MockUsbDevice<BreakingAndroidTraits>());
+    return service;
   }
 };
 
 class AndroidNoConfigUsbTest : public AndroidUsbDiscoveryTest {
  protected:
   std::unique_ptr<MockUsbService> CreateMockService() override {
-    return base::WrapUnique(new MockNoConfigUsbService());
+    std::unique_ptr<MockUsbService> service(new MockUsbService());
+    service->AddDevice(new MockUsbDevice<AndroidTraits>());
+    service->AddDevice(new MockUsbDevice<NoConfigTraits>());
+    return service;
   }
 };
 

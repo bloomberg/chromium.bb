@@ -47,7 +47,6 @@ class UsbServiceImpl :
 
  private:
   // device::UsbService implementation
-  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
   void GetDevices(const GetDevicesCallback& callback) override;
 
 #if defined(OS_WIN)
@@ -86,8 +85,6 @@ class UsbServiceImpl :
                          const base::Closure& refresh_complete);
 
   scoped_refptr<UsbContext> context_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // When available the device list will be updated when new devices are
   // connected instead of only when a full enumeration is requested.
@@ -100,10 +97,6 @@ class UsbServiceImpl :
   bool enumeration_in_progress_ = false;
   std::queue<std::string> pending_path_enumerations_;
   std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
-
-  // The map from unique IDs to UsbDevices.
-  typedef std::map<std::string, scoped_refptr<UsbDeviceImpl>> DeviceMap;
-  DeviceMap devices_;
 
   // The map from PlatformUsbDevices to UsbDevices.
   typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl>>

@@ -85,34 +85,6 @@ void UsbDeviceLinux::Open(const OpenCallback& callback) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void UsbDeviceLinux::HandleClosed(UsbDeviceHandle* handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  handles_.remove(handle);
-}
-
-const UsbConfigDescriptor* UsbDeviceLinux::GetActiveConfiguration() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return active_configuration_;
-}
-
-void UsbDeviceLinux::OnDisconnect() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Swap out the handle list as HandleClosed() will try to modify it.
-  std::list<UsbDeviceHandle*> handles;
-  handles.swap(handles_);
-  for (auto handle : handles_)
-    handle->Close();
-}
-
-void UsbDeviceLinux::ActiveConfigurationChanged(int configuration_value) {
-  for (const auto& config : configurations_) {
-    if (config.configuration_value == configuration_value) {
-      active_configuration_ = &config;
-      break;
-    }
-  }
-}
-
 #if defined(OS_CHROMEOS)
 
 void UsbDeviceLinux::OnOpenRequestComplete(const OpenCallback& callback,
@@ -163,7 +135,7 @@ void UsbDeviceLinux::Opened(base::ScopedFD fd, const OpenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<UsbDeviceHandle> device_handle =
       new UsbDeviceHandleUsbfs(this, std::move(fd), blocking_task_runner_);
-  handles_.push_back(device_handle.get());
+  handles().push_back(device_handle.get());
   callback.Run(device_handle);
 }
 

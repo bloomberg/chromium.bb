@@ -5,6 +5,7 @@
 #include "device/usb/usb_device.h"
 
 #include "base/guid.h"
+#include "device/usb/usb_device_handle.h"
 #include "device/usb/webusb_descriptors.h"
 
 namespace device {
@@ -52,8 +53,29 @@ void UsbDevice::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void UsbDevice::ActiveConfigurationChanged(int configuration_value) {
+  for (const auto& config : configurations_) {
+    if (config.configuration_value == configuration_value) {
+      active_configuration_ = &config;
+      return;
+    }
+  }
+}
+
 void UsbDevice::NotifyDeviceRemoved() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(this));
+}
+
+void UsbDevice::OnDisconnect() {
+  // Swap out the handle list as HandleClosed() will try to modify it.
+  std::list<UsbDeviceHandle*> handles;
+  handles.swap(handles_);
+  for (auto handle : handles_)
+    handle->Close();
+}
+
+void UsbDevice::HandleClosed(UsbDeviceHandle* handle) {
+  handles_.remove(handle);
 }
 
 }  // namespace device

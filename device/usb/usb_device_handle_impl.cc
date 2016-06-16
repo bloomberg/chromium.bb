@@ -920,7 +920,7 @@ void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   endpoint_map_.clear();
-  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device_->active_configuration();
   if (config) {
     for (const auto& map_entry : claimed_interfaces_) {
       int interface_number = map_entry.first;

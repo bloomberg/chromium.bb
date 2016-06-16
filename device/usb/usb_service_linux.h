@@ -26,7 +26,6 @@ class UsbServiceLinux : public UsbService {
   ~UsbServiceLinux() override;
 
   // device::UsbService implementation
-  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
   void GetDevices(const GetDevicesCallback& callback) override;
 
  private:
@@ -49,9 +48,6 @@ class UsbServiceLinux : public UsbService {
     return helper_started_ && first_enumeration_countdown_ == 0;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
   // |helper_started_| is set once OnDeviceAdded has been called for all devices
   // initially found on the system. |first_enumeration_countdown_| is then
   // decremented as DeviceReady is called for these devices.
@@ -62,7 +58,6 @@ class UsbServiceLinux : public UsbService {
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
   FileThreadHelper* helper_;
-  DeviceMap devices_by_guid_;
   DeviceMap devices_by_path_;
 
   base::WeakPtrFactory<UsbServiceLinux> weak_factory_;

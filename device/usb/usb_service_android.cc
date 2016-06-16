@@ -26,7 +26,9 @@ bool UsbServiceAndroid::RegisterJNI(JNIEnv* env) {
   return RegisterNativesImpl(env);  // Generated in ChromeUsbService_jni.h
 }
 
-UsbServiceAndroid::UsbServiceAndroid() {
+UsbServiceAndroid::UsbServiceAndroid(
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    : UsbService(base::ThreadTaskRunnerHandle::Get(), blocking_task_runner) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_ChromeUsbService_create(env, base::android::GetApplicationContext(),
@@ -48,22 +50,6 @@ UsbServiceAndroid::~UsbServiceAndroid() {
   Java_ChromeUsbService_close(env, j_object_.obj());
 }
 
-scoped_refptr<UsbDevice> UsbServiceAndroid::GetDevice(const std::string& guid) {
-  auto it = devices_by_guid_.find(guid);
-  if (it == devices_by_guid_.end())
-    return nullptr;
-  return it->second;
-}
-
-void UsbServiceAndroid::GetDevices(const GetDevicesCallback& callback) {
-  std::vector<scoped_refptr<UsbDevice>> devices;
-  devices.reserve(devices_by_guid_.size());
-  for (const auto& map_entry : devices_by_guid_)
-    devices.push_back(map_entry.second);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, devices));
-}
-
 void UsbServiceAndroid::DeviceAttached(JNIEnv* env,
                                        const JavaRef<jobject>& caller,
                                        const JavaRef<jobject>& usb_device) {
@@ -82,7 +68,8 @@ void UsbServiceAndroid::DeviceDetached(JNIEnv* env,
 
   scoped_refptr<UsbDeviceAndroid> device = it->second;
   devices_by_id_.erase(it);
-  devices_by_guid_.erase(device->guid());
+  devices().erase(device->guid());
+  device->OnDisconnect();
 
   USB_LOG(USER) << "USB device removed: id=" << device->device_id()
                 << " guid=" << device->guid();
@@ -92,9 +79,9 @@ void UsbServiceAndroid::DeviceDetached(JNIEnv* env,
 
 void UsbServiceAndroid::AddDevice(scoped_refptr<UsbDeviceAndroid> device) {
   DCHECK(!ContainsKey(devices_by_id_, device->device_id()));
-  DCHECK(!ContainsKey(devices_by_guid_, device->guid()));
+  DCHECK(!ContainsKey(devices(), device->guid()));
   devices_by_id_[device->device_id()] = device;
-  devices_by_guid_[device->guid()] = device;
+  devices()[device->guid()] = device;
 
   USB_LOG(USER) << "USB device added: id=" << device->device_id()
                 << " vendor=" << device->vendor_id() << " \""

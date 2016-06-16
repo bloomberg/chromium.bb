@@ -160,7 +160,7 @@ bool DeviceImpl::HasControlTransferPermission(
     ControlTransferRecipient recipient,
     uint16_t index) {
   DCHECK(device_handle_);
-  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device_->active_configuration();
 
   if (!permission_provider_)
     return false;
@@ -205,7 +205,7 @@ void DeviceImpl::OnOpen(const OpenCallback& callback,
 }
 
 void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
-  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device_->active_configuration();
   device_info_->active_configuration = config ? config->configuration_value : 0;
   callback.Run(device_info_->Clone());
 }
@@ -245,7 +245,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device_->active_configuration();
   if (!config) {
     callback.Run(false);
     return;

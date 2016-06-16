@@ -71,6 +71,14 @@ MockUsbDevice::MockUsbDevice(
 MockUsbDevice::~MockUsbDevice() {
 }
 
+void MockUsbDevice::AddMockConfig(const UsbConfigDescriptor& config) {
+  configurations_.push_back(config);
+}
+
+void MockUsbDevice::ActiveConfigurationChanged(int configuration_value) {
+  UsbDevice::ActiveConfigurationChanged(configuration_value);
+}
+
 void MockUsbDevice::NotifyDeviceRemoved() {
   UsbDevice::NotifyDeviceRemoved();
 }

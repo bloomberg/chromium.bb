@@ -60,10 +60,6 @@ void UsbDeviceAndroid::Open(const OpenCallback& callback) {
                                                 base::Bind(callback, nullptr));
 }
 
-const UsbConfigDescriptor* UsbDeviceAndroid::GetActiveConfiguration() const {
-  return nullptr;
-}
-
 UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
                                    uint16_t usb_version,
                                    uint8_t device_class,

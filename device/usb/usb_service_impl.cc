@@ -199,13 +199,11 @@ void OnDeviceOpenedReadDescriptors(
 
 UsbServiceImpl::UsbServiceImpl(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      blocking_task_runner_(blocking_task_runner),
+    : UsbService(base::ThreadTaskRunnerHandle::Get(), blocking_task_runner),
 #if defined(OS_WIN)
       device_observer_(this),
 #endif
       weak_factory_(this) {
-
   PlatformUsbContext platform_context = nullptr;
   int rv = libusb_init(&platform_context);
   if (rv != LIBUSB_SUCCESS || !platform_context) {
@@ -236,30 +234,17 @@ UsbServiceImpl::UsbServiceImpl(
 }
 
 UsbServiceImpl::~UsbServiceImpl() {
-  if (hotplug_enabled_) {
+  if (hotplug_enabled_)
     libusb_hotplug_deregister_callback(context_->context(), hotplug_handle_);
-  }
-  for (const auto& map_entry : devices_) {
-    map_entry.second->OnDisconnect();
-  }
   for (const auto& platform_device : ignored_devices_)
     libusb_unref_device(platform_device);
-}
-
-scoped_refptr<UsbDevice> UsbServiceImpl::GetDevice(const std::string& guid) {
-  DCHECK(CalledOnValidThread());
-  DeviceMap::iterator it = devices_.find(guid);
-  if (it != devices_.end()) {
-    return it->second;
-  }
-  return NULL;
 }
 
 void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
 
   if (!context_) {
-    task_runner_->PostTask(
+    task_runner()->PostTask(
         FROM_HERE,
         base::Bind(callback, std::vector<scoped_refptr<UsbDevice>>()));
     return;
@@ -267,11 +252,7 @@ void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
 
   if (hotplug_enabled_ && !enumeration_in_progress_) {
     // The device list is updated live when hotplug events are supported.
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    for (const auto& map_entry : devices_) {
-      devices.push_back(map_entry.second);
-    }
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, devices));
+    UsbService::GetDevices(callback);
   } else {
     pending_enumeration_callbacks_.push_back(callback);
     RefreshDevices();
@@ -320,11 +301,11 @@ void UsbServiceImpl::RefreshDevices() {
     pending_path_enumerations_.pop();
   }
 
-  blocking_task_runner_->PostTask(
+  blocking_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&GetDeviceListOnBlockingThread, device_path, context_,
-                 task_runner_, base::Bind(&UsbServiceImpl::OnDeviceList,
-                                          weak_factory_.GetWeakPtr())));
+                 task_runner(), base::Bind(&UsbServiceImpl::OnDeviceList,
+                                           weak_factory_.GetWeakPtr())));
 }
 
 void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
@@ -401,16 +382,15 @@ void UsbServiceImpl::RefreshDevicesComplete() {
   devices_being_enumerated_.clear();
 
   if (!pending_enumeration_callbacks_.empty()) {
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    for (const auto& map_entry : devices_) {
-      devices.push_back(map_entry.second);
-    }
+    std::vector<scoped_refptr<UsbDevice>> result;
+    result.reserve(devices().size());
+    for (const auto& map_entry : devices())
+      result.push_back(map_entry.second);
 
     std::vector<GetDevicesCallback> callbacks;
     callbacks.swap(pending_enumeration_callbacks_);
-    for (const GetDevicesCallback& callback : callbacks) {
-      callback.Run(devices);
-    }
+    for (const GetDevicesCallback& callback : callbacks)
+      callback.Run(result);
   }
 
   if (!pending_path_enumerations_.empty()) {
@@ -435,7 +415,7 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
     }
 
     scoped_refptr<UsbDeviceImpl> device(new UsbDeviceImpl(
-        context_, platform_device, descriptor, blocking_task_runner_));
+        context_, platform_device, descriptor, blocking_task_runner()));
     base::Closure add_device =
         base::Bind(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
                    refresh_complete, device);
@@ -471,8 +451,8 @@ void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
   }
 
   platform_devices_[device->platform_device()] = device;
-  DCHECK(!ContainsKey(devices_, device->guid()));
-  devices_[device->guid()] = device;
+  DCHECK(!ContainsKey(devices(), device->guid()));
+  devices()[device->guid()] = device;
 
   USB_LOG(USER) << "USB device added: vendor=" << device->vendor_id() << " \""
                 << device->manufacturer_string()
@@ -489,7 +469,7 @@ void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
 
 void UsbServiceImpl::RemoveDevice(scoped_refptr<UsbDeviceImpl> device) {
   platform_devices_.erase(device->platform_device());
-  devices_.erase(device->guid());
+  devices().erase(device->guid());
 
   USB_LOG(USER) << "USB device removed: guid=" << device->guid();
 
@@ -510,20 +490,20 @@ int LIBUSB_CALL UsbServiceImpl::HotplugCallback(libusb_context* context,
   switch (event) {
     case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
       libusb_ref_device(device);  // Released in OnPlatformDeviceAdded.
-      if (self->task_runner_->BelongsToCurrentThread()) {
+      if (self->task_runner()->BelongsToCurrentThread()) {
         self->OnPlatformDeviceAdded(device);
       } else {
-        self->task_runner_->PostTask(
+        self->task_runner()->PostTask(
             FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceAdded,
                                   base::Unretained(self), device));
       }
       break;
     case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
       libusb_ref_device(device);  // Released in OnPlatformDeviceRemoved.
-      if (self->task_runner_->BelongsToCurrentThread()) {
+      if (self->task_runner()->BelongsToCurrentThread()) {
         self->OnPlatformDeviceRemoved(device);
       } else {
-        self->task_runner_->PostTask(
+        self->task_runner()->PostTask(
             FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceRemoved,
                                   base::Unretained(self), device));
       }

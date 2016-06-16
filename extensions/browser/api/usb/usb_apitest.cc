@@ -94,6 +94,11 @@ ACTION_P2(InvokeUsbIsochronousTransferInCallback,
   arg3.Run(io_buffer, packets);
 }
 
+ACTION_P(SetConfiguration, mock_device) {
+  mock_device->ActiveConfigurationChanged(arg0);
+  arg1.Run(true);
+}
+
 class TestDevicePermissionsPrompt
     : public DevicePermissionsPrompt,
       public DevicePermissionsPrompt::Prompt::Observer {
@@ -153,8 +158,7 @@ class UsbApiTest : public ShellApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
-  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&mock_device_->configurations()[0]));
+  mock_device_->ActiveConfigurationChanged(1);
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(2);
   ASSERT_TRUE(RunAppTest("api_test/usb/device_handling"));
 }
@@ -171,21 +175,15 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
-  UsbConfigDescriptor config_descriptor(1, false, false, 0);
   EXPECT_CALL(*mock_device_handle_.get(), SetConfiguration(1, _))
-      .WillOnce(InvokeCallback<1>(true));
+      .WillOnce(SetConfiguration(mock_device_.get()));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
-  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
-      .WillOnce(Return(nullptr))
-      .WillOnce(Return(&config_descriptor));
   ASSERT_TRUE(RunAppTest("api_test/usb/set_configuration"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
-  UsbConfigDescriptor config_descriptor(1, false, false, 0);
+  mock_device_->ActiveConfigurationChanged(1);
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
-  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_descriptor));
   ASSERT_TRUE(RunAppTest("api_test/usb/list_interfaces"));
 }
 

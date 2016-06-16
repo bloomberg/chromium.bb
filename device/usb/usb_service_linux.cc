@@ -188,41 +188,25 @@ void UsbServiceLinux::FileThreadHelper::WillDestroyMonitorMessageLoop() {
 
 UsbServiceLinux::UsbServiceLinux(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      blocking_task_runner_(blocking_task_runner),
+    : UsbService(base::ThreadTaskRunnerHandle::Get(), blocking_task_runner),
       weak_factory_(this) {
   std::unique_ptr<FileThreadHelper> helper(
-      new FileThreadHelper(weak_factory_.GetWeakPtr(), task_runner_));
+      new FileThreadHelper(weak_factory_.GetWeakPtr(), task_runner()));
   helper_ = helper.get();
-  blocking_task_runner_->PostTask(
+  blocking_task_runner->PostTask(
       FROM_HERE, base::Bind(&FileThreadHelper::Start, base::Passed(&helper)));
 }
 
 UsbServiceLinux::~UsbServiceLinux() {
-  for (const auto& map_entry : devices_by_guid_)
-    map_entry.second->OnDisconnect();
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_);
-}
-
-scoped_refptr<UsbDevice> UsbServiceLinux::GetDevice(const std::string& guid) {
-  DCHECK(CalledOnValidThread());
-  auto it = devices_by_guid_.find(guid);
-  if (it == devices_by_guid_.end())
-    return nullptr;
-  return it->second;
+  blocking_task_runner()->DeleteSoon(FROM_HERE, helper_);
 }
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (enumeration_ready()) {
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    devices.reserve(devices_by_guid_.size());
-    for (const auto& map_entry : devices_by_guid_)
-      devices.push_back(map_entry.second);
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, devices));
-  } else {
+  if (enumeration_ready())
+    UsbService::GetDevices(callback);
+  else
     enumeration_callbacks_.push_back(callback);
-  }
 }
 
 void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
@@ -241,7 +225,7 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
 
   scoped_refptr<UsbDeviceLinux> device(new UsbDeviceLinux(
       device_path, descriptor, manufacturer, product, serial_number,
-      active_configuration, blocking_task_runner_));
+      active_configuration, blocking_task_runner()));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(base::Bind(&OnDeviceOpenedToReadDescriptors,
@@ -268,8 +252,8 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   auto it = devices_by_path_.find(device->device_path());
   if (it != devices_by_path_.end()) {
     if (success) {
-      DCHECK(!ContainsKey(devices_by_guid_, device->guid()));
-      devices_by_guid_[device->guid()] = device;
+      DCHECK(!ContainsKey(devices(), device->guid()));
+      devices()[device->guid()] = device;
 
       USB_LOG(USER) << "USB device added: path=" << device->device_path()
                     << " vendor=" << device->vendor_id() << " \""
@@ -283,12 +267,12 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   }
 
   if (enumeration_became_ready) {
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    devices.reserve(devices_by_guid_.size());
-    for (const auto& map_entry : devices_by_guid_)
-      devices.push_back(map_entry.second);
+    std::vector<scoped_refptr<UsbDevice>> result;
+    result.reserve(devices().size());
+    for (const auto& map_entry : devices())
+      result.push_back(map_entry.second);
     for (const auto& callback : enumeration_callbacks_)
-      callback.Run(devices);
+      callback.Run(result);
     enumeration_callbacks_.clear();
   } else if (success && enumeration_ready()) {
     NotifyDeviceAdded(device);
@@ -305,12 +289,12 @@ void UsbServiceLinux::OnDeviceRemoved(const std::string& path) {
   devices_by_path_.erase(by_path_it);
   device->OnDisconnect();
 
-  auto by_guid_it = devices_by_guid_.find(device->guid());
-  if (by_guid_it != devices_by_guid_.end() && enumeration_ready()) {
+  auto by_guid_it = devices().find(device->guid());
+  if (by_guid_it != devices().end() && enumeration_ready()) {
     USB_LOG(USER) << "USB device removed: path=" << device->device_path()
                   << " guid=" << device->guid();
 
-    devices_by_guid_.erase(by_guid_it);
+    devices().erase(by_guid_it);
     NotifyDeviceRemoved(device);
   }
 }
@@ -319,12 +303,12 @@ void UsbServiceLinux::HelperStarted() {
   DCHECK(CalledOnValidThread());
   helper_started_ = true;
   if (enumeration_ready()) {
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    devices.reserve(devices_by_guid_.size());
-    for (const auto& map_entry : devices_by_guid_)
-      devices.push_back(map_entry.second);
+    std::vector<scoped_refptr<UsbDevice>> result;
+    result.reserve(devices().size());
+    for (const auto& map_entry : devices())
+      result.push_back(map_entry.second);
     for (const auto& callback : enumeration_callbacks_)
-      callback.Run(devices);
+      callback.Run(result);
     enumeration_callbacks_.clear();
   }
 }

@@ -2186,6 +2186,7 @@
         '../crypto/crypto.gyp:crypto_test_support',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../device/serial/serial.gyp:device_serial_test_util',
+        '../device/usb/usb.gyp:device_usb_mocks',
         '../extensions/common/api/api.gyp:extensions_api',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../media/cast/cast.gyp:cast_test_utility',

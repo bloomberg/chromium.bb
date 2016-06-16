@@ -691,7 +691,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
   }
 
   std::unique_ptr<base::ListValue> configs(new base::ListValue());
-  const UsbConfigDescriptor* active_config = device->GetActiveConfiguration();
+  const UsbConfigDescriptor* active_config = device->active_configuration();
   for (const UsbConfigDescriptor& config : device->configurations()) {
     ConfigDescriptor api_config = ConvertConfigDescriptor(config);
     if (active_config &&
@@ -820,7 +820,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
   }
 
   const UsbConfigDescriptor* config_descriptor =
-      device_handle->GetDevice()->GetActiveConfiguration();
+      device_handle->GetDevice()->active_configuration();
   if (config_descriptor) {
     ConfigDescriptor config = ConvertConfigDescriptor(*config_descriptor);
     config.active = true;
@@ -848,7 +848,7 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
   }
 
   const UsbConfigDescriptor* config_descriptor =
-      device_handle->GetDevice()->GetActiveConfiguration();
+      device_handle->GetDevice()->active_configuration();
   if (config_descriptor) {
     ConfigDescriptor config = ConvertConfigDescriptor(*config_descriptor);
 

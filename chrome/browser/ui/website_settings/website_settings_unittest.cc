@@ -26,7 +26,7 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "grit/theme_resources.h"
@@ -65,19 +65,6 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
   return cipher_suite | connection_status;
 }
 
-class TestDeviceClient : public device::DeviceClient {
- public:
-  TestDeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  device::MockUsbService& usb_service() { return usb_service_; }
-
- private:
-  device::UsbService* GetUsbService() override { return &usb_service_; }
-
-  device::MockUsbService usb_service_;
-};
-
 class MockCertStore : public content::CertStore {
  public:
   virtual ~MockCertStore() {}
@@ -104,6 +91,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
     // Setup stub SSLStatus.
     security_info_.security_level = SecurityStateModel::NONE;
 
@@ -182,12 +170,14 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     return website_settings_.get();
   }
 
-  device::MockUsbService& usb_service() { return device_client_.usb_service(); }
+  device::MockUsbService& usb_service() {
+    return *device_client_.usb_service();
+  }
 
   SecurityStateModel::SecurityInfo security_info_;
 
  private:
-  TestDeviceClient device_client_;
+  device::MockDeviceClient device_client_;
   std::unique_ptr<WebsiteSettings> website_settings_;
   std::unique_ptr<MockWebsiteSettingsUI> mock_ui_;
   int cert_id_;

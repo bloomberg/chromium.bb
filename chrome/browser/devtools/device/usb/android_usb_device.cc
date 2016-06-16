@@ -77,7 +77,7 @@ void CountAndroidDevices(const base::Callback<void(int)>& callback,
                          const UsbDevices& devices) {
   int device_count = 0;
   for (const scoped_refptr<UsbDevice>& device : devices) {
-    const UsbConfigDescriptor* config = device->GetActiveConfiguration();
+    const UsbConfigDescriptor* config = device->active_configuration();
     if (config) {
       for (const UsbInterfaceDescriptor& iface : config->interfaces) {
         if (IsAndroidInterface(iface)) {
@@ -215,7 +215,7 @@ void OpenAndroidDevice(AndroidUsbDevices* devices,
     return;
   }
 
-  const UsbConfigDescriptor* config = device->GetActiveConfiguration();
+  const UsbConfigDescriptor* config = device->active_configuration();
   if (!config) {
     barrier.Run();
     return;
@@ -259,7 +259,7 @@ void OpenAndroidDevices(
       base::Bind(&RespondOnUIThread, callback, devices, caller_task_runner));
 
   for (const scoped_refptr<UsbDevice>& device : usb_devices) {
-    const UsbConfigDescriptor* config = device->GetActiveConfiguration();
+    const UsbConfigDescriptor* config = device->active_configuration();
     if (!config) {
       barrier.Run();
       continue;

@@ -113,25 +113,6 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
       base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback));
 }
 
-void UsbDeviceImpl::HandleClosed(UsbDeviceHandle* handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  handles_.remove(handle);
-}
-
-const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return active_configuration_;
-}
-
-void UsbDeviceImpl::OnDisconnect() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Swap out the handle list as HandleClosed() will try to modify it.
-  std::list<UsbDeviceHandle*> handles;
-  handles.swap(handles_);
-  for (UsbDeviceHandle* handle : handles)
-    handle->Close();
-}
-
 void UsbDeviceImpl::ReadAllConfigurations() {
   libusb_device_descriptor device_descriptor;
   int rv = libusb_get_device_descriptor(platform_device_, &device_descriptor);
@@ -162,17 +143,7 @@ void UsbDeviceImpl::ReadAllConfigurations() {
   }
 }
 
-void UsbDeviceImpl::ActiveConfigurationChanged(int configuration_value) {
-  for (const auto& config : configurations_) {
-    if (config.configuration_value == configuration_value) {
-      active_configuration_ = &config;
-      return;
-    }
-  }
-}
-
 void UsbDeviceImpl::RefreshActiveConfiguration() {
-  active_configuration_ = nullptr;
   libusb_config_descriptor* platform_config;
   int rv =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
@@ -204,7 +175,7 @@ void UsbDeviceImpl::Opened(PlatformUsbDeviceHandle platform_handle,
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<UsbDeviceHandle> device_handle = new UsbDeviceHandleImpl(
       context_, this, platform_handle, blocking_task_runner_);
-  handles_.push_back(device_handle.get());
+  handles().push_back(device_handle.get());
   callback.Run(device_handle);
 }
 

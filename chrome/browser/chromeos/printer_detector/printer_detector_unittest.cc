@@ -23,7 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_descriptors.h"
@@ -50,26 +50,6 @@ const char kPrinterAppExistsDelegateIDTemplate[] =
 const char kPrinterAppNotFoundDelegateIDTemplate[] =
     "system.printer.no_printer_provider_found/%s:%s";
 
-class FakeDeviceClient : public device::DeviceClient {
- public:
-  FakeDeviceClient() : usb_service_(nullptr) {}
-
-  ~FakeDeviceClient() override {}
-
-  // device::DeviceClient implementation:
-  device::UsbService* GetUsbService() override {
-    EXPECT_TRUE(usb_service_);
-    return usb_service_;
-  }
-
-  void set_usb_service(device::UsbService* service) { usb_service_ = service; }
-
- private:
-  device::UsbService* usb_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDeviceClient);
-};
-
 std::unique_ptr<KeyedService> CreatePrinterDetector(
     content::BrowserContext* context) {
   return std::unique_ptr<KeyedService>(
@@ -88,7 +68,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   ~PrinterDetectorAppSearchEnabledTest() override = default;
 
   void SetUp() override {
-    device_client_.set_usb_service(&usb_service_);
+    device_client_.GetUsbService();
     // Make sure the profile is created after adding the switch and setting up
     // device client.
     profile_.reset(new TestingProfile());
@@ -123,7 +103,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
                       uint8_t interface_class) {
     device::UsbConfigDescriptor config(1, false, false, 0);
     config.interfaces.emplace_back(1, 0, interface_class, 0, 0);
-    usb_service_.AddDevice(
+    device_client_.usb_service()->AddDevice(
         new device::MockUsbDevice(vendor_id, product_id, config));
   }
 
@@ -157,9 +137,8 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   StubNotificationUIManager notification_ui_manager_;
   user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
-  device::MockUsbService usb_service_;
+  device::MockDeviceClient device_client_;
   std::unique_ptr<TestingProfile> profile_;
-  FakeDeviceClient device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDetectorAppSearchEnabledTest);
 };

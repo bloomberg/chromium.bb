@@ -22,12 +22,9 @@ class UsbServiceAndroid : public UsbService {
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
 
-  UsbServiceAndroid();
+  UsbServiceAndroid(
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~UsbServiceAndroid() override;
-
-  // UsbService:
-  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
-  void GetDevices(const GetDevicesCallback& callback) override;
 
   // Methods called by Java.
   void DeviceAttached(JNIEnv* env,
@@ -41,8 +38,6 @@ class UsbServiceAndroid : public UsbService {
   void AddDevice(scoped_refptr<UsbDeviceAndroid> device);
 
   std::unordered_map<jint, scoped_refptr<UsbDeviceAndroid>> devices_by_id_;
-  std::unordered_map<std::string, scoped_refptr<UsbDeviceAndroid>>
-      devices_by_guid_;
 
   // Java object org.chromium.device.usb.ChromeUsbService.
   base::android::ScopedJavaGlobalRef<jobject> j_object_;

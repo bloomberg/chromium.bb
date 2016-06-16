@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <string>
 #include <utility>
 
@@ -38,7 +37,6 @@ class UsbDeviceLinux : public UsbDevice {
   void CheckUsbAccess(const ResultCallback& callback) override;
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
-  const UsbConfigDescriptor* GetActiveConfiguration() const override;
 
   const std::string& device_path() const { return device_path_; }
 
@@ -52,7 +50,6 @@ class UsbDeviceLinux : public UsbDevice {
 
  protected:
   friend class UsbServiceLinux;
-  friend class UsbDeviceHandleUsbfs;
 
   // Called by UsbServiceLinux only.
   UsbDeviceLinux(const std::string& device_path,
@@ -64,13 +61,6 @@ class UsbDeviceLinux : public UsbDevice {
                  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceLinux() override;
-
-  // Called by UsbServiceLinux only.
-  void OnDisconnect();
-
-  // Called by UsbDeviceHandleUsbfs only.
-  void HandleClosed(UsbDeviceHandle* handle);
-  void ActiveConfigurationChanged(int configuration_value);
 
  private:
 #if defined(OS_CHROMEOS)
@@ -89,15 +79,6 @@ class UsbDeviceLinux : public UsbDevice {
   base::ThreadChecker thread_checker_;
 
   const std::string device_path_;
-
-  // The current device configuration descriptor. May be null if the device is
-  // in an unconfigured state; if not null, it is a pointer to one of the
-  // items at UsbDevice::configurations_.
-  const UsbConfigDescriptor* active_configuration_ = nullptr;
-
-  // Weak pointers to open handles. HandleClosed() will be called before each
-  // is freed.
-  std::list<UsbDeviceHandle*> handles_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

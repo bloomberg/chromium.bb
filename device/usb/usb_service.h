@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -55,24 +56,40 @@ class UsbService : public base::NonThreadSafe {
 
   virtual ~UsbService();
 
-  virtual scoped_refptr<UsbDevice> GetDevice(const std::string& guid) = 0;
+  scoped_refptr<UsbDevice> GetDevice(const std::string& guid);
 
   // Enumerates available devices.
-  virtual void GetDevices(const GetDevicesCallback& callback) = 0;
+  virtual void GetDevices(const GetDevicesCallback& callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
-  UsbService();
+  UsbService(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
 
-  base::ObserverList<Observer, true> observer_list_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner() {
+    return blocking_task_runner_;
+  }
+
+  std::unordered_map<std::string, scoped_refptr<UsbDevice>>& devices() {
+    return devices_;
+  }
 
  private:
   friend void base::DeletePointer<UsbService>(UsbService* service);
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  std::unordered_map<std::string, scoped_refptr<UsbDevice>> devices_;
+  base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };

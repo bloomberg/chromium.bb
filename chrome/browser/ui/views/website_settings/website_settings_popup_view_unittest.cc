@@ -14,7 +14,7 @@
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,19 +116,6 @@ class ScopedWebContentsTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ScopedWebContentsTestHelper);
 };
 
-class TestDeviceClient : public device::DeviceClient {
- public:
-  TestDeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  device::MockUsbService& usb_service() { return usb_service_; }
-
- private:
-  device::UsbService* GetUsbService() override { return &usb_service_; }
-
-  device::MockUsbService usb_service_;
-};
-
 class WebsiteSettingsPopupViewTest : public testing::Test {
  public:
   WebsiteSettingsPopupViewTest() {}
@@ -150,7 +137,7 @@ class WebsiteSettingsPopupViewTest : public testing::Test {
   void TearDown() override { parent_window_->CloseNow(); }
 
  protected:
-  TestDeviceClient device_client_;
+  device::MockDeviceClient device_client_;
   ScopedWebContentsTestHelper web_contents_helper_;
   views::ScopedViewsTestHelper views_helper_;
 
@@ -243,7 +230,7 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   const GURL origin = GURL(kUrl).GetOrigin();
   scoped_refptr<device::UsbDevice> device =
       new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
-  device_client_.usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
   store->GrantDevicePermission(origin, origin, device->guid());

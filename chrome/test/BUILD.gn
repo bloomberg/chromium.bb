@@ -1003,6 +1003,7 @@ if (!is_android) {
       "//crypto:test_support",
       "//device/bluetooth:mocks",
       "//device/serial:test_support",
+      "//device/usb:test_support",
       "//extensions/common/api",
       "//google_apis:test_support",
       "//media",
