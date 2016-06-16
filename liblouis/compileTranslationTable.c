@@ -88,7 +88,9 @@ lou_getProgramPath ()
 	  buffer = reallocWrapper (buffer, size <<= 1);
 
 	  {
-	    DWORD length = GetModuleFileName (handle, buffer, size);
+		// As the "UNICODE" Windows define may have been set at compilation,
+		// This call must be specifically GetModuleFilenameA as further code expects it to be single byte chars.
+		DWORD length = GetModuleFileNameA (handle, buffer, size);
 
 	    if (!length)
 	      {
@@ -4947,8 +4949,11 @@ getTablePath()
 		   "tables");
 #ifdef _WIN32
   path = lou_getProgramPath ();
-  if (path != NULL && path[0] != '\0')
-    cp += sprintf (cp, ",%s%s", path, "\\share\\liblouis\\tables");
+  if (path != NULL) {
+    if(path[0] != '\0')
+      cp += sprintf (cp, ",%s%s", path, "\\share\\liblouis\\tables");
+    free(path);
+  }
 #else
   cp += sprintf (cp, ",%s", TABLESDIR);
 #endif
