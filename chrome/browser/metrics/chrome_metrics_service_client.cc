@@ -476,6 +476,15 @@ void ChromeMetricsServiceClient::Initialize() {
       new SigninStatusMetricsProviderChromeOS;
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(signin_metrics_provider_cros));
+
+  // Record default UMA state as opt-out for all Chrome OS users, if not
+  // recorded yet.
+  PrefService* local_state = g_browser_process->local_state();
+  if (metrics::GetMetricsReportingDefaultState(local_state) ==
+      metrics::EnableMetricsDefault::DEFAULT_UNKNOWN) {
+    metrics::RecordMetricsReportingDefaultState(
+        local_state, metrics::EnableMetricsDefault::OPT_OUT);
+  }
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
