@@ -215,7 +215,7 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK_EQ(state_, State::ACTIVE);
 
   if (!IsOptInVerificationDisabled() &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn)) {
+      !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
     playstore_launcher_.reset(
         new ArcAppLauncher(profile_, kPlayStoreAppId, true));
   }
@@ -446,6 +446,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
     if (state_ != State::STOPPED)
       UpdateEnabledStateUMA(false);
     ShutdownBridgeAndCloseUI();
+    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     return;
   }
 
