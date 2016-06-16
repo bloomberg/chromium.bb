@@ -4141,7 +4141,7 @@ var ActionLink = document.registerElement('action-link', {
         this.setAttribute('role', 'link');
 
       this.addEventListener('keydown', function(e) {
-        if (!this.disabled && e.key == 'Enter' && !this.href) {
+        if (!this.disabled && e.keyIdentifier == 'Enter' && !this.href) {
           // Schedule a click asynchronously because other 'keydown' handlers
           // may still run later (e.g. document.addEventListener('keydown')).
           // Specifically options dialogs break when this timeout isn't here.
@@ -11227,6 +11227,11 @@ cr.define('downloads', function() {
       },
     },
 
+    listeners: {
+      'paper-dropdown-close': 'onPaperDropdownClose_',
+      'paper-dropdown-open': 'onPaperDropdownOpen_',
+    },
+
     /** @return {boolean} Whether removal can be undone. */
     canUndo: function() {
       return this.$['search-input'] != this.shadowRoot.activeElement;
@@ -11252,12 +11257,26 @@ cr.define('downloads', function() {
       this.updateClearAll_();
     },
 
+    /** @private */
+    onPaperDropdownClose_: function() {
+      window.removeEventListener('resize', assert(this.boundResize_));
+    },
+
+    /** @private */
+    onPaperDropdownOpen_: function() {
+      this.boundResize_ = this.boundResize_ || function() {
+        this.$.more.close();
+      }.bind(this);
+      window.addEventListener('resize', this.boundResize_);
+    },
+
     /**
      * @param {!CustomEvent} event
      * @private
      */
     onSearchChanged_: function(event) {
-      downloads.ActionService.getInstance().search(event.detail);
+      downloads.ActionService.getInstance().search(
+          /** @type {string} */ (event.detail));
       this.updateClearAll_();
     },
 

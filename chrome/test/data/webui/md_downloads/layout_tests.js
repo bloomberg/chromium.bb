@@ -2,35 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('downloads.layout_tests', function() {
-  function registerTests() {
-    suite('LayoutTests', function() {
-      /** @type {!downloads.Manager} */
-      var manager;
+suite('layout tests', function() {
+  /** @type {!downloads.Manager} */
+  var manager;
 
-      setup(function() {
-        PolymerTest.clearBody();
-        manager = document.createElement('downloads-manager');
-        document.body.appendChild(manager);
-        assertEquals(manager, downloads.Manager.get());
-      });
+  setup(function() {
+    PolymerTest.clearBody();
+    manager = document.createElement('downloads-manager');
+    document.body.appendChild(manager);
+    assertEquals(manager, downloads.Manager.get());
+  });
 
-      test('long URLs ellide', function() {
-        downloads.Manager.insertItems(0, [{
-          file_name: 'file name',
-          state: downloads.States.COMPLETE,
-          url: 'a'.repeat(1000),
-        }]);
+  test('long URLs ellide', function() {
+    downloads.Manager.insertItems(0, [{
+      file_name: 'file name',
+      state: downloads.States.COMPLETE,
+      url: 'a'.repeat(1000),
+    }]);
 
-        Polymer.dom.flush();
+    Polymer.dom.flush();
 
-        var item = manager.$$('downloads-item');
-        assertLT(item.$$('#url').offsetWidth, item.offsetWidth);
-      });
-    });
-  }
-
-  return {
-    registerTests: registerTests,
-  };
+    var item = manager.$$('downloads-item');
+    assertLT(item.$$('#url').offsetWidth, item.offsetWidth);
+  });
 });

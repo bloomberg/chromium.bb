@@ -25,6 +25,11 @@ cr.define('downloads', function() {
       },
     },
 
+    listeners: {
+      'paper-dropdown-close': 'onPaperDropdownClose_',
+      'paper-dropdown-open': 'onPaperDropdownOpen_',
+    },
+
     /** @return {boolean} Whether removal can be undone. */
     canUndo: function() {
       return this.$['search-input'] != this.shadowRoot.activeElement;
@@ -48,6 +53,19 @@ cr.define('downloads', function() {
     /** @private */
     downloadsShowingChanged_: function() {
       this.updateClearAll_();
+    },
+
+    /** @private */
+    onPaperDropdownClose_: function() {
+      window.removeEventListener('resize', assert(this.boundResize_));
+    },
+
+    /** @private */
+    onPaperDropdownOpen_: function() {
+      this.boundResize_ = this.boundResize_ || function() {
+        this.$.more.close();
+      }.bind(this);
+      window.addEventListener('resize', this.boundResize_);
     },
 
     /**
