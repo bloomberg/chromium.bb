@@ -28,18 +28,18 @@ class MEDIA_EXPORT MediaTracks {
 
   // Adds a new audio track. The |bytestreamTrackId| must uniquely identify the
   // track within the bytestream.
-  void AddAudioTrack(const AudioDecoderConfig& config,
-                     StreamParser::TrackId bytestream_track_id,
-                     const std::string& kind,
-                     const std::string& label,
-                     const std::string& language);
+  MediaTrack* AddAudioTrack(const AudioDecoderConfig& config,
+                            StreamParser::TrackId bytestream_track_id,
+                            const std::string& kind,
+                            const std::string& label,
+                            const std::string& language);
   // Adds a new video track. The |bytestreamTrackId| must uniquely identify the
   // track within the bytestream.
-  void AddVideoTrack(const VideoDecoderConfig& config,
-                     StreamParser::TrackId bytestream_track_id,
-                     const std::string& kind,
-                     const std::string& label,
-                     const std::string& language);
+  MediaTrack* AddVideoTrack(const VideoDecoderConfig& config,
+                            StreamParser::TrackId bytestream_track_id,
+                            const std::string& kind,
+                            const std::string& label,
+                            const std::string& language);
 
   const MediaTracksCollection& tracks() const { return tracks_; }
 

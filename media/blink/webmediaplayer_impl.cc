@@ -833,23 +833,17 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   // Report the media track information to blink.
   for (const auto& track : tracks->tracks()) {
     if (track->type() == MediaTrack::Audio) {
-      auto track_id = client_->addAudioTrack(
-          blink::WebString::fromUTF8(
-              base::UintToString(track->bytestream_track_id())),
-          blink::WebMediaPlayerClient::AudioTrackKindMain,
-          blink::WebString::fromUTF8(track->label()),
-          blink::WebString::fromUTF8(track->language()),
-          /*enabled*/ true);
-      (void)track_id;
+      client_->addAudioTrack(blink::WebString::fromUTF8(track->id()),
+                             blink::WebMediaPlayerClient::AudioTrackKindMain,
+                             blink::WebString::fromUTF8(track->label()),
+                             blink::WebString::fromUTF8(track->language()),
+                             /*enabled*/ true);
     } else if (track->type() == MediaTrack::Video) {
-      auto track_id = client_->addVideoTrack(
-          blink::WebString::fromUTF8(
-              base::UintToString(track->bytestream_track_id())),
-          blink::WebMediaPlayerClient::VideoTrackKindMain,
-          blink::WebString::fromUTF8(track->label()),
-          blink::WebString::fromUTF8(track->language()),
-          /*selected*/ true);
-      (void)track_id;
+      client_->addVideoTrack(blink::WebString::fromUTF8(track->id()),
+                             blink::WebMediaPlayerClient::VideoTrackKindMain,
+                             blink::WebString::fromUTF8(track->label()),
+                             blink::WebString::fromUTF8(track->language()),
+                             /*selected*/ true);
     } else {
       // Text tracks are not supported through this code path yet.
       NOTREACHED();

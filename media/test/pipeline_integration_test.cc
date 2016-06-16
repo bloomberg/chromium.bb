@@ -632,7 +632,7 @@ class MockMediaSource {
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);
     chunk_demuxer_->SetTracksWatcher(
-        kSourceId, base::Bind(&MockMediaSource::InitSegmentReceivedWrapper,
+        kSourceId, base::Bind(&MockMediaSource::InitSegmentReceived,
                               base::Unretained(this)));
 
     AppendData(initial_append_size_);
@@ -649,12 +649,20 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
-  // A workaround for gtest mocks not allowing moving scoped_ptrs.
-  void InitSegmentReceivedWrapper(std::unique_ptr<MediaTracks> tracks) {
-    InitSegmentReceived(tracks);
+  void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks) {
+    CHECK(tracks.get());
+    EXPECT_GT(tracks->tracks().size(), 0u);
+    CHECK(chunk_demuxer_);
+    // Verify that track ids are unique.
+    std::set<MediaTrack::Id> track_ids;
+    for (const auto& track : tracks->tracks()) {
+      EXPECT_EQ(track_ids.end(), track_ids.find(track->id()));
+      track_ids.insert(track->id());
+    }
+    InitSegmentReceivedMock(tracks);
   }
 
-  MOCK_METHOD1(InitSegmentReceived, void(std::unique_ptr<MediaTracks>&));
+  MOCK_METHOD1(InitSegmentReceivedMock, void(std::unique_ptr<MediaTracks>&));
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;
@@ -722,7 +730,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     hashing_enabled_ = test_type & kHashed;
     clockless_playback_ = test_type & kClockless;
 
-    EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
+    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));

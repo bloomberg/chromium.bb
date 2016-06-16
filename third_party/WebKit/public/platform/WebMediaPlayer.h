@@ -102,7 +102,7 @@ public:
         LoadTypeMax = LoadTypeMediaStream,
     };
 
-    typedef unsigned TrackId;
+    typedef WebString TrackId;
     enum TrackType { TextTrack, AudioTrack, VideoTrack };
 
     virtual ~WebMediaPlayer() { }

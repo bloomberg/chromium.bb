@@ -40,14 +40,13 @@ class CORE_EXPORT TrackBase : public Supplementable<TrackBase> {
 public:
     virtual ~TrackBase();
 
-    WebMediaPlayer::TrackId trackId() const { return m_trackId; }
+    WebMediaPlayer::TrackId id() const { return m_id; }
 
     WebMediaPlayer::TrackType type() const { return m_type; }
 
     const AtomicString& kind() const { return m_kind; }
     AtomicString label() const { return m_label; }
     AtomicString language() const { return m_language; }
-    String id() const { return m_id; }
 
     void setMediaElement(HTMLMediaElement* mediaElement) { m_mediaElement = mediaElement; }
     HTMLMediaElement* mediaElement() const { return m_mediaElement; }
@@ -58,7 +57,6 @@ public:
 protected:
     TrackBase(WebMediaPlayer::TrackType, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const String& id);
 
-    WebMediaPlayer::TrackId m_trackId;
     WebMediaPlayer::TrackType m_type;
     AtomicString m_kind;
     AtomicString m_label;

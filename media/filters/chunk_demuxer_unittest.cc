@@ -1405,6 +1405,13 @@ class ChunkDemuxerTest : public ::testing::Test {
     DCHECK(tracks.get());
     DCHECK_GT(tracks->tracks().size(), 0u);
 
+    // Verify that track ids are unique.
+    std::set<MediaTrack::Id> track_ids;
+    for (const auto& track : tracks->tracks()) {
+      EXPECT_EQ(track_ids.end(), track_ids.find(track->id()));
+      track_ids.insert(track->id());
+    }
+
     InitSegmentReceivedMock(tracks);
   }
 

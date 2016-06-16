@@ -1223,22 +1223,25 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     // Note when we find our audio/video stream (we only want one of each) and
     // record src= playback UMA stats for the stream's decoder config.
+    MediaTrack* media_track = nullptr;
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       CHECK(!audio_stream);
       audio_stream = stream;
       audio_config = streams_[i]->audio_decoder_config();
       RecordAudioCodecStats(audio_config);
 
-      media_tracks->AddAudioTrack(audio_config, track_id, "main", track_label,
-                                  track_language);
+      media_track = media_tracks->AddAudioTrack(audio_config, track_id, "main",
+                                                track_label, track_language);
+      media_track->set_id(base::UintToString(track_id));
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       CHECK(!video_stream);
       video_stream = stream;
       video_config = streams_[i]->video_decoder_config();
       RecordVideoCodecStats(video_config, stream->codec->color_range);
 
-      media_tracks->AddVideoTrack(video_config, track_id, "main", track_label,
-                                  track_language);
+      media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
+                                                track_label, track_language);
+      media_track->set_id(base::UintToString(track_id));
     }
 
     max_duration = std::max(max_duration, streams_[i]->duration());

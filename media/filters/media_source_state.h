@@ -192,8 +192,6 @@ class MEDIA_EXPORT MediaSourceState {
   // The object used to parse appended data.
   std::unique_ptr<StreamParser> stream_parser_;
 
-  std::unique_ptr<MediaTracks> media_tracks_;
-
   ChunkDemuxerStream* audio_;  // Not owned by |this|.
   ChunkDemuxerStream* video_;  // Not owned by |this|.
 

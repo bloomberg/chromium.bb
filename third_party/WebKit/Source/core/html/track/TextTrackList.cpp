@@ -134,7 +134,7 @@ TextTrack* TextTrackList::getTrackById(const AtomicString& id)
     // to the value of the id argument.
     for (unsigned i = 0; i < length(); ++i) {
         TextTrack* track = anonymousIndexedGetter(i);
-        if (track->id() == id)
+        if (String(track->id()) == id)
             return track;
     }
 

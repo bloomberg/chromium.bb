@@ -398,7 +398,7 @@ class WebMediaPlayerMSTest
                                                const blink::WebString& label,
                                                const blink::WebString& language,
                                                bool enabled) override {
-    return 0;
+    return blink::WebMediaPlayer::TrackId();
   }
   void removeAudioTrack(blink::WebMediaPlayer::TrackId) override {}
   blink::WebMediaPlayer::TrackId addVideoTrack(const blink::WebString& id,
@@ -406,7 +406,7 @@ class WebMediaPlayerMSTest
                                                const blink::WebString& label,
                                                const blink::WebString& language,
                                                bool selected) override {
-    return 0;
+    return blink::WebMediaPlayer::TrackId();
   }
   void removeVideoTrack(blink::WebMediaPlayer::TrackId) override {}
   void addTextTrack(blink::WebInbandTextTrack*) override {}

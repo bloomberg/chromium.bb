@@ -2393,7 +2393,7 @@ AudioTrackList& HTMLMediaElement::audioTracks()
 
 void HTMLMediaElement::audioTrackChanged(WebMediaPlayer::TrackId trackId, bool enabled)
 {
-    DVLOG(MEDIA_LOG_LEVEL) << "audioTrackChanged(" << (void*)this << ") trackId= " << trackId << " enabled=" << boolString(enabled);
+    DVLOG(MEDIA_LOG_LEVEL) << "audioTrackChanged(" << (void*)this << ") trackId= " << (String)trackId << " enabled=" << boolString(enabled);
     DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     audioTracks().scheduleChangeEvent();
@@ -2410,7 +2410,7 @@ void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
     for (unsigned i = 0; i < audioTracks().length(); ++i) {
         AudioTrack* track = audioTracks().anonymousIndexedGetter(i);
         if (track->enabled())
-            enabledTrackIds.append(track->trackId());
+            enabledTrackIds.append(track->id());
     }
 
     webMediaPlayer()->enabledAudioTracksChanged(enabledTrackIds);
@@ -2423,12 +2423,12 @@ WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const WebString& id, Web
         << "', '" << (String)label << "', '" << (String)language << "', " << boolString(enabled) << ")";
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-        return 0;
+        return blink::WebMediaPlayer::TrackId();
 
     AudioTrack* audioTrack = AudioTrack::create(id, kindString, label, language, enabled);
     audioTracks().add(audioTrack);
 
-    return audioTrack->trackId();
+    return audioTrack->id();
 }
 
 void HTMLMediaElement::removeAudioTrack(WebMediaPlayer::TrackId trackId)
@@ -2449,7 +2449,7 @@ VideoTrackList& HTMLMediaElement::videoTracks()
 
 void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
 {
-    DVLOG(MEDIA_LOG_LEVEL) << "selectedVideoTrackChanged(" << (void*)this << ") selectedTrackId=" << (selectedTrackId ? String::format("%u", *selectedTrackId) : "none");
+    DVLOG(MEDIA_LOG_LEVEL) << "selectedVideoTrackChanged(" << (void*)this << ") selectedTrackId=" << (selectedTrackId ? ((String)*selectedTrackId) : "none");
     DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     if (selectedTrackId)
@@ -2467,7 +2467,7 @@ WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, Web
         << "', '" << (String)label << "', '" << (String)language << "', " << boolString(selected) << ")";
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-        return 0;
+        return blink::WebMediaPlayer::TrackId();
 
     // If another track was selected (potentially by the user), leave it selected.
     if (selected && videoTracks().selectedIndex() != -1)
@@ -2476,7 +2476,7 @@ WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, Web
     VideoTrack* videoTrack = VideoTrack::create(id, kindString, label, language, selected);
     videoTracks().add(videoTrack);
 
-    return videoTrack->trackId();
+    return videoTrack->id();
 }
 
 void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId)

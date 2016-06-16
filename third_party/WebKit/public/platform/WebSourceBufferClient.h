@@ -15,10 +15,10 @@ class WebSourceBufferClient {
 public:
     virtual ~WebSourceBufferClient() { }
 
-    // Complete media track info: track type, bytestream id, kind, label, language.
+    // Complete media track info: track type, unique track id, kind, label, language.
     struct MediaTrackInfo {
         WebMediaPlayer::TrackType trackType;
-        WebString byteStreamTrackId;
+        WebMediaPlayer::TrackId id;
         WebString kind;
         WebString label;
         WebString language;

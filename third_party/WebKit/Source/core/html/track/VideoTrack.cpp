@@ -31,7 +31,7 @@ void VideoTrack::setSelected(bool selected)
     m_selected = selected;
 
     if (mediaElement()) {
-        WebMediaPlayer::TrackId selectedTrackId = trackId();
+        WebMediaPlayer::TrackId selectedTrackId = id();
         mediaElement()->selectedVideoTrackChanged(selected ? &selectedTrackId : 0);
     }
 }

@@ -36,7 +36,7 @@ public:
     T* getTrackById(const String& id) const
     {
         for (unsigned i = 0; i < m_tracks.size(); ++i) {
-            if (m_tracks[i]->id() == id)
+            if (String(m_tracks[i]->id()) == id)
                 return m_tracks[i].get();
         }
 
@@ -65,7 +65,7 @@ public:
     void remove(WebMediaPlayer::TrackId trackId)
     {
         for (unsigned i = 0; i < m_tracks.size(); ++i) {
-            if (m_tracks[i]->trackId() != trackId)
+            if (m_tracks[i]->id() != trackId)
                 continue;
 
             m_tracks[i]->setMediaElement(0);

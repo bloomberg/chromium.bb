@@ -34,15 +34,8 @@
 
 namespace blink {
 
-static WebMediaPlayer::TrackId nextTrackId()
-{
-    static WebMediaPlayer::TrackId next = 0;
-    return ++next;
-}
-
 TrackBase::TrackBase(WebMediaPlayer::TrackType type, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const String& id)
-    : m_trackId(nextTrackId())
-    , m_type(type)
+    : m_type(type)
     , m_kind(kind)
     , m_label(label)
     , m_language(language)

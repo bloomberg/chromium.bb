@@ -84,6 +84,14 @@ void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
 void PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB(
     std::unique_ptr<MediaTracks> tracks) {
   CHECK(tracks);
+  CHECK_GT(tracks->tracks().size(), 0u);
+
+  // Verify that track ids are unique.
+  std::set<MediaTrack::Id> track_ids;
+  for (const auto& track : tracks->tracks()) {
+    EXPECT_EQ(track_ids.end(), track_ids.find(track->id()));
+    track_ids.insert(track->id());
+  }
 }
 
 void PipelineIntegrationTestBase::OnEnded() {
@@ -266,16 +274,14 @@ void PipelineIntegrationTestBase::CreateDemuxer(
     std::unique_ptr<DataSource> data_source) {
   data_source_ = std::move(data_source);
 
-  Demuxer::MediaTracksUpdatedCB tracks_updated_cb =
-      base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
-                 base::Unretained(this));
-
 #if !defined(MEDIA_DISABLE_FFMPEG)
   demuxer_ = std::unique_ptr<Demuxer>(new FFmpegDemuxer(
       message_loop_.task_runner(), data_source_.get(),
       base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
                  base::Unretained(this)),
-      tracks_updated_cb, new MediaLog()));
+      base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
+                 base::Unretained(this)),
+      new MediaLog()));
 #endif
 }
 
