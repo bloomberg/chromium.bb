@@ -136,9 +136,8 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
     FormFieldData field;
     field.is_focusable = true;
     field.should_autocomplete = true;
-    const gfx::RectF element_bounds;
 
-    external_delegate_->OnQuery(query_id, form, field, element_bounds);
+    external_delegate_->OnQuery(query_id, form, field, gfx::RectF());
   }
 
   void IssueOnSuggestionsReturned() {
@@ -585,9 +584,8 @@ TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
   FormFieldData field;
   field.is_focusable = true;
   field.should_autocomplete = false;
-  const gfx::RectF element_bounds;
 
-  external_delegate_->OnQuery(kQueryId, form, field, element_bounds);
+  external_delegate_->OnQuery(kQueryId, form, field, gfx::RectF());
 
   std::vector<Suggestion> autofill_items;
   autofill_items.push_back(Suggestion());
