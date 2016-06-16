@@ -55,6 +55,10 @@ namespace gfx {
 class Size;
 }
 
+namespace offline_pages {
+class PrerenderAdapterTest;
+}
+
 namespace prerender {
 
 class PrerenderHandle;
@@ -319,6 +323,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // content::RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
+  void SetPrerenderContentsFactoryForTest(
+      PrerenderContents::Factory* prerender_contents_factory);
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
@@ -378,9 +385,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     DISALLOW_COPY_AND_ASSIGN(PrerenderData);
   };
 
-  void SetPrerenderContentsFactory(
-      PrerenderContents::Factory* prerender_contents_factory);
-
   // Called by a PrerenderData to signal that the launcher has navigated away
   // from the context that launched the prerender. A user may have clicked
   // a link in a page containing a <link rel=prerender> element, or the user
@@ -389,7 +393,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SourceNavigatedAway(PrerenderData* prerender_data);
 
  private:
-  friend class ::InstantSearchPrerendererTest;
   friend class PrerenderBrowserTest;
   friend class PrerenderContents;
   friend class PrerenderHandle;

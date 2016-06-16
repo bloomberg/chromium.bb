@@ -848,12 +848,6 @@ PrerenderContents* PrerenderManager::PrerenderData::ReleaseContents() {
   return contents_.release();
 }
 
-void PrerenderManager::SetPrerenderContentsFactory(
-    PrerenderContents::Factory* prerender_contents_factory) {
-  DCHECK(CalledOnValidThread());
-  prerender_contents_factory_.reset(prerender_contents_factory);
-}
-
 void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
   // The expiry time of our prerender data will likely change because of
   // this navigation. This requires a resort of active_prerenders_.
@@ -1302,6 +1296,12 @@ void PrerenderManager::RenderProcessHostDestroyed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   size_t erased = prerender_process_hosts_.erase(host);
   DCHECK_EQ(1u, erased);
+}
+
+void PrerenderManager::SetPrerenderContentsFactoryForTest(
+    PrerenderContents::Factory* prerender_contents_factory) {
+  DCHECK(CalledOnValidThread());
+  prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
 }  // namespace prerender

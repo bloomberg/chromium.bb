@@ -1134,7 +1134,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     prerender_manager->mutable_config().rate_limit_enabled = false;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ = new TestPrerenderContentsFactory;
-    prerender_manager->SetPrerenderContentsFactory(prerender_contents_factory_);
+    prerender_manager->SetPrerenderContentsFactoryForTest(
+        prerender_contents_factory_);
     ASSERT_TRUE(safe_browsing_factory_->test_safe_browsing_service());
   }
 
