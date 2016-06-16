@@ -14,6 +14,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
+#include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -22,6 +23,7 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_amplifier_client.h"
 #include "chromeos/dbus/fake_ap_manager_client.h"
+#include "chromeos/dbus/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/fake_audio_dsp_client.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -129,6 +131,11 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     amplifier_client_.reset(AmplifierClient::Create());
   else
     amplifier_client_.reset(new FakeAmplifierClient);
+
+  if (!IsUsingStub(ARC_OBB_MOUNTER))
+    arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
+  else
+    arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
 
   if (!IsUsingStub(AUDIO_DSP))
     audio_dsp_client_.reset(AudioDspClient::Create());

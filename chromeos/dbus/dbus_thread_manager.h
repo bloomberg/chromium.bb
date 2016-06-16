@@ -28,6 +28,7 @@ namespace chromeos {
 // Style Note: Clients are sorted by names.
 class AmplifierClient;
 class ApManagerClient;
+class ArcObbMounterClient;
 class AudioDspClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -112,6 +113,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // pointers after DBusThreadManager has been shut down.
   AmplifierClient* GetAmplifierClient();
   ApManagerClient* GetApManagerClient();
+  ArcObbMounterClient* GetArcObbMounterClient();
   AudioDspClient* GetAudioDspClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
