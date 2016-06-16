@@ -1459,20 +1459,10 @@ void remote_surface_restore(wl_client* client, wl_resource* resource) {
 
 void remote_surface_pin(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ShellSurface>(resource)->SetPinned(true);
-  // Send set_pinned event here to notify client that pinning is successfully
-  // done. Note that this is temporary code and could cause a bug when pinning
-  // is failed.
-  // TODO(hidehiko): Implement the notification properly.
-  zwp_remote_surface_v1_send_set_pinned(resource);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ShellSurface>(resource)->SetPinned(false);
-  // Send unset_pinned event here to notify client that unpinning is
-  // successfully done. Note that this is temporary code and could cause a bug
-  // when unpinning is failed.
-  // TODO(hidehiko): Implement the notification properly.
-  zwp_remote_surface_v1_send_unset_pinned(resource);
 }
 
 void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
@@ -1642,6 +1632,10 @@ void HandleRemoteSurfaceStateChangedCallback(
     case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
       zwp_remote_surface_v1_send_unset_fullscreen(resource);
       break;
+    case ash::wm::WINDOW_STATE_TYPE_PINNED:
+      if (wl_resource_get_version(resource) >= 3)
+        zwp_remote_surface_v1_send_unset_pinned(resource);
+      break;
     default:
       break;
   }
@@ -1656,6 +1650,10 @@ void HandleRemoteSurfaceStateChangedCallback(
       break;
     case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
       zwp_remote_surface_v1_send_set_fullscreen(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_PINNED:
+      if (wl_resource_get_version(resource) >= 3)
+        zwp_remote_surface_v1_send_set_pinned(resource);
       break;
     default:
       break;

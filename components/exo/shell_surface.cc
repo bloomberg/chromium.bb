@@ -10,6 +10,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -353,9 +354,16 @@ void ShellSurface::SetPinned(bool pinned) {
   // Note: This will ask client to configure its surface even if pinned
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
-  // TODO(hidehiko): Implement pinned feature in ash layer, and switch to the
-  // real implementation.
-  widget_->SetAlwaysOnTop(pinned);
+  if (pinned) {
+    ash::wm::PinWindow(widget_->GetNativeWindow());
+  } else {
+    // At the moment, we cannot just unpin the window state, due to ash
+    // implementation. Instead, we call Restore() to unpin, if it is Pinned
+    // state. In this implementation, we may loose the previous state,
+    // if the previous state is fullscreen, etc.
+    if (ash::wm::GetWindowState(widget_->GetNativeWindow())->IsPinned())
+      widget_->Restore();
+  }
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
@@ -154,7 +156,14 @@ TEST_F(ShellSurfaceTest, SetPinned) {
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->SetPinned(true);
-  EXPECT_TRUE(shell_surface->GetWidget()->IsAlwaysOnTop());
+  EXPECT_TRUE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->IsPinned());
+
+  shell_surface->SetPinned(false);
+  EXPECT_FALSE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->IsPinned());
 }
 
 TEST_F(ShellSurfaceTest, SetTitle) {
