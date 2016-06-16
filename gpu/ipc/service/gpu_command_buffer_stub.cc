@@ -483,13 +483,17 @@ bool GpuCommandBufferStub::Initialize(
 
   gl::GLSurface::Format surface_format = gl::GLSurface::SURFACE_DEFAULT;
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
+  gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
+  if (!default_surface) {
+    DLOG(ERROR) << "Failed to create default offscreen surface.";
+    return false;
+  }
 #if defined(OS_ANDROID)
   if (init_params.attribs.red_size <= 5 &&
       init_params.attribs.green_size <= 6 &&
       init_params.attribs.blue_size <= 5 &&
       init_params.attribs.alpha_size == 0)
     surface_format = gl::GLSurface::SURFACE_RGB565;
-  gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
   // We can only use virtualized contexts for onscreen command buffers if their
   // config is compatible with the offscreen ones - otherwise MakeCurrent fails.
   if (surface_format != default_surface->GetFormat() && !offscreen)
@@ -519,8 +523,7 @@ bool GpuCommandBufferStub::Initialize(
   decoder_->set_engine(executor_.get());
 
   if (offscreen) {
-    surface_ = manager->GetDefaultOffscreenSurface();
-    DCHECK(surface_);
+    surface_ = default_surface;
   } else {
     surface_ = ImageTransportSurface::CreateNativeSurface(
         manager, this, surface_handle_, surface_format);
@@ -536,10 +539,8 @@ bool GpuCommandBufferStub::Initialize(
   if (use_virtualized_gl_context_ && gl_share_group) {
     context = gl_share_group->GetSharedContext();
     if (!context.get()) {
-      context = gl::init::CreateGLContext(
-          gl_share_group,
-          manager->GetDefaultOffscreenSurface(),
-          init_params.gpu_preference);
+      context = gl::init::CreateGLContext(gl_share_group, default_surface,
+                                          init_params.gpu_preference);
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
         return false;
