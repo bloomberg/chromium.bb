@@ -205,8 +205,6 @@ class NET_EXPORT HttpStreamFactory {
                                   const HttpResponseHeaders* headers,
                                   const url::SchemeHostPort& http_server);
 
-  GURL ApplyHostMappingRules(const GURL& url, HostPortPair* endpoint);
-
   // Virtual interface methods.
 
   // Request a stream.
