@@ -311,7 +311,8 @@ class GitCheckout(GitBaseTest):
     co = self._get_co(None)
     self._check_move(co)
     out = subprocess2.check_output(
-        ['git', 'diff', '--staged', '--name-status'], cwd=co.project_path)
+        ['git', 'diff', '--staged', '--name-status', '--no-renames'],
+        cwd=co.project_path)
     out = sorted(out.splitlines())
     expected = sorted(
       [
