@@ -201,7 +201,7 @@ public class NewTabPageView extends FrameLayout
          * @param callback The callback to be notified when the favicon has been checked.
          */
         void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
-                IconAvailabilityCallback callback);
+                boolean isTemporary, IconAvailabilityCallback callback);
 
         /**
          * Checks if the pages with the given URLs are available offline.
@@ -923,7 +923,8 @@ public class NewTabPageView extends FrameLayout
                     }
                 }
             };
-            mManager.ensureIconIsAvailable(url, iconUrl, useLargeIcon, callback);
+            mManager.ensureIconIsAvailable(
+                    url, iconUrl, useLargeIcon, /*isTemporary=*/false, callback);
         }
     }
 

@@ -84,6 +84,7 @@ void OnFaviconDownloaded(
     Profile* profile,
     const GURL& page_url,
     favicon_base::IconType icon_type,
+    bool is_temporary,
     int download_request_id,
     int http_status_code,
     const GURL& image_url,
@@ -98,6 +99,9 @@ void OnFaviconDownloaded(
     favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
         profile, ServiceAccessType::IMPLICIT_ACCESS);
     service->SetFavicons(page_url, image_url, icon_type, image);
+
+    if (is_temporary)
+      service->SetFaviconOutOfDateForPage(page_url);
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -112,6 +116,7 @@ void OnFaviconImageResultAvailable(
     const GURL& page_url,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
+    bool is_temporary,
     const favicon_base::FaviconImageResult& result) {
   // If there already is a favicon, return immediately.
   if (!result.image.IsEmpty()) {
@@ -124,7 +129,7 @@ void OnFaviconImageResultAvailable(
   web_contents->DownloadImage(
       icon_url, true, 0, false,
       base::Bind(OnFaviconDownloaded, j_availability_callback, profile,
-                 page_url, icon_type));
+                 page_url, icon_type, is_temporary));
 }
 
 }  // namespace
@@ -219,6 +224,7 @@ void FaviconHelper::EnsureIconIsAvailable(
     const JavaParamRef<jstring>& j_page_url,
     const JavaParamRef<jstring>& j_icon_url,
     jboolean j_is_large_icon,
+    jboolean j_is_temporary,
     const JavaParamRef<jobject>& j_availability_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
@@ -235,7 +241,7 @@ void FaviconHelper::EnsureIconIsAvailable(
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
   favicon_base::FaviconImageCallback callback_runner =
       base::Bind(&OnFaviconImageResultAvailable, j_scoped_callback, profile,
-                 web_contents, page_url, icon_url, icon_type);
+                 web_contents, page_url, icon_url, icon_type, j_is_temporary);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   favicon::GetFaviconImageForPageURL(service, page_url, icon_type,

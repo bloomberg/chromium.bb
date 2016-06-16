@@ -38,6 +38,7 @@ class FaviconHelper {
       const base::android::JavaParamRef<jstring>& j_page_url,
       const base::android::JavaParamRef<jstring>& j_icon_url,
       jboolean j_is_large_icon,
+      jboolean j_is_temporary,
       const base::android::JavaParamRef<jobject>& j_availability_callback);
   static bool RegisterFaviconHelper(JNIEnv* env);
 
