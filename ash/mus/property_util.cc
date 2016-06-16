@@ -235,5 +235,12 @@ bool IsAlwaysOnTop(::mus::Window* window) {
              ::mus::mojom::WindowManager::kAlwaysOnTop_Property);
 }
 
+bool ShouldRemoveStandardFrame(::mus::Window* window) {
+  return window->HasSharedProperty(
+             ::mus::mojom::WindowManager::kRemoveStandardFrame_Property) &&
+         window->GetSharedProperty<bool>(
+             ::mus::mojom::WindowManager::kRemoveStandardFrame_Property);
+}
+
 }  // namespace mus
 }  // namespace ash

@@ -27,6 +27,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -84,6 +85,30 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
 };
 
+// This class supports draggable app windows that paint their own custom frames.
+// It uses empty insets, doesn't paint anything, and hit tests return HTCAPTION.
+class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
+ public:
+  EmptyDraggableNonClientFrameView() {}
+  ~EmptyDraggableNonClientFrameView() override {}
+
+  // views::NonClientFrameView:
+  gfx::Rect GetBoundsForClientView() const override { return bounds(); }
+  gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const override {
+    return bounds();
+  }
+  int NonClientHitTest(const gfx::Point& point) override { return HTCAPTION; }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void ResetWindowControls() override {}
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EmptyDraggableNonClientFrameView);
+};
+
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
@@ -99,13 +124,11 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
 
   // NativeWidgetMus:
   views::NonClientFrameView* CreateNonClientFrameView() override {
-    views::Widget* widget =
-        static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
-    NonClientFrameViewMash* frame_view =
-        new NonClientFrameViewMash(widget, window());
     move_event_handler_.reset(new MoveEventHandler(
         window(), window_manager_client_, GetNativeView()));
-    return frame_view;
+    if (ShouldRemoveStandardFrame(window()))
+      return new EmptyDraggableNonClientFrameView();
+    return new NonClientFrameViewMash(GetWidget(), window());
   }
   void InitNativeWidget(const views::Widget::InitParams& params) override {
     views::NativeWidgetMus::InitNativeWidget(params);

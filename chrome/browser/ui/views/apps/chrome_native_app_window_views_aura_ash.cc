@@ -28,6 +28,14 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/mus/mus_util.h"
+#include "ui/gfx/skia_util.h"
+#endif
+
 using extensions::AppWindow;
 
 namespace {
@@ -140,6 +148,11 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                  ash::kShellWindowId_ImeWindowParentContainer);
   }
+#if defined(MOJO_SHELL_CLIENT)
+  init_params->mus_properties
+      [mus::mojom::WindowManager::kRemoveStandardFrame_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
+#endif
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
@@ -311,4 +324,30 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
     DCHECK(ash::Shell::HasInstance());
     ash::Shell::GetInstance()->UpdateShelfVisibility();
   }
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  ChromeNativeAppWindowViewsAura::UpdateDraggableRegions(regions);
+
+#if defined(MOJO_SHELL_CLIENT)
+  SkRegion* draggable_region = GetDraggableRegion();
+  // Set the NativeAppWindow's draggable region on the mus window.
+  if (draggable_region && !draggable_region->isEmpty() && widget() &&
+      GetMusWindow(widget()->GetNativeWindow())) {
+    // Supply client area insets that encompass all draggable regions.
+    gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
+
+    // Invert the draggable regions to determine the additional client areas.
+    SkRegion inverted_region;
+    inverted_region.setRect(draggable_region->getBounds());
+    inverted_region.op(*draggable_region, SkRegion::kDifference_Op);
+    std::vector<gfx::Rect> additional_client_regions;
+    for (SkRegion::Iterator i(inverted_region); !i.done(); i.next())
+      additional_client_regions.push_back(gfx::SkIRectToRect(i.rect()));
+
+    GetMusWindow(widget()->GetNativeWindow())
+        ->SetClientArea(insets, std::move(additional_client_regions));
+  }
+#endif
 }

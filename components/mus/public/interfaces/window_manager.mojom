@@ -50,6 +50,9 @@ interface WindowManager {
   const string kWindowIgnoredByShelf_Property = "prop:window-ignored-by-shelf";
   // The application ID (eg. 'mojo:foo'). Type: mojom::String
   const string kAppID_Property = "prop:app-id";
+  // Specifies that the system default caption and icon should not be rendered,
+  // and the client area should be equivalent to the window area. Type: bool
+  const string kRemoveStandardFrame_Property = "prop:remove-standard-frame";
 
   // When the WindowManager completes a request it must call back to
   // WindowManagerClient::WmResponse().

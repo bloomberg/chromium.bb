@@ -78,6 +78,8 @@ bool IsWindowJankyProperty(const void* key);
 void SetAlwaysOnTop(::mus::Window* window, bool value);
 bool IsAlwaysOnTop(::mus::Window* window);
 
+bool ShouldRemoveStandardFrame(::mus::Window* window);
+
 }  // namespace mus
 }  // namespace ash
 
