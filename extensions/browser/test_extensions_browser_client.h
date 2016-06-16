@@ -114,10 +114,6 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
 
-  ExtensionSystemProvider* extension_system_factory() {
-    return extension_system_factory_;
-  }
-
  private:
   content::BrowserContext* main_context_;       // Not owned.
   content::BrowserContext* incognito_context_;  // Not owned, defaults to NULL.

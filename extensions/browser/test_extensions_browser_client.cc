@@ -122,7 +122,7 @@ bool TestExtensionsBrowserClient::AllowCrossRendererResourceLoad(
 
 PrefService* TestExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
-  return nullptr;
+  return NULL;
 }
 
 void TestExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
