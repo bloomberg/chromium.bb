@@ -64,6 +64,8 @@
         'bluetooth/test/bluetooth_test_mac.mm',
         'bluetooth/test/bluetooth_test_win.h',
         'bluetooth/test/bluetooth_test_win.cc',
+        'bluetooth/test/mock_bluetooth_cbcharacteristic_mac.mm',
+        'bluetooth/test/mock_bluetooth_cbcharacteristic_mac.h',
         'bluetooth/test/mock_bluetooth_cbperipheral_mac.mm',
         'bluetooth/test/mock_bluetooth_cbperipheral_mac.h',
         'bluetooth/test/mock_bluetooth_cbservice_mac.mm',
