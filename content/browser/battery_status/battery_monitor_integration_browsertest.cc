@@ -91,7 +91,9 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
 // declared above.
 class TestContentBrowserClient : public ContentBrowserClient {
  public:
-  void RegisterRenderProcessMojoServices(ServiceRegistry* registry) override {
+  void RegisterRenderProcessMojoServices(
+      ServiceRegistry* registry,
+      RenderProcessHost* render_process_host) override {
     registry->AddService(base::Bind(&FakeBatteryMonitor::Create));
   }
 

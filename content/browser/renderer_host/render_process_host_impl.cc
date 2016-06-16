@@ -1099,7 +1099,7 @@ void RenderProcessHostImpl::RegisterMojoServices() {
 #endif
 
   GetContentClient()->browser()->RegisterRenderProcessMojoServices(
-      mojo_application_host_->service_registry());
+      mojo_application_host_->service_registry(), this);
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(

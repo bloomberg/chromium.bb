@@ -637,7 +637,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows to register browser Mojo services exposed through the
   // RenderProcessHost.
-  virtual void RegisterRenderProcessMojoServices(ServiceRegistry* registry) {}
+  virtual void RegisterRenderProcessMojoServices(
+      ServiceRegistry* registry,
+      RenderProcessHost* render_process_host) {}
 
   // Allows to register browser Mojo services exposed through the
   // FrameMojoShell.

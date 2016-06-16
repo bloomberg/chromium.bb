@@ -2718,7 +2718,8 @@ bool ChromeContentBrowserClient::ShouldUseWindowsPrefetchArgument() const {
 #endif  // defined(OS_WIN)
 
 void ChromeContentBrowserClient::RegisterRenderProcessMojoServices(
-    content::ServiceRegistry* registry) {
+    content::ServiceRegistry* registry,
+    content::RenderProcessHost* render_process_host) {
   registry->AddService(
       base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create));
 }

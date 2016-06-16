@@ -272,7 +272,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldUseWindowsPrefetchArgument() const override;
 #endif
   void RegisterRenderProcessMojoServices(
-      content::ServiceRegistry* registry) override;
+      content::ServiceRegistry* registry,
+      content::RenderProcessHost* render_process_host) override;
   void RegisterFrameMojoShellServices(
       content::ServiceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;

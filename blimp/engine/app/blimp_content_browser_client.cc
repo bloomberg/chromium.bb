@@ -40,7 +40,8 @@ BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
 }
 
 void BlimpContentBrowserClient::RegisterRenderProcessMojoServices(
-    content::ServiceRegistry* registry) {
+    content::ServiceRegistry* registry,
+    content::RenderProcessHost* render_process_host) {
   registry->AddService<mojom::BlobChannel>(
       base::Bind(&BlobChannelService::Create,
                  blimp_browser_main_parts_->GetBlobChannelSender()));
