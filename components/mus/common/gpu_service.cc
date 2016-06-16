@@ -11,6 +11,7 @@
 #include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connector.h"
 
 namespace mus {
@@ -87,10 +88,22 @@ GpuService::GetIOThreadTaskRunner() {
 
 std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(
     size_t size) {
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAnonymous(size))
-    return std::unique_ptr<base::SharedMemory>();
-  return shm;
+  mojo::ScopedSharedBufferHandle handle;
+  MojoResult result = mojo::CreateSharedBuffer(nullptr, size, &handle);
+  if (result != MOJO_RESULT_OK)
+    return nullptr;
+  DCHECK(handle->is_valid());
+
+  base::SharedMemoryHandle platform_handle;
+  size_t shared_memory_size;
+  bool readonly;
+  result = mojo::UnwrapSharedMemoryHandle(std::move(handle), &platform_handle,
+                                          &shared_memory_size, &readonly);
+  if (result != MOJO_RESULT_OK)
+    return nullptr;
+  DCHECK_EQ(shared_memory_size, size);
+
+  return base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
 }
 
 }  // namespace mus

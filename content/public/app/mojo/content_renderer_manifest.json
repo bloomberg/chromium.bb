@@ -5,7 +5,10 @@
   "capabilities": {
     "required": {
       "mojo:mus": {
-        "interfaces":  [ "mus::mojom::Gpu" ]
+        "interfaces":  [
+          "mus::mojom::Gpu",
+          "mus::mojom::GpuService"
+        ]
       }
     }
   }

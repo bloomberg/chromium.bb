@@ -233,6 +233,10 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
+#if defined(MOJO_RUNNER_CLIENT)
+#include "components/mus/common/switches.h"
+#endif
+
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
 #else
@@ -1580,6 +1584,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_IPC_FUZZER)
     switches::kIpcDumpDirectory,
     switches::kIpcFuzzerTestcase,
+#endif
+#if defined(MOJO_RUNNER_CLIENT)
+    mus::switches::kUseChromeGpuCommandBufferInMus,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
