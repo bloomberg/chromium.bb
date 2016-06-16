@@ -87,29 +87,39 @@ void OverlayPanelContent::RemoveLastHistoryEntry(
 void OverlayPanelContent::SetWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jweb_contents_delegate) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env,
-                                                         jcontent_view_core);
-  DCHECK(content_view_core);
-  DCHECK(content_view_core->GetWebContents());
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  DCHECK(web_contents);
 
   // NOTE(pedrosimonetti): Takes ownership of the WebContents associated
   // with the ContentViewCore. This is to make sure that the WebContens
   // and the Compositor are in the same process.
   // TODO(pedrosimonetti): Confirm with dtrainor@ if the comment above
   // is accurate.
-  web_contents_.reset(content_view_core->GetWebContents());
+  web_contents_.reset(web_contents);
   // TODO(pedrosimonetti): confirm if we need this after promoting it
   // to a real tab.
   TabAndroid::AttachTabHelpers(web_contents_.get());
-  ViewAndroidHelper::FromWebContents(web_contents_.get())
-      ->SetViewAndroid(content_view_core);
   web_contents_delegate_.reset(
       new web_contents_delegate_android::WebContentsDelegateAndroid(
           env, jweb_contents_delegate));
   web_contents_->SetDelegate(web_contents_delegate_.get());
+}
+
+void OverlayPanelContent::SetViewAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jcontent_view_core) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::GetNativeContentViewCore(env,
+                                                         jcontent_view_core);
+  DCHECK(content_view_core);
+
+  ViewAndroidHelper::FromWebContents(web_contents_.get())
+      ->SetViewAndroid(content_view_core);
 }
 
 void OverlayPanelContent::DestroyWebContents(
