@@ -632,13 +632,13 @@ ServiceWorkerContextCore::TransferProviderHostOut(int process_id,
                                                   int provider_id) {
   ProviderMap* map = GetProviderMapForProcess(process_id);
   ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
-  ServiceWorkerProviderHost* replacement =
-      new ServiceWorkerProviderHost(process_id,
-                                    transferee->frame_id(),
-                                    provider_id,
-                                    transferee->provider_type(),
-                                    AsWeakPtr(),
-                                    transferee->dispatcher_host());
+  ServiceWorkerProviderHost* replacement = new ServiceWorkerProviderHost(
+      process_id, transferee->frame_id(), provider_id,
+      transferee->provider_type(),
+      transferee->is_parent_frame_secure()
+          ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
+          : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE,
+      AsWeakPtr(), transferee->dispatcher_host());
   map->Replace(provider_id, replacement);
   transferee->PrepareForCrossSiteTransfer();
   return base::WrapUnique(transferee);

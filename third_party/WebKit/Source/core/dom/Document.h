@@ -1146,7 +1146,7 @@ private:
     bool childTypeAllowed(NodeType) const final;
     Node* cloneNode(bool deep) final;
     void cloneDataFromDocument(const Document&);
-    bool isSecureContextImpl(String* errorMessage, const SecureContextCheck priviligeContextCheck) const;
+    bool isSecureContextImpl(const SecureContextCheck priviligeContextCheck) const;
 
     ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
 

@@ -42,20 +42,20 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
-    registration_ = new ServiceWorkerRegistration(
-        GURL("http://host/scope/"), 1L, context()->AsWeakPtr());
+    registration_ = new ServiceWorkerRegistration(GURL("https://host/scope/"),
+                                                  1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(),
-                                        GURL("http://host/script.js"),
-                                        1L,
+                                        GURL("https://host/script.js"), 1L,
                                         context()->AsWeakPtr());
 
     // An empty host.
     std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
-                                      MSG_ROUTING_NONE, kMockProviderId,
-                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                      context()->AsWeakPtr(), nullptr));
-    host->SetDocumentUrl(GURL("http://host/scope/"));
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
+            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+            context()->AsWeakPtr(), nullptr));
+    host->SetDocumentUrl(GURL("https://host/scope/"));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 

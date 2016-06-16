@@ -201,6 +201,8 @@ void ServiceWorkerRegistration::ClaimClients() {
       continue;
     if (host->controlling_version() == active_version())
       continue;
+    if (!host->IsContextSecureForServiceWorker())
+      continue;
     if (host->MatchRegistration() == this)
       host->ClaimedByRegistration(this);
   }

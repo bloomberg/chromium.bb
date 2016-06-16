@@ -242,7 +242,8 @@ EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
   // we can observe its requests.
   std::unique_ptr<ServiceWorkerNetworkProvider> provider(
       new ServiceWorkerNetworkProvider(
-          route_id_, SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER));
+          route_id_, SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER,
+          true /* is_parent_frame_secure */));
 
   // The provider is kept around for the lifetime of the DataSource
   // and ownership is transferred to the DataSource.

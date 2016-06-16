@@ -3140,8 +3140,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   ServiceWorkerNetworkProvider::AttachToDocumentState(
       DocumentState::FromDataSource(datasource),
       ServiceWorkerNetworkProvider::CreateForNavigation(
-          routing_id_, navigation_state->request_params(),
-          frame->effectiveSandboxFlags(), content_initiated));
+          routing_id_, navigation_state->request_params(), frame,
+          content_initiated));
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,

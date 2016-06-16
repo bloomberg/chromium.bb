@@ -49,11 +49,12 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
     // An empty host.
     std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
-                                      MSG_ROUTING_NONE /* render_frame_id */,
-                                      1 /* provider_id */,
-                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                      context()->AsWeakPtr(), nullptr));
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(),
+            MSG_ROUTING_NONE /* render_frame_id */, 1 /* provider_id */,
+            SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+            context()->AsWeakPtr(), nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 

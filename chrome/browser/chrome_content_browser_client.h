@@ -232,6 +232,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) override;
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) override;
+  void GetSchemesBypassingSecureContextCheckWhitelist(
+      std::set<std::string>* schemes) override;
   void GetURLRequestAutoMountHandlers(
       std::vector<storage::URLRequestAutoMountHandler>* handlers) override;
   void GetAdditionalFileSystemBackends(
