@@ -17,11 +17,19 @@
     window.internals.runtimeFlags.autoplayMutedVideosEnabled = true;
     testRunner.setAutoplayAllowed(true);
 
-    function createMutedVideoElement() {
-        var e = document.createElement('video');
-        e.src = findMediaFile('video', 'content/test');
+    function createMutedMediaElement(type) {
+        var e = document.createElement(type);
+        e.src = findMediaFile(type, 'content/test');
         e.muted = true;
         return e;
+    }
+
+    function createMutedVideoElement() {
+        return createMutedMediaElement('video');
+    }
+
+    function createMutedAudioElement() {
+        return createMutedMediaElement('audio');
     }
 
     async_test(function(t) {
@@ -39,6 +47,26 @@
     promise_test(function() {
         return createMutedVideoElement().play();
     }, "Test that play() on a muted video succeeds without gesture.");
+
+    promise_test(function (t) {
+        return promise_rejects(
+            t,
+            new DOMException(
+                'play() can only be initiated by a user gesture.',
+                'NotAllowedError'),
+            createMutedAudioElement().play());
+    }, "Test that play() on a muted audio without gesture will reject.");
+
+    async_test(function (t) {
+        var e = createMutedAudioElement();
+        e.autoplay = true;
+        e.onplay = t.unreached_func();
+        e.oncanplaythrough = t.step_func(function() {
+            setTimeout(t.step_func_done(function() {
+                assert_true(e.paused);
+            }), 0);
+        });
+    }, "Test that autoplay on a muted audio without gesture has no effect.");
 
     promise_test(function(t) {
         var e = createMutedVideoElement();

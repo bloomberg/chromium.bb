@@ -3710,7 +3710,8 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const
     // - the flag is enabled;
     // - Data Saver is not enabled;
     // - Autoplay is enabled in settings;
-    if (muted()
+    if (isHTMLVideoElement()
+        && muted()
         && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()
         && !(document().settings() && document().settings()->dataSaverEnabled())
         && isAutoplayAllowedPerSettings()) {
