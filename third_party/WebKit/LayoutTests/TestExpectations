@@ -1684,5 +1684,3 @@ crbug.com/619973 [ Linux ] fast/forms/select/menulist-appearance-basic.html [ Ne
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
-
-crbug.com/620097 [ Linux ] css3/filters/effect-brightness-hw.html [ Failure ]
