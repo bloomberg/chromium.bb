@@ -15,7 +15,6 @@
 
 namespace cc {
 class Display;
-class OnscreenDisplayClient;
 class SurfaceIdAllocator;
 class SurfaceManager;
 
