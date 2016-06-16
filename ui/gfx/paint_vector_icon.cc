@@ -102,7 +102,8 @@ void PaintPath(Canvas* canvas,
 
     SkPath& path = paths.back();
     SkPaint& paint = paints.back();
-    switch (path_elements[i].type) {
+    CommandType command_type = path_elements[i].type;
+    switch (command_type) {
       // Handled above.
       case NEW_PATH:
         continue;
@@ -158,7 +159,7 @@ void PaintPath(Canvas* canvas,
         SkScalar y = path_elements[++i].arg;
 
         auto path_fn =
-            path_elements[i].type == ARC_TO
+            command_type == ARC_TO
                 ? static_cast<void (SkPath::*)(
                       SkScalar, SkScalar, SkScalar, SkPath::ArcSize,
                       SkPath::Direction, SkScalar, SkScalar)>(&SkPath::arcTo)
