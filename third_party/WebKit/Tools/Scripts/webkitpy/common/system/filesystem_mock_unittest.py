@@ -111,3 +111,11 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
                                                            ('foo/a', ['z'], ['x', 'y']),
                                                            ('foo/a/z', [], ['lyrics']),
                                                            ('foo/bar', [], ['quux', 'baz'])])
+
+    def test_executable(self):
+        host = MockHost()
+        mock_files = {'foo': '', 'bar': ''}
+        host.filesystem = MockFileSystem(files=mock_files)
+        host.filesystem.make_executable('foo')
+        self.assertEquals(host.filesystem.is_executable('foo'), True)
+        self.assertEquals(host.filesystem.is_executable('bar'), False)

@@ -49,6 +49,7 @@ class MockFileSystem(object):
                 not exist.
         """
         self.files = files or {}
+        self.executable_files = set()
         self.written_files = {}
         self.last_tmpdir = None
         self.current_tmpno = 0
@@ -60,7 +61,6 @@ class MockFileSystem(object):
             while not d in self.dirs:
                 self.dirs.add(d)
                 d = self.dirname(d)
-
     def clear_written_files(self):
         # This function can be used to track what is written between steps in a test.
         self.written_files = {}
@@ -74,6 +74,12 @@ class MockFileSystem(object):
         if self.sep in path:
             return path.rsplit(self.sep, 1)
         return ('', path)
+
+    def is_executable(self, file_path):
+        return file_path in self.executable_files
+
+    def make_executable(self, file_path):
+        self.executable_files.add(file_path)
 
     def abspath(self, path):
         if os.path.isabs(path):
