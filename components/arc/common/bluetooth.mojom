@@ -128,6 +128,103 @@ union BluetoothProperty {
   BluetoothLocalLEFeatures local_le_features;
 };
 
+// Bluetooth GATT types
+// Copy from Android API
+// https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html
+[Extensible]
+enum BluetoothGattStatus {
+  GATT_SUCCESS = 0,
+  GATT_READ_NOT_PERMITTED = 0x2,
+  GATT_WRITE_NOT_PERMITTED = 0x3,
+  GATT_INSUFFICIENT_AUTHENTICATION = 0x5,
+  GATT_REQUEST_NOT_SUPPORTED = 0x6,
+  GATT_INVALID_OFFSET = 0x7,
+  GATT_INVALID_ATTRIBUTE_LENGTH = 0xd,
+  GATT_INSUFFICIENT_ENCRYPTION = 0xf,
+  GATT_CONNECTION_CONGESTED = 0x8f,
+  GATT_FAILURE = 0x101,
+};
+
+// Copy from Android API
+// https://source.android.com/devices/halref/structbtgatt__gatt__id__t.html
+struct BluetoothGattID {
+  BluetoothUUID uuid;
+  uint8 inst_id;
+};
+
+// Copy from Android API
+// is_primary is not a boolean because Android defines it as uint8_t.
+// https://source.android.com/devices/halref/structbtgatt__srvc__id__t.html
+struct BluetoothGattServiceID {
+  BluetoothGattID id;
+  uint8 is_primary;
+};
+
+struct BluetoothGattValue {
+  BluetoothGattStatus status;
+  array<uint8> value;
+};
+
+// Copy from Bluetooth Assigned Numbers Document, Generic Access Profile
+// https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
+[Extensible]
+enum BluetoothAdvertisingDataType {
+  DATA_TYPE_FLAGS = 0x01,
+  DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE = 0x07,
+  DATA_TYPE_LOCAL_NAME_COMPLETE = 0x09,
+  DATA_TYPE_TX_POWER_LEVEL = 0x0A,
+  DATA_TYPE_SERVICE_DATA = 0x16,
+  DATA_TYPE_MANUFACTURER_SPECIFIC_DATA = 0xff,
+};
+
+// Copy from Bluetooth Core v4.2 Volume 3 Part C Chapter 11
+// and Bluetooth Core Specification Supplement v6 Part A Chapter 1
+// https://www.bluetooth.com/specifications/adopted-specifications
+union BluetoothAdvertisingData {
+  uint8 flags;
+  array<BluetoothUUID> service_uuids;
+  string local_name;
+  uint8 tx_power_level;
+  BluetoothServiceData service_data;
+  array<uint8> manufacturer_data;
+  array<uint8> other_data;
+};
+
+struct BluetoothServiceData {
+  uint16 uuid_16bit;
+  array<uint8> data;
+};
+
+[Extensible]
+enum BluetoothGattDBAttributeType {
+  BTGATT_DB_PRIMARY_SERVICE = 0,
+  BTGATT_DB_SECONDARY_SERVICE,
+  BTGATT_DB_INCLUDED_SERVICE,
+  BTGATT_DB_CHARACTERISTIC,
+  BTGATT_DB_DESCRIPTOR,
+};
+
+struct BluetoothGattDBElement {
+  uint8 id;
+  BluetoothUUID uuid;
+  BluetoothGattDBAttributeType type;
+  uint16 attribute_handle;
+
+  /*
+   * If |type| is |BTGATT_DB_PRIMARY_SERVICE|, or
+   * |BTGATT_DB_SECONDARY_SERVICE|, this contains the start and end attribute
+   * handles.
+   */
+  uint16 start_handle;
+  uint16 end_handle;
+
+  /*
+   * If |type| is |BTGATT_DB_CHARACTERISTIC|, this contains the properties of
+   * the characteristic.
+   */
+  uint8 properties;
+};
+
 interface BluetoothHost {
   EnableAdapter() => (BluetoothAdapterState state);
   DisableAdapter() => (BluetoothAdapterState state);
@@ -147,6 +244,47 @@ interface BluetoothHost {
   CancelBond(BluetoothAddress addr);
 
   GetConnectionState(BluetoothAddress addr) => (bool connected);
+
+  // Bluetooth Gatt Client functions
+  [MinVersion=1] StartLEScan();
+  [MinVersion=1] StopLEScan();
+  [MinVersion=1] ConnectLEDevice(BluetoothAddress remote_addr);
+  [MinVersion=1] DisconnectLEDevice(BluetoothAddress remote_addr);
+  [MinVersion=1] SearchService(BluetoothAddress remote_addr);
+  [MinVersion=1] GetGattDB(BluetoothAddress remote_addr);
+  [MinVersion=1] StartLEListen() => (BluetoothGattStatus status);
+  [MinVersion=1] StopLEListen() => (BluetoothGattStatus status);
+  [MinVersion=1] ReadGattCharacteristic(BluetoothAddress remote_addr,
+                                        BluetoothGattServiceID service_id,
+                                        BluetoothGattID char_id)
+      => (BluetoothGattValue value);
+  [MinVersion=1] WriteGattCharacteristic(BluetoothAddress remote_addr,
+                                         BluetoothGattServiceID service_id,
+                                         BluetoothGattID char_id,
+                                         BluetoothGattValue value)
+      => (BluetoothGattStatus status);
+  [MinVersion=1] ReadGattDescriptor(BluetoothAddress remote_addr,
+                                    BluetoothGattServiceID service_id,
+                                    BluetoothGattID char_id,
+                                    BluetoothGattID desc_id)
+      => (BluetoothGattValue value);
+  [MinVersion=1] WriteGattDescriptor(BluetoothAddress remote_addr,
+                                     BluetoothGattServiceID service_id,
+                                     BluetoothGattID char_id,
+                                     BluetoothGattID desc_id,
+                                     BluetoothGattValue value)
+      => (BluetoothGattStatus status);
+  [MinVersion=1] RegisterForGattNotification(BluetoothAddress remote_addr,
+                                             BluetoothGattServiceID service_id,
+                                             BluetoothGattID char_id)
+      => (BluetoothGattStatus status);
+  [MinVersion=1] DeregisterForGattNotification(BluetoothAddress remote_addr,
+                                               BluetoothGattServiceID service_id,
+                                               BluetoothGattID char_id)
+      => (BluetoothGattStatus status);
+  [MinVersion=1] ReadRemoteRssi(BluetoothAddress remote_addr)
+      => (int32 rssi);
+
 };
 
 interface BluetoothInstance {
@@ -165,4 +303,20 @@ interface BluetoothInstance {
   OnAclStateChanged(BluetoothStatus status,
                     BluetoothAddress remote_addr,
                     BluetoothAclState state);
+
+  // Bluetooth Gatt Client callbacks
+  [MinVersion=1] OnLEDeviceFound(BluetoothAddress addr,
+                                 int32 rssi,
+                                 array<BluetoothAdvertisingData> adv_data);
+  [MinVersion=1] OnLEConnectionStateChange(BluetoothAddress remote_addr,
+                                           bool connected);
+  [MinVersion=1] OnSearchComplete(BluetoothAddress remote_addr,
+                                  BluetoothGattStatus status);
+  [MinVersion=1] OnGetGattDB(BluetoothAddress remote_addr,
+                             array<BluetoothGattDBElement> db);
+  [MinVersion=1] OnServicesRemoved(BluetoothAddress remote_addr,
+                                   uint16 start_handle,
+                                   uint16 end_handle);
+  [MinVersion=1] OnServicesAdded(BluetoothAddress remote_addr,
+                                 array<BluetoothGattDBElement> db);
 };

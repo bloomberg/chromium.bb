@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "components/arc/common/bluetooth.mojom.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace device {
@@ -33,6 +34,19 @@ template <>
 struct TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID> {
   static arc::mojom::BluetoothUUIDPtr Convert(
       const device::BluetoothUUID& uuid);
+};
+
+template <>
+struct TypeConverter<device::BluetoothUUID, arc::mojom::BluetoothUUIDPtr> {
+  static device::BluetoothUUID Convert(
+      const arc::mojom::BluetoothUUIDPtr& uuid);
+};
+
+template <>
+struct TypeConverter<arc::mojom::BluetoothGattStatus,
+                     device::BluetoothGattService::GattErrorCode> {
+  static arc::mojom::BluetoothGattStatus Convert(
+      const device::BluetoothGattService::GattErrorCode& error_code);
 };
 
 }  // namespace mojo

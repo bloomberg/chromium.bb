@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "mojo/public/cpp/bindings/array.h"
 
@@ -81,6 +82,64 @@ TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID>::Convert(
   uuidp->uuid = mojo::Array<uint8_t>::From(address_bytes);
 
   return uuidp;
+}
+
+// static
+device::BluetoothUUID
+TypeConverter<device::BluetoothUUID, arc::mojom::BluetoothUUIDPtr>::Convert(
+    const arc::mojom::BluetoothUUIDPtr& uuid) {
+  std::vector<uint8_t> address_bytes = uuid->uuid.To<std::vector<uint8_t>>();
+
+  // BluetoothUUID expects the format below with the dashes inserted.
+  // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  std::string uuid_str =
+      base::HexEncode(address_bytes.data(), address_bytes.size());
+  const size_t uuid_dash_pos[] = {8, 13, 18, 23};
+  for (auto pos : uuid_dash_pos)
+    uuid_str = uuid_str.insert(pos, "-");
+
+  device::BluetoothUUID result(uuid_str);
+
+  DCHECK(result.IsValid());
+  return result;
+}
+
+// static
+arc::mojom::BluetoothGattStatus
+TypeConverter<arc::mojom::BluetoothGattStatus,
+              device::BluetoothGattService::GattErrorCode>::
+    Convert(const device::BluetoothGattService::GattErrorCode& error_code) {
+  arc::mojom::BluetoothGattStatus ret;
+
+  switch (error_code) {
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH:
+      ret = arc::mojom::BluetoothGattStatus::GATT_INVALID_ATTRIBUTE_LENGTH;
+      break;
+
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED:
+      ret = arc::mojom::BluetoothGattStatus::GATT_READ_NOT_PERMITTED;
+      break;
+
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_AUTHORIZED:
+      ret = arc::mojom::BluetoothGattStatus::GATT_INSUFFICIENT_AUTHENTICATION;
+      break;
+
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_SUPPORTED:
+      ret = arc::mojom::BluetoothGattStatus::GATT_REQUEST_NOT_SUPPORTED;
+      break;
+
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PAIRED:
+      ret = arc::mojom::BluetoothGattStatus::GATT_FAILURE;
+      break;
+
+    default:
+      ret = arc::mojom::BluetoothGattStatus::GATT_FAILURE;
+      break;
+  }
+  return ret;
 }
 
 }  // namespace mojo
