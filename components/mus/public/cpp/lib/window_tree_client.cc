@@ -603,6 +603,28 @@ Window* WindowTreeClient::NewTopLevelWindow(
   return window;
 }
 
+#if !defined(NDEBUG)
+std::string WindowTreeClient::GetDebugWindowHierarchy() const {
+  std::string result;
+  for (Window* root : roots_)
+    BuildDebugInfo(std::string(), root, &result);
+  return result;
+}
+
+void WindowTreeClient::BuildDebugInfo(const std::string& depth,
+                                      Window* window,
+                                      std::string* result) const {
+  std::string name = window->GetName();
+  *result += base::StringPrintf(
+      "%sid=%d visible=%s bounds=%d,%d %dx%d %s\n", depth.c_str(),
+      window->server_id(), window->visible() ? "true" : "false",
+      window->bounds().x(), window->bounds().y(), window->bounds().width(),
+      window->bounds().height(), !name.empty() ? name.c_str() : "(no name)");
+  for (Window* child : window->children())
+    BuildDebugInfo(depth + "  ", child, result);
+}
+#endif  // !defined(NDEBUG)
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClient, WindowTreeClient implementation:
 

@@ -171,6 +171,13 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void AddObserver(WindowTreeClientObserver* observer);
   void RemoveObserver(WindowTreeClientObserver* observer);
 
+#if !defined(NDEBUG)
+  std::string GetDebugWindowHierarchy() const;
+  void BuildDebugInfo(const std::string& depth,
+                      Window* window,
+                      std::string* result) const;
+#endif
+
  private:
   friend class WindowTreeClientPrivate;
 
