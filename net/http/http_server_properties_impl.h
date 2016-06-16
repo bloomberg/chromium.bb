@@ -161,7 +161,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   CanonicalHostMap::const_iterator GetCanonicalHost(
       const url::SchemeHostPort& server) const;
 
-  // Remove the cononical host for |server| if |server| is the value in the map.
+  // Remove the cononical host for |server|.
   void RemoveCanonicalHost(const url::SchemeHostPort& server);
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();

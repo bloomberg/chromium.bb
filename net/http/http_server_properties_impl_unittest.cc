@@ -597,6 +597,34 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
   ASSERT_TRUE(alternative_service_vector.empty());
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
+  url::SchemeHostPort server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
+  const AlternativeService alternative_service(QUIC, "", 443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  const AlternativeServiceInfo alternative_service_info(alternative_service,
+                                                        expiration);
+
+  impl_.SetAlternativeServices(
+      canonical_server,
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
+
+  // Make sure the canonical service is returned for the other server.
+  const AlternativeServiceVector alternative_service_vector =
+      impl_.GetAlternativeServices(server);
+  ASSERT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
+  EXPECT_EQ(443, alternative_service_vector[0].port);
+
+  // Now clear the alternatives for the other server and make sure it stays
+  // cleared.
+  // GetAlternativeServices() should remove this key from
+  // |alternative_service_map_|, and SetAlternativeServices() should not crash.
+  impl_.SetAlternativeServices(server, AlternativeServiceInfoVector());
+
+  ASSERT_TRUE(impl_.GetAlternativeServices(server).empty());
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServices) {
   url::SchemeHostPort test_server1("http", "foo1", 80);
   const AlternativeService alternative_service1(NPN_SPDY_3_1, "foo1", 443);

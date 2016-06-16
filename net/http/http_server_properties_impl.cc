@@ -407,11 +407,9 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
   AlternativeServiceMap::iterator it = alternative_service_map_.Peek(origin);
 
   if (alternative_service_info_vector.empty()) {
-    if (it == alternative_service_map_.end()) {
-      return false;
-    }
+    bool found = it != alternative_service_map_.end();
     ClearAlternativeServices(origin);
-    return true;
+    return found;
   }
 
   bool changed = true;
@@ -744,9 +742,6 @@ void HttpServerPropertiesImpl::RemoveCanonicalHost(
     const url::SchemeHostPort& server) {
   CanonicalHostMap::const_iterator canonical = GetCanonicalHost(server);
   if (canonical == canonical_host_to_origin_map_.end())
-    return;
-
-  if (!canonical->second.Equals(server))
     return;
 
   canonical_host_to_origin_map_.erase(canonical->first);
