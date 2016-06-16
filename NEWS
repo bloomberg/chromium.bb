@@ -16,6 +16,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Improvements to Mongolian thanks to Tsengel Maidar and Sreeja Param
 - Added new Slovak tables based off the official Slovak braille
   standard thanks to Peter Vagner
+- Changes to the Norwegian tables. There are now three Norwegian 8-dot
+  tables
+  - no-no-comp8.ctb: Norwegian 8-dot computer braille table
+  - no-no-8dot.utb: Norwegian 8-dot braille table
+  - no-no-8dot-fallback-6dot-g0.utb: Norwegian 8-dot braille table
+    with uncontracted 6-dot fallback
+
 ** Backwards incompatible changes
 - The json based harness test suite has been removed as its
   functionality has been superceded by the YAML tests. Please use
