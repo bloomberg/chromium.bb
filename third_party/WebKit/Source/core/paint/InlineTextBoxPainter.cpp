@@ -832,11 +832,6 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paint
     if (!LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted())
         return;
 
-    // Use same y positioning and height as for selection, so that when the selection and this highlight are on
-    // the same word there are no pieces sticking out.
-    int deltaY = m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
-    int selHeight = m_inlineTextBox.root().selectionHeight();
-
     int sPos = std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
     int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
     TextRun run = m_inlineTextBox.constructTextRun(style, font);
@@ -844,8 +839,10 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paint
     Color color = LayoutTheme::theme().platformTextSearchHighlightColor(marker->activeMatch());
     GraphicsContext& context = paintInfo.context;
     GraphicsContextStateSaver stateSaver(context);
-    context.clip(FloatRect(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat(), m_inlineTextBox.logicalWidth().toFloat(), selHeight));
-    context.drawHighlightForText(font, run, FloatPoint(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat()), selHeight, color, sPos, ePos);
+
+    LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
+    context.clip(FloatRect(boxRect));
+    context.drawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.height(), color, sPos, ePos);
 }
 
 
