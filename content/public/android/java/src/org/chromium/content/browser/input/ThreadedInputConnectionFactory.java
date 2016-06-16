@@ -22,6 +22,14 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     private static final String TAG = "cr_Ime";
     private static final boolean DEBUG_LOGS = false;
 
+    // Most of the time we do not need to retry. But if we have lost window focus while triggering
+    // delayed creation, then there is a chance that detection may fail in the following scenario:
+    // InputMethodManagerService checks the window focus by directly calling
+    // WindowManagerService#inputMethodClientHasFocus(). But the window focus change is
+    // propagated to the view via ViewRootImpl's message queue. Therefore, it may take another
+    // UI message loop until View#hasWindowFocus() is aligned with what IMMS sees.
+    private static final int CHECK_REGISTER_RETRY = 1;
+
     private final Handler mHandler;
     private final InputMethodManagerWrapper mInputMethodManagerWrapper;
     private final InputMethodUma mInputMethodUma;
@@ -101,6 +109,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         view.getHandler().post(new Runnable() {
             @Override
             public void run() {
+                if (!view.hasWindowFocus() || !view.hasFocus()) return;
                 // This is a hack to make InputMethodManager believe that the proxy view
                 // now has a focus. As a result, InputMethodManager will think that mProxyView
                 // is focused, and will call getHandler() of the view when creating input
@@ -116,27 +125,31 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                 mInputMethodManagerWrapper.isActive(view);
 
                 // Step 3: Check that the above hack worked.
-                // Step 3-1: Wait until activation finishes inside InputMethodManager.
+                // Do not check until activation finishes inside InputMethodManager (on IME thread).
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // Step 3-2. Run the check on view's handler (mostly UI) thread.
-                        // This prevents other views from taking focus in the middle of detection.
-                        final Handler viewHandler = view.getHandler();
-                        if (viewHandler == null) return;
-                        viewHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                assertRegisterProxyViewOnUiThread(view);
-                            }
-                        });
+                        postCheckRegisterResultOnImeThread(view, CHECK_REGISTER_RETRY);
                     }
                 });
             }
         });
     }
 
-    private void assertRegisterProxyViewOnUiThread(View view) {
+    private void postCheckRegisterResultOnImeThread(final View view, final int retry) {
+        // Now posting on UI thread to access view methods.
+        final Handler viewHandler = view.getHandler();
+        if (viewHandler == null) return;
+        viewHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkRegisterResult(view, retry);
+            }
+        });
+    }
+
+    private void checkRegisterResult(View view, int retry) {
+        if (DEBUG_LOGS) Log.w(TAG, "checkRegisterResult - retry: " + retry);
         // Success.
         if (mInputMethodManagerWrapper.isActive(mProxyView)) {
             mInputMethodUma.recordProxyViewSuccess();
@@ -147,14 +160,15 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         // otherwise regardless of whether proxy view is registered or not.
         if (!mInputMethodManagerWrapper.isActive(view)) return;
 
-        if (mThreadedInputConnection == null) {
-            // First time and failed. It is highly likely that this does not work systematically.
-            mInputMethodUma.recordProxyViewFailure();
-            onRegisterProxyViewFailed();
-        } else {
-            // Most likely that we already lost view focus.
-            mInputMethodUma.recordProxyViewDetectionFailure();
+        // Check again as focus could have been lost after posting this function.
+        if (!view.hasWindowFocus() || !view.hasFocus()) return;
+
+        if (retry > 0) {
+            postCheckRegisterResultOnImeThread(view, retry - 1);
+            return;
         }
+
+        onRegisterProxyViewFailed();
     }
 
     @VisibleForTesting

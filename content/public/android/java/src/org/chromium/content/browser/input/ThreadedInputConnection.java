@@ -196,7 +196,6 @@ public class ThreadedInputConnection extends BaseInputConnection
                 continue;
             }
             if (DEBUG_LOGS) Log.w(TAG, "checkQueue: " + state);
-            ImeUtils.checkCondition(!state.fromIme());
             updateSelection(state);
         }
     }
