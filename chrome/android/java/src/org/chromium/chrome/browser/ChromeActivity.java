@@ -538,7 +538,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 setStatusBarColor(tab, color);
 
                 if (getToolbarManager() == null) return;
-                getToolbarManager().updatePrimaryColor(color);
+                getToolbarManager().updatePrimaryColor(color, true);
 
                 ControlContainer controlContainer =
                         (ControlContainer) findViewById(R.id.control_container);

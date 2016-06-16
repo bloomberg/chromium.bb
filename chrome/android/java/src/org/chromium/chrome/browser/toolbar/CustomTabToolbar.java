@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
@@ -11,6 +15,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -50,6 +55,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.widget.Toast;
 
 import java.util.List;
@@ -59,6 +65,7 @@ import java.util.List;
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
+    private static final int BRAND_COLOR_TRANSITION_DURATION_MS = 250;
     private static final int TITLE_ANIM_DELAY_MS = 800;
     private static final int STATE_DOMAIN_ONLY = 0;
     private static final int STATE_TITLE_ONLY = 1;
@@ -75,6 +82,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     // Whether dark tint should be applied to icons and text.
     private boolean mUseDarkColors = true;
+
+    private ValueAnimator mBrandColorTransitionAnimation;
+    private boolean mBrandColorTransitionActive;
 
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
     private long mInitializeTimeStamp;
@@ -495,10 +505,46 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
      */
     @Override
     protected void onPrimaryColorChanged(boolean shouldAnimate) {
-        int primaryColor = getToolbarDataProvider().getPrimaryColor();
-        getBackground().setColor(primaryColor);
-        mUseDarkColors = !ColorUtils.shoudUseLightForegroundOnBackground(primaryColor);
-        updateVisualsForState();
+        if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
+
+        final ColorDrawable background = getBackground();
+        final int initialColor = background.getColor();
+        final int finalColor = getToolbarDataProvider().getPrimaryColor();
+
+        if (background.getColor() == finalColor) return;
+
+        mBrandColorTransitionAnimation = ValueAnimator.ofFloat(0, 1)
+                .setDuration(BRAND_COLOR_TRANSITION_DURATION_MS);
+        mBrandColorTransitionAnimation.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        mBrandColorTransitionAnimation.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float fraction = animation.getAnimatedFraction();
+                int red = (int) (Color.red(initialColor)
+                        + fraction * (Color.red(finalColor) - Color.red(initialColor)));
+                int green = (int) (Color.green(initialColor)
+                        + fraction * (Color.green(finalColor) - Color.green(initialColor)));
+                int blue = (int) (Color.blue(initialColor)
+                        + fraction * (Color.blue(finalColor) - Color.blue(initialColor)));
+                background.setColor(Color.rgb(red, green, blue));
+            }
+        });
+        mBrandColorTransitionAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mBrandColorTransitionActive = false;
+
+                // Using the current background color instead of the final color in case this
+                // animation was cancelled.  This ensures the assets are updated to the visible
+                // color.
+                mUseDarkColors = !ColorUtils.shoudUseLightForegroundOnBackground(
+                        background.getColor());
+                updateVisualsForState();
+            }
+        });
+        mBrandColorTransitionAnimation.start();
+        mBrandColorTransitionActive = true;
+        if (!shouldAnimate) mBrandColorTransitionAnimation.end();
     }
 
     @Override
