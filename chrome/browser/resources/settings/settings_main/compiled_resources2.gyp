@@ -6,6 +6,7 @@
     {
       'target_name': 'settings_main',
       'dependencies': [
+        '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_router',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -92,8 +92,6 @@ Polymer({
 <if expr="not chromeos">
     this.startListening_();
 </if>
-
-    this.scroller = this.parentElement;
   },
 
   /** @private */

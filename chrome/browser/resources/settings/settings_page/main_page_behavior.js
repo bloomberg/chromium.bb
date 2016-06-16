@@ -7,6 +7,25 @@ var EASING_FUNCTION = 'cubic-bezier(0.4, 0, 0.2, 1)';
 var EXPAND_DURATION = 350;
 
 /**
+ * Workaround for scrolling an element into view when using Polymer.
+ * @param {function():Element} containerCallback Return parent of element.
+ * @param {function():Element} elementCallback Return element to scroll to.
+ */
+function scrollWhenReady(containerCallback, elementCallback) {
+  // TODO(dschuyler): Determine whether this setTimeout can be removed.
+  // See also: https://github.com/Polymer/polymer/issues/3629
+  setTimeout(function pollForScrollHeight() {
+    var container = containerCallback();
+    if (!container || container.scrollHeight == 0) {
+      setTimeout(pollForScrollHeight.bind(this), 10);
+      return;
+    }
+
+    elementCallback().scrollIntoView();
+  }.bind(this));
+}
+
+/**
  * Provides animations to expand and collapse individual sections in a page.
  * Expanded sections take up the full height of the container. At most one
  * section should be expanded at any given time.
@@ -19,8 +38,13 @@ var MainPageBehaviorImpl = {
    */
   sectionSelector: '',
 
-  /** @type {?Element} The scrolling container. Elements must set this. */
+  /** @type {?Element} The scrolling container. */
   scroller: null,
+
+  /** @override */
+  attached: function() {
+    this.scroller = this.domHost && this.domHost.parentNode.$.mainContainer;
+  },
 
   /**
    * Hides or unhides the sections not being expanded.
@@ -212,7 +236,7 @@ var MainPageBehaviorImpl = {
     var card = section.$.card;
 
     // The card should start at the top of the page.
-    var targetTop = this.parentElement.getBoundingClientRect().top;
+    var targetTop = this.scroller.getBoundingClientRect().top;
 
     section.classList.add('expanding');
 
@@ -269,7 +293,7 @@ var MainPageBehaviorImpl = {
     this.style.margin = '';
     section.$.header.hidden = false;
 
-    var startingTop = this.parentElement.getBoundingClientRect().top;
+    var startingTop = this.scroller.getBoundingClientRect().top;
 
     var cardHeightStart = card.clientHeight;
     var cardWidthStart = card.clientWidth;
@@ -345,26 +369,15 @@ var RoutableBehaviorImpl = {
 
   /** @private */
   scrollToSection_: function() {
-    // TODO(dschuyler): Determine whether this setTimeout can be removed.
-    // See also: https://github.com/Polymer/polymer/issues/3629
-    setTimeout(function pollForScrollHeight() {
-      // If the current section changes while we are waiting for the page to be
-      // ready, scroll to the newest requested section.
-      var element = this.getSection_(this.currentRoute.section);
-      if (!element)
-        return;
-
-      var host = findAncestor(element, function(n) { return n.host; }).host;
-      if (host.scrollHeight == 0) {
-        setTimeout(pollForScrollHeight.bind(this), 100);
-        return;
-      }
-
-      // TODO(michaelpg): due to the workaround for crbug.com/617827 in
-      // settings_page_css.html, we have to use element.offsetTop instead of
-      // relying on element.scrollIntoView() so the margin is included.
-      host.scroller.scrollTop = element.offsetTop;
-    }.bind(this));
+    scrollWhenReady(
+        function() {
+          return this;
+        }.bind(this),
+        function() {
+          // If the current section changes while we are waiting for the page to
+          // be ready, scroll to the newest requested section.
+          return this.getSection_(this.currentRoute.section);
+        }.bind(this));
   },
 
   /** @private */
@@ -392,7 +405,8 @@ var RoutableBehaviorImpl = {
       var section = this.getSection_(newRoute.section);
       if (section)
         this.expandSection(section);
-    } else if (newRoute && newRoute.section) {
+    } else if (newRoute && newRoute.section &&
+        this.$$('[data-page=' + newRoute.page + ']')) {
       this.scrollToSection_();
     }
   },

@@ -37,10 +37,4 @@ Polymer({
    * is fixed.
    */
   sectionSelector: 'settings-section',
-
-  /** @override */
-  attached: function() {
-    /** @override */
-    this.scroller = this.parentElement;
-  },
 });

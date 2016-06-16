@@ -4,7 +4,6 @@
   <template>
     <style include="main-page-styles">
       :host {
-        --settings-page-padding-top: 21px;
         box-sizing: border-box;
         display: block;
         height: inherit;
@@ -25,22 +24,6 @@
          * with the top item in the side nav menu. Both things are desired
          * by Alan (bettes@). */
         margin-bottom: 3px;
-        /* TODO(michaelpg): This makes more sense as padding, but uses margin as
-         * a workaround for crbug.com/617287. Because margins collapse, add 3px
-         * to retain mostly the same spacing. */
-        margin-top: calc(var(--settings-page-padding-top) + 3px);
-      }
-
-      :host > div > :first-of-type {
-        /* TODO(michaelpg): This is offset because of the previous addition of
-         * 3px: crbug.com/617287. */
-        margin-top: var(--settings-page-padding-top);
-      }
-
-      .expanded.frozen {
-        /* TODO(michaelpg): This is zeroed out because of the previous
-         * replacement of margin with padding, above: crbug.com/617287. */
-        margin-top: 0;  /* -var(--settings-page-padding-top); */
       }
     </style>
   </template>

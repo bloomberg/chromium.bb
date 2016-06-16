@@ -63,7 +63,25 @@ Polymer({
     document.addEventListener('toggle-advanced-page', function(e) {
       this.showAdvancedPage_ = e.detail;
       this.isAdvancedMenuOpen_ = e.detail;
+      if (this.showAdvancedPage_) {
+        scrollWhenReady(
+            function() {
+              return this.$$('settings-advanced-page');
+            }.bind(this),
+            function() {
+              return this.$$('#toggleContainer');
+            }.bind(this));
+      }
     }.bind(this));
+  },
+
+  /**
+   * @param {boolean} opened Whether the menu is expanded.
+   * @return {string} Which icon to use.
+   * @private
+   * */
+  arrowState_: function(opened) {
+    return opened ? 'settings:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 
   /**
@@ -83,7 +101,7 @@ Polymer({
         (this.isAdvancedMenuOpen_ && this.showAdvancedToggle_) ||
         newRoute.page == 'advanced';
 
-    this.$.pageContainer.style.height = isSubpage ? '100%' : '';
+    this.style.height = isSubpage ? '100%' : '';
   },
 
   /** @private */

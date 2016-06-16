@@ -49,12 +49,6 @@ Polymer({
    */
   sectionSelector: 'settings-section',
 
-  /** @override */
-  attached: function() {
-    /** @override */
-    this.scroller = this.parentElement;
-  },
-
   onResetDone_: function() {
     this.showResetProfileBanner_ = false;
   },

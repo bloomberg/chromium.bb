@@ -51,10 +51,8 @@ SettingsPageBrowserTest.prototype = {
     assertTrue(!!settingsUi);
     var settingsMain = settingsUi.$$('settings-main');
     assertTrue(!!settingsMain);
-    var pages = settingsMain.$.pageContainer;
-    assertTrue(!!pages);
     var pageType = 'settings-' + type + '-page';
-    var page = pages.querySelector(pageType);
+    var page = settingsMain.$$(pageType);
     assertTrue(!!page);
     return page;
   },
