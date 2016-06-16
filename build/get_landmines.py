@@ -77,6 +77,8 @@ def print_landmines():
     print 'Clobber to support new location/infra for chrome_sync_shell_apk'
   if platform() == 'mac':
     print 'Clobber to get rid of evil libsqlite3.dylib (crbug.com/526208)'
+  if platform() == 'mac':
+    print 'Clobber to remove libsystem.dylib. See crbug.com/620075'
 
 
 def main():
