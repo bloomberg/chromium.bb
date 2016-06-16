@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/auth.h"
@@ -23,9 +24,10 @@ ShellLoginDialog::ShellLoginDialog(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ShellLoginDialog::PrepDialog, this,
-                 base::ASCIIToUTF16(auth_info->challenger.ToString()),
-                 base::UTF8ToUTF16(auth_info->realm)));
+      base::Bind(
+          &ShellLoginDialog::PrepDialog, this,
+          url_formatter::FormatOriginForSecurityDisplay(auth_info->challenger),
+          base::UTF8ToUTF16(auth_info->realm)));
 }
 
 void ShellLoginDialog::OnRequestCancelled() {

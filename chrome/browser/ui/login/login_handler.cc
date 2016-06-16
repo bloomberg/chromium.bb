@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/auth.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
@@ -63,95 +64,6 @@ namespace {
 // net::URLRequest.
 void ResetLoginHandlerForRequest(net::URLRequest* request) {
   ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request);
-}
-
-// Helper to create a PasswordForm for PasswordManager to start looking for
-// saved credentials.
-PasswordForm MakeInputForPasswordManager(const GURL& request_url,
-                                         net::AuthChallengeInfo* auth_info) {
-  PasswordForm dialog_form;
-  if (base::LowerCaseEqualsASCII(auth_info->scheme, net::kBasicAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_BASIC;
-  } else if (base::LowerCaseEqualsASCII(auth_info->scheme,
-                                        net::kDigestAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
-  } else {
-    dialog_form.scheme = PasswordForm::SCHEME_OTHER;
-  }
-  std::string host_and_port(auth_info->challenger.ToString());
-  if (auth_info->is_proxy) {
-    std::string origin = host_and_port;
-    // We don't expect this to already start with http:// or https://.
-    DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
-    origin = std::string("http://") + origin;
-    dialog_form.origin = GURL(origin);
-  } else if (!auth_info->challenger.Equals(
-                 net::HostPortPair::FromURL(request_url))) {
-    dialog_form.origin = GURL();
-    NOTREACHED();  // crbug.com/32718
-  } else {
-    dialog_form.origin = GURL(request_url.scheme() + "://" + host_and_port);
-  }
-  dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, *auth_info);
-  return dialog_form;
-}
-
-void ShowLoginPrompt(const GURL& request_url,
-                     net::AuthChallengeInfo* auth_info,
-                     LoginHandler* handler) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* parent_contents = handler->GetWebContentsForLogin();
-  if (!parent_contents)
-    return;
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(parent_contents);
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
-    return;
-  }
-
-  base::string16 authority = l10n_util::GetStringFUTF16(
-      auth_info->is_proxy ? IDS_LOGIN_DIALOG_PROXY_AUTHORITY
-                          : IDS_LOGIN_DIALOG_AUTHORITY,
-      url_formatter::FormatUrlForSecurityDisplay(request_url));
-  base::string16 explanation;
-  if (!content::IsOriginSecure(request_url)) {
-    explanation =
-        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
-  }
-
-  password_manager::PasswordManager* password_manager =
-      handler->GetPasswordManagerForLogin();
-
-  if (!password_manager) {
-#if defined(ENABLE_EXTENSIONS)
-    // A WebContents in a <webview> (a GuestView type) does not have a password
-    // manager, but still needs to be able to show login prompts.
-    const auto* guest =
-        guest_view::GuestViewBase::FromWebContents(parent_contents);
-    if (guest &&
-        extensions::GetViewType(guest->owner_web_contents()) !=
-            extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      handler->BuildViewWithoutPasswordManager(authority, explanation);
-      return;
-    }
-#endif
-    handler->CancelAuth();
-    return;
-  }
-
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(
-        password_manager->client()->GetLogManager());
-    logger.LogMessage(
-        autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
-  }
-
-  PasswordForm observed_form(
-      MakeInputForPasswordManager(request_url, auth_info));
-  handler->BuildViewWithPasswordManager(authority, explanation,
-                                        password_manager, observed_form);
 }
 
 }  // namespace
@@ -512,16 +424,140 @@ void LoginHandler::CloseContentsDeferred() {
     interstitial_delegate_->Proceed();
 }
 
-// This callback is run on the UI thread and creates a constrained window with
-// a LoginView to prompt the user. If the prompt is triggered because of
-// a cross origin navigation in the main frame, a blank interstitial is first
-// created which in turn creates the LoginView. Otherwise, a LoginView is
-// directly in this callback. In both cases, the response will be sent to
-// LoginHandler, which then routes it to the net::URLRequest on the I/O thread.
-void LoginDialogCallback(const GURL& request_url,
-                         net::AuthChallengeInfo* auth_info,
-                         LoginHandler* handler,
-                         bool is_main_frame) {
+// static
+std::string LoginHandler::GetSignonRealm(
+    const GURL& url,
+    const net::AuthChallengeInfo& auth_info) {
+  std::string signon_realm;
+  if (auth_info.is_proxy) {
+    // Historically we've been storing the signon realm for proxies using
+    // net::HostPortPair::ToString().
+    net::HostPortPair host_port_pair =
+        net::HostPortPair::FromURL(GURL(auth_info.challenger.Serialize()));
+    signon_realm = host_port_pair.ToString();
+    signon_realm.append("/");
+  } else {
+    // Take scheme, host, and port from the url.
+    signon_realm = url.GetOrigin().spec();
+    // This ends with a "/".
+  }
+  signon_realm.append(auth_info.realm);
+  return signon_realm;
+}
+
+// static
+PasswordForm LoginHandler::MakeInputForPasswordManager(
+    const GURL& request_url,
+    const net::AuthChallengeInfo& auth_info) {
+  PasswordForm dialog_form;
+  if (base::LowerCaseEqualsASCII(auth_info.scheme, net::kBasicAuthScheme)) {
+    dialog_form.scheme = PasswordForm::SCHEME_BASIC;
+  } else if (base::LowerCaseEqualsASCII(auth_info.scheme,
+                                        net::kDigestAuthScheme)) {
+    dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
+  } else {
+    dialog_form.scheme = PasswordForm::SCHEME_OTHER;
+  }
+  if (auth_info.is_proxy) {
+    dialog_form.origin = GURL(auth_info.challenger.Serialize());
+  } else if (!auth_info.challenger.IsSameOriginWith(url::Origin(request_url))) {
+    dialog_form.origin = GURL();
+    NOTREACHED();  // crbug.com/32718
+  } else {
+    dialog_form.origin = GURL(auth_info.challenger.Serialize());
+  }
+  dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, auth_info);
+  return dialog_form;
+}
+
+// static
+void LoginHandler::GetDialogStrings(const GURL& request_url,
+                                    const net::AuthChallengeInfo& auth_info,
+                                    base::string16* authority,
+                                    base::string16* explanation) {
+  GURL authority_url;
+
+  if (auth_info.is_proxy) {
+    *authority = l10n_util::GetStringFUTF16(
+        IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
+        url_formatter::FormatOriginForSecurityDisplay(
+            auth_info.challenger, url_formatter::SchemeDisplay::SHOW));
+    authority_url = GURL(auth_info.challenger.Serialize());
+  } else {
+    *authority = l10n_util::GetStringFUTF16(
+        IDS_LOGIN_DIALOG_AUTHORITY,
+        url_formatter::FormatUrlForSecurityDisplay(request_url));
+    authority_url = request_url;
+  }
+
+  if (!content::IsOriginSecure(authority_url)) {
+    // TODO(asanka): The string should be different for proxies and servers.
+    // http://crbug.com/620756
+    *explanation =
+        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
+  } else {
+    explanation->clear();
+  }
+}
+
+// static
+void LoginHandler::ShowLoginPrompt(const GURL& request_url,
+                                   net::AuthChallengeInfo* auth_info,
+                                   LoginHandler* handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* parent_contents = handler->GetWebContentsForLogin();
+  if (!parent_contents)
+    return;
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(parent_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
+    return;
+  }
+
+  base::string16 authority;
+  base::string16 explanation;
+  GetDialogStrings(request_url, *auth_info, &authority, &explanation);
+
+  password_manager::PasswordManager* password_manager =
+      handler->GetPasswordManagerForLogin();
+
+  if (!password_manager) {
+#if defined(ENABLE_EXTENSIONS)
+    // A WebContents in a <webview> (a GuestView type) does not have a password
+    // manager, but still needs to be able to show login prompts.
+    const auto* guest =
+        guest_view::GuestViewBase::FromWebContents(parent_contents);
+    if (guest &&
+        extensions::GetViewType(guest->owner_web_contents()) !=
+            extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      handler->BuildViewWithoutPasswordManager(authority, explanation);
+      return;
+    }
+#endif
+    handler->CancelAuth();
+    return;
+  }
+
+  if (password_manager &&
+      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        password_manager->client()->GetLogManager());
+    logger.LogMessage(
+        autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
+  }
+
+  PasswordForm observed_form(
+      LoginHandler::MakeInputForPasswordManager(request_url, *auth_info));
+  handler->BuildViewWithPasswordManager(authority, explanation,
+                                        password_manager, observed_form);
+}
+
+// static
+void LoginHandler::LoginDialogCallback(const GURL& request_url,
+                                       net::AuthChallengeInfo* auth_info,
+                                       LoginHandler* handler,
+                                       bool is_main_frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
   if (!parent_contents || handler->WasAuthHandled()) {
@@ -534,7 +570,8 @@ void LoginDialogCallback(const GURL& request_url,
 
   // Check if this is a main frame navigation and
   // (a) if the request is cross origin or
-  // (b) if an interstitial is already being shown.
+  // (b) if an interstitial is already being shown or
+  // (c) the prompt is for proxy authentication
   //
   // For (a), there are two different ways the navigation can occur:
   // 1- The user enters the resource URL in the omnibox.
@@ -548,18 +585,29 @@ void LoginDialogCallback(const GURL& request_url,
   // interstitial. This is because |LoginHandler::CloseContentsDeferred| tries
   // to proceed whatever interstitial is being shown when the login dialog is
   // closed, so that interstitial should only be a login interstitial.
-  if (is_main_frame && (parent_contents->ShowingInterstitialPage() ||
-                        parent_contents->GetLastCommittedURL().GetOrigin() !=
-                            request_url.GetOrigin())) {
+  //
+  // For (c), the authority information in the omnibox will be (and should be)
+  // different from the authority information in the authentication prompt. An
+  // interstitial with an empty URL clears the omnibox and reduces the possible
+  // user confusion that may result from the different authority information
+  // being displayed simultaneously. This is specially important when the proxy
+  // is accessed via an open connection while the target server is considered
+  // secure.
+  if (is_main_frame &&
+      (parent_contents->ShowingInterstitialPage() || auth_info->is_proxy ||
+       parent_contents->GetLastCommittedURL().GetOrigin() !=
+           request_url.GetOrigin())) {
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
     base::Closure callback =
-        base::Bind(&ShowLoginPrompt, request_url, base::RetainedRef(auth_info),
-                   base::RetainedRef(handler));
+        base::Bind(&LoginHandler::ShowLoginPrompt, request_url,
+                   base::RetainedRef(auth_info), base::RetainedRef(handler));
     // The interstitial delegate is owned by the interstitial that it creates.
     // This cancels any existing interstitial.
     handler->SetInterstitialDelegate(
-        (new LoginInterstitialDelegate(parent_contents, request_url, callback))
+        (new LoginInterstitialDelegate(
+             parent_contents, auth_info->is_proxy ? GURL() : request_url,
+             callback))
             ->GetWeakPtr());
   } else {
     ShowLoginPrompt(request_url, auth_info, handler);
@@ -575,32 +623,9 @@ LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginDialogCallback, request->url(),
+      base::Bind(&LoginHandler::LoginDialogCallback, request->url(),
                  base::RetainedRef(auth_info), base::RetainedRef(handler),
                  is_main_frame));
   return handler;
 }
 
-// Get the signon_realm under which this auth info should be stored.
-//
-// The format of the signon_realm for proxy auth is:
-//     proxy-host/auth-realm
-// The format of the signon_realm for server auth is:
-//     url-scheme://url-host[:url-port]/auth-realm
-//
-// Be careful when changing this function, since you could make existing
-// saved logins un-retrievable.
-std::string GetSignonRealm(const GURL& url,
-                           const net::AuthChallengeInfo& auth_info) {
-  std::string signon_realm;
-  if (auth_info.is_proxy) {
-    signon_realm = auth_info.challenger.ToString();
-    signon_realm.append("/");
-  } else {
-    // Take scheme, host, and port from the url.
-    signon_realm = url.GetOrigin().spec();
-    // This ends with a "/".
-  }
-  signon_realm.append(auth_info.realm);
-  return signon_realm;
-}

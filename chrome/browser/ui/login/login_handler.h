@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -135,6 +136,10 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   virtual void CloseDialog() = 0;
 
  private:
+  friend LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
+                                         net::URLRequest* request);
+  FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
+
   // Starts observing notifications from other LoginHandlers.
   void AddObservers();
 
@@ -166,6 +171,45 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Closes the view_contents from the UI loop.
   void CloseContentsDeferred();
 
+  // Get the signon_realm under which this auth info should be stored.
+  //
+  // The format of the signon_realm for proxy auth is:
+  //     proxy-host:proxy-port/auth-realm
+  // The format of the signon_realm for server auth is:
+  //     url-scheme://url-host[:url-port]/auth-realm
+  //
+  // Be careful when changing this function, since you could make existing
+  // saved logins un-retrievable.
+  static std::string GetSignonRealm(const GURL& url,
+                                    const net::AuthChallengeInfo& auth_info);
+
+  // Helper to create a PasswordForm for PasswordManager to start looking for
+  // saved credentials.
+  static autofill::PasswordForm MakeInputForPasswordManager(
+      const GURL& url,
+      const net::AuthChallengeInfo& auth_info);
+
+  static void GetDialogStrings(const GURL& request_url,
+                               const net::AuthChallengeInfo& auth_info,
+                               base::string16* authority,
+                               base::string16* explanation);
+
+  static void ShowLoginPrompt(const GURL& request_url,
+                              net::AuthChallengeInfo* auth_info,
+                              LoginHandler* handler);
+
+  // This callback is run on the UI thread and creates a constrained window with
+  // a LoginView to prompt the user. If the prompt is triggered because of a
+  // cross origin navigation in the main frame, a blank interstitial is first
+  // created which in turn creates the LoginView. Otherwise, a LoginView is
+  // created directly in this callback. In both cases, the response will be sent
+  // to LoginHandler, which then routes it to the net::URLRequest on the I/O
+  // thread.
+  static void LoginDialogCallback(const GURL& request_url,
+                                  net::AuthChallengeInfo* auth_info,
+                                  LoginHandler* handler,
+                                  bool is_main_frame);
+
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
   mutable base::Lock handled_auth_lock_;
@@ -182,8 +226,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
-  // or rejected.
-  // This should only be accessed on the UI loop.
+  // or rejected.  This should only be accessed on the UI loop.
   autofill::PasswordForm password_form_;
 
   // Points to the password manager owned by the WebContents requesting auth.
@@ -255,9 +298,5 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // destroying the net::URLRequest.
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request);
-
-// Get the signon_realm under which the identity should be saved.
-std::string GetSignonRealm(const GURL& url,
-                           const net::AuthChallengeInfo& auth_info);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_
