@@ -14,6 +14,7 @@ Run "generate_token.py -h" for more help on usage.
 """
 import argparse
 import base64
+from datetime import datetime
 import json
 import re
 import os
@@ -43,6 +44,8 @@ def HostnameFromArg(arg):
     return None
   if arg[-1] == ".":
     arg = arg[:-1]
+  if "." not in arg and arg != "localhost":
+    return None
   if all(DNS_LABEL_REGEX.match(label) for label in arg.split(".")):
     return arg.lower()
 
@@ -145,8 +148,15 @@ def main():
     print "(The original error was: %s)" % exc
     sys.exit(1)
 
-  # Output a properly-formatted token. Version 1 is hard-coded, as it is
-  # the only defined token version.
+
+  # Output the token details
+  print "Token details:"
+  print " Origin: %s" % args.origin
+  print " Feature: %s" % args.trial_name
+  print " Expiry: %d (%s UTC)" % (expiry, datetime.utcfromtimestamp(expiry))
+  print
+
+  # Output the properly-formatted token.
   print FormatToken(VERSION, signature, token_data)
 
 if __name__ == "__main__":
