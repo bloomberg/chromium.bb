@@ -3071,13 +3071,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * they're obscured by another view.
      */
     public void updateAccessibilityVisibility() {
-        int importantForAccessibility = isObscuredByAnotherViewForAccessibility()
-                ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                : View.IMPORTANT_FOR_ACCESSIBILITY_YES;
-        if (getView().getImportantForAccessibility() != importantForAccessibility) {
-            getView().setImportantForAccessibility(importantForAccessibility);
-            getView().sendAccessibilityEvent(
-                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        View view = getView();
+        if (view != null) {
+            int importantForAccessibility = isObscuredByAnotherViewForAccessibility()
+                    ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                    : View.IMPORTANT_FOR_ACCESSIBILITY_YES;
+            if (view.getImportantForAccessibility() != importantForAccessibility) {
+                view.setImportantForAccessibility(importantForAccessibility);
+                view.sendAccessibilityEvent(
+                        AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            }
         }
 
         ContentViewCore cvc = getContentViewCore();
