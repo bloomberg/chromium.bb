@@ -612,6 +612,7 @@ void WifiConfigView::ContentsChanged(views::Textfield* sender,
 bool WifiConfigView::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   if (sender == passphrase_textfield_ &&
+      key_event.type() == ui::ET_KEY_PRESSED &&
       key_event.key_code() == ui::VKEY_RETURN) {
     parent_->GetDialogClientView()->AcceptWindow();
   }

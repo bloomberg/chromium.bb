@@ -488,6 +488,9 @@ void TreeView::ContentsChanged(Textfield* sender,
 
 bool TreeView::HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) {
+  if (key_event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
   switch (key_event.key_code()) {
     case ui::VKEY_RETURN:
       CommitEdit();

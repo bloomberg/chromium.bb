@@ -361,38 +361,53 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
-  bool handled = false;
-  if (key_event.key_code() == ui::VKEY_TAB) {
-    if (focused_view_ != FOCUS_CONTENTS_VIEW &&
+  if (key_event.type() == ui::ET_KEY_PRESSED) {
+    if (key_event.key_code() == ui::VKEY_TAB &&
+        focused_view_ != FOCUS_CONTENTS_VIEW &&
         MoveTabFocus(key_event.IsShiftDown()))
       return true;
+
+    if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
+        back_button_->OnKeyPressed(key_event))
+      return true;
+
+    if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
+        speech_button_->OnKeyPressed(key_event))
+      return true;
+
+    const bool handled = contents_view_ && contents_view_->visible() &&
+                         contents_view_->OnKeyPressed(key_event);
+
+    // Arrow keys may have selected an item.  If they did, move focus off
+    // buttons.
+    // If they didn't, we still select the first search item, in case they're
+    // moving the caret through typed search text.  The UP arrow never moves
+    // focus from text/buttons to app list/results, so ignore it.
+    if (focused_view_ < FOCUS_CONTENTS_VIEW &&
+        (key_event.key_code() == ui::VKEY_LEFT ||
+         key_event.key_code() == ui::VKEY_RIGHT ||
+         key_event.key_code() == ui::VKEY_DOWN)) {
+      if (!handled)
+        delegate_->SetSearchResultSelection(true);
+      ResetTabFocus(handled);
+    }
+    return handled;
   }
 
-  if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
-      back_button_->OnKeyPressed(key_event))
-    return true;
+  if (key_event.type() == ui::ET_KEY_RELEASED) {
+    if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
+        back_button_->OnKeyReleased(key_event))
+      return true;
 
-  if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
-      speech_button_->OnKeyPressed(key_event))
-    return true;
+    if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
+        speech_button_->OnKeyReleased(key_event))
+      return true;
 
-  if (contents_view_ && contents_view_->visible())
-    handled = contents_view_->OnKeyPressed(key_event);
-
-  // Arrow keys may have selected an item.  If they did, move focus off buttons.
-  // If they didn't, we still select the first search item, in case they're
-  // moving the caret through typed search text.  The UP arrow never moves
-  // focus from text/buttons to app list/results, so ignore it.
-  if (focused_view_ < FOCUS_CONTENTS_VIEW &&
-      (key_event.key_code() == ui::VKEY_LEFT ||
-       key_event.key_code() == ui::VKEY_RIGHT ||
-       key_event.key_code() == ui::VKEY_DOWN)) {
-    if (!handled)
-      delegate_->SetSearchResultSelection(true);
-    ResetTabFocus(handled);
+    return contents_view_ && contents_view_->visible() &&
+           contents_view_->OnKeyReleased(key_event);
   }
 
-  return handled;
+  return false;
 }
 
 void SearchBoxView::ButtonPressed(views::Button* sender,

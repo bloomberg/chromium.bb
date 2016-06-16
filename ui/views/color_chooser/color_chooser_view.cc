@@ -466,8 +466,9 @@ void ColorChooserView::ContentsChanged(Textfield* sender,
 
 bool ColorChooserView::HandleKeyEvent(Textfield* sender,
                                       const ui::KeyEvent& key_event) {
-  if (key_event.key_code() != ui::VKEY_RETURN &&
-      key_event.key_code() != ui::VKEY_ESCAPE)
+  if (key_event.type() != ui::ET_KEY_PRESSED ||
+      (key_event.key_code() != ui::VKEY_RETURN &&
+       key_event.key_code() != ui::VKEY_ESCAPE))
     return false;
 
   GetWidget()->Close();

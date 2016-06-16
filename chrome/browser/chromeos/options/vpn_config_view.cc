@@ -333,6 +333,7 @@ bool VPNConfigView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if ((sender == psk_passphrase_textfield_ ||
        sender == user_passphrase_textfield_) &&
+      key_event.type() == ui::ET_KEY_PRESSED &&
       key_event.key_code() == ui::VKEY_RETURN) {
     parent_->GetDialogClientView()->AcceptWindow();
   }

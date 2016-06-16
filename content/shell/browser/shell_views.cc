@@ -289,15 +289,16 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                        const base::string16& new_contents) override {}
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
-   if (sender == url_entry_ && key_event.key_code() == ui::VKEY_RETURN) {
-     std::string text = base::UTF16ToUTF8(url_entry_->text());
-     GURL url(text);
-     if (!url.has_scheme()) {
-       url = GURL(std::string("http://") + std::string(text));
-       url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
-     }
-     shell_->LoadURL(url);
-     return true;
+    if (key_event.type() == ui::ET_KEY_PRESSED && sender == url_entry_ &&
+        key_event.key_code() == ui::VKEY_RETURN) {
+      std::string text = base::UTF16ToUTF8(url_entry_->text());
+      GURL url(text);
+      if (!url.has_scheme()) {
+        url = GURL(std::string("http://") + std::string(text));
+        url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
+      }
+      shell_->LoadURL(url);
+      return true;
    }
    return false;
   }

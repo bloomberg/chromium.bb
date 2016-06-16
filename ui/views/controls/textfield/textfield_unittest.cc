@@ -326,7 +326,8 @@ class TextfieldDestroyerController : public views::TextfieldController {
   // views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
-    target_->OnBlur();
+    if (target_)
+      target_->OnBlur();
     target_.reset();
     return false;
   }

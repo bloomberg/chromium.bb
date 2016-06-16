@@ -74,21 +74,17 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   // Overridden from views::TextFieldController:
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
-    suggestion_rejected_ = false;
-    switch (key_event.key_code()) {
-      case ui::VKEY_RETURN: {
-        Launch(Canonicalize(prompt_->text()), key_event.IsControlDown());
-        prompt_->SetText(base::string16());
-        UpdateEntries();
-      } break;
-      case ui::VKEY_BACK:
-      case ui::VKEY_DELETE:
-        // The user didn't like our suggestion, don't make another until they
-        // type another character.
-        suggestion_rejected_ = true;
-        break;
-      default:
-        break;
+    if (key_event.type() != ui::ET_KEY_PRESSED)
+      return false;
+
+    // The user didn't like our suggestion, don't make another until they
+    // type another character.
+    suggestion_rejected_ = key_event.key_code() == ui::VKEY_BACK ||
+                           key_event.key_code() == ui::VKEY_DELETE;
+    if (key_event.key_code() == ui::VKEY_RETURN) {
+      Launch(Canonicalize(prompt_->text()), key_event.IsControlDown());
+      prompt_->SetText(base::string16());
+      UpdateEntries();
     }
     return false;
   }

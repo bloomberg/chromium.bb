@@ -1046,6 +1046,9 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
 
 bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
                                         const ui::KeyEvent& key_event) {
+  if (key_event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
   views::Textfield* name_textfield =
       current_profile_name_->profile_name_textfield();
   DCHECK(sender == name_textfield);

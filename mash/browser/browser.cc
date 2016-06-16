@@ -687,13 +687,9 @@ class UI : public views::WidgetDelegateView,
   // Overridden from views::TextFieldController:
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
-    switch (key_event.key_code()) {
-      case ui::VKEY_RETURN: {
-        selected_view()->NavigateToURL(GURL(prompt_->text()));
-      } break;
-      default:
-        break;
-    }
+    if (key_event.type() == ui::ET_KEY_PRESSED &&
+        key_event.key_code() == ui::VKEY_RETURN)
+      selected_view()->NavigateToURL(GURL(prompt_->text()));
     return false;
   }
 

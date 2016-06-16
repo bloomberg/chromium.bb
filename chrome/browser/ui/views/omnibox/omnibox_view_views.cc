@@ -932,6 +932,9 @@ void OmniboxViewViews::ContentsChanged(views::Textfield* sender,
 
 bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
                                       const ui::KeyEvent& event) {
+  if (event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
   delete_at_end_pressed_ = false;
 
   if (event.key_code() == ui::VKEY_BACK) {
