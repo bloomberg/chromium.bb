@@ -76,15 +76,6 @@ class Profile;
 // The index of the window, windows are ordered front to back.
 - (NSNumber*)orderedIndex;
 
-// Used to see if the windows is in presentation mode.
-- (NSNumber*)presenting;
-
-// Used to enter presentation mode.
-- (void)handlesEnterPresentationMode:(NSScriptCommand*)command;
-
-// Used to exit presentation mode.
-- (void)handlesExitPresentationMode:(NSScriptCommand*)command;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_APPLESCRIPT_WINDOW_APPLESCRIPT_H_

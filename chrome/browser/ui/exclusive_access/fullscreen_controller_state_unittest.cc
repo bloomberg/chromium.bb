@@ -62,8 +62,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type,
-                       bool with_toolbar) override;
+                       ExclusiveAccessBubbleType type) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
@@ -74,8 +73,6 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void ChangeWindowFullscreenState();
 
  private:
-  // TODO(spqchan): Remove the with_toolbar param in EnterFullscreen() since
-  // it is now deprecated. See crbug.com/579259.
   void EnterFullscreen();
 
   // Returns true if ChangeWindowFullscreenState() should be called as a result
@@ -93,8 +90,7 @@ FullscreenControllerTestWindow::FullscreenControllerTestWindow()
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,
-    ExclusiveAccessBubbleType type,
-    bool with_toolbar) {
+    ExclusiveAccessBubbleType type) {
   EnterFullscreen();
 }
 

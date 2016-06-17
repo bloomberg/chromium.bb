@@ -149,11 +149,6 @@ class Command;
   // AppKit fullscreen mode.
   BOOL enteringImmersiveFullscreen_;
 
-  // True between |-setPresentationMode:url:bubbleType:| and
-  // |-windowDidEnterFullScreen:| to indicate that the window is in the process
-  // of transitioning into fullscreen presentation mode.
-  BOOL enteringPresentationMode_;
-
   // When the window is in the process of entering AppKit Fullscreen, this
   // property indicates whether the window is being fullscreened on the
   // primary screen.
@@ -534,10 +529,8 @@ class Command;
 // or exit Lion fullscreen mode.  Must not be called on Snow Leopard or earlier.
 - (void)handleLionToggleFullscreen;
 
-// Enters Browser/Appkit Fullscreen.
-// If |withToolbar| is NO, the tab strip and toolbar are hidden
-// (aka Presentation Mode).
-- (void)enterBrowserFullscreenWithToolbar:(BOOL)withToolbar;
+// Enters Browser AppKit Fullscreen.
+- (void)enterBrowserFullscreen;
 
 // Adds or removes the tab strip and toolbar from the current window. The
 // window must be in immersive or AppKit Fullscreen.
@@ -565,21 +558,11 @@ class Command;
 // the AppKit Fullscreen API.
 - (BOOL)isInAppKitFullscreen;
 
-// Enter fullscreen for an extension.
-- (void)enterExtensionFullscreen;
-
 // Enters Immersive Fullscreen for the given URL.
 - (void)enterWebContentFullscreen;
 
 // Exits the current fullscreen mode.
 - (void)exitAnyFullscreen;
-
-// Whether the system is in the very specific fullscreen mode: Presentation
-// Mode.
-- (BOOL)inPresentationMode;
-
-// Whether the toolbar should be shown in fullscreen.
-- (BOOL)shouldShowFullscreenToolbar;
 
 // Called by BrowserWindowFullscreenTransition when the exit animation is
 // finished.

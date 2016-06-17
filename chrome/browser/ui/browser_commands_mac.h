@@ -9,10 +9,6 @@ class Browser;
 
 namespace chrome {
 
-// Enters Mac OSX 10.7 Lion Fullscreen mode, with browser chrome displayed.
-// On earlier OSX versions, falls back to presentation mode.
-void ToggleFullscreenWithToolbarOrFallback(Browser* browser);
-
 // Toggles the visibility of the toolbar in fullscreen mode.
 void ToggleFullscreenToolbar(Browser* browser);
 

@@ -109,7 +109,7 @@ void ExclusiveAccessController::UpdateFullscreenToolbar() {
 }
 
 bool ExclusiveAccessController::IsFullscreenWithToolbar() const {
-  return IsFullscreen() && ![controller_ inPresentationMode];
+  return IsFullscreen();
 }
 
 // See the Fullscreen terminology section and the (Fullscreen) interface
@@ -117,18 +117,15 @@ bool ExclusiveAccessController::IsFullscreenWithToolbar() const {
 // logic in this method.
 void ExclusiveAccessController::EnterFullscreen(
     const GURL& url,
-    ExclusiveAccessBubbleType bubble_type,
-    bool with_toolbar) {
+    ExclusiveAccessBubbleType bubble_type) {
   url_ = url;
   bubble_type_ = bubble_type;
   if (browser_->exclusive_access_manager()
           ->fullscreen_controller()
           ->IsWindowFullscreenForTabOrPending())
     [controller_ enterWebContentFullscreen];
-  else if (!url.is_empty())
-    [controller_ enterExtensionFullscreen];
   else
-    [controller_ enterBrowserFullscreenWithToolbar:with_toolbar];
+    [controller_ enterBrowserFullscreen];
 }
 
 void ExclusiveAccessController::ExitFullscreen() {

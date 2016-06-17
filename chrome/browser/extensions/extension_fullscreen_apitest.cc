@@ -30,8 +30,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ExtensionFullscreenAccessPass) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        FocusWindowDoesNotExitFullscreen) {
   browser()->exclusive_access_manager()->context()->EnterFullscreen(
-      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
-      false);
+      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(browser()->window()->IsFullscreen());
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -47,8 +46,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_UpdateWindowSizeExitsFullscreen) {
   browser()->exclusive_access_manager()->context()->EnterFullscreen(
-      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
-      false);
+      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }

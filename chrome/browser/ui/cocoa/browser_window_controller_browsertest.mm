@@ -380,7 +380,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
-        ->ToggleBrowserFullscreenWithToolbar();
+        ->ToggleBrowserFullscreenMode();
     waiter->Wait();
   }
 

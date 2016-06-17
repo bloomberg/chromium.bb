@@ -62,8 +62,7 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   void UpdateFullscreenToolbar() override;
   bool IsFullscreenWithToolbar() const override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type,
-                       bool with_toolbar) override;
+                       ExclusiveAccessBubbleType type) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,

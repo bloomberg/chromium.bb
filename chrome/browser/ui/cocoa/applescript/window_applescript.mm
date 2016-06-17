@@ -259,26 +259,4 @@
     browser_->window()->Close();
 }
 
-- (NSNumber*)presenting {
-  BOOL presentingValue = browser_->window() &&
-                         browser_->window()->IsFullscreen() &&
-                         !browser_->window()
-                              ->GetExclusiveAccessContext()
-                              ->IsFullscreenWithToolbar();
-  return [NSNumber numberWithBool:presentingValue];
-}
-
-- (void)handlesEnterPresentationMode:(NSScriptCommand*)command {
-  AppleScript::LogAppleScriptUMA(
-      AppleScript::AppleScriptCommand::WINDOW_ENTER_PRESENTATION_MODE);
-  browser_->exclusive_access_manager()->context()->EnterFullscreen(
-      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION, false);
-}
-
-- (void)handlesExitPresentationMode:(NSScriptCommand*)command {
-  AppleScript::LogAppleScriptUMA(
-      AppleScript::AppleScriptCommand::WINDOW_EXIT_PRESENTATION_MODE);
-  browser_->exclusive_access_manager()->context()->ExitFullscreen();
-}
-
 @end

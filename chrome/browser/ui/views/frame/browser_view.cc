@@ -931,8 +931,7 @@ void BrowserView::Restore() {
 }
 
 void BrowserView::EnterFullscreen(const GURL& url,
-                                  ExclusiveAccessBubbleType bubble_type,
-                                  bool with_toolbar) {
+                                  ExclusiveAccessBubbleType bubble_type) {
   if (IsFullscreen())
     return;  // Nothing to do.
 

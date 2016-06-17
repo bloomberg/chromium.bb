@@ -415,11 +415,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ConvertPopupToTabbedBrowser(browser_);
       break;
     case IDC_FULLSCREEN:
-#if defined(OS_MACOSX)
-      chrome::ToggleFullscreenWithToolbarOrFallback(browser_);
-#else
       chrome::ToggleFullscreenMode(browser_);
-#endif
       break;
 
 #if defined(OS_CHROMEOS)

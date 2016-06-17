@@ -263,17 +263,6 @@
 			<property name="URL" code="URL " description="The URL of the bookmark." type="text"/>
 			<property name="index" code="indx" description="Returns the index with respect to its parent bookmark folder" type="number" access="r"/>
 		</class>
-		<class-extension extends="window">
-			<property name="presenting" code="pres" description="Whether the window is in presentation mode." type="boolean" access="r">
-				<cocoa key="presenting"/>
-			</property>
-			<responds-to command="enter presentation mode">
-				<cocoa method="handlesEnterPresentationMode:"/>
-			</responds-to>
-			<responds-to command="exit presentation mode">
-				<cocoa method="handlesExitPresentationMode:"/>
-			</responds-to>
-		</class-extension>
 		<command name="reload" code="CrSuRlod" description="Reload a tab.">
 			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
@@ -313,12 +302,6 @@
 				<cocoa key="javascript"/>
 			</parameter>
 			<result type="any"/>
-		</command>
-		<command name="enter presentation mode" code="CrSuEnPM" description="Enter presentation mode in window.">
-			<direct-parameter description="The window to enter presentation mode." type="specifier"/>
-		</command>
-		<command name="exit presentation mode" code="CrSuExPM" description="Exit presentation mode in window.">
-			<direct-parameter description="The window to exit presentation mode." type="specifier"/>
 		</command>
 	</suite>
 </dictionary>

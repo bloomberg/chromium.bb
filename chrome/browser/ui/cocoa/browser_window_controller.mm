@@ -1851,21 +1851,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 
-- (void)enterBrowserFullscreenWithToolbar:(BOOL)withToolbar {
-  if (!chrome::mac::SupportsSystemFullscreen()) {
-    if (![self isInImmersiveFullscreen])
-      [self enterImmersiveFullscreen];
-    return;
-  }
-
-  if ([self isInAppKitFullscreen]) {
-    [self updateFullscreenWithToolbar:withToolbar];
-  } else {
-    // Need to invoke AppKit Fullscreen API. Presentation mode (if set) will
-    // automatically be enabled in |-windowWillEnterFullScreen:|.
-    enteringPresentationMode_ = !withToolbar;
-    [self enterAppKitFullscreen];
-  }
+- (void)enterBrowserFullscreen {
+  [self enterAppKitFullscreen];
 }
 
 - (void)updateFullscreenWithToolbar:(BOOL)withToolbar {
@@ -1918,16 +1905,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return [presentationModeController_ menubarOffset];
 }
 
-- (void)enterExtensionFullscreen {
-  if (chrome::mac::SupportsSystemFullscreen()) {
-    [self enterBrowserFullscreenWithToolbar:NO];
-  } else {
-    [self enterImmersiveFullscreen];
-    DCHECK(!exclusiveAccessController_->url().is_empty());
-    [self updateFullscreenExitBubble];
-  }
-}
-
 - (void)enterWebContentFullscreen {
   // HTML5 Fullscreen should only use AppKit fullscreen in 10.10+.
   // However, if the user is using multiple monitors and turned off
@@ -1935,8 +1912,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // that the other monitors won't blank out.
   display::Screen* screen = display::Screen::GetScreen();
   BOOL hasMultipleMonitors = screen && screen->GetNumDisplays() > 1;
-  if (chrome::mac::SupportsSystemFullscreen() &&
-      base::mac::IsOSYosemiteOrLater() &&
+  if (base::mac::IsOSYosemiteOrLater() &&
       !(hasMultipleMonitors && ![NSScreen screensHaveSeparateSpaces])) {
     [self enterAppKitFullscreen];
   } else {
@@ -1954,17 +1930,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
     [self exitAppKitFullscreen];
   if ([self isInImmersiveFullscreen])
     [self exitImmersiveFullscreen];
-}
-
-- (BOOL)inPresentationMode {
-  return presentationModeController_.get() &&
-         [presentationModeController_ inPresentationMode] &&
-         presentationModeController_.get().slidingStyle ==
-             fullscreen_mac::OMNIBOX_TABS_HIDDEN;
-}
-
-- (BOOL)shouldShowFullscreenToolbar {
-  return shouldShowFullscreenToolbar_;
 }
 
 - (void)exitFullscreenAnimationFinished {

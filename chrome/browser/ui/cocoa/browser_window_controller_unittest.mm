@@ -768,7 +768,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
-  [controller_ enterBrowserFullscreenWithToolbar:YES];
+  [controller_ enterBrowserFullscreen];
   WaitForFullScreenTransition();
   EXPECT_TRUE([controller_ isInAnyFullscreenMode]);
 
@@ -792,7 +792,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_TRUE(IsFrontWindow([controller_ window]));
 
-  [controller_ enterBrowserFullscreenWithToolbar:YES];
+  [controller_ enterBrowserFullscreen];
   WaitForFullScreenTransition();
   [controller_ activate];
   chrome::testing::NSRunLoopRunAllPending();

@@ -278,8 +278,7 @@ class BrowserView : public BrowserWindow,
   void Minimize() override;
   void Restore() override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType bubble_type,
-                       bool with_toolbar) override;
+                       ExclusiveAccessBubbleType bubble_type) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,

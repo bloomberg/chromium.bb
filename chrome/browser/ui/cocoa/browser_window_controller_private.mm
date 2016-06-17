@@ -71,11 +71,10 @@ enum WindowLocation {
 };
 
 // There are 2 mechanisms for invoking fullscreen: AppKit and Immersive.
-// There are 2 types of AppKit Fullscreen: Presentation Mode and Canonical
-// Fullscreen.
+// PRESENTATION_MODE = 1 had been removed, but the enums aren't renumbered
+// since they are associated with a histogram.
 enum FullscreenStyle {
   IMMERSIVE_FULLSCREEN = 0,
-  PRESENTATION_MODE = 1,
   CANONICAL_FULLSCREEN = 2,
   FULLSCREEN_STYLE_COUNT = 3
 };
@@ -684,8 +683,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
   RecordFullscreenWindowLocation([self window]);
-  RecordFullscreenStyle(enteringPresentationMode_ ? PRESENTATION_MODE
-                                                  : CANONICAL_FULLSCREEN);
+  RecordFullscreenStyle(CANONICAL_FULLSCREEN);
 
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
@@ -755,7 +753,6 @@ willPositionSheet:(NSWindow*)sheet
     [self deregisterForContentViewResizeNotifications];
 
   enteringImmersiveFullscreen_ = NO;
-  enteringPresentationMode_ = NO;
 
   [self resetCustomAppKitFullscreenVariables];
   [[tabStripController_ activeTabContentsController]
@@ -867,7 +864,7 @@ willPositionSheet:(NSWindow*)sheet
   fullscreen_mac::SlidingStyle style;
   if ([self isFullscreenForTabContentOrExtension]) {
     style = fullscreen_mac::OMNIBOX_TABS_NONE;
-  } else if (enteringPresentationMode_ || ![self shouldShowFullscreenToolbar]) {
+  } else if (!shouldShowFullscreenToolbar_) {
     style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   } else {
     style = fullscreen_mac::OMNIBOX_TABS_PRESENT;

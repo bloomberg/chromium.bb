@@ -65,10 +65,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
 
   void ToggleBrowserFullscreenMode();
 
-  // Fullscreen mode with tab strip and toolbar shown.
-  // Currently only supported on Mac.
-  void ToggleBrowserFullscreenWithToolbar();
-
   // Extension API implementation uses this method to toggle fullscreen mode.
   // The extension's name is displayed in the full screen bubble UI to attribute
   // the cause of the full screen state change.
@@ -135,7 +131,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
 
   enum FullscreenInternalOption {
     BROWSER,
-    BROWSER_WITH_TOOLBAR,
     TAB
   };
 

@@ -71,10 +71,6 @@ void FullscreenController::ToggleBrowserFullscreenMode() {
   ToggleFullscreenModeInternal(BROWSER);
 }
 
-void FullscreenController::ToggleBrowserFullscreenWithToolbar() {
-  ToggleFullscreenModeInternal(BROWSER_WITH_TOOLBAR);
-}
-
 void FullscreenController::ToggleBrowserFullscreenModeWithExtension(
     const GURL& extension_url) {
   // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
@@ -347,13 +343,8 @@ void FullscreenController::ToggleFullscreenModeInternal(
       !IsWindowFullscreenForTabOrPending() &&
       exclusive_access_context->SupportsFullscreenWithToolbar() &&
       IsExtensionFullscreenOrPending()) {
-    if (option == BROWSER_WITH_TOOLBAR) {
-      enter_fullscreen = enter_fullscreen ||
-                         !exclusive_access_context->IsFullscreenWithToolbar();
-    } else {
-      enter_fullscreen = enter_fullscreen ||
-                         exclusive_access_context->IsFullscreenWithToolbar();
-    }
+    enter_fullscreen = enter_fullscreen ||
+        exclusive_access_context->IsFullscreenWithToolbar();
   }
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
@@ -396,8 +387,7 @@ void FullscreenController::EnterFullscreenModeInternal(
   // from tab fullscreen out to browser with toolbar.
 
   exclusive_access_manager()->context()->EnterFullscreen(
-      url, exclusive_access_manager()->GetExclusiveAccessExitBubbleType(),
-      option == BROWSER_WITH_TOOLBAR);
+      url, exclusive_access_manager()->GetExclusiveAccessExitBubbleType());
 
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
 
