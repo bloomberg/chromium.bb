@@ -102,6 +102,8 @@ HTMLElement* CustomElementDefinition::createElementAsync(Document& document, con
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
 void CustomElementDefinition::upgrade(Element* element)
 {
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Undefined);
+
     if (!m_observedAttributes.isEmpty())
         enqueueAttributeChangedCallbackForAllAttributes(element);
 

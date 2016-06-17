@@ -47,6 +47,8 @@ public:
     static void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue);
 
+    static void tryToUpgrade(Element*);
+
 private:
     static HTMLElement* createUndefinedElement(Document&, const QualifiedName&);
 };

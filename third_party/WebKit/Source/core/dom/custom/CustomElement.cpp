@@ -186,4 +186,20 @@ void CustomElement::enqueueAttributeChangedCallback(Element* element,
         definition->enqueueAttributeChangedCallback(element, name, oldValue, newValue);
 }
 
+void CustomElement::tryToUpgrade(Element* element)
+{
+    // Try to upgrade an element
+    // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
+
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Undefined);
+
+    CustomElementsRegistry* registry = CustomElement::registry(*element);
+    if (!registry)
+        return;
+    if (CustomElementDefinition* definition = registry->definitionForName(element->localName()))
+        definition->enqueueUpgradeReaction(element);
+    else
+        registry->addCandidate(element);
+}
+
 } // namespace blink

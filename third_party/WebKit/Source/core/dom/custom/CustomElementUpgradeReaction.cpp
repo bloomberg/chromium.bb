@@ -16,7 +16,11 @@ CustomElementUpgradeReaction::CustomElementUpgradeReaction(
 
 void CustomElementUpgradeReaction::invoke(Element* element)
 {
-    m_definition->upgrade(element);
+    // Don't call upgrade() if it's already upgraded. Multiple upgrade reactions
+    // could be enqueued because the state changes in step 10 of upgrades.
+    // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
+    if (element->getCustomElementState() == CustomElementState::Undefined)
+        m_definition->upgrade(element);
 }
 
 } // namespace blink
