@@ -624,8 +624,11 @@ gfx::ImageSkia OmniboxResultView::GetKeywordIcon() const {
 
 gfx::ImageSkia OmniboxResultView::GetVectorIcon(
     gfx::VectorIconId icon_id) const {
-  return gfx::CreateVectorIcon(icon_id, 16, color_utils::DeriveDefaultIconColor(
-                                                GetColor(GetState(), TEXT)));
+  // For selected rows, paint the icon the same color as the text.
+  SkColor color = GetColor(GetState(), TEXT);
+  if (GetState() != SELECTED)
+    color = color_utils::DeriveDefaultIconColor(color);
+  return gfx::CreateVectorIcon(icon_id, 16, color);
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {

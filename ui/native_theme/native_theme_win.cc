@@ -465,7 +465,8 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
+  const bool md = ui::MaterialDesignController::IsModeMaterial();
+  if (!md) {
     // Link:
     const SkColor kLinkPressedColor = SkColorSetRGB(200, 0, 0);
 
@@ -501,7 +502,9 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
   // Results Tables:
-  const SkColor kResultsTableUrlColor = SkColorSetRGB(0x0b, 0x80, 0x43);
+  const SkColor kResultsTableUrlColor =
+      md ? gfx::kGoogleBlue700 : SkColorSetRGB(0x0b, 0x80, 0x43);
+  const SkColor kResultsTableSelectedUrlColor = SK_ColorWHITE;
 
   switch (color_id) {
     // Windows
@@ -624,12 +627,13 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return color_utils::GetReadableColor(kResultsTableUrlColor,
                                             system_colors_[COLOR_WINDOW]);
     case kColorId_ResultsTableHoveredUrl:
-      return color_utils::GetReadableColor(
-          kResultsTableUrlColor,
+      return color_utils::PickContrastingColor(
+          kResultsTableUrlColor, kResultsTableSelectedUrlColor,
           GetSystemColor(kColorId_ResultsTableHoveredBackground));
     case kColorId_ResultsTableSelectedUrl:
-      return color_utils::GetReadableColor(kResultsTableUrlColor,
-                                           system_colors_[COLOR_HIGHLIGHT]);
+      return color_utils::PickContrastingColor(
+          kResultsTableUrlColor, kResultsTableSelectedUrlColor,
+          system_colors_[COLOR_HIGHLIGHT]);
     case kColorId_ResultsTablePositiveText:
       return color_utils::GetReadableColor(kPositiveTextColor,
                                            system_colors_[COLOR_WINDOW]);
