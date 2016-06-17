@@ -94,7 +94,7 @@ void ArrayBufferContents::shareWith(ArrayBufferContents& other)
 void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 {
     ASSERT(!m_holder->isShared() && !other.m_holder->isShared());
-    m_holder->copyMemoryTo(*other.m_holder);
+    other.m_holder->copyMemoryFrom(*m_holder);
 }
 
 void ArrayBufferContents::allocateMemoryWithFlags(size_t size, InitializationPolicy policy, int flags, void*& data)
@@ -127,8 +127,8 @@ ArrayBufferContents::DataHolder::DataHolder()
 ArrayBufferContents::DataHolder::~DataHolder()
 {
     ArrayBufferContents::freeMemory(m_data, m_sizeInBytes);
-    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
-        s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(m_sizeInBytes));
+
+    adjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(m_sizeInBytes));
 
     m_data = nullptr;
     m_sizeInBytes = 0;
@@ -137,33 +137,40 @@ ArrayBufferContents::DataHolder::~DataHolder()
 
 void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes, SharingType isShared, InitializationPolicy policy)
 {
-    ASSERT(!m_data);
-    void* data = nullptr;
-    allocateMemory(sizeInBytes, policy, data);
-    m_data = data;
-    m_sizeInBytes = data ? sizeInBytes : 0;
-    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
-        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(m_sizeInBytes));
+    DCHECK(!m_data);
+    DCHECK_EQ(m_sizeInBytes, 0u);
+
+    ArrayBufferContents::allocateMemory(sizeInBytes, policy, m_data);
+    m_sizeInBytes = m_data ? sizeInBytes : 0;
     m_isShared = isShared;
+
+    adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
 }
 
 void ArrayBufferContents::DataHolder::adopt(void* data, unsigned sizeInBytes, SharingType isShared)
 {
-    ASSERT(!m_data);
+    DCHECK(!m_data);
+    DCHECK_EQ(m_sizeInBytes, 0u);
+
     m_data = data;
     m_sizeInBytes = sizeInBytes;
     m_isShared = isShared;
+
+    adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
 }
 
-void ArrayBufferContents::DataHolder::copyMemoryTo(DataHolder& other)
+void ArrayBufferContents::DataHolder::copyMemoryFrom(const DataHolder& source)
 {
-    ASSERT(!other.m_sizeInBytes);
-    ArrayBufferContents::freeMemory(other.m_data, other.m_sizeInBytes);
-    ArrayBufferContents::allocateMemory(m_sizeInBytes, DontInitialize, other.m_data);
-    if (!other.m_data)
+    DCHECK(!m_data);
+    DCHECK_EQ(m_sizeInBytes, 0u);
+
+    ArrayBufferContents::allocateMemory(source.sizeInBytes(), DontInitialize, m_data);
+    m_sizeInBytes = m_data ? source.sizeInBytes() : 0;
+    if (!m_data)
         return;
-    memcpy(other.m_data, m_data, m_sizeInBytes);
-    other.m_sizeInBytes = m_sizeInBytes;
+    memcpy(m_data, source.data(), source.sizeInBytes());
+
+    adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
 }
 
 } // namespace WTF

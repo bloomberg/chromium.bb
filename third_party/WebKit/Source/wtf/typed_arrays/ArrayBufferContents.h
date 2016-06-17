@@ -37,7 +37,7 @@
 
 namespace WTF {
 
-typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
+typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int64_t size);
 
 class WTF_EXPORT ArrayBufferContents {
     WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
@@ -95,13 +95,24 @@ private:
 
         void allocateNew(unsigned sizeInBytes, SharingType isShared, InitializationPolicy);
         void adopt(void* data, unsigned sizeInBytes, SharingType isShared);
-        void copyMemoryTo(DataHolder& other);
+        void copyMemoryFrom(const DataHolder& source);
 
-        void* data() const { return m_data; }
+        const void* data() const { return m_data; }
+        void* data() { return m_data; }
         unsigned sizeInBytes() const { return m_sizeInBytes; }
         bool isShared() const { return m_isShared == Shared; }
 
     private:
+        void adjustAmountOfExternalAllocatedMemory(int64_t diff)
+        {
+            if (ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction)
+                ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
+        }
+        void adjustAmountOfExternalAllocatedMemory(unsigned diff)
+        {
+            adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
+        }
+
         void* m_data;
         unsigned m_sizeInBytes;
         SharingType m_isShared;

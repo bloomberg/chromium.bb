@@ -330,8 +330,14 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 } // namespace
 
-static void adjustAmountOfExternalAllocatedMemory(int size)
+static void adjustAmountOfExternalAllocatedMemory(int64_t size)
 {
+#if ENABLE(ASSERT)
+    static int64_t totalSize = 0;
+    totalSize += size;
+    DCHECK_GE(totalSize, 0);
+#endif
+
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
 }
 
