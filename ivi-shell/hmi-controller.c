@@ -845,9 +845,6 @@ hmi_controller_create(struct weston_compositor *ec)
 	wl_list_insert(&hmi_ctrl->workspace_fade.layer_list,
 		       &tmp_link_layer->link);
 
-	hmi_ctrl->surface_created.notify = set_notification_create_surface;
-	ivi_layout_interface->add_listener_create_surface(&hmi_ctrl->surface_created);
-
 	hmi_ctrl->surface_removed.notify = set_notification_remove_surface;
 	ivi_layout_interface->add_listener_remove_surface(&hmi_ctrl->surface_removed);
 
@@ -1277,6 +1274,13 @@ ivi_hmi_controller_UI_ready(struct wl_client *client,
 	ivi_layout_interface->commit_changes();
 
 	ivi_hmi_controller_add_launchers(hmi_ctrl, 256);
+
+	/* Add surface_created listener after the initialization of launchers.
+	 * Otherwise, surfaces of the launchers will be added to application
+	 * layer too.*/
+	hmi_ctrl->surface_created.notify = set_notification_create_surface;
+	ivi_layout_interface->add_listener_create_surface(&hmi_ctrl->surface_created);
+
 	hmi_ctrl->is_initialized = 1;
 }
 
