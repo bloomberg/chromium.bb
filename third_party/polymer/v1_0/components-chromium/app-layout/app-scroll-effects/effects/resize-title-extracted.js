@@ -12,8 +12,8 @@
     Polymer.AppLayout.registerEffect('resize-title', {
       /** @this Polymer.AppLayout.ElementWithBackground */
       setUp: function setUp() {
-        var title = Polymer.dom(this).querySelector('[title]');
-        var condensedTitle = Polymer.dom(this).querySelector('[condensed-title]');
+        var title = this._getDOMRef('title');
+        var condensedTitle = this._getDOMRef('condensedTitle');
 
         if (!condensedTitle) {
           this._warn(this._logf('effects[resize-title]', 'undefined `condensed-title`'));
@@ -26,9 +26,10 @@
 
         condensedTitle.style.willChange = 'opacity';
         title.style.willChange = 'opacity';
-
         condensedTitle.style.webkitTransform = 'translateZ(0)';
         title.style.webkitTransform = 'translateZ(0)';
+        condensedTitle.style.transform = 'translateZ(0)';
+        title.style.transform = 'translateZ(0)';
 
         var titleClientRect = title.getBoundingClientRect();
         var condensedTitleClientRect = condensedTitle.getBoundingClientRect();
@@ -43,10 +44,6 @@
 
         this._fxResizeTitle = fx;
       },
-      /** @this Polymer.AppLayout.ElementWithBackground */
-      tearDown: function tearDown() {
-        delete this._fxResizeTitle;
-      },
       /** @this PolymerElement */
       run: function run(p, y) {
         var fx = this._fxResizeTitle;
@@ -60,17 +57,15 @@
           fx.title.style.opacity = 1;
           fx.condensedTitle.style.opacity = 0;
         }
-
-        interpolate(Math.min(1, p),
-          [
-            [1, fx.scale],
-            [0, -fx.titleDX],
-            [y, y-fx.titleDY]
-          ],
+        interpolate(Math.min(1, p), [ [1, fx.scale], [0, -fx.titleDX], [y, y-fx.titleDY] ],
           function(scale, translateX, translateY) {
             this.transform('translate(' + translateX + 'px, ' + translateY + 'px) ' +
                 'scale3d(' + scale + ', ' + scale + ', 1)', fx.title);
           }, this);
+      },
+      /** @this Polymer.AppLayout.ElementWithBackground */
+      tearDown: function tearDown() {
+        delete this._fxResizeTitle;
       }
     });
   })();

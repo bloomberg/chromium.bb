@@ -36,3 +36,14 @@ index 8446e8a..3f679f6 100644
  INCLUDE_ATTR: 'include',
  toCssText: function (rules, callback, preserveProperties) {
  if (typeof rules === 'string') {
+--- a/components-chromium/iron-collapse/iron-collapse-extracted.js
++++ b/components-chromium/iron-collapse/iron-collapse-extracted.js
+@@ -96,7 +96,7 @@ Polymer({
+ 
+     /**
+      * Updates the size of the element.
+-     * @param {!String} size The new value for `maxWidth`/`maxHeight` as css property value, usually `auto` or `0px`.
++     * @param {string} size The new value for `maxWidth`/`maxHeight` as css property value, usually `auto` or `0px`.
+      * @param {boolean=} animated if `true` updates the size with an animation, otherwise without.
+      */     
+     updateSize: function(size, animated) {

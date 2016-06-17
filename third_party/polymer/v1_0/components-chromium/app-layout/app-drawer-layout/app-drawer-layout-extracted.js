@@ -15,15 +15,23 @@ Polymer({
         },
 
         /**
-         * If the viewport's width is smaller than this value, the panel will change to narrow layout.
-         * In the mode the drawer will be closed.
+         * If the viewport's width is smaller than this value, the panel will change to narrow
+         * layout. In the mode the drawer will be closed.
          */
         responsiveWidth: {
           type: String,
           value: '640px'
         },
 
-        _narrow: Boolean
+        /**
+         * Returns true if it is in narrow layout. This is useful if you need to show/hide
+         * elements based on the layout.
+         */
+        narrow: {
+          type: Boolean,
+          readOnly: true,
+          notify: true
+        }
       },
 
       listeners: {
@@ -32,7 +40,7 @@ Polymer({
       },
 
       observers: [
-        'resetLayout(_narrow, isAttached)'
+        'resetLayout(narrow, isAttached)'
       ],
 
       /**
@@ -61,7 +69,7 @@ Polymer({
           var drawerWidth = this.drawer.getWidth();
           var contentContainer = this.$.contentContainer;
 
-          if (this._narrow) {
+          if (this.narrow) {
             drawer.opened = drawer.persistent = false;
             contentContainer.classList.add('narrow');
 
@@ -82,6 +90,10 @@ Polymer({
 
           this.notifyResize();
         });
+      },
+
+      _onQueryMatchesChanged: function(event) {
+        this._setNarrow(event.detail.value);
       },
 
       _computeMediaQuery: function(forceNarrow, responsiveWidth) {

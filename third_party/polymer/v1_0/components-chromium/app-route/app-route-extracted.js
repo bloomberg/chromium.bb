@@ -87,20 +87,6 @@
       this.linkPaths('tail.__queryParams', 'route.__queryParams');
     },
 
-    // IE Object.assign polyfill
-    __assign: function(target, source) {
-      if (Object.assign) {
-        return Object.assign(target, source);
-      }
-      if (source != null) {
-        for (var key in source) {
-          target[key] = source[key];
-        }
-      }
-
-      return target;
-    },
-
     /**
      * Deal with the query params object being assigned to wholesale.
      * @export
@@ -113,8 +99,31 @@
           return;
         }
 
+        // Copy queryParams and track whether there are any differences compared
+        // to the existing query params.
+        var copyOfQueryParams = {};
+        var anythingChanged = false;
+        for (var key in queryParams) {
+          copyOfQueryParams[key] = queryParams[key];
+          if (anythingChanged ||
+              !this.queryParams ||
+              queryParams[key] !== this.queryParams[key]) {
+            anythingChanged = true;
+          }
+        }
+        // Need to check whether any keys were deleted
+        for (var key in this.queryParams) {
+          if (anythingChanged || !(key in queryParams)) {
+            anythingChanged = true;
+            break;
+          }
+        }
+
+        if (!anythingChanged) {
+          return;
+        }
         this._queryParamsUpdating = true;
-        this.set('queryParams', this.__assign({}, queryParams));
+        this.set('queryParams', copyOfQueryParams);
         this._queryParamsUpdating = false;
       }
     },

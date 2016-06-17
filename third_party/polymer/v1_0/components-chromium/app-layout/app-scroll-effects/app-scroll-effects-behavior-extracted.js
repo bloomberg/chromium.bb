@@ -133,7 +133,7 @@
     },
 
     observers: [
-      '_effectsChanged(effects, effectsConfig)'
+      '_effectsChanged(effects, effectsConfig, isAttached)'
     ],
 
     /**
@@ -227,10 +227,10 @@
     /**
      * Called when `effects` or `effectsConfig` changes.
      */
-    _effectsChanged: function(effects, effectsConfig) {
+    _effectsChanged: function(effects, effectsConfig, isAttached) {
       this._tearDownEffects();
 
-      if (effects === '') {
+      if (effects === '' || !isAttached) {
         return;
       }
       effects.split(' ').forEach(function(effectName) {
@@ -328,6 +328,16 @@
       if (!this.disabled) {
         this._updateScrollState(this._clampedScrollTop);
       }
+    },
+    
+    /**
+     * Override this method to return a reference to a node in the local DOM.
+     * The node is consumed by a scroll effect.
+     *
+     * @param {string} id The id for the node.
+     */
+    _getDOMRef: function(id) {
+      this._warn(this._logf('_getDOMRef', '`'+ id +'` is undefined'));
     },
 
     _getUndefinedMsg: function(effectName) {

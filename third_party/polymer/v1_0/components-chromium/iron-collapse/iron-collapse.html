@@ -25,7 +25,7 @@ will be collapsed.  Use `opened` or `toggle()` to show/hide the content.
       this.$.collapse.toggle();
     }
 
-`iron-collapse` adjusts the height/width of the collapsible element to show/hide
+`iron-collapse` adjusts the max-height/max-width of the collapsible element to show/hide
 the content.  So avoid putting padding/margin/border on the collapsible directly,
 and instead put a div inside and style that.
 
@@ -50,25 +50,23 @@ and instead put a div inside and style that.
 
 </head><body><dom-module id="iron-collapse">
 
-  <style>
-
-    :host {
-      display: block;
-      transition-duration: 300ms;
-      overflow: visible;
-    }
-
-    :host(.iron-collapse-closed) {
-      display: none;
-    }
-
-    :host(:not(.iron-collapse-opened)) {
-      overflow: hidden;
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+        transition-duration: 300ms;
+        overflow: visible;
+      }
+
+      :host(.iron-collapse-closed) {
+        display: none;
+      }
+
+      :host(:not(.iron-collapse-opened)) {
+        overflow: hidden;
+      }
+    </style>
 
     <content></content>
 

@@ -1865,7 +1865,7 @@ function quoteString(str) {
       return transformKey(keyEvent.key, noSpecialChars) ||
         transformKeyIdentifier(keyEvent.keyIdentifier) ||
         transformKeyCode(keyEvent.keyCode) ||
-        transformKey(keyEvent.detail.key, noSpecialChars) || '';
+        transformKey(keyEvent.detail ? keyEvent.detail.key : keyEvent.detail, noSpecialChars) || '';
     }
 
     function keyComboMatchesEvent(keyCombo, event) {
@@ -2518,7 +2518,7 @@ function quoteString(str) {
     _physicalSize: 0,
 
     /**
-     * The average `F` of the tiles observed till now.
+     * The average `offsetHeight` of the tiles observed till now.
      */
     _physicalAverage: 0,
 
@@ -2786,7 +2786,6 @@ function quoteString(str) {
             if (physicalOffset > this._scrollPosition) {
               return this.grid ? vidx - (vidx % this._itemsPerRow) : vidx;
             }
-
             // Handle a partially rendered final row in grid mode
             if (this.grid && this._virtualCount - 1 === vidx) {
               return vidx - (vidx % this._itemsPerRow);
@@ -2805,21 +2804,17 @@ function quoteString(str) {
       if (this._lastVisibleIndexVal === null) {
         if (this.grid) {
           var lastIndex = this.firstVisibleIndex + this._estRowsInView * this._itemsPerRow - 1;
-          this._lastVisibleIndexVal = lastIndex > this._virtualCount ? this._virtualCount : lastIndex;
+          this._lastVisibleIndexVal = Math.min(this._virtualCount, lastIndex);
         } else {
           var physicalOffset = this._physicalTop;
-
           this._iterateItems(function(pidx, vidx) {
-            physicalOffset += this._getPhysicalSizeIncrement(pidx);
-
-            if(physicalOffset <= this._scrollBottom) {
-              if (this.grid) {
-                var lastIndex = vidx - vidx % this._itemsPerRow + this._itemsPerRow - 1;
-                this._lastVisibleIndexVal = lastIndex > this._virtualCount ? this._virtualCount : lastIndex;
-              } else {
-                this._lastVisibleIndexVal = vidx;
-              }
+            if (physicalOffset < this._scrollBottom) {
+              this._lastVisibleIndexVal = vidx;
+            } else {
+              // Break _iterateItems
+              return true;
             }
+            physicalOffset += this._getPhysicalSizeIncrement(pidx);
           });
         }
       }
@@ -3194,31 +3189,24 @@ function quoteString(str) {
       if (!this._physicalIndexForKey) {
         return;
       }
-      var inst;
       var dot = path.indexOf('.');
       var key = path.substring(0, dot < 0 ? path.length : dot);
       var idx = this._physicalIndexForKey[key];
-      var el = this._physicalItems[idx];
+      var offscreenItem = this._offscreenFocusedItem;
+      var el = offscreenItem && offscreenItem._templateInstance.__key__ === key ?
+          offscreenItem : this._physicalItems[idx];
 
-
-      if (idx === this._focusedIndex && this._offscreenFocusedItem) {
-        el = this._offscreenFocusedItem;
-      }
-      if (!el) {
+      if (!el || el._templateInstance.__key__ !== key) {
         return;
       }
-
-      inst = el._templateInstance;
-
-      if (inst.__key__ !== key) {
-        return;
-      }
+      
       if (dot >= 0) {
         path = this.as + '.' + path.substring(dot+1);
-        inst.notifyPath(path, value, true);
+        el._templateInstance.notifyPath(path, value, true);
       } else {
-        inst[this.as] = value;
+        el._templateInstance[this.as] = value;
       }
+
     },
 
     /**
@@ -3233,10 +3221,11 @@ function quoteString(str) {
         this._virtualCount = this.items ? this.items.length : 0;
         this._collection = this.items ? Polymer.Collection.get(this.items) : null;
         this._physicalIndexForKey = {};
+        this._firstVisibleIndexVal = null;
+        this._lastVisibleIndexVal = null;
 
         this._resetScrollPosition(0);
         this._removeFocusedItem();
-
         // create the initial physical items
         if (!this._physicalItems) {
           this._physicalCount = Math.max(1, Math.min(DEFAULT_PHYSICAL_COUNT, this._virtualCount));
@@ -3247,6 +3236,7 @@ function quoteString(str) {
         this._physicalStart = 0;
 
       } else if (change.path === 'items.splices') {
+
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
 
@@ -3479,7 +3469,7 @@ function quoteString(str) {
       if (deltaHeight) {
         this._physicalTop = this._physicalTop - deltaHeight;
         // juking scroll position during interial scrolling on iOS is no bueno
-        if (!IOS_TOUCH_SCROLLING) {
+        if (!IOS_TOUCH_SCROLLING && this._physicalTop !== 0) {
           this._resetScrollPosition(this._scrollTop - deltaHeight);
         }
       }
@@ -3518,15 +3508,27 @@ function quoteString(str) {
         this._scrollHeight = this._estScrollHeight;
       }
     },
+
     /**
      * Scroll to a specific item in the virtual list regardless
+     * of the physical items in the DOM tree.
+     *
+     * @method scrollToItem
+     * @param {(Object)} item The item to be scrolled to
+     */
+    scrollToItem: function(item){
+      return this.scrollToIndex(this.items.indexOf(item));
+    },
+
+    /**
+     * Scroll to a specific index in the virtual list regardless
      * of the physical items in the DOM tree.
      *
      * @method scrollToIndex
      * @param {number} idx The index of the item
      */
     scrollToIndex: function(idx) {
-      if (typeof idx !== 'number') {
+      if (typeof idx !== 'number' || idx < 0 || idx > this.items.length - 1) {
         return;
       }
 
@@ -10379,14 +10381,14 @@ var CrSearchFieldBehavior = {
   },
 
   /**
-   * Sets the value of the search field, if it exists.
+   * Sets the value of the search field.
    * @param {string} value
    */
   setValue: function(value) {
     // Use bindValue when setting the input value so that changes propagate
     // correctly.
     this.$.searchInput.bindValue = value;
-    this.hasSearchText = value != '';
+    this.onValueChanged_(value);
   },
 
   showAndFocus: function() {
@@ -10400,7 +10402,16 @@ var CrSearchFieldBehavior = {
   },
 
   onSearchTermSearch: function() {
-    var newValue = this.getValue();
+    this.onValueChanged_(this.getValue());
+  },
+
+  /**
+   * Updates the internal state of the search field based on a change that has
+   * already happened.
+   * @param {string} newValue
+   * @private
+   */
+  onValueChanged_: function(newValue) {
     if (newValue == this.lastValue_)
       return;
 
@@ -10423,7 +10434,6 @@ var CrSearchFieldBehavior = {
 
     this.setValue('');
     this.$.searchInput.blur();
-    this.onSearchTermSearch();
   },
 
   /** @private */

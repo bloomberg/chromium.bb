@@ -135,6 +135,7 @@
         },
 
         hostAttributes: {
+          tabindex: 0,
           role: 'combobox',
           'aria-autocomplete': 'none',
           'aria-haspopup': 'true'

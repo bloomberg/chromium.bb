@@ -43,6 +43,15 @@ Polymer({
         },
 
         /**
+         * If true, tabs expand to fit their container. This currently only applies when
+         * scrollable is true.
+         */
+        fitContainer: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * If true, dragging on the tabs to scroll is disabled.
          */
         disableDrag: {
@@ -171,8 +180,8 @@ Polymer({
         return '';
       },
 
-      _computeTabsContentClass: function(scrollable) {
-        return scrollable ? 'scrollable' : 'horizontal';
+      _computeTabsContentClass: function(scrollable, fitContainer) {
+        return scrollable ? 'scrollable' + (fitContainer ? ' fit-container' : '') : ' fit-container';
       },
 
       _computeSelectionBarClass: function(noBar, alignBottom) {
@@ -203,6 +212,7 @@ Polymer({
       _onIronDeselect: function(event) {
         this.debounce('tab-changed', function() {
           this._tabChanged(null, this._previousTab);
+          this._previousTab = null;
         // See polymer/polymer#1305
         }, 1);
       },
@@ -325,6 +335,9 @@ Polymer({
 
       _tabChanged: function(tab, old) {
         if (!tab) {
+          // Remove the bar without animation.
+          this.$.selectionBar.classList.remove('expand');
+          this.$.selectionBar.classList.remove('contract');
           this._positionBar(0, 0);
           return;
         }
@@ -340,7 +353,9 @@ Polymer({
         };
 
         if (this.noSlide || old == null) {
-          // position bar directly without animation
+          // Position the bar without animation.
+          this.$.selectionBar.classList.remove('expand');
+          this.$.selectionBar.classList.remove('contract');
           this._positionBar(this._pos.width, this._pos.left);
           return;
         }
@@ -395,7 +410,7 @@ Polymer({
         this._width = width;
         this._left = left;
         this.transform(
-            'translate3d(' + left + '%, 0, 0) scaleX(' + (width / 100) + ')',
+            'translateX(' + left + '%) scaleX(' + (width / 100) + ')',
             this.$.selectionBar);
       },
 

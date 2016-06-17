@@ -231,7 +231,7 @@ Polymer({
         }
 
         if (scrollTop >= this._dHeight) {
-          top = this.condenses ? Math.max(this._dHeight, top) : top;
+          top = this.condenses && !this.fixed ? Math.max(this._dHeight, top) : top;
           this.style.transitionDuration = '0ms';
         }
 
@@ -248,9 +248,8 @@ Polymer({
               if (isScrollingDown && scrollTop >= maxHeaderTop) {
                 top = maxHeaderTop;
               } else if (!isScrollingDown && scrollTop >= this._dHeight) {
-                top = this.condenses ? this._dHeight : 0;
+                top = this.condenses && !this.fixed ? this._dHeight : 0;
               }
-
               var scrollVelocity = dScrollTop / (now - this._lastTimestamp);
               this.style.transitionDuration = this._clamp((top - lastTop) / scrollVelocity, 0, 300) + 'ms';
             } else {
@@ -319,7 +318,6 @@ Polymer({
         if (this._top === 0) {
           return this._clampedScrollTop > 0;
         }
-
         return this._clampedScrollTop - this._maxHeaderTop >= 0;
       },
 
@@ -330,7 +328,6 @@ Polymer({
        */
       _transformHeader: function(y) {
         this.translate3d(0, (-y) + 'px', 0);
-
         if (this._primaryEl && this.condenses && y >= this._primaryElTop) {
           this.translate3d(0, (Math.min(y, this._dHeight) - this._primaryElTop) + 'px', 0,
               this._primaryEl);
@@ -343,6 +340,42 @@ Polymer({
 
       _clamp: function(v, min, max) {
         return Math.min(max, Math.max(min, v));
+      },
+
+      _ensureBgContainers: function() {
+        if (!this._bgContainer) {
+          this._bgContainer = document.createElement('div');
+          this._bgContainer.id = 'background';
+
+          this._bgRear = document.createElement('div');
+          this._bgRear.id = 'backgroundRearLayer';
+          this._bgContainer.appendChild(this._bgRear);
+
+          this._bgFront = document.createElement('div');
+          this._bgFront.id = 'backgroundFrontLayer';
+          this._bgContainer.appendChild(this._bgFront);
+
+          Polymer.dom(this.root).insertBefore(this._bgContainer, this.$.contentContainer);
+        }
+      },
+
+      _getDOMRef: function(id) {
+        switch (id) {
+          case 'backgroundFrontLayer':
+            this._ensureBgContainers();
+            return this._bgFront;
+          case 'backgroundRearLayer':
+            this._ensureBgContainers();
+            return this._bgRear;
+          case 'background':
+            this._ensureBgContainers();
+            return this._bgContainer;
+          case 'title':
+            return Polymer.dom(this).querySelector('[title]');
+          case 'condensedTitle':
+            return Polymer.dom(this).querySelector('[condensed-title]');
+        }
+        return null;
       },
 
       /**

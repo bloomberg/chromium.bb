@@ -81,6 +81,15 @@ Polymer({
         this.resetLayout();
       },
 
+      _getDOMRef: function(id) {
+        if (id === 'background') {
+          return this.$.background;
+        }
+        if (id === 'backgroundFrontLayer') {
+          return this.$.backgroundFrontLayer;
+        }
+      },
+
       /**
        * Returns an object containing the progress value of the scroll effects.
        *

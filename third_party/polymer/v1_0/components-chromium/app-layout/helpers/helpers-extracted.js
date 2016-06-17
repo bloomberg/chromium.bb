@@ -8,7 +8,7 @@ Polymer.AppLayout = Polymer.AppLayout || {};
   };
 
   /**
-   * Registers a scroll effect to be used in elements that implement the 
+   * Registers a scroll effect to be used in elements that implement the
    * `Polymer.AppScrollEffectsBehavior` behavior.
    *
    * @param {string} effectName The effect name.
@@ -72,19 +72,20 @@ Polymer.AppLayout = Polymer.AppLayout || {};
         var deltaScrollTop = scrollTop - currentScrollTop;
         var deltaScrollLeft = scrollLeft - currentScrollLeft;
         var duration = 300;
-
-        (function updateFrame() {
+        var updateFrame = (function updateFrame() {
           var now = Date.now();
           var elapsedTime = now - startTime;
 
           if (elapsedTime < duration) {
-            scrollTo(
-                timingFn(elapsedTime, currentScrollLeft, deltaScrollLeft, duration),
-                timingFn(elapsedTime, currentScrollTop, deltaScrollTop, duration)
-              );
-            requestAnimationFrame(updateFrame.bind(this));
+            scrollTo(timingFn(elapsedTime, currentScrollLeft, deltaScrollLeft, duration),
+                timingFn(elapsedTime, currentScrollTop, deltaScrollTop, duration));
+            requestAnimationFrame(updateFrame);
+          } else {
+            scrollTo(scrollLeft, scrollTop);
           }
-        }).call(this);
+        }).bind(this);
+        
+        updateFrame();
       }
 
     } else if (options.behavior === 'silent') {

@@ -73,9 +73,8 @@
         computed: '_makeRegExp(urlSpaceRegex)'
       },
 
-      _lastChangedAtAt: {
-        type: Number,
-        value: -Infinity
+      _lastChangedAt: {
+        type: Number
       },
 
       _initialized: {
@@ -94,6 +93,9 @@
       this.listen(window, 'location-changed', '_urlChanged');
       this.listen(window, 'popstate', '_urlChanged');
       this.listen(/** @type {!HTMLBodyElement} */(document.body), 'click', '_globalOnClick');
+      // Give a 200ms grace period to make initial redirects without any
+      // additions to the user's history.
+      this._lastChangedAt = window.performance.now() - (this.dwellTime - 200);
 
       this._initialized = true;
       this._urlChanged();
@@ -104,17 +106,6 @@
       this.unlisten(window, 'popstate', '_urlChanged');
       this.unlisten(/** @type {!HTMLBodyElement} */(document.body), 'click', '_globalOnClick');
       this._initialized = false;
-    },
-    /**
-     * @return {number} the number of milliseconds since some point in the
-     *     past. Only useful for comparing against other results from this
-     *     function.
-     */
-    _now: function() {
-      if (window.performance && window.performance.now) {
-        return window.performance.now();
-      }
-      return new Date().getTime();
     },
     _hashChanged: function() {
       this.hash = window.location.hash.substring(1);
@@ -160,7 +151,7 @@
       // Need to use a full URL in case the containing page has a base URI.
       var fullNewUrl = new URL(
           newUrl, window.location.protocol + '//' + window.location.host).href;
-      var now = this._now();
+      var now = window.performance.now();
       var shouldReplace =
           this._lastChangedAt + this.dwellTime > now;
       this._lastChangedAt = now;
@@ -178,6 +169,12 @@
      * @param {MouseEvent} event .
      */
     _globalOnClick: function(event) {
+      // If another event handler has stopped this event then there's nothing
+      // for us to do. This can happen e.g. when there are multiple
+      // iron-location elements in a page.
+      if (event.defaultPrevented) {
+        return;
+      }
       var href = this._getSameOriginLinkHref(event);
       if (!href) {
         return;
@@ -216,18 +213,18 @@
 
       // If there's no link there's nothing to do.
       if (!anchor) {
-        return;
+        return null;
       }
 
       // Target blank is a new tab, don't intercept.
       if (anchor.target === '_blank') {
-        return;
+        return null;
       }
       // If the link is for an existing parent frame, don't intercept.
       if ((anchor.target === '_top' ||
            anchor.target === '_parent') &&
           window.top !== window) {
-        return;
+        return null;
       }
 
       var href = anchor.href;
@@ -267,6 +264,11 @@
       // Need to use a full URL in case the containing page has a base URI.
       var fullNormalizedHref = new URL(
           normalizedHref, window.location.href).href;
+      // If the navigation is to the current page we shouldn't add a history
+      // entry.
+      if (fullNormalizedHref === window.location.href) {
+        return null;
+      }
       return fullNormalizedHref;
     },
     _makeRegExp: function(urlSpaceRegex) {

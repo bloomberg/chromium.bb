@@ -206,7 +206,7 @@
                 header.classList.remove('animate');
               }, animateDuration);
             } else {
-              header.classList.toggle('animate', configs.tallMode[newMode]);
+              this.toggleClass('animate', configs.tallMode[newMode], header);
             }
           }
           this._keepScrollingState();
