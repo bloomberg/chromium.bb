@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -4576,6 +4577,43 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_FALSE(entry->GetHasPostData());
     EXPECT_EQ(-1, entry->GetPostID());
   }
+}
+
+// Tests that POST body is not lost when decidePolicyForNavigation tells the
+// renderer to route the request via FrameHostMsg_OpenURL sent to the browser.
+// See also https://crbug.com/344348.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/form_that_posts_to_echoall.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Ask the renderer to go through OpenURL FrameHostMsg_OpenURL IPC message.
+  // Without this, the test wouldn't repro https://crbug.com/344348.
+  shell()
+      ->web_contents()
+      ->GetMutableRendererPrefs()
+      ->browser_handles_all_top_level_requests = true;
+  shell()->web_contents()->GetRenderViewHost()->SyncRendererPrefs();
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.getElementById('form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected location.
+  GURL target_url(embedded_test_server()->GetURL("/echoall"));
+  EXPECT_EQ(target_url, shell()->web_contents()->GetLastCommittedURL());
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
 }
 
 }  // namespace content

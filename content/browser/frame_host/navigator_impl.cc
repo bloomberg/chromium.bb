@@ -648,13 +648,16 @@ bool NavigatorImpl::ShouldAssignSiteForURL(const GURL& url) {
   return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
-void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                                   const GURL& url,
-                                   SiteInstance* source_site_instance,
-                                   const Referrer& referrer,
-                                   WindowOpenDisposition disposition,
-                                   bool should_replace_current_entry,
-                                   bool user_gesture) {
+void NavigatorImpl::RequestOpenURL(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url,
+    bool uses_post,
+    const scoped_refptr<ResourceRequestBodyImpl>& body,
+    SiteInstance* source_site_instance,
+    const Referrer& referrer,
+    WindowOpenDisposition disposition,
+    bool should_replace_current_entry,
+    bool user_gesture) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
 
@@ -692,6 +695,8 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   OpenURLParams params(dest_url, referrer, frame_tree_node_id, disposition,
                        ui::PAGE_TRANSITION_LINK,
                        true /* is_renderer_initiated */);
+  params.uses_post = uses_post;
+  params.post_data = body;
   params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;

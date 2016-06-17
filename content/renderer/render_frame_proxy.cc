@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_messages.h"
@@ -446,6 +447,8 @@ void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
                                 bool should_replace_current_entry) {
   FrameHostMsg_OpenURL_Params params;
   params.url = request.url();
+  params.uses_post = request.httpMethod().utf8() == "POST";
+  params.resource_request_body = GetRequestBodyForWebURLRequest(request);
   params.referrer = Referrer(
       blink::WebStringToGURL(
           request.httpHeaderField(blink::WebString::fromUTF8("Referer"))),

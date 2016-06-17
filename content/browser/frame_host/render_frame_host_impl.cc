@@ -2183,9 +2183,9 @@ void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
                validated_url.possibly_invalid_spec());
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, source_site_instance, params.referrer,
-      params.disposition, params.should_replace_current_entry,
-      params.user_gesture);
+      this, validated_url, params.uses_post, params.resource_request_body,
+      source_site_instance, params.referrer, params.disposition,
+      params.should_replace_current_entry, params.user_gesture);
 }
 
 void RenderFrameHostImpl::Stop() {

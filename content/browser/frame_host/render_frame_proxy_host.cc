@@ -260,11 +260,11 @@ void RenderFrameProxyHost::OnOpenURL(
 
   // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
   // passed in as well.
-  // TODO(lukasza): https://crbug.com/344348: Pass real method and post_data.
   frame_tree_node_->navigator()->RequestTransferURL(
       current_rfh, validated_url, site_instance_.get(), std::vector<GURL>(),
       params.referrer, ui::PAGE_TRANSITION_LINK, GlobalRequestID(),
-      params.should_replace_current_entry, "GET", nullptr);
+      params.should_replace_current_entry, params.uses_post ? "POST" : "GET",
+      params.resource_request_body);
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(

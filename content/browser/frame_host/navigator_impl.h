@@ -65,6 +65,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                              const std::string& unique_name) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const GURL& url,
+                      bool uses_post,
+                      const scoped_refptr<ResourceRequestBodyImpl>& body,
                       SiteInstance* source_site_instance,
                       const Referrer& referrer,
                       WindowOpenDisposition disposition,

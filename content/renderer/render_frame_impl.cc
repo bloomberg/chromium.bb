@@ -808,6 +808,10 @@ bool IsContentWithCertificateErrorsRelevantToUI(
               ssl_status.connection_status);
 }
 
+bool IsHttpPost(const blink::WebURLRequest& request) {
+  return request.httpMethod().utf8() == "POST";
+}
+
 #if defined(OS_ANDROID)
 // Returns true if WMPI should be used for playback, false otherwise.
 //
@@ -2989,8 +2993,9 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
                                                    request.url(), referrer,
                                                    suggested_name));
   } else {
-    OpenURL(request.url(), referrer, policy, should_replace_current_entry,
-            false);
+    OpenURL(request.url(), IsHttpPost(request),
+            GetRequestBodyForWebURLRequest(request), referrer, policy,
+            should_replace_current_entry, false);
   }
 }
 
@@ -4890,8 +4895,9 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (is_content_initiated && IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem,
-            false);
+    OpenURL(url, IsHttpPost(info.urlRequest),
+            GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
+            info.defaultPolicy, info.replacesCurrentHistoryItem, false);
     return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
@@ -4900,8 +4906,9 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   // FrameNavigationEntry.  If none is found, fall back to the default url.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
       info.isHistoryNavigationInNewChildFrame && is_content_initiated) {
-    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem,
-            true);
+    OpenURL(url, IsHttpPost(info.urlRequest),
+            GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
+            info.defaultPolicy, info.replacesCurrentHistoryItem, true);
     // Suppress the load in Blink but mark the frame as loading.
     return blink::WebNavigationPolicyHandledByClient;
   }
@@ -4916,15 +4923,6 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations (not iframes). But we sometimes navigate to
   // about:blank to clear a tab, and we want to still allow that.
-  //
-  // Note: this is known to break POST submissions when crossing process
-  // boundaries until http://crbug.com/101395 is fixed.  This is better for
-  // security than loading a WebUI, extension or app page in the wrong process.
-  // POST requests don't work because this mechanism does not preserve form
-  // POST data. We will need to send the request's httpBody data up to the
-  // browser process, and issue a special POST navigation in WebKit (via
-  // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
-  // for examples of how to send the httpBody data.
   if (!frame_->parent() && is_content_initiated &&
       !url.SchemeIs(url::kAboutScheme)) {
     bool send_referrer = false;
@@ -4964,7 +4962,9 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     }
 
     if (should_fork) {
-      OpenURL(url, send_referrer ? referrer : Referrer(), info.defaultPolicy,
+      OpenURL(url, IsHttpPost(info.urlRequest),
+              GetRequestBodyForWebURLRequest(info.urlRequest),
+              send_referrer ? referrer : Referrer(), info.defaultPolicy,
               info.replacesCurrentHistoryItem, false);
       return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
@@ -5004,8 +5004,9 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
-    OpenURL(url, Referrer(), info.defaultPolicy,
-            info.replacesCurrentHistoryItem, false);
+    OpenURL(url, IsHttpPost(info.urlRequest),
+            GetRequestBodyForWebURLRequest(info.urlRequest), Referrer(),
+            info.defaultPolicy, info.replacesCurrentHistoryItem, false);
     return blink::WebNavigationPolicyIgnore;
   }
 
@@ -5335,13 +5336,18 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 #endif
 #endif
 
-void RenderFrameImpl::OpenURL(const GURL& url,
-                              const Referrer& referrer,
-                              WebNavigationPolicy policy,
-                              bool should_replace_current_entry,
-                              bool is_history_navigation_in_new_child) {
+void RenderFrameImpl::OpenURL(
+    const GURL& url,
+    bool uses_post,
+    const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body,
+    const Referrer& referrer,
+    WebNavigationPolicy policy,
+    bool should_replace_current_entry,
+    bool is_history_navigation_in_new_child) {
   FrameHostMsg_OpenURL_Params params;
   params.url = url;
+  params.uses_post = uses_post;
+  params.resource_request_body = resource_request_body;
   params.referrer = referrer;
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
 
