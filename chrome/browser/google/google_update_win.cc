@@ -234,7 +234,9 @@ class UpdateCheckDriver {
   void BeginUpdateCheck();
 
   // Returns the result of initiating an update check. Sets |error_code| if the
-  // result is any kind of failure.
+  // result is any kind of failure. On failure, the instance is left in a
+  // consistent state so that this method can be invoked later to retry the
+  // steps that failed.
   HRESULT BeginUpdateCheckInternal(GoogleUpdateErrorCode* error_code);
 
   // Sets status_ to UPGRADE_ERROR, error_code_ to |error_code|, hresult_ to
@@ -448,85 +450,125 @@ void UpdateCheckDriver::BeginUpdateCheck() {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&UpdateCheckDriver::PollGoogleUpdate,
                                       base::Unretained(this)));
-  } else {
-    // Return results immediately since the driver is not polling Google Update.
-    OnUpgradeError(error_code, hresult, -1, base::string16());
-    result_runner_->DeleteSoon(FROM_HERE, this);
+    return;
   }
+  if (hresult == GOOPDATE_E_APP_USING_EXTERNAL_UPDATER) {
+    // This particular transient error is worth retrying.
+    if (allowed_retries_) {
+      --allowed_retries_;
+      task_runner_->PostDelayedTask(
+          FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
+                                base::Unretained(this)),
+          base::TimeDelta::FromSeconds(kGoogleRetryIntervalSeconds));
+      return;
+    }
+  }
+
+  DCHECK(FAILED(hresult));
+  // Return results immediately since the driver is not polling Google Update.
+  OnUpgradeError(error_code, hresult, -1, base::string16());
+  result_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     GoogleUpdateErrorCode* error_code) {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::DIR_EXE, &chrome_exe))
-    NOTREACHED();
+  HRESULT hresult = S_OK;
+  // Instantiate GoogleUpdate3Web{Machine,User}Class.
+  if (!google_update_) {
+    base::FilePath chrome_exe;
+    if (!PathService::Get(base::DIR_EXE, &chrome_exe))
+      NOTREACHED();
 
-  system_level_install_ = !InstallUtil::IsPerUserInstall(chrome_exe);
+    system_level_install_ = !InstallUtil::IsPerUserInstall(chrome_exe);
 
-  // Make sure ATL is initialized in this module.
-  ui::win::CreateATLModuleIfNeeded();
+    // Make sure ATL is initialized in this module.
+    ui::win::CreateATLModuleIfNeeded();
 
-  *error_code = CanUpdateCurrentChrome(chrome_exe, system_level_install_);
-  if (*error_code != GOOGLE_UPDATE_NO_ERROR)
-    return E_FAIL;
+    *error_code = CanUpdateCurrentChrome(chrome_exe, system_level_install_);
+    if (*error_code != GOOGLE_UPDATE_NO_ERROR)
+      return E_FAIL;
 
-  HRESULT hresult = CreateGoogleUpdate3WebClass(
-      system_level_install_, install_update_if_possible_, elevation_window_,
-      &google_update_);
-  if (FAILED(hresult)) {
-    *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
-    return hresult;
+    hresult = CreateGoogleUpdate3WebClass(system_level_install_,
+                                          install_update_if_possible_,
+                                          elevation_window_, &google_update_);
+    if (FAILED(hresult)) {
+      *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
+      return hresult;
+    }
+
+    ConfigureProxyBlanket(google_update_.get());
   }
-
-  ConfigureProxyBlanket(google_update_.get());
 
   // The class was created, so all subsequent errors are reported as:
   *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR;
-  base::string16 app_guid =
-      installer::GetAppGuidForUpdates(system_level_install_);
-  DCHECK(!app_guid.empty());
 
-  {
+  // Create an app bundle.
+  if (!app_bundle_) {
+    base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
     base::win::ScopedComPtr<IDispatch> dispatch;
     hresult = google_update_->createAppBundleWeb(dispatch.Receive());
     if (FAILED(hresult))
       return hresult;
-    hresult = dispatch.QueryInterface(app_bundle_.Receive());
+    hresult = dispatch.QueryInterface(app_bundle.Receive());
     if (FAILED(hresult))
       return hresult;
-  }
-  ConfigureProxyBlanket(app_bundle_.get());
+    dispatch.Release();
 
-  if (!locale_.empty()) {
-    // Ignore the result of this since, while setting the display language is
-    // nice to have, a failure to do so does not affect the likelihood that the
-    // update check and/or install will succeed.
-    app_bundle_->put_displayLanguage(
-        base::win::ScopedBstr(base::UTF8ToUTF16(locale_).c_str()));
+    ConfigureProxyBlanket(app_bundle.get());
+
+    if (!locale_.empty()) {
+      // Ignore the result of this since, while setting the display language is
+      // nice to have, a failure to do so does not affect the likelihood that
+      // the update check and/or install will succeed.
+      app_bundle->put_displayLanguage(
+          base::win::ScopedBstr(base::UTF8ToUTF16(locale_).c_str()));
+    }
+
+    hresult = app_bundle->initialize();
+    if (FAILED(hresult))
+      return hresult;
+    if (elevation_window_) {
+      // Likewise, a failure to set the parent window need not block an update
+      // check.
+      app_bundle->put_parentHWND(
+          reinterpret_cast<ULONG_PTR>(elevation_window_));
+    }
+    app_bundle_.swap(app_bundle);
   }
 
-  hresult = app_bundle_->initialize();
-  if (FAILED(hresult))
-    return hresult;
-  if (elevation_window_) {
-    // Likewise, a failure to set the parent window need not block an update
-    // check.
-    app_bundle_->put_parentHWND(reinterpret_cast<ULONG_PTR>(elevation_window_));
+  // Get a reference to the Chrome app in the bundle.
+  if (!app_) {
+    base::string16 app_guid =
+        installer::GetAppGuidForUpdates(system_level_install_);
+    DCHECK(!app_guid.empty());
+
+    base::win::ScopedComPtr<IDispatch> dispatch;
+    // It is common for this call to fail with APP_USING_EXTERNAL_UPDATER if
+    // an auto update is in progress.
+    hresult = app_bundle_->createInstalledApp(
+        base::win::ScopedBstr(app_guid.c_str()));
+    if (FAILED(hresult))
+      return hresult;
+    // Move the IAppBundleWeb reference into a local now so that failures from
+    // this point onward result in it being released.
+    base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
+    app_bundle.swap(app_bundle_);
+    hresult = app_bundle->get_appWeb(0, dispatch.Receive());
+    if (FAILED(hresult))
+      return hresult;
+    base::win::ScopedComPtr<IAppWeb> app;
+    hresult = dispatch.QueryInterface(app.Receive());
+    if (FAILED(hresult))
+      return hresult;
+    ConfigureProxyBlanket(app.get());
+    hresult = app_bundle->checkForUpdate();
+    if (FAILED(hresult))
+      return hresult;
+    app_bundle_.swap(app_bundle);
+    app_.swap(app);
   }
 
-  base::win::ScopedComPtr<IDispatch> dispatch;
-  hresult =
-      app_bundle_->createInstalledApp(base::win::ScopedBstr(app_guid.c_str()));
-  if (FAILED(hresult))
-    return hresult;
-  hresult = app_bundle_->get_appWeb(0, dispatch.Receive());
-  if (FAILED(hresult))
-    return hresult;
-  hresult = dispatch.QueryInterface(app_.Receive());
-  if (FAILED(hresult))
-    return hresult;
-  ConfigureProxyBlanket(app_.get());
-  return app_bundle_->checkForUpdate();
+  return hresult;
 }
 
 bool UpdateCheckDriver::GetCurrentState(
@@ -722,19 +764,6 @@ void UpdateCheckDriver::PollGoogleUpdate() {
                    base::string16());
   } else if (IsErrorState(state, state_value, &error_code, &hresult,
                           &installer_exit_code, &error_string)) {
-    // Some errors can be transient.  Retry them after a short delay.
-    if (hresult == GOOPDATE_E_APP_USING_EXTERNAL_UPDATER) {
-      if (allowed_retries_ > 0) {
-        --allowed_retries_;
-        app_bundle_.Release();
-        google_update_.Release();
-        task_runner_->PostDelayedTask(
-            FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
-                                  base::Unretained(this)),
-            base::TimeDelta::FromSeconds(kGoogleRetryIntervalSeconds));
-        return;
-      }
-    }
     OnUpgradeError(error_code, hresult, installer_exit_code, error_string);
   } else if (IsFinalState(state, state_value, &upgrade_status, &new_version)) {
     status_ = upgrade_status;

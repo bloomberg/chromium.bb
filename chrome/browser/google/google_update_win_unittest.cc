@@ -914,40 +914,36 @@ TEST_P(GoogleUpdateWinTest, UpdateFailed) {
 TEST_P(GoogleUpdateWinTest, RetryAfterExternalUpdaterError) {
   static const HRESULT GOOPDATE_E_APP_USING_EXTERNAL_UPDATER = 0xa043081d;
 
-  CComObject<MockAppBundle>* mock_app_bundle1 =
+  CComObject<MockAppBundle>* mock_app_bundle =
       mock_google_update_factory_.MakeServerMock()->MakeAppBundle();
 
   // The first attempt will fail in createInstalledApp indicating that an update
   // is already in progress.
-  EXPECT_CALL(*mock_app_bundle1, createInstalledApp(StrEq(kChromeBinariesGuid)))
+  Sequence bundle_seq;
+  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+      .InSequence(bundle_seq)
       .WillOnce(Return(GOOPDATE_E_APP_USING_EXTERNAL_UPDATER));
 
-  // Retry with a second instance.
-  CComObject<MockAppBundle>* mock_app_bundle2 = nullptr;
+  // Expect a retry on the same instance.
+  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+      .InSequence(bundle_seq)
+      .WillOnce(Return(S_OK));
+
+  // See MakeApp() for an explanation of this:
   CComObject<MockApp>* mock_app = nullptr;
-  MakeGoogleUpdateMocks(&mock_app_bundle2, &mock_app);
+  EXPECT_EQ(S_OK, CComObject<MockApp>::CreateInstance(&mock_app));
+  mock_app->AddRef();
+  EXPECT_CALL(*mock_app_bundle, get_appWeb(0, _))
+      .WillOnce(DoAll(SetArgPointee<1>(mock_app), Return(S_OK)));
 
   // Expect the bundle to be called on to start the update.
-  EXPECT_CALL(*mock_app_bundle2, checkForUpdate())
-      .WillOnce(Return(S_OK));
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate()).WillOnce(Return(S_OK));
 
   mock_app->PushState(STATE_INIT);
   mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
   mock_app->PushState(STATE_NO_UPDATE);
 
-  // Until http://crbug.com/504516 is fixed, we expect the first update check
-  // to fail.
-  EXPECT_CALL(mock_update_check_delegate_,
-              OnError(GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR, _, _));
-
-  // Run the first update check. When http://crbug.com/504516 is fixed, this
-  // update check will be subsumed in the one below.
-  BeginUpdateCheck(task_runner_, std::string(), true, 0,
-                   mock_update_check_delegate_.AsWeakPtr());
-  task_runner_->RunUntilIdle();
-
-  // Expect a second update check to succeed. When http://crbug.com/504516 is
-  // fixed, this will be the one and only update check.
+  // Expect the update check to succeed.
   EXPECT_CALL(mock_update_check_delegate_,
               OnUpdateCheckComplete(IsEmpty()));  // new_version
   BeginUpdateCheck(task_runner_, std::string(), false, 0,
