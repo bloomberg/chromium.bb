@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_apply_framebuffer_attachment_cmaa_intel.h"
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
@@ -2159,6 +2160,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Log extra info.
   bool service_logging_;
 
+  std::unique_ptr<ApplyFramebufferAttachmentCMAAINTELResourceManager>
+      apply_framebuffer_attachment_cmaa_intel_;
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
   std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
@@ -4286,6 +4289,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   }
   ReleaseAllBackTextures();
   if (have_context) {
+    if (apply_framebuffer_attachment_cmaa_intel_.get()) {
+      apply_framebuffer_attachment_cmaa_intel_->Destroy();
+      apply_framebuffer_attachment_cmaa_intel_.reset();
+    }
+
     if (copy_tex_image_blit_.get()) {
       copy_tex_image_blit_->Destroy();
       copy_tex_image_blit_.reset();
@@ -4362,6 +4370,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // state_.current_program object.
   state_.current_program = NULL;
 
+  apply_framebuffer_attachment_cmaa_intel_.reset();
   copy_tex_image_blit_.reset();
   copy_texture_CHROMIUM_.reset();
   clear_framebuffer_blit_.reset();
@@ -15313,7 +15322,28 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
   // Apply CMAA(Conservative Morphological Anti-Aliasing) algorithm to the
   // color attachments of currently bound draw framebuffer.
   // Reference GL_INTEL_framebuffer_CMAA for details.
-  glApplyFramebufferAttachmentCMAAINTEL();
+  // Use platform version if available.
+  if (!feature_info_->feature_flags()
+           .use_chromium_screen_space_antialiasing_via_shaders) {
+    glApplyFramebufferAttachmentCMAAINTEL();
+  } else {
+    // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
+    // needed because it takes ??s of milliseconds to initialize.
+    if (!apply_framebuffer_attachment_cmaa_intel_.get()) {
+      LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
+          "glApplyFramebufferAttachmentCMAAINTEL");
+      apply_framebuffer_attachment_cmaa_intel_.reset(
+          new ApplyFramebufferAttachmentCMAAINTELResourceManager());
+      apply_framebuffer_attachment_cmaa_intel_->Initialize(this);
+      RestoreCurrentFramebufferBindings();
+      if (LOCAL_PEEK_GL_ERROR("glApplyFramebufferAttachmentCMAAINTEL") !=
+          GL_NO_ERROR)
+        return;
+    }
+    apply_framebuffer_attachment_cmaa_intel_
+        ->ApplyFramebufferAttachmentCMAAINTEL(
+            this, GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER));
+  }
 }
 
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(

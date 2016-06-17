@@ -42,6 +42,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     // Use the IMG GLenum values and functions rather than EXT.
     bool use_img_for_multisampled_render_to_texture;
     bool chromium_screen_space_antialiasing;
+    bool use_chromium_screen_space_antialiasing_via_shaders;
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
     bool nv_egl_stream_consumer_external;
@@ -190,6 +191,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool disable_shader_translator_;
   std::unique_ptr<gl::GLVersionInfo> gl_version_info_;
+
+  // Whether the command line switch kEnableCMAAShaders is passed in.
+  bool enable_cmaa_shaders_switch_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);
 };

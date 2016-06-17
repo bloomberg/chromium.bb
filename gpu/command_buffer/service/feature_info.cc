@@ -89,6 +89,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       multisampled_render_to_texture(false),
       use_img_for_multisampled_render_to_texture(false),
       chromium_screen_space_antialiasing(false),
+      use_chromium_screen_space_antialiasing_via_shaders(false),
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
       nv_egl_stream_consumer_external(false),
@@ -178,6 +179,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   // The flag here is for testing only.
   disable_shader_translator_ =
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
+
+  enable_cmaa_shaders_switch_ =
+      command_line->HasSwitch(switches::kEnableCMAAShaders);
 
   unsafe_es3_apis_enabled_ = false;
 
@@ -880,6 +884,17 @@ void FeatureInfo::InitializeFeatures() {
 
   if (extensions.Contains("GL_INTEL_framebuffer_CMAA")) {
     feature_flags_.chromium_screen_space_antialiasing = true;
+    AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
+  } else if (enable_cmaa_shaders_switch_ &&
+             (gl_version_info_->IsAtLeastGLES(3, 1) ||
+              (gl_version_info_->IsAtLeastGL(3, 0) &&
+               extensions.Contains("GL_ARB_shading_language_420pack") &&
+               extensions.Contains("GL_ARB_texture_gather") &&
+               extensions.Contains("GL_ARB_explicit_uniform_location") &&
+               extensions.Contains("GL_ARB_explicit_attrib_location") &&
+               extensions.Contains("GL_ARB_shader_image_load_store")))) {
+    feature_flags_.chromium_screen_space_antialiasing = true;
+    feature_flags_.use_chromium_screen_space_antialiasing_via_shaders = true;
     AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
   }
 
