@@ -40,7 +40,7 @@ class BattOrPowerMobileSites(_BattOrBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'BattOr.BattOrCases'
+    return 'battor.power_cases'
 
 @benchmark.Disabled('android') # crbug.com/618330
 class BattOrPowerMobileSitesNoChromeTrace(_BattOrBenchmark):
@@ -56,4 +56,4 @@ class BattOrPowerMobileSitesNoChromeTrace(_BattOrBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'battor.battor_cases.no_chrome_trace'
+    return 'battor.power_cases.no_chrome_trace'
