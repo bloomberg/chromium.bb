@@ -145,6 +145,9 @@ class ShellSurface : public SurfaceDelegate,
 
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
+
+  // Returns the main Surface instance or nullptr if it is not set.
+  // |window| must not be nullptr.
   static Surface* GetMainSurface(const aura::Window* window);
 
   // Returns a trace value representing the state of the surface.

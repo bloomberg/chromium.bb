@@ -162,17 +162,17 @@ void Keyboard::OnSurfaceDestroying(Surface* surface) {
 // Keyboard, private:
 
 Surface* Keyboard::GetEffectiveFocus(aura::Window* window) const {
-  Surface* main_surface =
-      ShellSurface::GetMainSurface(window->GetToplevelWindow());
-  Surface* window_surface = Surface::AsSurface(window);
+  // Use window surface as effective focus.
+  Surface* focus = Surface::AsSurface(window);
+  if (!focus) {
+    // Fallback to main surface.
+    aura::Window* top_level_window = window->GetToplevelWindow();
+    if (top_level_window)
+      focus = ShellSurface::GetMainSurface(top_level_window);
+  }
 
-  // Use window surface as effective focus and fallback to main surface when
-  // needed.
-  Surface* focus = window_surface ? window_surface : main_surface;
-  if (!focus)
-    return nullptr;
-
-  return delegate_->CanAcceptKeyboardEventsForSurface(focus) ? focus : nullptr;
+  return focus && delegate_->CanAcceptKeyboardEventsForSurface(focus) ? focus
+                                                                      : nullptr;
 }
 
 }  // namespace exo
