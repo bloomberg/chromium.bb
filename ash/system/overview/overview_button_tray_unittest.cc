@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -266,7 +267,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   window->Show();
   ParentWindowInPrimaryRootWindow(window.get());
 
-  ASSERT_TRUE(Shell::GetInstance()->IsSystemModalWindowOpen());
+  ASSERT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
   Shell::GetInstance()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(true);

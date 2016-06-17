@@ -5,6 +5,7 @@
 #include "ash/system/user/tray_user_separator.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ui/views/view.h"
 
@@ -29,7 +30,7 @@ views::View* TrayUserSeparator::CreateDefaultView(LoginStatus status) {
   // If the screen is locked, a system modal dialog or a single user is shown,
   // show nothing.
   if (session_state_delegate->IsUserSessionBlocked() ||
-      Shell::GetInstance()->IsSystemModalWindowOpen() ||
+      WmShell::Get()->IsSystemModalWindowOpen() ||
       session_state_delegate->NumberOfLoggedInUsers() < 2)
     return NULL;
 

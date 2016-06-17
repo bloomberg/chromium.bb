@@ -376,7 +376,7 @@ void UserView::AddUserCard(LoginStatus login) {
   user_card_view_ = new UserCardView(login, max_card_width, user_index_);
   // The entry is clickable when no system modal dialog is open and the multi
   // profile option is active.
-  bool clickable = !Shell::GetInstance()->IsSystemModalWindowOpen() &&
+  bool clickable = !WmShell::Get()->IsSystemModalWindowOpen() &&
                    IsMultiProfileSupportedAndUserActive();
   if (clickable) {
     // To allow the border to start before the icon, reduce the size before and

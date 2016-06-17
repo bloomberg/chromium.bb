@@ -97,7 +97,7 @@ views::View* TrayUser::CreateDefaultView(LoginStatus status) {
   // If the screen is locked or a system modal dialog box is shown, show only
   // the currently active user.
   if (user_index_ && (session_state_delegate->IsUserSessionBlocked() ||
-                      Shell::GetInstance()->IsSystemModalWindowOpen()))
+                      WmShell::Get()->IsSystemModalWindowOpen()))
     return nullptr;
 
   CHECK(user_ == nullptr);

@@ -11,6 +11,7 @@
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -255,8 +256,8 @@ TEST_F(MaximizeModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
   EXPECT_EQ(rect3.ToString(), w3->bounds().ToString());
 
   // Enable system modal dialog, and make sure both shelves are still hidden.
-  ash::Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(ash::Shell::GetInstance()->IsSystemModalWindowOpen());
+  WmShell::Get()->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
 
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.

@@ -13,6 +13,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
@@ -1532,8 +1533,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
   wm::ActivateWindow(window);
 
   // Enable system modal dialog, and make sure shelf is still hidden.
-  shell->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(shell->IsSystemModalWindowOpen());
+  WmShell* wm_shell = WmShell::Get();
+  wm_shell->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(wm_shell->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window));
   shell->UpdateShelfVisibility();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1587,8 +1589,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_TRUE(window_2->IsVisible());
 
   // Enable system modal dialog, and make sure both shelves are still hidden.
-  shell->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(shell->IsSystemModalWindowOpen());
+  WmShell* wm_shell = WmShell::Get();
+  wm_shell->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(wm_shell->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window_1));
   EXPECT_FALSE(wm::CanActivateWindow(window_2));
   shell->UpdateShelfVisibility();

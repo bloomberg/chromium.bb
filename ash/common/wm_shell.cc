@@ -5,8 +5,10 @@
 #include "ash/common/wm_shell.h"
 
 #include "ash/common/focus_cycler.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_window.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -29,6 +31,26 @@ WmShell::WmShell()
       system_tray_notifier_(new WmSystemTrayNotifier) {}
 
 WmShell::~WmShell() {}
+
+bool WmShell::IsSystemModalWindowOpen() {
+  if (simulate_modal_window_open_for_testing_)
+    return true;
+
+  // Traverse all system modal containers, and find its direct child window
+  // with "SystemModal" setting, and visible.
+  for (WmWindow* root : GetAllRootWindows()) {
+    WmWindow* system_modal =
+        root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
+    if (!system_modal)
+      continue;
+    for (const WmWindow* child : system_modal->GetChildren()) {
+      if (child->IsSystemModal() && child->GetTargetVisibility()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 void WmShell::SetSystemTrayDelegate(
     std::unique_ptr<SystemTrayDelegate> delegate) {

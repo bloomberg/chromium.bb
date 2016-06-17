@@ -256,14 +256,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
 
-  // Returns true if a system-modal dialog window is currently open.
-  bool IsSystemModalWindowOpen() const;
-
-  // For testing only: set simulation that a modal window is open
-  void SimulateModalWindowOpenForTesting(bool modal_window_open) {
-    simulate_modal_window_open_for_testing_ = modal_window_open;
-  }
-
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(

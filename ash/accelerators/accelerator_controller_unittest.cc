@@ -1205,7 +1205,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::ActivateWindow(window.get());
-  Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);
+  WmShell::Get()->SimulateModalWindowOpenForTesting(true);
   for (std::set<AcceleratorAction>::const_iterator it = all_actions.begin();
        it != all_actions.end(); ++it) {
     if (actionsAllowedAtModalWindow.find(*it) ==

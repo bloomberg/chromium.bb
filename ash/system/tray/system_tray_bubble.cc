@@ -285,7 +285,7 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
   std::vector<views::View*> item_views;
   // If a system modal dialog is present, create the same tray as
   // in locked state.
-  if (Shell::GetInstance()->IsSystemModalWindowOpen() &&
+  if (WmShell::Get()->IsSystemModalWindowOpen() &&
       login_status != LoginStatus::NOT_LOGGED_IN) {
     login_status = LoginStatus::LOCKED;
   }

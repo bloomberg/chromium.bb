@@ -1415,7 +1415,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (shell->IsSystemModalWindowOpen() &&
+  if (WmShell::Get()->IsSystemModalWindowOpen() &&
       actions_allowed_at_modal_window_.find(action) ==
           actions_allowed_at_modal_window_.end()) {
     // Note we prevent the shortcut from propagating so it will not

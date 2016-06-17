@@ -12,7 +12,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shell.h"
 #include "ash/wm/overview/window_selector.h"
 #include "base/metrics/histogram.h"
 
@@ -32,7 +31,7 @@ bool WindowSelectorController::CanSelect() {
       WmShell::Get()->GetSessionStateDelegate();
   return session_state_delegate->IsActiveUserSessionStarted() &&
          !session_state_delegate->IsScreenLocked() &&
-         !Shell::GetInstance()->IsSystemModalWindowOpen() &&
+         !WmShell::Get()->IsSystemModalWindowOpen() &&
          WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
 }

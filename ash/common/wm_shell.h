@@ -78,6 +78,14 @@ class ASH_EXPORT WmShell {
   // the window size.
   virtual bool IsForceMaximizeOnFirstRun() = 0;
 
+  // Returns true if a system-modal dialog window is currently open.
+  bool IsSystemModalWindowOpen();
+
+  // For testing only: set simulation that a modal window is open
+  void SimulateModalWindowOpenForTesting(bool modal_window_open) {
+    simulate_modal_window_open_for_testing_ = modal_window_open;
+  }
+
   // Returns true if |window| can be shown for the current user. This is
   // intended to check if the current user matches the user associated with
   // |window|.
@@ -146,6 +154,8 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<WmSystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+
+  bool simulate_modal_window_open_for_testing_ = false;
 };
 
 }  // namespace ash
