@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 368, 418, 198],
+          "rect": [8, 332, 418, 234],
           "reason": "invalidate paint rectangle"
         },
         {
@@ -58,6 +58,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'for the hedgehogs; and in\n'",
           "reason": "full"
         },
@@ -94,6 +98,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'other parts of\n'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'quarrelling all the while, and fighting'",
           "reason": "full"
         },
@@ -106,6 +114,14 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'that it was a very\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'the'",
           "reason": "full"
         },
@@ -115,6 +131,14 @@
         },
         {
           "object": "InlineTextBox 'yet'",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         },
         {

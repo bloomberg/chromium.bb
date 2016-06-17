@@ -828,14 +828,6 @@ crbug.com/613728 fast/table/border-collapsing/cached-change-colgroup-border-widt
 crbug.com/613728 fast/table/border-collapsing/cached-change-cell-border-width.html [ Failure ]
 crbug.com/613728 fast/table/border-collapsing/cached-change-table-border-width.html [ Failure ]
 
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-6.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-crbug.com/616167 [ Mac Win ] fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-other-block-on-line.html [ NeedsRebaseline ]
-
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 

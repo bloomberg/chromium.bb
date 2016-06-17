@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 332, 418, 234],
+          "rect": [8, 314, 418, 252],
           "reason": "invalidate paint rectangle"
         },
         {
@@ -72,6 +72,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'doubled-up\n'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'for the hedgehogs; and in\n'",
           "reason": "full"
         },
@@ -112,6 +116,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
+          "reason": "full"
+        },
+        {
           "object": "InlineTextBox 'stamping about, and shouting \u2018Off with his head!\u2019 or'",
           "reason": "incremental"
         },
@@ -146,6 +154,10 @@
         {
           "object": "InlineTextBox '\u2018Off with\n'",
           "reason": "incremental"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
         },
         {
           "object": "RootInlineBox",

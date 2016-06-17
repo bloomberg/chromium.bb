@@ -112,10 +112,6 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox ' twist itself round and look up in her face, with\n'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox ' was in a furious passion, and went\n'",
           "reason": "full"
         },
@@ -133,10 +129,6 @@
         },
         {
           "object": "InlineTextBox 'Queen'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'The chief difficulty Alice found at first was in'",
           "reason": "full"
         },
         {
@@ -168,10 +160,6 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox 'arm, with its legs hanging down,\n'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'become of\n'",
           "reason": "full"
         },
@@ -192,18 +180,6 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'body tucked away,\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'but generally, just as'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'comfortably enough, under her'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'crawling away: besides all\n'",
           "reason": "incremental"
         },
@@ -220,10 +196,6 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'flamingo: she succeeded in getting its'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'for the hedgehogs; and in\n'",
           "reason": "full"
         },
@@ -238,10 +210,6 @@
         {
           "object": "InlineTextBox 'for turns,\n'",
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'going to give the hedgehog a blow with its head, it'",
-          "reason": "full"
         },
         {
           "object": "InlineTextBox 'had\n'",
@@ -292,10 +260,6 @@
           "reason": "full"
         },
         {
-          "object": "InlineTextBox 'managing her\n'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
           "reason": "full"
         },
@@ -305,10 +269,6 @@
         },
         {
           "object": "InlineTextBox 'other parts of\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'out, and was'",
           "reason": "full"
         },
         {
@@ -330,10 +290,6 @@
         {
           "object": "InlineTextBox 'send the hedgehog to, and, as the doubled-up\n'",
           "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'she had got its neck nicely straightened\n'",
-          "reason": "full"
         },
         {
           "object": "InlineTextBox 'she wanted to send the hedgehog to, and, as the'",
@@ -361,10 +317,6 @@
         },
         {
           "object": "InlineTextBox 'stamping'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'such a'",
           "reason": "full"
         },
         {
@@ -428,10 +380,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "InlineTextBox 'would'",
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'yet'",
           "reason": "full"
         },
@@ -442,34 +390,6 @@
         {
           "object": "LayoutView #document",
           "reason": "scroll"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         },
         {
           "object": "RootInlineBox",
