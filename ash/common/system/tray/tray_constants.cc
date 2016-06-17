@@ -90,8 +90,8 @@ const int kShelfItemHeight = 38;
 const int kShelfItemSizeMD = 32;
 
 int GetTrayConstant(TrayConstant constant) {
-  const int kTraySpacing[] = {4, 8, 8};
-  const int kTrayPaddingFromEdgeOfShelf[] = {3, 8, 8};
+  const int kTraySpacing[] = {4, 4, 8};
+  const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 8};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&

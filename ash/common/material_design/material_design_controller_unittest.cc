@@ -99,28 +99,28 @@ TEST_F(MaterialDesignControllerTest, NoCommandLineValueMapsToDefaultMode) {
                     MaterialDesignController::Mode::MATERIAL_NORMAL ||
                 test::MaterialDesignControllerTestAPI::DefaultMode() ==
                     MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL,
-            MaterialDesignController::IsMaterial());
+            test::MaterialDesignControllerTestAPI::IsMaterial());
 }
 
 // Verify that MaterialDesignController::IsMaterial() will be false when
 // initialized with command line flag "disabled".
 TEST_F(MaterialDesignControllerTestNonMaterial, CommandLineValue) {
-  EXPECT_FALSE(MaterialDesignController::IsMaterial());
-  EXPECT_FALSE(MaterialDesignController::IsMaterialExperimental());
+  EXPECT_FALSE(test::MaterialDesignControllerTestAPI::IsMaterial());
+  EXPECT_FALSE(test::MaterialDesignControllerTestAPI::IsMaterialExperimental());
 }
 
 // Verify that MaterialDesignController::IsMaterial() will be true when
 // initialized with command line flag "enabled".
 TEST_F(MaterialDesignControllerTestMaterial, CommandLineValue) {
-  EXPECT_TRUE(MaterialDesignController::IsMaterial());
-  EXPECT_FALSE(MaterialDesignController::IsMaterialExperimental());
+  EXPECT_TRUE(test::MaterialDesignControllerTestAPI::IsMaterial());
+  EXPECT_FALSE(test::MaterialDesignControllerTestAPI::IsMaterialExperimental());
 }
 
 // Verify that MaterialDesignController::IsMaterialexperimental() will be true
 // when initialized with command line flag "experimental".
 TEST_F(MaterialDesignControllerTestExperimental, CommandLineValue) {
-  EXPECT_TRUE(MaterialDesignController::IsMaterial());
-  EXPECT_TRUE(MaterialDesignController::IsMaterialExperimental());
+  EXPECT_TRUE(test::MaterialDesignControllerTestAPI::IsMaterial());
+  EXPECT_TRUE(test::MaterialDesignControllerTestAPI::IsMaterialExperimental());
 }
 
 // Verify an invalid command line value uses the default mode.
@@ -129,7 +129,7 @@ TEST_F(MaterialDesignControllerTestInvalid, CommandLineValue) {
                     MaterialDesignController::Mode::MATERIAL_NORMAL ||
                 test::MaterialDesignControllerTestAPI::DefaultMode() ==
                     MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL,
-            MaterialDesignController::IsMaterial());
+            test::MaterialDesignControllerTestAPI::IsMaterial());
 }
 
 }  // namespace ash

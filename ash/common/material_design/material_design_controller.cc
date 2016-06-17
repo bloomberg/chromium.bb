@@ -52,16 +52,6 @@ void MaterialDesignController::Initialize() {
 }
 
 // static
-bool MaterialDesignController::IsMaterial() {
-  return IsMaterialExperimental() || GetMode() == Mode::MATERIAL_NORMAL;
-}
-
-// static
-bool MaterialDesignController::IsMaterialExperimental() {
-  return GetMode() == Mode::MATERIAL_EXPERIMENTAL;
-}
-
-// static
 MaterialDesignController::Mode MaterialDesignController::GetMode() {
   DCHECK_NE(mode_, Mode::UNINITIALIZED);
   return mode_;
@@ -69,7 +59,7 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsOverviewMaterial() {
-  return MaterialDesignController::IsMaterialExperimental();
+  return MaterialDesignController::IsMaterial();
 }
 
 // static
@@ -88,8 +78,23 @@ MaterialDesignController::Mode MaterialDesignController::mode() {
 }
 
 // static
+bool MaterialDesignController::IsMaterial() {
+  return IsMaterialExperimental() || IsMaterialNormal();
+}
+
+// static
+bool MaterialDesignController::IsMaterialNormal() {
+  return GetMode() == Mode::MATERIAL_NORMAL;
+}
+
+// static
+bool MaterialDesignController::IsMaterialExperimental() {
+  return GetMode() == Mode::MATERIAL_EXPERIMENTAL;
+}
+
+// static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
-  return Mode::NON_MATERIAL;
+  return Mode::MATERIAL_NORMAL;
 }
 
 // static

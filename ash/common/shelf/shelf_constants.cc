@@ -22,10 +22,10 @@ const SkColor kShelfButtonActivatedHighlightColor =
 const SkColor kShelfIconColor = SK_ColorWHITE;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {
-  const int kShelfBackgroundAlpha[] = {204, 153, 153};
-  const int kShelfSize[] = {47, 48, 48};
-  const int kShelfButtonSpacing[] = {10, 16, 16};
-  const int kShelfButtonSize[] = {44, 48, 48};
+  const int kShelfBackgroundAlpha[] = {204, 204, 153};
+  const int kShelfSize[] = {47, 47, 48};
+  const int kShelfButtonSpacing[] = {10, 10, 16};
+  const int kShelfButtonSize[] = {44, 44, 48};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&

@@ -18,6 +18,21 @@ MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
 }
 
 // static
+bool MaterialDesignControllerTestAPI::IsMaterial() {
+  return MaterialDesignController::IsMaterial();
+}
+
+// static
+bool MaterialDesignControllerTestAPI::IsMaterialNormal() {
+  return MaterialDesignController::IsMaterialNormal();
+}
+
+// static
+bool MaterialDesignControllerTestAPI::IsMaterialExperimental() {
+  return MaterialDesignController::IsMaterialExperimental();
+}
+
+// static
 MaterialDesignController::Mode MaterialDesignControllerTestAPI::DefaultMode() {
   return MaterialDesignController::DefaultMode();
 }

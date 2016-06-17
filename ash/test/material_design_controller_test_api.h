@@ -20,6 +20,9 @@ class MaterialDesignControllerTestAPI {
   ~MaterialDesignControllerTestAPI();
 
   // Wrapper functions for MaterialDesignController internal functions.
+  static bool IsMaterial();
+  static bool IsMaterialNormal();
+  static bool IsMaterialExperimental();
   static MaterialDesignController::Mode DefaultMode();
   static void Uninitialize();
 

@@ -30,17 +30,8 @@ class ASH_EXPORT MaterialDesignController {
   };
 
   // Initializes |mode_|. Must be called before calling IsMaterial(),
-  // IsMaterialExperimental(), or GetMode().
+  // IsMaterialExperimental(), IsMaterialNormal(), or GetMode().
   static void Initialize();
-
-  // Returns true if Material Design is enabled in Chrome OS system UI.
-  // Maps to "ash-md" flag "enabled" or "experimental" values.
-  static bool IsMaterial();
-
-  // Returns true if Material Design experimental features are enabled in
-  // Chrome OS system UI.
-  // Maps to "--ash-md=experimental" command line switch value.
-  static bool IsMaterialExperimental();
 
   // Returns the currently initialized MaterialDesignController::Mode type for
   // Chrome OS system UI.
@@ -65,6 +56,19 @@ class ASH_EXPORT MaterialDesignController {
 
   // Material Design |Mode| for Chrome OS system UI. Used only by tests.
   static Mode mode();
+
+  // Returns true if Material Design is enabled in Chrome OS system UI.
+  // Maps to "ash-md" flag "enabled" or "experimental" values.
+  static bool IsMaterial();
+
+  // Returns true if Material Design normal features are enabled in Chrome OS
+  // system UI. Maps to "--ash-md=enabled" command line switch value.
+  static bool IsMaterialNormal();
+
+  // Returns true if Material Design experimental features are enabled in
+  // Chrome OS system UI. Maps to "--ash-md=experimental" command line switch
+  // value.
+  static bool IsMaterialExperimental();
 
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();
