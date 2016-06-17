@@ -10,10 +10,8 @@ select {
 </style>
 <script>
 
-function openSelectMenu(target) {
-  var evt = document.createEvent("MouseEvents");
-  evt.initMouseEvent("mousedown", true, true, window);
-  document.querySelector('select').dispatchEvent(evt);
+function focusSelectMenu() {
+  document.querySelector('select').focus();
 }
 
 </script>

@@ -7068,19 +7068,29 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(child2, embedded_test_server()->GetURL(
       "c.com", "/site_isolation/page-with-select.html"));
 
-  // Open both <select> menus.  This creates a popup widget in both processes.
+  // Open both <select> menus by focusing each item and sending a space key
+  // at the focused node. This creates a popup widget in both processes.
   // Wait for and then drop the ViewHostMsg_ShowWidget messages, so that both
   // widgets are left in pending-but-not-shown state.
+  NativeWebKeyboardEvent event;
+  event.text[0] = ' ';
+  event.timeStampSeconds = 100;
+  event.type = blink::WebKeyboardEvent::Char;
+
   scoped_refptr<PendingWidgetMessageFilter> filter1 =
       new PendingWidgetMessageFilter();
   process1->AddFilter(filter1.get());
-  EXPECT_TRUE(ExecuteScript(child1, "openSelectMenu();"));
+  EXPECT_TRUE(ExecuteScript(child1, "focusSelectMenu();"));
+  child1->current_frame_host()->GetRenderWidgetHost()->ForwardKeyboardEvent(
+      event);
   filter1->Wait();
 
   scoped_refptr<PendingWidgetMessageFilter> filter2 =
       new PendingWidgetMessageFilter();
   process2->AddFilter(filter2.get());
-  EXPECT_TRUE(ExecuteScript(child2, "openSelectMenu();"));
+  EXPECT_TRUE(ExecuteScript(child2, "focusSelectMenu();"));
+  child2->current_frame_host()->GetRenderWidgetHost()->ForwardKeyboardEvent(
+      event);
   filter2->Wait();
 
   // At this point, we should have two pending widgets.
