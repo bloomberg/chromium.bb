@@ -42,13 +42,6 @@ from webkitpy.tool.commands.help_command import HelpCommand
 _log = logging.getLogger(__name__)
 
 
-class TryAgain(Exception):
-    # This is an exception that can be raised in the execute method of a Command,
-    # to make it retry from the start with the same arguments.
-    # TODO(qyearsley): Remove this, as it appears unused.
-    pass
-
-
 class MultiCommandTool(object):
 
     global_options = None
@@ -145,12 +138,7 @@ class MultiCommandTool(object):
             _log.error(failure_reason)
             return 0  # FIXME: Should this really be 0?
 
-        while True:
-            try:
-                result = command.check_arguments_and_execute(options, args, self)
-                break
-            except TryAgain:
-                pass
+        result = command.check_arguments_and_execute(options, args, self)
 
         self.command_completed()
         return result
