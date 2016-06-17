@@ -59,6 +59,23 @@ bool equalIgnoringPathQueryAndFragment(const KURL& a, const KURL& b)
     return true;
 }
 
+bool equalIgnoringQueryAndFragment(const KURL& a, const KURL& b)
+{
+    int aLength = a.pathEnd();
+    int bLength = b.pathEnd();
+
+    if (aLength != bLength)
+        return false;
+
+    const String& aString = a.getString();
+    const String& bString = b.getString();
+    for (int i = 0; i < aLength; ++i) {
+        if (aString[i] != bString[i])
+            return false;
+    }
+    return true;
+}
+
 }  // namespace
 
 History::History(LocalFrame* frame)
@@ -196,7 +213,7 @@ bool History::canChangeToUrl(const KURL& url, SecurityOrigin* documentOrigin, co
     // 'pushState'/'replaceState' to modify the URL fragment: see
     // https://crbug.com/528681 for the compatibility concerns.
     if (documentOrigin->isUnique() || documentOrigin->isLocal())
-        return equalIgnoringFragmentIdentifier(url, documentURL);
+        return equalIgnoringQueryAndFragment(url, documentURL);
 
     if (!equalIgnoringPathQueryAndFragment(url, documentURL))
         return false;
