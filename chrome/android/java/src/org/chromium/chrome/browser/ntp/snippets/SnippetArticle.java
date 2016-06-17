@@ -117,14 +117,17 @@ public class SnippetArticle implements NewTabPageListItem {
         // Track how the (approx.) position relates to age / score of the snippet that is clicked.
         int ageInMinutes =
                 (int) ((System.currentTimeMillis() - mPublishTimestampMilliseconds) / 60000L);
-        recordAge(histogramPrefix + "Age", ageInMinutes);
-        recordScore(histogramPrefix + "Score", mScore);
+        String histogramAge = histogramPrefix + "Age";
+        String histogramScore = histogramPrefix + "ScoreNew";
+
+        recordAge(histogramAge, ageInMinutes);
+        recordScore(histogramScore, mScore);
         int startPosition = 0;
         for (int endPosition : HISTOGRAM_FOR_POSITIONS) {
             if (mPosition >= startPosition && mPosition <= endPosition) {
                 String suffix = "_" + startPosition + "_" + endPosition;
-                recordAge(histogramPrefix + "Age" + suffix, ageInMinutes);
-                recordScore(histogramPrefix + "Score" + suffix, mScore);
+                recordAge(histogramAge + suffix, ageInMinutes);
+                recordScore(histogramScore + suffix, mScore);
                 break;
             }
             startPosition = endPosition + 1;
@@ -141,7 +144,7 @@ public class SnippetArticle implements NewTabPageListItem {
     }
 
     private static void recordScore(String histogramName, float score) {
-        int recordedScore = Math.min((int) Math.ceil(score), 1000);
-        RecordHistogram.recordCount1000Histogram(histogramName, recordedScore);
+        int recordedScore = Math.min((int) Math.ceil(score), 100000);
+        RecordHistogram.recordCustomCountHistogram(histogramName, recordedScore, 1, 100000, 50);
     }
 }
