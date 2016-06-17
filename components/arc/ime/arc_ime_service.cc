@@ -38,6 +38,7 @@ ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
       ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
+      keyboard_controller_(nullptr),
       test_input_method_(nullptr) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
