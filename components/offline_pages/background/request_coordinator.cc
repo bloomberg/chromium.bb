@@ -137,17 +137,18 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << __FUNCTION__;
   last_offlining_status_ = status;
 
-  // TODO(petewil): If the request succeeded, remove it from the Queue.
+  // If the request succeeded, remove it from the Queue and maybe schedule
+  // another one.
   if (status == Offliner::RequestStatus::SAVED) {
     queue_->RemoveRequest(request.request_id(),
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr()));
+
+    // TODO(petewil): Check time budget. Return to the scheduler if we are out.
+
+    // Start another request if we have time.
+    TryNextRequest();
   }
-
-  // TODO(petewil): Check time budget. Return to the scheduler if we are out.
-
-  // Start a request if we have time.
-  TryNextRequest();
 }
 
 }  // namespace offline_pages

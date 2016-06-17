@@ -197,7 +197,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_TRUE(scheduler_stub->schedule_called());
 }
 
-TEST_F(RequestCoordinatorTest, OfflinerDone) {
+TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId, kUrl, kClientId, base::Time::Now());
@@ -229,6 +229,39 @@ TEST_F(RequestCoordinatorTest, OfflinerDone) {
   // RequestPicker should *not* have tried to start an additional job,
   // because the request queue is empty now.
   EXPECT_EQ(0UL, last_requests().size());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(
+      kRequestId, kUrl, kClientId, base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // We need to give a callback to the request.
+  base::Callback<void(bool)> callback =
+      base::Bind(
+          &RequestCoordinatorTest::EmptyCallbackFunction,
+          base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Call the OfflinerDoneCallback to simulate the request failed, wait
+  // for callbacks.
+  SendOfflinerDoneCallback(request, Offliner::RequestStatus::FAILED);
+  PumpLoop();
+
+  // Verify the request is not removed from the queue, and wait for callbacks.
+  coordinator()->queue()->GetRequests(
+      base::Bind(&RequestCoordinatorTest::GetRequestsDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // Still one request in the queue.
+  EXPECT_EQ(1UL, last_requests().size());
+  // TODO(dougarnett): Verify retry count gets incremented.
 }
 
 }  // namespace offline_pages
