@@ -35,7 +35,6 @@ import optparse
 import logging
 import sys
 
-from webkitpy.tool.commands.command import Command
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
 from webkitpy.tool.commands.help_command import HelpCommand
 
@@ -46,33 +45,20 @@ class MultiCommandTool(object):
 
     global_options = None
 
-    def __init__(self, name=None, commands=None):
-        self._name = name or optparse.OptionParser(prog=name).get_prog_name()  # OptionParser has nice logic for fetching the name.
-        # Allow the unit tests to disable command auto-discovery.
-        self.commands = commands or [cls() for cls in self._find_all_commands() if cls.name]
+    def __init__(self, commands):
+        self.commands = commands
         self.help_command = self.command_by_name(HelpCommand.name)
-        # Require a help command, even if the manual test list doesn't include one.
+        # Require the help command, even if the manual test list doesn't include one.
         if not self.help_command:
             self.help_command = HelpCommand()
             self.commands.append(self.help_command)
+        # FIXME: Since tool is passed to Command.execute, it may not be necessary to set a tool attribute on the
+        # command objects here - maybe this should be done inside of Command.execute for commands that use self._tool.
         for command in self.commands:
             command.bind_to_tool(self)
 
-    @classmethod
-    def _add_all_subclasses(cls, class_to_crawl, seen_classes):
-        for subclass in class_to_crawl.__subclasses__():
-            if subclass not in seen_classes:
-                seen_classes.add(subclass)
-                cls._add_all_subclasses(subclass, seen_classes)
-
-    @classmethod
-    def _find_all_commands(cls):
-        commands = set()
-        cls._add_all_subclasses(Command, commands)
-        return sorted(commands)
-
     def name(self):
-        return self._name
+        return optparse.OptionParser().get_prog_name()
 
     def _create_option_parser(self):
         usage = "Usage: %prog [options] COMMAND [ARGS]"

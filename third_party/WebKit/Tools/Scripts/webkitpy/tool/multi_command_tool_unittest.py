@@ -32,7 +32,7 @@ from optparse import make_option
 
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.tool.multi_command_tool import MultiCommandTool
-from webkitpy.tool.commands import Command
+from webkitpy.tool.commands.command import Command
 
 
 class TrivialCommand(Command):
@@ -55,8 +55,11 @@ class UncommonCommand(TrivialCommand):
 
 class TrivialTool(MultiCommandTool):
 
-    def __init__(self, commands=None):
-        MultiCommandTool.__init__(self, name="trivial-tool", commands=commands)
+    def __init__(self, commands):
+        MultiCommandTool.__init__(self, commands)
+
+    def name(self):
+        return 'trivial-tool'
 
     def path(self):
         return __file__
@@ -85,8 +88,7 @@ class MultiCommandToolTest(unittest.TestCase):
         self._assert_split(full_args, full_args_expected)
 
     def test_command_by_name(self):
-        # This also tests Command auto-discovery.
-        tool = TrivialTool()
+        tool = TrivialTool(commands=[TrivialCommand(), UncommonCommand()])
         self.assertEqual(tool.command_by_name("trivial").name, "trivial")
         self.assertIsNone(tool.command_by_name("bar"))
 
@@ -130,7 +132,7 @@ See 'trivial-tool help COMMAND' for more information on a specific command.
         self._assert_tool_main_outputs(tool, ["tool", "--all-commands", "help"], expected_all_commands_help)
 
     def test_command_help(self):
-        command_with_options = TrivialCommand(options=[make_option("--my_option")], )
+        command_with_options = TrivialCommand(options=[make_option("--my_option")])
         tool = TrivialTool(commands=[command_with_options])
         expected_subcommand_help = """trivial [options]   help text
 
@@ -141,3 +143,8 @@ Options:
 
 """
         self._assert_tool_main_outputs(tool, ["tool", "help", "trivial"], expected_subcommand_help)
+
+    def test_constructor_calls_bind_to_tool(self):
+        tool = TrivialTool(commands=[TrivialCommand(), UncommonCommand()])
+        self.assertEqual(tool.commands[0]._tool, tool)
+        self.assertEqual(tool.commands[1]._tool, tool)
