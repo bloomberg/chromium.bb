@@ -1268,7 +1268,8 @@ void AndroidVideoDecodeAccelerator::Reset() {
 
   // Some VP8 files require complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
-  if (media_codec_ && codec_config_->codec_ == kCodecVP8) {
+  if (media_codec_ && codec_config_->codec_ == kCodecVP8 &&
+      !bitstream_buffers_in_decoder_.empty()) {
     // Postpone ResetCodecState() after the drain.
     StartCodecDrain(DRAIN_FOR_RESET);
   } else {
