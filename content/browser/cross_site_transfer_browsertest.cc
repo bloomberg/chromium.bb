@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
@@ -17,11 +24,13 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -416,6 +425,73 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
   EXPECT_FALSE(tracking_delegate().WaitForTrackedURLAndGetCompleted());
 
   shell()->web_contents()->SetDelegate(old_delegate);
+}
+
+// Test that verifies that a cross-process transfer retains ability to read
+// files encapsulated by HTTP POST body that is forwarded to the new renderer.
+// Invalid handling of this scenario has been suspected as the cause of at least
+// some of the renderer kills tracked in https://crbug.com/613260.
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).  Using 307 (rather than
+  // 302) redirection is important to preserve the HTTP method and POST body.
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Prepare a file to upload.
+  base::ScopedTempDir temp_dir;
+  base::FilePath file_path;
+  std::string file_content("test-file-content");
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &file_path));
+  ASSERT_LT(
+      0, base::WriteFile(file_path, file_content.data(), file_content.size()));
+
+  // Fill out the form to refer to the test file.
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file_path));
+  shell()->web_contents()->SetDelegate(delegate.get());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.getElementById('file').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+
+  // Remember the old process id for a sanity check below.
+  int old_process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('file-form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+
+  // Verify that the test really verifies access of a *new* renderer process.
+  int new_process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  ASSERT_NE(new_process_id, old_process_id);
+
+  // MAIN VERIFICATION: Check if the new renderer process is able to read the
+  // file.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      new_process_id, file_path));
+
+  // Verify that POST body got preserved by 307 redirect.  This expectation
+  // comes from: https://tools.ietf.org/html/rfc7231#section-6.4.7
+  std::string actual_page_body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &actual_page_body));
+  EXPECT_THAT(actual_page_body, ::testing::HasSubstr(file_content));
+  EXPECT_THAT(actual_page_body,
+              ::testing::HasSubstr(file_path.BaseName().AsUTF8Unsafe()));
+  EXPECT_THAT(actual_page_body,
+              ::testing::HasSubstr("form-data; name=\"file\""));
 }
 
 }  // namespace content

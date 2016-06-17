@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/command_line.h"
@@ -38,8 +39,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1929,30 +1928,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   EXPECT_FALSE(handler->IsJavascriptAllowed());
 }
-
-class FileChooserDelegate : public WebContentsDelegate {
- public:
-  FileChooserDelegate(const base::FilePath& file)
-      : file_(file), file_chosen_(false) {}
-
-  void RunFileChooser(RenderFrameHost* render_frame_host,
-                      const FileChooserParams& params) override {
-    // Send the selected file to the renderer process.
-    FileChooserFileInfo file_info;
-    file_info.file_path = file_;
-    std::vector<FileChooserFileInfo> files;
-    files.push_back(file_info);
-    render_frame_host->FilesSelectedInChooser(files, FileChooserParams::Open);
-
-    file_chosen_ = true;
-  }
-
-  bool file_chosen() { return file_chosen_; }
-
- private:
-  base::FilePath file_;
-  bool file_chosen_;
-};
 
 // Test for http://crbug.com/262948.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,

@@ -13,11 +13,13 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -29,6 +31,7 @@ namespace content {
 
 class FrameTreeNode;
 class MessageLoopRunner;
+class RenderFrameHost;
 class RenderWidgetHostViewChildFrame;
 class Shell;
 class SiteInstance;
@@ -173,6 +176,25 @@ class SurfaceHitTestReadyNotifier {
   RenderWidgetHostViewChildFrame* target_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
+};
+
+// Helper for mocking choosing a file via a file dialog.
+class FileChooserDelegate : public WebContentsDelegate {
+ public:
+  // Constructs a WebContentsDelegate that mocks a file dialog.
+  // The mocked file dialog will always reply that the user selected |file|.
+  FileChooserDelegate(const base::FilePath& file);
+
+  // Implementation of WebContentsDelegate::RunFileChooser.
+  void RunFileChooser(RenderFrameHost* render_frame_host,
+                      const FileChooserParams& params) override;
+
+  // Whether the file dialog was shown.
+  bool file_chosen() { return file_chosen_; }
+
+ private:
+  base::FilePath file_;
+  bool file_chosen_;
 };
 
 }  // namespace content

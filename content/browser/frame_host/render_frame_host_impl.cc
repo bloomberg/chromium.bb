@@ -2757,6 +2757,18 @@ void RenderFrameHostImpl::DidUseGeolocationPermission() {
           ->last_committed_url().GetOrigin());
 }
 
+void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
+    const ResourceRequestBodyImpl& body) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  std::vector<base::FilePath> file_paths = body.GetReferencedFiles();
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(GetProcess()->GetID(), file))
+      policy->GrantReadFile(GetProcess()->GetID(), file);
+  }
+}
+
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
@@ -2776,11 +2788,20 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 
   // We may be returning to an existing NavigationEntry that had been granted
   // file access.  If this is a different process, we will need to grant the
-  // access again.  The files listed in the page state are validated when they
-  // are received from the renderer to prevent abuse.
-  if (request_params.page_state.IsValid()) {
+  // access again.  Abuse is prevented, because the files listed in the page
+  // state are validated earlier, when they are received from the renderer (in
+  // RenderFrameHostImpl::CanAccessFilesOfPageState).
+  if (request_params.page_state.IsValid())
     render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
-  }
+
+  // We may be here after transferring navigation to a different renderer
+  // process.  In this case, we need to ensure that the new renderer retains
+  // ability to access files that the old renderer could access.  Abuse is
+  // prevented, because the files listed in ResourceRequestBody are validated
+  // earlier, when they are recieved from the renderer (in ShouldServiceRequest
+  // called from ResourceDispatcherHostImpl::BeginRequest).
+  if (common_params.post_data)
+    GrantFileAccessFromResourceRequestBody(*common_params.post_data);
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {

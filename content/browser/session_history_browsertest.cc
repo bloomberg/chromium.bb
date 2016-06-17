@@ -506,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
 // redirects (as mandated by https://tools.ietf.org/html/rfc7231#section-6.4.7).
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
   GURL form_url(embedded_test_server()->GetURL(
-      "a.com", "/session_history/form_that_posts_cross_site.html"));
+      "a.com", "/form_that_posts_cross_site.html"));
   GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
   GURL page_to_go_back_from(
       embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
   // Submit the form.
   TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
   EXPECT_TRUE(
-      ExecuteScript(shell(), "document.getElementById('form').submit();"));
+      ExecuteScript(shell(), "document.getElementById('text-form').submit();"));
   form_post_observer.Wait();
 
   // Verify that we arrived at the expected, redirected location.

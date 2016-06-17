@@ -55,6 +55,9 @@ class CONTENT_EXPORT ResourceRequestBodyImpl : public ResourceRequestBody,
   void set_identifier(int64_t id) { identifier_ = id; }
   int64_t identifier() const { return identifier_; }
 
+  // Returns paths referred to by |elements| of type Element::TYPE_FILE.
+  std::vector<base::FilePath> GetReferencedFiles() const;
+
  private:
   ~ResourceRequestBodyImpl() override;
 

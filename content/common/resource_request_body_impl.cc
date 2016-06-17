@@ -46,6 +46,16 @@ void ResourceRequestBodyImpl::AppendFileSystemFileRange(
                                            expected_modification_time);
 }
 
+std::vector<base::FilePath> ResourceRequestBodyImpl::GetReferencedFiles()
+    const {
+  std::vector<base::FilePath> result;
+  for (const auto& element : *elements()) {
+    if (element.type() == Element::TYPE_FILE)
+      result.push_back(element.path());
+  }
+  return result;
+}
+
 ResourceRequestBodyImpl::~ResourceRequestBodyImpl() {}
 
 }  // namespace content
