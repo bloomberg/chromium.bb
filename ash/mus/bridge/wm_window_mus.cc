@@ -303,6 +303,10 @@ bool WmWindowMus::GetBoolProperty(WmWindowProperty key) {
     case WmWindowProperty::ALWAYS_ON_TOP:
       return IsAlwaysOnTop();
 
+    case WmWindowProperty::EXCLUDE_FROM_MRU:
+      NOTIMPLEMENTED();
+      return false;
+
     default:
       NOTREACHED();
       break;
@@ -619,6 +623,10 @@ void WmWindowMus::Minimize() {
 void WmWindowMus::Unminimize() {
   SetWindowShowState(window_, MojomWindowShowStateFromUI(restore_show_state_));
   restore_show_state_ = ui::SHOW_STATE_DEFAULT;
+}
+
+void WmWindowMus::SetExcludedFromMru(bool excluded_from_mru) {
+  NOTIMPLEMENTED();
 }
 
 std::vector<WmWindow*> WmWindowMus::GetChildren() {

@@ -103,4 +103,30 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
   EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1.get()));
 }
 
+// Tests that windows with propery of |kExcludeFromMruKey|==true are not in the
+// window list.
+TEST_F(MruWindowTrackerTest, ExcludedFormMru) {
+  std::unique_ptr<aura::Window> w1(CreateWindow());
+  std::unique_ptr<aura::Window> w2(CreateWindow());
+  std::unique_ptr<aura::Window> w3(CreateWindow());
+
+  wm::GetWindowState(w1.get())->SetExcludedFromMru(true);
+  wm::GetWindowState(w3.get())->SetExcludedFromMru(true);
+
+  wm::ActivateWindow(w3.get());
+  wm::ActivateWindow(w2.get());
+  wm::ActivateWindow(w1.get());
+
+  // Expect the windows with |kExcludeFromMruKey| property being true are not
+  // in the list.
+  aura::Window::Windows window_list =
+      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
+
+  EXPECT_EQ(window_list.end(),
+            std::find(window_list.begin(), window_list.end(), w1.get()));
+  EXPECT_EQ(window_list.end(),
+            std::find(window_list.begin(), window_list.end(), w3.get()));
+  EXPECT_EQ(1u, window_list.size());
+}
+
 }  // namespace ash

@@ -19,6 +19,9 @@ enum class WmWindowProperty {
 
   // Type int. See aura::client::kTopViewInset for details.
   TOP_VIEW_INSET,
+
+  // Type bool. See aura::client:kExcludeFromMruKey for details.
+  EXCLUDE_FROM_MRU,
 };
 
 }  // namespace ash

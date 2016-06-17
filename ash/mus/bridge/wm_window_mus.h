@@ -185,6 +185,7 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
   void Maximize() override;
   void Minimize() override;
   void Unminimize() override;
+  void SetExcludedFromMru(bool) override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool CanResize() const override;

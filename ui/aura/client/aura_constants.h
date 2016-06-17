@@ -41,6 +41,10 @@ AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 // attention.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
 
+// A property key to indicate that a window should be excluded from the most
+// recently used windows list.
+AURA_EXPORT extern const aura::WindowProperty<bool>* const kExcludeFromMruKey;
+
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
