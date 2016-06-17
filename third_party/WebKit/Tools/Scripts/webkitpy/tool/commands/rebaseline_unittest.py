@@ -995,7 +995,7 @@ class TestAutoRebaseline(BaseTestCase):
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
         self.command.latest_revision_processed_on_all_bots = lambda: 9000
-        self.command.bot_revision_data = lambda: [{"builder": "MOCK Win7", "revision": "9000"}]
+        self.command.bot_revision_data = lambda(scm): [{"builder": "MOCK Win7", "revision": "9000"}]
 
     def test_release_builders(self):
         self.tool.builders = BuilderList({

@@ -29,6 +29,7 @@
 import json
 import logging
 
+from webkitpy.common.memoized import memoized
 from webkitpy.layout_tests.layout_package import json_results_generator
 
 _log = logging.getLogger(__name__)
@@ -77,7 +78,17 @@ class LayoutTestResult(object):
 class LayoutTestResults(object):
 
     @classmethod
-    def results_from_string(cls, string):
+    def results_from_string(cls, string, chromium_revision=None):
+        """Creates a LayoutTestResults object from a test result JSON string.
+
+        Args:
+            string: JSON string containg layout test result.
+            chromium_revision: If given, it will override the chromium_revision
+                field in json, to indicate the last revision that has completed
+                uploading onto the storage server. chromium_revision can be a
+                git hash or position number.
+        """
+
         if not string:
             return None
 
@@ -86,10 +97,11 @@ class LayoutTestResults(object):
         if not json_dict:
             return None
 
-        return cls(json_dict)
+        return cls(json_dict, chromium_revision)
 
-    def __init__(self, parsed_json):
+    def __init__(self, parsed_json, chromium_revision=None):
         self._results = parsed_json
+        self._chromium_revision = chromium_revision
 
     def run_was_interrupted(self):
         return self._results["interrupted"]
@@ -97,8 +109,14 @@ class LayoutTestResults(object):
     def builder_name(self):
         return self._results["builder_name"]
 
-    def chromium_revision(self):
-        return int(self._results["chromium_revision"])
+    @memoized
+    def chromium_revision(self, scm=None):
+        """Returns the revision of the results in commit position number format."""
+        revision = self._chromium_revision or self._results["chromium_revision"]
+        if not revision.isdigit():
+            assert scm, "scm is required if the original revision is a git hash."
+            revision = scm.commit_position_from_git_commit(revision)
+        return int(revision)
 
     def result_for_test(self, test):
         parts = test.split("/")

@@ -679,7 +679,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 [^[]*$      # Prevents matching previous [ for version specifiers instead of expectation specifiers
             """, re.VERBOSE)
 
-    def bot_revision_data(self):
+    def bot_revision_data(self, scm):
         revisions = []
         for result in self.builder_data().values():
             if result.run_was_interrupted():
@@ -687,7 +687,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 return []
             revisions.append({
                 "builder": result.builder_name(),
-                "revision": result.chromium_revision(),
+                "revision": result.chromium_revision(scm),
             })
         return revisions
 
@@ -831,7 +831,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.error("Cannot proceed with working directory changes. Clean working directory first.")
             return
 
-        revision_data = self.bot_revision_data()
+        revision_data = self.bot_revision_data(tool.scm())
         if not revision_data:
             return
 
