@@ -22,13 +22,17 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     cat_filter = tracing_category_filter.TracingCategoryFilter(
         filter_string='blink.console,navigation,blink.user_timing,loading')
 
+    # Below categories are needed for first-meaningful-paint computation.
+    cat_filter.AddDisabledByDefault('disabled-by-default-blink.debug.layout')
+    cat_filter.AddIncludedCategory('devtools.timeline')
+
     tbm_options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
     return tbm_options
 
 
-@benchmark.Disabled('win')  # crbug.com/615178
+@benchmark.Disabled('win', 'reference')  # crbug.com/615178, crbug.com/619254
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
