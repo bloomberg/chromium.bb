@@ -62,6 +62,8 @@
         'browser/chromeos/arc/arc_auth_service.h',
         'browser/chromeos/arc/arc_downloads_watcher_service.cc',
         'browser/chromeos/arc/arc_downloads_watcher_service.h',
+        'browser/chromeos/arc/arc_navigation_throttle.cc',
+        'browser/chromeos/arc/arc_navigation_throttle.h',
         'browser/chromeos/arc/arc_service_launcher.cc',
         'browser/chromeos/arc/arc_service_launcher.h',
         'browser/chromeos/arc/arc_support_host.cc',
