@@ -159,6 +159,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', ('amd', 0x6779)], bug=621201)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
