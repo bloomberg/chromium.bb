@@ -1070,24 +1070,20 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
+    lkgm_version = self._GetLGKMVersionFromManifest(next_manifest)
+    chroot_manager = chroot_lib.ChrootManager(self._build_root)
+    # Make sure the chroot version is valid.
+    chroot_manager.EnsureChrootAtVersion(lkgm_version)
+
+    # Clear the chroot version as we are in the middle of building it.
+    chroot_manager.ClearChrootVersion()
+
     if self._run.config.build_before_patching:
       assert not self._run.config.master
       pre_build_passed = self.RunPrePatchBuild()
       logging.PrintBuildbotStepName('CommitQueueSync : Apply Patches')
       if not pre_build_passed:
         logging.PrintBuildbotStepText('Pre-patch build failed.')
-
-    lkgm_version = self._GetLGKMVersionFromManifest(next_manifest)
-    chroot_manager = chroot_lib.ChrootManager(self._build_root)
-    # Make sure the chroot version is valid only on non-incremental builders.
-    # What was happening was by ensuring the chroot was at a specific version,
-    # on incremental builders it was actually clearing the chroot, hence we
-    # check for that now.
-    if not self._run.config.build_before_patching:
-      chroot_manager.EnsureChrootAtVersion(lkgm_version)
-
-    # Clear the chroot version as we are in the middle of building it.
-    chroot_manager.ClearChrootVersion()
 
     # Syncing to a pinned manifest ensures that we have the specified
     # revisions, but, unfortunately, repo won't bother to update branches.
