@@ -136,6 +136,11 @@ class MediaStreamAudioBus {
     thread_checker_.DetachFromThread();
   }
 
+  void ReattachThreadChecker() {
+    thread_checker_.DetachFromThread();
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
+
   media::AudioBus* bus() {
     DCHECK(thread_checker_.CalledOnValidThread());
     return bus_.get();
@@ -192,6 +197,12 @@ class MediaStreamAudioFifo {
 
     // May be created in the main render thread and used in the audio threads.
     thread_checker_.DetachFromThread();
+  }
+
+  void ReattachThreadChecker() {
+    thread_checker_.DetachFromThread();
+    DCHECK(thread_checker_.CalledOnValidThread());
+    destination_->ReattachThreadChecker();
   }
 
   void Push(const media::AudioBus& source, base::TimeDelta audio_delay) {
@@ -472,6 +483,12 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
   // there is no more OnPlayoutData() callback on the render thread.
   render_thread_checker_.DetachFromThread();
   render_fifo_.reset();
+}
+
+void MediaStreamAudioProcessor::OnRenderThreadChanged() {
+  render_thread_checker_.DetachFromThread();
+  DCHECK(render_thread_checker_.CalledOnValidThread());
+  render_fifo_->ReattachThreadChecker();
 }
 
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {

@@ -122,6 +122,11 @@ OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
                                                 device_id_, security_origin_);
 }
 
+bool AudioRendererMixerInput::CurrentThreadIsRenderingThread() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void AudioRendererMixerInput::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,

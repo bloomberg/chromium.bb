@@ -69,6 +69,11 @@ OutputDeviceInfo FakeAudioRendererSink::GetOutputDeviceInfo() {
   return output_device_info_;
 }
 
+bool FakeAudioRendererSink::CurrentThreadIsRenderingThread() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool FakeAudioRendererSink::Render(AudioBus* dest,
                                    uint32_t frames_delayed,
                                    int* frames_written) {

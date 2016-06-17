@@ -124,6 +124,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                      int sample_rate,
                      int audio_delay_milliseconds) override;
   void OnPlayoutDataSourceChanged() override;
+  void OnRenderThreadChanged() override;
 
   // webrtc::AudioProcessorInterface implementation.
   // This method is called on the libjingle thread.

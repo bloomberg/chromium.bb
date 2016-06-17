@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
@@ -62,9 +63,15 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                        int sample_rate,
                                        int audio_delay_milliseconds,
                                        base::TimeDelta* current_time) {
-  DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
   {
     base::AutoLock auto_lock(lock_);
+#if DCHECK_IS_ON()
+    DCHECK(renderer_->CurrentThreadIsRenderingThread());
+    if (!audio_renderer_thread_checker_.CalledOnValidThread()) {
+      for (const auto& sink : playout_sinks_)
+        sink->OnRenderThreadChanged();
+    }
+#endif
     if (!playing_) {
       // Force silence to AudioBus after stopping playout in case
       // there is lingering audio data in AudioBus.

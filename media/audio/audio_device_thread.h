@@ -12,6 +12,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -67,6 +68,11 @@ class MEDIA_EXPORT AudioDeviceThread {
     const int memory_length_;
     const int total_segments_;
     int segment_length_;
+
+    // Detached in constructor and attached in InitializeOnAudioThread() which
+    // is called on the audio device thread. Sub-classes can then use it for
+    // various thread checking purposes.
+    base::ThreadChecker thread_checker_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Callback);

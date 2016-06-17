@@ -163,6 +163,19 @@ void WebAudioSourceProviderImpl::provideInput(
   bus_wrapper_->Scale(volume_);
 }
 
+void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
+                                            RenderCallback* renderer) {
+  base::AutoLock auto_lock(sink_lock_);
+  DCHECK_EQ(state_, kStopped);
+
+  tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
+
+  sink_->Initialize(params, tee_filter_.get());
+
+  if (!set_format_cb_.is_null())
+    base::ResetAndReturn(&set_format_cb_).Run();
+}
+
 void WebAudioSourceProviderImpl::Start() {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK(tee_filter_);
@@ -208,6 +221,11 @@ media::OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
   return sink_->GetOutputDeviceInfo();
 }
 
+bool WebAudioSourceProviderImpl::CurrentThreadIsRenderingThread() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void WebAudioSourceProviderImpl::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
@@ -217,19 +235,6 @@ void WebAudioSourceProviderImpl::SwitchOutputDevice(
     callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   else
     sink_->SwitchOutputDevice(device_id, security_origin, callback);
-}
-
-void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
-                                            RenderCallback* renderer) {
-  base::AutoLock auto_lock(sink_lock_);
-  DCHECK_EQ(state_, kStopped);
-
-  tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
-
-  sink_->Initialize(params, tee_filter_.get());
-
-  if (!set_format_cb_.is_null())
-    base::ResetAndReturn(&set_format_cb_).Run();
 }
 
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(

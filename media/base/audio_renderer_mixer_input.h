@@ -51,6 +51,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void SwitchOutputDevice(const std::string& device_id,
                           const url::Origin& security_origin,
                           const OutputDeviceStatusCB& callback) override;
+  bool CurrentThreadIsRenderingThread() override;
 
   // Called by AudioRendererMixer when an error occurs.
   void OnRenderError();

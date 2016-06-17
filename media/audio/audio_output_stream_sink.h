@@ -40,6 +40,7 @@ class MEDIA_EXPORT AudioOutputStreamSink
   void Play() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  bool CurrentThreadIsRenderingThread() override;
 
   // AudioSourceCallback implementation.
   int OnMoreData(AudioBus* dest,

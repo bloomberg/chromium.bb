@@ -109,6 +109,7 @@ class MEDIA_EXPORT AudioOutputDevice
   void Pause() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  bool CurrentThreadIsRenderingThread() override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.

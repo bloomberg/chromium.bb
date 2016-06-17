@@ -56,14 +56,15 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
                     size_t number_of_frames) override;
 
   // RestartableAudioRendererSink implementation.
+  void Initialize(const AudioParameters& params,
+                  RenderCallback* renderer) override;
   void Start() override;
   void Stop() override;
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
-  void Initialize(const AudioParameters& params,
-                  RenderCallback* renderer) override;
+  bool CurrentThreadIsRenderingThread() override;
   void SwitchOutputDevice(const std::string& device_id,
                           const url::Origin& security_origin,
                           const OutputDeviceStatusCB& callback) override;

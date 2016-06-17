@@ -219,7 +219,7 @@ class WebRtcPlayoutDataSource {
   class Sink {
    public:
     // Callback to get the playout data.
-    // Called on the render audio thread.
+    // Called on the audio render thread.
     virtual void OnPlayoutData(media::AudioBus* audio_bus,
                                int sample_rate,
                                int audio_delay_milliseconds) = 0;
@@ -227,6 +227,11 @@ class WebRtcPlayoutDataSource {
     // Callback to notify the sink that the source has changed.
     // Called on the main render thread.
     virtual void OnPlayoutDataSourceChanged() = 0;
+
+    // Called to notify that the audio render thread has changed, and
+    // OnPlayoutData() will from now on be called on the new thread.
+    // Called on the new audio render thread.
+    virtual void OnRenderThreadChanged() = 0;
 
    protected:
     virtual ~Sink() {}

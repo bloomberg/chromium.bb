@@ -230,11 +230,17 @@ AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
   CHECK_GT(total_segments_, 0);
   CHECK_EQ(memory_length_ % total_segments_, 0);
   segment_length_ = memory_length_ / total_segments_;
+  thread_checker_.DetachFromThread();
 }
 
 AudioDeviceThread::Callback::~Callback() {}
 
 void AudioDeviceThread::Callback::InitializeOnAudioThread() {
+  // Normally this function is called before the thread checker is used
+  // elsewhere, but it's not guaranteed. DCHECK to ensure it was not used on
+  // another thread before we get here.
+  DCHECK(thread_checker_.CalledOnValidThread())
+      << "Thread checker was attached on the wrong thread";
   MapSharedMemory();
   CHECK(shared_memory_.memory());
 }

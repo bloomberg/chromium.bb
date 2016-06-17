@@ -79,6 +79,10 @@ OutputDeviceInfo NullAudioSink::GetOutputDeviceInfo() {
   return OutputDeviceInfo();
 }
 
+bool NullAudioSink::CurrentThreadIsRenderingThread() {
+  return task_runner_->BelongsToCurrentThread();
+}
+
 void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
                                        const url::Origin& security_origin,
                                        const OutputDeviceStatusCB& callback) {

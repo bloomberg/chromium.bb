@@ -133,6 +133,11 @@ OutputDeviceInfo ClocklessAudioSink::GetOutputDeviceInfo() {
   return device_info_;
 }
 
+bool ClocklessAudioSink::CurrentThreadIsRenderingThread() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void ClocklessAudioSink::StartAudioHashForTesting() {
   DCHECK(!initialized_);
   hashing_ = true;

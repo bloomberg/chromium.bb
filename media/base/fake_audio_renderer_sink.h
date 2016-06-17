@@ -39,6 +39,7 @@ class FakeAudioRendererSink : public AudioRendererSink {
   void Play() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  bool CurrentThreadIsRenderingThread() override;
 
   // Attempts to call Render() on the callback provided to
   // Initialize() with |dest| and |frames_delayed|.

@@ -41,6 +41,10 @@ class AudioOutputDevice::AudioThreadCallback
   // Called whenever we receive notifications about pending data.
   void Process(uint32_t pending_data) override;
 
+  // Returns whether the current thread is the audio device thread or not.
+  // Will always return true if DCHECKs are not enabled.
+  bool CurrentThreadIsAudioDeviceThread();
+
  private:
   AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<AudioBus> output_bus_;
@@ -152,6 +156,13 @@ OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo() {
                               ? matched_device_id_
                               : device_id_,
                           device_status_, output_params_);
+}
+
+bool AudioOutputDevice::CurrentThreadIsRenderingThread() {
+  // Since this function is supposed to be called on the rendering thread,
+  // it's safe to access |audio_callback_| here. It will always be valid when
+  // the rendering thread is running.
+  return audio_callback_->CurrentThreadIsAudioDeviceThread();
 }
 
 void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
@@ -475,6 +486,11 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // memory.
   render_callback_->Render(output_bus_.get(), std::round(frames_delayed),
                            frames_skipped);
+}
+
+bool AudioOutputDevice::AudioThreadCallback::
+    CurrentThreadIsAudioDeviceThread() {
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace media

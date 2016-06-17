@@ -29,6 +29,7 @@ class MockAudioRendererSink : public SwitchableAudioRendererSink {
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
+  MOCK_METHOD0(CurrentThreadIsRenderingThread, bool());
 
   OutputDeviceInfo GetOutputDeviceInfo();
 

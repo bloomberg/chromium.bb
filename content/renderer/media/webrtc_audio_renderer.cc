@@ -208,7 +208,6 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
       source_render_frame_id, session_id, sink_params_.effects()));
-  audio_renderer_thread_checker_.DetachFromThread();
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -240,7 +239,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   PrepareSink();
   {
     // No need to reassert the preconditions because the other thread accessing
-    // the fields (checked by |audio_renderer_thread_checker_|) only reads them.
+    // the fields only reads them.
     base::AutoLock auto_lock(lock_);
     source_ = source;
 
@@ -264,6 +263,10 @@ WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
 bool WebRtcAudioRenderer::IsStarted() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return start_ref_count_ != 0;
+}
+
+bool WebRtcAudioRenderer::CurrentThreadIsRenderingThread() {
+  return sink_->CurrentThreadIsRenderingThread();
 }
 
 void WebRtcAudioRenderer::Start() {
@@ -406,7 +409,6 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   // callback may currently be executing and trying to grab the lock while we're
   // stopping the thread on which it runs.
   sink_->Stop();
-  audio_renderer_thread_checker_.DetachFromThread();
   sink_ = new_sink;
   output_device_id_ = device_id;
   security_origin_ = security_origin;
@@ -423,7 +425,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
 int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
                                 uint32_t frames_delayed,
                                 uint32_t frames_skipped) {
-  DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
+  DCHECK(sink_->CurrentThreadIsRenderingThread());
   base::AutoLock auto_lock(lock_);
   if (!source_)
     return 0;
@@ -480,7 +482,7 @@ void WebRtcAudioRenderer::OnRenderError() {
 // Called by AudioPullFifo when more data is necessary.
 void WebRtcAudioRenderer::SourceCallback(
     int fifo_frame_delay, media::AudioBus* audio_bus) {
-  DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
+  DCHECK(sink_->CurrentThreadIsRenderingThread());
   base::TimeTicks start_time = base::TimeTicks::Now();
   DVLOG(2) << "WebRtcAudioRenderer::SourceCallback("
            << fifo_frame_delay << ", "

@@ -37,6 +37,7 @@ class MEDIA_EXPORT ClocklessAudioSink
   void Play() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  bool CurrentThreadIsRenderingThread() override;
 
   // Returns the time taken to consume all the audio.
   base::TimeDelta render_time() { return playback_time_; }

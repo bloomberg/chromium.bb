@@ -77,6 +77,11 @@ OutputDeviceInfo AudioOutputStreamSink::GetOutputDeviceInfo() {
   return OutputDeviceInfo();
 }
 
+bool AudioOutputStreamSink::CurrentThreadIsRenderingThread() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
                                       uint32_t total_bytes_delay,
                                       uint32_t frames_skipped) {

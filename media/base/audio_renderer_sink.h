@@ -70,6 +70,11 @@ class AudioRendererSink
   // Must never be called on the IO thread.
   virtual OutputDeviceInfo GetOutputDeviceInfo() = 0;
 
+  // If DCHECKs are enabled, this function returns true if called on rendering
+  // thread, otherwise false. With DCHECKs disabled, it returns true. Thus, it
+  // is intended to be used for DCHECKing.
+  virtual bool CurrentThreadIsRenderingThread() = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<AudioRendererSink>;
   virtual ~AudioRendererSink() {}
