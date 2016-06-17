@@ -1544,9 +1544,5 @@ crbug.com/618399 fast/js/regress/to-int32-boolean.html [ Pass Timeout ]
 
 crbug.com/484632 css3/flexbox/stretch-input-in-column.html [ Failure ]
 
-crbug.com/619973 [ Linux ] fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/619973 [ Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ NeedsRebaseline ]
-crbug.com/619973 [ Linux ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
