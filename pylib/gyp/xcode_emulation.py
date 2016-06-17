@@ -1712,11 +1712,12 @@ def _AddIOSDeviceConfigurations(targets):
   for target_dict in targets.itervalues():
     toolset = target_dict['toolset']
     configs = target_dict['configurations']
-    for config_name, config_dict in dict(configs).iteritems():
-      iphoneos_config_dict = copy.deepcopy(config_dict)
+    for config_name, simulator_config_dict in dict(configs).iteritems():
+      iphoneos_config_dict = copy.deepcopy(simulator_config_dict)
       configs[config_name + '-iphoneos'] = iphoneos_config_dict
-      configs[config_name + '-iphonesimulator'] = config_dict
+      configs[config_name + '-iphonesimulator'] = simulator_config_dict
       if toolset == 'target':
+        simulator_config_dict['xcode_settings']['SDKROOT'] = 'iphonesimulator'
         iphoneos_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
   return targets
 
