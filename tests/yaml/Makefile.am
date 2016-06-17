@@ -21,6 +21,7 @@ EXTRA_DIST =						\
 	en-ueb-g1_harness.yaml				\
 	en-ueb-g2-dictionary_harness.txt.bak.yaml	\
 	en-ueb-g2-dictionary_harness.yaml		\
+	en-ueb-math.yaml				\
 	en-ueb-symbols_harness.yaml			\
 	en-us-g2-dictionary_harness.txt.bak.yaml	\
 	en-us-g2-dictionary_harness.yaml		\

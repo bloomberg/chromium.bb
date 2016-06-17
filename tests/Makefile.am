@@ -133,6 +133,7 @@ dist_yaml_TESTS =					\
 	yaml/en-ueb-10-13-contractions.yaml		\
 	yaml/en-us-g2-dictionary_harness.yaml		\
 	yaml/en-us-g2-end-emphasis_harness.yaml		\
+	yaml/en-ueb-math.yaml				\
 	yaml/eo-g1_harness.yaml				\
 	yaml/ethio-g1_harness.yaml			\
 	yaml/example_test.yaml				\
