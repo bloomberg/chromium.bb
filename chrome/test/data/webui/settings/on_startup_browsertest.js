@@ -36,6 +36,12 @@ OnStartupSettingsBrowserTest.prototype = {
     assertTrue(!!result);
     return result;
   },
+
+  /** @override */
+  preLoad: function() {
+    SettingsPageBrowserTest.prototype.preLoad.call(this);
+    settingsHidePagesByDefaultForTest = true;
+  },
 };
 
 TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
@@ -53,6 +59,9 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
 
   suite('OnStartupHandler', function() {
     suiteSetup(function() {
+      self.getPage('basic').set('pageVisibility.onStartup', true);
+      Polymer.dom.flush();
+
       settingsPrefs = document.querySelector('cr-settings').$$(
           'settings-prefs');
       assertTrue(!!settingsPrefs);

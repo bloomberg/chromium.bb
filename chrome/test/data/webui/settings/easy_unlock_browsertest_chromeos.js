@@ -20,6 +20,12 @@ SettingsEasyUnlockBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_browser_proxy.js',
   ]),
+
+  /** @override */
+  preLoad: function() {
+    SettingsPageBrowserTest.prototype.preLoad.call(this);
+    settingsHidePagesByDefaultForTest = true;
+  },
 };
 
 // Times out on debug builders and may time out on memory bots because
@@ -102,8 +108,13 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
   /** @type {?CrSettingsPrefs} */
   var prefs = null;
 
+  var self = this;
+
   suite('SettingsEasyUnlock', function() {
     suiteSetup(function() {
+      self.getPage('basic').set('pageVisibility.people', true);
+      Polymer.dom.flush();
+
       // These overrides are necessary for this test to function on ChromeOS
       // bots that do not have Bluetooth (don't actually support Easy Unlock).
       loadTimeData.overrideValues({
