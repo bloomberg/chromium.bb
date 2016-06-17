@@ -21,6 +21,7 @@ struct Notifier;
 
 namespace arc {
 
+// TODO(hirono): Observe enabled flag change and notify it to message center.
 class ArcNotifierManager {
  public:
   ArcNotifierManager() {}

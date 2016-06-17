@@ -34,10 +34,10 @@ ArcNotifierManager::GetNotifiers(content::BrowserContext* profile) {
     added_packages.insert(app->package_name);
     message_center::NotifierId notifier_id(
         message_center::NotifierId::ARC_APPLICATION, app->package_name);
-    // TODO (hirono): Read Android settings to determine the notification is
-    // enabled.
     results.emplace_back(new message_center::Notifier(
-        notifier_id, base::ASCIIToUTF16(app->name), true));
+        notifier_id,
+        base::ASCIIToUTF16(app->name),
+        app->notifications_enabled));
   }
 
   return results;

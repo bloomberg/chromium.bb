@@ -28,6 +28,7 @@ const char kName[] = "name";
 const char kPackageName[] = "package_name";
 const char kActivity[] = "activity";
 const char kSticky[] = "sticky";
+const char kNotificationsEnabled[] = "notifications_enabled";
 const char kLastLaunchTime[] = "lastlaunchtime";
 
 // Provider of write access to a dictionary storing ARC app prefs.
@@ -272,10 +273,12 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   std::string package_name;
   std::string activity;
   bool sticky = false;
+  bool notifications_enabled = true;
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
   app->GetBoolean(kSticky, &sticky);
+  app->GetBoolean(kNotificationsEnabled, &notifications_enabled);
 
   base::Time last_launch_time;
   std::string last_launch_time_str;
@@ -290,7 +293,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 
   std::unique_ptr<AppInfo> app_info(
       new AppInfo(name, package_name, activity, last_launch_time, sticky,
-                  ready_apps_.count(mapped_app_id) > 0,
+                  notifications_enabled, ready_apps_.count(mapped_app_id) > 0,
                   arc::ShouldShowInLauncher(app_id)));
   return app_info;
 }
@@ -411,6 +414,7 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app) {
   app_dict->SetString(kPackageName, app.package_name);
   app_dict->SetString(kActivity, app.activity);
   app_dict->SetBoolean(kSticky, app.sticky);
+  app_dict->SetBoolean(kNotificationsEnabled, app.notifications_enabled);
 
   // From now, app is available.
   if (!ready_apps_.count(app_id))
@@ -426,6 +430,7 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app) {
                      app.activity,
                      base::Time(),
                      app.sticky,
+                     app.notifications_enabled,
                      true,
                      arc::ShouldShowInLauncher(app_id));
     FOR_EACH_OBSERVER(Observer,
@@ -552,6 +557,29 @@ void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnTaskSetActive(task_id));
 }
 
+void ArcAppListPrefs::OnNotificationsEnabledChanged(
+    const mojo::String& package_name, bool enabled) {
+  const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+  for (base::DictionaryValue::Iterator app(*apps);
+       !app.IsAtEnd(); app.Advance()) {
+    const base::DictionaryValue* app_dict;
+    std::string app_package_name;
+    if (!app.value().GetAsDictionary(&app_dict) ||
+        !app_dict->GetString(kPackageName, &app_package_name)) {
+      NOTREACHED();
+      continue;
+    }
+    if (app_package_name != package_name) {
+      continue;
+    }
+    ScopedArcAppListPrefUpdate update(prefs_, app.key());
+    base::DictionaryValue* updateing_app_dict = update.Get();
+    updateing_app_dict->SetBoolean(kNotificationsEnabled, enabled);
+  }
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnNotificationsEnabledChanged(package_name, enabled));
+}
+
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
                                   const std::vector<uint8_t>& content_png) {
@@ -586,6 +614,7 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   const std::string& activity,
                                   const base::Time& last_launch_time,
                                   bool sticky,
+                                  bool notifications_enabled,
                                   bool ready,
                                   bool showInLauncher)
     : name(name),
@@ -593,5 +622,6 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
       activity(activity),
       last_launch_time(last_launch_time),
       sticky(sticky),
+      notifications_enabled(notifications_enabled),
       ready(ready),
       showInLauncher(showInLauncher) {}

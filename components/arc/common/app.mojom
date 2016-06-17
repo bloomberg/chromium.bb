@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -15,9 +15,10 @@ struct AppInfo {
   string package_name;
   string activity;
   [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
+  [MinVersion=7] bool notifications_enabled;
 };
 
-// Next method ID: 7
+// Next method ID: 8
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
@@ -50,6 +51,10 @@ interface AppHost {
 
   // Notifies that task has been activated.
   [MinVersion=4] OnTaskSetActive@6(int32 task_id);
+
+  // Notifies that notifications enabled settings in Android is changed.
+  [MinVersion=7] OnNotificationsEnabledChanged@7(string package_name,
+                                                 bool enabled);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.

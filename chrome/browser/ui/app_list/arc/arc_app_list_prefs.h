@@ -54,6 +54,7 @@ class ArcAppListPrefs : public KeyedService,
             const std::string& activity,
             const base::Time& last_launch_time,
             bool sticky,
+            bool notifications_enabled,
             bool ready,
             bool showInLauncher);
 
@@ -62,6 +63,7 @@ class ArcAppListPrefs : public KeyedService,
     std::string activity;
     base::Time last_launch_time;
     bool sticky;
+    bool notifications_enabled;
     bool ready;
     bool showInLauncher;
   };
@@ -90,6 +92,9 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnTaskDestroyed(int32_t task_id) {}
     // Notifies that task has been activated and moved to the front.
     virtual void OnTaskSetActive(int32_t task_id) {}
+
+    virtual void OnNotificationsEnabledChanged(
+        const std::string& package_name, bool enabled) {}
 
    protected:
     virtual ~Observer() {}
@@ -168,7 +173,8 @@ class ArcAppListPrefs : public KeyedService,
                      const mojo::String& activity) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
-
+  void OnNotificationsEnabledChanged(const mojo::String& package_name,
+                                     bool enabled) override;
 
   void AddApp(const arc::mojom::AppInfo& app);
   void RemoveApp(const std::string& app_id);
