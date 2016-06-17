@@ -324,6 +324,7 @@
       'public/browser/url_data_source.h',
       'public/browser/user_metrics.h',
       'public/browser/utility_process_host.h',
+      'public/browser/utility_process_mojo_client.h',
       'public/browser/web_contents.cc',
       'public/browser/web_contents.h',
       'public/browser/web_contents_delegate.cc',

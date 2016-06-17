@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_MOJO_APP_H_
 #define CONTENT_PUBLIC_TEST_TEST_MOJO_APP_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,6 +36,8 @@ class TestMojoApp : public shell::ShellClient,
 
   // TestMojoService:
   void DoSomething(const DoSomethingCallback& callback) override;
+  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override;
+  void CreateFolder(const CreateFolderCallback& callback) override;
   void GetRequestorName(const GetRequestorNameCallback& callback) override;
 
   mojo::Binding<mojom::TestMojoService> service_binding_;
@@ -44,6 +48,6 @@ class TestMojoApp : public shell::ShellClient,
   DISALLOW_COPY_AND_ASSIGN(TestMojoApp);
 };
 
-}  // namespace
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_MOJO_APP_H_

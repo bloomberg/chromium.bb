@@ -8,6 +8,13 @@ interface TestMojoService {
   // Doesn't actually do anything, just responds.
   DoSomething() => ();
 
+  // Terminates the current process to cause a connection error. Meant to test
+  // a connection error for the utility process.
+  DoTerminateProcess() => ();
+
+  // Tries to create a temporary folder. Requires a sandbox to succeed.
+  CreateFolder() => (bool succeeded);
+
   // Retrieve the requestor name as seen by the test app providing this service.
   GetRequestorName() => (string name);
 };

@@ -164,6 +164,14 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
     callback.Run();
   }
 
+  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override {
+    NOTREACHED();
+  }
+
+  void CreateFolder(const CreateFolderCallback& callback) override {
+    NOTREACHED();
+  }
+
   void GetRequestorName(const GetRequestorNameCallback& callback) override {
     callback.Run(mojo::String(""));
   }

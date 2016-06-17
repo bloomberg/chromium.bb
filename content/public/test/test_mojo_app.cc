@@ -39,6 +39,15 @@ void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
+void TestMojoApp::DoTerminateProcess(
+    const DoTerminateProcessCallback& callback) {
+  NOTREACHED();
+}
+
+void TestMojoApp::CreateFolder(const CreateFolderCallback& callback) {
+  NOTREACHED();
+}
+
 void TestMojoApp::GetRequestorName(const GetRequestorNameCallback& callback) {
   callback.Run(requestor_name_);
 }

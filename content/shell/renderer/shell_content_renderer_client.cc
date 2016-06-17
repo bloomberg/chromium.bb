@@ -4,8 +4,11 @@
 
 #include "content/shell/renderer/shell_content_renderer_client.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/service_registry.h"
@@ -29,7 +32,7 @@ namespace {
 // A test Mojo service which can be driven by browser tests for various reasons.
 class TestMojoServiceImpl : public mojom::TestMojoService {
  public:
-  TestMojoServiceImpl(mojom::TestMojoServiceRequest request)
+  explicit TestMojoServiceImpl(mojom::TestMojoServiceRequest request)
       : binding_(this, std::move(request)) {
     binding_.set_connection_error_handler(
         base::Bind(&TestMojoServiceImpl::OnConnectionError,
@@ -54,6 +57,14 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
 
     // Deletes this.
     OnConnectionError();
+  }
+
+  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override {
+    NOTREACHED();
+  }
+
+  void CreateFolder(const CreateFolderCallback& callback) override {
+    NOTREACHED();
   }
 
   void GetRequestorName(const GetRequestorNameCallback& callback) override {
