@@ -3,11 +3,11 @@ Test setTargetAtTime Approach to Limit
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Initial output of 774 samples for setTargetAtTime(1, 0, 0.001) equals [0,0.02061781866875989,0.04081054289086172,0.0605869371865243,0.07995558537067682,0.09892489427870932,0.11750309741540466,0.13569825852863593,...] with an element-wise tolerance of 0.000024.
+PASS Initial output of 774 samples for setTargetAtTime(1, 0, 0.001) equals [0,0.02061781866875978,0.040810542890861834,0.06058693718652419,0.07995558537067671,0.09892489427870943,0.11750309741540454,0.13569825852863604,...] with an element-wise tolerance of 0.000024.
 PASS Tail output for setTargetAtTime(1, 0, 0.001) contains all the expected values in the correct order: [1].
 PASS setTargetAtTime(1, 0, 0.001) had the expected values.
 
-PASS Initial output of 2322 samples for setTargetAtTime(0, 0, 0.001) equals [1,0.9793821813312401,0.9591894571091383,0.9394130628134757,0.9200444146293232,0.9010751057212907,0.8824969025845953,0.8643017414713641,...] with an element-wise tolerance of 1.3e-7.
+PASS Initial output of 2322 samples for setTargetAtTime(0, 0, 0.001) equals [1,0.9793821813312402,0.9591894571091382,0.9394130628134758,0.9200444146293233,0.9010751057212906,0.8824969025845955,0.864301741471364,...] with an element-wise tolerance of 1.3e-7.
 PASS Tail output for setTargetAtTime(0, 0, 0.001) contains all the expected values in the correct order: [0].
 PASS setTargetAtTime(0, 0, 0.001) had the expected values.
 
