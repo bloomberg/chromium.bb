@@ -8,5 +8,5 @@
     RuntimeEnabled=PaymentRequest
 ] dictionary PaymentItem {
     required DOMString label;
-    required CurrencyAmount amount;
+    required PaymentCurrencyAmount amount;
 };

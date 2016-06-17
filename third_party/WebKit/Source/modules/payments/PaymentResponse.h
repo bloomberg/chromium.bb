@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
-#include "modules/payments/CurrencyAmount.h"
+#include "modules/payments/PaymentCurrencyAmount.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/Noncopyable.h"
@@ -31,7 +31,7 @@ public:
     virtual ~PaymentResponse();
 
     const String& methodName() const { return m_methodName; }
-    void totalAmount(CurrencyAmount& result) const { result = m_totalAmount; }
+    void totalAmount(PaymentCurrencyAmount& result) const { result = m_totalAmount; }
     ScriptValue details(ScriptState*, ExceptionState&) const;
     PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }
     const String& payerEmail() const { return m_payerEmail; }
@@ -43,7 +43,7 @@ public:
 
 private:
     String m_methodName;
-    CurrencyAmount m_totalAmount;
+    PaymentCurrencyAmount m_totalAmount;
     String m_stringifiedDetails;
     Member<PaymentAddress> m_shippingAddress;
     String m_payerEmail;

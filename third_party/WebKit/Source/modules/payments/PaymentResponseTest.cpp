@@ -58,7 +58,7 @@ TEST(PaymentResponseTest, DataCopiedOver)
     EXPECT_EQ("abc@gmail.com", output.payerEmail());
     EXPECT_EQ("0123", output.payerPhone());
 
-    CurrencyAmount totalAmount;
+    PaymentCurrencyAmount totalAmount;
     output.totalAmount(totalAmount);
     EXPECT_EQ("USD", totalAmount.currency());
     EXPECT_EQ("5.00", totalAmount.value());

@@ -35,7 +35,7 @@ struct PaymentAddress {
 // The currency amount that the renderer provides to the browser process. The
 // browser shows the amount in UI and forwards it on to the payment app, if it
 // requires the amount.
-struct CurrencyAmount {
+struct PaymentCurrencyAmount {
   // ISO 4217 currency code. Three upper case ASCII letters.
   string currency;
 
@@ -46,7 +46,7 @@ struct CurrencyAmount {
 
 struct PaymentResponse {
   string method_name;
-  CurrencyAmount total_amount;
+  PaymentCurrencyAmount total_amount;
 
   // Payment method specific JSON string that is built either by the browser or
   // a payment app, for example Android Pay. Browser ensures that the string can
@@ -75,20 +75,20 @@ interface PaymentRequestClient {
 
 struct PaymentItem {
   string label;
-  CurrencyAmount amount;
+  PaymentCurrencyAmount amount;
 };
 
-struct ShippingOption {
+struct PaymentShippingOption {
   string id;
   string label;
-  CurrencyAmount amount;
+  PaymentCurrencyAmount amount;
   bool selected;
 };
 
 struct PaymentDetails {
   PaymentItem total;
   array<PaymentItem> display_items;
-  array<ShippingOption> shipping_options;
+  array<PaymentShippingOption> shipping_options;
 };
 
 struct PaymentOptions {

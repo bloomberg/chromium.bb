@@ -81,7 +81,7 @@ TEST(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable)
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    details.setShippingOptions(HeapVector<ShippingOption>(2, buildShippingOptionForTest()));
+    details.setShippingOptions(HeapVector<PaymentShippingOption>(2, buildShippingOptionForTest()));
     PaymentOptions options;
     options.setRequestShipping(true);
 
@@ -96,7 +96,7 @@ TEST(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault)
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard")));
+    details.setShippingOptions(HeapVector<PaymentShippingOption>(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard")));
 
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, scope.getExceptionState());
 
@@ -109,7 +109,7 @@ TEST(PaymentRequestTest, DontSelectSingleAvailableShippingOptionWhenShippingNotR
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
+    details.setShippingOptions(HeapVector<PaymentShippingOption>(1, buildShippingOptionForTest()));
     PaymentOptions options;
     options.setRequestShipping(false);
 
@@ -124,7 +124,7 @@ TEST(PaymentRequestTest, DontSelectSingleUnselectedShippingOptionWhenShippingReq
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
+    details.setShippingOptions(HeapVector<PaymentShippingOption>(1, buildShippingOptionForTest()));
     PaymentOptions options;
     options.setRequestShipping(true);
 
@@ -139,7 +139,7 @@ TEST(PaymentRequestTest, SelectSingleSelectedShippingOptionWhenShippingRequested
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    HeapVector<ShippingOption> shippingOptions(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard"));
+    HeapVector<PaymentShippingOption> shippingOptions(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard"));
     shippingOptions[0].setSelected(true);
     details.setShippingOptions(shippingOptions);
     PaymentOptions options;
@@ -156,7 +156,7 @@ TEST(PaymentRequestTest, SelectOnlySelectedShippingOptionWhenShippingRequested)
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    HeapVector<ShippingOption> shippingOptions(2);
+    HeapVector<PaymentShippingOption> shippingOptions(2);
     shippingOptions[0] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard");
     shippingOptions[0].setSelected(true);
     shippingOptions[1] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "express");
@@ -175,7 +175,7 @@ TEST(PaymentRequestTest, SelectLastSelectedShippingOptionWhenShippingRequested)
     makePaymentRequestOriginSecure(scope.document());
     PaymentDetails details;
     details.setTotal(buildPaymentItemForTest());
-    HeapVector<ShippingOption> shippingOptions(2);
+    HeapVector<PaymentShippingOption> shippingOptions(2);
     shippingOptions[0] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard");
     shippingOptions[0].setSelected(true);
     shippingOptions[1] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "express");
@@ -553,7 +553,7 @@ TEST(PaymentRequestTest, ResolveShowPromiseWithRequestPayerEmailTrueAndValidPaye
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "abc@gmail.com";
 
     ScriptValue outValue;
@@ -576,7 +576,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerEmailTrueAndEmptyPayer
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -594,7 +594,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerEmailTrueAndNullPayerE
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = String();
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -612,7 +612,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerEmailFalseAndNonNullPa
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -630,7 +630,7 @@ TEST(PaymentRequestTest, ResolveShowPromiseWithRequestPayerEmailFalseAndNullPaye
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = String();
 
     ScriptValue outValue;
@@ -653,7 +653,7 @@ TEST(PaymentRequestTest, ResolveShowPromiseWithRequestPayerPhoneTrueAndValidPaye
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "0123";
 
     ScriptValue outValue;
@@ -676,7 +676,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerPhoneTrueAndEmptyPayer
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -694,7 +694,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerPhoneTrueAndNullPayerP
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = String();
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -712,7 +712,7 @@ TEST(PaymentRequestTest, RejectShowPromiseWithRequestPayerPhoneFalseAndNonNulPay
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -730,7 +730,7 @@ TEST(PaymentRequestTest, ResolveShowPromiseWithRequestPayerPhoneFalseAndNullPaye
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::CurrencyAmount::New();
+    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = String();
 
     ScriptValue outValue;

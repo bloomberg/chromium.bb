@@ -9,5 +9,5 @@
 ] dictionary PaymentDetails {
     PaymentItem total;
     sequence<PaymentItem> displayItems;
-    sequence<ShippingOption> shippingOptions;
+    sequence<PaymentShippingOption> shippingOptions;
 };

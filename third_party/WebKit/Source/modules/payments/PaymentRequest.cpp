@@ -19,8 +19,8 @@
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentRequestUpdateEvent.h"
 #include "modules/payments/PaymentResponse.h"
+#include "modules/payments/PaymentShippingOption.h"
 #include "modules/payments/PaymentsValidators.h"
-#include "modules/payments/ShippingOption.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/mojo/MojoHelper.h"
@@ -29,8 +29,8 @@
 
 namespace mojo {
 
-using blink::mojom::blink::CurrencyAmount;
-using blink::mojom::blink::CurrencyAmountPtr;
+using blink::mojom::blink::PaymentCurrencyAmount;
+using blink::mojom::blink::PaymentCurrencyAmountPtr;
 using blink::mojom::blink::PaymentDetails;
 using blink::mojom::blink::PaymentDetailsPtr;
 using blink::mojom::blink::PaymentItem;
@@ -39,14 +39,14 @@ using blink::mojom::blink::PaymentMethodData;
 using blink::mojom::blink::PaymentMethodDataPtr;
 using blink::mojom::blink::PaymentOptions;
 using blink::mojom::blink::PaymentOptionsPtr;
-using blink::mojom::blink::ShippingOption;
-using blink::mojom::blink::ShippingOptionPtr;
+using blink::mojom::blink::PaymentShippingOption;
+using blink::mojom::blink::PaymentShippingOptionPtr;
 
 template <>
-struct TypeConverter<CurrencyAmountPtr, blink::CurrencyAmount> {
-    static CurrencyAmountPtr Convert(const blink::CurrencyAmount& input)
+struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
+    static PaymentCurrencyAmountPtr Convert(const blink::PaymentCurrencyAmount& input)
     {
-        CurrencyAmountPtr output = CurrencyAmount::New();
+        PaymentCurrencyAmountPtr output = PaymentCurrencyAmount::New();
         output->currency = input.currency();
         output->value = input.value();
         return output;
@@ -59,19 +59,19 @@ struct TypeConverter<PaymentItemPtr, blink::PaymentItem> {
     {
         PaymentItemPtr output = PaymentItem::New();
         output->label = input.label();
-        output->amount = CurrencyAmount::From(input.amount());
+        output->amount = PaymentCurrencyAmount::From(input.amount());
         return output;
     }
 };
 
 template <>
-struct TypeConverter<ShippingOptionPtr, blink::ShippingOption> {
-    static ShippingOptionPtr Convert(const blink::ShippingOption& input)
+struct TypeConverter<PaymentShippingOptionPtr, blink::PaymentShippingOption> {
+    static PaymentShippingOptionPtr Convert(const blink::PaymentShippingOption& input)
     {
-        ShippingOptionPtr output = ShippingOption::New();
+        PaymentShippingOptionPtr output = PaymentShippingOption::New();
         output->id = input.id();
         output->label = input.label();
-        output->amount = CurrencyAmount::From(input.amount());
+        output->amount = PaymentCurrencyAmount::From(input.amount());
         output->selected = input.hasSelected() && input.selected();
         return output;
     }
@@ -90,9 +90,9 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
             output->display_items = mojo::WTFArray<PaymentItemPtr>::New(0);
 
         if (input.hasShippingOptions())
-            output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::From(input.shippingOptions());
+            output->shipping_options = mojo::WTFArray<PaymentShippingOptionPtr>::From(input.shippingOptions());
         else
-            output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::New(0);
+            output->shipping_options = mojo::WTFArray<PaymentShippingOptionPtr>::New(0);
 
         return output;
     }
@@ -173,7 +173,7 @@ void validateDisplayItems(const HeapVector<PaymentItem>& items, ExceptionState& 
     }
 }
 
-void validateShippingOptions(const HeapVector<ShippingOption>& options, ExceptionState& exceptionState)
+void validateShippingOptions(const HeapVector<PaymentShippingOption>& options, ExceptionState& exceptionState)
 {
     for (const auto& option : options) {
         if (!option.hasId() || option.id().isEmpty()) {

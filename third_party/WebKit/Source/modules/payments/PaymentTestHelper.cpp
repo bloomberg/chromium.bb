@@ -6,19 +6,19 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
-#include "modules/payments/CurrencyAmount.h"
+#include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentMethodData.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
 namespace {
 
-// PaymentItem and ShippingOption have identical structure
-// except for the "id" field, which is present only in ShippingOption.
-template <typename PaymentItemOrShippingOption>
-void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
+// PaymentItem and PaymentShippingOption have identical structure
+// except for the "id" field, which is present only in PaymentShippingOption.
+template <typename PaymentItemOrPaymentShippingOption>
+void setValues(PaymentItemOrPaymentShippingOption& original, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
-    CurrencyAmount itemAmount;
+    PaymentCurrencyAmount itemAmount;
     if (data == PaymentTestDataCurrencyCode) {
         if (modificationType == PaymentTestOverwriteValue)
             itemAmount.setCurrency(valueToUse);
@@ -53,9 +53,9 @@ PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestMod
     return item;
 }
 
-ShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
+PaymentShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
-    ShippingOption shippingOption;
+    PaymentShippingOption shippingOption;
     if (data == PaymentTestDataId) {
         if (modificationType == PaymentTestOverwriteValue)
             shippingOption.setId(valueToUse);
@@ -80,7 +80,7 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
     else
         item = buildPaymentItemForTest();
 
-    ShippingOption shippingOption;
+    PaymentShippingOption shippingOption;
     if (detail == PaymentTestDetailShippingOption)
         shippingOption = buildShippingOptionForTest(data, modificationType, valueToUse);
     else
@@ -89,7 +89,7 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
     PaymentDetails result;
     result.setTotal(total);
     result.setDisplayItems(HeapVector<PaymentItem>(1, item));
-    result.setShippingOptions(HeapVector<ShippingOption>(2, shippingOption));
+    result.setShippingOptions(HeapVector<PaymentShippingOption>(2, shippingOption));
 
     return result;
 }
@@ -104,7 +104,7 @@ HeapVector<PaymentMethodData> buildPaymentMethodDataForTest()
 mojom::blink::PaymentResponsePtr buildPaymentResponseForTest()
 {
     mojom::blink::PaymentResponsePtr result = mojom::blink::PaymentResponse::New();
-    result->total_amount = mojom::blink::CurrencyAmount::New();
+    result->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     return result;
 }
 

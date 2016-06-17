@@ -38,7 +38,7 @@ import org.chromium.mojom.payments.PaymentOptions;
 import org.chromium.mojom.payments.PaymentRequest;
 import org.chromium.mojom.payments.PaymentRequestClient;
 import org.chromium.mojom.payments.PaymentResponse;
-import org.chromium.mojom.payments.ShippingOption;
+import org.chromium.mojom.payments.PaymentShippingOption;
 import org.chromium.ui.base.WindowAndroid;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -110,7 +110,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * updated payment options from the website to determine whether shipping options have changed
      * due to user selecting a shipping address.
      */
-    private List<ShippingOption> mRawShippingOptions;
+    private List<PaymentShippingOption> mRawShippingOptions;
 
     /**
      * The UI model for the shipping options. Includes the label and sublabel for each shipping
@@ -446,7 +446,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * @param formatter A formatter and validator for the currency amount value.
      * @return The UI representation of the shipping options or null if invalid.
      */
-    private static SectionInformation getValidatedShippingOptions(ShippingOption[] options,
+    private static SectionInformation getValidatedShippingOptions(PaymentShippingOption[] options,
             String totalCurrency, CurrencyStringFormatter formatter) {
         // Shipping options are optional.
         if (options == null || options.length == 0) {
@@ -454,7 +454,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         for (int i = 0; i < options.length; i++) {
-            ShippingOption option = options[i];
+            PaymentShippingOption option = options[i];
 
             // Each "id", "label", "currency", and "value" should be non-empty.
             // Each "value" should be a valid amount value.
@@ -471,7 +471,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         List<PaymentOption> result = new ArrayList<>();
         int selectedItemIndex = SectionInformation.NO_SELECTION;
         for (int i = 0; i < options.length; i++) {
-            ShippingOption option = options[i];
+            PaymentShippingOption option = options[i];
             result.add(new PaymentOption(option.id, option.label,
                     formatter.format(option.amount.value), PaymentOption.NO_ICON));
             if (option.selected) selectedItemIndex = i;
