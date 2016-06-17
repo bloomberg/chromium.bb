@@ -60,6 +60,7 @@
 ../../third_party/catapult/devil/devil/utils/parallelizer.py
 ../../third_party/catapult/devil/devil/utils/reraiser_thread.py
 ../../third_party/catapult/devil/devil/utils/run_tests_helper.py
+../../third_party/catapult/devil/devil/utils/signal_handler.py
 ../../third_party/catapult/devil/devil/utils/timeout_retry.py
 ../../third_party/catapult/devil/devil/utils/watchdog_timer.py
 ../../third_party/catapult/devil/devil/utils/zip_utils.py

@@ -6,9 +6,13 @@ import fnmatch
 import functools
 import imp
 import logging
+import signal
+import thread
+import threading
 
 from devil import base_error
 from devil.android import device_errors
+from devil.utils import signal_handler
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_run
@@ -67,8 +71,10 @@ def handle_shard_failures_with(on_failure):
       except device_errors.DeviceUnreachableError:
         logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
       except base_error.BaseError:
-        logging.exception('Shard failed: %s(%s)', f.__name__,
-                          str(dev))
+        logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
+      except SystemExit:
+        logging.exception('Shard killed: %s(%s)', f.__name__, str(dev))
+        raise
       if on_failure:
         on_failure(dev, f.__name__)
       return None
@@ -88,9 +94,14 @@ class LocalDeviceTestRun(test_run.TestRun):
   def RunTests(self):
     tests = self._GetTests()
 
+    exit_now = threading.Event()
+
     @handle_shard_failures
     def run_tests_on_device(dev, tests, results):
       for test in tests:
+        if exit_now.isSet():
+          thread.exit()
+
         result = None
         try:
           result = self._RunTest(dev, test)
@@ -112,34 +123,38 @@ class LocalDeviceTestRun(test_run.TestRun):
 
       logging.info('Finished running tests on this device.')
 
-    tries = 0
-    results = []
-    while tries < self._env.max_tries and tests:
-      logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
-      logging.info('Will run %d tests on %d devices: %s',
-                   len(tests), len(self._env.devices),
-                   ', '.join(str(d) for d in self._env.devices))
-      for t in tests:
-        logging.debug('  %s', t)
+    def stop_tests(_signum, _frame):
+      exit_now.set()
 
-      try_results = base_test_result.TestRunResults()
-      if self._ShouldShard():
-        tc = test_collection.TestCollection(self._CreateShards(tests))
-        self._env.parallel_devices.pMap(
-            run_tests_on_device, tc, try_results).pGet(None)
-      else:
-        self._env.parallel_devices.pMap(
-            run_tests_on_device, tests, try_results).pGet(None)
+    with signal_handler.AddSignalHandler(signal.SIGTERM, stop_tests):
+      tries = 0
+      results = []
+      while tries < self._env.max_tries and tests:
+        logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
+        logging.info('Will run %d tests on %d devices: %s',
+                     len(tests), len(self._env.devices),
+                     ', '.join(str(d) for d in self._env.devices))
+        for t in tests:
+          logging.debug('  %s', t)
 
-      results.append(try_results)
-      tries += 1
-      tests = self._GetTestsToRetry(tests, try_results)
+        try_results = base_test_result.TestRunResults()
+        if self._ShouldShard():
+          tc = test_collection.TestCollection(self._CreateShards(tests))
+          self._env.parallel_devices.pMap(
+              run_tests_on_device, tc, try_results).pGet(None)
+        else:
+          self._env.parallel_devices.pMap(
+              run_tests_on_device, tests, try_results).pGet(None)
 
-      logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
-      if tests:
-        logging.info('%d failed tests remain.', len(tests))
-      else:
-        logging.info('All tests completed.')
+        results.append(try_results)
+        tries += 1
+        tests = self._GetTestsToRetry(tests, try_results)
+
+        logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
+        if tests:
+          logging.info('%d failed tests remain.', len(tests))
+        else:
+          logging.info('All tests completed.')
 
     return results
 
