@@ -67,7 +67,6 @@ class PythonChecker(object):
 
     def _check_pylint(self):
         output = self._run_pylint(self._file_path)
-        print output
         errors = self._parse_pylint_output(output)
         for line_number, category, message in errors:
             self._handle_style_error(line_number, category, 5, message)
