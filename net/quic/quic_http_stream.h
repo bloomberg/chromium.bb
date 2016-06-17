@@ -118,8 +118,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int DoReadRequestBodyComplete(int rv);
   int DoSendBody();
   int DoSendBodyComplete(int rv);
-  int DoReadResponseHeaders();
-  int DoReadResponseHeadersComplete(int rv);
 
   int ProcessResponseHeaders(const SpdyHeaderBlock& headers);
 

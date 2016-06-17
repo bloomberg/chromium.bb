@@ -174,41 +174,6 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-int QuicHttpStream::DoStreamRequest() {
-  if (session_.get() == nullptr) {
-    // TODO(rtenneti) Bug: b/28676259 - a temporary fix until we find out why
-    // |session_| could be a nullptr.
-    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
-                                    : ERR_QUIC_HANDSHAKE_FAILED;
-  }
-  int rv = stream_request_.StartRequest(
-      session_, &stream_,
-      base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
-  if (rv == OK) {
-    stream_->SetDelegate(this);
-    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
-      stream_->DisableConnectionMigration();
-    }
-    if (response_info_) {
-      next_state_ = STATE_SET_REQUEST_PRIORITY;
-    }
-  } else if (rv != ERR_IO_PENDING && !was_handshake_confirmed_) {
-    rv = ERR_QUIC_HANDSHAKE_FAILED;
-  }
-  return rv;
-}
-
-int QuicHttpStream::DoSetRequestPriority() {
-  // Set priority according to request and, and advance to
-  // STATE_SEND_HEADERS.
-  DCHECK(stream_);
-  DCHECK(response_info_);
-  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(priority);
-  next_state_ = STATE_SEND_HEADERS;
-  return OK;
-}
-
 void QuicHttpStream::OnStreamReady(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
@@ -629,6 +594,41 @@ int QuicHttpStream::DoLoop(int rv) {
            rv != ERR_IO_PENDING);
 
   return rv;
+}
+
+int QuicHttpStream::DoStreamRequest() {
+  if (session_.get() == nullptr) {
+    // TODO(rtenneti) Bug: b/28676259 - a temporary fix until we find out why
+    // |session_| could be a nullptr.
+    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
+                                    : ERR_QUIC_HANDSHAKE_FAILED;
+  }
+  int rv = stream_request_.StartRequest(
+      session_, &stream_,
+      base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
+  if (rv == OK) {
+    stream_->SetDelegate(this);
+    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
+      stream_->DisableConnectionMigration();
+    }
+    if (response_info_) {
+      next_state_ = STATE_SET_REQUEST_PRIORITY;
+    }
+  } else if (rv != ERR_IO_PENDING && !was_handshake_confirmed_) {
+    rv = ERR_QUIC_HANDSHAKE_FAILED;
+  }
+  return rv;
+}
+
+int QuicHttpStream::DoSetRequestPriority() {
+  // Set priority according to request and, and advance to
+  // STATE_SEND_HEADERS.
+  DCHECK(stream_);
+  DCHECK(response_info_);
+  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
+  stream_->SetPriority(priority);
+  next_state_ = STATE_SEND_HEADERS;
+  return OK;
 }
 
 int QuicHttpStream::DoSendHeaders() {
