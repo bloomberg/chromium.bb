@@ -322,6 +322,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock_popen_with_oserr()
     cmd = [
       '--no-log',
+      '--cache', self.tempdir,
       '/bin/echo',
       'hello',
       'world',
@@ -358,10 +359,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
       finally:
         os.close(packages_fd)
 
+      cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
       cmd = [
         '--no-log',
+        '--cache', os.path.join(self.tempdir, 'cache'),
         '--cipd-package-list', packages_path,
         '--cipd-server', self.cipd_server.url,
+        '--cipd-cache', cipd_cache,
         'bin/echo${EXECUTABLE_SUFFIX}',
         'hello',
         'world',
@@ -375,23 +379,23 @@ class RunIsolatedTest(RunIsolatedTestBase):
       # Test cipd-ensure command for installing packages.
       for cipd_ensure_cmd, _ in self.popen_calls[0:2]:
         self.assertEqual(cipd_ensure_cmd[:2], [
-          os.path.abspath('cipd_cache/cipd' + cipd.EXECUTABLE_SUFFIX),
+          os.path.join(cipd_cache, 'cipd' + cipd.EXECUTABLE_SUFFIX),
           'ensure',
         ])
         cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
         self.assertEqual(
             cipd_ensure_cmd[cache_dir_index+1],
-            os.path.abspath('cipd_cache/cipd_internal'))
+            os.path.join(cipd_cache, 'cipd_internal'))
 
       # Test cipd cache.
-      version_file = unicode(os.path.abspath(
-          'cipd_cache/versions/1481d0a0ceb16ea4672fed76a0710306eb9f3a33'))
+      version_file = unicode(os.path.join(
+          cipd_cache, 'versions', '1481d0a0ceb16ea4672fed76a0710306eb9f3a33'))
       self.assertTrue(fs.isfile(version_file))
       with open(version_file) as f:
         self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-      client_binary_file = unicode(os.path.abspath(
-          'cipd_cache/clients/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+      client_binary_file = unicode(os.path.join(
+          cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
       self.assertTrue(fs.isfile(client_binary_file))
 
       # Test echo call.
