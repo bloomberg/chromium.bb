@@ -17,8 +17,8 @@ parameter has changed.
 
 ** New features
 - Numerous features to support UEB properly. Thanks to Mike Gray,
-  Keith Creasy and the American Printing House for the Blind for
-  sponsoring this work.
+  William Freeman, Davy Kager, Keith Creasy and the American Printing
+  House for the Blind for sponsoring this work.
   - support the many emphasis classes needed for UEB.
   - support translation of numbers according to the rules of UEB.
   - Capitalization is now handled just like emphasis.
