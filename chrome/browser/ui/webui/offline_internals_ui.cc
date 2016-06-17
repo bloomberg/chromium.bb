@@ -45,10 +45,10 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void HandleDeleteSelectedPages(const base::ListValue* args);
 
   // Load Request Queue info.
-  void HandleGetRequestQueueInfo(const base::ListValue* args);
+  void HandleGetRequestQueue(const base::ListValue* args);
 
   // Load Stored pages info.
-  void HandleGetStoredPagesInfo(const base::ListValue* args);
+  void HandleGetStoredPages(const base::ListValue* args);
 
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
@@ -218,7 +218,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
   ResolveJavascriptCallback(base::StringValue(callback_id), save_page_requests);
 }
 
-void OfflineInternalsUIMessageHandler::HandleGetRequestQueueInfo(
+void OfflineInternalsUIMessageHandler::HandleGetRequestQueue(
     const base::ListValue* args) {
   AllowJavascript();
   std::string callback_id;
@@ -234,7 +234,7 @@ void OfflineInternalsUIMessageHandler::HandleGetRequestQueueInfo(
   }
 }
 
-void OfflineInternalsUIMessageHandler::HandleGetStoredPagesInfo(
+void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
     const base::ListValue* args) {
   AllowJavascript();
   std::string callback_id;
@@ -260,12 +260,12 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "getRequestQueueInfo",
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetRequestQueueInfo,
+      "getRequestQueue",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetRequestQueue,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "getStoredPagesInfo",
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetStoredPagesInfo,
+      "getStoredPages",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetStoredPages,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Get the offline page model associated with this web ui.
@@ -290,6 +290,8 @@ OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
                                IDR_OFFLINE_INTERNALS_CSS);
   html_source->AddResourcePath("offline_internals.js",
                                IDR_OFFLINE_INTERNALS_JS);
+  html_source->AddResourcePath("offline_internals_browser_proxy.js",
+                               IDR_OFFLINE_INTERNALS_BROWSER_PROXY_JS);
   html_source->SetDefaultResource(IDR_OFFLINE_INTERNALS_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);

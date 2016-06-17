@@ -2,32 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @typedef {{
- *   onlineUrl: string,
- *   creationTime: number,
- *   id: string,
- *   namespace: string,
- *   size: string,
- *   filePath: string,
- *   lastAccessTime: number,
- *   accessCount: number
- * }}
- */
-var OfflinePage;
-
-/**
- * @typedef {{
- *   status: string,
- *   onlineUrl: string,
- *   creationTime: number,
- *   id: string,
- *   namespace: string,
- *   lastAttempt: number
- * }}
- */
-var SavePageRequest;
-
 cr.define('offlineInternals', function() {
   'use strict';
 
@@ -36,6 +10,9 @@ cr.define('offlineInternals', function() {
 
   /** @type {!Array<SavePageRequest>} */
   var savePageRequests = [];
+
+  /** @type {offlineInternals.OfflineInternalsBrowserProxy} */
+  var browserProxy_;
 
   /**
    * Fill stored pages table.
@@ -108,15 +85,15 @@ cr.define('offlineInternals', function() {
    * Refresh all displayed information.
    */
   function refreshAll() {
-    cr.sendWithPromise('getStoredPagesInfo').then(fillStoredPages);
-    cr.sendWithPromise('getRequestQueueInfo').then(fillRequestQueue);
+    browserProxy_.getStoredPages().then(fillStoredPages);
+    browserProxy_.getRequestQueue().then(fillRequestQueue);
   }
 
   /**
    * Delete all pages in the offline store.
    */
   function deleteAllPages() {
-    cr.sendWithPromise('deleteAllPages').then(pagesDeleted);
+    browserProxy_.deleteAllPages().then(pagesDeleted);
   }
 
   /**
@@ -125,17 +102,7 @@ cr.define('offlineInternals', function() {
    */
   function pagesDeleted(status) {
     $('page-actions-info').textContent = status;
-    cr.sendWithPromise('getStoredPagesInfo').then(fillStoredPages);
-  }
-
-  /**
-   * Helper function to JSON-escape and add quotes around a string.
-   * @param {string} strObj The obj to escape and add quotes around.
-   * @return {string} The escaped string.
-   */
-  function escapeString(strObj) {
-    // CSV single quotes are encoded as "". There can also be commas.
-    return '"' + strObj.replace(/"/g, '""') + '"';
+    browserProxy_.getStoredPages().then(fillStoredPages);
   }
 
   /**
@@ -165,7 +132,7 @@ cr.define('offlineInternals', function() {
         selectedIds.push(checkboxes[i].value);
     }
 
-    cr.sendWithPromise('deleteSelectedPages', selectedIds).then(pagesDeleted);
+    browserProxy_.deleteSelectedPages(selectedIds).then(pagesDeleted);
   }
 
   function initialize() {
@@ -173,6 +140,8 @@ cr.define('offlineInternals', function() {
     $('clear-selected').onclick = deleteSelectedPages;
     $('refresh').onclick = refreshAll;
     $('download').onclick = download;
+    browserProxy_ =
+        offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
     refreshAll();
   }
 
