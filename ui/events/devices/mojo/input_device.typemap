@@ -3,11 +3,23 @@
 # found in the LICENSE file.
 
 mojom = "//ui/events/devices/mojo/input_devices.mojom"
-public_headers = [ "//ui/events/devices/input_device.h" ]
-traits_headers = [ 
-  "//ui/events/devices/mojo/input_device_struct_traits.h" 
- ]
+public_headers = [
+  "//ui/events/devices/input_device.h",
+  "//ui/events/devices/touchscreen_device.h",
+]
+traits_headers = [ "//ui/events/devices/mojo/input_device_struct_traits.h" ]
+sources = [
+  "//ui/events/devices/mojo/input_device_struct_traits.cc",
+]
 public_deps = [
   "//ui/events/devices",
 ]
-type_mappings = [ "ui.mojom.InputDevice=ui::InputDevice" ]
+deps = [
+  "//ui/gfx/geometry",
+]
+
+type_mappings = [
+  "ui.mojom.InputDeviceType=ui::InputDeviceType",
+  "ui.mojom.InputDevice=ui::InputDevice",
+  "ui.mojom.TouchscreenDevice=ui::TouchscreenDevice",
+]

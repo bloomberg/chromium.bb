@@ -16,18 +16,18 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<ui::mojom::InputDeviceType, ui::InputDeviceType> {
+  static ui::mojom::InputDeviceType ToMojom(ui::InputDeviceType type);
+  static bool FromMojom(ui::mojom::InputDeviceType type,
+                        ui::InputDeviceType* output);
+};
+
+template <>
 struct StructTraits<ui::mojom::InputDevice, ui::InputDevice> {
   static int32_t id(const ui::InputDevice& device) { return device.id; }
 
-  static ui::mojom::InputDeviceType type(const ui::InputDevice& device) {
-    switch (device.type) {
-      case ui::INPUT_DEVICE_INTERNAL:
-        return ui::mojom::InputDeviceType::INPUT_DEVICE_INTERNAL;
-      case ui::INPUT_DEVICE_EXTERNAL:
-        return ui::mojom::InputDeviceType::INPUT_DEVICE_EXTERNAL;
-      case ui::INPUT_DEVICE_UNKNOWN:
-        return ui::mojom::InputDeviceType::INPUT_DEVICE_UNKNOWN;
-    }
+  static ui::InputDeviceType type(const ui::InputDevice& device) {
+    return device.type;
   }
 
   static const std::string& name(const ui::InputDevice& device) {
@@ -46,37 +46,7 @@ struct StructTraits<ui::mojom::InputDevice, ui::InputDevice> {
     return device.product_id;
   }
 
-  static bool Read(ui::mojom::InputDeviceDataView data, ui::InputDevice* out) {
-    out->id = data.id();
-
-    switch (data.type()) {
-      case ui::mojom::InputDeviceType::INPUT_DEVICE_INTERNAL:
-        out->type = ui::INPUT_DEVICE_INTERNAL;
-        break;
-      case ui::mojom::InputDeviceType::INPUT_DEVICE_EXTERNAL:
-        out->type = ui::INPUT_DEVICE_EXTERNAL;
-        break;
-      case ui::mojom::InputDeviceType::INPUT_DEVICE_UNKNOWN:
-        out->type = ui::INPUT_DEVICE_UNKNOWN;
-        break;
-      default:
-        // Who knows what values might come over the wire, fail if invalid.
-        return false;
-    }
-
-    if (!data.ReadName(&out->name))
-      return false;
-
-    base::StringPiece sys_path_string;
-    if (!data.ReadSysPath(&sys_path_string))
-      return false;
-    out->sys_path = base::FilePath::FromUTF8Unsafe(sys_path_string);
-
-    out->vendor_id = data.vendor_id();
-    out->product_id = data.product_id();
-
-    return true;
-  }
+  static bool Read(ui::mojom::InputDeviceDataView data, ui::InputDevice* out);
 };
 
 template <>
@@ -95,17 +65,7 @@ struct StructTraits<ui::mojom::TouchscreenDevice, ui::TouchscreenDevice> {
   }
 
   static bool Read(ui::mojom::TouchscreenDeviceDataView data,
-                   ui::TouchscreenDevice* out) {
-    if (!data.ReadInputDevice(static_cast<ui::InputDevice*>(out)))
-      return false;
-
-    if (!data.ReadSize(&out->size))
-      return false;
-
-    out->touch_points = data.touch_points();
-
-    return true;
-  }
+                   ui::TouchscreenDevice* out);
 };
 
 }  // namespace mojo
