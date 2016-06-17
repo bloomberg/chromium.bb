@@ -8,7 +8,9 @@
 #include "base/strings/string16.h"
 #include "components/autofill/content/public/interfaces/autofill_types.mojom.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data_predictions.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
@@ -135,6 +137,64 @@ struct StructTraits<autofill::mojom::FormData, autofill::FormData> {
 
   static bool Read(autofill::mojom::FormDataDataView data,
                    autofill::FormData* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::FormFieldDataPredictions,
+                    autofill::FormFieldDataPredictions> {
+  static const autofill::FormFieldData& field(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.field;
+  }
+
+  static const std::string& signature(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.signature;
+  }
+
+  static const std::string& heuristic_type(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.heuristic_type;
+  }
+
+  static const std::string& server_type(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.server_type;
+  }
+
+  static const std::string& overall_type(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.overall_type;
+  }
+
+  static const std::string& parseable_name(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.parseable_name;
+  }
+
+  static bool Read(autofill::mojom::FormFieldDataPredictionsDataView data,
+                   autofill::FormFieldDataPredictions* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::FormDataPredictions,
+                    autofill::FormDataPredictions> {
+  static const autofill::FormData& data(
+      const autofill::FormDataPredictions& r) {
+    return r.data;
+  }
+
+  static const std::string& signature(const autofill::FormDataPredictions& r) {
+    return r.signature;
+  }
+
+  static const std::vector<autofill::FormFieldDataPredictions>& fields(
+      const autofill::FormDataPredictions& r) {
+    return r.fields;
+  }
+
+  static bool Read(autofill::mojom::FormDataPredictionsDataView data,
+                   autofill::FormDataPredictions* out);
 };
 
 }  // namespace mojo

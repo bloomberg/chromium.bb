@@ -14,6 +14,23 @@
 
 namespace autofill {
 
+const std::vector<const char*> kOptions = {"Option1", "Option2", "Option3",
+                                           "Option4"};
+namespace {
+
+void CreateTestFieldDataPredictions(const std::string& signature,
+                                    FormFieldDataPredictions* field_predict) {
+  test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
+                              kOptions, 4, &field_predict->field);
+  field_predict->signature = signature;
+  field_predict->heuristic_type = "TestSignature";
+  field_predict->server_type = "TestServerType";
+  field_predict->overall_type = "TestOverallType";
+  field_predict->parseable_name = "TestParseableName";
+}
+
+}  // namespace
+
 class AutofillTypeTraitsTestImpl : public testing::Test,
                                    public mojom::TypeTraitsTest {
  public:
@@ -34,6 +51,18 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     callback.Run(s);
   }
 
+  void PassFormDataPredictions(
+      const FormDataPredictions& s,
+      const PassFormDataPredictionsCallback& callback) override {
+    callback.Run(s);
+  }
+
+  void PassFormFieldDataPredictions(
+      const FormFieldDataPredictions& s,
+      const PassFormFieldDataPredictionsCallback& callback) override {
+    callback.Run(s);
+  }
+
  private:
   base::MessageLoop loop_;
 
@@ -42,8 +71,6 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
 
 TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   FormFieldData input;
-  const std::vector<const char*> kOptions = {"Option1", "Option2", "Option3",
-                                             "Option4"};
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
                               kOptions, 4, &input);
 
@@ -68,6 +95,43 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
     EXPECT_TRUE(input.SameFormAs(passed));
     loop.Quit();
   });
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldDataPredictions) {
+  FormFieldDataPredictions input;
+  CreateTestFieldDataPredictions("TestSignature", &input);
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassFormFieldDataPredictions(
+      input, [&input, &loop](const FormFieldDataPredictions& passed) {
+        EXPECT_TRUE(input == passed);
+        loop.Quit();
+      });
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
+  FormDataPredictions input;
+  test::CreateTestAddressFormData(&input.data);
+  input.signature = "TestSignature";
+
+  FormFieldDataPredictions field_predict;
+  CreateTestFieldDataPredictions("Tom", &field_predict);
+  input.fields.push_back(field_predict);
+  CreateTestFieldDataPredictions("Jerry", &field_predict);
+  input.fields.push_back(field_predict);
+  CreateTestFieldDataPredictions("NoOne", &field_predict);
+  input.fields.push_back(field_predict);
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassFormDataPredictions(
+      input, [&input, &loop](const FormDataPredictions& passed) {
+        EXPECT_TRUE(input == passed);
+        loop.Quit();
+      });
   loop.Run();
 }
 

@@ -55,3 +55,18 @@ struct FormData {
   bool is_formless_checkout;
   array<FormFieldData> fields;
 };
+
+struct FormFieldDataPredictions {
+  FormFieldData field;
+  string signature;
+  string heuristic_type;
+  string server_type;
+  string overall_type;
+  string parseable_name;
+};
+
+struct FormDataPredictions {
+  FormData data;
+  string signature;
+  array<FormFieldDataPredictions> fields;
+};

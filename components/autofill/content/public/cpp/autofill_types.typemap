@@ -5,7 +5,9 @@
 mojom = "//components/autofill/content/public/interfaces/autofill_types.mojom"
 public_headers = [
   "//components/autofill/core/common/form_data.h",
+  "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
+  "//components/autofill/core/common/form_field_data_predictions.h",
 ]
 traits_headers = [
   "//components/autofill/content/public/cpp/autofill_types_struct_traits.h"
@@ -22,7 +24,9 @@ deps = [
 type_mappings = [
   "autofill.mojom.CheckStatus=autofill::FormFieldData::CheckStatus",
   "autofill.mojom.FormData=autofill::FormData",
+  "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",
+  "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
   "autofill.mojom.TextDirection=base::i18n::TextDirection",
 ]

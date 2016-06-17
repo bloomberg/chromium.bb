@@ -177,4 +177,38 @@ bool StructTraits<mojom::FormData, FormData>::Read(mojom::FormDataDataView data,
   return true;
 }
 
+// static
+bool StructTraits<mojom::FormFieldDataPredictions, FormFieldDataPredictions>::
+    Read(mojom::FormFieldDataPredictionsDataView data,
+         FormFieldDataPredictions* out) {
+  if (!data.ReadField(&out->field))
+    return false;
+  if (!data.ReadSignature(&out->signature))
+    return false;
+  if (!data.ReadHeuristicType(&out->heuristic_type))
+    return false;
+  if (!data.ReadServerType(&out->server_type))
+    return false;
+  if (!data.ReadOverallType(&out->overall_type))
+    return false;
+  if (!data.ReadParseableName(&out->parseable_name))
+    return false;
+
+  return true;
+}
+
+// static
+bool StructTraits<mojom::FormDataPredictions, FormDataPredictions>::Read(
+    mojom::FormDataPredictionsDataView data,
+    FormDataPredictions* out) {
+  if (!data.ReadData(&out->data))
+    return false;
+  if (!data.ReadSignature(&out->signature))
+    return false;
+  if (!data.ReadFields(&out->fields))
+    return false;
+
+  return true;
+}
+
 }  // namespace mojo
