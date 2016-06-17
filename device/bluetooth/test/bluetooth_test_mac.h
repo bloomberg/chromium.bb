@@ -10,12 +10,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
-#if __OBJC__
-@class MockCBPeripheral;
-#else   // __OBJC__
-class MockCBPeripheral;
-#endif  // __OBJC__
-
 namespace device {
 
 class BluetoothAdapterMac;
@@ -47,12 +41,6 @@ class BluetoothTestMac : public BluetoothTestBase {
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;
   void SimulateGattServiceRemoved(BluetoothRemoteGattService* service) override;
-  void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
-                                  const std::string& uuid,
-                                  int properties) override;
-  void SimulateGattCharacteristicRemoved(
-      BluetoothRemoteGattService* service,
-      BluetoothRemoteGattCharacteristic* characteristic) override;
 
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();
@@ -63,10 +51,6 @@ class BluetoothTestMac : public BluetoothTestBase {
 
  protected:
   class ScopedMockCentralManager;
-
-  // Returns MockCBPeripheral from BluetoothRemoteGattService.
-  MockCBPeripheral* GetMockCBPeripheral(
-      BluetoothRemoteGattService* service) const;
 
   // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.
   std::string FindCBUUIDForHashTarget();

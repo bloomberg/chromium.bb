@@ -95,7 +95,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Methods used by BluetoothLowEnergyPeripheralBridge.
   void DidDiscoverPrimaryServices(NSError* error);
   void DidModifyServices(NSArray* invalidatedServices);
-  void DidDiscoverCharacteristics(CBService* cb_service, NSError* error);
 
   // Updates information about the device.
   virtual void Update(NSDictionary* advertisement_data, int rssi);
@@ -112,7 +111,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   friend class BluetoothAdapterMac;
   friend class BluetoothAdapterMacTest;
   friend class BluetoothLowEnergyPeripheralBridge;
-  friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;
 
   // Returns the Bluetooth adapter.

@@ -103,8 +103,6 @@
         'bluetooth_remote_gatt_characteristic.h',
         'bluetooth_remote_gatt_characteristic_android.cc',
         'bluetooth_remote_gatt_characteristic_android.h',
-        'bluetooth_remote_gatt_characteristic_mac.h',
-        'bluetooth_remote_gatt_characteristic_mac.mm',
         'bluetooth_remote_gatt_characteristic_win.cc',
         'bluetooth_remote_gatt_characteristic_win.h',
         'bluetooth_remote_gatt_descriptor.cc',

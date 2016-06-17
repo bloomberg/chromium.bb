@@ -239,7 +239,7 @@ void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
 void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
-    // TODO(http://crbug.com/609844): Decide what to do if discover failed
+    // TODO(http://crbug.com/609844): Decide what to do if we fail to discover
     // a device services.
     VLOG(1) << "Can't discover primary services: "
             << error.localizedDescription.UTF8String << " (" << error.domain
@@ -258,44 +258,10 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
       adapter_->NotifyGattServiceAdded(gatt_service);
     }
   }
-  for (GattServiceMap::const_iterator it = gatt_services_.begin();
-       it != gatt_services_.end(); ++it) {
-    device::BluetoothRemoteGattService* gatt_service = it->second;
-    device::BluetoothRemoteGattServiceMac* gatt_service_mac =
-        static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
-    gatt_service_mac->DiscoverCharacteristics();
-  }
-}
-
-void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
-    CBService* cb_service,
-    NSError* error) {
-  if (error) {
-    // TODO(http://crbug.com/609320): Need to pass the error.
-    // TODO(http://crbug.com/609844): Decide what to do if discover failed
-    VLOG(1) << "Can't discover characteristics: "
-            << error.localizedDescription.UTF8String << " (" << error.domain
-            << ": " << error.code << ")";
-    return;
-  }
-  BluetoothRemoteGattServiceMac* gatt_service =
-      GetBluetoothRemoteGattService(cb_service);
-  DCHECK(gatt_service);
-  gatt_service->DidDiscoverCharacteristics();
-
-  // Notify when all services have been discovered.
-  bool discovery_complete =
-      std::find_if_not(
-          gatt_services_.begin(), gatt_services_.end(),
-          [](std::pair<std::string, BluetoothRemoteGattService*> pair) {
-            BluetoothRemoteGattService* gatt_service = pair.second;
-            return static_cast<BluetoothRemoteGattServiceMac*>(gatt_service)
-                ->IsDiscoveryComplete();
-          }) == gatt_services_.end();
-  if (discovery_complete) {
-    SetGattServicesDiscoveryComplete(true);
-    adapter_->NotifyGattServicesDiscovered(this);
-  }
+  // TODO(http://crbug.com/609064): Services are fully discovered once all
+  // characteristics have been found.
+  SetGattServicesDiscoveryComplete(true);
+  adapter_->NotifyGattServicesDiscovered(this);
 }
 
 void BluetoothLowEnergyDeviceMac::DidModifyServices(

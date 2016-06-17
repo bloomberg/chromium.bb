@@ -84,11 +84,6 @@ using base::scoped_nsobject;
   if (_bluetoothTestMac) {
     _bluetoothTestMac->OnFakeBluetoothServiceDiscovery();
   }
-  [_delegate peripheral:self.peripheral didDiscoverServices:nil];
-}
-
-- (void)discoverCharacteristics:(NSArray*)characteristics
-                     forService:(CBService*)service {
 }
 
 - (void)removeAllServices {
@@ -100,10 +95,8 @@ using base::scoped_nsobject;
     _services.reset([[NSMutableArray alloc] init]);
   }
   for (CBUUID* uuid in services) {
-    base::scoped_nsobject<MockCBService> service([[MockCBService alloc]
-        initWithPeripheral:self.peripheral
-                    CBUUID:uuid
-                   primary:YES]);
+    base::scoped_nsobject<MockCBService> service(
+        [[MockCBService alloc] initWithCBUUID:uuid primary:YES]);
     [_services.get() addObject:service.get().service];
   }
 }
@@ -117,18 +110,6 @@ using base::scoped_nsobject;
                                                    base::scoped_policy::RETAIN);
   DCHECK(serviceToRemove);
   [_services.get() removeObject:serviceToRemove];
-  [self didModifyServices:@[ serviceToRemove ]];
-}
-
-- (void)didDiscoverCharactericsForAllServices {
-  for (CBService* service in _services.get()) {
-    [_delegate peripheral:self.peripheral
-        didDiscoverCharacteristicsForService:service
-                                       error:nil];
-  }
-}
-
-- (void)didModifyServices:(NSArray*)invalidatedServices {
   // -[CBPeripheralDelegate peripheral:didModifyServices:] is only available
   // with 10.9. It is safe to call this method (even if chrome is running on
   // 10.8) since WebBluetooth is enabled only with 10.10.
@@ -136,7 +117,7 @@ using base::scoped_nsobject;
       [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
-  [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
+  [_delegate peripheral:self.peripheral didModifyServices:@[ serviceToRemove ]];
 #pragma clang diagnostic pop
 }
 

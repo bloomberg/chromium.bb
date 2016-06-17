@@ -23,7 +23,7 @@ namespace device {
 class BluetoothRemoteGattServiceTest : public BluetoothTest {};
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -63,9 +63,9 @@ TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
 
   EXPECT_NE(service3->GetIdentifier(), service4->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothRemoteGattServiceTest, GetUUID) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -89,9 +89,9 @@ TEST_F(BluetoothRemoteGattServiceTest, GetUUID) {
   EXPECT_EQ(uuid, device->GetGattServices()[0]->GetUUID());
   EXPECT_EQ(uuid, device->GetGattServices()[1]->GetUUID());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattServiceTest, GetCharacteristics_FindNone) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -112,15 +112,11 @@ TEST_F(BluetoothRemoteGattServiceTest, GetCharacteristics_FindNone) {
 
   EXPECT_EQ(0u, service->GetCharacteristics().size());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattServiceTest,
        GetCharacteristics_and_GetCharacteristic) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -165,15 +161,11 @@ TEST_F(BluetoothRemoteGattServiceTest,
   EXPECT_EQ(service->GetCharacteristic(char_id1),
             service->GetCharacteristic(char_id1));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 TEST_F(BluetoothRemoteGattServiceTest,
        GetCharacteristic_CharacteristicRemoved) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -224,16 +216,9 @@ TEST_F(BluetoothRemoteGattServiceTest,
   EXPECT_FALSE(service->GetCharacteristic(removed_char));
   EXPECT_EQ(0u, service->GetCharacteristics().size());
 
-#if defined(OS_MACOSX)
-  // SimulateGattServicesDiscovered
-  // 4 * SimulateGattCharacteristic
-  // 4 * SimulateGattCharacteristicRemoved
-  EXPECT_EQ(9, observer.gatt_service_changed_count());
-#else  // defined(OS_MACOSX)
   EXPECT_EQ(4, observer.gatt_service_changed_count());
-#endif  // defined(OS_MACOSX)
 }
-#endif  //  defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothRemoteGattServiceTest, SimulateGattServiceRemove) {
