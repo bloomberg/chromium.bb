@@ -101,10 +101,7 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  bool init = display_->Initialize(this);
-  // Since this class shares its GL context with the Display, Initialize should
-  // not be possible to fail.
-  DCHECK(init);
+  display_->Initialize(this);
   return true;
 }
 

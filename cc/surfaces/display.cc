@@ -76,7 +76,7 @@ Display::~Display() {
   }
 }
 
-bool Display::Initialize(DisplayClient* client) {
+void Display::Initialize(DisplayClient* client) {
   DCHECK(client);
   client_ = client;
 
@@ -87,10 +87,10 @@ bool Display::Initialize(DisplayClient* client) {
                                                compositor_surface_namespace_);
   }
 
-  // TODO(danakj): The context given to the Display's OutputSurface should
-  // already be initialized, so Bind can not fail. DCHECK this instead of
-  // returning.
-  return output_surface_->BindToClient(this);
+  bool ok = output_surface_->BindToClient(this);
+  // The context given to the Display's OutputSurface should already be
+  // initialized, so Bind can not fail.
+  DCHECK(ok);
 }
 
 void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {

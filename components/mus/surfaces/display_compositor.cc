@@ -72,9 +72,7 @@ DisplayCompositor::DisplayCompositor(
       allocator_.id_namespace(), std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
-
-  bool init = display_->Initialize(this);
-  DCHECK(init);  // The context provider was already bound above.
+  display_->Initialize(this);
 }
 
 DisplayCompositor::~DisplayCompositor() {

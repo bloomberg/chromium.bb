@@ -65,7 +65,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
-  bool Initialize(DisplayClient* client);
+  void Initialize(DisplayClient* client);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.

@@ -102,8 +102,7 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
       base::MakeUnique<TextureMailboxDeleter>(task_runner)));
   display_->SetEnlargePassTextureAmountForTesting(enlarge_pass_texture_amount_);
 
-  bool init = display_->Initialize(&display_client_);
-  CHECK(init);
+  display_->Initialize(&display_client_);
   return true;
 }
 
