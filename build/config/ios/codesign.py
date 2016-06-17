@@ -201,9 +201,9 @@ def FindProvisioningProfile(bundle, provisioning_profile_short_name):
 
   # Select the most specific mobile provisioning profile, i.e. the one with
   # the longest application identifier pattern.
-  valid_provisioning_profiles.sort(
+  return max(
+      valid_provisioning_profiles,
       key=lambda p: len(p.application_identifier_pattern))
-  return valid_provisioning_profiles[0]
 
 
 def CodeSignBundle(binary, bundle, args):
