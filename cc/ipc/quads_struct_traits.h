@@ -265,6 +265,97 @@ struct StructTraits<cc::mojom::TileQuadState, cc::DrawQuad> {
 };
 
 template <>
+struct EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace> {
+  static cc::mojom::YUVColorSpace ToMojom(
+      cc::YUVVideoDrawQuad::ColorSpace color_space);
+  static bool FromMojom(cc::mojom::YUVColorSpace input,
+                        cc::YUVVideoDrawQuad::ColorSpace* out);
+};
+
+template <>
+struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
+  static bool IsNull(const cc::DrawQuad& input) {
+    return input.material != cc::DrawQuad::YUV_VIDEO_CONTENT;
+  }
+
+  static void SetToNull(cc::DrawQuad* output) {
+    // There is nothing to deserialize here if the DrawQuad is not a
+    // YUVVideoDrawQuad. If it is, then this should not be called.
+    DCHECK_NE(cc::DrawQuad::YUV_VIDEO_CONTENT, output->material);
+  }
+
+  static const gfx::RectF& ya_tex_coord_rect(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->ya_tex_coord_rect;
+  }
+
+  static const gfx::RectF& uv_tex_coord_rect(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->uv_tex_coord_rect;
+  }
+
+  static const gfx::Size& ya_tex_size(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->ya_tex_size;
+  }
+
+  static const gfx::Size& uv_tex_size(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->uv_tex_size;
+  }
+
+  static uint32_t y_plane_resource_id(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->y_plane_resource_id();
+  }
+
+  static uint32_t u_plane_resource_id(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->u_plane_resource_id();
+  }
+
+  static uint32_t v_plane_resource_id(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->v_plane_resource_id();
+  }
+
+  static uint32_t a_plane_resource_id(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->a_plane_resource_id();
+  }
+
+  static cc::YUVVideoDrawQuad::ColorSpace color_space(
+      const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->color_space;
+  }
+
+  static float resource_offset(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->resource_offset;
+  }
+
+  static float resource_multiplier(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->resource_multiplier;
+  }
+
+  static bool Read(cc::mojom::YUVVideoQuadStateDataView data,
+                   cc::DrawQuad* out);
+};
+
+template <>
 struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
   static cc::DrawQuad::Material material(const cc::DrawQuad& quad) {
     return quad.material;
@@ -318,9 +409,8 @@ struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
     return nullptr;
   }
 
-  static cc::mojom::YUVVideoQuadStatePtr yuv_video_quad_state(
-      const cc::DrawQuad& data) {
-    return nullptr;
+  static const cc::DrawQuad& yuv_video_quad_state(const cc::DrawQuad& data) {
+    return data;
   }
 
   static bool Read(cc::mojom::DrawQuadDataView data, cc::DrawQuad* out);

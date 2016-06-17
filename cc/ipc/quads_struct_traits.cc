@@ -211,6 +211,65 @@ bool StructTraits<cc::mojom::TileQuadState, cc::DrawQuad>::Read(
   return true;
 }
 
+cc::mojom::YUVColorSpace
+EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace>::ToMojom(
+    cc::YUVVideoDrawQuad::ColorSpace color_space) {
+  switch (color_space) {
+    case cc::YUVVideoDrawQuad::REC_601:
+      return cc::mojom::YUVColorSpace::REC_601;
+    case cc::YUVVideoDrawQuad::REC_709:
+      return cc::mojom::YUVColorSpace::REC_709;
+    case cc::YUVVideoDrawQuad::JPEG:
+      return cc::mojom::YUVColorSpace::JPEG;
+  }
+  NOTREACHED();
+  return cc::mojom::YUVColorSpace::JPEG;
+}
+
+// static
+bool EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace>::
+    FromMojom(cc::mojom::YUVColorSpace input,
+              cc::YUVVideoDrawQuad::ColorSpace* out) {
+  switch (input) {
+    case cc::mojom::YUVColorSpace::REC_601:
+      *out = cc::YUVVideoDrawQuad::REC_601;
+      return true;
+    case cc::mojom::YUVColorSpace::REC_709:
+      *out = cc::YUVVideoDrawQuad::REC_709;
+      return true;
+    case cc::mojom::YUVColorSpace::JPEG:
+      *out = cc::YUVVideoDrawQuad::JPEG;
+      return true;
+  }
+  return false;
+}
+
+// static
+bool StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad>::Read(
+    cc::mojom::YUVVideoQuadStateDataView data,
+    cc::DrawQuad* out) {
+  cc::YUVVideoDrawQuad* quad = static_cast<cc::YUVVideoDrawQuad*>(out);
+  if (!data.ReadYaTexCoordRect(&quad->ya_tex_coord_rect) ||
+      !data.ReadUvTexCoordRect(&quad->uv_tex_coord_rect) ||
+      !data.ReadYaTexSize(&quad->ya_tex_size) ||
+      !data.ReadUvTexSize(&quad->uv_tex_size)) {
+    return false;
+  }
+  quad->resources.ids[cc::YUVVideoDrawQuad::kYPlaneResourceIdIndex] =
+      data.y_plane_resource_id();
+  quad->resources.ids[cc::YUVVideoDrawQuad::kUPlaneResourceIdIndex] =
+      data.u_plane_resource_id();
+  quad->resources.ids[cc::YUVVideoDrawQuad::kVPlaneResourceIdIndex] =
+      data.v_plane_resource_id();
+  quad->resources.ids[cc::YUVVideoDrawQuad::kAPlaneResourceIdIndex] =
+      data.a_plane_resource_id();
+  if (!data.ReadColorSpace(&quad->color_space))
+    return false;
+  quad->resource_offset = data.resource_offset();
+  quad->resource_multiplier = data.resource_multiplier();
+  return true;
+}
+
 // static
 bool StructTraits<cc::mojom::DrawQuad, cc::DrawQuad>::Read(
     cc::mojom::DrawQuadDataView data,
@@ -241,9 +300,7 @@ bool StructTraits<cc::mojom::DrawQuad, cc::DrawQuad>::Read(
     case cc::mojom::Material::TILED_CONTENT:
       return data.ReadTileQuadState(out);
     case cc::mojom::Material::YUV_VIDEO_CONTENT:
-      // TODO(fsamuel): Implement YUVVideoDrawQuad
-      // serialization/deserialization.
-      break;
+      return data.ReadYuvVideoQuadState(out);
   }
   NOTREACHED();
   return false;

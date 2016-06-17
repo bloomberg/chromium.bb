@@ -11,6 +11,7 @@
 #include "cc/quads/render_pass_id.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -508,6 +509,59 @@ TEST_F(StructTraitsTest, TransferableResource) {
   EXPECT_EQ(is_software, output.is_software);
   EXPECT_EQ(gpu_memory_buffer_id, output.gpu_memory_buffer_id.id);
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
+}
+
+TEST_F(StructTraitsTest, YUVDrawQuad) {
+  const DrawQuad::Material material = DrawQuad::YUV_VIDEO_CONTENT;
+  const gfx::Rect rect(1234, 4321, 1357, 7531);
+  const gfx::Rect opaque_rect(1357, 8642, 432, 123);
+  const gfx::Rect visible_rect(1337, 7331, 561, 293);
+  const bool needs_blending = true;
+  const gfx::RectF ya_tex_coord_rect(1234.1f, 5678.2f, 9101112.3f, 13141516.4f);
+  const gfx::RectF uv_tex_coord_rect(1234.1f, 4321.2f, 1357.3f, 7531.4f);
+  const gfx::Size ya_tex_size(1234, 5678);
+  const gfx::Size uv_tex_size(4321, 8765);
+  const uint32_t y_plane_resource_id = 1337;
+  const uint32_t u_plane_resource_id = 1234;
+  const uint32_t v_plane_resource_id = 2468;
+  const uint32_t a_plane_resource_id = 7890;
+  const YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
+  const float resource_offset = 1337.5f;
+  const float resource_multiplier = 1234.6f;
+
+  SharedQuadState sqs;
+  QuadList input;
+  YUVVideoDrawQuad* quad = input.AllocateAndConstruct<YUVVideoDrawQuad>();
+  quad->SetAll(&sqs, rect, opaque_rect, visible_rect, needs_blending,
+               ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
+               y_plane_resource_id, u_plane_resource_id, v_plane_resource_id,
+               a_plane_resource_id, color_space, resource_offset,
+               resource_multiplier);
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  QuadList output;
+  proxy->EchoQuadList(input, &output);
+
+  ASSERT_EQ(input.size(), output.size());
+
+  ASSERT_EQ(material, output.ElementAt(0)->material);
+  const YUVVideoDrawQuad* out_quad =
+      YUVVideoDrawQuad::MaterialCast(output.ElementAt(0));
+  EXPECT_EQ(rect, out_quad->rect);
+  EXPECT_EQ(opaque_rect, out_quad->opaque_rect);
+  EXPECT_EQ(visible_rect, out_quad->visible_rect);
+  EXPECT_EQ(needs_blending, out_quad->needs_blending);
+  EXPECT_EQ(ya_tex_coord_rect, out_quad->ya_tex_coord_rect);
+  EXPECT_EQ(uv_tex_coord_rect, out_quad->uv_tex_coord_rect);
+  EXPECT_EQ(ya_tex_size, out_quad->ya_tex_size);
+  EXPECT_EQ(uv_tex_size, out_quad->uv_tex_size);
+  EXPECT_EQ(y_plane_resource_id, out_quad->y_plane_resource_id());
+  EXPECT_EQ(u_plane_resource_id, out_quad->u_plane_resource_id());
+  EXPECT_EQ(v_plane_resource_id, out_quad->v_plane_resource_id());
+  EXPECT_EQ(a_plane_resource_id, out_quad->a_plane_resource_id());
+  EXPECT_EQ(color_space, out_quad->color_space);
+  EXPECT_EQ(resource_offset, out_quad->resource_offset);
+  EXPECT_EQ(resource_multiplier, out_quad->resource_multiplier);
 }
 
 }  // namespace cc
