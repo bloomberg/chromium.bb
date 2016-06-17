@@ -398,17 +398,10 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     // scope is already disposed, so we don't have to explicitly terminate the
     // worker execution.
     //
-    // (2) |workerScriptCount() == 1|: If other WorkerGlobalScopes are running
-    // on the worker thread, we should not terminate the worker execution. This
-    // condition is not entirely correct because other scripts can be being
-    // initialized or terminated simuletaneously. Though this function itself is
-    // protected by a mutex, it is possible that |workerScriptCount()| here is
-    // not consistent with that in |initialize| and |shutdown|.
-    //
-    // (3) |m_runningDebuggerTask|: Terminating during debugger task may lead to
+    // (2) |m_runningDebuggerTask|: Terminating during debugger task may lead to
     // crash due to heavy use of v8 api in debugger. Any debugger task is
     // guaranteed to finish, so we can wait for the completion.
-    bool shouldScheduleToTerminateExecution = !m_readyToShutdown && (workerBackingThread().workerScriptCount() == 1) && !m_runningDebuggerTask;
+    bool shouldScheduleToTerminateExecution = !m_readyToShutdown && !m_runningDebuggerTask;
 
     if (shouldScheduleToTerminateExecution) {
         if (mode == TerminationMode::Forcible) {
@@ -461,7 +454,8 @@ void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> 
             return;
         }
 
-        workerBackingThread().attach();
+        if (isOwningBackingThread())
+            workerBackingThread().initialize();
 
         if (shouldAttachThreadDebugger())
             V8PerIsolateData::from(isolate())->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(this, isolate())));
@@ -546,7 +540,8 @@ void WorkerThread::performShutdownOnWorkerThread()
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
-    workerBackingThread().detach();
+    if (isOwningBackingThread())
+        workerBackingThread().shutdown();
     // We must not touch workerBackingThread() from now on.
 
     m_microtaskRunner = nullptr;

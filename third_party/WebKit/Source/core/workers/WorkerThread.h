@@ -161,6 +161,13 @@ protected:
     // Called on the worker thread.
     virtual WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
+    // Returns true when this WorkerThread owns the associated
+    // WorkerBackingThread exclusively. If this function returns true, the
+    // WorkerThread initializes / shutdowns the backing thread. Otherwise
+    // workerBackingThread() should be initialized / shutdown properly
+    // out of this class.
+    virtual bool isOwningBackingThread() const { return true; }
+
     // Called on the worker thread.
     virtual void postInitialize() { }
 
