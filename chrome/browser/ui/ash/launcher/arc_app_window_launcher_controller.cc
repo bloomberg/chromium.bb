@@ -33,9 +33,6 @@ enum class FullScreenMode {
   NON_ACTIVE,   // Fullscreen was not activated for an app.
 };
 
-std::string GetShelfAppId(const std::string& app_id) {
-  return app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId : app_id;
-}
 }  // namespace
 
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
@@ -201,6 +198,20 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
     StopObserving(observed_profile_);
 }
 
+// static
+std::string ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(
+    const std::string& arc_app_id) {
+  return arc_app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId
+                                            : arc_app_id;
+}
+
+// static
+std::string ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(
+    const std::string& shelf_app_id) {
+  return shelf_app_id == ArcSupportHost::kHostAppId ? arc::kPlayStoreAppId
+                                                    : shelf_app_id;
+}
+
 void ArcAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
   for (auto& it : task_id_to_app_window_) {
@@ -312,8 +323,8 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
 
-  const std::string app_id =
-      GetShelfAppId(ArcAppListPrefs::GetAppId(package_name, activity_name));
+  const std::string app_id = GetShelfAppIdFromArcAppId(
+      ArcAppListPrefs::GetAppId(package_name, activity_name));
 
   std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, app_id, this));
   RegisterApp(app_window.get());

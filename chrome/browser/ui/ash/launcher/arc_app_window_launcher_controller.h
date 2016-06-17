@@ -42,6 +42,12 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                  ash::ShelfDelegate* shelf_delegate);
   ~ArcAppWindowLauncherController() override;
 
+  // Returns shelf app id. Play Store app is mapped to Arc platform host app.
+  static std::string GetShelfAppIdFromArcAppId(const std::string& arc_app_id);
+
+  // Returns Arc app id. Arc platform host app is mapped to Play Store app.
+  static std::string GetArcAppIdFromShelfAppId(const std::string& shelf_app_id);
+
   // AppWindowLauncherControllre:
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
