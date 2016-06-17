@@ -62,12 +62,12 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(MdTextButton::CreateMdButton(
       nullptr, base::ASCIIToUTF16("Material design")));
   MdTextButton* md_button = MdTextButton::CreateMdButton(
-      nullptr, base::ASCIIToUTF16("Strong call to action"));
-  md_button->SetCallToAction(MdTextButton::STRONG_CALL_TO_ACTION);
+      nullptr, base::ASCIIToUTF16("Default"));
+  md_button->SetIsDefault(true);
   container->AddChildView(md_button);
   md_button = MdTextButton::CreateMdButton(
-      nullptr, base::ASCIIToUTF16("Weak call to action"));
-  md_button->SetCallToAction(MdTextButton::WEAK_CALL_TO_ACTION);
+      nullptr, base::ASCIIToUTF16("Call to action"));
+  md_button->SetCallToAction(true);
   container->AddChildView(md_button);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

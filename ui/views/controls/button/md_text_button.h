@@ -14,14 +14,6 @@ namespace views {
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
-  // Describes the presentation of a button. A stronger call to action draws
-  // more attention.
-  enum CallToAction {
-    NO_CALL_TO_ACTION,  // Default.
-    WEAK_CALL_TO_ACTION,
-    STRONG_CALL_TO_ACTION,
-  };
-
   // Creates a normal STYLE_BUTTON LabelButton in pre-MD, or an MdTextButton
   // in MD mode.
   static LabelButton* CreateStandardButton(ButtonListener* listener,
@@ -38,7 +30,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // Paint an MD-style focus ring on the given canvas at the given bounds.
   static void PaintMdFocusRing(gfx::Canvas* canvas, View* view);
 
-  void SetCallToAction(CallToAction cta);
+  void SetCallToAction(bool cta);
 
   // LabelButton:
   void Layout() override;
@@ -47,7 +39,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropForFocus() const override;
-  void SetText(const base::string16& text) override;
   void UpdateStyleToIndicateDefaultStatus() override;
 
  private:
@@ -62,7 +53,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   views::View* focus_ring_;
 
   // The call to action style for this button.
-  CallToAction cta_;
+  bool cta_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

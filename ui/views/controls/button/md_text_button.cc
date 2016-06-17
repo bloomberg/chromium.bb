@@ -19,15 +19,14 @@ namespace views {
 namespace {
 
 // Inset between clickable region border and button contents (text).
-const int kHorizontalPadding = 12;
-const int kVerticalPadding = 6;
+const int kHorizontalPadding = 16;
 
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
 // The amount to enlarge the focus border in all directions relative to the
 // button.
-const int kFocusBorderOutset = -2;
+const int kFocusBorderOutset = -1;
 
 // The corner radius of the focus border roundrect.
 const int kFocusBorderCornerRadius = 3;
@@ -92,7 +91,7 @@ LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
     const base::string16& text) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     MdTextButton* md_button = MdTextButton::CreateMdButton(listener, text);
-    md_button->SetCallToAction(MdTextButton::STRONG_CALL_TO_ACTION);
+    md_button->SetCallToAction(true);
     return md_button;
   }
 
@@ -104,11 +103,6 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
                                            const base::string16& text) {
   MdTextButton* button = new MdTextButton(listener);
   button->SetText(text);
-  // TODO(estade): can we get rid of the platform style border hoopla if
-  // we apply the MD treatment to all buttons, even GTK buttons?
-  button->SetBorder(
-      Border::CreateEmptyBorder(kVerticalPadding, kHorizontalPadding,
-                                kVerticalPadding, kHorizontalPadding));
   button->SetFocusForPlatform();
   return button;
 }
@@ -117,8 +111,8 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
 void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas, views::View* view) {
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(view->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_CallToActionColor));
+  paint.setColor(SkColorSetA(view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CallToActionColor), 0x33));
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(1);
   gfx::RectF rect(view->GetLocalBounds());
@@ -126,7 +120,7 @@ void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas, views::View* view) {
   canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
 }
 
-void MdTextButton::SetCallToAction(CallToAction cta) {
+void MdTextButton::SetCallToAction(bool cta) {
   if (cta_ == cta)
     return;
 
@@ -165,23 +159,14 @@ bool MdTextButton::ShouldShowInkDropForFocus() const {
   return false;
 }
 
-void MdTextButton::SetText(const base::string16& text) {
-  LabelButton::SetText(base::i18n::ToUpper(text));
-}
-
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
-  // Update the call to action state to reflect defaultness. Don't change strong
-  // call to action to weak.
-  if (!is_default())
-    SetCallToAction(NO_CALL_TO_ACTION);
-  else if (cta_ == NO_CALL_TO_ACTION)
-    SetCallToAction(WEAK_CALL_TO_ACTION);
+  UpdateColorsFromNativeTheme();
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       focus_ring_(new MdFocusRing()),
-      cta_(NO_CALL_TO_ACTION) {
+      cta_(false) {
   SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -194,39 +179,51 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   AddChildView(focus_ring_);
   focus_ring_->SetVisible(false);
   set_request_focus_on_press(false);
+
+  // Top and bottom padding depend on the font. Example: if font cap height is
+  // 9dp, use 8dp bottom padding and 7dp top padding to total 24dp.
+  const gfx::FontList& font = label()->font_list();
+  int text_height = font.GetCapHeight();
+  int even_text_height = text_height - (text_height % 2);
+  const int top_padding = even_text_height - (text_height - even_text_height);
+  const int bottom_padding = even_text_height;
+  DCHECK_EQ(3 * even_text_height, top_padding + text_height + bottom_padding);
+
+  const int inbuilt_top_padding = font.GetBaseline() - font.GetCapHeight();
+  const int inbuilt_bottom_padding =
+      font.GetHeight() - label()->font_list().GetBaseline();
+
+  // TODO(estade): can we get rid of the platform style border hoopla if
+  // we apply the MD treatment to all buttons, even GTK buttons?
+  SetBorder(Border::CreateEmptyBorder(
+      top_padding - inbuilt_top_padding, kHorizontalPadding,
+      bottom_padding - inbuilt_bottom_padding, kHorizontalPadding));
 }
 
 MdTextButton::~MdTextButton() {}
 
 void MdTextButton::UpdateColorsFromNativeTheme() {
-  ui::NativeTheme::ColorId fg_color_id = ui::NativeTheme::kColorId_NumColors;
-  switch (cta_) {
-    case NO_CALL_TO_ACTION:
-      // When there's no call to action, respect a color override if one has
-      // been set. For other call to action states, don't let individual buttons
-      // specify a color.
-      if (!explicitly_set_normal_color())
-        fg_color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
-      break;
-    case WEAK_CALL_TO_ACTION:
-      fg_color_id = ui::NativeTheme::kColorId_CallToActionColor;
-      break;
-    case STRONG_CALL_TO_ACTION:
-      fg_color_id = ui::NativeTheme::kColorId_TextOnCallToActionColor;
-      break;
-  }
+  ui::NativeTheme::ColorId fg_color_id =
+      cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
+           : ui::NativeTheme::kColorId_ButtonEnabledColor;
+
+  // When there's no call to action, respect a color override if one has
+  // been set. For call to action styling, don't let individual buttons
+  // specify a color.
   ui::NativeTheme* theme = GetNativeTheme();
-  if (fg_color_id != ui::NativeTheme::kColorId_NumColors)
+  if (cta_ || !explicitly_set_normal_color())
     SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
-  set_background(
-      cta_ == STRONG_CALL_TO_ACTION
-          ? Background::CreateBackgroundPainter(
-                true, Painter::CreateSolidRoundRectPainter(
-                          theme->GetSystemColor(
-                              ui::NativeTheme::kColorId_CallToActionColor),
-                          kInkDropSmallCornerRadius))
-          : nullptr);
+  SkColor text_color = label()->enabled_color();
+  SkColor bg_color =
+      cta_ ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+           : is_default()
+                 ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
+                 : SK_ColorTRANSPARENT;
+  SkColor stroke_color = SkColorSetA(SK_ColorBLACK, 0x1A);
+  set_background(Background::CreateBackgroundPainter(
+      true, Painter::CreateRoundRectWith1PxBorderPainter(
+                bg_color, stroke_color, kInkDropSmallCornerRadius)));
 }
 
 }  // namespace views

@@ -75,7 +75,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       if (ui::MaterialDesignController::IsModeMaterial()) {
         views::MdTextButton* button = CreateMdTextButton(
             this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-        button->SetCallToAction(views::MdTextButton::STRONG_CALL_TO_ACTION);
+        button->SetCallToAction(true);
         ok_button_ = button;
       } else {
         ok_button_ = CreateTextButton(
@@ -96,8 +96,8 @@ void ConfirmInfoBar::ViewHierarchyChanged(
             this,
             delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
         // Apply CTA only if the cancel button is the only button.
-        if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL)
-          button->SetCallToAction(views::MdTextButton::STRONG_CALL_TO_ACTION);
+        button->SetCallToAction(delegate->GetButtons() ==
+                                ConfirmInfoBarDelegate::BUTTON_CANCEL);
         cancel_button_ = button;
       } else {
         cancel_button_ = CreateTextButton(

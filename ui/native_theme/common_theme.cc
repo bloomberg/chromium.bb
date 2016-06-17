@@ -25,6 +25,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Dialogs:
     static const SkColor kDialogBackgroundColorMd = SK_ColorWHITE;
+    // Buttons:
+    static const SkColor kButtonEnabledColorMd = gfx::kChromeIconGrey;
     // MenuItem:
     static const SkColor kMenuHighlightBackgroundColorMd =
         SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
@@ -41,6 +43,11 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_DialogBackground:
       case NativeTheme::kColorId_BubbleBackground:
         return kDialogBackgroundColorMd;
+
+      // Buttons
+      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonHoverColor:
+        return kButtonEnabledColorMd;
 
       // MenuItem
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:

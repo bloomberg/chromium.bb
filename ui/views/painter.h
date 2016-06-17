@@ -51,6 +51,12 @@ class VIEWS_EXPORT Painter {
   // corner radius.
   static Painter* CreateSolidRoundRectPainter(SkColor color, float radius);
 
+  // Creates a painter that draws a RoundRect with a solid color and a given
+  // corner radius, and also adds a 1px border (inset) in the given color.
+  static Painter* CreateRoundRectWith1PxBorderPainter(SkColor bg_color,
+                                                      SkColor stroke_color,
+                                                      float radius);
+
   // Creates a painter that draws a gradient between the two colors.
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
   static Painter* CreateVerticalGradient(SkColor c1, SkColor c2);

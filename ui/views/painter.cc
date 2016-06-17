@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/nine_image_painter.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -29,9 +31,11 @@ namespace {
 
 // SolidRoundRectPainter -------------------------------------------------------
 
+// Creates a round rect painter with a 1 pixel border. The border paints on top
+// of the background.
 class SolidRoundRectPainter : public Painter {
  public:
-  SolidRoundRectPainter(SkColor color, float radius);
+  SolidRoundRectPainter(SkColor bg_color, SkColor stroke_color, float radius);
   ~SolidRoundRectPainter() override;
 
   // Painter:
@@ -39,14 +43,17 @@ class SolidRoundRectPainter : public Painter {
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
-  const SkColor color_;
+  const SkColor bg_color_;
+  const SkColor stroke_color_;
   const float radius_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidRoundRectPainter);
 };
 
-SolidRoundRectPainter::SolidRoundRectPainter(SkColor color, float radius)
-    : color_(color), radius_(radius) {}
+SolidRoundRectPainter::SolidRoundRectPainter(SkColor bg_color,
+                                             SkColor stroke_color,
+                                             float radius)
+    : bg_color_(bg_color), stroke_color_(stroke_color), radius_(radius) {}
 
 SolidRoundRectPainter::~SolidRoundRectPainter() {}
 
@@ -55,11 +62,24 @@ gfx::Size SolidRoundRectPainter::GetMinimumSize() const {
 }
 
 void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  gfx::RectF rect((gfx::SizeF(size)));
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+
+  gfx::RectF border_rect_f((gfx::SizeF(size)));
+  border_rect_f.Scale(scale);
+  const SkScalar scaled_corner_radius = SkFloatToScalar(radius_ * scale);
+
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(color_);
-  canvas->DrawRoundRect(rect, radius_, paint);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(bg_color_);
+  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
+
+  border_rect_f.Inset(gfx::InsetsF(0.5f));
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(1);
+  paint.setColor(stroke_color_);
+  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
 }
 
 // DashedFocusPainter ----------------------------------------------------------
@@ -276,7 +296,14 @@ void Painter::PaintFocusPainter(View* view,
 
 // static
 Painter* Painter::CreateSolidRoundRectPainter(SkColor color, float radius) {
-  return new SolidRoundRectPainter(color, radius);
+  return new SolidRoundRectPainter(color, SK_ColorTRANSPARENT, radius);
+}
+
+// static
+Painter* Painter::CreateRoundRectWith1PxBorderPainter(SkColor bg_color,
+                                                      SkColor stroke_color,
+                                                      float radius) {
+  return new SolidRoundRectPainter(bg_color, stroke_color, radius);
 }
 
 // static
