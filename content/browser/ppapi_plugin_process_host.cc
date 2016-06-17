@@ -471,8 +471,12 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
   int renderer_child_id;
   client->GetPpapiChannelInfo(&process_handle, &renderer_child_id);
 
-  base::ProcessId process_id = (process_handle == base::kNullProcessHandle) ?
-      0 : base::GetProcId(process_handle);
+  base::ProcessId process_id = base::kNullProcessId;
+  if (process_handle != base::kNullProcessHandle) {
+    // This channel is not used by the browser itself.
+    process_id = base::GetProcId(process_handle);
+    CHECK_NE(base::kNullProcessId, process_id);
+  }
 
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.

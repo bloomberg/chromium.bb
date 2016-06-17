@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -77,12 +78,14 @@ void GetPermissionSettingsCallback(
 
 BrokerProcessDispatcher::BrokerProcessDispatcher(
     PP_GetInterface_Func get_plugin_interface,
-    PP_ConnectInstance_Func connect_instance)
+    PP_ConnectInstance_Func connect_instance,
+    bool peer_is_browser)
     : ppapi::proxy::BrokerSideDispatcher(connect_instance),
       get_plugin_interface_(get_plugin_interface),
       flash_browser_operations_1_3_(NULL),
       flash_browser_operations_1_2_(NULL),
-      flash_browser_operations_1_0_(NULL) {
+      flash_browser_operations_1_0_(NULL),
+      peer_is_browser_(peer_is_browser) {
   if (get_plugin_interface) {
     flash_browser_operations_1_0_ =
         static_cast<const PPP_Flash_BrowserOperations_1_0*>(
@@ -110,17 +113,36 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
 }
 
 bool BrokerProcessDispatcher::OnMessageReceived(const IPC::Message& msg) {
+  if (BrokerSideDispatcher::OnMessageReceived(msg))
+    return true;
+
+  if (!peer_is_browser_) {
+    // We might want to consider killing the peer instead is we see problems in
+    // the future.
+    if (msg.type() == PpapiMsg_GetSitesWithData::ID ||
+        msg.type() == PpapiMsg_ClearSiteData::ID ||
+        msg.type() == PpapiMsg_DeauthorizeContentLicenses::ID ||
+        msg.type() == PpapiMsg_GetPermissionSettings::ID ||
+        msg.type() == PpapiMsg_SetDefaultPermission::ID ||
+        msg.type() == PpapiMsg_SetSitePermission::ID) {
+      base::debug::DumpWithoutCrashing();
+    }
+    return false;
+  }
+
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrokerProcessDispatcher, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_GetSitesWithData, OnGetSitesWithData)
     IPC_MESSAGE_HANDLER(PpapiMsg_ClearSiteData, OnClearSiteData)
     IPC_MESSAGE_HANDLER(PpapiMsg_DeauthorizeContentLicenses,
                         OnDeauthorizeContentLicenses)
-    IPC_MESSAGE_HANDLER(PpapiMsg_GetPermissionSettings, OnGetPermissionSettings)
+    IPC_MESSAGE_HANDLER(PpapiMsg_GetPermissionSettings,
+                        OnGetPermissionSettings)
     IPC_MESSAGE_HANDLER(PpapiMsg_SetDefaultPermission, OnSetDefaultPermission)
     IPC_MESSAGE_HANDLER(PpapiMsg_SetSitePermission, OnSetSitePermission)
-    IPC_MESSAGE_UNHANDLED(return BrokerSideDispatcher::OnMessageReceived(msg))
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return true;
+  return handled;
 }
 
 void BrokerProcessDispatcher::OnGetPermissionSettingsCompleted(

@@ -444,8 +444,8 @@ void PpapiThread::OnCreateChannel(base::ProcessId renderer_pid,
   IPC::ChannelHandle channel_handle;
 
   if (!plugin_entry_points_.get_interface ||  // Plugin couldn't be loaded.
-      !SetupRendererChannel(renderer_pid, renderer_child_id, incognito,
-                            &channel_handle)) {
+      !SetupChannel(renderer_pid, renderer_child_id, incognito,
+                    &channel_handle)) {
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
   }
@@ -483,10 +483,10 @@ void PpapiThread::OnHang() {
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
 }
 
-bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
-                                       int renderer_child_id,
-                                       bool incognito,
-                                       IPC::ChannelHandle* handle) {
+bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
+                               int renderer_child_id,
+                               bool incognito,
+                               IPC::ChannelHandle* handle) {
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
   IPC::ChannelHandle plugin_handle;
   plugin_handle.name = IPC::Channel::GenerateVerifiedChannelID(
@@ -496,15 +496,17 @@ bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
   ppapi::proxy::ProxyChannel* dispatcher = NULL;
   bool init_result = false;
   if (is_broker_) {
+    bool peer_is_browser = renderer_pid == base::kNullProcessId;
     BrokerProcessDispatcher* broker_dispatcher =
         new BrokerProcessDispatcher(plugin_entry_points_.get_interface,
-                                    connect_instance_func_);
+                                    connect_instance_func_, peer_is_browser);
     init_result = broker_dispatcher->InitBrokerWithChannel(this,
                                                            renderer_pid,
                                                            plugin_handle,
                                                            false);
     dispatcher = broker_dispatcher;
   } else {
+    DCHECK_NE(base::kNullProcessId, renderer_pid);
     PluginProcessDispatcher* plugin_dispatcher =
         new PluginProcessDispatcher(plugin_entry_points_.get_interface,
                                     permissions_,

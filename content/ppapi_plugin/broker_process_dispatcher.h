@@ -24,7 +24,8 @@ class BrokerProcessDispatcher
       public base::SupportsWeakPtr<BrokerProcessDispatcher> {
  public:
   BrokerProcessDispatcher(PP_GetInterface_Func get_plugin_interface,
-                          PP_ConnectInstance_Func connect_instance);
+                          PP_ConnectInstance_Func connect_instance,
+                          bool peer_is_browser);
   ~BrokerProcessDispatcher() override;
 
   // IPC::Listener overrides.
@@ -87,6 +88,8 @@ class BrokerProcessDispatcher
   const PPP_Flash_BrowserOperations_1_3* flash_browser_operations_1_3_;
   const PPP_Flash_BrowserOperations_1_2* flash_browser_operations_1_2_;
   const PPP_Flash_BrowserOperations_1_0* flash_browser_operations_1_0_;
+
+  bool peer_is_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcessDispatcher);
 };

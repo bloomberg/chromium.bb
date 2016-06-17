@@ -36,6 +36,8 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   class Client {
    public:
     // Gets the information about the renderer that's requesting the channel.
+    // If |renderer_handle| is base::kNullProcessHandle, this channel is used by
+    // the browser itself.
     virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                                      int* renderer_id) = 0;
 

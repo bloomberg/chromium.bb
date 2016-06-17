@@ -110,12 +110,14 @@ class PpapiThread : public ChildThreadImpl,
   void OnCrash();
   void OnHang();
 
-  // Sets up the channel to the given renderer. On success, returns true and
-  // fills the given ChannelHandle with the information from the new channel.
-  bool SetupRendererChannel(base::ProcessId renderer_pid,
-                            int renderer_child_id,
-                            bool incognito,
-                            IPC::ChannelHandle* handle);
+  // Sets up the channel to the given renderer. If |renderer_pid| is
+  // base::kNullProcessId, the channel is set up to the browser. On success,
+  // returns true and fills the given ChannelHandle with the information from
+  // the new channel.
+  bool SetupChannel(base::ProcessId renderer_pid,
+                    int renderer_child_id,
+                    bool incognito,
+                    IPC::ChannelHandle* handle);
 
   // Sets up the name of the plugin for logging using the given path.
   void SavePluginName(const base::FilePath& path);
