@@ -172,7 +172,8 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 }
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
-    : functor_(nullptr),
+    : content::WebContentsObserver(web_contents.get()),
+      functor_(nullptr),
       browser_view_renderer_(
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
@@ -184,6 +185,15 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
                              new AwContentsUserData(this));
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
+
+  CompositorID compositor_id;
+  if (web_contents_->GetRenderProcessHost() &&
+      web_contents_->GetRenderViewHost()) {
+    compositor_id.process_id = web_contents_->GetRenderProcessHost()->GetID();
+    compositor_id.routing_id = web_contents_->GetRoutingID();
+  }
+
+  browser_view_renderer_.SetActiveCompositorID(compositor_id);
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
 
@@ -1286,6 +1296,20 @@ void AwContents::ResumeLoadingCreatedPopupWebContents(
 void SetShouldDownloadFavicons(JNIEnv* env,
                                const JavaParamRef<jclass>& jclazz) {
   g_should_download_favicons = true;
+}
+
+void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
+                                       content::RenderViewHost* new_host) {
+  DCHECK(new_host);
+
+  int process_id = new_host->GetProcess()->GetID();
+  int routing_id = new_host->GetRoutingID();
+  // At this point, the current RVH may or may not contain a compositor. So
+  // compositor_ may be nullptr, in which case
+  // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
+  // new compositor is constructed.
+  browser_view_renderer_.SetActiveCompositorID(
+      CompositorID(process_id, routing_id));
 }
 
 }  // namespace android_webview

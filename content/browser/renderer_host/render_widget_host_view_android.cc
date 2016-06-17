@@ -1137,11 +1137,6 @@ void RenderWidgetHostViewAndroid::RetainFrame(
       new LastFrameInfo(output_surface_id, std::move(frame)));
 }
 
-SynchronousCompositorHost*
-RenderWidgetHostViewAndroid::GetSynchronousCompositor() {
-  return sync_compositor_.get();
-}
-
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (!content_view_core_)
@@ -1782,8 +1777,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     sync_compositor_ = SynchronousCompositorHost::Create(
         this, content_view_core_->GetWebContents());
   }
-  if (sync_compositor_)
-    sync_compositor_->DidBecomeCurrent();
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks(

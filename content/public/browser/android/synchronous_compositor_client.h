@@ -18,19 +18,19 @@ class SynchronousCompositor;
 class SynchronousCompositorClient {
  public:
   // Indication to the client that |compositor| is now initialized on the
-  // compositor thread, and open for business.
-  virtual void DidInitializeCompositor(SynchronousCompositor* compositor) = 0;
+  // compositor thread, and open for business. |process_id| and |routing_id|
+  // belong to the RVH that owns the compositor.
+  virtual void DidInitializeCompositor(SynchronousCompositor* compositor,
+                                       int process_id,
+                                       int routing_id) = 0;
 
   // Indication to the client that |compositor| is going out of scope, and
   // must not be accessed within or after this call.
   // NOTE if the client goes away before the compositor it must call
   // SynchronousCompositor::SetClient(nullptr) to release the back pointer.
-  virtual void DidDestroyCompositor(SynchronousCompositor* compositor) = 0;
-
-  // Indication to the client that |compositor| just became the current one.
-  // The compositor has to be initialized first. An initialized compositor may
-  // not become current immediately.
-  virtual void DidBecomeCurrent(SynchronousCompositor* compositor) = 0;
+  virtual void DidDestroyCompositor(SynchronousCompositor* compositor,
+                                    int process_id,
+                                    int routing_id) = 0;
 
   // See LayerScrollOffsetDelegate for details.
   virtual void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset,

@@ -19,11 +19,10 @@ TestSynchronousCompositor::~TestSynchronousCompositor() {
 
 void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
   if (client_)
-    client_->DidDestroyCompositor(this);
+    client_->DidDestroyCompositor(this, 0, 0);
   client_ = client;
   if (client_) {
-    client_->DidInitializeCompositor(this);
-    client_->DidBecomeCurrent(this);
+    client_->DidInitializeCompositor(this, 0, 0);
   }
 }
 

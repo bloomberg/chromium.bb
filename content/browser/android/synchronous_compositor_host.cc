@@ -68,6 +68,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       client_(client),
       ui_task_runner_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
@@ -76,11 +77,11 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
       did_activate_pending_tree_count_(0u) {
-  client_->DidInitializeCompositor(this);
+  client_->DidInitializeCompositor(this, process_id_, routing_id_);
 }
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
-  client_->DidDestroyCompositor(this);
+  client_->DidDestroyCompositor(this, process_id_, routing_id_);
 }
 
 bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
@@ -92,10 +93,6 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void SynchronousCompositorHost::DidBecomeCurrent() {
-  client_->DidBecomeCurrent(this);
 }
 
 SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(

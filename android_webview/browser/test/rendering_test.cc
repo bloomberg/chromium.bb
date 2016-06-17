@@ -56,6 +56,7 @@ void RenderingTest::SetUpTestHarness() {
   DCHECK(!functor_.get());
   browser_view_renderer_.reset(
       new TestBrowserViewRenderer(this, base::ThreadTaskRunnerHandle::Get()));
+  browser_view_renderer_->SetActiveCompositorID(CompositorID(0, 0));
   InitializeCompositor();
   std::unique_ptr<FakeWindow> window(
       new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));

@@ -27,10 +27,11 @@ class RequestInvokeGLTracker;
 }
 
 class RenderThreadManagerClient;
-class CompositorFrameProducer;
 class ChildFrame;
+class CompositorFrameProducer;
 class HardwareRenderer;
 class InsideHardwareReleaseReset;
+struct CompositorID;
 
 // This class is used to pass data between UI thread and RenderThread.
 class RenderThreadManager : public CompositorFrameConsumer {
@@ -64,7 +65,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources,
-                                   uint32_t compositor_id,
+                                   const CompositorID& compositor_id,
                                    uint32_t output_surface_id);
 
  private:

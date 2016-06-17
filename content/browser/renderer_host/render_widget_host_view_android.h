@@ -248,7 +248,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnShowingPastePopup(const gfx::PointF& point);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
-  SynchronousCompositorHost* GetSynchronousCompositor();
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);
 

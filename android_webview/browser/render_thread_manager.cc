@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_frame_producer.h"
+#include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/render_thread_manager_client.h"
@@ -227,7 +228,7 @@ RenderThreadManager::ReturnedResources::~ReturnedResources() {}
 
 void RenderThreadManager::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources,
-    uint32_t compositor_id,
+    const CompositorID& compositor_id,
     uint32_t output_surface_id) {
   base::AutoLock lock(lock_);
   ReturnedResources& returned_resources =

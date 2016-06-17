@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "cc/resources/returned_resource.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -25,7 +26,8 @@ class CompositorFrameConsumer {
     uint32_t output_surface_id;
     cc::ReturnedResourceArray resources;
   };
-  using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
+  using ReturnedResourcesMap =
+      std::map<CompositorID, ReturnedResources, CompositorIDComparator>;
 
   // A CompositorFrameConsumer may be registered with at most one
   // CompositorFrameProducer.

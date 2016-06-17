@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/macros.h"
 #include "cc/surfaces/display_client.h"
@@ -51,7 +52,7 @@ class HardwareRenderer : public cc::DisplayClient,
 
   void ReturnResourcesInChildFrame();
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
-                                   uint32_t compositor_routing_id,
+                                   const CompositorID& compositor_id,
                                    uint32_t output_surface_id);
 
   RenderThreadManager* render_thread_manager_;
@@ -78,7 +79,7 @@ class HardwareRenderer : public cc::DisplayClient,
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   cc::SurfaceId child_id_;
   cc::SurfaceId root_id_;
-  uint32_t compositor_id_;
+  CompositorID compositor_id_;
   // HardwareRenderer guarantees resources are returned in the order of
   // output_surface_id, and resources for old output surfaces are dropped.
   uint32_t last_committed_output_surface_id_;

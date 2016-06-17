@@ -38,7 +38,6 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
     : render_thread_manager_(state),
       last_egl_context_(eglGetCurrentContext()),
       gl_surface_(new AwGLSurface),
-      compositor_id_(0u),  // Valid compositor id starts at 1.
       last_committed_output_surface_id_(0u),
       last_submitted_output_surface_id_(0u),
       output_surface_(NULL) {
@@ -122,7 +121,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
   if (child_frame_.get() && child_frame_->frame.get()) {
-    if (compositor_id_ != child_frame_->compositor_id ||
+    if (!compositor_id_.Equals(child_frame_->compositor_id) ||
         last_submitted_output_surface_id_ != child_frame_->output_surface_id) {
       if (!root_id_.is_null())
         surface_factory_->Destroy(root_id_);
@@ -260,7 +259,7 @@ void HardwareRenderer::ReturnResourcesInChildFrame() {
 
 void HardwareRenderer::ReturnResourcesToCompositor(
     const cc::ReturnedResourceArray& resources,
-    uint32_t compositor_id,
+    const CompositorID& compositor_id,
     uint32_t output_surface_id) {
   if (output_surface_id != last_committed_output_surface_id_)
     return;
