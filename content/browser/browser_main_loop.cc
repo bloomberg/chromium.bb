@@ -72,6 +72,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
@@ -109,6 +110,7 @@
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
+#include "media/base/android/media_client_android.h"
 #include "ui/gl/gl_surface.h"
 #endif
 
@@ -1316,6 +1318,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   ThemeHelperMac::GetInstance();
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+  media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
+#endif
 
   return result_code_;
 }

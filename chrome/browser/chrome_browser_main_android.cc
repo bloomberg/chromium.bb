@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_media_client_android.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
-#include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -117,12 +115,6 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   }
 
   ChromeBrowserMainParts::PreEarlyInitialization();
-}
-
-void ChromeBrowserMainPartsAndroid::PreMainMessageLoopRun() {
-  media::SetMediaClientAndroid(new ChromeMediaClientAndroid);
-
-  ChromeBrowserMainParts::PreMainMessageLoopRun();
 }
 
 void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
