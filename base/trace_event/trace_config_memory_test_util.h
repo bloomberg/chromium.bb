@@ -72,7 +72,7 @@ class TraceConfigMemoryTestUtil {
         "}", MemoryDumpManager::kTraceCategory);
   }
 
-  static std::string GetTraceConfig_BackgroundTrigger() {
+  static std::string GetTraceConfig_BackgroundTrigger(int period_ms) {
     return StringPrintf(
         "{"
           "\"enable_argument_filter\":false,"
@@ -85,12 +85,12 @@ class TraceConfigMemoryTestUtil {
              "\"triggers\":["
               "{"
                 "\"mode\":\"background\","
-                "\"periodic_interval_ms\":1"
+                "\"periodic_interval_ms\":%d"
               "}"
             "]"
           "},"
           "\"record_mode\":\"record-until-full\""
-        "}", MemoryDumpManager::kTraceCategory);
+        "}", MemoryDumpManager::kTraceCategory, period_ms);
   }
 };
 

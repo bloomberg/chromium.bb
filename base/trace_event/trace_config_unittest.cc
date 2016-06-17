@@ -646,7 +646,8 @@ TEST(TraceConfigTest, TraceConfigFromMemoryConfigString) {
       tc1.memory_dump_config_.heap_profiler_options.breakdown_threshold_bytes);
 
   std::string tc_str2 =
-      TraceConfigMemoryTestUtil::GetTraceConfig_BackgroundTrigger();
+      TraceConfigMemoryTestUtil::GetTraceConfig_BackgroundTrigger(
+          1 /* period_ms */);
   TraceConfig tc2(tc_str2);
   EXPECT_EQ(tc_str2, tc2.ToString());
   EXPECT_TRUE(tc2.IsCategoryGroupEnabled(MemoryDumpManager::kTraceCategory));

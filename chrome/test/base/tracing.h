@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_config.h"
 
 namespace tracing {
 
@@ -35,6 +36,15 @@ bool BeginTracingWithWatch(const std::string& category_patterns,
                            const std::string& category_name,
                            const std::string& event_name,
                            int num_occurrences) WARN_UNUSED_RESULT;
+
+// Called from UI thread.
+// Begin tracing specified category_patterns on the browser.
+// |trace_config| specifies the configuration for tracing. This includes the
+// list of categories enabled, tracing modes and memory dumps configuration.
+//
+// See base/trace_event/trace_config.h for documentation of configurations.
+bool BeginTracingWithTraceConfig(
+    const base::trace_event::TraceConfig& trace_config) WARN_UNUSED_RESULT;
 
 // Called from UI thread.
 // Wait on the event set with BeginTracingWithWatch. If non-zero, return after

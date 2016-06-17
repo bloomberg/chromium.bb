@@ -4,6 +4,8 @@
 
 #include "content/child/child_discardable_shared_memory_manager.h"
 
+#include <inttypes.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -18,6 +20,7 @@
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -217,7 +220,9 @@ bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     base::trace_event::MemoryAllocatorDump* total_dump =
-        pmd->CreateAllocatorDump("discardable");
+        pmd->CreateAllocatorDump(
+            base::StringPrintf("discardable/child_0x%" PRIXPTR,
+                               reinterpret_cast<uintptr_t>(this)));
     const size_t total_size = heap_.GetSize();
     const size_t freelist_size = heap_.GetSizeOfFreeLists();
     total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

@@ -1148,7 +1148,8 @@ TEST_F(MemoryDumpManagerTest, TestBackgroundTracingSetup) {
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
 
   EnableTracingWithTraceConfig(
-      TraceConfigMemoryTestUtil::GetTraceConfig_BackgroundTrigger());
+      TraceConfigMemoryTestUtil::GetTraceConfig_BackgroundTrigger(
+          1 /* period_ms */));
   ASSERT_TRUE(IsPeriodicDumpingEnabled());
   run_loop.Run();
   DisableTracing();

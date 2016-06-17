@@ -55,11 +55,10 @@ class InProcessTraceController {
         watch_notification_count_(0) {}
   virtual ~InProcessTraceController() {}
 
-  bool BeginTracing(const std::string& category_patterns) {
+  bool BeginTracing(const base::trace_event::TraceConfig& trace_config) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return content::TracingController::GetInstance()->StartTracing(
-        base::trace_event::TraceConfig(category_patterns, ""),
-        content::TracingController::StartTracingDoneCallback());
+        trace_config, content::TracingController::StartTracingDoneCallback());
   }
 
   bool BeginTracingWithWatch(const std::string& category_patterns,
@@ -166,7 +165,7 @@ namespace tracing {
 
 bool BeginTracing(const std::string& category_patterns) {
   return InProcessTraceController::GetInstance()->BeginTracing(
-      category_patterns);
+      base::trace_event::TraceConfig(category_patterns, ""));
 }
 
 bool BeginTracingWithWatch(const std::string& category_patterns,
@@ -175,6 +174,11 @@ bool BeginTracingWithWatch(const std::string& category_patterns,
                            int num_occurrences) {
   return InProcessTraceController::GetInstance()->BeginTracingWithWatch(
       category_patterns, category_name, event_name, num_occurrences);
+}
+
+bool BeginTracingWithTraceConfig(
+    const base::trace_event::TraceConfig& trace_config) {
+  return InProcessTraceController::GetInstance()->BeginTracing(trace_config);
 }
 
 bool WaitForWatchEvent(base::TimeDelta timeout) {
