@@ -82,28 +82,7 @@
             android:scaleType="center" />
     </FrameLayout>
 
-    <!-- Indeterminate spinny to show that things are processing. -->
-    <ProgressBar
-        android:id="@+id/waiting_progress"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/payments_section_largest_spacing"
-        android:layout_marginBottom="@dimen/payments_section_small_spacing" />
-
-    <!-- Message displayed to the user. -->
-    <TextView
-        android:id="@+id/message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/payments_section_small_spacing"
-        android:layout_marginStart="@dimen/payments_section_large_spacing"
-        android:layout_marginEnd="@dimen/payments_section_large_spacing"
-        android:layout_marginBottom="@dimen/payments_section_largest_spacing"
-        android:gravity="center_horizontal"
-        android:textColor="@color/descriptive_text_color"
-        android:textSize="16sp" />
+    <include layout="@layout/payment_request_spinny" />
 
     <!-- Request dialog: Payment information. -->
     <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView

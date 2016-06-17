@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,6 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -665,10 +665,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private GridLayout mOptionLayout;
 
         /** A spinner to show when the user selection is being checked. */
-        private ProgressBar mCheckingProgress;
-
-        /** A message to show when the user selection is being checked. */
-        private TextView mCheckingMessage;
+        private View mCheckingProgress;
 
         /**
          * Constructs an OptionSection.
@@ -722,18 +719,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
             mDescriptionView = new TextView(getContext());
 
-            mCheckingProgress = new ProgressBar(getContext());
-            mainSectionLayout.addView(mCheckingProgress, new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            mCheckingProgress.setVisibility(GONE);
-
-            mCheckingMessage = new TextView(getContext());
-            mCheckingMessage.setText(
-                    getContext().getString(R.string.payments_shipping_address_checking));
-            mCheckingMessage.setTextAlignment(TEXT_ALIGNMENT_CENTER);
-            mainSectionLayout.addView(mCheckingMessage, new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            mCheckingMessage.setVisibility(GONE);
+            mCheckingProgress = createLoadingSpinner();
 
             mOptionLayout = new GridLayout(context);
             mOptionLayout.setColumnCount(3);
@@ -748,6 +734,39 @@ public abstract class PaymentRequestSection extends LinearLayout {
             updateOptionList(information, selectedItem);
         }
 
+        private View createLoadingSpinner() {
+            ViewGroup spinnyLayout = (ViewGroup) LayoutInflater.from(getContext()).inflate(
+                    R.layout.payment_request_spinny, null);
+
+            TextView textView = (TextView) spinnyLayout.findViewById(R.id.message);
+            textView.setText(getContext().getString(R.string.payments_checking_option));
+
+            return spinnyLayout;
+        }
+
+        private void setSpinnerVisibility(boolean visibility) {
+            if (visibility) {
+                if (mCheckingProgress.getParent() != null) return;
+
+                ViewGroup parent = (ViewGroup) mOptionLayout.getParent();
+                int optionLayoutIndex = parent.indexOfChild(mOptionLayout);
+                parent.addView(mCheckingProgress, optionLayoutIndex);
+
+                MarginLayoutParams params =
+                        (MarginLayoutParams) mCheckingProgress.getLayoutParams();
+                params.width = LayoutParams.MATCH_PARENT;
+                params.height = LayoutParams.WRAP_CONTENT;
+                params.bottomMargin = getContext().getResources().getDimensionPixelSize(
+                        R.dimen.payments_section_checking_spacing);
+                mCheckingProgress.requestLayout();
+            } else {
+                if (mCheckingProgress.getParent() == null) return;
+
+                ViewGroup parent = (ViewGroup) mCheckingProgress.getParent();
+                parent.removeView(mCheckingProgress);
+            }
+        }
+
         @Override
         public void setDisplayMode(int displayMode) {
             super.setDisplayMode(displayMode);
@@ -755,20 +774,17 @@ public abstract class PaymentRequestSection extends LinearLayout {
             if (displayMode == DISPLAY_MODE_FOCUSED) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(VISIBLE);
-                mCheckingProgress.setVisibility(GONE);
-                mCheckingMessage.setVisibility(GONE);
+                setSpinnerVisibility(false);
                 setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
             } else if (displayMode == DISPLAY_MODE_CHECKING) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(GONE);
-                mCheckingProgress.setVisibility(VISIBLE);
-                mCheckingMessage.setVisibility(VISIBLE);
+                setSpinnerVisibility(true);
                 setDescriptionVisibility(false);
             } else {
                 setIsSummaryAllowed(true);
                 mOptionLayout.setVisibility(GONE);
-                mCheckingProgress.setVisibility(GONE);
-                mCheckingMessage.setVisibility(GONE);
+                setSpinnerVisibility(false);
                 setDescriptionVisibility(false);
             }
         }

@@ -305,8 +305,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 // Hide the loading indicators and show the real sections.
                 mPaymentContainer.setVisibility(View.VISIBLE);
                 mButtonBar.setVisibility(View.VISIBLE);
-                mRequestView.removeView(mRequestView.findViewById(R.id.waiting_progress));
-                mRequestView.removeView(mRequestView.findViewById(R.id.message));
+                mRequestView.removeView(mRequestView.findViewById(R.id.payment_request_spinny));
                 mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
             }
         });
@@ -496,6 +495,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
 
         if (mIsClientCheckingSelection) {
+            startSectionResizeAnimation();
             section.setDisplayMode(PaymentRequestSection.DISPLAY_MODE_CHECKING);
         } else {
             expand(null);
@@ -688,17 +688,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** Update the display status of each expandable section. */
     private void updateSectionVisibility() {
-        Runnable animationEndRunnable = new Runnable() {
-            @Override
-            public void run() {
-                mSectionAnimator = null;
-                notifyReadyToClose();
-                notifyReadyForInput();
-                notifyReadyToPay();
-            }
-        };
-        mSectionAnimator = new FocusAnimator(
-                mPaymentContainerLayout, mSelectedSection, animationEndRunnable);
+        startSectionResizeAnimation();
 
         mOrderSummarySection.setDisplayMode(mSelectedSection == mOrderSummarySection
                 ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
@@ -754,6 +744,25 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 && mShippingAddressSectionInformation != null
                 && mShippingAddressSectionInformation.getSelectedItemIndex()
                         == SectionInformation.INVALID_SELECTION;
+    }
+
+    /**
+     * Animates the different sections of the dialog expanding and contracting into their final
+     * positions.
+     */
+    private void startSectionResizeAnimation() {
+        Runnable animationEndRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mSectionAnimator = null;
+                notifyReadyToClose();
+                notifyReadyForInput();
+                notifyReadyToPay();
+            }
+        };
+
+        mSectionAnimator =
+                new FocusAnimator(mPaymentContainerLayout, mSelectedSection, animationEndRunnable);
     }
 
     /**
