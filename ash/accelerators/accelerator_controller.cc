@@ -12,6 +12,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/ash_switches.h"
+#include "ash/common/focus_cycler.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
@@ -23,7 +24,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/focus_cycler.h"
 #include "ash/gpu_support.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -204,27 +204,24 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
       WindowCycleController::FORWARD);
 }
 
-void HandleRotatePaneFocus(Shell::Direction direction) {
-  Shell* shell = Shell::GetInstance();
+void HandleRotatePaneFocus(FocusCycler::Direction direction) {
   switch (direction) {
     // TODO(stevet): Not sure if this is the same as IDC_FOCUS_NEXT_PANE.
-    case Shell::FORWARD: {
+    case FocusCycler::FORWARD: {
       base::RecordAction(UserMetricsAction("Accel_Focus_Next_Pane"));
-      shell->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
       break;
     }
-    case Shell::BACKWARD: {
+    case FocusCycler::BACKWARD: {
       base::RecordAction(UserMetricsAction("Accel_Focus_Previous_Pane"));
-      shell->focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
       break;
     }
   }
+  WmShell::Get()->focus_cycler()->RotateFocus(direction);
 }
 
 void HandleFocusShelf() {
-  Shell* shell = Shell::GetInstance();
   base::RecordAction(base::UserMetricsAction("Accel_Focus_Shelf"));
-  shell->focus_cycler()->FocusWidget(
+  WmShell::Get()->focus_cycler()->FocusWidget(
       Shelf::ForPrimaryDisplay()->shelf_widget());
 }
 
@@ -1149,10 +1146,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       exit_warning_handler_.HandleAccelerator();
       break;
     case FOCUS_NEXT_PANE:
-      HandleRotatePaneFocus(Shell::FORWARD);
+      HandleRotatePaneFocus(FocusCycler::FORWARD);
       break;
     case FOCUS_PREVIOUS_PANE:
-      HandleRotatePaneFocus(Shell::BACKWARD);
+      HandleRotatePaneFocus(FocusCycler::BACKWARD);
       break;
     case FOCUS_SHELF:
       HandleFocusShelf();

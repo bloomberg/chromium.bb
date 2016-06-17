@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/focus_cycler.h"
+#include "ash/common/focus_cycler.h"
 
 #include <memory>
 
@@ -11,8 +11,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
-#include "ash/shell_factory.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -61,6 +59,8 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
 
 }  // namespace
 
+// TODO(jamescook): Migrate this test to //ash/common after the status area
+// widget moves. http://crbug.com/620955
 class FocusCyclerTest : public AshTestBase {
  public:
   FocusCyclerTest() {}
@@ -387,8 +387,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   // Pressing "Escape" while on the status area should
   // deactivate it, and activate the browser window.
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  ui::test::EventGenerator event_generator(root, root);
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
   event_generator.PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
@@ -418,14 +417,14 @@ TEST_F(FocusCyclerTest, RemoveWidgetOnDisplayRemoved) {
   EXPECT_TRUE(wm::IsActiveWindow(window.get()));
 
   // Cycle focus to the status area.
-  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  WmShell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window.get()));
 
   // Cycle focus to the shelf.
-  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  WmShell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
 
   // Cycle focus should go back to the browser.
-  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  WmShell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window.get()));
 }
 

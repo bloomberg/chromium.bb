@@ -517,9 +517,13 @@ void WmWindowAura::Show() {
   window_->Show();
 }
 
+views::Widget* WmWindowAura::GetInternalWidget() {
+  return views::Widget::GetWidgetForNativeView(window_);
+}
+
 void WmWindowAura::CloseWidget() {
-  DCHECK(views::Widget::GetWidgetForNativeView(window_));
-  views::Widget::GetWidgetForNativeView(window_)->Close();
+  DCHECK(GetInternalWidget());
+  GetInternalWidget()->Close();
 }
 
 bool WmWindowAura::IsFocused() const {

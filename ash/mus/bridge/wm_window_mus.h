@@ -47,7 +47,6 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
     // The window manager creates a mus::Window and a views::Widget to show the
     // non-client frame decorations. In this case the creation type is
     // FOR_CLIENT.
-
     FOR_CLIENT,
   };
 
@@ -176,6 +175,7 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
   bool IsAlwaysOnTop() const override;
   void Hide() override;
   void Show() override;
+  views::Widget* GetInternalWidget() override;
   void CloseWidget() override;
   bool IsFocused() const override;
   bool IsActive() const override;

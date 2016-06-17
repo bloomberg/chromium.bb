@@ -31,6 +31,10 @@ namespace ui {
 class Layer;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 
 class WmLayoutManager;
@@ -202,6 +206,11 @@ class ASH_EXPORT WmWindow {
 
   virtual void Hide() = 0;
   virtual void Show() = 0;
+
+  // Returns the widget associated with this window, or null if not associated
+  // with a widget. Only ash system UI widgets are returned, not widgets created
+  // by the mus window manager code to show a non-client frame.
+  virtual views::Widget* GetInternalWidget() = 0;
 
   // Requests the window to close and destroy itself. This is intended to
   // forward to an associated widget.

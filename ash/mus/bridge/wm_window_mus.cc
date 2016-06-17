@@ -575,6 +575,14 @@ void WmWindowMus::Show() {
   window_->SetVisible(true);
 }
 
+views::Widget* WmWindowMus::GetInternalWidget() {
+  // Don't return the window frame widget for an embedded client window.
+  if (widget_creation_type_ == WidgetCreationType::FOR_CLIENT)
+    return nullptr;
+
+  return widget_;
+}
+
 void WmWindowMus::CloseWidget() {
   DCHECK(widget_);
   // Allow the client to service the close request for remote widgets.

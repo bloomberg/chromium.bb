@@ -4,6 +4,7 @@
 
 #include "ash/common/wm_shell.h"
 
+#include "ash/common/focus_cycler.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "base/logging.h"
@@ -23,7 +24,9 @@ WmShell* WmShell::Get() {
   return instance_;
 }
 
-WmShell::WmShell() : system_tray_notifier_(new WmSystemTrayNotifier) {}
+WmShell::WmShell()
+    : focus_cycler_(new FocusCycler),
+      system_tray_notifier_(new WmSystemTrayNotifier) {}
 
 WmShell::~WmShell() {}
 

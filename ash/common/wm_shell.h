@@ -20,6 +20,7 @@ class Rect;
 namespace ash {
 
 class AccessibilityDelegate;
+class FocusCycler;
 class MruWindowTracker;
 class SessionStateDelegate;
 class ShellObserver;
@@ -42,6 +43,8 @@ class ASH_EXPORT WmShell {
   static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
+
+  FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
   WmSystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
@@ -140,6 +143,7 @@ class ASH_EXPORT WmShell {
 
   static WmShell* instance_;
 
+  std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<WmSystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
 };

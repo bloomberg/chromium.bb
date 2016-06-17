@@ -39,7 +39,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
-#include "ash/focus_cycler.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -365,11 +364,6 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
   return new CustomFrameViewAsh(widget);
-}
-
-void Shell::RotateFocus(Direction direction) {
-  focus_cycler_->RotateFocus(direction == FORWARD ? FocusCycler::FORWARD
-                                                  : FocusCycler::BACKWARD);
 }
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
@@ -955,7 +949,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   focus_client_.reset(focus_controller);
   activation_client_ = focus_controller;
   activation_client_->AddObserver(this);
-  focus_cycler_.reset(new FocusCycler());
 
   screen_position_controller_.reset(new ScreenPositionController);
 

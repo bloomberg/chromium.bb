@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/focus_cycler.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -130,7 +132,7 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
 
   // Rotate focus, this should move focus to another window that isn't part of
   // the default container.
-  Shell::GetInstance()->RotateFocus(Shell::FORWARD);
+  WmShell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
 
   // Cycling should activate the window.

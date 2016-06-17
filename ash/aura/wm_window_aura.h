@@ -128,6 +128,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool IsAlwaysOnTop() const override;
   void Hide() override;
   void Show() override;
+  views::Widget* GetInternalWidget() override;
   void CloseWidget() override;
   bool IsFocused() const override;
   bool IsActive() const override;

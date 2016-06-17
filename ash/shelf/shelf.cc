@@ -13,7 +13,6 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_delegate.h"

@@ -6,16 +6,14 @@
 
 #include "ash/ash_export.h"
 #include "ash/ash_switches.h"
+#include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/focus_cycler.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -94,8 +92,9 @@ void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
 bool StatusAreaWidgetDelegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
-  const FocusCycler* focus_cycler = focus_cycler_for_testing_ ?
-      focus_cycler_for_testing_ : Shell::GetInstance()->focus_cycler();
+  const FocusCycler* focus_cycler = focus_cycler_for_testing_
+                                        ? focus_cycler_for_testing_
+                                        : WmShell::Get()->focus_cycler();
   return focus_cycler->widget_activating() == GetWidget();
 }
 

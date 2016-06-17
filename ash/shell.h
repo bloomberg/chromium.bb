@@ -102,7 +102,6 @@ class EventClientImpl;
 class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FirstRunHelper;
-class FocusCycler;
 class GPUSupport;
 class HighContrastController;
 class KeyboardUI;
@@ -182,11 +181,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
                          public aura::client::ActivationChangeObserver {
  public:
   typedef std::vector<RootWindowController*> RootWindowControllerList;
-
-  enum Direction {
-    FORWARD,
-    BACKWARD
-  };
 
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
@@ -274,9 +268,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget);
-
-  // Rotates focus through containers that can receive focus.
-  void RotateFocus(Direction direction);
 
   // Sets the work area insets of the display that contains |window|,
   // this notifies observers too.
@@ -385,7 +376,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
-  FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
@@ -690,7 +680,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
-  std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;

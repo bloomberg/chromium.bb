@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -16,7 +17,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/focus_cycler.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigator.h"
@@ -599,7 +599,7 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
           IsActiveUserSessionStarted()) {
     status_area_widget_->Show();
   }
-  Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
+  WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
 
   aura::Window* status_container =
       WmWindowAura::GetAuraWindow(wm_status_container);
@@ -617,7 +617,7 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
 ShelfWidget::~ShelfWidget() {
   // Must call Shutdown() before destruction.
   DCHECK(!status_area_widget_);
-  Shell::GetInstance()->focus_cycler()->RemoveWidget(this);
+  WmShell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
   RemoveObserver(this);
 }
@@ -735,7 +735,7 @@ void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
   wm_shelf_aura->SetShelf(shelf_.get());
   delegate->OnShelfCreated(shelf_.get());
 
-  SetFocusCycler(shell->focus_cycler());
+  SetFocusCycler(WmShell::Get()->focus_cycler());
 }
 
 void ShelfWidget::PostCreateShelf() {
@@ -775,7 +775,7 @@ void ShelfWidget::Shutdown() {
     shelf_layout_manager_->PrepareForShutdown();
 
   if (status_area_widget_) {
-    Shell::GetInstance()->focus_cycler()->RemoveWidget(status_area_widget_);
+    WmShell::Get()->focus_cycler()->RemoveWidget(status_area_widget_);
     status_area_widget_->Shutdown();
     status_area_widget_ = nullptr;
   }

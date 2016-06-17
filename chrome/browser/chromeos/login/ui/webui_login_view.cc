@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
+#include "ash/common/focus_cycler.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
@@ -443,8 +445,8 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
-    ash::Shell::GetInstance()->RotateFocus(reverse ? ash::Shell::BACKWARD :
-                                                    ash::Shell::FORWARD);
+    ash::WmShell::Get()->focus_cycler()->RotateFocus(
+        reverse ? ash::FocusCycler::BACKWARD : ash::FocusCycler::FORWARD);
   }
 
   return true;
