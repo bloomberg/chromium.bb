@@ -127,7 +127,7 @@ function setMetricsMode(text, canEnable, on) {
   };
 
   var onLearnMore = function(event) {
-    var url = 'https://support.google.com/chrome/answer/96817';
+    var url = 'https://support.google.com/chromebook?p=playapps';
     chrome.browser.openTab({'url': url}, function() {});
     event.preventDefault();
   };
