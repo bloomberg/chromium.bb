@@ -308,10 +308,8 @@ int SdchDictionaryFetcher::DoSendRequestPending(int rv) {
 
   // If there's been an error, abort the current request.
   if (rv != OK) {
-    current_request_.reset();
-    buffer_ = NULL;
+    ResetRequest();
     next_state_ = STATE_SEND_REQUEST;
-
     return OK;
   }
 
@@ -343,8 +341,7 @@ int SdchDictionaryFetcher::DoReadBodyComplete(int rv) {
 
   // An error; abort the current request.
   if (rv < 0) {
-    current_request_.reset();
-    buffer_ = NULL;
+    ResetRequest();
     next_state_ = STATE_SEND_REQUEST;
     return OK;
   }

@@ -4,6 +4,7 @@
 
 #include "net/url_request/sdch_dictionary_fetcher.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,14 +14,16 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/sdch_manager.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_data_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +36,10 @@ const char kSampleBufferContext[] = "This is a sample buffer.";
 const char kTestDomain1[] = "top.domain.test";
 const char kTestDomain2[] = "top2.domain.test";
 
-class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
+// A URLRequestJob that returns a fixed response body, based on the URL, with
+// the specified HttpResponseInfo. Can also be made to return an error after the
+// response body has been read.
+class URLRequestSpecifiedResponseJob : public URLRequestJob {
  public:
   // Called on destruction with load flags used for this request.
   typedef base::Callback<void(int)> DestructionCallback;
@@ -43,11 +49,43 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
       NetworkDelegate* network_delegate,
       const HttpResponseInfo& response_info_to_return,
       const DestructionCallback& destruction_callback)
-      : URLRequestSimpleJob(request, network_delegate),
+      : URLRequestJob(request, network_delegate),
         response_info_to_return_(response_info_to_return),
         last_load_flags_seen_(request->load_flags()),
-        destruction_callback_(destruction_callback) {
+        destruction_callback_(destruction_callback),
+        bytes_read_(0),
+        final_read_result_(OK),
+        weak_factory_(this) {
     DCHECK(!destruction_callback.is_null());
+  }
+
+  ~URLRequestSpecifiedResponseJob() override {
+    destruction_callback_.Run(last_load_flags_seen_);
+  }
+
+  // Sets the result of the final read, after the entire body has been read.
+  // Defaults to OK.
+  void set_final_read_result(Error final_read_result) {
+    final_read_result_ = final_read_result;
+  }
+
+  // URLRequestJob implementation:
+  void Start() override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&URLRequestSpecifiedResponseJob::StartAsync,
+                              weak_factory_.GetWeakPtr()));
+  }
+
+  int ReadRawData(IOBuffer* buf, int buf_size) override {
+    std::string response = ExpectedResponseForURL(request_->url());
+    response = response.substr(bytes_read_);
+    size_t bytes_to_copy =
+        std::min(static_cast<size_t>(buf_size), response.size());
+    if (bytes_to_copy == 0)
+      return final_read_result_;
+    memcpy(buf->data(), response.c_str(), bytes_to_copy);
+    bytes_read_ += bytes_to_copy;
+    return bytes_to_copy;
   }
 
   static std::string ExpectedResponseForURL(const GURL& url) {
@@ -57,29 +95,21 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
                               url.spec().c_str());
   }
 
-  // URLRequestJob
   void GetResponseInfo(HttpResponseInfo* info) override {
     *info = response_info_to_return_;
   }
 
  private:
-  ~URLRequestSpecifiedResponseJob() override {
-    destruction_callback_.Run(last_load_flags_seen_);
-  }
-
-  // URLRequestSimpleJob implementation:
-  int GetData(std::string* mime_type,
-              std::string* charset,
-              std::string* data,
-              const CompletionCallback& callback) const override {
-    GURL url(request_->url());
-    *data = ExpectedResponseForURL(url);
-    return OK;
-  }
+  void StartAsync() { NotifyHeadersComplete(); }
 
   const HttpResponseInfo response_info_to_return_;
   int last_load_flags_seen_;
   const DestructionCallback destruction_callback_;
+
+  int bytes_read_;
+  Error final_read_result_;
+
+  base::WeakPtrFactory<URLRequestSpecifiedResponseJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestSpecifiedResponseJob);
 };
@@ -105,7 +135,9 @@ class TestURLRequestRedirectJob : public URLRequestRedirectJob {
   const base::Closure destruction_callback_;
 };
 
-static const char* redirect_signal = "/redirect/";
+const char kRedirectPath[] = "/redirect/";
+const char kBodyErrorPath[] = "/body_error/";
+
 class SDCHTestRequestInterceptor : public URLRequestInterceptor {
  public:
   // A callback to be called whenever a URLRequestJob child of this
@@ -137,16 +169,20 @@ class SDCHTestRequestInterceptor : public URLRequestInterceptor {
     lifecycle_callback_.Run(1, 0);
 
     std::string path = request->url().path();
-    if (path.substr(0, strlen(redirect_signal)) == redirect_signal) {
+    if (base::StartsWith(path, kRedirectPath, base::CompareCase::SENSITIVE)) {
       return new TestURLRequestRedirectJob(
-          request, network_delegate, GURL(path.substr(strlen(redirect_signal))),
+          request, network_delegate, GURL(path.substr(strlen(kRedirectPath))),
           URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "testing",
           base::Bind(lifecycle_callback_, -1, 0));
     }
 
-    return new URLRequestSpecifiedResponseJob(
-        request, network_delegate, *http_response_info_,
-        base::Bind(lifecycle_callback_, -1));
+    std::unique_ptr<URLRequestSpecifiedResponseJob> job(
+        new URLRequestSpecifiedResponseJob(
+            request, network_delegate, *http_response_info_,
+            base::Bind(lifecycle_callback_, -1)));
+    if (base::StartsWith(path, kBodyErrorPath, base::CompareCase::SENSITIVE))
+      job->set_final_read_result(net::ERR_FAILED);
+    return job.release();
   }
 
   // The caller must ensure that both |*http_response_info| and the
@@ -516,6 +552,26 @@ TEST_F(SdchDictionaryFetcherTest, Redirect) {
       URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary2_url),
       additions[0].dictionary_text);
   EXPECT_FALSE(last_load_flags_seen() & LOAD_ONLY_FROM_CACHE);
+}
+
+// Check the case of two requests for different URLs, where the first request
+// fails after receiving body data.
+TEST_F(SdchDictionaryFetcherTest, TwoDictionariesFirstFails) {
+  GURL dictionary_with_error_url(PathToGurl("body_error/"));
+  GURL dictionary_url(PathToGurl("dictionary"));
+  EXPECT_TRUE(
+      fetcher()->Schedule(dictionary_with_error_url, GetDefaultCallback()));
+  EXPECT_TRUE(fetcher()->Schedule(dictionary_url, GetDefaultCallback()));
+  WaitForNoJobs();
+
+  EXPECT_EQ(2, jobs_requested());
+  std::vector<DictionaryAdditions> additions;
+  GetDictionaryAdditions(&additions);
+  // Should only have a dictionary for the successful request.
+  ASSERT_EQ(1u, additions.size());
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary_url),
+      additions[0].dictionary_text);
 }
 
 }  // namespace
