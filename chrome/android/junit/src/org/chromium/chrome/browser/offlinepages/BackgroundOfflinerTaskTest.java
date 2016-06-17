@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -17,6 +19,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /**
@@ -24,7 +27,8 @@ import org.robolectric.annotation.Config;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class)
+        application = BaseChromiumApplication.class,
+        shadows = { ShadowGcmNetworkManager.class })
 public class BackgroundOfflinerTaskTest {
     private Bundle mTaskExtras;
     private long mTestTime;
@@ -53,6 +57,21 @@ public class BackgroundOfflinerTaskTest {
         assertSame(deviceConditions, mStubBackgroundSchedulerProcessor.getDeviceConditions());
 
         // TODO(dougarnett): Call processor callback and verify waiter signaled.
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testStartBackgroundRequests() {
+        BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
+        assertNull("Nothing scheduled", ShadowGcmNetworkManager.getScheduledTask());
+        assertTrue(task.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter));
+
+        // Check that the backup task was scheduled.
+        assertNotNull("Backup task scheduled", ShadowGcmNetworkManager.getScheduledTask());
+
+        // Check with ShadowBackgroundBackgroundSchedulerProcessor that startProcessing got called.
+        assertTrue(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
     }
 
     @Test

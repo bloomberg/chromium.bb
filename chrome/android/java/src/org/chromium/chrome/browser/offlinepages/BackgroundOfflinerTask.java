@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerPr
  */
 public class BackgroundOfflinerTask {
     private static final String TAG = "BGOfflinerTask";
+    private static final long DEFER_START_SECONDS = 5 * 60;
 
     public BackgroundOfflinerTask(BackgroundSchedulerProcessor bridge) {
         mBridge = bridge;
@@ -36,6 +37,11 @@ public class BackgroundOfflinerTask {
      */
     public boolean startBackgroundRequests(Context context, Bundle bundle,
                                            ChromeBackgroundServiceWaiter waiter) {
+        // Set up backup scheduled task in case processing is killed before RequestCoordinator
+        // has a chance to reschedule base on remaining work.
+        BackgroundScheduler.schedule(context, DEFER_START_SECONDS);
+
+        // Now initiate processing.
         processBackgroundRequests(bundle, OfflinePageUtils.getDeviceConditions(context), waiter);
 
         // Gather UMA data to measure how often the user's machine is amenable to background

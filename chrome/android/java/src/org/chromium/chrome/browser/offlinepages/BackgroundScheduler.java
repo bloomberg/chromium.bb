@@ -23,6 +23,14 @@ public class BackgroundScheduler {
      * For the given Triggering conditions, start a new GCM Network Manager request.
      */
     public static void schedule(Context context) {
+        schedule(context, 0 /* delayStartSecs */);
+    }
+
+    /**
+     * For the given Triggering conditions, start a new GCM Network Manager request allowed
+     * to run after {@code delayStartSecs} seconds.
+     */
+    public static void schedule(Context context, long delayStartSecs) {
         // Get the GCM Network Scheduler.
         GcmNetworkManager gcmNetworkManager = GcmNetworkManager.getInstance(context);
 
@@ -34,7 +42,7 @@ public class BackgroundScheduler {
 
         Task task = new OneoffTask.Builder()
                 .setService(ChromeBackgroundService.class)
-                .setExecutionWindow(0, ONE_WEEK_IN_SECONDS)
+                .setExecutionWindow(delayStartSecs, ONE_WEEK_IN_SECONDS)
                 .setTag(OfflinePageUtils.TASK_TAG)
                 .setUpdateCurrent(true)
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
