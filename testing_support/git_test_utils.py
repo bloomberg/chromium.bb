@@ -240,7 +240,7 @@ class GitRepo(object):
       SPECIAL_KEY: special_value,
       ...
       "path/to/some/file": { 'data': "some data content for this file",
-                              'mode': 0o0755 },
+                              'mode': 0o755 },
       ...
     }
 
