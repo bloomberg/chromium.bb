@@ -4123,6 +4123,7 @@
             'html/track/vtt/VTTScannerTest.cpp',
             'input/EventHandlerTest.cpp',
             'layout/ImageQualityControllerTest.cpp',
+            'layout/InlineTextBoxTest.cpp',
             'layout/LayoutBlockTest.cpp',
             'layout/LayoutBoxTest.cpp',
             'layout/LayoutInlineTest.cpp',

@@ -83,12 +83,17 @@ LayoutRect InlineTextBox::logicalOverflowRect() const
     if (knownToHaveNoOverflow() || !gTextBoxesWithOverflow)
         return logicalFrameRect();
 
-    return gTextBoxesWithOverflow->get(this);
+    const auto& it = gTextBoxesWithOverflow->find(this);
+    if (it != gTextBoxesWithOverflow->end())
+        return it->value;
+
+    return logicalFrameRect();
 }
 
 void InlineTextBox::setLogicalOverflowRect(const LayoutRect& rect)
 {
     ASSERT(!knownToHaveNoOverflow());
+    DCHECK(rect != logicalFrameRect());
     if (!gTextBoxesWithOverflow)
         gTextBoxesWithOverflow = new InlineTextBoxOverflowMap;
     gTextBoxesWithOverflow->set(this, rect);
@@ -98,10 +103,10 @@ void InlineTextBox::move(const LayoutSize& delta)
 {
     InlineBox::move(delta);
 
-    if (!knownToHaveNoOverflow()) {
-        LayoutRect logicalOverflowRect = this->logicalOverflowRect();
-        logicalOverflowRect.move(isHorizontal() ? delta : delta.transposedSize());
-        setLogicalOverflowRect(logicalOverflowRect);
+    if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow) {
+        const auto& it = gTextBoxesWithOverflow->find(this);
+        if (it != gTextBoxesWithOverflow->end())
+            it->value.move(isHorizontal() ? delta : delta.transposedSize());
     }
 }
 

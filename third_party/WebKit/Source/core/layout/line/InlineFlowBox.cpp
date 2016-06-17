@@ -871,7 +871,8 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow, logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
 
-    textBox->setLogicalOverflowRect(logicalVisualOverflow);
+    if (logicalVisualOverflow != textBox->logicalFrameRect())
+        textBox->setLogicalOverflowRect(logicalVisualOverflow);
 }
 
 inline void InlineFlowBox::addReplacedChildOverflow(const InlineBox* inlineBox, LayoutRect& logicalLayoutOverflow, LayoutRect& logicalVisualOverflow)

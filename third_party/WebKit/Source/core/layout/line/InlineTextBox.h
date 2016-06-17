@@ -23,6 +23,7 @@
 #ifndef InlineTextBox_h
 #define InlineTextBox_h
 
+#include "core/CoreExport.h"
 #include "core/layout/api/LineLayoutText.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
@@ -37,7 +38,7 @@ class GraphicsContext;
 const unsigned short cNoTruncation = USHRT_MAX;
 const unsigned short cFullTruncation = USHRT_MAX - 1;
 
-class InlineTextBox : public InlineBox {
+class CORE_EXPORT InlineTextBox : public InlineBox {
 public:
     InlineTextBox(LineLayoutItem item, int start, unsigned short length)
         : InlineBox(item)

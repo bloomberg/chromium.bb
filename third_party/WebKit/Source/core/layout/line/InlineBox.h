@@ -21,6 +21,7 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
+#include "core/CoreExport.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
@@ -38,7 +39,7 @@ enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some LayoutObject (i.e., it represents a portion of that LayoutObject).
-class InlineBox : public DisplayItemClient {
+class CORE_EXPORT InlineBox : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
     InlineBox(LineLayoutItem obj)
