@@ -101,8 +101,7 @@ class LintTest(unittest.TestCase):
         self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
-    # TODO(crbug.com/574272) - Reenable this after the bug is fixed.
-    def disabled_test_lint_test_files(self):
+    def test_lint_test_files(self):
         logging_stream = StringIO.StringIO()
         options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()
