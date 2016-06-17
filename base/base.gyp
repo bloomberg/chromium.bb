@@ -546,6 +546,7 @@
         'synchronization/read_write_lock_unittest.cc',
         'synchronization/waitable_event_unittest.cc',
         'synchronization/waitable_event_watcher_unittest.cc',
+        'sys_byteorder_unittest.cc',
         'sys_info_unittest.cc',
         'system_monitor/system_monitor_unittest.cc',
         'task/cancelable_task_tracker_unittest.cc',
