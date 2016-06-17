@@ -565,15 +565,15 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     TestPriorityCookieCase(cm.get(), "10HN 171MN", 0U, 140U, 10U, 150U, 0U);
     // Round 1 => 10L; round2 => 21M; round 3 => none.
     TestPriorityCookieCase(cm.get(), "141MN 40LN", 30U, 120U, 0U, 150U, 0U);
-    // Round 1 => none; round2 => none; round 3 => 31H.
-    TestPriorityCookieCase(cm.get(), "101HN 80MN", 0U, 80U, 70U, 150U, 0U);
+    // Round 1 => none; round2 => 30M; round 3 => 1H.
+    TestPriorityCookieCase(cm.get(), "101HN 80MN", 0U, 50U, 100U, 150U, 0U);
 
     // For {low, medium} priorities right on quota, different orders.
-    // Round 1 => 1L; round 2 => none, round3 => 30L.
-    TestPriorityCookieCase(cm.get(), "31LN 50MN 100HN", 0U, 50U, 100U, 150U,
+    // Round 1 => 1L; round 2 => none, round3 => 30H.
+    TestPriorityCookieCase(cm.get(), "31LN 50MN 100HN", 30U, 50U, 70U, 150U,
                            0U);
-    // Round 1 => none; round 2 => 1M, round3 => 30M.
-    TestPriorityCookieCase(cm.get(), "51MN 100HN 30LN", 30U, 20U, 100U, 150U,
+    // Round 1 => none; round 2 => 1M, round3 => 30H.
+    TestPriorityCookieCase(cm.get(), "51MN 100HN 30LN", 30U, 50U, 70U, 150U,
                            0U);
     // Round 1 => none; round 2 => none; round3 => 31H.
     TestPriorityCookieCase(cm.get(), "101HN 50MN 30LN", 30U, 50U, 70U, 150U,
@@ -586,45 +586,21 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Round 1 => 10L; round 2 => 10M; round 3 => 11H.
     TestPriorityCookieCase(cm.get(), "21HN 60MN 40LN 60HN", 30U, 50U, 70U, 150U,
                            0U);
-    // Round 1 => 10L; round 2 => 11M, 10L; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11HN 10MN 20LN 110MN 20LN 10HN", 20U,
-                           109U, 21U, 150U, 0U);
-    // Round 1 => none; round 2 => none; round 3 => 11L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11LN 10MN 140HN 10MN 10LN", 10U, 10U,
-                           130U, 150U, 0U);
-    // Round 1 => none; round 2 => 1M; round 3 => 10L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 60MN 90HN", 0U, 60U, 90U,
+    // Round 1 => 10L; round 2 => 21M; round 3 => 0H.
+    TestPriorityCookieCase(cm.get(), "11HN 10MN 20LN 110MN 20LN 10HN", 30U, 99U,
+                           21U, 150U, 0U);
+    // Round 1 => none; round 2 => none; round 3 => 31H.
+    TestPriorityCookieCase(cm.get(), "11LN 10MN 140HN 10MN 10LN", 21U, 20U,
+                           109U, 150U, 0U);
+    // Round 1 => none; round 2 => 21M; round 3 => 10H.
+    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 60MN 90HN", 10U, 50U, 90U,
                            150U, 0U);
-    // Round 1 => none; round 2 => 10L, 21M; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 90MN 60HN", 0U, 80U, 70U,
+    // Round 1 => none; round 2 => 31M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 90MN 60HN", 10U, 70U, 70U,
                            150U, 0U);
 
-    // TODO(jww): According to
-    // https://tools.ietf.org/html/draft-west-cookie-priority#section-3, it
-    // seems that quotas are a mechanism for preventing another application on
-    // the same doman from DoS'ing an application by constantly evicting *all*
-    // lower priority cookies.
-    //
-    // Unfortunately, this has never strictly worked in our implementation. Take
-    // the following test as an example:
-    // TestPriorityCookieCase(cm.get(), "50LN 131HN", 30U, 0U, 120U, 150U, 0U);
-    //
-    // According to this theory, we would expect eviction to proceed as:
     // Round 1 => 20L; round 2 => 0; round 3 => 11H
-    // thus resulting in 30L and 120H at the end.
-    //
-    // However, what happens in practice is that the cookies left are 19L and
-    // 131H. This is because the quotas are accumulated over the rounds and what
-    // priority they apply to is lost information. Since in the last round all
-    // that is known is a total quota, and the low-priority cookies are least
-    // recently accessed, they are evicted first to get down to 150 cookies.
-    //
-    // We should address this and uncomment the test below when it is fixed.
-    //
-    // See https://crbug.com/609550
-    //
-    // Round 1 => 20L; round 2 => 0; round 3 => 11H
-    // TestPriorityCookieCase(cm.get(), "50LN 131HN", 30U, 0U, 120U, 150U, 0U);
+    TestPriorityCookieCase(cm.get(), "50LN 131HN", 30U, 0U, 120U, 150U, 0U);
     // Round 1 => 20L; round 2 => 0; round 3 => 11H
     TestPriorityCookieCase(cm.get(), "131HN 50LN", 30U, 0U, 120U, 150U, 0U);
     // Round 1 => 20L; round 2 => none; round 3 => 11H.
@@ -643,8 +619,11 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
     // Each test case adds 181 cookies, so 31 cookies are evicted.
     // Cookie same priority, repeated for each priority.
+    // Round 1 => 31L; round2 => none; round 3 => none.
     TestPriorityCookieCase(cm.get(), "181LS", 150U, 0U, 0U, 0U, 150U);
+    // Round 1 => none; round2 => 31M; round 3 => none.
     TestPriorityCookieCase(cm.get(), "181MS", 0U, 150U, 0U, 0U, 150U);
+    // Round 1 => none; round2 => none; round 3 => 31H.
     TestPriorityCookieCase(cm.get(), "181HS", 0U, 0U, 150U, 0U, 150U);
 
     // Pairwise scenarios.
@@ -652,15 +631,15 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     TestPriorityCookieCase(cm.get(), "10HS 171MS", 0U, 140U, 10U, 0U, 150U);
     // Round 1 => 10L; round2 => 21M; round 3 => none.
     TestPriorityCookieCase(cm.get(), "141MS 40LS", 30U, 120U, 0U, 0U, 150U);
-    // Round 1 => none; round2 => none; round 3 => 31H.
-    TestPriorityCookieCase(cm.get(), "101HS 80MS", 0U, 80U, 70U, 0U, 150U);
+    // Round 1 => none; round2 => 30M; round 3 => 1H.
+    TestPriorityCookieCase(cm.get(), "101HS 80MS", 0U, 50U, 100U, 0U, 150U);
 
     // For {low, medium} priorities right on quota, different orders.
-    // Round 1 => 1L; round 2 => none, round3 => 30L.
-    TestPriorityCookieCase(cm.get(), "31LS 50MS 100HS", 0U, 50U, 100U, 0U,
+    // Round 1 => 1L; round 2 => none, round3 => 30H.
+    TestPriorityCookieCase(cm.get(), "31LS 50MS 100HS", 30U, 50U, 70U, 0U,
                            150U);
-    // Round 1 => none; round 2 => 1M, round3 => 30M.
-    TestPriorityCookieCase(cm.get(), "51MS 100HS 30LS", 30U, 20U, 100U, 0U,
+    // Round 1 => none; round 2 => 1M, round3 => 30H.
+    TestPriorityCookieCase(cm.get(), "51MS 100HS 30LS", 30U, 50U, 70U, 0U,
                            150U);
     // Round 1 => none; round 2 => none; round3 => 31H.
     TestPriorityCookieCase(cm.get(), "101HS 50MS 30LS", 30U, 50U, 70U, 0U,
@@ -673,17 +652,17 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Round 1 => 10L; round 2 => 10M; round 3 => 11H.
     TestPriorityCookieCase(cm.get(), "21HS 60MS 40LS 60HS", 30U, 50U, 70U, 0U,
                            150U);
-    // Round 1 => 10L; round 2 => 11M, 10L; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11HS 10MS 20LS 110MS 20LS 10HS", 20U,
-                           109U, 21U, 0U, 150U);
-    // Round 1 => none; round 2 => none; round 3 => 11L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11LS 10MS 140HS 10MS 10LS", 10U, 10U,
-                           130U, 0U, 150U);
-    // Round 1 => none; round 2 => 1M; round 3 => 10L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 60MS 90HS", 0U, 60U, 90U,
+    // Round 1 => 10L; round 2 => 21M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11HS 10MS 20LS 110MS 20LS 10HS", 30U, 99U,
+                           21U, 0U, 150U);
+    // Round 1 => none; round 2 => none; round 3 => 31H.
+    TestPriorityCookieCase(cm.get(), "11LS 10MS 140HS 10MS 10LS", 21U, 20U,
+                           109U, 0U, 150U);
+    // Round 1 => none; round 2 => 21M; round 3 => 10H.
+    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 60MS 90HS", 10U, 50U, 90U,
                            0U, 150U);
-    // Round 1 => none; round 2 => 10L, 21M; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 90MS 60HS", 0U, 80U, 70U,
+    // Round 1 => none; round 2 => 31M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 90MS 60HS", 10U, 70U, 70U,
                            0U, 150U);
   }
 
@@ -699,44 +678,101 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // secure cookies take priority, so the non-secure cookie is removed, along
     // with 30 secure cookies. Repeated for each priority, and with the
     // non-secure cookie as older and newer.
+    // Round 1 => 1LN; round 2 => 30LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "1LN 180LS", 150U, 0U, 0U, 0U, 150U);
+    // Round 1 => none; round 2 => none; round 3 => 1MN.
+    // Round 4 => none; round 5 => 30MS; round 6 => none.
     TestPriorityCookieCase(cm.get(), "1MN 180MS", 0U, 150U, 0U, 0U, 150U);
+    // Round 1 => none; round 2 => none; round 3 => none.
+    // Round 4 => 1HN; round 5 => none; round 6 => 30HS.
     TestPriorityCookieCase(cm.get(), "1HN 180HS", 0U, 0U, 150U, 0U, 150U);
+    // Round 1 => 1LN; round 2 => 30LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "180LS 1LN", 150U, 0U, 0U, 0U, 150U);
+    // Round 1 => none; round 2 => none; round 3 => 1MN.
+    // Round 4 => none; round 5 => 30MS; round 6 => none.
     TestPriorityCookieCase(cm.get(), "180MS 1MN", 0U, 150U, 0U, 0U, 150U);
+    // Round 1 => none; round 2 => none; round 3 => none.
+    // Round 4 => 1HN; round 5 => none; round 6 => 30HS.
     TestPriorityCookieCase(cm.get(), "180HS 1HN", 0U, 0U, 150U, 0U, 150U);
 
     // Low-priority secure cookies are removed before higher priority non-secure
     // cookies.
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "180LS 1MN", 149U, 1U, 0U, 1U, 149U);
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "180LS 1HN", 149U, 0U, 1U, 1U, 149U);
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "1MN 180LS", 149U, 1U, 0U, 1U, 149U);
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "1HN 180LS", 149U, 0U, 1U, 1U, 149U);
 
     // Higher-priority non-secure cookies are removed before any secure cookie
-    // with greater than low-priority.
-    TestPriorityCookieCase(cm.get(), "180MS 1HN", 0U, 150U, 0U, 0U, 150U);
-    TestPriorityCookieCase(cm.get(), "1HN 180MS", 0U, 150U, 0U, 0U, 150U);
+    // with greater than low-priority. Is it true? How about the quota?
+    // Round 1 => none; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => 31MS; round 6 => none.
+    TestPriorityCookieCase(cm.get(), "180MS 1HN", 0U, 149U, 1U, 1U, 149U);
+    // Round 1 => none; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => 31MS; round 6 => none.
+    TestPriorityCookieCase(cm.get(), "1HN 180MS", 0U, 149U, 1U, 1U, 149U);
 
     // Pairwise:
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "1LS 180LN", 150U, 0U, 0U, 149U, 1U);
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "100LS 81LN", 150U, 0U, 0U, 50U, 100U);
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "150LS 31LN", 150U, 0U, 0U, 0U, 150U);
-    TestPriorityCookieCase(cm.get(), "1LS 180HN", 0U, 0U, 150U, 150U, 0U);
+    // Round 1 => none; round 2 => none; round 3 => none.
+    // Round 4 => 31HN; round 5 => none; round 6 => none.
+    TestPriorityCookieCase(cm.get(), "1LS 180HN", 1U, 0U, 149U, 149U, 1U);
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "100LS 81HN", 69U, 0U, 81U, 81U, 69U);
+    // Round 1 => none; round 2 => 31LS; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "150LS 31HN", 119U, 0U, 31U, 31U, 119U);
 
     // Quota calculations inside non-secure/secure blocks remain in place:
-    // Round 1 => 20LS; round 2 => none; round 3 => 11HN.
+    // Round 1 => none; round 2 => 20LS; round 3 => none.
+    // Round 4 => 11HN; round 5 => none; round 6 => none.
     TestPriorityCookieCase(cm.get(), "50HN 50LS 81HS", 30U, 0U, 120U, 39U,
                            111U);
-    // Round 1 => none; round 2 => 10LS, 21MN; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11MS 10HN 10LS 90MN 60HN", 0U, 80U, 70U,
-                           139U, 11U);
+    // Round 1 => none; round 2 => none; round 3 => 31MN.
+    // Round 4 => none; round 5 => none; round 6 => none.
+    TestPriorityCookieCase(cm.get(), "11MS 10HN 10LS 90MN 60HN", 10U, 70U, 70U,
+                           129U, 21U);
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
+    TestPriorityCookieCase(cm.get(), "40LS 40LN 101HS", 49U, 0U, 101U, 9U,
+                           141U);
 
     // Multiple GC rounds end up with consistent behavior:
-    TestPriorityCookieCase(cm.get(), "100HS 100LN 100MN", 0, 76U, 100U, 76U,
-                           100U);
+    // GC is started as soon as there are 181 cookies in the store.
+    // On each major round it tries to preserve the quota for each priority.
+    // It is not aware about more cookies going in.
+    // 1 GC notices there are 181 cookies - 100HS 81LN 0MN
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
+    // 2 GC notices there are 181 cookies - 100HS 69LN 12MN
+    // Round 1 => 31LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => none.
+    // 3 GC notices there are 181 cookies - 100HS 38LN 43MN
+    // Round 1 =>  8LN; round 2 => none; round 3 => none.
+    // Round 4 => none; round 5 => none; round 6 => 23HS.
+    // 4 GC notcies there are 181 cookies - 77HS 30LN 74MN
+    // Round 1 => none; round 2 => none; round 3 => 24MN.
+    // Round 4 => none; round 5 => none; round 6 =>  7HS.
+    TestPriorityCookieCase(cm.get(), "100HS 100LN 100MN", 30U, 76U, 70U, 106U,
+                           70U);
   }
 
   // Function for creating a CM with a number of cookies in it,
