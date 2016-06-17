@@ -86,7 +86,7 @@ public:
     HTMLOptionsCollection* options();
     HTMLCollection* selectedOptions();
 
-    void optionElementChildrenChanged();
+    void optionElementChildrenChanged(const HTMLOptionElement&);
 
     void setRecalcListItems();
     void invalidateSelectedItems();

@@ -429,12 +429,14 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
     HTMLFormControlElementWithState::childrenChanged(change);
 }
 
-void HTMLSelectElement::optionElementChildrenChanged()
+void HTMLSelectElement::optionElementChildrenChanged(const HTMLOptionElement& option)
 {
     setNeedsValidityCheck();
     setOptionsChangedOnLayoutObject();
 
     if (layoutObject()) {
+        if (option.selected() && usesMenuList())
+            layoutObject()->updateFromElement();
         if (AXObjectCache* cache = layoutObject()->document().existingAXObjectCache())
             cache->childrenChanged(this);
     }

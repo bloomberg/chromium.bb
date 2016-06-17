@@ -310,7 +310,7 @@ void HTMLOptionElement::childrenChanged(const ChildrenChange& change)
     if (HTMLDataListElement* dataList = ownerDataListElement())
         dataList->optionElementChildrenChanged();
     else if (HTMLSelectElement* select = ownerSelectElement())
-        select->optionElementChildrenChanged();
+        select->optionElementChildrenChanged(*this);
     updateLabel();
     HTMLElement::childrenChanged(change);
 }
