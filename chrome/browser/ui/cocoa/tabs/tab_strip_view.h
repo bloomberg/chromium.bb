@@ -33,6 +33,7 @@
   BOOL dropArrowShown_;
   NSPoint dropArrowPosition_;
   BOOL inATabDraggingOverlayWindow_;
+  BOOL visualEffectsDisabledForFullscreen_;
 }
 
 @property(assign, nonatomic) BOOL dropArrowShown;
@@ -43,6 +44,9 @@
 // objects according to Cocoa's create rule.
 - (NewTabButton*)getNewTabButton;
 
+// Leaving visual effects enabled when fullscreen results in higher power
+// consumption. This is used to disable effects when fullscreen.
+- (void)setVisualEffectsDisabledForFullscreen:(BOOL)fullscreen;
 @end
 
 // Interface for the controller to set and clear the weak reference to itself.

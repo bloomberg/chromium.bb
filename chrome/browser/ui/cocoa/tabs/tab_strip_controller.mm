@@ -2311,4 +2311,8 @@ private:
   [newTabButton_ setImages];
 }
 
+- (void)setVisualEffectsDisabledForFullscreen:(BOOL)fullscreen {
+  [tabStripView_ setVisualEffectsDisabledForFullscreen:fullscreen];
+}
+
 @end

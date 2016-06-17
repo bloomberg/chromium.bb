@@ -402,7 +402,19 @@
 
 - (void)windowDidChangeTheme {
   [self setNeedsDisplay:YES];
+  [self updateVisualEffectState];
+}
 
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)setVisualEffectsDisabledForFullscreen:(BOOL)disabled {
+  visualEffectsDisabledForFullscreen_ = disabled;
+  [self updateVisualEffectState];
+}
+
+- (void)updateVisualEffectState {
   // Configure the NSVisualEffectView so that it does nothing if the user has
   // switched to a custom theme, or uses vibrancy if the user has switched back
   // to the default theme.
@@ -411,17 +423,13 @@
   if (!visualEffectView || !themeProvider) {
     return;
   }
-
-  if (themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
+  if (visualEffectsDisabledForFullscreen_ ||
+      themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
       themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
     [visualEffectView setState:NSVisualEffectStateInactive];
   } else {
     [visualEffectView setState:NSVisualEffectStateFollowsWindowActiveState];
   }
-}
-
-- (void)windowDidChangeActive {
-  [self setNeedsDisplay:YES];
 }
 
 @end
