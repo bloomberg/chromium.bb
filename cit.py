@@ -56,8 +56,10 @@ def need_to_update(branch):
 
 def ensure_infra(branch):
   """Ensures that infra.git is present in ~/.chrome-infra."""
-  print 'Fetching infra@%s into %s, may take a couple of minutes...' % (
-      branch, TARGET_DIR)
+  sys.stderr.write(
+      'Fetching infra@%s into %s, may take a couple of minutes...' % (
+      branch, TARGET_DIR))
+  sys.stderr.flush()
   if not os.path.isdir(TARGET_DIR):
     os.mkdir(TARGET_DIR)
   if not os.path.exists(os.path.join(TARGET_DIR, '.gclient')):
@@ -69,6 +71,8 @@ def ensure_infra(branch):
       [sys.executable, GCLIENT, 'sync', '--revision', 'origin/%s' % (branch,)],
       cwd=TARGET_DIR,
       stdout=subprocess.PIPE)
+  sys.stderr.write(' done.\n')
+  sys.stderr.flush()
 
 
 def get_available_tools():
