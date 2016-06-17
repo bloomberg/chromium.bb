@@ -24,6 +24,7 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -628,6 +629,7 @@ public class ImeTest extends ContentShellTestBase {
     @CommandLineFlags.Add("enable-features=ImeThread")
     @MediumTest
     @Feature({"TextInput"})
+    @FlakyTest
     public void testPasteLongText() throws Exception {
         int textLength = 25000;
         String text = new String(new char[textLength]).replace("\0", "a");
