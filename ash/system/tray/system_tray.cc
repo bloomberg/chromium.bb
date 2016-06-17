@@ -5,6 +5,8 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/date/tray_date.h"
@@ -14,8 +16,6 @@
 #include "ash/common/system/update/tray_update.h"
 #include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/cast/tray_cast.h"
@@ -31,7 +31,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -531,7 +530,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   UpdateNotificationBubble();  // State changed, re-create notifications.
   if (!notification_bubble_)
     UpdateWebNotifications();
-  GetShelfLayoutManager()->UpdateAutoHideState();
+  GetShelf()->UpdateAutoHideState();
 
   // When we show the system menu in our alternate shelf layout, we need to
   // tint the background.
@@ -651,7 +650,7 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (system_bubble_.get() && bubble_view == system_bubble_->bubble_view()) {
     DestroySystemBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
-    GetShelfLayoutManager()->UpdateAutoHideState();
+    GetShelf()->UpdateAutoHideState();
   } else if (notification_bubble_.get() &&
              bubble_view == notification_bubble_->bubble_view()) {
     DestroyNotificationBubble();

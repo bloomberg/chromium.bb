@@ -20,6 +20,7 @@ class ShelfLayoutManager;
 class StatusAreaWidget;
 class TrayEventFilter;
 class TrayBackground;
+class WmShelf;
 
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray,
 // LogoutButtonTray, OverviewButtonTray.
@@ -140,7 +141,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
 
-  ShelfLayoutManager* GetShelfLayoutManager();
+  WmShelf* GetShelf();
 
   // Updates the arrow visibility based on the launcher visibility.
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
@@ -167,6 +168,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   TrayContainer* tray_container_;
 
   // Shelf alignment.
+  // TODO(jamescook): Don't cache this, get it from WmShelf.
   ShelfAlignment shelf_alignment_;
 
   // Owned by the view passed to SetContents().

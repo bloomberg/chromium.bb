@@ -55,9 +55,23 @@ ShelfAutoHideState WmShelfMus::GetAutoHideState() const {
   return SHELF_AUTO_HIDE_HIDDEN;
 }
 
+void WmShelfMus::UpdateAutoHideState() {
+  NOTIMPLEMENTED();
+}
+
 ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
   NOTIMPLEMENTED();
   return SHELF_BACKGROUND_DEFAULT;
+}
+
+bool WmShelfMus::IsDimmed() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool WmShelfMus::IsVisible() const {
+  NOTIMPLEMENTED();
+  return true;
 }
 
 void WmShelfMus::UpdateVisibilityState() {
@@ -78,9 +92,22 @@ void WmShelfMus::UpdateIconPositionForWindow(WmWindow* window) {
   NOTIMPLEMENTED();
 }
 
+gfx::Rect WmShelfMus::GetIdealBounds() {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   NOTIMPLEMENTED();
   return gfx::Rect();
+}
+
+void WmShelfMus::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
+  NOTIMPLEMENTED();
+}
+
+void WmShelfMus::UpdateAutoHideForGestureEvent(ui::GestureEvent* event) {
+  NOTIMPLEMENTED();
 }
 
 void WmShelfMus::AddObserver(WmShelfObserver* observer) {

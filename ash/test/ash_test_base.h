@@ -63,6 +63,9 @@ class AshTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Returns the system tray on the primary display.
+  static SystemTray* GetPrimarySystemTray();
+
   // Update the display configuration as given in |display_specs|.
   // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
@@ -128,9 +131,6 @@ class AshTestBase : public testing::Test {
   void RunAllPendingInMessageLoop();
 
   TestScreenshotDelegate* GetScreenshotDelegate();
-
-  // Returns the system tray on the primary display.
-  SystemTray* GetPrimarySystemTray();
 
   TestSystemTrayDelegate* GetSystemTrayDelegate();
 

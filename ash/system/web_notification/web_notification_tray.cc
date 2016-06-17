@@ -6,7 +6,9 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -14,7 +16,6 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -257,9 +258,10 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
           message_center_tray_.get(),
           true);
 
+  WmShelf* shelf = GetShelf();
   int max_height;
-  if (IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())) {
-    max_height = GetShelfLayoutManager()->GetIdealBounds().y();
+  if (IsHorizontalAlignment(shelf->GetAlignment())) {
+    max_height = shelf->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
     WmWindow* status_area_window =
@@ -277,7 +279,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       new WebNotificationBubbleWrapper(this, message_center_bubble));
 
   status_area_widget()->SetHideSystemNotifications(true);
-  GetShelfLayoutManager()->UpdateAutoHideState();
+  shelf->UpdateAutoHideState();
   button_->SetBubbleVisible(true);
   SetDrawBackgroundAsActive(true);
   return true;
@@ -295,7 +297,7 @@ void WebNotificationTray::HideMessageCenter() {
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;
   status_area_widget()->SetHideSystemNotifications(false);
-  GetShelfLayoutManager()->UpdateAutoHideState();
+  GetShelf()->UpdateAutoHideState();
   button_->SetBubbleVisible(false);
 }
 

@@ -565,6 +565,7 @@ void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
 
 ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
                          WmWindow* wm_status_container,
+                         WmShelfAura* wm_shelf_aura,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
       background_animator_(
@@ -592,8 +593,11 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
+  wm_shelf_aura->SetShelfLayoutManager(shelf_layout_manager_);
 
-  status_area_widget_ = new StatusAreaWidget(wm_status_container, this);
+  // TODO(jamescook): Move ownership to RootWindowController.
+  status_area_widget_ =
+      new StatusAreaWidget(wm_status_container, wm_shelf_aura);
   status_area_widget_->CreateTrayViews();
   if (Shell::GetInstance()->session_state_delegate()->
           IsActiveUserSessionStarted()) {

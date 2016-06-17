@@ -12,12 +12,12 @@
 #include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,17 +42,15 @@ namespace test {
 
 namespace {
 
-SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()
-      ->shelf_widget()
-      ->status_area_widget()
-      ->system_tray();
-}
-
 // Trivial item implementation that tracks its views for testing.
 class TestItem : public SystemTrayItem {
  public:
-  TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
+  TestItem()
+      : SystemTrayItem(AshTestBase::GetPrimarySystemTray()),
+        tray_view_(nullptr),
+        default_view_(nullptr),
+        detailed_view_(nullptr),
+        notification_view_(nullptr) {}
 
   views::View* CreateTrayView(LoginStatus status) override {
     tray_view_ = new views::View;
@@ -108,7 +106,7 @@ class TestItem : public SystemTrayItem {
 // view creation methods.
 class TestNoViewItem : public SystemTrayItem {
  public:
-  TestNoViewItem() : SystemTrayItem(GetSystemTray()) {}
+  TestNoViewItem() : SystemTrayItem(AshTestBase::GetPrimarySystemTray()) {}
 
   views::View* CreateTrayView(LoginStatus status) override { return nullptr; }
 
@@ -148,7 +146,7 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 typedef AshTestBase SystemTrayTest;
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -161,7 +159,7 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 
 // Opening and closing the bubble should change the coloring of the tray.
 TEST_F(SystemTrayTest, SystemTrayColoring) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->draw_background_as_active());
@@ -179,7 +177,7 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 // Closing the system bubble through an alignment change should change the
 // system tray coloring back to normal.
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
@@ -200,7 +198,7 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -238,7 +236,7 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   // Verify that no crashes occur on items lacking some views.
@@ -250,7 +248,7 @@ TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
 }
 
 TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   // Add an initial tray item so that the tray gets laid out correctly.
@@ -279,7 +277,7 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayNotifications) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -314,7 +312,7 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
 }
 
 TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -347,54 +345,40 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
   EXPECT_EQ(widget, test_item->default_view()->GetWidget());
 }
 
-// Tests that the tray is laid out properly and is fully contained within
-// the shelf.
+// Tests that the tray view is laid out properly and is fully contained within
+// the shelf widget.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   Shelf* shelf = Shelf::ForPrimaryDisplay();
-  StatusAreaWidget* widget = Shell::GetPrimaryRootWindowController()
-                                 ->shelf_widget()
-                                 ->status_area_widget();
-  SystemTray* tray = widget->system_tray();
+  StatusAreaWidget* widget = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  SystemTray* tray = GetPrimarySystemTray();
 
   // Test in bottom alignment.
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
   gfx::Rect tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
-  EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
-  EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
-  EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 
   // Test in locked alignment.
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
-  EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
-  EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
-  EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 
   // Test in the left alignment.
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
-  EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
-  EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
-  EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 
   // Test in the right alignment.
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
-  EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
-  EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
-  EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 }
 
 TEST_F(SystemTrayTest, PersistentBubble) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -451,7 +435,7 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
       gfx::Rect(0, 0, 100, 100));
   widget->Show();
 
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   ASSERT_TRUE(tray->HasSystemBubble());
@@ -483,7 +467,7 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
 // Tests that if SetVisible(true) is called while animating to hidden that the
 // tray becomes visible, and stops animating to hidden.
 TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->visible());
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration;
@@ -505,7 +489,7 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
 // Tests that touch on an item in the system bubble triggers it to become
 // active.
 TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   TrayPopupItemContainer* view =
@@ -525,7 +509,7 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
 // Tests that touch events on an item in the system bubble cause it to stop
 // being active.
 TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   TrayPopupItemContainer* view =
@@ -549,10 +533,7 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
-  StatusAreaWidget* widget = Shell::GetPrimaryRootWindowController()
-                                 ->shelf_widget()
-                                 ->status_area_widget();
-  SystemTray* tray = widget->system_tray();
+  SystemTray* tray = GetPrimarySystemTray();
   WebNotificationTray* notification_tray =
       tray->status_area_widget()->web_notification_tray();
 

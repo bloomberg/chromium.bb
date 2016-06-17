@@ -96,7 +96,7 @@ class FocusCyclerTest : public AshTestBase {
         WmShell::Get()->GetRootWindowForNewWindows()->GetChildByShellWindowId(
             kShellWindowId_StatusContainer);
 
-    StatusAreaWidget* widget = new StatusAreaWidget(parent, shelf_widget());
+    StatusAreaWidget* widget = new StatusAreaWidget(parent, GetPrimaryShelf());
     widget->CreateTrayViews();
     widget->Show();
     tray_.reset(widget->system_tray());

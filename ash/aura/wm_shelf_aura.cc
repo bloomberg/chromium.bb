@@ -9,6 +9,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shell.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -79,8 +80,20 @@ ShelfAutoHideState WmShelfAura::GetAutoHideState() const {
   return shelf_layout_manager_->auto_hide_state();
 }
 
+void WmShelfAura::UpdateAutoHideState() {
+  shelf_layout_manager_->UpdateAutoHideState();
+}
+
 ShelfBackgroundType WmShelfAura::GetBackgroundType() const {
   return shelf_layout_manager_->shelf_widget()->GetBackgroundType();
+}
+
+bool WmShelfAura::IsDimmed() const {
+  return shelf_layout_manager_->shelf_widget()->GetDimsShelf();
+}
+
+bool WmShelfAura::IsVisible() const {
+  return shelf_->IsVisible();
 }
 
 void WmShelfAura::UpdateVisibilityState() {
@@ -90,6 +103,10 @@ void WmShelfAura::UpdateVisibilityState() {
 ShelfVisibilityState WmShelfAura::GetVisibilityState() const {
   return shelf_layout_manager_ ? shelf_layout_manager_->visibility_state()
                                : SHELF_HIDDEN;
+}
+
+gfx::Rect WmShelfAura::GetIdealBounds() {
+  return shelf_layout_manager_->GetIdealBounds();
 }
 
 gfx::Rect WmShelfAura::GetUserWorkAreaBounds() const {
@@ -104,6 +121,18 @@ void WmShelfAura::UpdateIconPositionForWindow(WmWindow* window) {
 gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   return shelf_->GetScreenBoundsOfItemIconForWindow(
       WmWindowAura::GetAuraWindow(window));
+}
+
+void WmShelfAura::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
+  // Auto-hide support for ash_sysui.
+  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
+    shelf_layout_manager_->UpdateAutoHideForMouseEvent(event);
+}
+
+void WmShelfAura::UpdateAutoHideForGestureEvent(ui::GestureEvent* event) {
+  // Auto-hide support for ash_sysui.
+  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
+    shelf_layout_manager_->UpdateAutoHideForGestureEvent(event);
 }
 
 void WmShelfAura::AddObserver(WmShelfObserver* observer) {

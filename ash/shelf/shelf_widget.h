@@ -30,6 +30,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
  public:
   ShelfWidget(WmWindow* wm_shelf_container,
               WmWindow* wm_status_container,
+              WmShelfAura* wm_shelf_aura,
               WorkspaceController* workspace_controller);
   ~ShelfWidget() override;
 

@@ -763,8 +763,8 @@ void RootWindowController::InitLayoutManagers() {
   WmWindow* status_container =
       WmWindowAura::Get(GetContainer(kShellWindowId_StatusContainer));
   shelf_widget_.reset(new ShelfWidget(shelf_container, status_container,
+                                      wm_shelf_aura_.get(),
                                       workspace_controller()));
-  wm_shelf_aura_->SetShelfLayoutManager(shelf_widget_->shelf_layout_manager());
   workspace_layout_manager_delegate->set_shelf(
       shelf_widget_->shelf_layout_manager());
 

@@ -6,18 +6,18 @@
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/login_status.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 class OverviewButtonTray;
-class ShelfWidget;
 class ShellDelegate;
 class StatusAreaWidgetDelegate;
 class SystemTray;
 class WebNotificationTray;
+class WmShelf;
 class WmWindow;
 #if defined(OS_CHROMEOS)
 class LogoutButtonTray;
@@ -26,7 +26,7 @@ class VirtualKeyboardTray;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  StatusAreaWidget(WmWindow* status_container, ShelfWidget* shelf_widget);
+  StatusAreaWidget(WmWindow* status_container, WmShelf* wm_shelf);
   ~StatusAreaWidget() override;
 
   // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.
@@ -57,7 +57,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   OverviewButtonTray* overview_button_tray() {
     return overview_button_tray_;
   }
-  ShelfWidget* shelf_widget() { return shelf_widget_; }
+  WmShelf* wm_shelf() { return wm_shelf_; }
 
   LoginStatus login_status() const { return login_status_; }
 
@@ -98,7 +98,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 #endif
   LoginStatus login_status_;
 
-  ShelfWidget* shelf_widget_;
+  WmShelf* wm_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

@@ -9,9 +9,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
@@ -28,13 +25,6 @@ namespace ash {
 namespace test {
 
 namespace {
-
-SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()
-      ->shelf_widget()
-      ->status_area_widget()
-      ->system_tray();
-}
 
 class TestDetailsView : public TrayDetailsView,
                         public ViewClickListener,
@@ -78,7 +68,11 @@ class TestDetailsView : public TrayDetailsView,
 // Trivial item implementation that tracks its views for testing.
 class TestItem : public SystemTrayItem {
  public:
-  TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
+  TestItem()
+      : SystemTrayItem(AshTestBase::GetPrimarySystemTray()),
+        tray_view_(nullptr),
+        default_view_(nullptr),
+        detailed_view_(nullptr) {}
 
   // Overridden from SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override {
@@ -118,7 +112,7 @@ class TrayDetailsViewTest : public AshTestBase {
   ~TrayDetailsViewTest() override {}
 
   HoverHighlightView* CreateAndShowHoverHighlightView() {
-    SystemTray* tray = GetSystemTray();
+    SystemTray* tray = GetPrimarySystemTray();
     TestItem* test_item = new TestItem;
     tray->AddTrayItem(test_item);
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -131,7 +125,7 @@ class TrayDetailsViewTest : public AshTestBase {
   }
 
   TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {
-    SystemTray* tray = GetSystemTray();
+    SystemTray* tray = GetPrimarySystemTray();
     TestItem* test_item = new TestItem;
     tray->AddTrayItem(test_item);
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -147,7 +141,7 @@ class TrayDetailsViewTest : public AshTestBase {
 };
 
 TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
-  SystemTray* tray = GetSystemTray();
+  SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item_1 = new TestItem;
@@ -200,7 +194,7 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedback) {
   HoverHighlightView* view = CreateAndShowHoverHighlightView();
   EXPECT_FALSE(view->hover());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(view->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(view->hover());
@@ -215,7 +209,7 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedbackCancellation) {
   EXPECT_FALSE(view->hover());
 
   gfx::Rect view_bounds = view->GetBoundsInScreen();
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(view->hover());
@@ -234,7 +228,7 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedback) {
   TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
   EXPECT_FALSE(button->background());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(button->background());
@@ -250,7 +244,7 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedbackCancellation) {
   EXPECT_FALSE(button->background());
 
   gfx::Rect view_bounds = button->GetBoundsInScreen();
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(button->background());
@@ -270,7 +264,7 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonMouseHoverFeedback) {
   TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
   EXPECT_FALSE(button->background());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   gfx::Rect bounds = button->GetBoundsInScreen();
   gfx::Point initial_point(bounds.x() - 1, bounds.y());
   generator.set_current_location(initial_point);

@@ -12,6 +12,11 @@ namespace gfx {
 class Rect;
 }
 
+namespace ui {
+class GestureEvent;
+class MouseEvent;
+}
+
 namespace ash {
 
 class WmShelfObserver;
@@ -31,11 +36,25 @@ class ASH_EXPORT WmShelf {
 
   virtual ShelfAutoHideState GetAutoHideState() const = 0;
 
+  // Invoke when the auto-hide state may have changed (for example, when the
+  // system tray bubble opens it should force the shelf to be visible).
+  virtual void UpdateAutoHideState() = 0;
+
   virtual ShelfBackgroundType GetBackgroundType() const = 0;
+
+  // Shelf items are slightly dimmed (e.g. when a window is maximized).
+  virtual bool IsDimmed() const = 0;
+
+  // Whether the shelf view is visible.
+  // TODO(jamescook): Consolidate this with GetVisibilityState().
+  virtual bool IsVisible() const = 0;
 
   virtual void UpdateVisibilityState() = 0;
 
   virtual ShelfVisibilityState GetVisibilityState() const = 0;
+
+  // Returns the ideal bounds of the shelf assuming it is visible.
+  virtual gfx::Rect GetIdealBounds() = 0;
 
   virtual gfx::Rect GetUserWorkAreaBounds() const = 0;
 
@@ -44,6 +63,10 @@ class ASH_EXPORT WmShelf {
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   virtual gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) = 0;
+
+  // TODO(jamescook): Nuke when ash_sysui is removed. http://crbug.com/621112
+  virtual void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) = 0;
+  virtual void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) = 0;
 
   virtual void AddObserver(WmShelfObserver* observer) = 0;
   virtual void RemoveObserver(WmShelfObserver* observer) = 0;

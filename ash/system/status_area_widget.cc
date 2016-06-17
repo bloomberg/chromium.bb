@@ -4,15 +4,12 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -28,7 +25,7 @@
 namespace ash {
 
 StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
-                                   ShelfWidget* shelf_widget)
+                                   WmShelf* wm_shelf)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
       overview_button_tray_(NULL),
       system_tray_(NULL),
@@ -38,7 +35,7 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
       virtual_keyboard_tray_(NULL),
 #endif
       login_status_(LoginStatus::NOT_LOGGED_IN),
-      shelf_widget_(shelf_widget) {
+      wm_shelf_(wm_shelf) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
@@ -102,7 +99,7 @@ bool StatusAreaWidget::ShouldShowShelf() const {
        web_notification_tray_->ShouldBlockShelfAutoHide()))
     return true;
 
-  if (!shelf_widget_->shelf()->IsVisible())
+  if (!wm_shelf_->IsVisible())
     return false;
 
   // If the shelf is currently visible, don't hide the shelf if the mouse
@@ -137,14 +134,12 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
   Widget::OnMouseEvent(event);
-  if (Shell::GetInstance()->in_mus() && shelf_widget_->shelf_layout_manager())
-    shelf_widget_->shelf_layout_manager()->UpdateAutoHideForMouseEvent(event);
+  wm_shelf_->UpdateAutoHideForMouseEvent(event);
 }
 
 void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
   Widget::OnGestureEvent(event);
-  if (Shell::GetInstance()->in_mus() && shelf_widget_->shelf_layout_manager())
-    shelf_widget_->shelf_layout_manager()->UpdateAutoHideForGestureEvent(event);
+  wm_shelf_->UpdateAutoHideForGestureEvent(event);
 }
 
 void StatusAreaWidget::AddSystemTray() {

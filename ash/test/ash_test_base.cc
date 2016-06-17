@@ -173,6 +173,11 @@ void AshTestBase::TearDown() {
   display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 }
 
+// static
+SystemTray* AshTestBase::GetPrimarySystemTray() {
+  return Shell::GetInstance()->GetPrimarySystemTray();
+}
+
 ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   if (!event_generator_) {
     event_generator_.reset(
@@ -284,10 +289,6 @@ void AshTestBase::RunAllPendingInMessageLoop() {
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
   return ash_test_helper_->test_screenshot_delegate();
-}
-
-SystemTray* AshTestBase::GetPrimarySystemTray() {
-  return Shell::GetInstance()->GetPrimarySystemTray();
 }
 
 TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {

@@ -6,14 +6,12 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
@@ -105,16 +103,14 @@ class TrayBackground : public views::Background {
   ~TrayBackground() override {}
 
  private:
-  ShelfWidget* GetShelfWidget() const {
-    return tray_background_view_->GetShelfLayoutManager()->shelf_widget();
+  WmShelf* GetShelf() const {
+    return tray_background_view_->GetShelf();
   }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
     SkColor background_color = SK_ColorTRANSPARENT;
-    ShelfWidget* shelf_widget = GetShelfWidget();
-    if (shelf_widget &&
-        shelf_widget->GetBackgroundType() ==
-            ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+    if (GetShelf()->GetBackgroundType() ==
+        ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
       background_color = SkColorSetA(kShelfBaseColor,
                                      GetShelfConstant(SHELF_BACKGROUND_ALPHA));
     }
@@ -153,17 +149,15 @@ class TrayBackground : public views::Background {
       }
     };
 
-    int orientation = kImageHorizontal;
-    ShelfWidget* shelf_widget = GetShelfWidget();
-    if (shelf_widget &&
-        !shelf_widget->shelf_layout_manager()->IsHorizontalAlignment()) {
-      orientation = kImageVertical;
-    }
+    WmShelf* shelf = GetShelf();
+    const int orientation = IsHorizontalAlignment(shelf->GetAlignment())
+                                ? kImageHorizontal
+                                : kImageVertical;
 
     int state = kImageTypeDefault;
     if (tray_background_view_->draw_background_as_active())
       state = kImageTypePressed;
-    else if (shelf_widget && shelf_widget->GetDimsShelf())
+    else if (shelf->IsDimmed())
       state = kImageTypeOnBlack;
     else
       state = kImageTypeDefault;
@@ -247,6 +241,7 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
       background_(NULL),
       draw_background_as_active_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
+  DCHECK(status_area_widget->wm_shelf());
   set_notify_enter_exit_on_child(true);
 
   tray_container_ = new TrayContainer(shelf_alignment_);
@@ -389,8 +384,8 @@ void TrayBackgroundView::SetContentsBackground() {
   tray_container_->set_background(background_);
 }
 
-ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
-  return status_area_widget()->shelf_widget()->shelf_layout_manager();
+WmShelf* TrayBackgroundView::GetShelf() {
+  return status_area_widget_->wm_shelf();
 }
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
