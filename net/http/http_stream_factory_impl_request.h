@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"
 #include "net/socket/connection_attempts.h"
@@ -27,29 +26,8 @@ class SpdySession;
 
 class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
  public:
-  class NET_EXPORT_PRIVATE Helper {
-   public:
-    virtual ~Helper() {}
-
-    // Returns the LoadState for Request.
-    virtual LoadState GetLoadState() const = 0;
-
-    // Called when Request is destructed.
-    virtual void OnRequestComplete() = 0;
-
-    // Called to resume the HttpStream creation process when necessary
-    // Proxy authentication credentials are collected.
-    virtual int RestartTunnelWithProxyAuth(
-        const AuthCredentials& credentials) = 0;
-
-    // Called when the priority of transaction changes.
-    virtual void SetPriority(RequestPriority priority) = 0;
-  };
-
-  // Request will notify |job_controller| when it's destructed.
-  // Thus |job_controller| is valid for the lifetime of the |this| Request.
   Request(const GURL& url,
-          Helper* helper,
+          HttpStreamFactoryImpl* factory,
           HttpStreamRequest::Delegate* delegate,
           WebSocketHandshakeStreamBase::CreateHelper*
               websocket_handshake_stream_create_helper,
@@ -63,22 +41,39 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   const BoundNetLog& net_log() const { return net_log_; }
 
-  // Called when the |helper_| determines the appropriate |spdy_session_key|
-  // for the Request. Note that this does not mean that SPDY is necessarily
-  // supported for this SpdySessionKey, since we may need to wait for NPN to
-  // complete before knowing if SPDY is available.
+  // Called when the Job determines the appropriate |spdy_session_key| for the
+  // Request. Note that this does not mean that SPDY is necessarily supported
+  // for this SpdySessionKey, since we may need to wait for NPN to complete
+  // before knowing if SPDY is available.
   void SetSpdySessionKey(const SpdySessionKey& spdy_session_key);
   bool HasSpdySessionKey() const;
+
+  // Attaches |job| to this request. Does not mean that Request will use |job|,
+  // but Request will own |job|.
+  void AttachJob(HttpStreamFactoryImpl::Job* job);
 
   // Marks completion of the request. Must be called before OnStreamReady().
   void Complete(bool was_npn_negotiated,
                 NextProto protocol_negotiated,
                 bool using_spdy);
 
-  void ResetSpdySessionKey();
+  // If this Request has a |spdy_session_key_|, remove this session from the
+  // SpdySessionRequestMap.
+  void RemoveRequestFromSpdySessionRequestMap();
 
-  // Called by |helper_| to record connection attempts made by the socket
-  // layer in an attached Job for this stream request.
+  // Called by an attached Job if it sets up a SpdySession.
+  // |stream| is null when |stream_type| is HttpStreamRequest::HTTP_STREAM.
+  // |bidirectional_stream_spdy_impl| is null when |stream_type| is
+  // HttpStreamRequest::BIDIRECTIONAL_STREAM.
+  void OnNewSpdySessionReady(
+      Job* job,
+      std::unique_ptr<HttpStream> stream,
+      std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_spdy_impl,
+      const base::WeakPtr<SpdySession>& spdy_session,
+      bool direct);
+
+  // Called by an attached Job to record connection attempts made by the socket
+  // layer for this stream request.
   void AddConnectionAttempts(const ConnectionAttempts& attempts);
 
   WebSocketHandshakeStreamBase::CreateHelper*
@@ -89,29 +84,37 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // HttpStreamRequest::Delegate methods which we implement. Note we don't
   // actually subclass HttpStreamRequest::Delegate.
 
-  void OnStreamReady(const SSLConfig& used_ssl_config,
+  void OnStreamReady(Job* job,
+                     const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
                      HttpStream* stream);
-  void OnBidirectionalStreamImplReady(const SSLConfig& used_ssl_config,
+  void OnBidirectionalStreamImplReady(Job* job,
+                                      const SSLConfig& used_ssl_config,
                                       const ProxyInfo& used_proxy_info,
                                       BidirectionalStreamImpl* stream);
 
-  void OnWebSocketHandshakeStreamReady(const SSLConfig& used_ssl_config,
+  void OnWebSocketHandshakeStreamReady(Job* job,
+                                       const SSLConfig& used_ssl_config,
                                        const ProxyInfo& used_proxy_info,
                                        WebSocketHandshakeStreamBase* stream);
-  void OnStreamFailed(int status,
+  void OnStreamFailed(Job* job,
+                      int status,
                       const SSLConfig& used_ssl_config,
                       SSLFailureState ssl_failure_state);
-  void OnCertificateError(int status,
+  void OnCertificateError(Job* job,
+                          int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info);
-  void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
+  void OnNeedsProxyAuth(Job* job,
+                        const HttpResponseInfo& proxy_response,
                         const SSLConfig& used_ssl_config,
                         const ProxyInfo& used_proxy_info,
                         HttpAuthController* auth_controller);
-  void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
+  void OnNeedsClientAuth(Job* job,
+                         const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info);
   void OnHttpsProxyTunnelResponse(
+      Job *job,
       const HttpResponseInfo& response_info,
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
@@ -127,21 +130,30 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   bool using_spdy() const override;
   const ConnectionAttempts& connection_attempts() const override;
   HttpStreamRequest::StreamType stream_type() const { return stream_type_; }
-  const SpdySessionKey* spdy_session_key() const {
-    return spdy_session_key_.get();
-  }
 
  private:
+  // Used to bind |job| to the request and orphan all other jobs in |jobs_|.
+  void BindJob(Job* job);
+
+  // Used to orphan all jobs in |jobs_|.
+  void OrphanJobs();
+
+  // Used to cancel all jobs in |jobs_|.
+  void CancelJobs();
+
+  // Called when a Job succeeds.
+  void OnJobSucceeded(Job* job);
+
   const GURL url_;
-
-  // Unowned. The helper must outlive this request.
-  Helper* helper_;
-
+  HttpStreamFactoryImpl* const factory_;
   WebSocketHandshakeStreamBase::CreateHelper* const
       websocket_handshake_stream_create_helper_;
   HttpStreamRequest::Delegate* const delegate_;
   const BoundNetLog net_log_;
 
+  // At the point where Job is irrevocably tied to the Request, we set this.
+  std::unique_ptr<Job> bound_job_;
+  std::set<HttpStreamFactoryImpl::Job*> jobs_;
   std::unique_ptr<const SpdySessionKey> spdy_session_key_;
 
   bool completed_;

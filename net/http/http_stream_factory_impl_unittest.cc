@@ -1469,6 +1469,9 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+  ASSERT_EQ(0u,
+            static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
+                ->num_orphaned_jobs());
 }
 
 class HttpStreamFactoryBidirectionalQuicTest
@@ -1824,6 +1827,9 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  ASSERT_EQ(0u,
+            static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
+                ->num_orphaned_jobs());
 }
 
 // TODO(ricea): This test can be removed once the new WebSocket stack supports
@@ -2008,6 +2014,10 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+
+  // Make sure there is no orphaned job. it is already canceled.
+  ASSERT_EQ(0u, static_cast<HttpStreamFactoryImpl*>(
+      session->http_stream_factory_for_websocket())->num_orphaned_jobs());
 }
 
 }  // namespace
