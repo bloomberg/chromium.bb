@@ -4778,7 +4778,7 @@ def MatchingFileType(file_name, extensions):
 def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.mm', '.proto', '.java']
-  GN_EXTS = ['.gn', '.gni']
+  GN_EXTS = ['.gn', '.gni', '.typemap']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--dry-run', action='store_true',

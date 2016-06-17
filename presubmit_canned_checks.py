@@ -1170,7 +1170,8 @@ def CheckGNFormatted(input_api, output_api):
   affected_files = input_api.AffectedFiles(
       include_deletes=False,
       file_filter=lambda x: x.LocalPath().endswith('.gn') or
-                            x.LocalPath().endswith('.gni'))
+                            x.LocalPath().endswith('.gni') or
+                            x.LocalPath().endswith('.typemap'))
   warnings = []
   for f in affected_files:
     cmd = ['gn', 'format', '--dry-run', f.AbsoluteLocalPath()]
