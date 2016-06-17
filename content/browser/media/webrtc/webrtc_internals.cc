@@ -9,10 +9,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/media/webrtc/webrtc_internals_ui_observer.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -501,9 +501,8 @@ void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more PeerConnections are active.");
     power_save_blocker_ = content::CreatePowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-        device::PowerSaveBlocker::kReasonOther,
-        "WebRTC has active PeerConnections");
+        PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        PowerSaveBlocker::kReasonOther, "WebRTC has active PeerConnections");
   }
 }
 

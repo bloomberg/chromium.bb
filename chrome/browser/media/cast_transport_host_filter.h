@@ -19,9 +19,9 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport.h"
 
-namespace device {
+namespace content {
 class PowerSaveBlocker;
-}  // namespace device
+}  // namespace content
 
 namespace cast {
 
@@ -91,9 +91,9 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   base::DefaultTickClock clock_;
 
   // While |id_map_| is non-empty, hold an instance of
-  // device::PowerSaveBlocker.  This prevents Chrome from being suspended while
+  // content::PowerSaveBlocker.  This prevents Chrome from being suspended while
   // remoting content.
-  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<content::PowerSaveBlocker> power_save_blocker_;
 
   base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
 

@@ -82,8 +82,8 @@
 #include "ui/snapshot/snapshot.h"
 
 #if defined(OS_MACOSX)
-#include "content/browser/power_save_blocker_factory.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -1296,8 +1296,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     DCHECK(!power_save_blocker_);
     power_save_blocker_.reset(
         CreatePowerSaveBlocker(
-            device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-            device::PowerSaveBlocker::kReasonOther, "GetSnapshot")
+            PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+            PowerSaveBlocker::kReasonOther, "GetSnapshot")
             .release());
   }
 #endif

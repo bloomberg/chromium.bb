@@ -10,9 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "content/browser/power_save_blocker_impl.h"
 
-namespace device {
+namespace content {
 namespace {
 
 int g_blocker_count[2];
@@ -57,7 +57,8 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
   DCHECK(success);
 }
 
-void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type, int delta) {
+void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type,
+                      int delta) {
   g_blocker_count[type] += delta;
   DCHECK_GE(g_blocker_count[type], 0);
 
@@ -156,4 +157,4 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
                             base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
-}  // namespace device
+}  // namespace content

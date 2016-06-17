@@ -7,11 +7,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "content/browser/power_save_blocker_impl.h"
 #include "jni/PowerSaveBlocker_jni.h"
 #include "ui/android/view_android.h"
 
-namespace device {
+namespace content {
 
 using base::android::AttachCurrentThread;
 
@@ -46,7 +46,8 @@ PowerSaveBlockerImpl::Delegate::Delegate(
   java_power_save_blocker_.Reset(Java_PowerSaveBlocker_create(env));
 }
 
-PowerSaveBlockerImpl::Delegate::~Delegate() {}
+PowerSaveBlockerImpl::Delegate::~Delegate() {
+}
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -101,4 +102,4 @@ bool RegisterPowerSaveBlocker(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace device
+}  // namespace content

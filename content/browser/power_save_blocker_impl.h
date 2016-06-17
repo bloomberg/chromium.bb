@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_IMPL_H_
-#define DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_IMPL_H_
+#ifndef CONTENT_BROWSER_POWER_SAVE_BLOCKER_IMPL_H_
+#define CONTENT_BROWSER_POWER_SAVE_BLOCKER_IMPL_H_
 
 #include <string>
 
@@ -13,14 +13,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "device/power_save_blocker/power_save_blocker.h"
-#include "device/power_save_blocker/power_save_blocker_export.h"
+#include "content/public/browser/power_save_blocker.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
-namespace device {
+namespace content {
 
 class WebContents;
 
@@ -38,7 +37,7 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   // On Android, the kPowerSaveBlockPreventDisplaySleep type of
   // PowerSaveBlocker should associated with a View, so the blocker can be
   // removed by the platform.
-  DEVICE_POWER_SAVE_BLOCKER_EXPORT void InitDisplaySleepBlocker(
+  void InitDisplaySleepBlocker(
       const base::WeakPtr<ui::ViewAndroid>& view_android);
 #endif
 
@@ -70,6 +69,6 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockerImpl);
 };
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_IMPL_H_
+#endif  // CONTENT_BROWSER_POWER_SAVE_BLOCKER_IMPL_H_

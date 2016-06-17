@@ -23,12 +23,6 @@ namespace cc {
 class CompositorFrameMetadata;
 }
 
-#if defined(OS_ANDROID)
-namespace device {
-class PowerSaveBlockerImpl;
-}  // namespace device
-#endif
-
 namespace content {
 
 class BrowserContext;
@@ -37,6 +31,10 @@ class DevToolsProtocolHandler;
 class FrameTreeNode;
 class NavigationHandle;
 class RenderFrameHostImpl;
+
+#if defined(OS_ANDROID)
+class PowerSaveBlockerImpl;
+#endif
 
 namespace devtools {
 namespace browser { class BrowserHandler; }
@@ -173,7 +171,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
-  std::unique_ptr<device::PowerSaveBlockerImpl> power_save_blocker_;
+  std::unique_ptr<PowerSaveBlockerImpl> power_save_blocker_;
   std::unique_ptr<base::WeakPtrFactory<ui::ViewAndroid>> view_weak_factory_;
 #endif
   std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;

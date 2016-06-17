@@ -2,7 +2,6 @@ include_rules = [
   "+components/invalidation",
   "+components/keyed_service",
   "+components/prefs",
-  "+device/power_save_blocker",
   "+google_apis",
   "+google/cacheinvalidation/types.pb.h",
   "+net",
@@ -11,6 +10,13 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  # The following dependency should be removed to fully make this
+  # directory chrome/ and content/ and storage/ independent.
+  # crbug.com/257943
+  "drive_uploader\.cc": [
+    "+content/public/browser/power_save_blocker_factory.h",
+  ],
+
   # The following test dependencies should be removed to fully componentize this
   # directory. crbug.com/498951
   r"(copy_operation_unittest\.cc"
@@ -56,9 +62,8 @@ specific_include_rules = {
 
   # The following test dependencies should be removed to fully componentize this
   # directory. crbug.com/498951
-  r"(drive_uploader\.cc"
-  r"|fake_file_system\.cc"
-  r"|file_system_unittest\.cc"
+  r"(fake_file_system\.cc"
+  r"|file_system_unittest.cc"
   r"|file_write_watcher_unittest\.cc"
   r"|get_file_for_saving_operation_unittest\.cc"
   r"|operation_test_base\.cc"

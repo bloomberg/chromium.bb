@@ -4,8 +4,7 @@
 
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 
-#include "content/public/browser/browser_thread.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 
 namespace content {
 
@@ -41,11 +40,9 @@ const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
 }
 
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
-  power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
-      device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      device::PowerSaveBlocker::kReasonOther, "Uploading data to " + host_,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  power_save_blocker_ = CreatePowerSaveBlocker(
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      PowerSaveBlocker::kReasonOther, "Uploading data to " + host_);
 }
 
 }  // namespace content

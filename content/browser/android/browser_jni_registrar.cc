@@ -32,13 +32,13 @@
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/session/media_session_delegate_android.h"
 #include "content/browser/mojo/service_registrar_android.h"
+#include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#include "device/power_save_blocker/power_save_blocker_android.h"
 #include "mojo/android/system/core_impl.h"
 
 namespace {
@@ -63,8 +63,9 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
     {"DownloadControllerAndroidImpl",
      content::DownloadControllerAndroidImpl::RegisterDownloadController},
-    {"GamepadList", content::GamepadPlatformDataFetcherAndroid::
-                        RegisterGamepadPlatformDataFetcherAndroid},
+    {"GamepadList",
+     content::GamepadPlatformDataFetcherAndroid::
+         RegisterGamepadPlatformDataFetcherAndroid},
     {"HandleViewResources",
      content::CompositedTouchHandleDrawable::RegisterHandleViewResources},
     {"InterstitialPageDelegateAndroid",
@@ -77,6 +78,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::NavigationControllerAndroid::Register},
     {"PopupTouchHandleDrawable",
      content::PopupTouchHandleDrawable::RegisterPopupTouchHandleDrawable},
+    {"PowerSaveBlock", content::RegisterPowerSaveBlocker},
     {"RegisterImeAdapter", content::RegisterImeAdapter},
     {"ScreenOrientationProvider",
      content::ScreenOrientationDelegateAndroid::Register},

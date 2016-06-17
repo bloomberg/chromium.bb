@@ -1,5 +1,4 @@
 include_rules = [
-  "+device/power_save_blocker",
   "+media/audio",
   "+media/base",
   "+media/cast",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
-#define DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_POWER_SAVE_BLOCKER_H_
+#define CONTENT_PUBLIC_BROWSER_POWER_SAVE_BLOCKER_H_
 
 #include <memory>
 #include <string>
@@ -11,13 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "device/power_save_blocker/power_save_blocker_export.h"
+#include "content/common/content_export.h"
 
-namespace device {
+namespace content {
 
 // A RAII-style class to block the system from entering low-power (sleep) mode.
 // This class is thread-safe; it may be constructed and deleted on any thread.
-class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
+class CONTENT_EXPORT PowerSaveBlocker {
  public:
   enum PowerSaveBlockerType {
     // Prevent the application from being suspended. On some platforms, apps may
@@ -59,6 +59,6 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 };
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_POWER_SAVE_BLOCKER_H_

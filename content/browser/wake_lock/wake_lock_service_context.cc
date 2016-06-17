@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "content/browser/power_save_blocker_factory.h"
+#include "content/browser/power_save_blocker_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_registry.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 namespace content {
 
@@ -69,8 +69,8 @@ bool WakeLockServiceContext::HasWakeLockForTests() const {
 void WakeLockServiceContext::CreateWakeLock() {
   DCHECK(!wake_lock_);
   wake_lock_ = CreatePowerSaveBlocker(
-      device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      device::PowerSaveBlocker::kReasonOther, "Wake Lock API");
+      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      PowerSaveBlocker::kReasonOther, "Wake Lock API");
 
 #if defined(OS_ANDROID)
   // On Android, additionaly associate the blocker with this WebContents.
@@ -79,7 +79,7 @@ void WakeLockServiceContext::CreateWakeLock() {
   if (web_contents()->GetNativeView()) {
     view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
         web_contents()->GetNativeView()));
-    static_cast<device::PowerSaveBlockerImpl*>(wake_lock_.get())
+    static_cast<PowerSaveBlockerImpl*>(wake_lock_.get())
         ->InitDisplaySleepBlocker(view_weak_factory_->GetWeakPtr());
   }
 #endif

@@ -20,12 +20,9 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
-namespace device {
-class PowerSaveBlocker;
-}  // namespace device
-
 namespace content {
 
+class PowerSaveBlocker;
 class RenderFrameHost;
 class WebContents;
 
@@ -65,7 +62,7 @@ class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
   std::set<std::pair<int, int>> frames_requesting_lock_;
 
   // The actual power save blocker for screen.
-  std::unique_ptr<device::PowerSaveBlocker> wake_lock_;
+  std::unique_ptr<PowerSaveBlocker> wake_lock_;
 #if defined(OS_ANDROID)
   std::unique_ptr<base::WeakPtrFactory<ui::ViewAndroid>> view_weak_factory_;
 #endif

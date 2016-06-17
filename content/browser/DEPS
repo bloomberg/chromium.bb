@@ -16,7 +16,6 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
   "+device/battery",  # For battery status service.
-  "+device/power_save_blocker",
   "+device/vibration",  # For Vibration API
   "+device/vr",  # For WebVR API
   "+gin/v8_initializer.h",
