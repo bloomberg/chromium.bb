@@ -274,6 +274,11 @@ void ExtensionAppItem::OnExtensionIconImageChanged(
   UpdateIcon();
 }
 
+void ExtensionAppItem::OnExtensionIconImageDestroyed(
+    extensions::IconImage* image) {
+  SetIcon(gfx::ImageSkia());
+}
+
 void ExtensionAppItem::ExtensionEnableFlowFinished() {
   extension_enable_flow_.reset();
   extension_enable_flow_controller_->OnCloseChildDialog();

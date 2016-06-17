@@ -81,6 +81,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Overridden from extensions::IconImage::Observer:
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
+  void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
 
   // Overridden from ExtensionEnableFlowDelegate:
   void ExtensionEnableFlowFinished() override;
