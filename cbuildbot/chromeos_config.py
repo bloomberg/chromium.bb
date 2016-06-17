@@ -1140,6 +1140,12 @@ def GetConfig():
       description='Informational Chrome Uprev & Build (internal)',
   )
 
+  chrome_info_gn = site_config.AddTemplate(
+      'chrome-pfq-informational-gn',
+      chrome_info,
+      useflags=append_useflags(['gn']),
+  )
+
   chrome_info_cheets = site_config.AddTemplate(
       'chrome-pfq-cheets-informational',
       chrome_info,
@@ -1273,10 +1279,6 @@ def GetConfig():
       'amd64-generic',
   ])
 
-  _gn_boards = frozenset([
-      'amd64-generic',
-  ])
-
   def _AddFullConfigs():
     """Add x86 and arm full configs."""
     defaults = config_lib.DefaultSettings()
@@ -1297,7 +1299,7 @@ def GetConfig():
                             manifest_repo_url=site_params['MANIFEST_URL'],
                             overlays=constants.PUBLIC_OVERLAYS,
                             **external_overrides)
-    _CreateConfigsForBoards(chromium_info_gn, _gn_boards,
+    _CreateConfigsForBoards(chromium_info_gn, _all_full_boards,
                             'tot-chromium-pfq-informational-gn',
                             important=False,
                             internal=defaults['internal'],
@@ -2453,6 +2455,9 @@ def GetConfig():
     informational_boards = list(set(_all_release_boards) - set(_cheets_boards))
     _CreateConfigsForBoards(
         chrome_info, informational_boards, 'tot-chrome-pfq-informational',
+        important=False)
+    _CreateConfigsForBoards(
+        chrome_info_gn, informational_boards, 'tot-chrome-pfq-informational-gn',
         important=False)
     _CreateConfigsForBoards(
         chrome_info_cheets, _cheets_boards,
