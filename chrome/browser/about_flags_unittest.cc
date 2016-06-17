@@ -168,7 +168,8 @@ std::string FilePathStringTypeToString(const base::FilePath::StringType& path) {
 }
 
 // Get all associated switches corresponding to defined about_flags.cc entries.
-// Does not include information about FEATURE_VALUE entries.
+// Does not include information about FEATURE_VALUE or
+// FEATURE_WITH_VARIATIOSN_VALUE entries.
 std::set<std::string> GetAllSwitchesForTesting() {
   std::set<std::string> result;
 
@@ -184,8 +185,8 @@ std::set<std::string> GetAllSwitchesForTesting() {
         result.insert(entry.command_line_switch);
         break;
       case flags_ui::FeatureEntry::MULTI_VALUE:
-        for (int j = 0; j < entry.num_choices; ++j) {
-          result.insert(entry.choices[j].command_line_switch);
+        for (int j = 0; j < entry.num_options; ++j) {
+          result.insert(entry.ChoiceForOption(j).command_line_switch);
         }
         break;
       case flags_ui::FeatureEntry::ENABLE_DISABLE_VALUE:
@@ -193,6 +194,7 @@ std::set<std::string> GetAllSwitchesForTesting() {
         result.insert(entry.disable_command_line_switch);
         break;
       case flags_ui::FeatureEntry::FEATURE_VALUE:
+      case flags_ui::FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
         break;
     }
   }

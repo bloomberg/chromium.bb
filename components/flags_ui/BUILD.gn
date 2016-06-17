@@ -24,6 +24,7 @@ source_set("flags_ui") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/strings",
+    "//components/variations",
     "//ui/base",
   ]
 }
@@ -49,6 +50,7 @@ source_set("unit_tests") {
     "//base",
     "//components/prefs:test_support",
     "//components/strings",
+    "//components/variations",
     "//testing/gtest",
   ]
 }

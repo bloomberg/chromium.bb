@@ -75,12 +75,12 @@
                    jsvalues="href: '#' + internal_name"
                    jscontent="'#' + internal_name"></a>
               </div>
-              <div jsdisplay="choices && choices.length > 0">
+              <div jsdisplay="options && options.length > 0">
                 <select
                   class="experiment-select"
                   jsvalues=".internal_name:internal_name;.disabled:!enabled">
                   <option jsvalues=".selected:selected"
-                          jsselect="choices"
+                          jsselect="options"
                           jscontent="description">NAME
                   </option>
                 </select>

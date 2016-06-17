@@ -2008,6 +2008,12 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
       switches::kDisableFeatures);
 }
 
+void RegisterAllFeatureVariationParameters(
+    flags_ui::FlagsStorage* flags_storage) {
+  FlagsStateSingleton::GetFlagsState()->RegisterAllFeatureVariationParameters(
+      flags_storage);
+}
+
 bool AreSwitchesIdenticalToCurrentCommandLine(
     const base::CommandLine& new_cmdline,
     const base::CommandLine& active_cmdline,

@@ -720,6 +720,11 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     metrics->AddSyntheticTrialObserver(provider);
   }
 
+  // Associate parameters chosen in about:flags and create trial/group for them.
+  flags_ui::PrefServiceFlagsStorage flags_storage(
+      g_browser_process->local_state());
+  about_flags::RegisterAllFeatureVariationParameters(&flags_storage);
+
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
@@ -972,9 +977,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   {
     TRACE_EVENT0("startup",
         "ChromeBrowserMainParts::PreCreateThreadsImpl:ConvertFlags");
-    flags_ui::PrefServiceFlagsStorage flags_storage_(
+    flags_ui::PrefServiceFlagsStorage flags_storage(
         g_browser_process->local_state());
-    about_flags::ConvertFlagsToSwitches(&flags_storage_,
+    about_flags::ConvertFlagsToSwitches(&flags_storage,
                                         base::CommandLine::ForCurrentProcess(),
                                         flags_ui::kAddSentinels);
   }

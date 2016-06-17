@@ -12,25 +12,30 @@
 // different entry types and when they should be used.
 #define SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value)     \
   flags_ui::FeatureEntry::SINGLE_VALUE, command_line_switch, switch_value, \
-      nullptr, nullptr, nullptr, nullptr, 0
+      nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr
 #define SINGLE_VALUE_TYPE(command_line_switch) \
   SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
   flags_ui::FeatureEntry::SINGLE_DISABLE_VALUE, command_line_switch,           \
-      switch_value, nullptr, nullptr, nullptr, nullptr, 0
+      switch_value, nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr
 #define SINGLE_DISABLE_VALUE_TYPE(command_line_switch) \
   SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, enable_value,     \
                                             disable_switch, disable_value)   \
   flags_ui::FeatureEntry::ENABLE_DISABLE_VALUE, enable_switch, enable_value, \
-      disable_switch, disable_value, nullptr, nullptr, 3
+      disable_switch, disable_value, nullptr, 3, nullptr, nullptr, nullptr
 #define ENABLE_DISABLE_VALUE_TYPE(enable_switch, disable_switch) \
   ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, "", disable_switch, "")
 #define MULTI_VALUE_TYPE(choices)                                          \
   flags_ui::FeatureEntry::MULTI_VALUE, nullptr, nullptr, nullptr, nullptr, \
-      nullptr, choices, arraysize(choices)
+      nullptr, arraysize(choices), choices, nullptr, nullptr
 #define FEATURE_VALUE_TYPE(feature)                                          \
   flags_ui::FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr, \
-      &feature, nullptr, 3
+      &feature, 3, nullptr, nullptr, nullptr
+#define FEATURE_WITH_VARIATIONS_VALUE_TYPE(feature, feature_variations,       \
+                                           feature_trial)                     \
+  flags_ui::FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr,    \
+      nullptr, nullptr, &feature, 2 + arraysize(feature_variations), nullptr, \
+      feature_variations, feature_trial
 
 #endif  // COMPONENTS_FLAGS_UI_FEATURE_ENTRY_MACROS_H_

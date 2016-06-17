@@ -21,6 +21,13 @@ class ListValue;
 
 namespace flags_ui {
 
+// Internal functionality exposed for tests.
+namespace internal {
+// The trial group selected when feature variation parameters are registered via
+// FlagsState::RegisterFeatureVariationParameters().
+extern const char kTrialGroupAboutFlags[];
+}  // namespace internal
+
 struct FeatureEntry;
 class FlagsStorage;
 struct SwitchEntry;
@@ -56,6 +63,9 @@ class FlagsState {
   FlagsState(const FeatureEntry* feature_entries, size_t num_feature_entries);
   ~FlagsState();
 
+  // Reads the state from |flags_storage| and adds the command line flags
+  // belonging to the active feature entries to |command_line|. Features are
+  // appended via |enable_features_flag_name| and |disable_features_flag_name|.
   void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
                               base::CommandLine* command_line,
                               SentinelsMode sentinels,
@@ -69,6 +79,10 @@ class FlagsState {
       std::map<std::string, base::CommandLine::StringType>* switch_list);
   void ResetAllFlags(FlagsStorage* flags_storage);
   void Reset();
+
+  // Registers variations parameter values stored in |flags_storage| (previously
+  // selected in about:flags).
+  void RegisterAllFeatureVariationParameters(FlagsStorage* flags_storage);
 
   // Gets the list of feature entries. Entries that are available for the
   // current platform are appended to |supported_entries|; all other entries are

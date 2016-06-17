@@ -34,6 +34,11 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             flags_ui::SentinelsMode sentinels);
 
+// Registers variations parameter values stored in |flags_storage| (previously
+// selected in about:flags).
+void RegisterAllFeatureVariationParameters(
+    flags_ui::FlagsStorage* flags_storage);
+
 // Compares a set of switches of the two provided command line objects and
 // returns true if they are the same and false otherwise.
 // If |out_difference| is not NULL, it's filled with set_symmetric_difference
