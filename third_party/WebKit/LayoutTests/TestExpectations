@@ -1438,6 +1438,9 @@ crbug.com/620126 svg/custom/relative-sized-image.xhtml [ NeedsManualRebaseline ]
 crbug.com/620126 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsManualRebaseline ]
 crbug.com/620126 svg/custom/js-late-clipPath-creation.svg [ NeedsManualRebaseline ]
 
+# Failure on Linux Trusty, temporarily disabled.
+crbug.com/621025 [ Linux ] svg/custom/text-match-highlight.html [ Failure ]
+
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/connect/connect-disconnected-connect.html [ Skip ]
