@@ -19,10 +19,6 @@ public class PrecacheBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "received boot signal");
-        if (PrecacheController.schedulePeriodicPrecacheTask(context)) {
-            PrecacheUMA.record(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_BOOT_SIGNAL);
-        } else {
-            PrecacheUMA.record(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_BOOT_SIGNAL_FAIL);
-        }
+        PrecacheController.schedulePeriodicPrecacheTask(context);
     }
 }
