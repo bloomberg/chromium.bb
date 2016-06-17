@@ -27,6 +27,7 @@ source_set("exo") {
     "surface.h",
     "surface_delegate.h",
     "surface_observer.h",
+    "surface_property.h",
     "touch.cc",
     "touch.h",
     "touch_delegate.h",

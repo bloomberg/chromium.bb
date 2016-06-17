@@ -567,6 +567,8 @@ void Surface::CommitSurfaceHierarchy() {
     factory_owner_->surface_factory_->Destroy(old_surface_id);
   }
 
+  content_size_ = layer_size;
+
   if (old_surface_id != surface_id_) {
     window_->layer()->SetShowSurface(
         surface_id_,
@@ -753,6 +755,32 @@ void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
       base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
       base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
       layer_size, contents_surface_to_layer_scale, layer_size);
+}
+
+int64_t Surface::SetPropertyInternal(const void* key,
+                                     const char* name,
+                                     PropertyDeallocator deallocator,
+                                     int64_t value,
+                                     int64_t default_value) {
+  int64_t old = GetPropertyInternal(key, default_value);
+  if (value == default_value) {
+    prop_map_.erase(key);
+  } else {
+    Value prop_value;
+    prop_value.name = name;
+    prop_value.value = value;
+    prop_value.deallocator = deallocator;
+    prop_map_[key] = prop_value;
+  }
+  return old;
+}
+
+int64_t Surface::GetPropertyInternal(const void* key,
+                                     int64_t default_value) const {
+  std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
+  if (iter == prop_map_.end())
+    return default_value;
+  return iter->second.value;
 }
 
 }  // namespace exo

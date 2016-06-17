@@ -118,6 +118,9 @@ TEST_F(SurfaceTest, SetBufferScale) {
   EXPECT_EQ(
       gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
       surface->window()->bounds().size().ToString());
+  EXPECT_EQ(
+      gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
+      surface->content_size().ToString());
 }
 
 TEST_F(SurfaceTest, RecreateLayer) {
@@ -152,7 +155,7 @@ TEST_F(SurfaceTest, SetViewport) {
   gfx::Size viewport(256, 256);
   surface->SetViewport(viewport);
   surface->Commit();
-  EXPECT_EQ(viewport.ToString(), surface->window()->bounds().size().ToString());
+  EXPECT_EQ(viewport.ToString(), surface->content_size().ToString());
 
   // This will update the bounds of the surface and take the viewport2 into
   // account.
@@ -161,6 +164,7 @@ TEST_F(SurfaceTest, SetViewport) {
   surface->Commit();
   EXPECT_EQ(viewport2.ToString(),
             surface->window()->bounds().size().ToString());
+  EXPECT_EQ(viewport2.ToString(), surface->content_size().ToString());
 }
 
 TEST_F(SurfaceTest, SetCrop) {
@@ -175,6 +179,7 @@ TEST_F(SurfaceTest, SetCrop) {
   surface->Commit();
   EXPECT_EQ(crop_size.ToString(),
             surface->window()->bounds().size().ToString());
+  EXPECT_EQ(crop_size.ToString(), surface->content_size().ToString());
 }
 
 TEST_F(SurfaceTest, SetBlendMode) {

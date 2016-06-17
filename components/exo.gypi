@@ -49,6 +49,7 @@
         'exo/sub_surface.h',
         'exo/surface.cc',
         'exo/surface.h',
+        'exo/surface_property.h',
         'exo/surface_delegate.h',
         'exo/surface_observer.h',
         'exo/touch.cc',

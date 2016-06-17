@@ -48,6 +48,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/surface_property.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "ipc/unix_domain_socket_util.h"
@@ -76,7 +77,8 @@
 #include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
-DECLARE_WINDOW_PROPERTY_TYPE(wl_resource*);
+DECLARE_SURFACE_PROPERTY_TYPE(wl_resource*);
+DECLARE_SURFACE_PROPERTY_TYPE(bool);
 
 namespace exo {
 namespace wayland {
@@ -122,22 +124,22 @@ uint32_t TimeTicksToMilliseconds(base::TimeTicks ticks) {
 
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with window.
-DEFINE_WINDOW_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
+DEFINE_SURFACE_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
 
 // A property key containing a boolean set to true if a viewport is associated
 // with window.
-DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
+DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
 
 // A property key containing a boolean set to true if a security object is
 // associated with window.
-DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
+DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 
 // A property key containing a boolean set to true if a blending object is
 // associated with window.
-DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
+DEFINE_SURFACE_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
 wl_resource* GetSurfaceResource(Surface* surface) {
-  return surface->window()->GetProperty(kSurfaceResourceKey);
+  return surface->GetProperty(kSurfaceResourceKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +308,7 @@ void compositor_create_surface(wl_client* client,
       client, &wl_surface_interface, wl_resource_get_version(resource), id);
 
   // Set the surface resource property for type-checking downcast support.
-  surface->window()->SetProperty(kSurfaceResourceKey, surface_resource);
+  surface->SetProperty(kSurfaceResourceKey, surface_resource);
 
   SetImplementation(surface_resource, &surface_implementation,
                     std::move(surface));
@@ -2305,14 +2307,14 @@ class Viewport : public SurfaceObserver {
  public:
   explicit Viewport(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->window()->SetProperty(kSurfaceHasViewportKey, true);
+    surface_->SetProperty(kSurfaceHasViewportKey, true);
   }
   ~Viewport() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetCrop(gfx::RectF());
       surface_->SetViewport(gfx::Size());
-      surface_->window()->SetProperty(kSurfaceHasViewportKey, false);
+      surface_->SetProperty(kSurfaceHasViewportKey, false);
     }
   }
 
@@ -2401,7 +2403,7 @@ void viewporter_get_viewport(wl_client* client,
                              uint32_t id,
                              wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->window()->GetProperty(kSurfaceHasViewportKey)) {
+  if (surface->GetProperty(kSurfaceHasViewportKey)) {
     wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS,
                            "a viewport for that surface already exists");
     return;
@@ -2439,13 +2441,13 @@ class Security : public SurfaceObserver {
  public:
   explicit Security(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->window()->SetProperty(kSurfaceHasSecurityKey, true);
+    surface_->SetProperty(kSurfaceHasSecurityKey, true);
   }
   ~Security() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetOnlyVisibleOnSecureOutput(false);
-      surface_->window()->SetProperty(kSurfaceHasSecurityKey, false);
+      surface_->SetProperty(kSurfaceHasSecurityKey, false);
     }
   }
 
@@ -2490,7 +2492,7 @@ void secure_output_get_security(wl_client* client,
                                 uint32_t id,
                                 wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->window()->GetProperty(kSurfaceHasSecurityKey)) {
+  if (surface->GetProperty(kSurfaceHasSecurityKey)) {
     wl_resource_post_error(resource, ZWP_SECURE_OUTPUT_V1_ERROR_SECURITY_EXISTS,
                            "a security object for that surface already exists");
     return;
@@ -2528,14 +2530,14 @@ class Blending : public SurfaceObserver {
  public:
   explicit Blending(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->window()->SetProperty(kSurfaceHasBlendingKey, true);
+    surface_->SetProperty(kSurfaceHasBlendingKey, true);
   }
   ~Blending() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetBlendMode(SkXfermode::kSrcOver_Mode);
       surface_->SetAlpha(1.0f);
-      surface_->window()->SetProperty(kSurfaceHasBlendingKey, false);
+      surface_->SetProperty(kSurfaceHasBlendingKey, false);
     }
   }
 
@@ -2606,7 +2608,7 @@ void alpha_compositing_get_blending(wl_client* client,
                                     uint32_t id,
                                     wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->window()->GetProperty(kSurfaceHasBlendingKey)) {
+  if (surface->GetProperty(kSurfaceHasBlendingKey)) {
     wl_resource_post_error(resource,
                            ZWP_ALPHA_COMPOSITING_V1_ERROR_BLENDING_EXISTS,
                            "a blending object for that surface already exists");
