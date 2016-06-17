@@ -2734,44 +2734,6 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
 }
 
-// Ensure that verified profiles can be saved via SaveImportedProfile,
-// overwriting existing verified profiles as well.
-TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
-  // Start with a verified profile.
-  AutofillProfile profile(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
-  EXPECT_TRUE(profile.IsVerified());
-
-  // Add the profile to the database.
-  personal_data_->AddProfile(profile);
-
-  // Verify that the web database has been updated and the notification sent.
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::MessageLoop::current()->Run();
-
-  AutofillProfile new_verified_profile = profile;
-  new_verified_profile.set_guid(base::GenerateGUID());
-  new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
-                                  ASCIIToUTF16("1 234 567-8910"));
-  EXPECT_TRUE(new_verified_profile.IsVerified());
-
-  personal_data_->SaveImportedProfile(new_verified_profile);
-
-  // Verify that the web database has been updated and the notification sent.
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::MessageLoop::current()->Run();
-
-  // The new profile should be merged into the existing one.
-  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
-  ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
-}
-
 // Ensure that verified credit cards can be saved via SaveImportedCreditCard.
 TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
   // Start with a verified credit card.
@@ -4460,7 +4422,10 @@ TEST_F(PersonalDataManagerTest, DedupeOnInsert) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+  // Create a similar new non verified imported profile to be merged with the
+  // saved profiles.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
 
   // The imported profile and saved profiles 1 and 2 should be merged together.
   // Therefore there should only be 3 saved profiles.
@@ -4666,6 +4631,245 @@ TEST_F(PersonalDataManagerTest,
   // imported profile since it was used just now.
   EXPECT_LT(base::Time::Now() - base::TimeDelta::FromSeconds(10),
             profiles[0]->use_date());
+}
+
+// Tests that FindAndMergeDuplicateProfiles only keeps the verified profile with
+// its original data when deduping with similar profiles, even if it has a
+// higher frecency score.
+TEST_F(PersonalDataManagerTest,
+       FindAndMergeDuplicateProfiles_VerifiedProfileFirst) {
+  EnableAutofillProfileCleanup();
+
+  // Create a verified profile with a higher frecency score.
+  AutofillProfile profile1(base::GenerateGUID(), kSettingsOrigin);
+  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910");
+  profile1.set_use_count(5);
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+
+  // Create a similar non verified profile with a lower frecency score.
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile2.set_use_count(3);
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+
+  // Create a similar new non verified imported profile to be merged with the
+  // saved profiles.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+
+  base::HistogramTester histogram_tester;
+  personal_data_->SaveImportedProfile(imported_profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+
+  // The |imported_profile| should have merged with |profile2|. |profile2|
+  // should then have been discarded because it is similar to the verified
+  // |profile1|.
+  ASSERT_EQ(1U, profiles.size());
+  // 2 profiles were considered for dedupe (profiles 1 and 2).
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 2, 1);
+  // 1 profile was removed (|profile2|).
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 1, 1);
+
+  // Only the verified |profile2| with its original data should have been kept.
+  EXPECT_EQ(profile1.guid(), profiles[0]->guid());
+  EXPECT_EQ(UTF8ToUTF16("742 Evergreen Terrace"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(UTF8ToUTF16("12345678910"),
+            profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(UTF8ToUTF16(""), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(UTF8ToUTF16(""), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(profile1.use_count(), profiles[0]->use_count());
+  EXPECT_LT(profile1.use_date() - TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+  EXPECT_GT(profile1.use_date() + TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+}
+
+// Tests that FindAndMergeDuplicateProfiles only keeps the verified profile with
+// it's original data when deduping with similar profiles, even if it has a
+// lower frecency score.
+TEST_F(PersonalDataManagerTest,
+       FindAndMergeDuplicateProfiles_VerifiedProfileLast) {
+  EnableAutofillProfileCleanup();
+
+  // Create a non verified profile with a higher frecency score.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile1.set_use_count(5);
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+
+  // Create a similar verified profile with a lower frecency score.
+  AutofillProfile profile2(base::GenerateGUID(), kSettingsOrigin);
+  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910");
+  profile2.set_use_count(3);
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+
+  // Create a similar non verified imported profile to be merged with the saved
+  // profiles.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+
+  base::HistogramTester histogram_tester;
+  personal_data_->SaveImportedProfile(imported_profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+
+  // The |imported_profile| should have merged with |profile1|. |profile1|
+  // should then have been discarded because it is similar to the verified
+  // |profile2|.
+  ASSERT_EQ(1U, profiles.size());
+  // 2 profiles were considered for dedupe (profiles 1 and 2).
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 2, 1);
+  // 1 profile was removed (|profile1|).
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 1, 1);
+
+  // Only the verified |profile2| with it's original data should have been kept.
+  EXPECT_EQ(profile2.guid(), profiles[0]->guid());
+  EXPECT_EQ(UTF8ToUTF16("742 Evergreen Terrace"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(UTF8ToUTF16("12345678910"),
+            profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(UTF8ToUTF16(""), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(UTF8ToUTF16(""), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(profile2.use_count(), profiles[0]->use_count());
+  EXPECT_LT(profile2.use_date() - TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+  EXPECT_GT(profile2.use_date() + TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+}
+
+// Tests that FindAndMergeDuplicateProfiles does not merge unverified data into
+// a verified profile. Also tests that two verified profiles don't get merged.
+TEST_F(PersonalDataManagerTest,
+       FindAndMergeDuplicateProfiles_MultipleVerifiedProfiles) {
+  EnableAutofillProfileCleanup();
+
+  // Create a verified profile with a higher frecency score.
+  AutofillProfile profile1(base::GenerateGUID(), kSettingsOrigin);
+  test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile1.set_use_count(5);
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+
+  // Create a similar verified profile with a lower frecency score.
+  AutofillProfile profile2(base::GenerateGUID(), kSettingsOrigin);
+  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910");
+  profile2.set_use_count(3);
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+
+  // Create a non verified imported profile to be merged with the saved
+  // profiles.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+
+  base::HistogramTester histogram_tester;
+  personal_data_->SaveImportedProfile(imported_profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Get the profiles, sorted by frecency to have a deterministic order.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  // The |imported_profile| should have been discarded because the saved profile
+  // with the highest frecency score is verified (|profile1|). Therefore, the
+  // |imported_profile|'s data should not have been merged with |profile1|'s
+  // data. Then |profile1| should have been compared to |profile2| but they
+  // should not have merged because both profiles are verified.
+  ASSERT_EQ(2U, profiles.size());
+  // 2 profiles were considered for dedupe (the 2 saved profiles).
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesConsideredForDedupe", 2, 1);
+  // No profile was removed.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe", 0, 1);
+
+  EXPECT_EQ(profile1.guid(), profiles[0]->guid());
+  EXPECT_EQ(profile2.guid(), profiles[1]->guid());
+  // The profiles should have kept their original data.
+  EXPECT_EQ(UTF8ToUTF16("742 Evergreen Terrace."),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(UTF8ToUTF16("742 Evergreen Terrace"),
+            profiles[1]->GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(UTF8ToUTF16("J"), profiles[0]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(UTF8ToUTF16("Jay"), profiles[1]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(UTF8ToUTF16(""), profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(UTF8ToUTF16("12345678910"),
+            profiles[1]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(profile1.use_count(), profiles[0]->use_count());
+  EXPECT_EQ(profile2.use_count(), profiles[1]->use_count());
+  EXPECT_LT(profile1.use_date() - TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+  EXPECT_GT(profile1.use_date() + TimeDelta::FromSeconds(2),
+            profiles[0]->use_date());
+  EXPECT_LT(profile2.use_date() - TimeDelta::FromSeconds(2),
+            profiles[1]->use_date());
+  EXPECT_GT(profile2.use_date() + TimeDelta::FromSeconds(2),
+            profiles[1]->use_date());
 }
 
 }  // namespace autofill

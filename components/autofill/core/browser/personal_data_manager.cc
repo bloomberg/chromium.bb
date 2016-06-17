@@ -904,11 +904,16 @@ std::string PersonalDataManager::MergeProfile(
   merged_profiles->clear();
 
   // Sort the existing profiles in decreasing order of frecency, so the "best"
-  // profiles are checked first.
+  // profiles are checked first. Put the verified profiles last so the non
+  // verified profiles get deduped among themselves before reaching the verified
+  // profiles.
+  // TODO(crbug.com/620521): Remove the check for verified from the sort.
   base::Time comparison_time = base::Time::Now();
   std::sort(existing_profiles.begin(), existing_profiles.end(),
             [comparison_time](const AutofillDataModel* a,
                               const AutofillDataModel* b) {
+              if (a->IsVerified() != b->IsVerified())
+                return !a->IsVerified();
               return a->CompareFrecency(b, comparison_time);
             });
 
@@ -1581,8 +1586,11 @@ void PersonalDataManager::FindAndMergeDuplicateProfiles(
       if (existing_profile->SaveAdditionalInfo(*profile_to_merge,
                                                app_locale_)) {
         // Since |profile_to_merge| was a duplicate of |existing_profile| and
-        // was merged sucessfully, it can now be deleted.
-        profile_guids_to_delete->push_back(profile_to_merge->guid());
+        // was merged sucessfully, it can now be deleted. The only exception is
+        // if |profile_to_merge| is verified and |existing_profile| is not.
+        // Verified profiles only merge with other verified profiles.
+        if (!profile_to_merge->IsVerified() || existing_profile->IsVerified())
+          profile_guids_to_delete->push_back(profile_to_merge->guid());
 
         // Now try to merge the new resulting profile with the rest of the
         // existing profiles.

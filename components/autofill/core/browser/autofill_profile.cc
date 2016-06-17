@@ -574,6 +574,10 @@ bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
 
 bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
                                          const std::string& app_locale) {
+  // If both profiles are verified, do not merge them.
+  if (IsVerified() && profile.IsVerified())
+    return false;
+
   ServerFieldTypeSet field_types, other_field_types;
   GetNonEmptyTypes(app_locale, &field_types);
   profile.GetNonEmptyTypes(app_locale, &other_field_types);
