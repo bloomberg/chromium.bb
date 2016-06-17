@@ -112,8 +112,10 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   scoped_refptr<IOBuffer> buffer_;
   OnDictionaryFetchedCallback current_callback_;
 
-  // The currently accumulating dictionary.
-  std::string dictionary_;
+  // The currently accumulating dictionary. Stored as a unique_ptr so all memory
+  // it consumes can be easily freed, as it gets quite big, and
+  // std::string::clear() may not free memory.
+  std::unique_ptr<std::string> dictionary_;
 
   // Store the URLRequestContext associated with the owning SdchManager for
   // use while fetching.
