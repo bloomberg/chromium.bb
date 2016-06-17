@@ -318,13 +318,13 @@ ExecutionContext* PaymentRequest::getExecutionContext() const
     return ContextLifecycleObserver::getExecutionContext();
 }
 
-ScriptPromise PaymentRequest::complete(ScriptState* scriptState, bool success)
+ScriptPromise PaymentRequest::complete(ScriptState* scriptState, PaymentComplete result)
 {
     if (m_completeResolver)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called complete() once"));
 
     // The payment provider should respond in PaymentRequest::OnComplete().
-    m_paymentProvider->Complete(success);
+    m_paymentProvider->Complete(mojom::blink::PaymentComplete(result));
 
     m_completeResolver = ScriptPromiseResolver::create(scriptState);
     return m_completeResolver->promise();

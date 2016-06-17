@@ -30,7 +30,7 @@ promise_test(t => {
           return result;
         })
       .then(response => {
-          completeResult = response.complete(true);
+          completeResult = response.complete("success");
           // Return before calling gc() to make sure reference to response
           // is gone.
         })

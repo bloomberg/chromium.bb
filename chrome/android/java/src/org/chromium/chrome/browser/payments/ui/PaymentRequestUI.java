@@ -398,12 +398,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *
      * Should not be called multiple times.
      *
-     * @param paymentSuccess Whether the payment (if any) was successful.
+     * @param shouldCloseImmediately If true, this function will immediately dismiss the dialog
+     *        without describing the error.
      * @param callback The callback to notify of finished animations.
      */
-    public void close(boolean paymentSuccess, final Runnable callback) {
+    public void close(boolean shouldCloseImmediately, final Runnable callback) {
         mIsClientClosing = true;
-        mResultView.update(paymentSuccess, new Runnable() {
+        mResultView.update(shouldCloseImmediately, new Runnable() {
             @Override
             public void run() {
                 dismissDialog(false);

@@ -32,7 +32,7 @@ public:
 
     ~MockPaymentCompleter() override {}
 
-    MOCK_METHOD2(complete, ScriptPromise(ScriptState*, bool success));
+    MOCK_METHOD2(complete, ScriptPromise(ScriptState*, PaymentComplete result));
 
     DEFINE_INLINE_TRACE() {}
 
@@ -83,9 +83,9 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess)
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), true));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), Success));
 
-    output.complete(scope.getScriptState(), true);
+    output.complete(scope.getScriptState(), "success");
 }
 
 TEST(PaymentResponseTest, CompleteCalledWithFailure)
@@ -97,9 +97,9 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure)
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), false));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), Fail));
 
-    output.complete(scope.getScriptState(), false);
+    output.complete(scope.getScriptState(), "fail");
 }
 
 } // namespace

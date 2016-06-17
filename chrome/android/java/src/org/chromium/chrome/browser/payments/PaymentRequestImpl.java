@@ -30,6 +30,7 @@ import org.chromium.components.safejson.JsonSanitizer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.mojom.payments.PaymentComplete;
 import org.chromium.mojom.payments.PaymentDetails;
 import org.chromium.mojom.payments.PaymentItem;
 import org.chromium.mojom.payments.PaymentMethodData;
@@ -605,8 +606,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Called when the merchant website has processed the payment.
      */
     @Override
-    public void complete(boolean success) {
-        closeUI(success);
+    public void complete(int result) {
+        closeUI(PaymentComplete.FAIL != result);
     }
 
     /**
@@ -699,9 +700,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     /**
      * Closes the UI. If the client is still connected, then it's notified of UI hiding.
      */
-    private void closeUI(boolean paymentSuccess) {
+    private void closeUI(boolean immediateClose) {
         if (mUI != null) {
-            mUI.close(paymentSuccess, new Runnable() {
+            mUI.close(immediateClose, new Runnable() {
                 @Override
                 public void run() {
                     if (mClient != null) mClient.onComplete();

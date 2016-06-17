@@ -47,9 +47,14 @@ ScriptValue PaymentResponse::details(ScriptState* scriptState, ExceptionState& e
     return ScriptValue(scriptState, fromJSONString(scriptState, m_stringifiedDetails, exceptionState));
 }
 
-ScriptPromise PaymentResponse::complete(ScriptState* scriptState, bool success)
+ScriptPromise PaymentResponse::complete(ScriptState* scriptState, const String& result)
 {
-    return m_paymentCompleter->complete(scriptState, success);
+    PaymentComplete convertedResult = Unknown;
+    if (result == "success")
+        convertedResult = Success;
+    if (result == "fail")
+        convertedResult = Fail;
+    return m_paymentCompleter->complete(scriptState, convertedResult);
 }
 
 DEFINE_TRACE(PaymentResponse)

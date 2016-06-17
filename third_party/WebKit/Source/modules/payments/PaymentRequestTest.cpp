@@ -361,9 +361,9 @@ TEST(PaymentRequestTest, CannotCallCompleteTwice)
     EXPECT_FALSE(scope.getExceptionState().hadException());
     request->show(scope.getScriptState());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
-    request->complete(scope.getScriptState(), false);
+    request->complete(scope.getScriptState(), Fail);
 
-    request->complete(scope.getScriptState(), true).then(funcs.expectNoCall(), funcs.expectCall());
+    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall());
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnError)
@@ -389,7 +389,7 @@ TEST(PaymentRequestTest, RejectCompletePromiseOnError)
     request->show(scope.getScriptState());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
-    request->complete(scope.getScriptState(), true).then(funcs.expectNoCall(), funcs.expectCall());
+    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall());
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnError();
 }
@@ -404,7 +404,7 @@ TEST(PaymentRequestTest, ResolvePromiseOnComplete)
     request->show(scope.getScriptState());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
-    request->complete(scope.getScriptState(), true).then(funcs.expectCall(), funcs.expectNoCall());
+    request->complete(scope.getScriptState(), Success).then(funcs.expectCall(), funcs.expectNoCall());
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnComplete();
 }
@@ -432,7 +432,7 @@ TEST(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
     request->show(scope.getScriptState()).then(funcs.expectCall(), funcs.expectNoCall());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
-    request->complete(scope.getScriptState(), true).then(funcs.expectNoCall(), funcs.expectCall());
+    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall());
 
     request->onUpdatePaymentDetailsFailure(ScriptValue::from(scope.getScriptState(), "oops"));
 }

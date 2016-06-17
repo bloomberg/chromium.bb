@@ -37,7 +37,7 @@ public:
     const String& payerEmail() const { return m_payerEmail; }
     const String& payerPhone() const { return m_payerPhone; }
 
-    ScriptPromise complete(ScriptState*, bool success);
+    ScriptPromise complete(ScriptState*, const String& result = "");
 
     DECLARE_TRACE();
 

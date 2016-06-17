@@ -64,7 +64,7 @@ public:
     ExecutionContext* getExecutionContext() const override;
 
     // PaymentCompleter:
-    ScriptPromise complete(ScriptState*, bool success) override;
+    ScriptPromise complete(ScriptState*, PaymentComplete result) override;
 
     // PaymentUpdater:
     void onUpdatePaymentDetails(const ScriptValue& detailsScriptValue) override;

@@ -63,12 +63,15 @@ public class PaymentResultUIManager {
     /**
      * Updates the UI to display whether or not the payment request was successful.
      *
-     * @param paymentSuccess Whether or not the payment request was successful.
-     * @param callback       Callback to run upon dismissal.
+     * @param shouldCloseImmediately If true, this function will immediately dismiss the dialog
+     *        without describing the error.
+     * @param callback Callback to run upon dismissal.
      */
-    public void update(boolean paymentSuccess, final Runnable callback) {
-        if (mResultLayout.getParent() == null || paymentSuccess) {
-            // Dismiss the dialog immediately.
+    public void update(boolean shouldCloseImmediately, final Runnable callback) {
+        if (mResultLayout.getParent() == null || shouldCloseImmediately) {
+            // The shouldCloseImmediately boolean is true when the merchant calls
+            // instrumentResponse.complete("success") or instrumentResponse.complete("")
+            // in JavaScript.
             callback.run();
         } else {
             // Describe the error.

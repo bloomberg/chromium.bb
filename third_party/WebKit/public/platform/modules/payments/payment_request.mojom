@@ -109,6 +109,12 @@ struct PaymentMethodData {
   string stringified_data;
 };
 
+enum PaymentComplete {
+  SUCCESS,
+  FAIL,
+  UNKNOWN
+};
+
 interface PaymentRequest {
   SetClient(PaymentRequestClient client);
   Show(array<PaymentMethodData> methodData,
@@ -116,5 +122,5 @@ interface PaymentRequest {
        PaymentOptions options);
   UpdateWith(PaymentDetails details);
   Abort();
-  Complete(bool success);
+  Complete(PaymentComplete result);
 };

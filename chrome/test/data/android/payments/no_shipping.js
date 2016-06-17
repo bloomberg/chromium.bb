@@ -16,7 +16,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .show()
         .then(function(resp) {
-          resp.complete(true)
+          resp.complete("success")
               .then(function() {
                 print(
                     JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +

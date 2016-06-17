@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://w3c.github.io/browser-payment-api/#idl-def-paymentcomplete
+
+enum PaymentComplete {
+    "success",
+    "fail",
+    ""
+};
+
 // https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentresponse-interface
 
 [
@@ -14,5 +22,5 @@
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
     readonly attribute PaymentAddress? shippingAddress;
 
-    [CallWith=ScriptState] Promise<void> complete(boolean success);
+    [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "");
 };

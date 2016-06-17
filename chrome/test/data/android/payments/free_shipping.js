@@ -25,7 +25,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         {requestShipping: true});
     request.show()
         .then(function(resp) {
-          resp.complete(true)
+          resp.complete("success")
               .then(function() {
                 print(
                     JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +
