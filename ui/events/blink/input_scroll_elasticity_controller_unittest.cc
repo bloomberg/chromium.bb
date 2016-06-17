@@ -85,27 +85,6 @@ class ScrollElasticityControllerTest : public testing::Test {
         current_time_(base::TimeTicks::FromInternalValue(100000000ull)) {}
   ~ScrollElasticityControllerTest() override {}
 
-  void SendMouseWheelEvent(
-      Phase phase,
-      Phase momentum_phase,
-      const gfx::Vector2dF& event_delta = gfx::Vector2dF(),
-      const gfx::Vector2dF& overscroll_delta = gfx::Vector2dF()) {
-    blink::WebMouseWheelEvent event;
-    event.phase = static_cast<blink::WebMouseWheelEvent::Phase>(phase);
-    event.momentumPhase =
-        static_cast<blink::WebMouseWheelEvent::Phase>(momentum_phase);
-    event.deltaX = -event_delta.x();
-    event.deltaY = -event_delta.y();
-    TickCurrentTime();
-    event.timeStampSeconds = (current_time_ - base::TimeTicks()).InSecondsF();
-
-    cc::InputHandlerScrollResult scroll_result;
-    scroll_result.did_overscroll_root = !overscroll_delta.IsZero();
-    scroll_result.unused_scroll_delta = overscroll_delta;
-
-    controller_.ObserveWheelEventAndResult(event, scroll_result);
-    input_event_count_ += 1;
-  }
 
   void SendGestureScrollBegin(InertialPhaseState inertialPhase) {
     blink::WebGestureEvent event;
@@ -179,40 +158,6 @@ TEST_F(ScrollElasticityControllerTest, Axis) {
 
   // If we push equally in the X and Y directions, we should see a stretch
   // in the Y direction.
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(10, 10),
-                      gfx::Vector2dF(10, 10));
-  EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(0.f, helper_.StretchAmount().x());
-  EXPECT_LT(0.f, helper_.StretchAmount().y());
-  helper_.SetStretchAmount(gfx::Vector2dF());
-  EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(0, helper_.request_begin_frame_count());
-
-  // If we push more in the X direction than the Y direction, we should see a
-  // stretch  in the X direction. This decision should be based on the
-  // input delta, not the actual overscroll delta.
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(-25, 10),
-                      gfx::Vector2dF(-25, 40));
-  EXPECT_EQ(3, helper_.set_stretch_amount_count());
-  EXPECT_GT(0.f, helper_.StretchAmount().x());
-  EXPECT_EQ(0.f, helper_.StretchAmount().y());
-  helper_.SetStretchAmount(gfx::Vector2dF());
-  EXPECT_EQ(4, helper_.set_stretch_amount_count());
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(0, helper_.request_begin_frame_count());
-}
-
-// Verify that stretching  occurs in one axis at a time, and that it
-// is biased to the Y axis.
-TEST_F(ScrollElasticityControllerTest, GestureBased_Axis) {
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
-                                            gfx::ScrollOffset(0, 0));
-
-  // If we push equally in the X and Y directions, we should see a stretch
-  // in the Y direction.
   SendGestureScrollBegin(NonMomentumPhase);
   SendGestureScrollUpdate(NonMomentumPhase, gfx::Vector2dF(10, 10),
                           gfx::Vector2dF(10, 10));
@@ -242,59 +187,6 @@ TEST_F(ScrollElasticityControllerTest, GestureBased_Axis) {
 // Verify that we need a total overscroll delta of at least 10 in a pinned
 // direction before we start stretching.
 TEST_F(ScrollElasticityControllerTest, MinimumDeltaBeforeStretch) {
-  // We should not start stretching while we are not pinned in the direction
-  // of the scroll (even if there is an overscroll delta). We have to wait for
-  // the regular scroll to eat all of the events.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
-                                            gfx::ScrollOffset(10, 10));
-  SendMouseWheelEvent(PhaseMayBegin, PhaseNone);
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
-                      gfx::Vector2dF(0, 10));
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
-                      gfx::Vector2dF(0, 10));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Now pin the -X and +Y direction. The first event will not generate a
-  // stretch
-  // because it is below the delta threshold of 10.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 10),
-                                            gfx::ScrollOffset(10, 10));
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
-                      gfx::Vector2dF(0, 8));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Make the next scroll be in the -X direction more than the +Y direction,
-  // which will erase the memory of the previous unused delta of 8.
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(-10, 5),
-                      gfx::Vector2dF(-8, 10));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Now push against the pinned +Y direction again by 8. We reset the
-  // previous delta, so this will not generate a stretch.
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
-                      gfx::Vector2dF(0, 8));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Push against +Y by another 8. This gets us above the delta threshold of
-  // 10, so we should now have had the stretch set, and it should be in the
-  // +Y direction. The scroll in the -X direction should have been forgotten.
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
-                      gfx::Vector2dF(0, 8));
-  EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(0.f, helper_.StretchAmount().x());
-  EXPECT_LT(0.f, helper_.StretchAmount().y());
-
-  // End the gesture. Because there is a non-zero stretch, we should be in the
-  // animated state, and should have had a frame requested.
-  EXPECT_EQ(0, helper_.request_begin_frame_count());
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(1, helper_.request_begin_frame_count());
-}
-
-// Verify that we need a total overscroll delta of at least 10 in a pinned
-// direction before we start stretching.
-TEST_F(ScrollElasticityControllerTest, GestureBased_MinimumDeltaBeforeStretch) {
   // We should not start stretching while we are not pinned in the direction
   // of the scroll (even if there is an overscroll delta). We have to wait for
   // the regular scroll to eat all of the events.
@@ -348,102 +240,6 @@ TEST_F(ScrollElasticityControllerTest, GestureBased_MinimumDeltaBeforeStretch) {
 // animating mode, where input events are ignored, and the stretch is updated
 // while animating.
 TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
-  // Do an active scroll, then switch to the momentum phase and scroll for a
-  // bit.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
-                                            gfx::ScrollOffset(10, 10));
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  SendMouseWheelEvent(PhaseNone, PhaseBegan);
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, 0));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Hit the -Y edge and overscroll slightly, but not enough to go over the
-  // threshold to cause a stretch.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 0),
-                                            gfx::ScrollOffset(10, 10));
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, -8));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-  EXPECT_EQ(0, helper_.request_begin_frame_count());
-
-  // Take another step, this time going over the threshold. This should update
-  // the stretch amount, and then switch to the animating mode.
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, -80));
-  EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(1, helper_.request_begin_frame_count());
-  EXPECT_GT(-1.f, helper_.StretchAmount().y());
-
-  // Subsequent momentum events should do nothing.
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, -80));
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, -80));
-  SendMouseWheelEvent(PhaseNone, PhaseEnded, gfx::Vector2dF(0, -80),
-                      gfx::Vector2dF(0, -80));
-  EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(1, helper_.request_begin_frame_count());
-
-  // Subsequent animate events should update the stretch amount and request
-  // another frame.
-  TickCurrentTimeAndAnimate();
-  EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(2, helper_.request_begin_frame_count());
-  EXPECT_GT(-1.f, helper_.StretchAmount().y());
-
-  // Touching the trackpad (a PhaseMayBegin event) should disable animation.
-  SendMouseWheelEvent(PhaseMayBegin, PhaseNone);
-  TickCurrentTimeAndAnimate();
-  EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(2, helper_.request_begin_frame_count());
-
-  // Releasing the trackpad should re-enable animation.
-  SendMouseWheelEvent(PhaseCancelled, PhaseNone);
-  EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(3, helper_.request_begin_frame_count());
-  TickCurrentTimeAndAnimate();
-  EXPECT_EQ(3, helper_.set_stretch_amount_count());
-  EXPECT_EQ(4, helper_.request_begin_frame_count());
-
-  // Keep animating frames until the stretch returns to rest.
-  int stretch_count = 3;
-  int begin_frame_count = 4;
-  while (1) {
-    TickCurrentTimeAndAnimate();
-    if (helper_.StretchAmount().IsZero()) {
-      stretch_count += 1;
-      EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-      EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
-      break;
-    }
-    stretch_count += 1;
-    begin_frame_count += 1;
-    EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-    EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
-  }
-
-  // After coming to rest, no subsequent animate calls change anything.
-  TickCurrentTimeAndAnimate();
-  EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-  EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
-}
-
-// Verify that a stretch caused by a momentum scroll will switch to the
-// animating mode, where input events are ignored, and the stretch is updated
-// while animating.
-TEST_F(ScrollElasticityControllerTest, GestureBased_MomentumAnimate) {
   // Do an active scroll, then switch to the momentum phase and scroll for a
   // bit.
   helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
@@ -539,43 +335,6 @@ TEST_F(ScrollElasticityControllerTest, GestureBased_MomentumAnimate) {
 
 // Verify that a stretch opposing a scroll is correctly resolved.
 TEST_F(ScrollElasticityControllerTest, ReconcileStretchAndScroll) {
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-
-  // Verify completely knocking out the scroll in the -Y direction.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
-                                            gfx::ScrollOffset(10, 10));
-  helper_.SetStretchAmount(gfx::Vector2dF(0, -10));
-  controller_.ReconcileStretchAndScroll();
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, -5));
-  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(5, 0));
-
-  // Verify partially knocking out the scroll in the -Y direction.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 8),
-                                            gfx::ScrollOffset(10, 10));
-  helper_.SetStretchAmount(gfx::Vector2dF(0, -5));
-  controller_.ReconcileStretchAndScroll();
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(5, 3));
-
-  // Verify completely knocking out the scroll in the +X direction.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
-                                            gfx::ScrollOffset(10, 10));
-  helper_.SetStretchAmount(gfx::Vector2dF(10, 0));
-  controller_.ReconcileStretchAndScroll();
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(5, 0));
-  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(10, 5));
-
-  // Verify partially knocking out the scroll in the +X and +Y directions.
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(2, 3),
-                                            gfx::ScrollOffset(10, 10));
-  helper_.SetStretchAmount(gfx::Vector2dF(5, 5));
-  controller_.ReconcileStretchAndScroll();
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(7, 8));
-}
-
-// Verify that a stretch opposing a scroll is correctly resolved.
-TEST_F(ScrollElasticityControllerTest, GestureBased_ReconcileStretchAndScroll) {
   SendGestureScrollBegin(NonMomentumPhase);
 
   // Verify completely knocking out the scroll in the -Y direction.
@@ -612,57 +371,8 @@ TEST_F(ScrollElasticityControllerTest, GestureBased_ReconcileStretchAndScroll) {
 }
 
 // Verify that stretching  happens when the area is user scrollable.
-TEST_F(ScrollElasticityControllerTest, UserScrollableRequiredForStretch) {
-  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
-                                            gfx::ScrollOffset(10, 10));
-  gfx::Vector2dF delta(0, -15);
-
-  // Do an active scroll, and ensure that the stretch amount doesn't change.
-  helper_.SetUserScrollable(false);
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-  SendMouseWheelEvent(PhaseNone, PhaseBegan);
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
-  SendMouseWheelEvent(PhaseNone, PhaseEnded);
-  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_EQ(0, helper_.set_stretch_amount_count());
-
-  // Re-enable user scrolling and ensure that stretching is re-enabled.
-  helper_.SetUserScrollable(true);
-  SendMouseWheelEvent(PhaseBegan, PhaseNone);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
-  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
-  SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_NE(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_GT(helper_.set_stretch_amount_count(), 0);
-  SendMouseWheelEvent(PhaseNone, PhaseBegan);
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
-  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
-  SendMouseWheelEvent(PhaseNone, PhaseEnded);
-  EXPECT_NE(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
-  EXPECT_GT(helper_.set_stretch_amount_count(), 0);
-
-  // Disable user scrolling and tick the timer until the stretch goes back
-  // to zero. Ensure that the return to zero doesn't happen immediately.
-  helper_.SetUserScrollable(false);
-  int ticks_to_zero = 0;
-  while (1) {
-    TickCurrentTimeAndAnimate();
-    if (helper_.StretchAmount().IsZero())
-      break;
-    ticks_to_zero += 1;
-  }
-  EXPECT_GT(ticks_to_zero, 3);
-}
-
-// Verify that stretching  happens when the area is user scrollable.
 TEST_F(ScrollElasticityControllerTest,
-       GestureBased_UserScrollableRequiredForStretch) {
+       UserScrollableRequiredForStretch) {
   helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
                                             gfx::ScrollOffset(10, 10));
   gfx::Vector2dF delta(0, -15);

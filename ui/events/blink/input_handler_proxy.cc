@@ -561,21 +561,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         break;
     }
   }
-
-  // Send the event and its disposition to the elasticity controller to update
-  // the over-scroll animation. If the event is to be handled on the main
-  // thread, the event and its disposition will be sent to the elasticity
-  // controller after being handled on the main thread.
-  if (scroll_elasticity_controller_ && result != DID_NOT_HANDLE) {
-    // Note that the call to the elasticity controller is made asynchronously,
-    // to minimize divergence between main thread and impl thread event
-    // handling paths.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&InputScrollElasticityController::ObserveWheelEventAndResult,
-                   scroll_elasticity_controller_->GetWeakPtr(), wheel_event,
-                   scroll_result));
-  }
   return result;
 }
 

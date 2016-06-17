@@ -159,32 +159,6 @@ void InputHandlerManager::UnregisterRoutingIDOnCompositorThread(
   client_->UnregisterRoutingID(routing_id);
 }
 
-void InputHandlerManager::ObserveWheelEventAndResultOnMainThread(
-    int routing_id,
-    const blink::WebMouseWheelEvent& wheel_event,
-    const cc::InputHandlerScrollResult& scroll_result) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &InputHandlerManager::ObserveWheelEventAndResultOnCompositorThread,
-          base::Unretained(this), routing_id, wheel_event, scroll_result));
-}
-
-void InputHandlerManager::ObserveWheelEventAndResultOnCompositorThread(
-    int routing_id,
-    const blink::WebMouseWheelEvent& wheel_event,
-    const cc::InputHandlerScrollResult& scroll_result) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  auto it = input_handlers_.find(routing_id);
-  if (it == input_handlers_.end())
-    return;
-
-  InputHandlerProxy* proxy = it->second->input_handler_proxy();
-  DCHECK(proxy->scroll_elasticity_controller());
-  proxy->scroll_elasticity_controller()->ObserveWheelEventAndResult(
-      wheel_event, scroll_result);
-}
-
 void InputHandlerManager::ObserveGestureEventAndResultOnMainThread(
     int routing_id,
     const blink::WebGestureEvent& gesture_event,

@@ -94,13 +94,6 @@ bool RenderWidgetMusConnection::HasTouchEventHandlersAt(
   return true;
 }
 
-void RenderWidgetMusConnection::ObserveWheelEventAndResult(
-    const blink::WebMouseWheelEvent& wheel_event,
-    const gfx::Vector2dF& wheel_unused_delta,
-    bool event_processed) {
-  NOTIMPLEMENTED();
-}
-
 void RenderWidgetMusConnection::ObserveGestureEventAndResult(
     const blink::WebGestureEvent& gesture_event,
     const gfx::Vector2dF& wheel_unused_delta,

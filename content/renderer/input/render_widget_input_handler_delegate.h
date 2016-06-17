@@ -43,13 +43,6 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   // at the given point.
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const = 0;
 
-  // Called to forward a mouse wheel event to the compositor thread, to effect
-  // the elastic overscroll effect.
-  virtual void ObserveWheelEventAndResult(
-      const blink::WebMouseWheelEvent& wheel_event,
-      const gfx::Vector2dF& wheel_unused_delta,
-      bool event_processed) = 0;
-
   // Called to forward a gesture event to the compositor thread, to effect
   // the elastic overscroll effect.
   virtual void ObserveGestureEventAndResult(

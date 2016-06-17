@@ -61,11 +61,6 @@ class CONTENT_EXPORT InputHandlerManager {
   void RegisterRoutingID(int routing_id);
   void UnregisterRoutingID(int routing_id);
 
-  void ObserveWheelEventAndResultOnMainThread(
-      int routing_id,
-      const blink::WebMouseWheelEvent& wheel_event,
-      const cc::InputHandlerScrollResult& scroll_result);
-
   void ObserveGestureEventAndResultOnMainThread(
       int routing_id,
       const blink::WebGestureEvent& gesture_event,

@@ -43,9 +43,6 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   // RenderWidgetInputHandlerDelegate implementation:
   void FocusChangeComplete() override;
   bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
-  void ObserveWheelEventAndResult(const blink::WebMouseWheelEvent& wheel_event,
-                                  const gfx::Vector2dF& wheel_unused_delta,
-                                  bool event_processed) override;
   void ObserveGestureEventAndResult(const blink::WebGestureEvent& gesture_event,
                                     const gfx::Vector2dF& gesture_unused_delta,
                                     bool event_processed) override;
