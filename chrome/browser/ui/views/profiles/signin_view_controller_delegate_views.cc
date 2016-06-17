@@ -10,9 +10,11 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
@@ -76,7 +78,12 @@ void SigninViewControllerDelegateViews::PerformClose() {
 }
 
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
-  content_view_->SetPreferredSize(gfx::Size(kModalDialogWidth, height));
+  int max_height = browser_
+      ->window()
+      ->GetWebContentsModalDialogHost()
+      ->GetMaximumDialogSize().height();
+  content_view_->SetPreferredSize(
+      gfx::Size(kModalDialogWidth, std::min(height, max_height)));
   content_view_->Layout();
 
   if (wait_for_size_) {
@@ -96,18 +103,24 @@ void SigninViewControllerDelegateViews::DisplayModal() {
 views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
     content::WebContentsDelegate* delegate,
     profiles::BubbleViewMode mode,
-    Profile* profile,
+    Browser* browser,
     signin_metrics::AccessPoint access_point) {
   GURL url =
-      signin::GetSigninURLFromBubbleViewMode(profile, mode, access_point);
+      signin::GetSigninURLFromBubbleViewMode(
+          browser->profile(), mode, access_point);
 
+  int max_height = browser
+      ->window()
+      ->GetWebContentsModalDialogHost()
+      ->GetMaximumDialogSize().height();
   // Adds Gaia signin webview.
   const gfx::Size pref_size =
       switches::UsePasswordSeparatedSigninFlow()
-          ? gfx::Size(kModalDialogWidth, kFixedGaiaViewHeight)
+          ? gfx::Size(kModalDialogWidth,
+                      std::min(kFixedGaiaViewHeight, max_height))
           : gfx::Size(kPasswordCombinedFixedGaiaViewWidth,
                       kPasswordCombinedFixedGaiaViewHeight);
-  views::WebView* web_view = new views::WebView(profile);
+  views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(url);
 
   if (delegate)
@@ -124,11 +137,17 @@ views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
 
 views::WebView*
 SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
-    Profile* profile) {
-  views::WebView* web_view = new views::WebView(profile);
+    Browser* browser) {
+  views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(GURL(chrome::kChromeUISyncConfirmationURL));
+
+  int max_height = browser
+      ->window()
+      ->GetWebContentsModalDialogHost()
+      ->GetMaximumDialogSize().height();
   web_view->SetPreferredSize(
-      gfx::Size(kModalDialogWidth, kSyncConfirmationDialogHeight));
+      gfx::Size(kModalDialogWidth,
+                std::min(kSyncConfirmationDialogHeight, max_height)));
 
   return web_view;
 }
@@ -142,7 +161,7 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
   return new SigninViewControllerDelegateViews(
       signin_view_controller,
       SigninViewControllerDelegateViews::CreateGaiaWebView(
-          nullptr, mode, browser->profile(), access_point),
+          nullptr, mode, browser, access_point),
       browser, false);
 }
 
@@ -152,7 +171,6 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
     Browser* browser) {
   return new SigninViewControllerDelegateViews(
       signin_view_controller,
-      SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
-          browser->profile()),
+      SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(browser),
       browser, true);
 }

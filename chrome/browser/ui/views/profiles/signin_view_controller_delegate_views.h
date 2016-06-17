@@ -47,10 +47,10 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   static views::WebView* CreateGaiaWebView(
       content::WebContentsDelegate* delegate,
       profiles::BubbleViewMode mode,
-      Profile* profile,
+      Browser* browser,
       signin_metrics::AccessPoint access_point);
 
-  static views::WebView* CreateSyncConfirmationWebView(Profile* profile);
+  static views::WebView* CreateSyncConfirmationWebView(Browser* browser);
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;

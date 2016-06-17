@@ -1672,7 +1672,7 @@ views::View* ProfileChooserView::CreateGaiaSigninView(
     views::View** signin_content_view) {
   views::WebView* web_view =
       SigninViewControllerDelegateViews::CreateGaiaWebView(
-          this, view_mode_, browser_->profile(), access_point_);
+          this, view_mode_, browser_, access_point_);
 
   int message_id;
   switch (view_mode_) {
