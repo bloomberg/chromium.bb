@@ -32,7 +32,7 @@ from optparse import make_option
 
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.tool.multi_command_tool import MultiCommandTool
-from webkitpy.tool.commands import Command
+from webkitpy.tool.commands.command import Command
 
 
 class TrivialCommand(Command):
@@ -85,8 +85,7 @@ class MultiCommandToolTest(unittest.TestCase):
         self._assert_split(full_args, full_args_expected)
 
     def test_command_by_name(self):
-        # This also tests Command auto-discovery.
-        tool = TrivialTool()
+        tool = TrivialTool(commands=[TrivialCommand(), UncommonCommand()])
         self.assertEqual(tool.command_by_name("trivial").name, "trivial")
         self.assertIsNone(tool.command_by_name("bar"))
 

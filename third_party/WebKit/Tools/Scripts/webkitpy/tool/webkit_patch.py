@@ -33,7 +33,23 @@ from optparse import make_option
 
 from webkitpy.common.host import Host
 from webkitpy.tool.multi_command_tool import MultiCommandTool
-from webkitpy.tool import commands
+
+from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
+from webkitpy.tool.commands.commit_announcer import CommitAnnouncerCommand
+from webkitpy.tool.commands.flaky_tests import FlakyTests
+from webkitpy.tool.commands.layout_tests_server import LayoutTestsServer
+from webkitpy.tool.commands.pretty_diff import PrettyDiff
+from webkitpy.tool.commands.queries import CrashLog
+from webkitpy.tool.commands.queries import PrintBaselines
+from webkitpy.tool.commands.queries import PrintExpectations
+from webkitpy.tool.commands.rebaseline import AutoRebaseline
+from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
+from webkitpy.tool.commands.rebaseline import OptimizeBaselines
+from webkitpy.tool.commands.rebaseline import Rebaseline
+from webkitpy.tool.commands.rebaseline import RebaselineExpectations
+from webkitpy.tool.commands.rebaseline import RebaselineJson
+from webkitpy.tool.commands.rebaseline import RebaselineTest
+from webkitpy.tool.commands.rebaseline_server import RebaselineServer
 
 
 class WebKitPatch(MultiCommandTool, Host):
@@ -47,6 +63,24 @@ class WebKitPatch(MultiCommandTool, Host):
         MultiCommandTool.__init__(self)
         Host.__init__(self)
         self._path = path
+        self.commands = [
+            AnalyzeBaselines(),
+            AutoRebaseline(),
+            CommitAnnouncerCommand(),
+            CopyExistingBaselinesInternal(),
+            CrashLog(),
+            FlakyTests(),
+            LayoutTestsServer(),
+            OptimizeBaselines(),
+            PrettyDiff(),
+            PrintBaselines(),
+            PrintExpectations(),
+            Rebaseline(),
+            RebaselineExpectations(),
+            RebaselineJson(),
+            RebaselineServer(),
+            RebaselineTest(),
+        ]
 
     def path(self):
         return self._path
