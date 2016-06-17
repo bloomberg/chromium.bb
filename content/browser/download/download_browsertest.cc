@@ -30,7 +30,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -48,6 +47,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -255,9 +255,12 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  std::unique_ptr<device::PowerSaveBlocker> psb(CreatePowerSaveBlocker(
-      device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      device::PowerSaveBlocker::kReasonOther, "Download in progress"));
+  std::unique_ptr<device::PowerSaveBlocker> psb(
+      device::PowerSaveBlocker::CreateWithTaskRunners(
+          device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+          device::PowerSaveBlocker::kReasonOther, "Download in progress",
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   return new DownloadFileWithDelay(std::move(save_info),
                                    default_download_directory,
                                    std::move(stream),
@@ -352,9 +355,12 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
-    std::unique_ptr<device::PowerSaveBlocker> psb(CreatePowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-        device::PowerSaveBlocker::kReasonOther, "Download in progress"));
+    std::unique_ptr<device::PowerSaveBlocker> psb(
+        device::PowerSaveBlocker::CreateWithTaskRunners(
+            device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+            device::PowerSaveBlocker::kReasonOther, "Download in progress",
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
                                     std::move(stream),

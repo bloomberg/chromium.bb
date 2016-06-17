@@ -103,7 +103,6 @@
   ],
   'variables': {
     'public_browser_sources': [
-      'browser/power_save_blocker_factory.h',
       'public/browser/access_token_store.h',
       'public/browser/android/browser_media_player_manager_register.cc',
       'public/browser/android/browser_media_player_manager_register.h',
@@ -1175,7 +1174,6 @@
       'browser/permissions/permission_service_impl.h',
       'browser/power_monitor_message_broadcaster.cc',
       'browser/power_monitor_message_broadcaster.h',
-      'browser/power_save_blocker_factory.cc',
       'browser/power_usage_monitor_impl.cc',
       'browser/power_usage_monitor_impl.h',
       'browser/presentation/presentation_service_impl.cc',

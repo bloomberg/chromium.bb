@@ -24,7 +24,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -204,9 +204,11 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
   DCHECK(request_);
   DCHECK(delegate_);
   RecordDownloadCount(UNTHROTTLED_COUNT);
-  power_save_blocker_ = CreatePowerSaveBlocker(
+  power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      device::PowerSaveBlocker::kReasonOther, "Download in progress");
+      device::PowerSaveBlocker::kReasonOther, "Download in progress",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   DownloadRequestData* request_data = DownloadRequestData::Get(request_);
   if (request_data) {
     save_info_ = request_data->TakeSaveInfo();

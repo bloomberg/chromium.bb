@@ -14,8 +14,8 @@
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/thread_safe_capture_oracle.h"
@@ -86,10 +86,12 @@ bool AuraWindowCaptureMachine::InternalStart(
   compositor->AddAnimationObserver(this);
 
   power_save_blocker_.reset(
-      CreatePowerSaveBlocker(
+      device::PowerSaveBlocker::CreateWithTaskRunners(
           device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
           device::PowerSaveBlocker::kReasonOther,
-          "DesktopCaptureDevice is running")
+          "DesktopCaptureDevice is running",
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
           .release());
 
   return true;

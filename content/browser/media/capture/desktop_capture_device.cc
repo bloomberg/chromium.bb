@@ -20,9 +20,9 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/capture_resolution_chooser.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
@@ -174,10 +174,12 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
       params.resolution_change_policy));
 
   power_save_blocker_.reset(
-      CreatePowerSaveBlocker(
+      device::PowerSaveBlocker::CreateWithTaskRunners(
           device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
           device::PowerSaveBlocker::kReasonOther,
-          "DesktopCaptureDevice is running")
+          "DesktopCaptureDevice is running",
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
           .release());
 
   desktop_capturer_->Start(this);

@@ -9,12 +9,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/media/webrtc/webrtc_internals_ui_observer.h"
-#include "content/browser/power_save_blocker_factory.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 
 using base::ProcessId;
 using std::string;
@@ -500,10 +500,12 @@ void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
   } else if (!peer_connection_data_.empty() && !power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more PeerConnections are active.");
-    power_save_blocker_ = content::CreatePowerSaveBlocker(
+    power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         device::PowerSaveBlocker::kReasonOther,
-        "WebRTC has active PeerConnections");
+        "WebRTC has active PeerConnections",
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 }
 

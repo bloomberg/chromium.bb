@@ -1392,6 +1392,7 @@
         '../base/base.gyp:test_support_base',
         '../device/battery/battery.gyp:device_battery',
         '../device/battery/battery.gyp:device_battery_mojo_bindings',
+        '../device/power_save_blocker/power_save_blocker.gyp:device_power_save_blocker',
         '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
         '../gin/gin.gyp:gin',
         '../gpu/gpu.gyp:gpu',
