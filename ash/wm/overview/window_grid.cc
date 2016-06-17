@@ -25,13 +25,17 @@
 #include "base/i18n/string_search.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
@@ -98,13 +102,17 @@ const SkColor kShieldColor = SkColorSetARGB(178, 0, 0, 0);
 
 // The color and opacity of the overview selector.
 const SkColor kWindowSelectionColor = SkColorSetARGB(128, 0, 0, 0);
-const SkColor kWindowSelectionColorMD = SkColorSetARGB(41, 255, 255, 255);
+const SkColor kWindowSelectionColorMD = SkColorSetARGB(51, 255, 255, 255);
 const SkColor kWindowSelectionBorderColor = SkColorSetARGB(38, 255, 255, 255);
-const SkColor kWindowSelectionBorderColorMD = SkColorSetARGB(51, 255, 255, 255);
+const SkColor kWindowSelectionBorderColorMD = SkColorSetARGB(76, 255, 255, 255);
 
 // Border thickness of overview selector.
 const int kWindowSelectionBorderThickness = 2;
 const int kWindowSelectionBorderThicknessMD = 1;
+
+// Corner radius of the overview selector border.
+const int kWindowSelectionRadius = 0;
+const int kWindowSelectionRadiusMD = 3;
 
 // The minimum amount of spacing between the bottom of the text filtering
 // text field and the top of the selection widget on the first row of items.
@@ -116,7 +124,7 @@ const int kTextFilterBottomMargin = 5;
 const int kWindowMarginMD = 5;
 
 // Additional inset of overview selector (4 is the visible selector thickness).
-const int kSelectionInset = kWindowMarginMD - 4;
+const int kSelectionInset = kWindowMarginMD - 5;
 
 // Windows are not allowed to get taller than this.
 const int kMaxHeight = 512;
@@ -126,6 +134,114 @@ const float kOverviewInsetRatio = 0.05f;
 
 // Additional vertical inset reserved for windows in overview mode.
 const float kOverviewVerticalInset = 0.1f;
+
+// A View having rounded corners and a specified background color which is
+// only painted within the bounds defined by the rounded corners.
+// TODO(varkha): This duplicates code from RoundedImageView. Refactor these
+//               classes and move into ui/views.
+class RoundedRectView : public views::View {
+ public:
+  RoundedRectView(int corner_radius, SkColor background)
+      : corner_radius_(corner_radius), background_(background) {}
+
+  ~RoundedRectView() override {}
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    views::View::OnPaint(canvas);
+
+    SkScalar radius = SkIntToScalar(corner_radius_);
+    const SkScalar kRadius[8] = {radius, radius, radius, radius,
+                                 radius, radius, radius, radius};
+    SkPath path;
+    gfx::Rect bounds(size());
+    bounds.set_height(bounds.height() + radius);
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    canvas->ClipPath(path, true);
+    canvas->DrawColor(background_);
+  }
+
+ private:
+  int corner_radius_;
+  SkColor background_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedRectView);
+};
+
+// BackgroundWith1PxBorder renders a solid background color, with a one pixel
+// border with rounded corners. This accounts for the scaling of the canvas, so
+// that the border is 1 pixel thick regardless of display scaling.
+class BackgroundWith1PxBorder : public views::Background {
+ public:
+  BackgroundWith1PxBorder(SkColor background,
+                          SkColor border_color,
+                          int border_thickness,
+                          int corner_radius);
+
+  void Paint(gfx::Canvas* canvas, views::View* view) const override;
+
+ private:
+  // Color for the one pixel border.
+  SkColor border_color_;
+
+  // Thickness of border inset.
+  int border_thickness_;
+
+  // Corner radius of the inside edge of the roundrect border stroke.
+  int corner_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
+};
+
+BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
+                                                 SkColor border_color,
+                                                 int border_thickness,
+                                                 int corner_radius)
+    : border_color_(border_color),
+      border_thickness_(border_thickness),
+      corner_radius_(corner_radius) {
+  SetNativeControlColor(background);
+}
+
+void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
+                                    views::View* view) const {
+  gfx::RectF border_rect_f(view->GetContentsBounds());
+
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+  border_rect_f.Scale(scale);
+  if (border_thickness_ > 0) {
+    const float inset = border_thickness_ * scale - 0.5f;
+    border_rect_f.Inset(inset, inset);
+  }
+
+  SkPath path;
+  const SkScalar scaled_corner_radius =
+      SkFloatToScalar(corner_radius_ * scale + 0.5f);
+  path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
+                    scaled_corner_radius);
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(1);
+  paint.setAntiAlias(true);
+
+  SkPath stroke_path;
+  paint.getFillPath(path, &stroke_path);
+
+  SkPath fill_path;
+  Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(get_color());
+  canvas->sk_canvas()->drawPath(fill_path, paint);
+
+  if (border_thickness_ > 0) {
+    paint.setColor(border_color_);
+    canvas->sk_canvas()->drawPath(stroke_path, paint);
+  }
+}
 
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
@@ -159,6 +275,7 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
 // individual item.
 void CalculateOverviewSizes(WmWindow* root_window,
                             size_t items,
+                            int text_filter_bottom,
                             gfx::Rect* bounding_rect,
                             gfx::Size* item_size) {
   gfx::Rect total_bounds = root_window->ConvertRectToScreen(
@@ -166,8 +283,7 @@ void CalculateOverviewSizes(WmWindow* root_window,
           kShellWindowId_DefaultContainer)));
 
   // Reserve space at the top for the text filtering textbox to appear.
-  total_bounds.Inset(
-      0, WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin, 0, 0);
+  total_bounds.Inset(0, text_filter_bottom + kTextFilterBottomMargin, 0, 0);
 
   // Find the minimum number of windows per row that will fit all of the
   // windows on screen.
@@ -198,13 +314,14 @@ void CalculateOverviewSizes(WmWindow* root_window,
 // equidistant windows preserves a stable order between overview sessions
 // by comparing window pointers.
 void ReorderItemsGreedyLeastMovement(std::vector<WmWindow*>* items,
-                                     WmWindow* root_window) {
+                                     WmWindow* root_window,
+                                     int text_filter_bottom) {
   if (items->empty())
     return;
   gfx::Rect bounding_rect;
   gfx::Size item_size;
-  CalculateOverviewSizes(root_window, items->size(), &bounding_rect,
-                         &item_size);
+  CalculateOverviewSizes(root_window, items->size(), text_filter_bottom,
+                         &bounding_rect, &item_size);
   int num_columns = std::min(static_cast<int>(items->size()),
                              bounding_rect.width() / item_size.width());
   for (size_t i = 0; i < items->size(); ++i) {
@@ -243,6 +360,7 @@ void ReorderItemsGreedyLeastMovement(std::vector<WmWindow*>* items,
 views::Widget* CreateBackgroundWidget(WmWindow* root_window,
                                       SkColor background_color,
                                       int border_thickness,
+                                      int border_radius,
                                       SkColor border_color) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
@@ -265,12 +383,18 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   // The background widget should not activate the shelf when passing under it.
   widget_window->GetWindowState()->set_ignored_by_shelf(true);
 
-  views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateSolidBackground(background_color));
-  if (border_thickness) {
-    content_view->SetBorder(
-        views::Border::CreateSolidBorder(border_thickness, border_color));
+  views::View* content_view =
+      new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    content_view->set_background(new BackgroundWith1PxBorder(
+        background_color, border_color, border_thickness, border_radius));
+  } else {
+    content_view->set_background(
+        views::Background::CreateSolidBackground(background_color));
+    if (border_thickness) {
+      content_view->SetBorder(
+          views::Border::CreateSolidBorder(border_thickness, border_color));
+    }
   }
   widget->SetContentsView(content_view);
   widget_window->GetParent()->StackChildAtTop(widget_window);
@@ -300,7 +424,8 @@ WindowGrid::WindowGrid(WmWindow* root_window,
           switches::kAshEnableStableOverviewOrder)) {
     // Reorder windows to try to minimize movement to target overview positions.
     // This also creates a stable window ordering.
-    ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_);
+    ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_,
+                                    window_selector_->text_filter_bottom());
   }
   for (auto window : windows_in_root) {
     window->AddObserver(this);
@@ -459,7 +584,8 @@ void WindowGrid::PositionWindows(bool animate) {
   CHECK(!window_list_.empty());
   gfx::Rect bounding_rect;
   gfx::Size item_size;
-  CalculateOverviewSizes(root_window_, window_list_.size(), &bounding_rect,
+  CalculateOverviewSizes(root_window_, window_list_.size(),
+                         window_selector_->text_filter_bottom(), &bounding_rect,
                          &item_size);
   num_columns_ = std::min(static_cast<int>(window_list_.size()),
                           bounding_rect.width() / item_size.width());
@@ -596,8 +722,10 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
       (*iter)->SetDimmed(false);
     } else {
       (*iter)->SetDimmed(true);
-      if (selection_widget_ && SelectedWindow() == *iter)
+      if (selection_widget_ && SelectedWindow() == *iter) {
+        SelectedWindow()->SetSelected(false);
         selection_widget_.reset();
+      }
     }
   }
 }
@@ -648,7 +776,7 @@ void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
 }
 
 void WindowGrid::InitShieldWidget() {
-  shield_widget_.reset(CreateBackgroundWidget(root_window_, kShieldColor, 0,
+  shield_widget_.reset(CreateBackgroundWidget(root_window_, kShieldColor, 0, 0,
                                               SK_ColorTRANSPARENT));
 
   WmWindow* widget_window =
@@ -674,8 +802,11 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
       material ? kWindowSelectionBorderColorMD : kWindowSelectionBorderColor;
   const int selection_color =
       material ? kWindowSelectionColorMD : kWindowSelectionColor;
-  selection_widget_.reset(CreateBackgroundWidget(
-      root_window_, selection_color, border_thickness, border_color));
+  const int border_radius =
+      material ? kWindowSelectionRadiusMD : kWindowSelectionRadius;
+  selection_widget_.reset(CreateBackgroundWidget(root_window_, selection_color,
+                                                 border_thickness,
+                                                 border_radius, border_color));
 
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());

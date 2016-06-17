@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/display/display_observer.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace views {
@@ -38,10 +39,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public WmActivationObserver,
                                   public views::TextfieldController {
  public:
-  // The distance between the top edge of the screen and the bottom edge of
-  // the text filtering textfield.
-  static const int kTextFilterBottomEdge;
-
   // Returns true if the window can be selected in overview mode.
   static bool IsSelectable(WmWindow* window);
 
@@ -75,6 +72,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   bool restoring_minimized_windows() const {
     return restoring_minimized_windows_;
   }
+
+  int text_filter_bottom() { return text_filter_bottom_; }
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
@@ -164,6 +163,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // such as enter key to select.
   std::unique_ptr<views::Widget> text_filter_widget_;
 
+  // Image used for text filter textfield.
+  gfx::ImageSkia search_image_;
+
   // The current length of the string entered into the text filtering textfield.
   size_t text_filter_string_length_;
 
@@ -174,6 +176,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Tracks whether minimized windows are currently being restored for overview
   // mode.
   bool restoring_minimized_windows_;
+
+  // The distance between the top edge of the screen and the bottom edge of
+  // the text filtering textfield.
+  int text_filter_bottom_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

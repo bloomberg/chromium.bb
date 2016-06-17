@@ -102,8 +102,11 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   void PrepareForOverview();
 
   // Applies the |transform| to the overview window and all of its transient
-  // children.
-  void SetTransform(WmWindow* root_window, const gfx::Transform& transform);
+  // children. With Material Design creates a mask layer with the bottom edge
+  // using rounded corners of |radius|.
+  void SetTransform(WmWindow* root_window,
+                    const gfx::Transform& transform,
+                    int radius);
 
   // Set's the opacity of the managed windows.
   void SetOpacity(float opacity);

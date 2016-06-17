@@ -363,11 +363,21 @@ TEST_P(WindowSelectorTest, OverviewScreenRotation) {
 
   // Formula for initial placement found in window_selector.cc using
   // width = 400, height = 300:
-  // x: root_window->bounds().width() / 2 * (1 - kTextFilterScreenProportion).
-  // y: -kTextFilterDistanceFromTop (since there's no text in the filter).
+  // x: 0.5 * root_window->bounds().width() * (1 - kTextFilterScreenProportion).
+  // y: -kTextFilterHeight (since there's no text in the filter).
   // w: root_window->bounds().width() * kTextFilterScreenProportion.
   // h: kTextFilterHeight.
-  EXPECT_EQ("150,-32 100x32",
+  //
+  // With Material Design the text filter position is calculated as:
+  // x: 0.5 * (total_bounds.width() -
+  //           std::min(kTextFilterWidthMD, total_bounds.width())).
+  // y: -kTextFilterHeightMD (since there's no text in the filter).
+  // w: std::min(kTextFilterWidthMD, total_bounds.width()).
+  // h: kTextFilterHeightMD.
+  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
+  gfx::Rect expected_bounds(150, -32, 100, 32);
+  gfx::Rect expected_bounds_MD(60, -40, 280, 40);
+  EXPECT_EQ((material ? expected_bounds_MD : expected_bounds).ToString(),
             text_filter->GetClientAreaBoundsInScreen().ToString());
 
   // Rotates the display, which triggers the WindowSelector's
@@ -375,7 +385,9 @@ TEST_P(WindowSelectorTest, OverviewScreenRotation) {
   UpdateDisplay("400x300/r");
 
   // Uses the same formulas as above using width = 300, height = 400.
-  EXPECT_EQ("112,-32 75x32",
+  expected_bounds = gfx::Rect(112, -32, 75, 32);
+  expected_bounds_MD = gfx::Rect(10, -40, 280, 40);
+  EXPECT_EQ((material ? expected_bounds_MD : expected_bounds).ToString(),
             text_filter->GetClientAreaBoundsInScreen().ToString());
 }
 #endif

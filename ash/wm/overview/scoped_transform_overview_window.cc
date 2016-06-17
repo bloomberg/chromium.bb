@@ -15,6 +15,9 @@
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/paint_recorder.h"
@@ -168,10 +171,11 @@ TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
 }  // namespace
 
 // Mask layer that clips the window's original header in overview mode.
+// Only used with Material Design.
 class ScopedTransformOverviewWindow::OverviewContentMask
     : public ui::LayerDelegate {
  public:
-  explicit OverviewContentMask(int inset);
+  OverviewContentMask(int inset, int radius);
   ~OverviewContentMask() override;
 
   ui::Layer* layer() { return &layer_; }
@@ -185,13 +189,15 @@ class ScopedTransformOverviewWindow::OverviewContentMask
  private:
   ui::Layer layer_;
   int inset_;
+  int radius_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewContentMask);
 };
 
 ScopedTransformOverviewWindow::OverviewContentMask::OverviewContentMask(
-    int inset)
-    : layer_(ui::LAYER_TEXTURED), inset_(inset) {
+    int inset,
+    int radius)
+    : layer_(ui::LAYER_TEXTURED), inset_(inset), radius_(radius) {
   layer_.set_delegate(this);
 }
 
@@ -202,12 +208,29 @@ ScopedTransformOverviewWindow::OverviewContentMask::~OverviewContentMask() {
 void ScopedTransformOverviewWindow::OverviewContentMask::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
+  gfx::Rect bounds(layer()->bounds().size());
+  bounds.Inset(0, inset_, 0, 0);
+
+  // Tile a window into an area, rounding the bottom corners.
+  const SkRect rect = gfx::RectToSkRect(bounds);
+  const SkScalar corner_radius_scalar = SkIntToScalar(radius_);
+  SkScalar radii[8] = {0,
+                       0,  // top-left
+                       0,
+                       0,  // top-right
+                       corner_radius_scalar,
+                       corner_radius_scalar,  // bottom-right
+                       corner_radius_scalar,
+                       corner_radius_scalar};  // bottom-left
+  SkPath path;
+  path.addRoundRect(rect, radii, SkPath::kCW_Direction);
+
+  // Set a mask.
   SkPaint paint;
   paint.setAlpha(kOverviewContentMaskAlpha);
   paint.setStyle(SkPaint::kFill_Style);
-  gfx::Rect rect(layer()->bounds().size());
-  rect.Inset(0, inset_, 0, 0);
-  recorder.canvas()->DrawRect(rect, paint);
+  paint.setAntiAlias(true);
+  recorder.canvas()->DrawPath(path, paint);
 }
 
 void ScopedTransformOverviewWindow::OverviewContentMask::
@@ -241,7 +264,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   BeginScopedAnimation(
       OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
       &animation_settings_list);
-  SetTransform(window()->GetRootWindow(), original_transform_);
+  SetTransform(window()->GetRootWindow(), original_transform_, 0);
 
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
       CreateScopedOverviewAnimationSettings(
@@ -367,12 +390,13 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 
 void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* root_window,
-    const gfx::Transform& transform) {
+    const gfx::Transform& transform,
+    int radius) {
   DCHECK(overview_started_);
 
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     mask_.reset(new OverviewContentMask(
-        window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET)));
+        window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET), radius));
     mask_->layer()->SetBounds(GetTargetBoundsInScreen());
     window()->GetLayer()->SetMaskLayer(mask_->layer());
   }

@@ -28,6 +28,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -66,6 +67,9 @@ static const SkColor kCloseButtonColor = SK_ColorWHITE;
 // TODO(varkha): Make background color conform to window header.
 static const SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
+// Corner radius for the selection tiles used with Material Design.
+static int kLabelBackgroundRadius = 2;
+
 // Label shadow color.
 static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);
 
@@ -73,7 +77,7 @@ static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);
 static const int kVerticalLabelPadding = 20;
 
 // Horizontal padding for the label, on both sides. Used with Material Design.
-static const int kHorizontalLabelPaddingMD = 4;
+static const int kHorizontalLabelPaddingMD = 8;
 
 // Solid shadow length from the label
 static const int kVerticalShadowOffset = 1;
@@ -164,6 +168,41 @@ OverviewCloseButton::OverviewCloseButton(views::ButtonListener* listener)
 
 OverviewCloseButton::~OverviewCloseButton() {
 }
+
+// A View having rounded corners and a specified background color which is
+// only painted within the bounds defined by the rounded corners.
+// TODO(varkha): This duplicates code from RoundedImageView. Refactor these
+//               classes and move into ui/views.
+class RoundedContainerView : public views::View {
+ public:
+  RoundedContainerView(int corner_radius, SkColor background)
+      : corner_radius_(corner_radius), background_(background) {}
+
+  ~RoundedContainerView() override {}
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    views::View::OnPaint(canvas);
+
+    SkScalar radius = SkIntToScalar(corner_radius_);
+    const SkScalar kRadius[8] = {radius, radius, radius, radius,
+                                 radius, radius, radius, radius};
+    SkPath path;
+    gfx::Rect bounds(size());
+    bounds.set_height(bounds.height() + radius);
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    canvas->ClipPath(path, true);
+    canvas->DrawColor(background_);
+  }
+
+ private:
+  int corner_radius_;
+  SkColor background_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
+};
 
 }  // namespace
 
@@ -405,7 +444,13 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
       screen_rect, selector_item_bounds);
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  transform_window_.SetTransform(root_window_, transform);
+  // Rounded corners are achieved by using a mask layer on the original window
+  // before the transform. Dividing by scale factor obtains the corner radius
+  // which when scaled will yield |kLabelBackgroundRadius|.
+  transform_window_.SetTransform(
+      root_window_, transform,
+      gfx::ToFlooredInt(kLabelBackgroundRadius /
+                        GetItemScale(target_bounds.size())));
   transform_window_.set_overview_transform(transform);
 }
 
@@ -474,9 +519,8 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     window_label_button_view_->SetVisible(false);
     window_label_->Show();
 
-    views::View* background_view = new views::View;
-    background_view->set_background(
-        views::Background::CreateSolidBackground(kLabelBackgroundColor));
+    views::View* background_view =
+        new RoundedContainerView(kLabelBackgroundRadius, kLabelBackgroundColor);
     window_label_selector_.reset(new views::Widget);
     params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
     params.accept_events = false;
