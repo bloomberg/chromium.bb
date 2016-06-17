@@ -60,6 +60,8 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
   }
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override {}
+  void OnWmNewDisplay(Window* window,
+                      const display::Display& display) override {}
   void OnAccelerator(uint32_t id, const ui::Event& event) override {}
 
  private:

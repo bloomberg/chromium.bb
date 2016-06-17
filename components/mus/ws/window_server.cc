@@ -18,8 +18,8 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_manager_access_policy.h"
-#include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
@@ -39,7 +39,7 @@ WindowServer::WindowServer(
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      window_manager_factory_registry_(this, &user_id_tracker_) {}
+      window_manager_window_tree_factory_set_(this, &user_id_tracker_) {}
 
 WindowServer::~WindowServer() {
   in_destructor_ = true;
@@ -94,42 +94,34 @@ WindowTree* WindowServer::EmbedAtWindow(
   return tree;
 }
 
-WindowTree* WindowServer::AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
-                                  std::unique_ptr<WindowTreeBinding> binding,
-                                  mojom::WindowTreePtr tree_ptr) {
+void WindowServer::AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
+                           std::unique_ptr<WindowTreeBinding> binding,
+                           mojom::WindowTreePtr tree_ptr) {
   CHECK_EQ(0u, tree_map_.count(tree_impl_ptr->id()));
   WindowTree* tree = tree_impl_ptr.get();
   tree_map_[tree->id()] = std::move(tree_impl_ptr);
   tree->Init(std::move(binding), std::move(tree_ptr));
-  return tree;
 }
 
 WindowTree* WindowServer::CreateTreeForWindowManager(
-    Display* display,
-    mojom::WindowManagerFactory* factory,
-    ServerWindow* root,
-    const UserId& user_id) {
-  mojom::DisplayPtr display_ptr = display->ToMojomDisplay();
-  mojom::WindowTreeClientPtr tree_client;
-  factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  std::unique_ptr<WindowTree> tree_ptr(new WindowTree(
-      this, user_id, root, base::WrapUnique(new WindowManagerAccessPolicy)));
-  WindowTree* tree = tree_ptr.get();
-  mojom::WindowTreePtr window_tree_ptr;
-  mojom::WindowTreeRequest tree_request;
-  std::unique_ptr<WindowTreeBinding> binding =
+    const UserId& user_id,
+    mojom::WindowTreeRequest window_tree_request,
+    mojom::WindowTreeClientPtr window_tree_client) {
+  std::unique_ptr<WindowTree> window_tree(new WindowTree(
+      this, user_id, nullptr, base::WrapUnique(new WindowManagerAccessPolicy)));
+  std::unique_ptr<WindowTreeBinding> window_tree_binding =
       delegate_->CreateWindowTreeBinding(
-          WindowServerDelegate::BindingType::WINDOW_MANAGER, this, tree,
-          &tree_request, &tree_client);
-  if (!binding) {
-    DefaultWindowTreeBinding* default_binding =
-        new DefaultWindowTreeBinding(tree_ptr.get(), std::move(tree_client));
-    binding.reset(default_binding);
-    window_tree_ptr = default_binding->CreateInterfacePtrAndBind();
+          WindowServerDelegate::BindingType::WINDOW_MANAGER, this,
+          window_tree.get(), &window_tree_request, &window_tree_client);
+  if (!window_tree_binding) {
+    window_tree_binding.reset(new DefaultWindowTreeBinding(
+        window_tree.get(), this, std::move(window_tree_request),
+        std::move(window_tree_client)));
   }
-  AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
-  tree->ConfigureWindowManager();
-  return tree;
+  WindowTree* window_tree_ptr = window_tree.get();
+  AddTree(std::move(window_tree), std::move(window_tree_binding), nullptr);
+  window_tree_ptr->ConfigureWindowManager();
+  return window_tree_ptr;
 }
 
 void WindowServer::DestroyTree(WindowTree* tree) {
@@ -158,6 +150,8 @@ void WindowServer::DestroyTree(WindowTree* tree) {
       displays_notified.insert(display);
     }
   }
+
+  window_manager_window_tree_factory_set_.DeleteFactoryAssociatedWithTree(tree);
 
   // Remove any requests from the client that resulted in a call to the window
   // manager and we haven't gotten a response back yet.
@@ -224,7 +218,7 @@ const WindowTree* WindowServer::GetTreeWithRoot(
   return nullptr;
 }
 
-void WindowServer::OnFirstWindowManagerFactorySet() {
+void WindowServer::OnFirstWindowManagerWindowTreeFactoryReady() {
   if (display_manager_->has_active_or_pending_displays())
     return;
 
@@ -653,6 +647,15 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
 }
 
 void WindowServer::OnFirstDisplayReady() {
+  // TODO(sky): remove this, temporary until window manager state made
+  // global.
+  if (!created_one_display_) {
+    created_one_display_ = true;
+    std::vector<WindowManagerWindowTreeFactory*> factories =
+        window_manager_window_tree_factory_set_.GetFactories();
+    for (WindowManagerWindowTreeFactory* factory : factories)
+      factory->BindPendingRequest();
+  }
   delegate_->OnFirstDisplayReady();
 }
 

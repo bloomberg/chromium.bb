@@ -22,6 +22,7 @@ source_set("unittest_support") {
     "//base",
     "//components/mus/public/cpp",
     "//testing/gtest",
+    "//ui/display",
     "//ui/gfx/geometry/mojo",
   ]
 }

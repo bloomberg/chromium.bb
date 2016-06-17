@@ -8,8 +8,10 @@
 #include "ash/mus/test/wm_test_screen.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/tests/window_tree_client_private.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
@@ -22,31 +24,32 @@ WmTestHelper::~WmTestHelper() {}
 
 void WmTestHelper::Init() {
   message_loop_.reset(new base::MessageLoopForUI());
-  const uint32_t app_id = 1;
-  window_manager_app_.Initialize(nullptr, shell::Identity(), app_id);
+  window_manager_app_.window_manager_.reset(
+      new WindowManager(&window_manager_app_, nullptr));
   screen_ = new WmTestScreen;
-  window_manager_app_.screen_.reset(screen_);
+  window_manager_app_.window_manager_->screen_.reset(screen_);
 
-  // RootWindowController controls its own lifetime.
-  RootWindowController* root_window_controller =
-      new RootWindowController(&window_manager_app_);
   // Need an id other than kInvalidDisplayID so the Display is considered valid.
-  root_window_controller->display_.set_id(1);
+  display::Display display(1);
   const gfx::Rect display_bounds(0, 0, 800, 600);
-  root_window_controller->display_.set_bounds(display_bounds);
+  display.set_bounds(display_bounds);
   // Offset the height slightly to give a different work area. -20 is arbitrary,
   // it could be anything.
   const gfx::Rect work_area(0, 0, display_bounds.width(),
                             display_bounds.height() - 20);
-  root_window_controller->display_.set_work_area(work_area);
+  display.set_work_area(work_area);
+  window_tree_client_setup_.InitForWindowManager(
+      window_manager_app_.window_manager_.get(),
+      window_manager_app_.window_manager_.get(), display);
 
-  screen_->display_list()->AddDisplay(root_window_controller->display(),
+  window_manager_app_.InitWindowManager(
+      window_tree_client_setup_.window_tree_client());
+
+  screen_->display_list()->AddDisplay(display,
                                       views::DisplayList::Type::PRIMARY);
 
-  window_tree_client_setup_.Init(root_window_controller,
-                                 root_window_controller->window_manager_.get());
-  root_window_controller->root()->SetBounds(display_bounds);
-  window_manager_app_.AddRootWindowController(root_window_controller);
+  ::mus::WindowTreeClientPrivate(window_tree_client_setup_.window_tree_client())
+      .CallWmNewDisplayAdded(display);
 }
 
 }  // namespace mus

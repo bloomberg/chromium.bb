@@ -109,7 +109,6 @@ class UserDisplayManagerTest : public testing::Test {
   TestWindowServerDelegate window_server_delegate_;
   std::unique_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
-  TestWindowManagerFactory test_window_manager_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTest);
@@ -121,9 +120,9 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server_->display_manager();
-  WindowManagerFactoryRegistryTestApi(
-      window_server_->window_manager_factory_registry())
-      .AddService(kUserId1, &test_window_manager_factory_);
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server_->window_manager_window_tree_factory_set())
+      .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -150,9 +149,9 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server_->display_manager();
-  WindowManagerFactoryRegistryTestApi(
-      window_server_->window_manager_factory_registry())
-      .AddService(kUserId1, &test_window_manager_factory_);
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server_->window_manager_window_tree_factory_set())
+      .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -175,9 +174,9 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server_->display_manager();
-  WindowManagerFactoryRegistryTestApi(
-      window_server_->window_manager_factory_registry())
-      .AddService(kUserId1, &test_window_manager_factory_);
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server_->window_manager_window_tree_factory_set())
+      .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -217,9 +216,9 @@ TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server_->display_manager();
-  WindowManagerFactoryRegistryTestApi(
-      window_server_->window_manager_factory_registry())
-      .AddService(kUserId1, &test_window_manager_factory_);
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server_->window_manager_window_tree_factory_set())
+      .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);

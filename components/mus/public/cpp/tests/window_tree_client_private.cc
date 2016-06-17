@@ -6,6 +6,7 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "ui/display/display.h"
 
 namespace mus {
 
@@ -34,6 +35,19 @@ void WindowTreeClientPrivate::OnEmbed(mojom::WindowTree* window_tree) {
                                  display_id, focused_window_id, true);
 }
 
+void WindowTreeClientPrivate::CallWmNewDisplayAdded(
+    const display::Display& display) {
+  mojom::WindowDataPtr root_data(mojom::WindowData::New());
+  root_data->parent_id = 0;
+  root_data->window_id = 1;
+  root_data->properties.SetToEmpty();
+  root_data->visible = true;
+  root_data->bounds = gfx::Rect(display.bounds().size());
+  const bool parent_drawn = true;
+  tree_client_impl_->WmNewDisplayAddedImpl(display, std::move(root_data),
+                                           parent_drawn);
+}
+
 void WindowTreeClientPrivate::CallOnWindowInputEvent(
     Window* window,
     std::unique_ptr<ui::Event> event) {
@@ -41,6 +55,12 @@ void WindowTreeClientPrivate::CallOnWindowInputEvent(
   const uint32_t observer_id = 0u;
   tree_client_impl_->OnWindowInputEvent(event_id, window->server_id(),
                                         std::move(event), observer_id);
+}
+
+void WindowTreeClientPrivate::SetTreeAndClientId(mojom::WindowTree* window_tree,
+                                                 ClientSpecificId client_id) {
+  tree_client_impl_->tree_ = window_tree;
+  tree_client_impl_->client_id_ = client_id;
 }
 
 }  // namespace mus

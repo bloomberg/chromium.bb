@@ -13,8 +13,11 @@ class RootWindowController;
 class RootWindowsObserver {
  public:
   // Called once a new display has been created and the root Window obtained.
-  virtual void OnRootWindowControllerAdded(
-      RootWindowController* controller) = 0;
+  virtual void OnRootWindowControllerAdded(RootWindowController* controller) {}
+
+  // Called before a RootWindowController is destroyed.
+  virtual void OnWillDestroyRootWindowController(
+      RootWindowController* controller) {}
 
  protected:
   ~RootWindowsObserver() {}

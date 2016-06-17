@@ -18,6 +18,10 @@
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/events/mojo/event.mojom.h"
 
+namespace display {
+class Display;
+}
+
 namespace gfx {
 class Insets;
 class Rect;
@@ -95,6 +99,11 @@ class WindowManagerDelegate {
   virtual void OnWmClientJankinessChanged(
       const std::set<Window*>& client_windows,
       bool janky) = 0;
+
+  // Called when a display is added. |window| is the root of the window tree for
+  // the specified display.
+  virtual void OnWmNewDisplay(Window* window,
+                              const display::Display& display) = 0;
 
   virtual void OnAccelerator(uint32_t id, const ui::Event& event) = 0;
 

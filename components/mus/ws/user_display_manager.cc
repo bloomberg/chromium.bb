@@ -52,10 +52,10 @@ void UserDisplayManager::AddDisplayManagerBinding(
 }
 
 void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
-  if (!display->GetWindowManagerStateForUser(user_id_)
-           ->got_frame_decoration_values()) {
+  const WindowManagerState* wms =
+      display->GetWindowManagerStateForUser(user_id_);
+  if (wms && !wms->got_frame_decoration_values())
     return;
-  }
 
   display_manager_observers_.ForAllPtrs(
       [this, &display](mojom::DisplayManagerObserver* observer) {
@@ -169,12 +169,7 @@ void UserDisplayManager::CallOnDisplayChanged(
     mojom::DisplayManagerObserver* observer) {
   mojo::Array<mojom::DisplayPtr> displays(1);
   displays[0] = wms->ToMojomDisplay();
-  display_manager_observers_.ForAllPtrs(
-      [&displays](mojom::DisplayManagerObserver* observer) {
-        observer->OnDisplaysChanged(displays.Clone());
-      });
-  if (test_observer_)
-    test_observer_->OnDisplaysChanged(displays.Clone());
+  observer->OnDisplaysChanged(displays.Clone());
 }
 
 void UserDisplayManager::AddObserver(

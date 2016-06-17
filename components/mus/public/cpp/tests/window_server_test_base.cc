@@ -126,6 +126,12 @@ void WindowServerTestBase::OnWmClientJankinessChanged(
     window_manager_delegate_->OnWmClientJankinessChanged(client_windows, janky);
 }
 
+void WindowServerTestBase::OnWmNewDisplay(Window* window,
+                                          const display::Display& display) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmNewDisplay(window, display);
+}
+
 void WindowServerTestBase::OnAccelerator(uint32_t id, const ui::Event& event) {
   if (window_manager_delegate_)
     window_manager_delegate_->OnAccelerator(id, event);

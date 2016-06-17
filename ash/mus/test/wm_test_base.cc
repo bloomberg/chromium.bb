@@ -200,8 +200,9 @@ void WmTestBase::TearDown() {
 }
 
 std::vector<RootWindowController*> WmTestBase::GetRootsOrderedByDisplayId() {
-  std::set<RootWindowController*> roots =
-      test_helper_->window_manager_app()->GetRootControllers();
+  std::set<RootWindowController*> roots = test_helper_->window_manager_app()
+                                              ->window_manager()
+                                              ->GetRootWindowControllers();
   std::vector<RootWindowController*> ordered_roots;
   ordered_roots.insert(ordered_roots.begin(), roots.begin(), roots.end());
   std::sort(ordered_roots.begin(), ordered_roots.end(), &CompareByDisplayId);

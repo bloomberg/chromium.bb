@@ -15,8 +15,8 @@
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_init_params.h"
-#include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
@@ -36,14 +36,15 @@ Display::Display(WindowServer* window_server,
       last_cursor_(ui::kCursorNone) {
   platform_display_->Init(this);
 
-  window_server_->window_manager_factory_registry()->AddObserver(this);
+  window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
   window_server_->user_id_tracker()->AddObserver(this);
 }
 
 Display::~Display() {
   window_server_->user_id_tracker()->RemoveObserver(this);
 
-  window_server_->window_manager_factory_registry()->RemoveObserver(this);
+  window_server_->window_manager_window_tree_factory_set()->RemoveObserver(
+      this);
 
   if (!focus_controller_) {
     focus_controller_->RemoveObserver(this);
@@ -231,31 +232,31 @@ void Display::InitWindowManagersIfNecessary() {
     window_manager_state_map_[shell::mojom::kRootUserID] = std::move(wms_ptr);
     wms->tree_ = binding_->CreateWindowTree(wms->root());
   } else {
-    CreateWindowManagerStatesFromRegistry();
+    CreateWindowManagerStatesFromFactories();
   }
 }
 
-void Display::CreateWindowManagerStatesFromRegistry() {
-  std::vector<WindowManagerFactoryService*> services =
-      window_server_->window_manager_factory_registry()->GetServices();
-  for (WindowManagerFactoryService* service : services) {
-    if (service->window_manager_factory())
-      CreateWindowManagerStateFromService(service);
+void Display::CreateWindowManagerStatesFromFactories() {
+  std::vector<WindowManagerWindowTreeFactory*> factories =
+      window_server_->window_manager_window_tree_factory_set()->GetFactories();
+  for (WindowManagerWindowTreeFactory* factory : factories) {
+    if (factory->window_tree())
+      CreateWindowManagerStateFromFactory(factory);
   }
 }
 
-void Display::CreateWindowManagerStateFromService(
-    WindowManagerFactoryService* service) {
+void Display::CreateWindowManagerStateFromFactory(
+    WindowManagerWindowTreeFactory* factory) {
   std::unique_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
-      this, platform_display_.get(), service->user_id()));
+      this, platform_display_.get(), factory->user_id()));
   WindowManagerState* wms = wms_ptr.get();
-  window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
-  wms->tree_ = window_server_->CreateTreeForWindowManager(
-      this, service->window_manager_factory(), wms->root(), service->user_id());
+  window_manager_state_map_[factory->user_id()] = std::move(wms_ptr);
+  wms->tree_ = factory->window_tree();
   if (!binding_) {
     const bool is_active =
-        service->user_id() == window_server_->user_id_tracker()->active_id();
+        factory->user_id() == window_server_->user_id_tracker()->active_id();
     wms->root()->SetVisible(is_active);
+    wms->tree_->AddRootForWindowManager(wms->root());
   }
 }
 
@@ -444,9 +445,10 @@ void Display::OnUserIdRemoved(const UserId& id) {
   DCHECK_EQ(0u, window_manager_state_map_.count(id));
 }
 
-void Display::OnWindowManagerFactorySet(WindowManagerFactoryService* service) {
+void Display::OnWindowManagerWindowTreeFactoryReady(
+    WindowManagerWindowTreeFactory* factory) {
   if (!binding_)
-    CreateWindowManagerStateFromService(service);
+    CreateWindowManagerStateFromFactory(factory);
 }
 
 }  // namespace ws

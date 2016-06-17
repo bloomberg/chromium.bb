@@ -118,6 +118,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
 void WindowTree::ConfigureWindowManager() {
   DCHECK(!window_manager_internal_);
   window_manager_internal_ = binding_->GetWindowManager();
+  window_manager_internal_->OnConnect(id_);
 }
 
 const ServerWindow* WindowTree::GetWindow(const WindowId& id) const {
@@ -162,6 +163,22 @@ const WindowManagerState* WindowTree::GetWindowManagerState(
                    ->GetWindowManagerAndDisplay(window)
                    .window_manager_state
              : nullptr;
+}
+
+void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
+  DCHECK(window_manager_internal_);
+  const ClientWindowId client_window_id(WindowIdToTransportId(root->id()));
+  DCHECK_EQ(0u, client_id_to_window_id_map_.count(client_window_id));
+  client_id_to_window_id_map_[client_window_id] = root->id();
+  window_id_to_client_id_map_[root->id()] = client_window_id;
+  roots_.insert(root);
+
+  Display* display = GetDisplay(root);
+  DCHECK(display);
+
+  window_manager_internal_->WmNewDisplayAdded(display->ToMojomDisplay(),
+                                              WindowToWindowData(root),
+                                              root->parent()->IsDrawn());
 }
 
 void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
@@ -383,12 +400,16 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
 }
 
 void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
-    return;
   ServerWindow* window = GetWindowByClientId(window_id);
-  if (window)
-    host->AddActivationParent(window);
+  if (window) {
+    Display* display = GetDisplay(window);
+    if (display)
+      display->AddActivationParent(window);
+    else
+      DVLOG(1) << "AddActivationParent window not associated with display";
+  } else {
+    DVLOG(1) << "AddActivationParent supplied invalid window id";
+  }
 }
 
 void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
@@ -662,16 +683,14 @@ const DisplayManager* WindowTree::display_manager() const {
   return window_server_->display_manager();
 }
 
-Display* WindowTree::GetDisplayForWindowManager() {
-  return GetWindowManagerStateForWindowManager()->display();
-}
-
 WindowManagerState* WindowTree::GetWindowManagerStateForWindowManager() {
-  // The WindowTree for the wm has one and only one root.
-  CHECK_EQ(1u, roots_.size());
-
   // Indicates the client is the wm.
   DCHECK(window_manager_internal_);
+
+  if (roots_.size() > 1) {
+    // TODO(sky): fix the > 1 case, http://crbug.com/611563.
+    NOTIMPLEMENTED();
+  }
 
   WindowManagerState* wms = display_manager()
                                 ->GetWindowManagerAndDisplay(*roots_.begin())
@@ -1405,20 +1424,22 @@ void WindowTree::AddActivationParent(Id transport_window_id) {
 }
 
 void WindowTree::RemoveActivationParent(Id transport_window_id) {
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
-    return;
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (window)
-    host->RemoveActivationParent(window);
+  if (window) {
+    Display* display = GetDisplay(window);
+    if (display)
+      display->RemoveActivationParent(window);
+    else
+      DVLOG(1) << "RemoveActivationParent window not associated with display";
+  } else {
+    DVLOG(1) << "RemoveActivationParent supplied invalid window id";
+  }
 }
 
 void WindowTree::ActivateNextWindow() {
-  Display* display = GetDisplayForWindowManager();
-  if (!display)
-    return;
-  display->ActivateNextWindow();
+  // TODO(sky): this needs to track active window. http://crbug.com/611563.
+  GetWindowManagerStateForWindowManager()->display()->ActivateNextWindow();
 }
 
 void WindowTree::SetUnderlaySurfaceOffsetAndExtendedHitArea(
@@ -1435,17 +1456,10 @@ void WindowTree::SetUnderlaySurfaceOffsetAndExtendedHitArea(
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {
-  // TODO(sky): think about what else case means.
-  if (GetDisplayForWindowManager())
-    window_server_->WindowManagerChangeCompleted(change_id, response);
+  window_server_->WindowManagerChangeCompleted(change_id, response);
 }
 
 void WindowTree::WmRequestClose(Id transport_window_id) {
-  // Only the WindowManager should be using this.
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
-    return;
-
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   WindowTree* tree = window_server_->GetTreeWithRoot(window);
@@ -1474,16 +1488,14 @@ void WindowTree::WmSetNonClientCursor(uint32_t window_id,
 
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
                                            Id transport_window_id) {
-  if (GetDisplayForWindowManager()) {
-    ServerWindow* window =
-        GetWindowByClientId(ClientWindowId(transport_window_id));
-    if (window && window->id().client_id != id_) {
-      window_server_->WindowManagerSentBogusMessage();
-      window = nullptr;
-    }
-    window_server_->WindowManagerCreatedTopLevelWindow(this, change_id, window);
+  ServerWindow* window =
+      GetWindowByClientId(ClientWindowId(transport_window_id));
+  if (window && window->id().client_id != id_) {
+    DVLOG(1) << "OnWmCreatedTopLevelWindow supplied invalid window id";
+    window_server_->WindowManagerSentBogusMessage();
+    window = nullptr;
   }
-  // TODO(sky): think about what else case means.
+  window_server_->WindowManagerCreatedTopLevelWindow(this, change_id, window);
 }
 
 bool WindowTree::HasRootForAccessPolicy(const ServerWindow* window) const {

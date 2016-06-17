@@ -4,7 +4,7 @@
   "display_name": "Test Window Manager",
   "capabilities": {
     "required": {
-      "mojo:mus": { "interfaces": [ "mus::mojom::WindowManagerFactoryService" ] }
+      "mojo:mus": { "interfaces": [ "mus::mojom::WindowManagerWindowTreeFactory" ] }
     }
   }
 }

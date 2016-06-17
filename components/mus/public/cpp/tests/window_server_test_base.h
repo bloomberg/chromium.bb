@@ -81,6 +81,7 @@ class WindowServerTestBase
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool not_responding) override;
+  void OnWmNewDisplay(Window* window, const display::Display& display) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // InterfaceFactory<WindowTreeClient>:

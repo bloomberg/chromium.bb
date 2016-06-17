@@ -64,6 +64,7 @@ source_set("cpp") {
     "//gpu/ipc/client",
     "//services/shell/public/cpp",
     "//ui/display",
+    "//ui/display/mojo",
     "//ui/events",
     "//ui/gfx/geometry",
   ]

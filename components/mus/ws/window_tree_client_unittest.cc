@@ -24,7 +24,6 @@ using shell::Connection;
 using mojo::InterfaceRequest;
 using shell::ShellClient;
 using mojo::String;
-using mus::mojom::ErrorCode;
 using mus::mojom::WindowDataPtr;
 using mus::mojom::WindowTree;
 using mus::mojom::WindowTreeClient;
@@ -387,6 +386,12 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   // mojom::WindowManager:
+  void OnConnect(uint16_t client_id) override {}
+  void WmNewDisplayAdded(mojom::DisplayPtr display,
+                         mojom::WindowDataPtr root_data,
+                         bool drawn) override {
+    NOTIMPLEMENTED();
+  }
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {

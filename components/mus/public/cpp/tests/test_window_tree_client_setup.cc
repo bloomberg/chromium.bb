@@ -7,6 +7,7 @@
 #include "components/mus/public/cpp/tests/test_window_tree.h"
 #include "components/mus/public/cpp/tests/window_tree_client_private.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "ui/display/display.h"
 
 namespace mus {
 
@@ -20,6 +21,26 @@ TestWindowTreeClientSetup::~TestWindowTreeClientSetup() {
 }
 
 void TestWindowTreeClientSetup::Init(
+    WindowTreeClientDelegate* window_tree_delegate) {
+  CommonInit(window_tree_delegate, nullptr);
+  WindowTreeClientPrivate(window_tree_client_.get())
+      .OnEmbed(window_tree_.get());
+}
+
+void TestWindowTreeClientSetup::InitForWindowManager(
+    WindowTreeClientDelegate* window_tree_delegate,
+    WindowManagerDelegate* window_manager_delegate,
+    const display::Display& display) {
+  CommonInit(window_tree_delegate, window_manager_delegate);
+  WindowTreeClientPrivate(window_tree_client_.get())
+      .SetTreeAndClientId(window_tree_.get(), 1);
+}
+
+WindowTreeClient* TestWindowTreeClientSetup::window_tree_client() {
+  return window_tree_client_.get();
+}
+
+void TestWindowTreeClientSetup::CommonInit(
     WindowTreeClientDelegate* window_tree_delegate,
     WindowManagerDelegate* window_manager_delegate) {
   window_tree_.reset(new TestWindowTree);
@@ -27,12 +48,6 @@ void TestWindowTreeClientSetup::Init(
       window_tree_delegate, window_manager_delegate, nullptr));
   static_cast<WindowTreeClient*>(window_tree_client_.get())
       ->AddObserver(this);
-  WindowTreeClientPrivate(window_tree_client_.get())
-      .OnEmbed(window_tree_.get());
-}
-
-WindowTreeClient* TestWindowTreeClientSetup::window_tree_client() {
-  return window_tree_client_.get();
 }
 
 void TestWindowTreeClientSetup::OnWillDestroyClient(

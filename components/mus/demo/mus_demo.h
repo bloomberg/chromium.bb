@@ -13,12 +13,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
-#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -32,7 +28,6 @@ namespace mus_demo {
 // window and draws a spinning square in the center of the window. Provides a
 // simple way to demonstrate that the graphic stack works as intended.
 class MusDemo : public shell::ShellClient,
-                public mus::mojom::WindowManagerFactory,
                 public mus::WindowTreeClientDelegate,
                 public mus::WindowManagerDelegate {
  public:
@@ -48,14 +43,8 @@ class MusDemo : public shell::ShellClient,
 
   // WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnUnembed(mus::Window* root) override;
   void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
-
-  // mus::mojom::WindowManagerFactory:
-  void CreateWindowManager(
-      mus::mojom::DisplayPtr display,
-      mus::mojom::WindowTreeClientRequest request) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;
@@ -68,6 +57,8 @@ class MusDemo : public shell::ShellClient,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<mus::Window*>& client_windows,
                                   bool janky) override;
+  void OnWmNewDisplay(mus::Window* window,
+                      const display::Display& display) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // Allocate a bitmap the same size as the window to draw into.
@@ -79,9 +70,7 @@ class MusDemo : public shell::ShellClient,
   shell::Connector* connector_ = nullptr;
 
   mus::Window* window_ = nullptr;
-  mus::WindowManagerClient* window_manager_client_ = nullptr;
-  mojo::Binding<mus::mojom::WindowManagerFactory>
-      window_manager_factory_binding_;
+  mus::WindowTreeClient* window_tree_client_ = nullptr;
 
   // Used to send frames to mus.
   std::unique_ptr<bitmap_uploader::BitmapUploader> uploader_;

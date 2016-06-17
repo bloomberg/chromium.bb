@@ -6,7 +6,6 @@
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
-#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/application_runner.h"
@@ -19,45 +18,33 @@ namespace mus {
 namespace test {
 
 class TestWM : public shell::ShellClient,
-               public mus::mojom::WindowManagerFactory,
                public mus::WindowTreeClientDelegate,
                public mus::WindowManagerDelegate {
  public:
-  TestWM() : window_manager_factory_binding_(this) {}
-  ~TestWM() override {}
+  TestWM() {}
+  ~TestWM() override { delete window_tree_client_; }
 
  private:
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,
                   const shell::Identity& identity,
                   uint32_t id) override {
-    mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
-    connector->ConnectToInterface("mojo:mus", &wm_factory_service);
-    wm_factory_service->SetWindowManagerFactory(
-        window_manager_factory_binding_.CreateInterfacePtrAndBind());
+    window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
+    window_tree_client_->ConnectAsWindowManager(connector);
   }
   bool AcceptConnection(shell::Connection* connection) override {
     return true;
   }
 
-  // mus::mojom::WindowManagerFactory:
-  void CreateWindowManager(
-      mus::mojom::DisplayPtr display,
-      mus::mojom::WindowTreeClientRequest request) override {
-    new mus::WindowTreeClient(this, this, std::move(request));
-  }
-
   // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override {
-    root_ = root;
-    window_manager_client_->AddActivationParent(root_);
-    mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
-        mus::mojom::FrameDecorationValues::New();
-    frame_decoration_values->max_title_bar_button_width = 0;
-    window_manager_client_->SetFrameDecorationValues(
-        std::move(frame_decoration_values));
+    // WindowTreeClients configured as the window manager should never get
+    // OnEmbed().
+    NOTREACHED();
   }
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override {}
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override {
+    window_tree_client_ = nullptr;
+  }
   void OnEventObserved(const ui::Event& event, mus::Window* target) override {
     // Don't care.
   }
@@ -86,14 +73,27 @@ class TestWM : public shell::ShellClient,
                                   bool janky) override {
     // Don't care.
   }
+  void OnWmNewDisplay(Window* window,
+                      const display::Display& display) override {
+    // Only handles a single root.
+    DCHECK(!root_);
+    root_ = window;
+    DCHECK(window_manager_client_);
+    window_manager_client_->AddActivationParent(root_);
+    mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
+        mus::mojom::FrameDecorationValues::New();
+    frame_decoration_values->max_title_bar_button_width = 0;
+    window_manager_client_->SetFrameDecorationValues(
+        std::move(frame_decoration_values));
+  }
   void OnAccelerator(uint32_t id, const ui::Event& event) override {
     // Don't care.
   }
 
-  mojo::Binding<mus::mojom::WindowManagerFactory>
-      window_manager_factory_binding_;
   mus::Window* root_ = nullptr;
   mus::WindowManagerClient* window_manager_client_ = nullptr;
+  // See WindowTreeClient for details on ownership.
+  mus::WindowTreeClient* window_tree_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWM);
 };

@@ -8,46 +8,86 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 
-#include "ash/mus/disconnected_app_handler.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tracker.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "mash/session/public/interfaces/session.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+
+namespace display {
+class Display;
+class Screen;
+}
+
+namespace shell {
+class Connector;
+}
 
 namespace ash {
 namespace mus {
 
 class RootWindowController;
+class RootWindowsObserver;
+class ShadowController;
+class WindowManagerApplication;
+class WmShellMus;
+class WmLookupMus;
+class WmTestHelper;
 
-class WindowManager : public ::mus::WindowTracker,
-                      public ::mus::WindowManagerDelegate,
-                      public mash::session::mojom::ScreenlockStateListener {
+// WindowManager serves as the WindowManagerDelegate and
+// WindowTreeClientDelegate for mash. WindowManager creates (and owns)
+// a RootWindowController per Display. WindowManager takes ownership of
+// the WindowTreeClient.
+class WindowManager : public ::mus::WindowManagerDelegate,
+                      public ::mus::WindowObserver,
+                      public ::mus::WindowTreeClientDelegate {
  public:
-  WindowManager();
+  WindowManager(WindowManagerApplication* window_manager_app,
+                shell::Connector* connector);
   ~WindowManager() override;
 
-  void Initialize(RootWindowController* root_controller,
-                  mash::session::mojom::Session* session);
+  void Init(::mus::WindowTreeClient* window_tree_client);
+
+  WmShellMus* shell() { return shell_.get(); }
 
   ::mus::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
 
+  shell::Connector* connector() { return connector_; }
+
+  void SetScreenLocked(bool is_locked);
+
   // Creates a new top level window.
   ::mus::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
 
+  std::set<RootWindowController*> GetRootWindowControllers();
+
+  void AddRootWindowsObserver(RootWindowsObserver* observer);
+  void RemoveRootWindowsObserver(RootWindowsObserver* observer);
+
  private:
-  gfx::Rect CalculateDefaultBounds(::mus::Window* window) const;
-  gfx::Rect GetMaximizedWindowBounds() const;
+  friend class WmTestHelper;
+
+  void AddAccelerators();
+
+  RootWindowController* CreateRootWindowController(
+      ::mus::Window* window,
+      const display::Display& display);
 
   // ::mus::WindowObserver:
-  void OnTreeChanging(const TreeChangeParams& params) override;
+  void OnWindowDestroying(::mus::Window* window) override;
+  void OnWindowDestroyed(::mus::Window* window) override;
+
+  // WindowTreeClientDelegate:
+  void OnEmbed(::mus::Window* root) override;
+  void OnWindowTreeClientDestroyed(::mus::WindowTreeClient* client) override;
+  void OnEventObserved(const ui::Event& event, ::mus::Window* target) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(::mus::WindowManagerClient* client) override;
@@ -61,16 +101,30 @@ class WindowManager : public ::mus::WindowTracker,
   void OnWmClientJankinessChanged(
       const std::set<::mus::Window*>& client_windows,
       bool not_responding) override;
+  void OnWmNewDisplay(::mus::Window* window,
+                      const display::Display& display) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
-  // session::mojom::ScreenlockStateListener:
-  void ScreenlockStateChanged(bool locked) override;
+  // TODO(sky): this is unfortunate, remove.
+  WindowManagerApplication* window_manager_app_;
 
-  RootWindowController* root_controller_;
-  ::mus::WindowManagerClient* window_manager_client_;
-  DisconnectedAppHandler disconnected_app_handler_;
+  shell::Connector* connector_;
 
-  mojo::Binding<mash::session::mojom::ScreenlockStateListener> binding_;
+  ::mus::WindowTreeClient* window_tree_client_ = nullptr;
+
+  ::mus::WindowManagerClient* window_manager_client_ = nullptr;
+
+  std::unique_ptr<ShadowController> shadow_controller_;
+
+  std::set<std::unique_ptr<RootWindowController>> root_window_controllers_;
+
+  base::ObserverList<RootWindowsObserver> root_windows_observers_;
+
+  std::unique_ptr<display::Screen> screen_;
+
+  std::unique_ptr<WmShellMus> shell_;
+
+  std::unique_ptr<WmLookupMus> lookup_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

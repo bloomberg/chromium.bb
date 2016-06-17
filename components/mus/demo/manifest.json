@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "mojo:mus": {
-        "interfaces": [ "mus::mojom::WindowManagerFactoryService"],
+        "interfaces": [ "mus::mojom::WindowManagerWindowTreeFactory"],
       "classes": [ "app" ]
       }
     }

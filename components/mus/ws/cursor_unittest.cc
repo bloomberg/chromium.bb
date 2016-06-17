@@ -51,9 +51,9 @@ class CursorTest : public testing::Test {
     window_server_delegate_.set_num_displays_to_create(1);
 
     // As a side effect, this allocates Displays.
-    WindowManagerFactoryRegistryTestApi(
-        window_server_->window_manager_factory_registry())
-        .AddService(kTestId1, &test_window_manager_factory_);
+    WindowManagerWindowTreeFactorySetTestApi(
+        window_server_->window_manager_window_tree_factory_set())
+        .Add(kTestId1);
     window_server_->user_id_tracker()->SetActiveUserId(kTestId1);
   }
 
@@ -103,7 +103,6 @@ class CursorTest : public testing::Test {
   TestWindowServerDelegate window_server_delegate_;
   std::unique_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
-  TestWindowManagerFactory test_window_manager_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorTest);

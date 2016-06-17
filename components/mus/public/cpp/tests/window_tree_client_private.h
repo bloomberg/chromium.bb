@@ -10,6 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/mus/common/types.h"
+
+namespace display {
+class Display;
+}
 
 namespace ui {
 class Event;
@@ -35,8 +40,14 @@ class WindowTreeClientPrivate {
   // Calls OnEmbed() on the WindowTreeClient.
   void OnEmbed(mojom::WindowTree* window_tree);
 
+  void CallWmNewDisplayAdded(const display::Display& display);
+
   // Pretends that |event| has been received from the window server.
   void CallOnWindowInputEvent(Window* window, std::unique_ptr<ui::Event> event);
+
+  // Sets the WindowTree and client id.
+  void SetTreeAndClientId(mojom::WindowTree* window_tree,
+                          ClientSpecificId client_id);
 
  private:
    WindowTreeClient* tree_client_impl_;

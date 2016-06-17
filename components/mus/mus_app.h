@@ -18,7 +18,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
-#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
+#include "components/mus/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "components/mus/public/interfaces/window_server_test.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -61,7 +61,7 @@ class MusApp
       public shell::InterfaceFactory<mojom::Gpu>,
       public shell::InterfaceFactory<mojom::GpuService>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
-      public shell::InterfaceFactory<mojom::WindowManagerFactoryService>,
+      public shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public shell::InterfaceFactory<mojom::WindowServerTest> {
@@ -119,9 +119,10 @@ class MusApp
   void Create(shell::Connection* connection,
               mojom::UserAccessManagerRequest request) override;
 
-  // shell::InterfaceFactory<mojom::WindowManagerFactoryService> implementation.
+  // shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>
+  // implementation.
   void Create(shell::Connection* connection,
-              mojom::WindowManagerFactoryServiceRequest request) override;
+              mojom::WindowManagerWindowTreeFactoryRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowTreeFactory>:
   void Create(shell::Connection* connection,

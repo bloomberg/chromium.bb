@@ -8,9 +8,10 @@
 #include "cc/output/copy_output_request.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/window_manager_access_policy.h"
-#include "components/mus/ws/window_manager_factory_service.h"
+#include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,22 +76,22 @@ ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
 
 }  // namespace
 
-// WindowManagerFactoryRegistryTestApi ----------------------------------------
+// WindowManagerWindowTreeFactorySetTestApi ------------------------------------
 
-WindowManagerFactoryRegistryTestApi::WindowManagerFactoryRegistryTestApi(
-    WindowManagerFactoryRegistry* registry)
-    : registry_(registry) {}
+WindowManagerWindowTreeFactorySetTestApi::
+    WindowManagerWindowTreeFactorySetTestApi(
+        WindowManagerWindowTreeFactorySet*
+            window_manager_window_tree_factory_set)
+    : window_manager_window_tree_factory_set_(
+          window_manager_window_tree_factory_set) {}
 
-WindowManagerFactoryRegistryTestApi::~WindowManagerFactoryRegistryTestApi() {}
+WindowManagerWindowTreeFactorySetTestApi::
+    ~WindowManagerWindowTreeFactorySetTestApi() {}
 
-void WindowManagerFactoryRegistryTestApi::AddService(
-    const UserId& user_id,
-    mojom::WindowManagerFactory* factory) {
-  std::unique_ptr<WindowManagerFactoryService> service_ptr(
-      new WindowManagerFactoryService(registry_, user_id));
-  WindowManagerFactoryService* service = service_ptr.get();
-  registry_->AddServiceImpl(std::move(service_ptr));
-  service->SetWindowManagerFactoryImpl(factory);
+void WindowManagerWindowTreeFactorySetTestApi::Add(const UserId& user_id) {
+  WindowManagerWindowTreeFactory* factory =
+      window_manager_window_tree_factory_set_->Add(user_id, nullptr);
+  factory->CreateWindowTree(nullptr, nullptr);
 }
 
 // TestPlatformDisplayFactory  -------------------------------------------------
@@ -442,16 +443,6 @@ void WindowEventTargetingHelper::SetTaskRunner(
 
 // ----------------------------------------------------------------------------
 
-TestWindowManagerFactory::TestWindowManagerFactory() {}
-
-TestWindowManagerFactory::~TestWindowManagerFactory() {}
-
-void TestWindowManagerFactory::CreateWindowManager(
-    mus::mojom::DisplayPtr display,
-    mus::mojom::WindowTreeClientRequest client) {}
-
-// ----------------------------------------------------------------------------
-
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u
              ? tree->GetWindow((*tree->roots().begin())->id())
@@ -473,7 +464,12 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
 }
 
 ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id) {
-  ServerWindow* parent = FirstRoot(tree);
+  return NewWindowInTreeWithParent(tree, FirstRoot(tree), client_id);
+}
+
+ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
+                                        ServerWindow* parent,
+                                        ClientWindowId* client_id) {
   if (!parent)
     return nullptr;
   ClientWindowId parent_client_id;

@@ -17,9 +17,10 @@ namespace ws {
 class WindowServer;
 class WindowTree;
 
-// WindowTreeBinding manages the binding between a WindowTree and its mojo
-// clients. WindowTreeBinding exists so that the client can be mocked for
-// tests. WindowTree owns its associated WindowTreeBinding.
+// WindowTreeBinding manages the binding between a WindowTree and its
+// WindowTreeClient. WindowTreeBinding exists so that a mock implementation
+// of WindowTreeClient can be injected for tests. WindowTree owns its
+// associated WindowTreeBinding.
 class WindowTreeBinding {
  public:
   explicit WindowTreeBinding(mojom::WindowTreeClient* client);

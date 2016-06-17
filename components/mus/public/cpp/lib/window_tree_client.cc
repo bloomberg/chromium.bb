@@ -21,7 +21,9 @@
 #include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/cpp/window_tree_client_observer.h"
+#include "components/mus/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/shell/public/cpp/connector.h"
+#include "ui/display/mojo/display_type_converters.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -94,7 +96,7 @@ WindowTreeClient::WindowTreeClient(
       focused_window_(nullptr),
       binding_(this),
       tree_(nullptr),
-      delete_on_no_roots_(true),
+      delete_on_no_roots_(!window_manager_delegate),
       in_destructor_(false),
       cursor_location_memory_(nullptr),
       weak_factory_(this) {
@@ -143,13 +145,21 @@ void WindowTreeClient::ConnectViaWindowTreeFactory(
 
   mojom::WindowTreeFactoryPtr factory;
   connector->ConnectToInterface("mojo:mus", &factory);
-  factory->CreateWindowTree(GetProxy(&tree_ptr_),
+  mojom::WindowTreePtr window_tree;
+  factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
-  tree_ = tree_ptr_.get();
+  SetWindowTree(std::move(window_tree));
+}
 
-  tree_ptr_->GetCursorLocationMemory(
-      base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,
-                 weak_factory_.GetWeakPtr()));
+void WindowTreeClient::ConnectAsWindowManager(shell::Connector* connector) {
+  DCHECK(window_manager_delegate_);
+
+  mojom::WindowManagerWindowTreeFactoryPtr factory;
+  connector->ConnectToInterface("mojo:mus", &factory);
+  mojom::WindowTreePtr window_tree;
+  factory->CreateWindowTree(GetProxy(&window_tree),
+                            binding_.CreateInterfacePtrAndBind());
+  SetWindowTree(std::move(window_tree));
 }
 
 void WindowTreeClient::WaitForEmbed() {
@@ -501,6 +511,27 @@ Window* WindowTreeClient::NewWindowImpl(
   return window;
 }
 
+void WindowTreeClient::SetWindowTree(mojom::WindowTreePtr window_tree_ptr) {
+  tree_ptr_ = std::move(window_tree_ptr);
+  tree_ = tree_ptr_.get();
+
+  tree_ptr_->GetCursorLocationMemory(
+      base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,
+                 weak_factory_.GetWeakPtr()));
+
+  tree_ptr_.set_connection_error_handler(base::Bind(
+      &WindowTreeClient::OnConnectionLost, weak_factory_.GetWeakPtr()));
+
+  if (window_manager_delegate_) {
+    tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,
+                                               tree_ptr_.associated_group()));
+  }
+}
+
+void WindowTreeClient::OnConnectionLost() {
+  delete this;
+}
+
 void WindowTreeClient::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ClientSpecificId client_id,
                                        mojom::WindowDataPtr root_data,
@@ -527,6 +558,19 @@ void WindowTreeClient::OnEmbedImpl(mojom::WindowTree* window_tree,
     FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
                       OnWindowTreeFocusChanged(focused_window_, nullptr));
   }
+}
+
+void WindowTreeClient::WmNewDisplayAddedImpl(const display::Display& display,
+                                             mojom::WindowDataPtr root_data,
+                                             bool parent_drawn) {
+  DCHECK(window_manager_delegate_);
+
+  Window* root = AddWindowToClient(this, nullptr, root_data);
+  WindowPrivate(root).LocalSetDisplay(display.id());
+  WindowPrivate(root).LocalSetParentDrawn(parent_drawn);
+  roots_.insert(root);
+
+  window_manager_delegate_->OnWmNewDisplay(root, display);
 }
 
 void WindowTreeClient::OnReceivedCursorLocationMemory(
@@ -998,6 +1042,17 @@ void WindowTreeClient::RequestClose(uint32_t window_id) {
 
   FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
                     OnRequestClose(window));
+}
+
+void WindowTreeClient::OnConnect(ClientSpecificId client_id) {
+  client_id_ = client_id;
+}
+
+void WindowTreeClient::WmNewDisplayAdded(mojom::DisplayPtr display,
+                                         mojom::WindowDataPtr root_data,
+                                         bool parent_drawn) {
+  WmNewDisplayAddedImpl(display.To<display::Display>(), std::move(root_data),
+                        parent_drawn);
 }
 
 void WindowTreeClient::WmSetBounds(uint32_t change_id,

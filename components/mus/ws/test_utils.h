@@ -19,8 +19,8 @@
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/user_id.h"
-#include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_manager_window_tree_factory_set.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
@@ -31,18 +31,19 @@ namespace test {
 
 // Collection of utilities useful in creating mus tests.
 
-class WindowManagerFactoryRegistryTestApi {
+class WindowManagerWindowTreeFactorySetTestApi {
  public:
-  explicit WindowManagerFactoryRegistryTestApi(
-      WindowManagerFactoryRegistry* registry);
-  ~WindowManagerFactoryRegistryTestApi();
+  explicit WindowManagerWindowTreeFactorySetTestApi(
+      WindowManagerWindowTreeFactorySet*
+          window_manager_window_tree_factory_set);
+  ~WindowManagerWindowTreeFactorySetTestApi();
 
-  void AddService(const UserId& user_id, mojom::WindowManagerFactory* factory);
+  void Add(const UserId& user_id);
 
  private:
-  WindowManagerFactoryRegistry* registry_;
+  WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerFactoryRegistryTestApi);
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactorySetTestApi);
 };
 
 // -----------------------------------------------------------------------------
@@ -232,6 +233,10 @@ class TestWindowManager : public mojom::WindowManager {
 
  private:
   // WindowManager:
+  void OnConnect(uint16_t client_id) override {}
+  void WmNewDisplayAdded(mus::mojom::DisplayPtr display,
+                         mus::mojom::WindowDataPtr root,
+                         bool drawn) override {}
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {}
@@ -472,21 +477,6 @@ class WindowEventTargetingHelper {
 
 // -----------------------------------------------------------------------------
 
-class TestWindowManagerFactory : public mojom::WindowManagerFactory {
- public:
-  TestWindowManagerFactory();
-  ~TestWindowManagerFactory() override;
-
-  // mojom::WindowManagerFactory:
-  void CreateWindowManager(mus::mojom::DisplayPtr display,
-                           mus::mojom::WindowTreeClientRequest client) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerFactory);
-};
-
-// -----------------------------------------------------------------------------
-
 // Returns the first and only root of |tree|. If |tree| has zero or more than
 // one root returns null.
 ServerWindow* FirstRoot(WindowTree* tree);
@@ -502,6 +492,9 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
 // Creates a new visible window as a child of the single root of |tree|.
 // |client_id| set to the ClientWindowId of the new window.
 ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id);
+ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
+                                        ServerWindow* parent,
+                                        ClientWindowId* client_id);
 
 }  // namespace test
 }  // namespace ws

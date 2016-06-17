@@ -12,15 +12,16 @@ namespace ash {
 namespace mus {
 
 // Tracks mus::Windows for when they get disconnected from the embedded app.
-// Currently closes a window upon disconnection.
+// Destroys the window upon disconnection.
 class DisconnectedAppHandler : public ::mus::WindowTracker {
  public:
-  DisconnectedAppHandler();
+  explicit DisconnectedAppHandler(::mus::Window* root_window);
   ~DisconnectedAppHandler() override;
 
  private:
   // mus::WindowObserver:
   void OnWindowEmbeddedAppDisconnected(::mus::Window* window) override;
+  void OnTreeChanging(const TreeChangeParams& params) override;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectedAppHandler);
 };

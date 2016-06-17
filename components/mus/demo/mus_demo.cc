@@ -6,7 +6,9 @@
 
 #include "base/time/time.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
+#include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "services/shell/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -54,18 +56,18 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 
 }  // namespace
 
-MusDemo::MusDemo() : window_manager_factory_binding_(this) {}
+MusDemo::MusDemo() {}
 
-MusDemo::~MusDemo() {}
+MusDemo::~MusDemo() {
+  delete window_tree_client_;
+}
 
 void MusDemo::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
-  mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
-  connector->ConnectToInterface("mojo:mus", &wm_factory_service);
-  wm_factory_service->SetWindowManagerFactory(
-      window_manager_factory_binding_.CreateInterfacePtrAndBind());
+  window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
+  window_tree_client_->ConnectAsWindowManager(connector);
 }
 
 bool MusDemo::AcceptConnection(shell::Connection* connection) {
@@ -73,36 +75,18 @@ bool MusDemo::AcceptConnection(shell::Connection* connection) {
 }
 
 void MusDemo::OnEmbed(mus::Window* window) {
-  window_ = window;
-
-  // Initialize bitmap uploader for sending frames to MUS.
-  uploader_.reset(new bitmap_uploader::BitmapUploader(window_));
-  uploader_->Init(connector_);
-
-  // Draw initial frame and start the timer to regularly draw frames.
-  DrawFrame();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameDelay),
-               base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
+  // Not called for the WindowManager.
+  NOTREACHED();
 }
 
-void MusDemo::OnUnembed(mus::Window* root) {}
-
 void MusDemo::OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) {
+  window_tree_client_ = nullptr;
   timer_.Stop();
 }
 
 void MusDemo::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 
-// mus::mojom::WindowManagerFactory:
-void MusDemo::CreateWindowManager(mus::mojom::DisplayPtr display,
-                                  mus::mojom::WindowTreeClientRequest request) {
-  new mus::WindowTreeClient(this, this, std::move(request));
-}
-
-// mus::WindowManagerDelegate:
-void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {
-  window_manager_client_ = client;
-}
+void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {}
 
 bool MusDemo::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
   return true;
@@ -123,6 +107,21 @@ void MusDemo::OnWmClientJankinessChanged(
     const std::set<mus::Window*>& client_windows,
     bool janky) {
   // Don't care
+}
+
+void MusDemo::OnWmNewDisplay(mus::Window* window,
+                             const display::Display& display) {
+  DCHECK(!window_);  // Only support one display.
+  window_ = window;
+
+  // Initialize bitmap uploader for sending frames to MUS.
+  uploader_.reset(new bitmap_uploader::BitmapUploader(window_));
+  uploader_->Init(connector_);
+
+  // Draw initial frame and start the timer to regularly draw frames.
+  DrawFrame();
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameDelay),
+               base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
 }
 
 void MusDemo::OnAccelerator(uint32_t id, const ui::Event& event) {

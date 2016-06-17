@@ -129,6 +129,9 @@ class WindowTree : public mojom::WindowTree,
         const_cast<const WindowTree*>(this)->GetWindowManagerState(window));
   }
 
+  // Adds a new root to this tree. This is only valid for window managers.
+  void AddRootForWindowManager(const ServerWindow* root);
+
   // Invoked when a tree is about to be destroyed.
   void OnWindowDestroyingTreeImpl(WindowTree* tree);
 
@@ -246,7 +249,6 @@ class WindowTree : public mojom::WindowTree,
   const DisplayManager* display_manager() const;
 
   // Used when this tree is the window manager.
-  Display* GetDisplayForWindowManager();
   WindowManagerState* GetWindowManagerStateForWindowManager();
 
   bool ShouldRouteToWindowManager(const ServerWindow* window) const;

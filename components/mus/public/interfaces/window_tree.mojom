@@ -11,46 +11,10 @@ import "components/mus/public/interfaces/event_matcher.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/window_manager.mojom";
 import "components/mus/public/interfaces/window_manager_constants.mojom";
+import "components/mus/public/interfaces/window_tree_constants.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
-
-struct WindowData {
-  uint32 parent_id;
-  uint32 window_id;
-  gfx.mojom.Rect bounds;
-  map<string, array<uint8>> properties;
-  // True if this window is visible. The window may not be drawn on screen (see
-  // OnWindowParentDrawnStateChanged() for details).
-  bool visible;
-};
-
-enum ErrorCode {
-  NONE,
-  VALUE_IN_USE,
-  ILLEGAL_ARGUMENT,
-};
-
-// Each Window has support for two surfaces. Generally the |DEFAULT| surface
-// is used. The |UNDERLAY| surface is useful if the owner of a window wants to
-// to Embed() another client and at the same time draw something under the
-// embedded apps representation.
-enum SurfaceType {
-  // Only the owner of a window may obtain this surface.
-  // The window manager can change the offset of this by way of
-  // SetUnderlaySurfaceOffsetAndExtendedHitArea().
-  UNDERLAY,
-
-  // Only the embedded app may obtain this surface. If an app is not embedded
-  // in the Window than the owner may also render to this surface as well.
-  DEFAULT,
-};
-
-// The result of an input event sent to a client app.
-enum EventResult {
-  HANDLED,
-  UNHANDLED,
-};
 
 // Windows are identified by a uint32. The upper 16 bits are the connection id,
 // and the lower 16 the id assigned by the client.

@@ -97,6 +97,9 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
   // See description of |children_use_extended_hit_region_|.
   bool ShouldUseExtendedHitRegion() const;
 
+  // Returns true if this window is considered a shell window container.
+  bool IsContainer() const;
+
   // WmWindow:
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;

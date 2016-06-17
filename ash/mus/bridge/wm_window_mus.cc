@@ -155,6 +155,10 @@ bool WmWindowMus::ShouldUseExtendedHitRegion() const {
   return parent && parent->children_use_extended_hit_region_;
 }
 
+bool WmWindowMus::IsContainer() const {
+  return GetShellWindowId() != kShellWindowId_Invalid;
+}
+
 const WmWindow* WmWindowMus::GetRootWindow() const {
   return Get(window_->GetRoot());
 }

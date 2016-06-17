@@ -199,7 +199,7 @@ bool MusApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
   connection->AddInterface<WindowTreeHostFactory>(this);
-  connection->AddInterface<mojom::WindowManagerFactoryService>(this);
+  connection->AddInterface<mojom::WindowManagerWindowTreeFactory>(this);
   connection->AddInterface<mojom::WindowTreeFactory>(this);
   if (test_config_)
     connection->AddInterface<WindowServerTest>(this);
@@ -272,9 +272,9 @@ void MusApp::Create(shell::Connection* connection,
 }
 
 void MusApp::Create(shell::Connection* connection,
-                    mojom::WindowManagerFactoryServiceRequest request) {
+                    mojom::WindowManagerWindowTreeFactoryRequest request) {
   AddUserIfNecessary(connection);
-  window_server_->window_manager_factory_registry()->Register(
+  window_server_->window_manager_window_tree_factory_set()->Add(
       connection->GetRemoteIdentity().user_id(), std::move(request));
 }
 

@@ -19,19 +19,7 @@ namespace mus {
 class Window;
 class WindowTreeClient;
 
-// Interface implemented by an application using the window manager.
-//
-// WindowTreeClient is deleted by any of the following:
-// . If all the roots of the connection are destroyed and the connection is
-//   configured to delete when there are no roots (the default). This happens
-//   if the owner of the roots Embed()s another app in all the roots, or all
-//   the roots are explicitly deleted.
-// . The connection to the window manager is lost.
-// . Explicitly by way of calling delete.
-//
-// When the WindowTreeClient is deleted all windows are deleted (and observers
-// notified). This is followed by notifying the delegate by way of
-// OnClientDestroyed().
+// Interface implemented by an application using mus.
 class WindowTreeClientDelegate {
  public:
   // Called when the application implementing this interface is embedded at

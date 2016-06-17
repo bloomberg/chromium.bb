@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
+#include "components/mus/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -24,7 +24,7 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/user_id_tracker.h"
-#include "components/mus/ws/window_manager_factory_registry.h"
+#include "components/mus/ws/window_manager_window_tree_factory_set.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -59,6 +59,8 @@ class WindowServer : public ServerWindowDelegate,
     return display_manager_.get();
   }
 
+  bool created_one_display() const { return created_one_display_; }
+
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
@@ -77,13 +79,13 @@ class WindowServer : public ServerWindowDelegate,
 
   // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to
   // destroy the tree.
-  WindowTree* AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
-                      std::unique_ptr<WindowTreeBinding> binding,
-                      mojom::WindowTreePtr tree_ptr);
-  WindowTree* CreateTreeForWindowManager(Display* display,
-                                         mojom::WindowManagerFactory* factory,
-                                         ServerWindow* root,
-                                         const UserId& user_id);
+  void AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
+               std::unique_ptr<WindowTreeBinding> binding,
+               mojom::WindowTreePtr tree_ptr);
+  WindowTree* CreateTreeForWindowManager(
+      const UserId& user_id,
+      mojom::WindowTreeRequest window_tree_request,
+      mojom::WindowTreeClientPtr window_tree_client);
   // Invoked when a WindowTree's connection encounters an error.
   void DestroyTree(WindowTree* tree);
 
@@ -125,10 +127,10 @@ class WindowServer : public ServerWindowDelegate,
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
 
-  void OnFirstWindowManagerFactorySet();
+  void OnFirstWindowManagerWindowTreeFactoryReady();
 
-  WindowManagerFactoryRegistry* window_manager_factory_registry() {
-    return &window_manager_factory_registry_;
+  WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set() {
+    return &window_manager_window_tree_factory_set_;
   }
 
   // Sets focus to |window|. Returns true if |window| already has focus, or
@@ -310,7 +312,11 @@ class WindowServer : public ServerWindowDelegate,
 
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
-  WindowManagerFactoryRegistry window_manager_factory_registry_;
+  WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
+
+  // TODO(sky): remove this, temporary until window manager state made global
+  // and not per display.
+  bool created_one_display_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

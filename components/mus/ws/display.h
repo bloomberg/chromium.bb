@@ -24,7 +24,7 @@
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_tracker.h"
 #include "components/mus/ws/user_id_tracker_observer.h"
-#include "components/mus/ws/window_manager_factory_registry_observer.h"
+#include "components/mus/ws/window_manager_window_tree_factory_set_observer.h"
 
 namespace mus {
 namespace ws {
@@ -56,7 +56,7 @@ class Display : public PlatformDisplayDelegate,
                 public FocusControllerDelegate,
                 public ServerWindowObserver,
                 public UserIdTrackerObserver,
-                public WindowManagerFactoryRegistryObserver {
+                public WindowManagerWindowTreeFactorySetObserver {
  public:
   Display(WindowServer* window_server,
           const PlatformDisplayInitParams& platform_display_init_params);
@@ -148,11 +148,11 @@ class Display : public PlatformDisplayDelegate,
   void InitWindowManagersIfNecessary();
 
   // Creates the set of WindowManagerStates from the
-  // WindowManagerFactoryRegistry.
-  void CreateWindowManagerStatesFromRegistry();
+  // WindowManagerWindowTreeFactorySet.
+  void CreateWindowManagerStatesFromFactories();
 
-  void CreateWindowManagerStateFromService(
-      WindowManagerFactoryService* service);
+  void CreateWindowManagerStateFromFactory(
+      WindowManagerWindowTreeFactory* factory);
 
   // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
@@ -182,8 +182,9 @@ class Display : public PlatformDisplayDelegate,
   void OnUserIdAdded(const UserId& id) override;
   void OnUserIdRemoved(const UserId& id) override;
 
-  // WindowManagerFactoryRegistryObserver:
-  void OnWindowManagerFactorySet(WindowManagerFactoryService* service) override;
+  // WindowManagerWindowTreeFactorySetObserver:
+  void OnWindowManagerWindowTreeFactoryReady(
+      WindowManagerWindowTreeFactory* factory) override;
 
   const uint32_t id_;
   std::unique_ptr<DisplayBinding> binding_;

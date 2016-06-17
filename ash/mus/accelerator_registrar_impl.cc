@@ -9,7 +9,6 @@
 
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
-#include "ash/mus/window_manager_application.h"
 #include "base/bind.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 
@@ -19,7 +18,6 @@ namespace mus {
 namespace {
 const int kAcceleratorIdMask = 0xffff;
 
-void OnAcceleratorAdded(bool result) {}
 void CallAddAcceleratorCallback(
     const ::mus::mojom::AcceleratorRegistrar::AddAcceleratorCallback& callback,
     bool result) {
@@ -28,22 +26,15 @@ void CallAddAcceleratorCallback(
 
 }  // namespace
 
-struct AcceleratorRegistrarImpl::Accelerator {
-  ::mus::mojom::EventMatcherPtr event_matcher;
-  AddAcceleratorCallback callback;
-  bool callback_used = false;
-};
-
 AcceleratorRegistrarImpl::AcceleratorRegistrarImpl(
-    WindowManagerApplication* wm_app,
+    WindowManager* window_manager,
     uint32_t accelerator_namespace,
     mojo::InterfaceRequest<AcceleratorRegistrar> request,
     const DestroyCallback& destroy_callback)
-    : wm_app_(wm_app),
+    : window_manager_(window_manager),
       binding_(this, std::move(request)),
       accelerator_namespace_(accelerator_namespace & 0xffff),
       destroy_callback_(destroy_callback) {
-  wm_app_->AddRootWindowsObserver(this);
   binding_.set_connection_error_handler(base::Bind(
       &AcceleratorRegistrarImpl::OnBindingGone, base::Unretained(this)));
 }
@@ -66,7 +57,6 @@ void AcceleratorRegistrarImpl::ProcessAccelerator(uint32_t accelerator_id,
 }
 
 AcceleratorRegistrarImpl::~AcceleratorRegistrarImpl() {
-  wm_app_->RemoveRootWindowsObserver(this);
   RemoveAllAccelerators();
   destroy_callback_.Run(this);
 }
@@ -97,27 +87,10 @@ void AcceleratorRegistrarImpl::OnHandlerGone() {
   RemoveAllAccelerators();
 }
 
-void AcceleratorRegistrarImpl::AddAcceleratorToRoot(
-    RootWindowController* root,
-    uint32_t namespaced_accelerator_id) {
-  Accelerator& accelerator = accelerators_[namespaced_accelerator_id];
-  AddAcceleratorCallback callback = accelerator.callback_used
-                                        ? base::Bind(&OnAcceleratorAdded)
-                                        : accelerator.callback;
-  // Ensure we only notify the callback once (as happens with mojoms).
-  accelerator.callback_used = true;
-  root->window_manager()->window_manager_client()->AddAccelerator(
-      namespaced_accelerator_id, accelerator.event_matcher.Clone(),
-      base::Bind(&CallAddAcceleratorCallback, callback));
-}
-
 void AcceleratorRegistrarImpl::RemoveAllAccelerators() {
-  for (const auto& pair : accelerators_) {
-    for (RootWindowController* root : wm_app_->GetRootControllers()) {
-      root->window_manager()->window_manager_client()->RemoveAccelerator(
-          pair.first);
-    }
-  }
+  for (uint32_t accelerator : accelerators_)
+    window_manager_->window_manager_client()->RemoveAccelerator(accelerator);
+
   accelerators_.clear();
 }
 
@@ -139,34 +112,24 @@ void AcceleratorRegistrarImpl::AddAccelerator(
     return;
   }
   uint32_t namespaced_accelerator_id = ComputeAcceleratorId(accelerator_id);
-  accelerators_[namespaced_accelerator_id].event_matcher = matcher->Clone();
-  accelerators_[namespaced_accelerator_id].callback = callback;
-  accelerators_[namespaced_accelerator_id].callback_used = false;
-  for (RootWindowController* root : wm_app_->GetRootControllers())
-    AddAcceleratorToRoot(root, namespaced_accelerator_id);
+  accelerators_.insert(namespaced_accelerator_id);
+  window_manager_->window_manager_client()->AddAccelerator(
+      namespaced_accelerator_id, std::move(matcher),
+      base::Bind(&CallAddAcceleratorCallback, callback));
 }
 
 void AcceleratorRegistrarImpl::RemoveAccelerator(uint32_t accelerator_id) {
   uint32_t namespaced_accelerator_id = ComputeAcceleratorId(accelerator_id);
-  auto iter = accelerators_.find(namespaced_accelerator_id);
-  if (iter == accelerators_.end())
+  if (accelerators_.erase(namespaced_accelerator_id) == 0)
     return;
-  for (RootWindowController* root : wm_app_->GetRootControllers()) {
-    root->window_manager()->window_manager_client()->RemoveAccelerator(
-        namespaced_accelerator_id);
-  }
-  accelerators_.erase(iter);
+  window_manager_->window_manager_client()->RemoveAccelerator(
+      namespaced_accelerator_id);
+
   // If the registrar is not bound anymore (i.e. the client can no longer
   // install new accelerators), and the last accelerator has been removed, then
   // there's no point keeping this alive anymore.
   if (accelerators_.empty() && !binding_.is_bound())
     delete this;
-}
-
-void AcceleratorRegistrarImpl::OnRootWindowControllerAdded(
-    RootWindowController* controller) {
-  for (const auto& pair : accelerators_)
-    AddAcceleratorToRoot(controller, pair.first);
 }
 
 }  // namespace mus

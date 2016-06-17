@@ -9,7 +9,6 @@
 
 #include <map>
 
-#include "ash/mus/root_windows_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
@@ -19,17 +18,16 @@
 namespace ash {
 namespace mus {
 
-class WindowManagerApplication;
+class WindowManager;
 
 // Manages AcceleratorHandlers from a particular AcceleratorRegistrar
 // connection. This manages its own lifetime, and destroys itself when the
 // AcceleratorRegistrar and all its AcceleratorHandlers are disconnected. Upon
 // destruction, it calls the DestroyCallback.
-class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
-                                 public RootWindowsObserver {
+class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar {
  public:
   using DestroyCallback = base::Callback<void(AcceleratorRegistrarImpl*)>;
-  AcceleratorRegistrarImpl(WindowManagerApplication* wm_app,
+  AcceleratorRegistrarImpl(WindowManager* window_manager,
                            uint32_t accelerator_namespace,
                            mojo::InterfaceRequest<AcceleratorRegistrar> request,
                            const DestroyCallback& destroy_callback);
@@ -43,16 +41,11 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
   void ProcessAccelerator(uint32_t accelerator_id, const ui::Event& event);
 
  private:
-  struct Accelerator;
-
   ~AcceleratorRegistrarImpl() override;
 
   uint32_t ComputeAcceleratorId(uint32_t accelerator_id) const;
   void OnBindingGone();
   void OnHandlerGone();
-
-  void AddAcceleratorToRoot(RootWindowController* root,
-                            uint32_t namespaced_accelerator_id);
 
   void RemoveAllAccelerators();
 
@@ -63,14 +56,11 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t accelerator_id) override;
 
-  // RootWindowsObserver:
-  void OnRootWindowControllerAdded(RootWindowController* controller) override;
-
-  WindowManagerApplication* wm_app_;
+  WindowManager* window_manager_;
   ::mus::mojom::AcceleratorHandlerPtr accelerator_handler_;
   mojo::Binding<AcceleratorRegistrar> binding_;
   uint32_t accelerator_namespace_;
-  std::map<uint32_t, Accelerator> accelerators_;
+  std::set<uint32_t> accelerators_;
   DestroyCallback destroy_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorRegistrarImpl);

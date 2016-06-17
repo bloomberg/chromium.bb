@@ -8,7 +8,7 @@
     },
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:mus": { "interfaces": [ "mus::mojom::WindowManagerFactoryService" ] }
+      "mojo:mus": { "interfaces": [ "mus::mojom::WindowManagerWindowTreeFactory" ] }
     }
   }
 }

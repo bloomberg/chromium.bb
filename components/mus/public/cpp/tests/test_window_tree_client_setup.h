@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_tree_client_observer.h"
 
+namespace display {
+class Display;
+}
+
 namespace mus {
 
 class TestWindowTree;
@@ -24,10 +28,11 @@ class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
   TestWindowTreeClientSetup();
   ~TestWindowTreeClientSetup() override;
 
-  // Initializes the WindowTreeClient. |window_manager_delegate| may be
-  // null.
-  void Init(WindowTreeClientDelegate* window_tree_delegate,
-            WindowManagerDelegate* window_manager_delegate);
+  // Initializes the WindowTreeClient.
+  void Init(WindowTreeClientDelegate* window_tree_delegate);
+  void InitForWindowManager(WindowTreeClientDelegate* window_tree_delegate,
+                            WindowManagerDelegate* window_manager_delegate,
+                            const display::Display& display);
 
   // The WindowTree that WindowTreeClient talks to.
   TestWindowTree* window_tree() { return window_tree_.get(); }
@@ -35,6 +40,10 @@ class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
   WindowTreeClient* window_tree_client();
 
  private:
+  // Called by both implementations of init to perform common initialization.
+  void CommonInit(WindowTreeClientDelegate* window_tree_delegate,
+                  WindowManagerDelegate* window_manager_delegate);
+
   // mus::WindowTreeClientObserver:
   void OnWillDestroyClient(mus::WindowTreeClient* client) override;
 

@@ -23,6 +23,10 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
+namespace display {
+class Display;
+}
+
 namespace gfx {
 class Insets;
 class Size;
@@ -39,7 +43,20 @@ class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
 enum class ChangeType;
 
-// Manages the connection with the Window Server service.
+// Manages the connection with mus.
+//
+// WindowTreeClient is deleted by any of the following:
+// . If all the roots of the connection are destroyed and the connection is
+//   configured to delete when there are no roots (true if the WindowTreeClient
+//   is created with a mojom::WindowTreeClientRequest). This happens
+//   if the owner of the roots Embed()s another app in all the roots, or all
+//   the roots are explicitly deleted.
+// . The connection to mus is lost.
+// . Explicitly by way of calling delete.
+//
+// When WindowTreeClient is deleted all windows are deleted (and observers
+// notified). This is followed by calling
+// WindowTreeClientDelegate::OnWindowTreeClientDestroyed().
 class WindowTreeClient : public mojom::WindowTreeClient,
                          public mojom::WindowManager,
                          public WindowManagerClient {
@@ -51,6 +68,9 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   // Establishes the connection by way of the WindowTreeFactory.
   void ConnectViaWindowTreeFactory(shell::Connector* connector);
+
+  // Establishes the connection by way of WindowManagerWindowTreeFactory.
+  void ConnectAsWindowManager(shell::Connector* connector);
 
   // Wait for OnEmbed(), returning when done.
   void WaitForEmbed();
@@ -206,6 +226,12 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   Window* NewWindowImpl(NewWindowType type,
                         const Window::SharedProperties* properties);
 
+  // Sets the mojom::WindowTree implementation.
+  void SetWindowTree(mojom::WindowTreePtr window_tree_ptr);
+
+  // Called when the mojom::WindowTree connection is lost, deletes this.
+  void OnConnectionLost();
+
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ClientSpecificId client_id,
@@ -213,6 +239,11 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                    int64_t display_id,
                    Id focused_window_id,
                    bool drawn);
+
+  // Called by WmNewDisplayAdded().
+  void WmNewDisplayAddedImpl(const display::Display& display,
+                             mojom::WindowDataPtr root_data,
+                             bool parent_drawn);
 
   void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
 
@@ -273,6 +304,10 @@ class WindowTreeClient : public mojom::WindowTreeClient,
       mojo::AssociatedInterfaceRequest<WindowManager> internal) override;
 
   // Overridden from WindowManager:
+  void OnConnect(ClientSpecificId client_id) override;
+  void WmNewDisplayAdded(mojom::DisplayPtr display,
+                         mojom::WindowDataPtr root_data,
+                         bool parent_drawn) override;
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    const gfx::Rect& transit_bounds) override;
