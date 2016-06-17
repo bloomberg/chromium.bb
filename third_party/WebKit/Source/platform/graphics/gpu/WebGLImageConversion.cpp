@@ -8,6 +8,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
 #include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/OwnPtr.h"
@@ -2160,7 +2161,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         // only immutable/fully decoded frames make it through.  We could potentially relax this
         // and allow SkImage::NewFromBitmap to make a copy.
         ASSERT(bitmap.isImmutable());
-        skiaImage = adoptRef(SkImage::NewFromBitmap(bitmap));
+        skiaImage = fromSkSp(SkImage::MakeFromBitmap(bitmap));
         info = bitmap.info();
 
         if (hasAlpha && premultiplyAlpha)

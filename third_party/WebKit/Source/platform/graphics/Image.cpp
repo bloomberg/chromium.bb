@@ -231,7 +231,7 @@ void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect,
     // Fetch this now as subsetting may swap the image.
     auto imageID = image->uniqueID();
 
-    image = adoptRef(image->newSubset(enclosingIntRect(normSrcRect)));
+    image = fromSkSp(image->makeSubset(enclosingIntRect(normSrcRect)));
     if (!image)
         return;
 

@@ -111,7 +111,7 @@ PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, I
     canvas->concat(affineTransformToSkMatrix(transform));
     canvas->drawImage(image.get(), 0, 0, &paint);
 
-    return adoptRef(surface->newImageSnapshot());
+    return fromSkSp(surface->makeImageSnapshot());
 }
 
 FloatSize DragImage::clampedImageScale(const IntSize& imageSize, const IntSize& size,

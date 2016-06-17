@@ -30,6 +30,7 @@
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/ImageFrameGenerator.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
@@ -114,7 +115,7 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
     if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
         return nullptr;
 
-    return adoptRef(SkImage::NewFromBitmap(frame->bitmap()));
+    return fromSkSp(SkImage::MakeFromBitmap(frame->bitmap()));
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
@@ -295,7 +296,7 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
     RefPtr<SkROBuffer> roBuffer = adoptRef(m_rwBuffer->newRBufferSnapshot());
     RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkROBuffer(roBuffer.release());
     DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), segmentReader.release(), m_allDataReceived, index, m_frameData[index].m_uniqueID);
-    RefPtr<SkImage> image = adoptRef(SkImage::NewFromGenerator(generator)); // SkImage takes ownership of the generator.
+    RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromGenerator(generator)); // SkImage takes ownership of the generator.
     if (!image)
         return nullptr;
 

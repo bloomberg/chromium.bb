@@ -128,8 +128,9 @@ public:
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(false);
         context().getPaintController().endItem<EndTransformDisplayItem>(*m_pictureBuilder);
-        RefPtr<const SkPicture> recording = m_pictureBuilder->endRecording();
-        RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
+        // TODO(fmalita): endRecording() should return a non-const SKP.
+        sk_sp<SkPicture> recording(const_cast<SkPicture*>(m_pictureBuilder->endRecording().leakRef()));
+        RefPtr<SkImage> skImage = fromSkSp(SkImage::MakeFromPicture(std::move(recording),
             SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
         RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
         RespectImageOrientationEnum imageOrientation = DoNotRespectImageOrientation;

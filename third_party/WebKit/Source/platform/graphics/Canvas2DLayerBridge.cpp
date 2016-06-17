@@ -442,7 +442,7 @@ void Canvas2DLayerBridge::hibernate()
     SkPaint copyPaint;
     copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
     m_surface->draw(tempHibernationSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback
-    m_hibernationImage = adoptRef(tempHibernationSurface->newImageSnapshot());
+    m_hibernationImage = fromSkSp(tempHibernationSurface->makeImageSnapshot());
     m_surface.clear(); // destroy the GPU-backed buffer
     m_layer->clearTexture();
 #if USE_IOSURFACE_FOR_2D_CANVAS
@@ -959,7 +959,7 @@ PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint,
     // even though we are not technically writing to the texture, only to its
     // parameters.
     getOrCreateSurface()->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
-    return adoptRef(m_surface->newImageSnapshot());
+    return fromSkSp(m_surface->makeImageSnapshot());
 }
 
 void Canvas2DLayerBridge::willOverwriteCanvas()

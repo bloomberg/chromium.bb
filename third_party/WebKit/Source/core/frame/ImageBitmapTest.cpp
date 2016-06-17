@@ -38,6 +38,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,11 +55,11 @@ protected:
     {
         sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
         surface->getCanvas()->clear(0xFFFFFFFF);
-        m_image = adoptRef(surface->newImageSnapshot());
+        m_image = fromSkSp(surface->makeImageSnapshot());
 
         sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
         surface2->getCanvas()->clear(0xAAAAAAAA);
-        m_image2 = adoptRef(surface2->newImageSnapshot());
+        m_image2 = fromSkSp(surface2->makeImageSnapshot());
 
         // Save the global memory cache to restore it upon teardown.
         m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());

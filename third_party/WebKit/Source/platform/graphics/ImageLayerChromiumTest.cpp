@@ -78,7 +78,7 @@ private:
             return;
 
         surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = adoptRef(surface->newImageSnapshot());
+        m_image = fromSkSp(surface->makeImageSnapshot());
     }
 
     static sk_sp<SkSurface> createSkSurface(IntSize size, bool opaque)

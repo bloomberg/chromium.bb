@@ -130,7 +130,7 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
     OwnPtr<Vector<char>> base64Data = adoptPtr(new Vector<char>());
     Vector<char> encodedImage;
 
-    RefPtr<SkImage> image = adoptRef(SkImage::NewFromBitmap(bitmap));
+    RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromBitmap(bitmap));
     if (!image)
         return nullptr;
 

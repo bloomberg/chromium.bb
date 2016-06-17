@@ -48,9 +48,7 @@ gfx::ImageSkia CreateEnclosedFaviconImage(gfx::Size size,
   SkRect dest_rect =
       SkRect::MakeLTRB(center_rect.x(), center_rect.y(), center_rect.right(),
                        center_rect.bottom());
-  const std::unique_ptr<SkImage> bitmap(
-      SkImage::NewFromBitmap(*favicon.bitmap()));
-  canvas.drawImageRect(bitmap.get(), dest_rect, nullptr);
+  canvas.drawBitmapRect(*favicon.bitmap(), dest_rect, nullptr);
 
   return gfx::ImageSkia::CreateFrom1xBitmap(result);
 }

@@ -30,6 +30,7 @@
 
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
@@ -61,7 +62,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
 
 PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
 {
-    return adoptRef(m_surface->newImageSnapshot());
+    return fromSkSp(m_surface->makeImageSnapshot());
 }
 
 GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()

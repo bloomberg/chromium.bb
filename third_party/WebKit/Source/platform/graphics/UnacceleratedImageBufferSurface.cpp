@@ -30,6 +30,7 @@
 
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
@@ -65,7 +66,7 @@ bool UnacceleratedImageBufferSurface::isValid() const
 
 PassRefPtr<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
 {
-    return adoptRef(m_surface->newImageSnapshot());
+    return fromSkSp(m_surface->makeImageSnapshot());
 }
 
 } // namespace blink

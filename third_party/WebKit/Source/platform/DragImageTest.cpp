@@ -35,6 +35,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -102,7 +103,7 @@ private:
             return;
 
         surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = adoptRef(surface->newImageSnapshot());
+        m_image = fromSkSp(surface->makeImageSnapshot());
     }
 
     static sk_sp<SkSurface> createSkSurface(IntSize size)
@@ -221,7 +222,7 @@ TEST(DragImageTest, InterpolationNone)
         testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
     }
 
-    RefPtr<TestImage> testImage = TestImage::create(adoptRef(SkImage::NewFromBitmap(testBitmap)));
+    RefPtr<TestImage> testImage = TestImage::create(fromSkSp(SkImage::MakeFromBitmap(testBitmap)));
     OwnPtr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
     ASSERT_TRUE(dragImage);
     dragImage->scale(2, 2);

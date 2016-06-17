@@ -33,6 +33,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/skia/ImagePixelLocker.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -243,7 +244,7 @@ PassRefPtr<JSONObject> objectForBitmapData(const SkBitmap& bitmap)
 {
     Vector<unsigned char> output;
 
-    if (RefPtr<SkImage> image = adoptRef(SkImage::NewFromBitmap(bitmap))) {
+    if (RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromBitmap(bitmap))) {
         ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType, kRGBA_8888_SkColorType);
         ImageDataBuffer imageData(IntSize(image->width(), image->height()),
             static_cast<const unsigned char*>(pixelLocker.pixels()));
