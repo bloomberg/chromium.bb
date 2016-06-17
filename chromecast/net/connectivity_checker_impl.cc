@@ -65,6 +65,7 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
 }
 
 void ConnectivityCheckerImpl::Initialize() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType check_url_str =
       command_line->GetSwitchValueNative(switches::kConnectivityCheckUrl);
@@ -90,24 +91,29 @@ ConnectivityCheckerImpl::~ConnectivityCheckerImpl() {
 }
 
 bool ConnectivityCheckerImpl::Connected() const {
+  base::AutoLock auto_lock(connected_lock_);
   return connected_;
 }
 
 void ConnectivityCheckerImpl::SetConnected(bool connected) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (connected_ == connected)
     return;
-
-  connected_ = connected;
+  {
+    base::AutoLock auto_lock(connected_lock_);
+    connected_ = connected;
+  }
   Notify(connected);
   LOG(INFO) << "Global connection is: " << (connected ? "Up" : "Down");
 }
 
 void ConnectivityCheckerImpl::Check() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&ConnectivityCheckerImpl::Check, this));
-    return;
-  }
+  task_runner_->PostTask(FROM_HERE,
+      base::Bind(&ConnectivityCheckerImpl::CheckInternal, this));
+}
+
+void ConnectivityCheckerImpl::CheckInternal() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(url_request_context_.get());
 
   // Don't check connectivity if network is offline, because Internet could be
@@ -162,6 +168,7 @@ void ConnectivityCheckerImpl::OnNetworkChangedInternal() {
 }
 
 void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   int http_response_code =
       (request->status().is_success() &&
        request->response_info().headers.get() != nullptr)
@@ -192,6 +199,7 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   net::SSLClientSocket::ClearSessionCache();
   OnUrlRequestError(ErrorType::SSL_CERTIFICATE_ERROR);
@@ -199,6 +207,7 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
 }
 
 void ConnectivityCheckerImpl::OnUrlRequestError(ErrorType type) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   ++check_errors_;
   if (check_errors_ > kNumErrorsToNotifyOffline) {
     // Only record event on the connectivity transition.
@@ -218,11 +227,13 @@ void ConnectivityCheckerImpl::OnUrlRequestError(ErrorType type) {
 }
 
 void ConnectivityCheckerImpl::OnUrlRequestTimeout() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(ERROR) << "time out";
   OnUrlRequestError(ErrorType::REQUEST_TIMEOUT);
 }
 
 void ConnectivityCheckerImpl::Cancel() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (!url_request_.get())
     return;
   VLOG(2) << "Cancel connectivity check in progress";
