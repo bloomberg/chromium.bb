@@ -6347,7 +6347,7 @@
         'TARGETED_DEVICE_FAMILY': '1,2',
         'conditions': [
           ['ios_sdk_path==""', {
-            'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
+            'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
           }, {
             'SDKROOT': '<(ios_sdk_path)',  # -isysroot
           }],
