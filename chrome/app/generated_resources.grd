@@ -14954,6 +14954,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_OFFLINING_RECENT_PAGES_DESCRIPTION" desc="Description for the flag to enable offlining of recently visited pages.">
         Enable storing recently visited pages locally for offline use. Requires Offline Pages to be enabled.
       </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_CT_NAME" desc="Name for the flag to enable offlining CT features.">
+        Enable Offline Pages CT features.
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_CT_DESCRIPTION" desc="Description for the flag to enable offline pages CT features.">
+        Enable Offline Pages CT features.
+      </message>
     </if>
 
     <if expr="not is_android and not is_ios and _google_chrome">

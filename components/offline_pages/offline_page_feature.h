@@ -13,6 +13,7 @@ namespace offline_pages {
 extern const base::Feature kOfflineBookmarksFeature;
 extern const base::Feature kOffliningRecentPagesFeature;
 extern const base::Feature kOfflinePagesBackgroundLoadingFeature;
+extern const base::Feature kOfflinePagesCTFeature;
 
 // Returns true if offline pages, as result of one or more offline features
 // being enabled, is enabled.
@@ -26,6 +27,9 @@ bool IsOffliningRecentPagesEnabled();
 
 // Returns true if saving offline pages in the background is enabled.
 bool IsOfflinePagesBackgroundLoadingEnabled();
+
+// Returns true if offline CT features are enabled.  See crbug.com/620421.
+bool IsOfflinePagesCTEnabled();
 
 }  // namespace offline_pages
 

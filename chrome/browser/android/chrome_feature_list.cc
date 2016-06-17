@@ -39,6 +39,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhysicalWebFeature,
     &kSystemDownloadManager,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
+    &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
 };
 
 }  // namespace

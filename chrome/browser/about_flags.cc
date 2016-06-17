@@ -1826,6 +1826,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"offlining-recent-pages", IDS_FLAGS_OFFLINING_RECENT_PAGES_NAME,
      IDS_FLAGS_OFFLINING_RECENT_PAGES_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
+    {"offline-pages-ct", IDS_FLAGS_OFFLINE_PAGES_CT_NAME,
+     IDS_FLAGS_OFFLINE_PAGES_CT_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTFeature)},
 #endif  // defined(OS_ANDROID)
     {"protect-sync-credential", IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_NAME,
      IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
