@@ -165,16 +165,7 @@ dist_yaml_TESTS =					\
 	yaml/emphasis-no-context.yaml			\
 	yaml/pl-pl-comp8_harness.yaml			\
 	yaml/sr-g1_harness.yaml				\
-	yaml/ta-ta-g1_harness.yaml			\
-	yaml/en-ueb-g1_harness.txt.bak.yaml		\
-	yaml/en-ueb-g2-dictionary_harness.txt.bak.yaml	\
-	yaml/en-us-g2-dictionary_harness.txt.bak.yaml	\
-	yaml/en-us-g2-end-emphasis_harness.txt.bak.yaml	\
-	yaml/ethio-g1_harness.txt.bak.yaml		\
-	yaml/ko-2006-g2_harness.txt.bak.yaml		\
-	yaml/ko-g2_harness.txt.bak.yaml			\
-	yaml/nl-BE-g1_harness.txt.bak.yaml		\
-	yaml/ta-ta-g1_harness.txt.bak.yaml
+	yaml/ta-ta-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml

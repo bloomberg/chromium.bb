@@ -17,18 +17,13 @@ EXTRA_DIST =						\
 	en-ueb-09-typeforms.yaml			\
 	en-ueb-10-07-contractions.yaml			\
 	en-ueb-10-13-contractions.yaml			\
-	en-ueb-g1_harness.txt.bak.yaml			\
 	en-ueb-g1_harness.yaml				\
-	en-ueb-g2-dictionary_harness.txt.bak.yaml	\
 	en-ueb-g2-dictionary_harness.yaml		\
 	en-ueb-math.yaml				\
 	en-ueb-symbols_harness.yaml			\
-	en-us-g2-dictionary_harness.txt.bak.yaml	\
 	en-us-g2-dictionary_harness.yaml		\
-	en-us-g2-end-emphasis_harness.txt.bak.yaml	\
 	en-us-g2-end-emphasis_harness.yaml		\
 	eo-g1_harness.yaml				\
-	ethio-g1_harness.txt.bak.yaml			\
 	ethio-g1_harness.yaml				\
 	example_test.yaml				\
 	fi_harness.yaml					\
@@ -43,14 +38,11 @@ EXTRA_DIST =						\
 	hu-hu-g1_harness.yaml				\
 	hu-hu-g1-hyph_harness.yaml			\
 	iu-ca-g1_harness.yaml				\
-	ko-2006-g2_harness.txt.bak.yaml			\
 	ko-2006-g2_harness.yaml				\
-	ko-g2_harness.txt.bak.yaml			\
 	ko-g2_harness.yaml				\
 	letterDefTest_harness.yaml			\
 	mn-MN_harness.yaml				\
 	nl-BE-g0_harness.yaml				\
-	nl-BE-g1_harness.txt.bak.yaml			\
 	nl-BE-g1_harness.yaml				\
 	nl-NL-g0_harness.yaml				\
 	no_8dot_harness.yaml				\
@@ -62,5 +54,4 @@ EXTRA_DIST =						\
 	emphasis-no-context.yaml			\
 	pl-pl-comp8_harness.yaml			\
 	sr-g1_harness.yaml				\
-	ta-ta-g1_harness.txt.bak.yaml			\
 	ta-ta-g1_harness.yaml
