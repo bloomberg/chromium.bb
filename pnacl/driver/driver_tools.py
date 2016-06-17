@@ -360,6 +360,8 @@ def ParseArgsBase(argv, patternlist):
   while i < len(argv):
     if ShouldExpandCommandFile(argv[i]):
       argv = DoExpandCommandFile(argv, i)
+      if i >= len(argv):
+        break
     num_matched, action, groups = MatchOne(argv, i, patternlist)
     if num_matched == 0:
       unmatched.append(argv[i])
