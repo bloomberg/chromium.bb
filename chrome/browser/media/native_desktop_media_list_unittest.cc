@@ -67,10 +67,11 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
 
   void Capture(const webrtc::DesktopRegion& region) override {
     DCHECK(callback_);
-    webrtc::DesktopFrame* frame =
-        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10));
+    std::unique_ptr<webrtc::DesktopFrame> frame(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));
     memset(frame->data(), 0, frame->stride() * frame->size().height());
-    callback_->OnCaptureCompleted(frame);
+    callback_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
+                               std::move(frame));
   }
 
   bool GetScreenList(ScreenList* screens) override {
@@ -121,10 +122,11 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
     std::map<WindowId, int8_t>::iterator it =
         frame_values_.find(selected_window_id_);
     int8_t value = (it != frame_values_.end()) ? it->second : 0;
-    webrtc::DesktopFrame* frame =
-        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10));
+    std::unique_ptr<webrtc::DesktopFrame> frame(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));
     memset(frame->data(), value, frame->stride() * frame->size().height());
-    callback_->OnCaptureCompleted(frame);
+    callback_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
+                               std::move(frame));
   }
 
   bool GetWindowList(WindowList* windows) override {

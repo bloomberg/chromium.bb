@@ -78,7 +78,8 @@ class DesktopSessionAgent
   void OnChannelError() override;
 
   // webrtc::DesktopCapturer::Callback implementation.
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   // webrtc::MouseCursorMonitor::Callback implementation.
   void OnMouseCursor(webrtc::MouseCursor* cursor) override;

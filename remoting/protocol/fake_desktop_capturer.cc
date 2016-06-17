@@ -153,7 +153,10 @@ void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
     frame->set_capture_time_ms(
         (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
   }
-  callback_->OnCaptureCompleted(frame.release());
+  callback_->OnCaptureResult(
+      frame ? webrtc::DesktopCapturer::Result::SUCCESS
+            : webrtc::DesktopCapturer::Result::ERROR_TEMPORARY,
+      std::move(frame));
 }
 
 }  // namespace protocol

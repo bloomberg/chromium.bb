@@ -112,7 +112,9 @@ void VideoFramePump::SetSizeCallback(const SizeCallback& size_callback) {
   size_callback_ = size_callback;
 }
 
-void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
+void VideoFramePump::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   capture_scheduler_.OnCaptureCompleted();
@@ -137,7 +139,7 @@ void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
       base::Bind(&VideoFramePump::EncodeFrame, encoder_.get(),
-                 base::Passed(base::WrapUnique(frame)),
+                 base::Passed(&frame),
                  base::Passed(&captured_frame_timestamps_)),
       base::Bind(&VideoFramePump::OnFrameEncoded, weak_factory_.GetWeakPtr()));
 }

@@ -96,7 +96,8 @@ class NativeDesktopMediaList::Worker
   typedef std::map<DesktopMediaID, uint32_t> ImageHashesMap;
 
   // webrtc::DesktopCapturer::Callback interface.
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   base::WeakPtr<NativeDesktopMediaList> media_list_;
 
@@ -225,9 +226,10 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
                  media_list_));
 }
 
-void NativeDesktopMediaList::Worker::OnCaptureCompleted(
-    webrtc::DesktopFrame* frame) {
-  current_frame_.reset(frame);
+void NativeDesktopMediaList::Worker::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
+  current_frame_ = std::move(frame);
 }
 
 NativeDesktopMediaList::NativeDesktopMediaList(

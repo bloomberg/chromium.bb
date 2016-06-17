@@ -178,8 +178,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionProxy, message)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_AudioPacket,
                         OnAudioPacket)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureCompleted,
-                        OnCaptureCompleted)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureResult,
+                        OnCaptureResult)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_MouseCursor,
                         OnMouseCursor)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
@@ -262,7 +262,8 @@ void DesktopSessionProxy::DetachFromDesktop() {
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
     --pending_capture_frame_requests_;
-    video_capturer_->OnCaptureCompleted(nullptr);
+    video_capturer_->OnCaptureResult(
+        webrtc::DesktopCapturer::Result::ERROR_PERMANENT, nullptr);
   }
 }
 
@@ -280,7 +281,8 @@ void DesktopSessionProxy::CaptureFrame() {
     ++pending_capture_frame_requests_;
     SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
   } else {
-    video_capturer_->OnCaptureCompleted(nullptr);
+    video_capturer_->OnCaptureResult(
+        webrtc::DesktopCapturer::Result::ERROR_PERMANENT, nullptr);
   }
 }
 
@@ -467,16 +469,15 @@ void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
   shared_buffers_.erase(id);
 }
 
-void DesktopSessionProxy::OnCaptureCompleted(
+void DesktopSessionProxy::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
     const SerializedDesktopFrame& serialized_frame) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   --pending_capture_frame_requests_;
 
-  // If the input serialized_frame does not have a screen size, it means the
-  // capturer returns a nullptr for OnCaptureCompleted call.
-  if (serialized_frame.dimensions.is_empty()) {
-    video_capturer_->OnCaptureCompleted(nullptr);
+  if (result != webrtc::DesktopCapturer::Result::SUCCESS) {
+    video_capturer_->OnCaptureResult(result, nullptr);
     return;
   }
 
@@ -493,11 +494,12 @@ void DesktopSessionProxy::OnCaptureCompleted(
   frame->set_capture_time_ms(serialized_frame.capture_time_ms);
   frame->set_dpi(serialized_frame.dpi);
 
-  for (size_t i = 0; i < serialized_frame.dirty_region.size(); ++i) {
-    frame->mutable_updated_region()->AddRect(serialized_frame.dirty_region[i]);
+  for (const auto& rect : serialized_frame.dirty_region) {
+    frame->mutable_updated_region()->AddRect(rect);
   }
 
-  video_capturer_->OnCaptureCompleted(std::move(frame));
+  video_capturer_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
+                                   std::move(frame));
 }
 
 void DesktopSessionProxy::OnMouseCursor(

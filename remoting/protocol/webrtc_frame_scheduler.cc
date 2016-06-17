@@ -118,7 +118,9 @@ bool WebrtcFrameScheduler::ClearAndGetKeyFrameRequest() {
   return key_frame_request;
 }
 
-void WebrtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
+void WebrtcFrameScheduler::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::TimeTicks captured_ticks = base::TimeTicks::Now();
@@ -126,7 +128,7 @@ void WebrtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
       (captured_ticks - base::TimeTicks()).InMilliseconds();
   capture_pending_ = false;
 
-  std::unique_ptr<webrtc::DesktopFrame> owned_frame(frame);
+  // TODO(sergeyu): Handle ERROR_PERMANENT result here.
 
   if (encode_pending_) {
     // TODO(isheriff): consider queuing here
@@ -150,7 +152,7 @@ void WebrtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   task_tracker_.PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
       base::Bind(&WebrtcFrameScheduler::EncodeFrame, encoder_.get(),
-                 base::Passed(std::move(owned_frame)), target_bitrate_kbps_,
+                 base::Passed(&frame), target_bitrate_kbps_,
                  ClearAndGetKeyFrameRequest(), capture_timestamp_ms),
       base::Bind(&WebrtcFrameScheduler::OnFrameEncoded,
                  weak_factory_.GetWeakPtr()));

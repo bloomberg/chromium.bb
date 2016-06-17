@@ -75,9 +75,10 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   void SetNotificationWindowId(gfx::NativeViewId window_id);
 
  private:
-
-  // webrtc::DesktopCapturer::Callback interface
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  // webrtc::DesktopCapturer::Callback interface.
+  void OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   // Method that is scheduled on |task_runner_| to be called on regular interval
   // to capture a frame.
@@ -191,28 +192,32 @@ void DesktopCaptureDevice::Core::SetNotificationWindowId(
   desktop_capturer_->SetExcludedWindow(window_id);
 }
 
-void DesktopCaptureDevice::Core::OnCaptureCompleted(
-    webrtc::DesktopFrame* frame) {
+void DesktopCaptureDevice::Core::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(capture_in_progress_);
+  capture_in_progress_ = false;
+
+  bool success = result == webrtc::DesktopCapturer::Result::SUCCESS;
 
   if (!first_capture_returned_) {
     first_capture_returned_ = true;
     if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
-      IncrementDesktopCaptureCounter(frame ? FIRST_SCREEN_CAPTURE_SUCCEEDED
-                                           : FIRST_SCREEN_CAPTURE_FAILED);
+      IncrementDesktopCaptureCounter(success ? FIRST_SCREEN_CAPTURE_SUCCEEDED
+                                             : FIRST_SCREEN_CAPTURE_FAILED);
     } else {
-      IncrementDesktopCaptureCounter(frame ? FIRST_WINDOW_CAPTURE_SUCCEEDED
-                                           : FIRST_WINDOW_CAPTURE_FAILED);
+      IncrementDesktopCaptureCounter(success ? FIRST_WINDOW_CAPTURE_SUCCEEDED
+                                             : FIRST_WINDOW_CAPTURE_FAILED);
     }
   }
 
-  capture_in_progress_ = false;
-
-  if (!frame) {
-    client_->OnError(FROM_HERE, "Failed to capture a frame.");
+  if (!success) {
+    if (result == webrtc::DesktopCapturer::Result::ERROR_PERMANENT)
+      client_->OnError(FROM_HERE, "The desktop capturer has failed.");
     return;
   }
+  DCHECK(frame);
 
   if (!client_)
     return;
@@ -227,8 +232,6 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   } else {
     UMA_HISTOGRAM_TIMES(kUmaWindowCaptureTime, capture_time);
   }
-
-  std::unique_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
   // If the frame size has changed, drop the output frame (if any), and
   // determine the new output size.
@@ -246,26 +249,22 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   if (output_size.is_empty())
     return;
 
-  // On OSX We receive a 1x1 frame when the shared window is minimized. It
-  // cannot be subsampled to I420 and will be dropped downstream. So we replace
-  // it with a black frame to avoid the video appearing frozen at the last
-  // frame.
-  if (frame->size().width() == 1 || frame->size().height() == 1) {
-    if (!black_frame_) {
-      black_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
-      memset(black_frame_->data(),
-             0,
-             black_frame_->stride() * black_frame_->size().height());
-    }
-    owned_frame.reset();
-    frame = black_frame_.get();
-  }
-
   size_t output_bytes = output_size.width() * output_size.height() *
       webrtc::DesktopFrame::kBytesPerPixel;
-  const uint8_t* output_data = NULL;
+  const uint8_t* output_data = nullptr;
 
-  if (!frame->size().equals(output_size)) {
+  if (frame->size().equals(webrtc::DesktopSize(1, 1))) {
+    // On OSX We receive a 1x1 frame when the shared window is minimized. It
+    // cannot be subsampled to I420 and will be dropped downstream. So we
+    // replace it with a black frame to avoid the video appearing frozen at the
+    // last frame.
+    if (!black_frame_ || !black_frame_->size().equals(output_size)) {
+      black_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
+      memset(black_frame_->data(), 0,
+             black_frame_->stride() * black_frame_->size().height());
+    }
+    output_data = black_frame_->data();
+  } else if (!frame->size().equals(output_size)) {
     // Down-scale and/or letterbox to the target format if the frame does not
     // match the output size.
 
@@ -282,16 +281,14 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     // using ARGBScaleClip().
     const webrtc::DesktopRect output_rect =
         ComputeLetterboxRect(output_size, frame->size());
-    uint8_t* output_rect_data = output_frame_->data() +
-        output_frame_->stride() * output_rect.top() +
-        webrtc::DesktopFrame::kBytesPerPixel * output_rect.left();
-    libyuv::ARGBScale(frame->data(), frame->stride(),
-                      frame->size().width(), frame->size().height(),
-                      output_rect_data, output_frame_->stride(),
-                      output_rect.width(), output_rect.height(),
-                      libyuv::kFilterBilinear);
+    uint8_t* output_rect_data =
+        output_frame_->GetFrameDataAtPos(output_rect.top_left());
+    libyuv::ARGBScale(frame->data(), frame->stride(), frame->size().width(),
+                      frame->size().height(), output_rect_data,
+                      output_frame_->stride(), output_rect.width(),
+                      output_rect.height(), libyuv::kFilterBilinear);
     output_data = output_frame_->data();
-  } else if (IsFrameUnpackedOrInverted(frame)) {
+  } else if (IsFrameUnpackedOrInverted(frame.get())) {
     // If |frame| is not packed top-to-bottom then create a packed top-to-bottom
     // copy.
     // This is required if the frame is inverted (see crbug.com/306876), or if
@@ -301,10 +298,8 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
       memset(output_frame_->data(), 0, output_bytes);
     }
 
-    output_frame_->CopyPixelsFrom(
-        *frame,
-        webrtc::DesktopVector(),
-        webrtc::DesktopRect::MakeSize(frame->size()));
+    output_frame_->CopyPixelsFrom(*frame, webrtc::DesktopVector(),
+                                  webrtc::DesktopRect::MakeSize(frame->size()));
     output_data = output_frame_->data();
   } else {
     // If the captured frame matches the output size, we can return the pixel

@@ -16,7 +16,6 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using testing::_;
-using testing::SaveArg;
 
 namespace remoting {
 
@@ -37,6 +36,11 @@ const unsigned char frame_data[] = {
     0x20, 0x3c, 0x00, 0xc6, 0xe1, 0x73, 0x34, 0xe2, 0x23, 0x99, 0xc4, 0xfa,
     0x91, 0xc2, 0xd5, 0x97, 0xc1, 0x8b, 0xd0, 0x3c, 0x13, 0xba, 0xf0, 0xd7
   };
+
+ACTION_P(SaveUniquePtrArg, dest) {
+  *dest = std::move(*arg1);
+}
+
 }  // namespace
 
 class AuraDesktopCapturerTest : public testing::Test,
@@ -46,7 +50,13 @@ class AuraDesktopCapturerTest : public testing::Test,
 
   void SetUp() override;
 
-  MOCK_METHOD1(OnCaptureCompleted, void(webrtc::DesktopFrame* frame));
+  MOCK_METHOD2(OnCaptureResultPtr,
+               void(webrtc::DesktopCapturer::Result result,
+                    std::unique_ptr<webrtc::DesktopFrame>* frame));
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override {
+    OnCaptureResultPtr(result, &frame);
+  }
 
  protected:
   void SimulateFrameCapture() {
@@ -67,22 +77,18 @@ void AuraDesktopCapturerTest::SetUp() {
 }
 
 TEST_F(AuraDesktopCapturerTest, ConvertSkBitmapToDesktopFrame) {
-  webrtc::DesktopFrame* captured_frame = nullptr;
+  std::unique_ptr<webrtc::DesktopFrame> captured_frame;
 
-  EXPECT_CALL(*this, OnCaptureCompleted(_)).Times(1).WillOnce(
-      SaveArg<0>(&captured_frame));
+  EXPECT_CALL(*this,
+              OnCaptureResultPtr(webrtc::DesktopCapturer::Result::SUCCESS, _))
+      .Times(1)
+      .WillOnce(SaveUniquePtrArg(&captured_frame));
   capturer_->Start(this);
 
   SimulateFrameCapture();
 
-  ASSERT_TRUE(captured_frame != nullptr);
-  uint8_t* captured_data = captured_frame->data();
-  EXPECT_EQ(
-      0,
-      memcmp(
-          frame_data, captured_data, sizeof(frame_data)));
-
-  delete captured_frame;
+  ASSERT_TRUE(captured_frame);
+  EXPECT_EQ(0, memcmp(frame_data, captured_frame->data(), sizeof(frame_data)));
 }
 
 }  // namespace remoting

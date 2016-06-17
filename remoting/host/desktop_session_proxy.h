@@ -160,8 +160,9 @@ class DesktopSessionProxy
   // Drops a cached reference to the shared buffer.
   void OnReleaseSharedBuffer(int id);
 
-  // Handles CaptureCompleted notification from the desktop session agent.
-  void OnCaptureCompleted(const SerializedDesktopFrame& serialized_frame);
+  // Handles CaptureResult notification from the desktop session agent.
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       const SerializedDesktopFrame& serialized_frame);
 
   // Handles MouseCursor notification from the desktop session agent.
   void OnMouseCursor(const webrtc::MouseCursor& mouse_cursor);

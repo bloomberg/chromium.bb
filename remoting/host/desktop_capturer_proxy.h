@@ -45,7 +45,8 @@ class DesktopCapturerProxy : public webrtc::DesktopCapturer {
  private:
   class Core;
 
-  void OnFrameCaptured(std::unique_ptr<webrtc::DesktopFrame> frame);
+  void OnFrameCaptured(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame);
 
   base::ThreadChecker thread_checker_;
 

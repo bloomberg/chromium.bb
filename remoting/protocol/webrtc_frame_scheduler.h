@@ -45,7 +45,8 @@ class WebrtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   // Starts |capture_timer_|.
   void StartCaptureTimer();

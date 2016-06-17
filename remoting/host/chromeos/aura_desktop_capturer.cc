@@ -55,7 +55,8 @@ void AuraDesktopCapturer::Capture(const webrtc::DesktopRegion&) {
 void AuraDesktopCapturer::OnFrameCaptured(
     std::unique_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty()) {
-    callback_->OnCaptureCompleted(nullptr);
+    callback_->OnCaptureResult(DesktopCapturer::Result::ERROR_TEMPORARY,
+                               nullptr);
     return;
   }
 
@@ -74,7 +75,8 @@ void AuraDesktopCapturer::OnFrameCaptured(
   // See cc::Layer::contents_scale_(x|y)() and frame->set_depi().
   frame->mutable_updated_region()->SetRect(rect);
 
-  callback_->OnCaptureCompleted(frame.release());
+  callback_->OnCaptureResult(DesktopCapturer::Result::SUCCESS,
+                             std::move(frame));
 }
 
 }  // namespace remoting

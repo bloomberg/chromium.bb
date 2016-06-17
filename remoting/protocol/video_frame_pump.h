@@ -122,7 +122,8 @@ class VideoFramePump : public VideoStream,
   };
 
   // webrtc::DesktopCapturer::Callback interface.
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   // Callback for CaptureScheduler.
   void CaptureNextFrame();

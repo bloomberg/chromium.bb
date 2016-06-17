@@ -33,11 +33,12 @@ void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
   desktop_session_proxy_->CaptureFrame();
 }
 
-void IpcVideoFrameCapturer::OnCaptureCompleted(
+void IpcVideoFrameCapturer::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(capture_pending_);
   capture_pending_ = false;
-  callback_->OnCaptureCompleted(frame.release());
+  callback_->OnCaptureResult(result, std::move(frame));
 }
 
 }  // namespace remoting

@@ -118,7 +118,8 @@ class ThreadCheckDesktopCapturer : public webrtc::DesktopCapturer {
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
     frame->mutable_updated_region()->SetRect(
         webrtc::DesktopRect::MakeXYWH(0, 0, 10, 10));
-    callback_->OnCaptureCompleted(frame.release());
+    callback_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
+                               std::move(frame));
   }
 
  private:

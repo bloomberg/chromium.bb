@@ -66,7 +66,13 @@ class MockScreenCapturerCallback : public webrtc::ScreenCapturer::Callback {
   MockScreenCapturerCallback() {}
   virtual ~MockScreenCapturerCallback() {}
 
-  MOCK_METHOD1(OnCaptureCompleted, void(webrtc::DesktopFrame*));
+  MOCK_METHOD2(OnCaptureResultPtr,
+               void(webrtc::DesktopCapturer::Result result,
+                    std::unique_ptr<webrtc::DesktopFrame>* frame));
+  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
+                       std::unique_ptr<webrtc::DesktopFrame> frame) override {
+    OnCaptureResultPtr(result, &frame);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockScreenCapturerCallback);
@@ -543,11 +549,9 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
   setup_run_loop_->Run();
 
   // Stop the test when the first frame is captured.
-  EXPECT_CALL(desktop_capturer_callback_, OnCaptureCompleted(_))
-      .WillOnce(DoAll(
-          DeleteArg<0>(),
-          InvokeWithoutArgs(
-              this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment)));
+  EXPECT_CALL(desktop_capturer_callback_, OnCaptureResultPtr(_, _))
+      .WillOnce(InvokeWithoutArgs(
+          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
 
   // Capture a single frame.
   video_capturer_->Capture(webrtc::DesktopRegion());

@@ -14,6 +14,7 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 #endif  // REMOTING_HOST_CHROMOTING_MESSAGES_H_
@@ -172,9 +173,13 @@ IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   IPC_STRUCT_MEMBER(webrtc::DesktopVector, dpi)
 IPC_STRUCT_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE(webrtc::DesktopCapturer::Result,
+                          webrtc::DesktopCapturer::Result::MAX_VALUE)
+
 // Notifies the network process that a shared buffer has been created.
-IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
-                     SerializedDesktopFrame /* frame */ )
+IPC_MESSAGE_CONTROL2(ChromotingDesktopNetworkMsg_CaptureResult,
+                     webrtc::DesktopCapturer::Result /* result */,
+                     SerializedDesktopFrame /* frame */)
 
 // Carries a cursor share update from the desktop session agent to the client.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_MouseCursor,

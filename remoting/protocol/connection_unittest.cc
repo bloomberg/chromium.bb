@@ -84,7 +84,8 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
           webrtc::DesktopRect::MakeSize(frame->size()));
     }
 
-    callback_->OnCaptureCompleted(frame.release());
+    callback_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
+                               std::move(frame));
   }
 
  private:

@@ -321,10 +321,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
 }
 
-void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
+void DesktopSessionAgent::OnCaptureResult(
+    webrtc::DesktopCapturer::Result result,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  last_frame_.reset(frame);
 
   // Serialize webrtc::DesktopFrame.
   SerializedDesktopFrame serialized_frame;
@@ -340,8 +340,10 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
     }
   }
 
+  last_frame_ = std::move(frame);
+
   SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_frame)));
+      new ChromotingDesktopNetworkMsg_CaptureResult(result, serialized_frame)));
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
