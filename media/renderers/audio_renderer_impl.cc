@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -55,16 +56,39 @@ AudioRendererImpl::AudioRendererImpl(
       pending_read_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
+      is_suspending_(false),
       weak_factory_(this) {
   audio_buffer_stream_->set_splice_observer(base::Bind(
       &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
   audio_buffer_stream_->set_config_change_observer(base::Bind(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
+
+  // Tests may not have a power monitor.
+  base::PowerMonitor* monitor = base::PowerMonitor::Get();
+  if (!monitor)
+    return;
+
+  // PowerObserver's must be added and removed from the same thread, but we
+  // won't remove the observer until we're destructed on |task_runner_| so we
+  // must post it here if we're on the wrong thread.
+  if (task_runner_->BelongsToCurrentThread()) {
+    monitor->AddObserver(this);
+  } else {
+    // Safe to post this without a WeakPtr because this class must be destructed
+    // on the same thread and construction has not completed yet.
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&base::PowerMonitor::AddObserver,
+                                      base::Unretained(monitor), this));
+  }
+  // Do not add anything below this line since the above actions are only safe
+  // as the last lines of the constructor.
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (base::PowerMonitor::Get())
+    base::PowerMonitor::Get()->RemoveObserver(this);
 
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.
@@ -189,7 +213,7 @@ bool AudioRendererImpl::GetWallClockTimes(
   const double playback_rate = playback_rate_ ? playback_rate_ : 1.0;
   const bool is_time_moving = sink_playing_ && playback_rate_ &&
                               !last_render_time_.is_null() &&
-                              stop_rendering_time_.is_null();
+                              stop_rendering_time_.is_null() && !is_suspending_;
 
   // Pre-compute the time until playback of the audio buffer extents, since
   // these values are frequently used below.
@@ -501,6 +525,16 @@ void AudioRendererImpl::SetVolume(float volume) {
   sink_->SetVolume(volume);
 }
 
+void AudioRendererImpl::OnSuspend() {
+  base::AutoLock auto_lock(lock_);
+  is_suspending_ = true;
+}
+
+void AudioRendererImpl::OnResume() {
+  base::AutoLock auto_lock(lock_);
+  is_suspending_ = false;
+}
+
 void AudioRendererImpl::DecodedAudioReady(
     AudioBufferStream::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
@@ -751,7 +785,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       return 0;
     }
 
-    if (playback_rate_ == 0) {
+    if (playback_rate_ == 0 || is_suspending_) {
       audio_clock_->WroteAudio(0, frames_requested, frames_delayed,
                                playback_rate_);
       return 0;

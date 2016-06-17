@@ -748,6 +748,33 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
     ASSERT_NE(0.0f, bus->channel(0)[i]);
 }
 
+TEST_F(AudioRendererImplTest, RenderingDelayedForSuspend) {
+  Initialize();
+  Preroll(base::TimeDelta(), base::TimeDelta(), PIPELINE_OK);
+  StartTicking();
+
+  // Verify the first buffer is real data.
+  int frames_read = 0;
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(hardware_params_);
+  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_NE(0, frames_read);
+  for (int i = 0; i < bus->frames(); ++i)
+    ASSERT_NE(0.0f, bus->channel(0)[i]);
+
+  // Verify after suspend we get silence.
+  renderer_->OnSuspend();
+  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_EQ(0, frames_read);
+
+  // Verify after resume we get audio.
+  bus->Zero();
+  renderer_->OnResume();
+  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_NE(0, frames_read);
+  for (int i = 0; i < bus->frames(); ++i)
+    ASSERT_NE(0.0f, bus->channel(0)[i]);
+}
+
 TEST_F(AudioRendererImplTest, RenderingDelayDoesNotOverflow) {
   Initialize();
 
@@ -855,6 +882,16 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
 
   // Time shouldn't change just yet because we've only sent the initial audio
   // data to the hardware.
+  EXPECT_EQ(tick_clock_->NowTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  // A system suspend should freeze the time state and resume restart it.
+  renderer_->OnSuspend();
+  EXPECT_EQ(tick_clock_->NowTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  renderer_->OnResume();
   EXPECT_EQ(tick_clock_->NowTicks(),
             ConvertMediaTime(base::TimeDelta(), &is_time_moving));
   EXPECT_TRUE(is_time_moving);
