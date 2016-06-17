@@ -337,16 +337,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // See https://crbug.com/304341.
   WebPreferences ComputeWebkitPrefs();
 
-  // Returns whether the current RenderProcessHost has read access to the files
-  // reported in |state|.
-  bool CanAccessFilesOfPageState(const PageState& state) const;
-
-  // Grants the current RenderProcessHost read access to any file listed in
-  // |validated_state|.  It is important that the PageState has been validated
-  // upon receipt from the renderer process to prevent it from forging access to
-  // files without the user's consent.
-  void GrantFileAccessFromPageState(const PageState& validated_state);
-
   // 1. Grants permissions to URL (if any)
   // 2. Grants permissions to filenames
   // 3. Grants permissions to file system files.

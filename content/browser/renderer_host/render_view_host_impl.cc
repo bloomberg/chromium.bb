@@ -930,7 +930,9 @@ void RenderViewHostImpl::OnUpdateState(int32_t page_id,
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(state)) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  int child_id = GetProcess()->GetID();
+  if (!policy->CanReadAllFiles(child_id, state.GetReferencedFiles())) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RVH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return;
@@ -1220,30 +1222,6 @@ void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
   if (GetWidget()->GetView())
     GetWidget()->GetView()->FocusedNodeTouched(location_dips_screen, editable);
 #endif
-}
-
-bool RenderViewHostImpl::CanAccessFilesOfPageState(
-    const PageState& state) const {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  const std::vector<base::FilePath>& file_paths = state.GetReferencedFiles();
-  for (const auto& file : file_paths) {
-    if (!policy->CanReadFile(GetProcess()->GetID(), file))
-      return false;
-  }
-  return true;
-}
-
-void RenderViewHostImpl::GrantFileAccessFromPageState(const PageState& state) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  const std::vector<base::FilePath>& file_paths = state.GetReferencedFiles();
-  for (const auto& file : file_paths) {
-    if (!policy->CanReadFile(GetProcess()->GetID(), file))
-      policy->GrantReadFile(GetProcess()->GetID(), file);
-  }
 }
 
 void RenderViewHostImpl::SelectWordAroundCaret() {

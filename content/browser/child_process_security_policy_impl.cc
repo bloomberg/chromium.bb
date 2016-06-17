@@ -4,6 +4,7 @@
 
 #include "content/browser/child_process_security_policy_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/command_line.h"
@@ -626,6 +627,15 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
                                                  const base::FilePath& file) {
   return HasPermissionsForFile(child_id, file, READ_FILE_GRANT);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanReadAllFiles(
+    int child_id,
+    const std::vector<base::FilePath>& files) {
+  return std::all_of(files.begin(), files.end(),
+                     [this, child_id](const base::FilePath& file) {
+                       return CanReadFile(child_id, file);
+                     });
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(

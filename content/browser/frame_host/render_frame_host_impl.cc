@@ -21,7 +21,6 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -160,6 +159,17 @@ class ScopedCommitStateResetter {
   RenderFrameHostImpl* render_frame_host_;
   bool disabled_;
 };
+
+void GrantFileAccess(int child_id,
+                     const std::vector<base::FilePath>& file_paths) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(child_id, file))
+      policy->GrantReadFile(child_id, file);
+  }
+}
 
 }  // namespace
 
@@ -1085,8 +1095,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  if (!render_view_host_->CanAccessFilesOfPageState(
-          validated_params.page_state)) {
+  if (!CanAccessFilesOfPageState(validated_params.page_state)) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return;
@@ -1177,8 +1186,7 @@ void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  // TODO(creis): Move CanAccessFilesOfPageState to RenderFrameHostImpl.
-  if (!render_view_host_->CanAccessFilesOfPageState(state)) {
+  if (!CanAccessFilesOfPageState(state)) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return;
@@ -2757,16 +2765,18 @@ void RenderFrameHostImpl::DidUseGeolocationPermission() {
           ->last_committed_url().GetOrigin());
 }
 
+bool RenderFrameHostImpl::CanAccessFilesOfPageState(const PageState& state) {
+  return ChildProcessSecurityPolicyImpl::GetInstance()->CanReadAllFiles(
+      GetProcess()->GetID(), state.GetReferencedFiles());
+}
+
+void RenderFrameHostImpl::GrantFileAccessFromPageState(const PageState& state) {
+  GrantFileAccess(GetProcess()->GetID(), state.GetReferencedFiles());
+}
+
 void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
     const ResourceRequestBodyImpl& body) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  std::vector<base::FilePath> file_paths = body.GetReferencedFiles();
-  for (const auto& file : file_paths) {
-    if (!policy->CanReadFile(GetProcess()->GetID(), file))
-      policy->GrantReadFile(GetProcess()->GetID(), file);
-  }
+  GrantFileAccess(GetProcess()->GetID(), body.GetReferencedFiles());
 }
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
@@ -2792,7 +2802,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // state are validated earlier, when they are received from the renderer (in
   // RenderFrameHostImpl::CanAccessFilesOfPageState).
   if (request_params.page_state.IsValid())
-    render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
+    GrantFileAccessFromPageState(request_params.page_state);
 
   // We may be here after transferring navigation to a different renderer
   // process.  In this case, we need to ensure that the new renderer retains

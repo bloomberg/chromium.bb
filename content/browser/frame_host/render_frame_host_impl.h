@@ -732,6 +732,16 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // Informs the content client that geolocation permissions were used.
   void DidUseGeolocationPermission();
 
+  // Returns whether the current RenderProcessHost has read access to all the
+  // files reported in |state|.
+  bool CanAccessFilesOfPageState(const PageState& state);
+
+  // Grants the current RenderProcessHost read access to any file listed in
+  // |validated_state|.  It is important that the PageState has been validated
+  // upon receipt from the renderer process to prevent it from forging access to
+  // files without the user's consent.
+  void GrantFileAccessFromPageState(const PageState& validated_state);
+
   // Grants the current RenderProcessHost read access to any file listed in
   // |body|.  It is important that the ResourceRequestBody has been validated
   // upon receipt from the renderer process to prevent it from forging access to
