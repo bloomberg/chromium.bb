@@ -80,6 +80,10 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
   results->retry_after_delta = base::TimeDelta();
   results->landing_url = url_fetcher->GetURL();
 
+  VLOG(1) << "Getting captive portal result"
+          << " response code: " << results->response_code
+          << " landing_url: " << results->landing_url;
+
   // If there's a network error of some sort when fetching a file via HTTP,
   // there may be a networking problem, rather than a captive portal.
   // TODO(mmenke):  Consider special handling for redirects that end up at
