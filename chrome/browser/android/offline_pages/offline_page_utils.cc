@@ -12,10 +12,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -165,6 +167,13 @@ void OfflinePageUtils::MarkPageAccessed(
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   DCHECK(offline_page_model);
   offline_page_model->MarkPageAccessed(offline_page->offline_id);
+}
+
+const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
+    content::WebContents* web_contents) {
+  OfflinePageTabHelper* tab_helper =
+      OfflinePageTabHelper::FromWebContents(web_contents);
+  return tab_helper ? tab_helper->offline_page() : nullptr;
 }
 
 }  // namespace offline_pages

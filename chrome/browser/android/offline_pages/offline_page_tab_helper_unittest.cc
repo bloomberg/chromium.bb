@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/offline_pages/client_namespace_constants.h"
@@ -80,8 +81,8 @@ class OfflinePageTabHelperTest :
     return offline_page_tab_helper_;
   }
 
-  const GURL& online_url() const { return online_url_; }
-  const GURL& offline_url() const { return offline_url_; }
+  const GURL& online_url() const { return offline_page_item_->url; }
+  GURL offline_url() const { return offline_page_item_->GetOfflineURL(); }
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
@@ -98,8 +99,7 @@ class OfflinePageTabHelperTest :
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
 
-  GURL online_url_;
-  GURL offline_url_;
+  std::unique_ptr<OfflinePageItem> offline_page_item_;
 
   base::HistogramTester histogram_tester_;
 
@@ -193,8 +193,7 @@ void OfflinePageTabHelperTest::OnSavePageDone(SavePageResult result,
 void OfflinePageTabHelperTest::OnGetPageByOfflineIdDone(
     const OfflinePageItem* result) {
   DCHECK(result);
-  online_url_ = result->url;
-  offline_url_ = result->GetOfflineURL();
+  offline_page_item_.reset(new OfflinePageItem(*result));
 }
 
 TEST_F(OfflinePageTabHelperTest, SwitchToOnlineFromOfflineOnNetwork) {
@@ -221,6 +220,25 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnNoNetwork) {
   histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
   histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 1);
   histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
+}
+
+TEST_F(OfflinePageTabHelperTest, TestCurrentOfflinePage) {
+  SimulateHasNetworkConnectivity(false);
+
+  StartLoad(online_url());
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  const OfflinePageItem* item =
+      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_EQ(offline_url(), item->GetOfflineURL());
+  EXPECT_EQ(online_url(), item->url);
+
+  SimulateHasNetworkConnectivity(true);
+  StartLoad(offline_url());
+  RunUntilIdle();
+  item = OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_EQ(nullptr, item);
 }
 
 TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnError) {

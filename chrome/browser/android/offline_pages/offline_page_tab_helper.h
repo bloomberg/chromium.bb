@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/offline_page_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -17,6 +18,8 @@ class WebContents;
 
 namespace offline_pages {
 
+struct OfflinePageItem;
+
 // Per-tab class to manage switch between online version and offline version.
 class OfflinePageTabHelper :
     public content::WebContentsObserver,
@@ -24,7 +27,15 @@ class OfflinePageTabHelper :
  public:
   ~OfflinePageTabHelper() override;
 
+  const OfflinePageItem* offline_page() { return offline_page_.get(); }
+
  private:
+  enum class RedirectReason {
+    DISCONNECTED_NETWORK,
+    FLAKY_NETWORK,
+    FLAKY_NETWORK_FORWARD_BACK
+  };
+
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
   friend class OfflinePageTabHelperTest;
   FRIEND_TEST_ALL_PREFIXES(OfflinePageTabHelperTest,
@@ -38,14 +49,18 @@ class OfflinePageTabHelper :
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  void GotRedirectURLForSupportedErrorCode(ui::PageTransition transition,
-                                           const GURL& from_url,
-                                           const GURL& redirect_url);
-  void GotRedirectURLForStartedNavigation(const GURL& from_url,
-                                          const GURL& redirect_url);
+  void RedirectToOnline(const GURL& from_url,
+                        const OfflinePageItem* offline_page);
+  void TryRedirectToOffline(RedirectReason redirect_reason,
+                            const GURL& from_url,
+                            const OfflinePageItem* offline_page);
 
   void Redirect(const GURL& from_url, const GURL& to_url);
 
+  // Iff the tab we are associated with is redirected to an offline page,
+  // |offline_page_| will be non-null.  This can be used to synchronously ask
+  // about the offline state of the current web contents.
+  std::unique_ptr<OfflinePageItem> offline_page_;
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelper);

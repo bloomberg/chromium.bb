@@ -13,6 +13,7 @@ class GURL;
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace offline_pages {
@@ -53,6 +54,12 @@ class OfflinePageUtils {
   // Marks that the offline page related to the |offline_url| has been accessed.
   static void MarkPageAccessed(content::BrowserContext* browser_context,
                                const GURL& offline_url);
+
+  // Gets the offline page corresponding to the given web contents.  The
+  // returned pointer is owned by the web_contents and may be deleted by user
+  // navigation, so it is unsafe to store a copy of the returned pointer.
+  static const OfflinePageItem* GetOfflinePageFromWebContents(
+      content::WebContents* web_contents);
 };
 
 }  // namespace offline_pages
