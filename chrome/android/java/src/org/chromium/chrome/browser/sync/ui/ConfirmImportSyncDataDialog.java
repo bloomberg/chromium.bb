@@ -106,6 +106,11 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        // If the dialog is being recreated it won't have the listener set and so won't be
+        // functional. Therefore we dismiss, and the user will need to open the dialog again.
+        if (savedInstanceState != null) {
+            dismiss();
+        }
         String oldAccountName = getArguments().getString(KEY_OLD_ACCOUNT_NAME);
         String newAccountName = getArguments().getString(KEY_NEW_ACCOUNT_NAME);
         ImportSyncType importSyncType =
