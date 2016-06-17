@@ -37,6 +37,10 @@
 #include "ui/wm/core/default_activation_client.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#endif
+
 namespace content {
 
 // RenderFrameHostTester ------------------------------------------------------
@@ -211,6 +215,11 @@ void RenderViewHostTestHarness::SetUp() {
 
   if (IsBrowserSideNavigationEnabled())
     BrowserSideNavigationSetUp();
+
+#if defined(OS_MACOSX)
+  ui::WindowResizeHelperMac::Get()->Init(
+    base::MessageLoop::current()->task_runner());
+#endif  // OS_MACOSX
 }
 
 void RenderViewHostTestHarness::TearDown() {
@@ -225,6 +234,10 @@ void RenderViewHostTestHarness::TearDown() {
   // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.
   base::RunLoop().RunUntilIdle();
+
+#if defined(OS_MACOSX)
+  ui::WindowResizeHelperMac::Get()->ShutdownForTests();
+#endif  // OS_MACOSX
 
 #if defined(OS_WIN)
   ole_initializer_.reset();
