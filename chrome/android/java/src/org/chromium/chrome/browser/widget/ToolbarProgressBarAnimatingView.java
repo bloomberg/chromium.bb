@@ -193,6 +193,7 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
         animate().cancel();
         setAlpha(0.0f);
         mLastAnimatedFraction = 0.0f;
+        mProgressWidth = 0;
     }
 
     /**
