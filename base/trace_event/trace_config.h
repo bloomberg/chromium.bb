@@ -139,7 +139,7 @@ class BASE_EXPORT TraceConfig {
   //                             "inc_pattern*",
   //                             "disabled-by-default-memory-infra"],
   //     "excluded_categories": ["excluded", "exc_pattern*"],
-  //     "synthetic_delays": ["test.Delay1;16", "test.Delay2;32"]
+  //     "synthetic_delays": ["test.Delay1;16", "test.Delay2;32"],
   //     "memory_dump_config": {
   //       "triggers": [
   //         {
