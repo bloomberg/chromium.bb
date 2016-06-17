@@ -57,9 +57,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableNormalText:
     case kColorId_ResultsTableHoveredText:
     case kColorId_ResultsTableSelectedText:
-    case kColorId_ResultsTableNormalHeadline:
-    case kColorId_ResultsTableHoveredHeadline:
-    case kColorId_ResultsTableSelectedHeadline:
       return kResultsTableText;
     case kColorId_ResultsTableNormalDimmedText:
     case kColorId_ResultsTableHoveredDimmedText:

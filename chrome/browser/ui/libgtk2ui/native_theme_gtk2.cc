@@ -400,14 +400,11 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetSystemColor(kColorId_TextfieldSelectionColor);
     case kColorId_ResultsTableNormalDimmedText:
     case kColorId_ResultsTableHoveredDimmedText:
-    case kColorId_ResultsTableNormalHeadline:
-    case kColorId_ResultsTableHoveredHeadline:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldDefaultColor),
           GetSystemColor(kColorId_TextfieldDefaultBackground),
           0x80);
     case kColorId_ResultsTableSelectedDimmedText:
-    case kColorId_ResultsTableSelectedHeadline:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldSelectionColor),
           GetSystemColor(kColorId_TextfieldDefaultBackground),

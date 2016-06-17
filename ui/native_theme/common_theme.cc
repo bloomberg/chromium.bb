@@ -21,11 +21,6 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
-  // Shared colors.
-  static const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
-  static const SkColor kTextfieldSelectionBackgroundFocused =
-      SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
-
   // MD colors.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Dialogs:
@@ -35,14 +30,11 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
     static const SkColor kSelectedMenuItemForegroundColorMd = SK_ColorBLACK;
     // Link:
-    static const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
     static const SkColor kLinkEnabledColorMd = gfx::kGoogleBlue700;
     // Results tables:
     static const SkColor kResultsTableTextMd = SK_ColorBLACK;
     static const SkColor kResultsTableDimmedTextMd =
         SkColorSetRGB(0x64, 0x64, 0x64);
-    static const SkColor kPositiveTextColorMd = SkColorSetRGB(0x0b, 0x80, 0x43);
-    static const SkColor kNegativeTextColorMd = SkColorSetRGB(0xc5, 0x39, 0x29);
 
     switch (color_id) {
       // Dialogs
@@ -56,8 +48,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
         return kSelectedMenuItemForegroundColorMd;
       // Link
-      case NativeTheme::kColorId_LinkDisabled:
-        return kLinkDisabledColorMd;
       case NativeTheme::kColorId_LinkEnabled:
       case NativeTheme::kColorId_LinkPressed:
         // Normal and pressed share a color.
@@ -81,9 +71,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ResultsTableNormalText:
       case NativeTheme::kColorId_ResultsTableHoveredText:
       case NativeTheme::kColorId_ResultsTableSelectedText:
-      case NativeTheme::kColorId_ResultsTableNormalHeadline:
-      case NativeTheme::kColorId_ResultsTableHoveredHeadline:
-      case NativeTheme::kColorId_ResultsTableSelectedHeadline:
         return kResultsTableTextMd;
       case NativeTheme::kColorId_ResultsTableNormalDimmedText:
       case NativeTheme::kColorId_ResultsTableHoveredDimmedText:
@@ -93,14 +80,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ResultsTableHoveredUrl:
       case NativeTheme::kColorId_ResultsTableSelectedUrl:
         return base_theme->GetSystemColor(NativeTheme::kColorId_LinkEnabled);
-      case NativeTheme::kColorId_ResultsTablePositiveText:
-      case NativeTheme::kColorId_ResultsTablePositiveHoveredText:
-      case NativeTheme::kColorId_ResultsTablePositiveSelectedText:
-        return kPositiveTextColorMd;
-      case NativeTheme::kColorId_ResultsTableNegativeText:
-      case NativeTheme::kColorId_ResultsTableNegativeHoveredText:
-      case NativeTheme::kColorId_ResultsTableNegativeSelectedText:
-        return kNegativeTextColorMd;
 
       default:
         break;
@@ -155,8 +134,11 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kLinkPressedColor = SK_ColorRED;
   // Textfield:
   static const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
+  static const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
   static const SkColor kTextfieldReadOnlyColor = SK_ColorDKGRAY;
   static const SkColor kTextfieldReadOnlyBackground = SK_ColorWHITE;
+  static const SkColor kTextfieldSelectionBackgroundFocused =
+      SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
   static const SkColor kTextfieldSelectionColor = color_utils::AlphaBlend(
       SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xdd);
   // Tooltip
@@ -370,13 +352,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ResultsTableSelectedText:
       return kResultsTableSelectedText;
     case NativeTheme::kColorId_ResultsTableNormalDimmedText:
-    case NativeTheme::kColorId_ResultsTableNormalHeadline:
       return kResultsTableNormalDimmedText;
     case NativeTheme::kColorId_ResultsTableHoveredDimmedText:
-    case NativeTheme::kColorId_ResultsTableHoveredHeadline:
       return kResultsTableHoveredDimmedText;
     case NativeTheme::kColorId_ResultsTableSelectedDimmedText:
-    case NativeTheme::kColorId_ResultsTableSelectedHeadline:
       return kResultsTableSelectedDimmedText;
     case NativeTheme::kColorId_ResultsTableNormalUrl:
       return kResultsTableNormalUrl;
