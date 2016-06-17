@@ -39,7 +39,19 @@ const int kDefaultFontSize = 12;
 
 };  // namespace
 
+@interface OffTheSideButtonCell : BookmarkButtonCell
+@end
+@implementation OffTheSideButtonCell
+
+- (BOOL)isOffTheSideButtonCell {
+  return YES;
+}
+
+@end
+
 @interface BookmarkButtonCell(Private)
+// Returns YES if the cell is the offTheSide button cell.
+- (BOOL)isOffTheSideButtonCell;
 - (void)configureBookmarkButtonCell;
 - (void)applyTextColor;
 // Returns the title the button cell displays. Note that a button cell can
@@ -140,6 +152,10 @@ const int kDefaultFontSize = 12;
 }
 
 - (BOOL)isFolderButtonCell {
+  return NO;
+}
+
+- (BOOL)isOffTheSideButtonCell {
   return NO;
 }
 
@@ -373,11 +389,17 @@ const int kDefaultFontSize = 12;
 
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
                             inView:(NSView*)controlView {
-  // In Material Design we have to move the focus ring over by 2 pts to get it
-  // to line up with the image.
-  if (ui::MaterialDesignController::IsModeMaterial() &&
-      [self visibleTitle].length > 0) {
-    cellFrame.origin.x += 2;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // In Material Design we have to move the focus ring over by 2 pts to get it
+    // to line up with the image.
+    if ([self visibleTitle].length > 0) {
+      cellFrame.origin.x += 2;
+    }
+
+    // We also have to nudge the chevron button's focus ring up 2pts.
+    if ([self isOffTheSideButtonCell]) {
+      cellFrame.origin.y -= 2;
+    }
   }
   [super drawFocusRingMaskWithFrame:cellFrame inView:controlView];
 }
