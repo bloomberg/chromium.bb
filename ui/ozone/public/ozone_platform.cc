@@ -34,11 +34,17 @@ OzonePlatform::~OzonePlatform() {
 
 // static
 void OzonePlatform::InitializeForUI() {
+  const InitParams params;
+  OzonePlatform::InitializeForUI(params);
+}
+
+// static
+void OzonePlatform::InitializeForUI(const InitParams& args) {
   CreateInstance();
   if (g_platform_initialized_ui)
     return;
   g_platform_initialized_ui = true;
-  instance_->InitializeUI();
+  instance_->InitializeUI(args);
   // This is deliberately created after initializing so that the platform can
   // create its own version of DDM.
   DeviceDataManager::CreateInstance();
@@ -46,11 +52,17 @@ void OzonePlatform::InitializeForUI() {
 
 // static
 void OzonePlatform::InitializeForGPU() {
+  const InitParams params;
+  OzonePlatform::InitializeForGPU(params);
+}
+
+// static
+void OzonePlatform::InitializeForGPU(const InitParams& args) {
   CreateInstance();
   if (g_platform_initialized_gpu)
     return;
   g_platform_initialized_gpu = true;
-  instance_->InitializeGPU();
+  instance_->InitializeGPU(args);
 }
 
 // static
@@ -77,5 +89,15 @@ void OzonePlatform::CreateInstance() {
 
 // static
 OzonePlatform* OzonePlatform::instance_;
+
+// Convenience methods to facilitate transitionning to new API.
+void OzonePlatform::InitializeUI(const InitParams& args) {
+  InitializeUI();
+}
+void OzonePlatform::InitializeGPU(const InitParams& args) {
+  InitializeGPU();
+}
+
+void OzonePlatform::AddInterfaces(shell::Connection* connection) {}
 
 }  // namespace ui
