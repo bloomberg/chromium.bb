@@ -1,6 +1,17 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// NOTE: This class is provided to support existing Chromium consumers; it is
+// NOT intended for use in NEW code. Configuring a TLS server correctly is a
+// security-sensitive activity with many subtle nuances, and thus care should be
+// taken to discuss with //net/OWNERS before any new usages.
+//
+// As such, this header should be treated as an internal implementation detail
+// of //net (where it's used for some unit test infrastructure), not as
+// appropriate for general use.
+//
+// See https://crbug.com/621176 for more details.
 
 #ifndef NET_SOCKET_SSL_SERVER_SOCKET_H_
 #define NET_SOCKET_SSL_SERVER_SOCKET_H_
