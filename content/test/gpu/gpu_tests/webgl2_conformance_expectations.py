@@ -247,8 +247,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['mac'], bug=483282)
 
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
     self.Fail('conformance2/textures/misc/tex-new-formats.html',
@@ -405,6 +403,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.

@@ -379,12 +379,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fails on all platforms
     self.Fail('deqp/data/gles2/shaders/functions.html',
         bug=478572)
-    # Under the Nexus 5X group is a list of failures for bug 609883.
-    # the ext-sRGB.html bug is failing on the Nexus 5X.
-    # If bug 540900 is fixed, double check whether the Nexus 5X
-    # needs a .Fail added for bug 609883 and ext-sRGB.html.
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        bug=540900)
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.

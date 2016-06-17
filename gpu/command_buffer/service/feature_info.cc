@@ -136,7 +136,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_render_buffer_format_bgra8888(false),
       ext_multisample_compatibility(false),
       ext_blend_func_extended(false),
-      ext_read_format_bgra(false) {}
+      ext_read_format_bgra(false),
+      desktop_srgb_support(false) {}
 
 FeatureInfo::FeatureInfo() {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
@@ -542,6 +543,12 @@ void FeatureInfo::InitializeFeatures() {
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
   }
 
+  if (gl_version_info_->IsAtLeastGL(3, 2) ||
+      (gl_version_info_->IsAtLeastGL(2, 0) &&
+       (extensions.Contains("GL_EXT_framebuffer_sRGB") ||
+        extensions.Contains("GL_ARB_framebuffer_sRGB")))) {
+    feature_flags_.desktop_srgb_support = true;
+  }
   // With EXT_sRGB, unsized SRGB_EXT and SRGB_ALPHA_EXT are accepted by the
   // <format> and <internalformat> parameter of TexImage2D. GLES3 adds support
   // for SRGB Textures but the accepted internal formats for TexImage2D are only
@@ -551,7 +558,7 @@ void FeatureInfo::InitializeFeatures() {
   if ((((gl_version_info_->is_es3 ||
          extensions.Contains("GL_OES_rgb8_rgba8")) &&
         extensions.Contains("GL_EXT_sRGB")) ||
-       gl::HasDesktopGLFeatures()) &&
+       feature_flags_.desktop_srgb_support) &&
       (context_type_ == CONTEXT_TYPE_WEBGL1 ||
        context_type_ == CONTEXT_TYPE_OPENGLES2)) {
     AddExtensionString("GL_EXT_sRGB");

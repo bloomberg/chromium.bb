@@ -3964,6 +3964,10 @@ bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
       GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
   if (valid && !features().chromium_framebuffer_multisample)
     OnUseFramebuffer();
+  if (valid) {
+    framebuffer_manager()->UpdateFramebufferSRGBSetting(
+        feature_info_.get(), framebuffer);
+  }
   return valid;
 }
 
