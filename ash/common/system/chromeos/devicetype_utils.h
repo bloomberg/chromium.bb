@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_
-#define ASH_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_
 
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
@@ -23,4 +23,4 @@ ASH_EXPORT int GetChromeOSDeviceTypeResourceId();
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_DEVICETYPE_UTILS_H_

@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
+#include "ash/common/system/system_notifier.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/new_window_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "base/strings/string_number_conversions.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/env.h"

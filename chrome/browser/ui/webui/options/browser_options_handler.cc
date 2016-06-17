@@ -112,9 +112,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/ash_switches.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"

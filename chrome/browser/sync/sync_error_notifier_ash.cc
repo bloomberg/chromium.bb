@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
+#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/system_notifier.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

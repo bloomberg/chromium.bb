@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "grit/ash_resources.h"

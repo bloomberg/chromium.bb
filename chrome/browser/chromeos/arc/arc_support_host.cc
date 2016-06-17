@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 
-#include "ash/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

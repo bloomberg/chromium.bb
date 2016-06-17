@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/power_status_view.h"
+#include "ash/common/system/chromeos/power/power_status_view.h"
 
-#include "ash/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "grit/ash_strings.h"

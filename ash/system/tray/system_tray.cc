@@ -46,6 +46,9 @@
 #include "ui/views/view.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/tray_power.h"
+#include "ash/common/system/chromeos/settings/tray_settings.h"
 #include "ash/system/chromeos/audio/tray_audio_chromeos.h"
 #include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
@@ -53,13 +56,10 @@
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
-#include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/system/chromeos/session/tray_session_length_limit.h"
-#include "ash/system/chromeos/settings/tray_settings.h"
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"

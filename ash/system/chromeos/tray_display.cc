@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -18,8 +20,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/devicetype_utils.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"

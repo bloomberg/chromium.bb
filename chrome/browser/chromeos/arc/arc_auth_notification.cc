@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 
-#include "ash/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"

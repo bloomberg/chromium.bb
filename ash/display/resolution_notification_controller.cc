@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/common/system/system_notifier.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

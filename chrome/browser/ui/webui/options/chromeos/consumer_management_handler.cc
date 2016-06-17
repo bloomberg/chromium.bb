@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/consumer_management_handler.h"
 
-#include "ash/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"

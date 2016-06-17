@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_POWER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_POWER_HANDLER_H_
 
-#include "ash/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"

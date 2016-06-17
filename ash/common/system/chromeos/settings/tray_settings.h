@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
-#define ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
 
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
@@ -35,4 +35,4 @@ class TraySettings : public SystemTrayItem {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_

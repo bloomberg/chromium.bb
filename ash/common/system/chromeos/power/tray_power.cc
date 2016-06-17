@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/tray_power.h"
+#include "ash/common/system/chromeos/power/tray_power.h"
 
 #include <utility>
 
 #include "ash/ash_switches.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/chromeos/power/battery_notification.h"
+#include "ash/common/system/chromeos/power/dual_role_notification.h"
 #include "ash/common/system/date/date_view.h"
+#include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/shell.h"
-#include "ash/system/chromeos/devicetype_utils.h"
-#include "ash/system/chromeos/power/battery_notification.h"
-#include "ash/system/chromeos/power/dual_role_notification.h"
-#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

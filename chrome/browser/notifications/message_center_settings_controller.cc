@@ -47,7 +47,7 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/system_notifier.h"
+#include "ash/common/system/system_notifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_notifier_manager.h"
 #include "components/arc/arc_bridge_service.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/battery_notification.h"
+#include "ash/common/system/chromeos/power/battery_notification.h"
 
-#include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/system_notifier.h"
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/system_notifier.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"

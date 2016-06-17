@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/location.h"

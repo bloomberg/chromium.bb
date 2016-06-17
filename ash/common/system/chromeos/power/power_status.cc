@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 
 #include <algorithm>
 #include <cmath>
 
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

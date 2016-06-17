@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"

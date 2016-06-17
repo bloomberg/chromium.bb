@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/power_status_view.h"
+#include "ash/common/system/chromeos/power/power_status_view.h"
 
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/chromeos/power/tray_power.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
-#define ASH_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 #include "base/macros.h"
 
 namespace message_center {
@@ -45,4 +45,4 @@ class ASH_EXPORT DualRoleNotification {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_

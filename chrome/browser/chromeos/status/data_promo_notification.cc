@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
-#include "ash/system/system_notifier.h"
+#include "ash/common/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

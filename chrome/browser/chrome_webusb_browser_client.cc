@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/system/system_notifier.h"
+#include "ash/common/system/system_notifier.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"

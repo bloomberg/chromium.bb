@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

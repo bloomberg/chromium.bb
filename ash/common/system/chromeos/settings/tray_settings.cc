@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/settings/tray_settings.h"
+#include "ash/common/system/chromeos/settings/tray_settings.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/chromeos/power/power_status_view.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -40,12 +39,11 @@ class SettingsDefaultView : public ActionableView,
         ash::kTrayPopupPaddingBetweenItems));
 
     bool power_view_right_align = false;
-    bool userAddingRunning = ash::Shell::GetInstance()
-                                 ->session_state_delegate()
-                                 ->IsInSecondaryLoginScreen();
-
     if (login_status_ != LoginStatus::NOT_LOGGED_IN &&
-        login_status_ != LoginStatus::LOCKED && !userAddingRunning) {
+        login_status_ != LoginStatus::LOCKED &&
+        !WmShell::Get()
+             ->GetSessionStateDelegate()
+             ->IsInSecondaryLoginScreen()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon =
           new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
@@ -73,12 +71,9 @@ class SettingsDefaultView : public ActionableView,
 
   // Overridden from ash::ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    bool adding_user = Shell::GetInstance()
-                           ->session_state_delegate()
-                           ->IsInSecondaryLoginScreen();
-
     if (login_status_ == LoginStatus::NOT_LOGGED_IN ||
-        login_status_ == LoginStatus::LOCKED || adding_user) {
+        login_status_ == LoginStatus::LOCKED ||
+        WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
       return false;
     }
 
@@ -157,15 +152,13 @@ views::View* TraySettings::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 
-void TraySettings::DestroyTrayView() {
-}
+void TraySettings::DestroyTrayView() {}
 
 void TraySettings::DestroyDefaultView() {
   default_view_ = NULL;
 }
 
-void TraySettings::DestroyDetailedView() {
-}
+void TraySettings::DestroyDetailedView() {}
 
 void TraySettings::UpdateAfterLoginStatusChange(LoginStatus status) {}
 

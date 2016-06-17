@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_
-#define ASH_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/chromeos/power/tray_power.h"
+#include "ash/common/system/chromeos/power/tray_power.h"
 #include "base/macros.h"
 
 namespace message_center {
@@ -33,4 +33,4 @@ class ASH_EXPORT BatteryNotification {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_POWER_BATTERY_NOTIFICATION_H_

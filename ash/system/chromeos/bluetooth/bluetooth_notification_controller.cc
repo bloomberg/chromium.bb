@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/system/system_notifier.h"
+#include "ash/common/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
