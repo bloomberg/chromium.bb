@@ -13,7 +13,13 @@ bool PageTransitionCoreTypeIs(PageTransition lhs,
   // Expect the rhs to be a compile time constant without qualifiers.
   DCHECK_EQ(PageTransitionGetQualifier(rhs), 0);
   DCHECK(PageTransitionIsValidType(rhs));
-  return PageTransitionStripQualifier(lhs) == PageTransitionStripQualifier(rhs);
+  return static_cast<int32_t>(PageTransitionStripQualifier(lhs)) ==
+      static_cast<int32_t>(PageTransitionStripQualifier(rhs));
+}
+
+bool PageTransitionTypeIncludingQualifiersIs(PageTransition lhs,
+                                             PageTransition rhs) {
+  return static_cast<int32_t>(lhs) == static_cast<int32_t>(rhs);
 }
 
 PageTransition PageTransitionStripQualifier(PageTransition type) {
@@ -37,9 +43,8 @@ PageTransition PageTransitionFromInt(int32_t type) {
 }
 
 bool PageTransitionIsMainFrame(PageTransition type) {
-  int32_t t = PageTransitionStripQualifier(type);
-  return (t != PAGE_TRANSITION_AUTO_SUBFRAME &&
-          t != PAGE_TRANSITION_MANUAL_SUBFRAME);
+  return !PageTransitionCoreTypeIs(type, PAGE_TRANSITION_AUTO_SUBFRAME) &&
+         !PageTransitionCoreTypeIs(type, PAGE_TRANSITION_MANUAL_SUBFRAME);
 }
 
 bool PageTransitionIsRedirect(PageTransition type) {

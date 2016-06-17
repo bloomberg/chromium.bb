@@ -151,6 +151,11 @@ enum PageTransition {
 UI_BASE_EXPORT bool PageTransitionCoreTypeIs(PageTransition lhs,
                                              PageTransition rhs);
 
+// Compares two PageTransition types including qualifiers. Rarely useful,
+// PageTransitionCoreTypeIs() is more likely what you need.
+UI_BASE_EXPORT bool PageTransitionTypeIncludingQualifiersIs(PageTransition lhs,
+                                                            PageTransition rhs);
+
 // Simplifies the provided transition by removing any qualifier
 UI_BASE_EXPORT PageTransition PageTransitionStripQualifier(
     PageTransition type);
@@ -188,7 +193,8 @@ UI_BASE_EXPORT const char* PageTransitionGetCoreTransitionString(
 class DontUseOperatorEquals;
 
 // Ban operator== as it's way too easy to forget to strip the qualifiers. Use
-// PageTransitionCoreTypeIs() instead.
+// PageTransitionCoreTypeIs() instead or, in rare cases,
+// PageTransitionTypeIncludingQualifiersIs().
 DontUseOperatorEquals operator==(PageTransition, PageTransition);
 DontUseOperatorEquals operator==(PageTransition, int);
 DontUseOperatorEquals operator==(int, PageTransition);

@@ -727,6 +727,7 @@ test("ui_base_unittests") {
     "resource/resource_bundle_unittest.cc",
     "resource/scale_factor_unittest.cc",
     "template_expressions_unittest.cc",
+    "test/page_transition_types_unittest.cc",
     "test/run_all_unittests.cc",
     "user_activity/user_activity_detector_unittest.cc",
   ]
