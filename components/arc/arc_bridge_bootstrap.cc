@@ -42,7 +42,23 @@ const base::FilePath::CharType kArcBridgeSocketPath[] =
 
 const char kArcBridgeSocketGroup[] = "arc-bridge";
 
-class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
+// This is called when StopArcInstance D-Bus method completes. Since we have the
+// ArcInstanceStopped() callback and are notified if StartArcInstance fails, we
+// don't need to do anything when StopArcInstance completes.
+void DoNothingInstanceStopped(bool) {}
+
+chromeos::SessionManagerClient* GetSessionManagerClient() {
+  // If the DBusThreadManager or the SessionManagerClient aren't available,
+  // there isn't much we can do. This should only happen when running tests.
+  if (!chromeos::DBusThreadManager::IsInitialized() ||
+      !chromeos::DBusThreadManager::Get() ||
+      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
+    return nullptr;
+  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+}
+
+class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
+                               public chromeos::SessionManagerClient::Observer {
  public:
   // The possible states of the bootstrap connection.  In the normal flow,
   // the state changes in the following sequence:
@@ -112,7 +128,9 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
 
   // DBus callbacks.
   void OnInstanceStarted(base::ScopedFD socket_fd, bool success);
-  void OnInstanceStopped(bool success);
+
+  // chromeos::SessionManagerClient::Observer:
+  void ArcInstanceStopped(bool clean) override;
 
   // The state of the bootstrap connection.
   State state_ = State::STOPPED;
@@ -126,11 +144,21 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeBootstrapImpl);
 };
 
-ArcBridgeBootstrapImpl::ArcBridgeBootstrapImpl() : weak_factory_(this) {}
+ArcBridgeBootstrapImpl::ArcBridgeBootstrapImpl()
+    : weak_factory_(this) {
+  chromeos::SessionManagerClient* client = GetSessionManagerClient();
+  if (client == nullptr)
+    return;
+  client->AddObserver(this);
+}
 
 ArcBridgeBootstrapImpl::~ArcBridgeBootstrapImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == State::STOPPED || state_ == State::STOPPING);
+  chromeos::SessionManagerClient* client = GetSessionManagerClient();
+  if (client == nullptr)
+    return;
+  client->RemoveObserver(this);
 }
 
 void ArcBridgeBootstrapImpl::Start() {
@@ -228,16 +256,16 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
 void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
                                                bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (state_ != State::STARTING) {
-    VLOG(1) << "Stop() called when ARC is not running";
-    return;
-  }
   if (!success) {
     LOG(ERROR) << "Failed to start ARC instance";
     // Roll back the state to SOCKET_CREATING to avoid sending the D-Bus signal
     // to stop the failed instance.
     SetState(State::SOCKET_CREATING);
     Stop();
+    return;
+  }
+  if (state_ != State::STARTING) {
+    VLOG(1) << "Stop() called when ARC is not running";
     return;
   }
   SetState(State::STARTED);
@@ -315,21 +343,21 @@ void ArcBridgeBootstrapImpl::Stop() {
     // This was stopped before the D-Bus command to start the instance. Skip
     // the D-Bus command to stop it.
     SetState(State::STOPPING);
-    OnInstanceStopped(true);
+    ArcInstanceStopped(true);
     return;
   }
   SetState(State::STOPPING);
+  // Notification will arrive through ArcInstanceStopped().
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->StopArcInstance(base::Bind(
-      &ArcBridgeBootstrapImpl::OnInstanceStopped, weak_factory_.GetWeakPtr()));
+  session_manager_client->StopArcInstance(
+      base::Bind(&DoNothingInstanceStopped));
 }
 
-void ArcBridgeBootstrapImpl::OnInstanceStopped(bool success) {
+void ArcBridgeBootstrapImpl::ArcInstanceStopped(bool clean) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // STOPPING is the only valid state for this function.
-  // DCHECK on enum classes not supported.
-  DCHECK(state_ == State::STOPPING);
+  if (!clean)
+    LOG(ERROR) << "ARC instance crashed";
   DCHECK(delegate_);
   SetState(State::STOPPED);
   delegate_->OnStopped();

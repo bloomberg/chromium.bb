@@ -14,8 +14,16 @@ namespace arc {
 
 class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnCrashed() = 0;
+  };
+
   FakeArcBridgeInstance();
   ~FakeArcBridgeInstance() override;
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Finalizes the connection between the host and the instance, and signals
   // the host that the boot sequence has finished.
@@ -33,7 +41,12 @@ class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
   // The number of times Init() has been called.
   int init_calls() const { return init_calls_; }
 
+  // Simulates a crash by calling Stop() on the ArcBridgeBoostrap.
+  void SimulateCrash();
+
  private:
+  Delegate* delegate_ = nullptr;
+
   // Mojo endpoints.
   mojo::Binding<mojom::ArcBridgeInstance> binding_;
   mojom::ArcBridgeHostPtr host_ptr_;

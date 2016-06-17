@@ -429,6 +429,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SessionManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        login_manager::kSessionManagerInterface,
+        login_manager::kArcInstanceStopped,
+        base::Bind(&SessionManagerClientImpl::ArcInstanceStoppedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -652,6 +659,16 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
+  }
+
+  void ArcInstanceStoppedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    bool clean = false;
+    if (!reader.PopBool(&clean)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    FOR_EACH_OBSERVER(Observer, observers_, ArcInstanceStopped(clean));
   }
 
   // Called when the object is connected to the signal.

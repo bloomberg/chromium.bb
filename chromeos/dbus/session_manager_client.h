@@ -47,6 +47,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
     // Called after EmitLoginPromptVisible is called.
     virtual void EmitLoginPromptVisibleCalled() {}
+
+    // Called when the ARC instance is stopped after it had already started.
+    // |clean| is true if the instance was stopped as a result of an explicit
+    // request, false if it died unexpectedly.
+    virtual void ArcInstanceStopped(bool clean) {}
   };
 
   // Interface for performing actions on behalf of the stub implementation.

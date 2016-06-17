@@ -31,4 +31,10 @@ void FakeArcBridgeInstance::WaitForInitCall() {
   binding_.WaitForIncomingMethodCall();
 }
 
+void FakeArcBridgeInstance::SimulateCrash() {
+  if (!delegate_)
+    return;
+  delegate_->OnCrashed();
+}
+
 }  // namespace arc

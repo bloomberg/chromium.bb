@@ -15,6 +15,7 @@ namespace arc {
 
 FakeArcBridgeBootstrap::FakeArcBridgeBootstrap(FakeArcBridgeInstance* instance)
     : instance_(instance) {
+  instance_->set_delegate(this);
 }
 
 void FakeArcBridgeBootstrap::Start() {
@@ -28,6 +29,10 @@ void FakeArcBridgeBootstrap::Stop() {
   DCHECK(delegate_);
   instance_->Unbind();
   delegate_->OnStopped();
+}
+
+void FakeArcBridgeBootstrap::OnCrashed() {
+  Stop();
 }
 
 }  // namespace arc

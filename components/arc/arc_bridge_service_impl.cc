@@ -94,6 +94,9 @@ void ArcBridgeServiceImpl::StopInstance() {
   if (binding_.is_bound())
     binding_.Close();
   bootstrap_->Stop();
+
+  // We were explicitly asked to stop, so do not reconnect.
+  reconnect_ = false;
 }
 
 void ArcBridgeServiceImpl::SetDetectedAvailability(bool arc_available) {
@@ -119,6 +122,9 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 
   instance_ptr_->Init(binding_.CreateInterfacePtrAndBind());
 
+  // The container can be considered to have been successfully launched, so
+  // restart if the connection goes down without being requested.
+  reconnect_ = true;
   VLOG(0) << "ARC ready";
   SetState(State::READY);
 }
@@ -154,9 +160,10 @@ void ArcBridgeServiceImpl::OnChannelClosed() {
     return;
   }
   VLOG(1) << "Mojo connection lost";
+  instance_ptr_.reset();
+  if (binding_.is_bound())
+    binding_.Close();
   CloseAllChannels();
-  reconnect_ = true;
-  StopInstance();
 }
 
 }  // namespace arc
