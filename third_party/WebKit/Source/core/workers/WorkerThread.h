@@ -34,6 +34,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
+#include "platform/WaitableEvent.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -43,7 +44,6 @@
 namespace blink {
 
 class InspectorTaskRunner;
-class WaitableEvent;
 class WorkerBackingThread;
 class WorkerGlobalScope;
 class WorkerInspectorController;
@@ -152,6 +152,8 @@ public:
 
     ExitCode getExitCode();
 
+    void waitForShutdownForTesting() { m_shutdownEvent->wait(); }
+
 protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
@@ -164,6 +166,7 @@ protected:
 
 private:
     friend class WorkerThreadTest;
+    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerTaskIsRunning);
 
     class ForceTerminationTask;
     class WorkerMicrotaskRunner;
@@ -189,8 +192,6 @@ private:
     void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
     void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void performDebuggerTaskDontWaitOnWorkerThread();
-
-    void setForceTerminationDelayInMsForTesting(long long forceTerminationDelayInMs) { m_forceTerminationDelayInMs = forceTerminationDelayInMs; }
 
     bool m_started = false;
     bool m_terminated = false;
