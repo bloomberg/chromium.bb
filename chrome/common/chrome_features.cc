@@ -55,7 +55,7 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
 
 // Enables or disables the Material Design version of chrome://history.
 const base::Feature kMaterialDesignHistoryFeature {
-  "MaterialDesignHistory", base::FEATURE_DISABLED_BY_DEFAULT
+  "MaterialDesignHistory", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 // Enables or disables the Material Design version of chrome://settings.

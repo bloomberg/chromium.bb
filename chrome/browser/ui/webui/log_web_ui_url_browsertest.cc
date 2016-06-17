@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,6 +38,11 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
 
   std::vector<Bucket> GetSamples() {
     return histogram_tester_.GetAllSamples(webui::kWebUICreatedForUrl);
+  }
+
+  void SetUpOnMainThread() override {
+    // Disable MD History to test non-MD history page.
+    MdHistoryUI::DisableForTesting();
   }
 
  private:
