@@ -65,10 +65,10 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/scoped_ipc_support.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/shell/runner/common/client_util.h"
 
 #if defined(OS_POSIX)
@@ -398,7 +398,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
   if (!IsInBrowserProcess()) {
     // Don't double-initialize IPC support in single-process mode.
-    mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(GetIOTaskRunner()));
+    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(GetIOTaskRunner()));
     InitializeMojoIPCChannel();
   }
   if (shell::ShellIsRemote()) {

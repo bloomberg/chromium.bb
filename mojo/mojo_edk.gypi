@@ -45,6 +45,8 @@
       'edk/embedder/platform_handle_vector.h',
       'edk/embedder/platform_shared_buffer.cc',
       'edk/embedder/platform_shared_buffer.h',
+      'edk/embedder/scoped_ipc_support.cc',
+      'edk/embedder/scoped_ipc_support.h',
       'edk/embedder/scoped_platform_handle.h',
       'edk/system/awakable.h',
       'edk/system/awakable_list.cc',

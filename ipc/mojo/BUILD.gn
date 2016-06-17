@@ -39,18 +39,6 @@ component("mojo") {
   ]
 }
 
-source_set("ipc_support") {
-  sources = [
-    "scoped_ipc_support.cc",
-    "scoped_ipc_support.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/edk/system",
-  ]
-}
-
 test("ipc_mojo_unittests") {
   sources = [
     "ipc_channel_mojo_unittest.cc",

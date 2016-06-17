@@ -13,7 +13,7 @@
       'dependencies': [
         '../message_lib/message_lib.gyp:ipc_message_lib',
         '../../../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
-        '../../../ipc/mojo/ipc_mojo.gyp:ipc_mojo_support'
+        '../../../mojo/mojo_edk.gyp:mojo_system_impl',
       ],
       'sources': [
         'replay.cc',

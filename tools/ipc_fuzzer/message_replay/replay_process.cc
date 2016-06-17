@@ -21,6 +21,7 @@
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 
 #if defined(OS_POSIX)
 #include "content/public/common/content_descriptors.h"
@@ -93,7 +94,8 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
              kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif
 
-  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(io_thread_.task_runner()));
+  mojo_ipc_support_.reset(
+      new mojo::edk::ScopedIPCSupport(io_thread_.task_runner()));
   InitializeMojoIPCChannel();
 
   return true;

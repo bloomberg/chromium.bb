@@ -17,8 +17,13 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
-#include "ipc/mojo/scoped_ipc_support.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
+
+namespace mojo {
+namespace edk {
+class ScopedIPCSupport;
+}  // namespace edk
+}  // namespace mojo
 
 namespace ipc_fuzzer {
 
@@ -48,7 +53,7 @@ class ReplayProcess : public IPC::Listener {
  private:
   void SendNextMessage();
 
-  std::unique_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
   base::MessageLoop main_loop_;
   base::Thread io_thread_;

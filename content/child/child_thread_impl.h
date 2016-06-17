@@ -31,10 +31,15 @@ class MessageLoop;
 
 namespace IPC {
 class MessageFilter;
-class ScopedIPCSupport;
 class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
+
+namespace mojo {
+namespace edk {
+class ScopedIPCSupport;
+}  // namespace edk
+}  // namespace mojo
 
 namespace blink {
 class WebFrame;
@@ -243,7 +248,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
-  std::unique_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;

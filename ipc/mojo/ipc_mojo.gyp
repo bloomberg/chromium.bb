@@ -49,18 +49,6 @@
       },
     },
     {
-      'target_name': 'ipc_mojo_support',
-      'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../mojo/mojo_edk.gyp:mojo_system_impl',
-      ],
-      'sources': [
-        'scoped_ipc_support.cc',
-        'scoped_ipc_support.h',
-      ],
-    },
-    {
       'target_name': 'ipc_mojo_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [

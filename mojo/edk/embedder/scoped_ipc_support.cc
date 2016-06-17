@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/mojo/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -10,7 +10,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
 
-namespace IPC {
+namespace mojo {
+namespace edk {
 
 namespace {
 class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
@@ -56,4 +57,5 @@ ScopedIPCSupport::~ScopedIPCSupport() {
   ipc_support_initializer.Get().ShutDown();
 }
 
-}  // namespace IPC
+}  // namespace edk
+}  // namespace mojo

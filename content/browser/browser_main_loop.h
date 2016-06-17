@@ -35,10 +35,6 @@ class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
 
-namespace IPC {
-class ScopedIPCSupport;
-}
-
 namespace media {
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
@@ -53,6 +49,12 @@ namespace midi {
 class MidiManager;
 }  // namespace midi
 }  // namespace media
+
+namespace mojo {
+namespace edk {
+class ScopedIPCSupport;
+}  // namespace edk
+}  // namespace mojo
 
 namespace net {
 class NetworkChangeNotifier;
@@ -258,7 +260,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<base::Thread> indexed_db_thread_;
   std::unique_ptr<MojoShellContext> mojo_shell_context_;
-  std::unique_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;

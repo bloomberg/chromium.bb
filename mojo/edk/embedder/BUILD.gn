@@ -38,6 +38,8 @@ source_set("embedder") {
     "embedder_internal.h",
     "entrypoints.cc",
     "entrypoints.h",
+    "scoped_ipc_support.cc",
+    "scoped_ipc_support.h",
 
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
