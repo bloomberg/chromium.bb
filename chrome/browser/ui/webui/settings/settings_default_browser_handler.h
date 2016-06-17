@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace base {
 class ListValue;
@@ -51,8 +51,8 @@ class DefaultBrowserHandler : public SettingsPageUIHandler {
   scoped_refptr<shell_integration::DefaultBrowserWorker>
       default_browser_worker_;
 
-  // Policy setting to determine if default browser setting is managed.
-  BooleanPrefMember default_browser_policy_;
+  // Used to listen for changes to if the default browser setting is managed.
+  PrefChangeRegistrar local_state_pref_registrar_;
 
   // Used to invalidate the DefaultBrowserWorker callback.
   base::WeakPtrFactory<DefaultBrowserHandler> weak_ptr_factory_;

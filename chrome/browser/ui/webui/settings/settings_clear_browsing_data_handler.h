@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace base {
 class ListValue;
@@ -75,15 +75,8 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // can only be one such request in-flight.
   std::string webui_callback_id_;
 
-  // Keeps track of whether clearing LSO data is supported.
-  BooleanPrefMember clear_plugin_lso_data_enabled_;
-
-  // Keeps track of whether Pepper Flash is enabled and thus Flapper-specific
-  // settings and removal options (e.g. Content Licenses) are available.
-  BooleanPrefMember pepper_flash_settings_enabled_;
-
-  // Keeps track of whether deleting browsing history and downloads is allowed.
-  BooleanPrefMember allow_deleting_browser_history_;
+  // Used to listen for pref changes to allow / disallow deleting browsing data.
+  PrefChangeRegistrar profile_pref_registrar_;
 
   // Whether the sentence about other forms of history stored in user's account
   // should be displayed in the footer. This value is retrieved asynchronously,

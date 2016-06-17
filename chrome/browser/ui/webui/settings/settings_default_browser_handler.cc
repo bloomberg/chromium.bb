@@ -17,8 +17,12 @@ namespace settings {
 
 namespace {
 
-bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
-  return pref.IsManaged() && !pref.GetValue();
+bool DefaultBrowserIsDisabledByPolicy() {
+  const PrefService::Preference* pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kDefaultBrowserSettingEnabled);
+  DCHECK(pref);
+  return pref->IsManaged() && !pref->GetValue();
 }
 
 }  // namespace
@@ -44,14 +48,16 @@ void DefaultBrowserHandler::RegisterMessages() {
 }
 
 void DefaultBrowserHandler::OnJavascriptAllowed() {
-  default_browser_policy_.Init(
-      prefs::kDefaultBrowserSettingEnabled, g_browser_process->local_state(),
+  PrefService* prefs = g_browser_process->local_state();
+  local_state_pref_registrar_.Init(prefs);
+  local_state_pref_registrar_.Add(
+      prefs::kDefaultBrowserSettingEnabled,
       base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
                  base::Unretained(this), nullptr));
 }
 
 void DefaultBrowserHandler::OnJavascriptDisallowed() {
-  default_browser_policy_.Destroy();
+  local_state_pref_registrar_.RemoveAll();
 }
 
 void DefaultBrowserHandler::RequestDefaultBrowserState(
@@ -62,7 +68,7 @@ void DefaultBrowserHandler::RequestDefaultBrowserState(
 }
 
 void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
-  CHECK(!IsDisabledByPolicy(default_browser_policy_));
+  CHECK(!DefaultBrowserIsDisabledByPolicy());
 
   base::RecordAction(base::UserMetricsAction("Options_SetAsDefaultBrowser"));
   UMA_HISTOGRAM_COUNTS("Settings.StartSetAsDefault", true);
@@ -85,7 +91,7 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
   base::FundamentalValue is_default(state == shell_integration::IS_DEFAULT);
   base::FundamentalValue can_be_default(
       state != shell_integration::UNKNOWN_DEFAULT &&
-      !IsDisabledByPolicy(default_browser_policy_) &&
+      !DefaultBrowserIsDisabledByPolicy() &&
       shell_integration::CanSetAsDefaultBrowser());
 
   CallJavascriptFunction("Settings.updateDefaultBrowserState", is_default,

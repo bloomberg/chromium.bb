@@ -26,10 +26,6 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
       remover_(nullptr),
       should_show_history_footer_(false),
       weak_ptr_factory_(this) {
-  PrefService* prefs = Profile::FromWebUI(webui)->GetPrefs();
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled, prefs);
-  pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
-                                      prefs);
   sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(webui));
 }
@@ -53,8 +49,9 @@ void ClearBrowsingDataHandler::RegisterMessages() {
 
 void ClearBrowsingDataHandler::OnJavascriptAllowed() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  allow_deleting_browser_history_.Init(
-      prefs::kAllowDeletingBrowserHistory, prefs,
+  profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Add(
+      prefs::kAllowDeletingBrowserHistory,
       base::Bind(&ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged,
                  base::Unretained(this)));
 
@@ -63,7 +60,7 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
-  allow_deleting_browser_history_.Destroy();
+  profile_pref_registrar_.RemoveAll();
   sync_service_observer_.RemoveAll();
 }
 
@@ -80,11 +77,11 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 
   int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
   // Don't try to clear LSO data if it's not supported.
-  if (!*clear_plugin_lso_data_enabled_)
+  if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
     site_data_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
   int remove_mask = 0;
-  if (*allow_deleting_browser_history_) {
+  if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
     if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory))
       remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
     if (prefs->GetBoolean(prefs::kDeleteDownloadHistory))
@@ -108,7 +105,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 
   // Clearing Content Licenses is only supported in Pepper Flash.
   if (prefs->GetBoolean(prefs::kDeauthorizeContentLicenses) &&
-      *pepper_flash_settings_enabled_) {
+      prefs->GetBoolean(prefs::kPepperFlashSettingsEnabled)) {
     remove_mask |= BrowsingDataRemover::REMOVE_CONTENT_LICENSES;
   }
 
@@ -174,7 +171,9 @@ void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("browsing-history-pref-changed"),
-      base::FundamentalValue(*allow_deleting_browser_history_));
+      base::FundamentalValue(
+          Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+              prefs::kAllowDeletingBrowserHistory)));
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
