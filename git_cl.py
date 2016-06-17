@@ -4166,6 +4166,11 @@ review to be closed, without actually landing upstream. If you choose to
 proceed, please verify that the commit lands upstream as expected."""
     print(message)
     ask_for_data('[Press enter to dcommit or ctrl-C to quit]')
+  # TODO(tandrii): kill this post SVN migration with
+  # https://codereview.chromium.org/2076683002
+  print('WARNING: chrome infrastructure is migrating SVN repos to Git.\n'
+        'Please let us know of this project you are committing to:'
+        '    http://crbug.com/600451')
   return SendUpstream(parser, args, 'dcommit')
 
 
