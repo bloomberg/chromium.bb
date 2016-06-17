@@ -6,6 +6,7 @@
 
 #include <iwscapi.h>
 #include <stddef.h>
+#include <wbemidl.h>
 #include <windows.h>
 #include <wscapi.h>
 
@@ -28,6 +29,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/channel_info.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -35,6 +37,25 @@
 #include "components/version_info/version_info.h"
 
 namespace {
+
+// This is an undocumented structure returned from querying the "productState"
+// uint32 from the AntiVirusProduct in WMI.
+// http://neophob.com/2010/03/wmi-query-windows-securitycenter2/ gives a good
+// summary and testing was also done with a variety of AV products to determine
+// these values as accurately as possible.
+#pragma pack(push)
+#pragma pack(1)
+struct PRODUCT_STATE {
+  uint8_t unknown_1 : 4;
+  uint8_t definition_state : 4;  // 1 = Out of date, 0 = Up to date.
+  uint8_t unknown_2 : 4;
+  uint8_t security_state : 4;  //  0 = Inactive, 1 = Active, 2 = Snoozed.
+  uint8_t security_provider;   // matches WSC_SECURITY_PROVIDER in wscapi.h.
+  uint8_t unknown_3;
+};
+#pragma pack(pop)
+
+static_assert(sizeof(PRODUCT_STATE) == 4, "Wrong packing!");
 
 bool ShouldReportFullNames() {
   // The expectation is that this will be disabled for the majority of users,
@@ -137,7 +158,14 @@ std::vector<AntiVirusMetricsProvider::AvProduct>
 AntiVirusMetricsProvider::GetAntiVirusProductsOnFileThread() {
   std::vector<AvProduct> av_products;
 
-  ResultCode result = FillAntiVirusProducts(&av_products);
+  ResultCode result = RESULT_GENERIC_FAILURE;
+
+  // The WSC interface is preferred here as it's fully documented, but this code
+  // will fall-back to the undocumented WMI interface on Windows 7 and below.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    result = FillAntiVirusProductsFromWSC(&av_products);
+  else
+    result = FillAntiVirusProductsFromWMI(&av_products);
 
   UMA_HISTOGRAM_ENUMERATION("UMA.AntiVirusMetricsProvider.Result",
                             result,
@@ -156,7 +184,7 @@ void AntiVirusMetricsProvider::GotAntiVirusProducts(
 
 // static
 AntiVirusMetricsProvider::ResultCode
-AntiVirusMetricsProvider::FillAntiVirusProducts(
+AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     std::vector<AvProduct>* products) {
   std::vector<AvProduct> result_list;
   base::ThreadRestrictions::AssertIOAllowed();
@@ -167,7 +195,7 @@ AntiVirusMetricsProvider::FillAntiVirusProducts(
 
   base::win::ScopedComPtr<IWSCProductList> product_list;
   HRESULT result =
-      CoCreateInstance(__uuidof(WSCProductList), NULL, CLSCTX_INPROC_SERVER,
+      CoCreateInstance(__uuidof(WSCProductList), nullptr, CLSCTX_INPROC_SERVER,
                        __uuidof(IWSCProductList), product_list.ReceiveVoid());
   if (FAILED(result))
     return RESULT_FAILED_TO_CREATE_INSTANCE;
@@ -238,6 +266,140 @@ AntiVirusMetricsProvider::FillAntiVirusProducts(
       return RESULT_FAILED_TO_GET_REMEDIATION_PATH;
     std::wstring path_str(remediation_path, remediation_path.Length());
     remediation_path.Release();
+
+    std::string product_version;
+    // Not a failure if the product version cannot be read from the file on
+    // disk.
+    if (GetProductVersion(&path_str, &product_version)) {
+      if (ShouldReportFullNames())
+        av_product.set_product_version(product_version);
+      av_product.set_product_version_hash(metrics::HashName(product_version));
+    }
+
+    result_list.push_back(av_product);
+  }
+
+  *products = std::move(result_list);
+
+  return RESULT_SUCCESS;
+}
+
+AntiVirusMetricsProvider::ResultCode
+AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
+    std::vector<AvProduct>* products) {
+  std::vector<AvProduct> result_list;
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::win::ScopedCOMInitializer com_initializer;
+
+  if (!com_initializer.succeeded())
+    return RESULT_FAILED_TO_INITIALIZE_COM;
+
+  base::win::ScopedComPtr<IWbemLocator> wmi_locator;
+  HRESULT hr = wmi_locator.CreateInstance(CLSID_WbemLocator, nullptr,
+                                          CLSCTX_INPROC_SERVER);
+  if (FAILED(hr))
+    return RESULT_FAILED_TO_CREATE_INSTANCE;
+
+  base::win::ScopedComPtr<IWbemServices> wmi_services;
+  hr = wmi_locator->ConnectServer(
+      base::win::ScopedBstr(L"ROOT\\SecurityCenter2"), nullptr, nullptr,
+      nullptr, 0, nullptr, nullptr, wmi_services.Receive());
+  if (FAILED(hr))
+    return RESULT_FAILED_TO_CONNECT_TO_WMI;
+
+  hr = ::CoSetProxyBlanket(wmi_services.get(), RPC_C_AUTHN_WINNT,
+                           RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL,
+                           RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
+  if (FAILED(hr))
+    return RESULT_FAILED_TO_SET_SECURITY_BLANKET;
+
+  // This interface is available on Windows Vista and above, and is officially
+  // undocumented.
+  base::win::ScopedBstr query_language(L"WQL");
+  base::win::ScopedBstr query(L"SELECT * FROM AntiVirusProduct");
+  base::win::ScopedComPtr<IEnumWbemClassObject> enumerator;
+
+  hr = wmi_services->ExecQuery(
+      query_language, query,
+      WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
+      enumerator.Receive());
+  if (FAILED(hr))
+    return RESULT_FAILED_TO_EXEC_WMI_QUERY;
+
+  // Iterate over the results of the WMI query. Each result will be an
+  // AntiVirusProduct instance.
+  while (true) {
+    base::win::ScopedComPtr<IWbemClassObject> class_object;
+    ULONG items_returned = 0;
+    hr = enumerator->Next(WBEM_INFINITE, 1, class_object.Receive(),
+                          &items_returned);
+    if (FAILED(hr))
+      return RESULT_FAILED_TO_ITERATE_RESULTS;
+
+    if (hr == WBEM_S_FALSE || items_returned == 0)
+      break;
+
+    AvProduct av_product;
+    av_product.set_product_state(
+        metrics::SystemProfileProto::AntiVirusState::
+            SystemProfileProto_AntiVirusState_STATE_ON);
+
+    // See definition of PRODUCT_STATE structure above for how this is being
+    // used.
+    base::win::ScopedVariant product_state;
+    hr = class_object->Get(L"productState", 0, product_state.Receive(), 0, 0);
+
+    if (FAILED(hr) || product_state.type() != VT_I4)
+      return RESULT_FAILED_TO_GET_PRODUCT_STATE;
+
+    LONG state_val = V_I4(product_state.ptr());
+    // Map the values from product_state to the proto values.
+    switch (reinterpret_cast<PRODUCT_STATE*>(&state_val)->security_state) {
+      case 0:
+        av_product.set_product_state(
+            metrics::SystemProfileProto::AntiVirusState::
+                SystemProfileProto_AntiVirusState_STATE_OFF);
+        break;
+      case 1:
+        av_product.set_product_state(
+            metrics::SystemProfileProto::AntiVirusState::
+                SystemProfileProto_AntiVirusState_STATE_ON);
+        break;
+      case 2:
+        av_product.set_product_state(
+            metrics::SystemProfileProto::AntiVirusState::
+                SystemProfileProto_AntiVirusState_STATE_SNOOZED);
+        break;
+      default:
+        // unknown state.
+        return RESULT_PRODUCT_STATE_INVALID;
+        break;
+    }
+
+    base::win::ScopedVariant display_name;
+    hr = class_object->Get(L"displayName", 0, display_name.Receive(), 0, 0);
+
+    if (FAILED(hr) || display_name.type() != VT_BSTR)
+      return RESULT_FAILED_TO_GET_PRODUCT_NAME;
+
+    // Owned by ScopedVariant.
+    BSTR temp_bstr = V_BSTR(display_name.ptr());
+    std::string name(base::SysWideToUTF8(
+        std::wstring(temp_bstr, ::SysStringLen(temp_bstr))));
+
+    if (ShouldReportFullNames())
+      av_product.set_product_name(name);
+    av_product.set_product_name_hash(metrics::HashName(name));
+
+    base::win::ScopedVariant exe_path;
+    hr = class_object->Get(L"pathToSignedProductExe", 0, exe_path.Receive(), 0,
+                           0);
+
+    if (FAILED(hr) || exe_path.type() != VT_BSTR)
+      return RESULT_FAILED_TO_GET_REMEDIATION_PATH;
+
+    temp_bstr = V_BSTR(exe_path.ptr());
+    std::wstring path_str(temp_bstr, ::SysStringLen(temp_bstr));
 
     std::string product_version;
     // Not a failure if the product version cannot be read from the file on

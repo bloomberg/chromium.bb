@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
@@ -109,6 +110,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
 
 TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   ASSERT_TRUE(thread_checker_.CalledOnValidThread());
+  base::HistogramTester histograms;
   SetFullNamesFeatureEnabled(expect_unhashed_value_);
   // Make sure the I/O is happening on the FILE thread by disallowing it on
   // the main thread.
@@ -119,6 +121,8 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   content::RunThisRunLoop(&run_loop_);
   EXPECT_TRUE(got_results_);
   base::ThreadRestrictions::SetIOAllowed(previous_value);
+  histograms.ExpectUniqueSample("UMA.AntiVirusMetricsProvider.Result",
+                                AntiVirusMetricsProvider::RESULT_SUCCESS, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());

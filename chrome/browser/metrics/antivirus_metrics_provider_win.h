@@ -58,12 +58,23 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
     RESULT_PRODUCT_STATE_INVALID = 8,
     RESULT_FAILED_TO_GET_PRODUCT_NAME = 9,
     RESULT_FAILED_TO_GET_REMEDIATION_PATH = 10,
-    RESULT_COUNT = 11
+    RESULT_FAILED_TO_CONNECT_TO_WMI = 11,
+    RESULT_FAILED_TO_SET_SECURITY_BLANKET = 12,
+    RESULT_FAILED_TO_EXEC_WMI_QUERY = 13,
+    RESULT_FAILED_TO_ITERATE_RESULTS = 14,
+    RESULT_COUNT = 15
   };
 
   typedef metrics::SystemProfileProto::AntiVirusProduct AvProduct;
 
-  static ResultCode FillAntiVirusProducts(std::vector<AvProduct>* products);
+  // Query COM interface IWSCProductList for installed AV products. This
+  // interface is only available on Windows 8 and above.
+  static ResultCode FillAntiVirusProductsFromWSC(
+      std::vector<AvProduct>* products);
+  // Query WMI ROOT\SecurityCenter2 for installed AV products. This interface is
+  // only available on Windows Vista and above.
+  static ResultCode FillAntiVirusProductsFromWMI(
+      std::vector<AvProduct>* products);
   static std::vector<AvProduct> GetAntiVirusProductsOnFileThread();
 
   // Called when metrics are done being gathered from the FILE thread.
@@ -81,6 +92,8 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<AntiVirusMetricsProvider> weak_ptr_factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(AntiVirusMetricsProviderTest, GetMetricsFullName);
 
   DISALLOW_COPY_AND_ASSIGN(AntiVirusMetricsProvider);
 };
