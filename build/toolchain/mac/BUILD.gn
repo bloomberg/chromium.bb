@@ -38,6 +38,30 @@ gyp_mac_tool_source =
     rebase_path("//tools/gyp/pylib/gyp/mac_tool.py", root_build_dir)
 exec_script("setup_toolchain.py", [ gyp_mac_tool_source ])
 
+# When implementing tools using Python scripts, a TOOL_VERSION=N env
+# variable is placed in front of the command. The N should be incremented
+# whenever the script is changed, so that the build system rebuilds all
+# edges that utilize the script. Ideally this should be changed to use
+# proper input-dirty checking, but that could be expensive. Instead, use a
+# script to get the tool scripts' modification time to use as the version.
+# This won't cause a re-generation of GN files when the tool script changes
+# but it will cause edges to be marked as dirty if the ninja files are
+# regenerated. See https://crbug.com/619083 for details. A proper fix
+# would be to have inputs to tools (https://crbug.com/621119).
+tool_versions =
+    exec_script("get_tool_mtime.py",
+                rebase_path([
+                              "//build/toolchain/mac/compile_xcassets.py",
+                              "//build/toolchain/mac/copy_bundle_data.py",
+                              "//build/toolchain/mac/filter_libtool.py",
+                              "//build/toolchain/mac/linker_driver.py",
+                            ],
+                            root_build_dir),
+                "trim scope")
+
+# Work around for unused variable warning in template https://crbug.com/395883.
+assert(tool_versions != "")
+
 # Shared toolchain definition. Invocations should set toolchain_os to set the
 # build args in this definition.
 template("mac_toolchain") {
@@ -60,6 +84,7 @@ template("mac_toolchain") {
     ld = invoker.ld
 
     linker_driver =
+        "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
 
     # Make these apply to all tools below.
@@ -136,7 +161,7 @@ template("mac_toolchain") {
     tool("alink") {
       script =
           rebase_path("//build/toolchain/mac/filter_libtool.py", root_build_dir)
-      command = "rm -f {{output}} && python $script libtool -static {{arflags}} -o {{output}} {{inputs}}"
+      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script libtool -static {{arflags}} -o {{output}} {{inputs}}"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
         "{{output_dir}}/{{target_output_name}}{{output_extension}}",
@@ -283,7 +308,7 @@ template("mac_toolchain") {
       }
       _tool = rebase_path("//build/toolchain/mac/copy_bundle_data.py",
                           root_build_dir)
-      command = "python $_tool ${_extra_args} {{source}} {{output}}"
+      command = "TOOL_VERSION=${tool_versions.copy_bundle_data} python $_tool ${_extra_args} {{source}} {{output}}"
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
@@ -298,6 +323,7 @@ template("mac_toolchain") {
         _min_deployment_target = mac_deployment_target
       }
       command = "rm -f {{output}} && " +
+                "TOOL_VERSION=${tool_versions.compile_xcassets} " +
                 "python $_tool -p $_sdk_name -t $_min_deployment_target " +
                 "-o {{output}} {{inputs}}"
 
