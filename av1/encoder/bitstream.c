@@ -31,6 +31,7 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
+#include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
 
@@ -492,6 +493,28 @@ static void write_intra_angle_info(const MB_MODE_INFO *const mbmi,
 }
 #endif  // CONFIG_EXT_INTRA
 
+static void write_switchable_interp_filter(AV1_COMP *const cpi,
+                                           const MACROBLOCKD *const xd,
+                                           aom_writer *w) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  if (cm->interp_filter == SWITCHABLE) {
+#if CONFIG_EXT_INTERP
+    if (is_interp_needed(xd)) {
+#endif
+      const int ctx = av1_get_pred_context_switchable_interp(xd);
+      av1_write_token(w, av1_switchable_interp_tree,
+                      cm->fc->switchable_interp_prob[ctx],
+                      &switchable_interp_encodings[mbmi->interp_filter]);
+      ++cpi->interp_filter_selected[0][mbmi->interp_filter];
+#if CONFIG_EXT_INTERP
+    } else {
+      assert(mbmi->interp_filter == EIGHTTAP);
+    }
+#endif
+  }
+}
+
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
                                 aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -575,15 +598,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     }
 
-    if (cm->interp_filter == SWITCHABLE) {
-      const int ctx = av1_get_pred_context_switchable_interp(xd);
-      av1_write_token(w, av1_switchable_interp_tree,
-                      cm->fc->switchable_interp_prob[ctx],
-                      &switchable_interp_encodings[mbmi->interp_filter]);
-      ++cpi->interp_filter_selected[0][mbmi->interp_filter];
-    } else {
-      assert(mbmi->interp_filter == cm->interp_filter);
-    }
+#if !CONFIG_EXT_INTERP
+    write_switchable_interp_filter(cpi, xd, w);
+#endif  // CONFIG_EXT_INTERP
 
     if (bsize < BLOCK_8X8) {
       const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
@@ -634,6 +651,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_MOTION_VAR
     write_motion_mode(cm, mbmi, w);
 #endif  // CONFIG_MOTION_VAR
+#if CONFIG_EXT_INTERP
+    write_switchable_interp_filter(cpi, xd, w);
+#endif  // CONFIG_EXT_INTERP
   }
 
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&

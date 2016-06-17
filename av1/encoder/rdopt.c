@@ -3141,6 +3141,9 @@ static int64_t handle_inter_mode(
     if (x->source_variance < cpi->sf.disable_filter_search_var_thresh) {
       assign_filter = EIGHTTAP;
     }
+#if CONFIG_EXT_INTERP
+    if (!is_interp_needed(xd)) assign_filter = EIGHTTAP;
+#endif
   } else {
     assign_filter = cm->interp_filter;
   }
@@ -3194,6 +3197,7 @@ static int64_t handle_inter_mode(
       }
       mbmi->interp_filter = best_filter;
     } else {
+#if !CONFIG_EXT_INTERP
       int best_rs = av1_get_switchable_rate(cpi, xd);
       int tmp_rs;
       InterpFilter best_filter = mbmi->interp_filter;
@@ -3206,8 +3210,14 @@ static int64_t handle_inter_mode(
         }
       }
       mbmi->interp_filter = best_filter;
+#else
+      assert(0);
+#endif
     }
   }
+
+  if (cm->interp_filter != SWITCHABLE)
+    assert(cm->interp_filter == mbmi->interp_filter);
 
   if (!is_comp_pred) single_filter[this_mode][refs[0]] = mbmi->interp_filter;
 
@@ -4512,16 +4522,20 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   if (cm->interp_filter != BILINEAR) {
     best_filter = EIGHTTAP;
-    if (cm->interp_filter == SWITCHABLE &&
-        x->source_variance >= cpi->sf.disable_filter_search_var_thresh) {
-      int rs;
-      int best_rs = INT_MAX;
-      for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
-        mbmi->interp_filter = i;
-        rs = av1_get_switchable_rate(cpi, xd);
-        if (rs < best_rs) {
-          best_rs = rs;
-          best_filter = mbmi->interp_filter;
+    if (cm->interp_filter == SWITCHABLE) {
+#if CONFIG_EXT_INTERP
+      if (is_interp_needed(xd))
+#endif
+      {
+        int rs;
+        int best_rs = INT_MAX;
+        for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
+          mbmi->interp_filter = i;
+          rs = av1_get_switchable_rate(cpi, xd);
+          if (rs < best_rs) {
+            best_rs = rs;
+            best_filter = mbmi->interp_filter;
+          }
         }
       }
     }
@@ -4827,7 +4841,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
             if (tmp_rd == INT64_MAX) continue;
             rs = av1_get_switchable_rate(cpi, xd);
             rs_rd = RDCOST(x->rdmult, x->rddiv, rs, 0);
-            if (cm->interp_filter == SWITCHABLE) tmp_rd += rs_rd;
+            tmp_rd += rs_rd;
 
             newbest = (tmp_rd < tmp_best_rd);
             if (newbest) {
@@ -4886,6 +4900,11 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
         *mbmi = tmp_best_mbmode;
         for (i = 0; i < 4; i++) xd->mi[0]->bmi[i] = tmp_best_bmodes[i];
       }
+
+#if CONFIG_EXT_INTERP
+      if (cm->interp_filter == SWITCHABLE && !is_interp_needed(xd))
+        mbmi->interp_filter = EIGHTTAP;
+#endif
 
       rate2 += rate;
       distortion2 += distortion;

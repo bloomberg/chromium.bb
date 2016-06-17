@@ -589,12 +589,22 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static INLINE InterpFilter read_switchable_interp_filter(AV1_COMMON *const cm,
                                                          MACROBLOCKD *const xd,
                                                          aom_reader *r) {
-  const int ctx = av1_get_pred_context_switchable_interp(xd);
-  const InterpFilter type = (InterpFilter)aom_read_tree(
-      r, av1_switchable_interp_tree, cm->fc->switchable_interp_prob[ctx]);
-  FRAME_COUNTS *counts = xd->counts;
-  if (counts) ++counts->switchable_interp[ctx][type];
-  return type;
+  if (cm->interp_filter == SWITCHABLE) {
+#if CONFIG_EXT_INTERP
+    if (is_interp_needed(xd))
+#endif
+    {
+      const int ctx = av1_get_pred_context_switchable_interp(xd);
+      const InterpFilter type = (InterpFilter)aom_read_tree(
+          r, av1_switchable_interp_tree, cm->fc->switchable_interp_prob[ctx]);
+      FRAME_COUNTS *counts = xd->counts;
+      if (counts) ++counts->switchable_interp[ctx][type];
+      return type;
+    }
+    return EIGHTTAP;
+  } else {
+    return cm->interp_filter;
+  }
 }
 
 static void read_intra_block_mode_info(AV1_COMMON *const cm,
@@ -857,9 +867,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif
 
-  mbmi->interp_filter = (cm->interp_filter == SWITCHABLE)
-                            ? read_switchable_interp_filter(cm, xd, r)
-                            : cm->interp_filter;
+#if !CONFIG_EXT_INTERP
+  mbmi->interp_filter = read_switchable_interp_filter(cm, xd, r);
+#endif  // CONFIG_EXT_INTERP
 
   if (bsize < BLOCK_8X8) {
     const int num_4x4_w = 1 << xd->bmode_blocks_wl;
@@ -928,6 +938,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_MOTION_VAR
   mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);
 #endif  // CONFIG_MOTION_VAR
+#if CONFIG_EXT_INTERP
+  mbmi->interp_filter = read_switchable_interp_filter(cm, xd, r);
+#endif  // CONFIG_EXT_INTERP
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,

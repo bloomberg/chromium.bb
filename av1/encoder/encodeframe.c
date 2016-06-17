@@ -1002,8 +1002,13 @@ static void update_state(AV1_COMP *cpi, ThreadData *td, PICK_MODE_CONTEXT *ctx,
       av1_update_mv_count(td);
 
       if (cm->interp_filter == SWITCHABLE) {
-        const int ctx = av1_get_pred_context_switchable_interp(xd);
-        ++td->counts->switchable_interp[ctx][mbmi->interp_filter];
+#if CONFIG_EXT_INTERP
+        if (is_interp_needed(xd))
+#endif
+        {
+          const int ctx = av1_get_pred_context_switchable_interp(xd);
+          ++td->counts->switchable_interp[ctx][mbmi->interp_filter];
+        }
       }
 
 #if CONFIG_MOTION_VAR
