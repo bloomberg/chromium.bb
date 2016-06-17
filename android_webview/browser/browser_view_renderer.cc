@@ -506,8 +506,9 @@ void BrowserViewRenderer::SetActiveCompositorID(
     const CompositorID& compositor_id) {
   if (compositor_map_.count(compositor_id)) {
     compositor_ = compositor_map_[compositor_id];
-    // TODO(hush): Now transfer states to the new compositor, like memory policy
-    // and root layer scroll offset.
+    UpdateMemoryPolicy();
+    compositor_->DidChangeRootLayerScrollOffset(
+        gfx::ScrollOffset(scroll_offset_dip_));
   } else {
     compositor_ = nullptr;
   }
