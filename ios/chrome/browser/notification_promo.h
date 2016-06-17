@@ -56,7 +56,18 @@ class NotificationPromo {
   double EndTime() const;
 
   // Mark the promo as closed when the user dismisses it.
+  void HandleClosed();
+  // Mark the promo has having been viewed. This returns true if views
+  // exceeds the maximum allowed.
+  bool HandleViewed();
+
+  // TODO(crbug.com/620554): Remove deprecated method. No new uses should be
+  // introduced.
+  // Mark the promo as closed when the user dismisses it.
   static void HandleClosed(PromoType promo_type, PrefService* local_state);
+
+  // TODO(crbug.com/620554): Remove deprecated method. No new uses should be
+  // introduced.
   // Mark the promo has having been viewed. This returns true if views
   // exceeds the maximum allowed.
   static bool HandleViewed(PromoType promo_type, PrefService* local_state);
@@ -75,13 +86,6 @@ class NotificationPromo {
  private:
   // For testing.
   friend class NotificationPromoTest;
-
-  // Check if this promo notification is new based on if the promo id has
-  // changed.
-  void CheckForNewNotification();
-
-  // Actions on receiving a new promo notification.
-  void OnNewNotification();
 
   // Flush data members to prefs for storage.
   void WritePrefs();
@@ -121,8 +125,6 @@ class NotificationPromo {
 
   int views_;
   bool closed_;
-
-  bool new_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };
