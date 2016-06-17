@@ -256,6 +256,9 @@ class PersonalDataManager : public KeyedService,
                            FindAndMergeDuplicateProfiles_ProfilesToDelete);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            FindAndMergeDuplicateProfiles_MergedProfileValues);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, ApplyProfileUseDatesFix);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ApplyProfileUseDatesFix_NotAppliedTwice);
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -436,6 +439,10 @@ class PersonalDataManager : public KeyedService,
       const std::vector<AutofillProfile*>& existing_profiles,
       AutofillProfile* profile_to_merge,
       std::vector<std::string>* profile_guids_to_delete);
+
+  // Runs the Autofill use date fix routine if it's never been done. Returns
+  // whether the routine was run.
+  void ApplyProfileUseDatesFix();
 
   const std::string app_locale_;
 

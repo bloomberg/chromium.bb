@@ -324,6 +324,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         ReceiveLoadedDbValues(h, result, &pending_profiles_query_,
                               &web_profiles_);
         LogProfileCount();  // This only logs local profiles.
+        ApplyProfileUseDatesFix();
       } else {
         ReceiveLoadedDbValues(h, result, &pending_server_profiles_query_,
                               &server_profiles_);
@@ -1601,6 +1602,28 @@ void PersonalDataManager::FindAndMergeDuplicateProfiles(
 
   AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
       profile_guids_to_delete->size());
+}
+
+void PersonalDataManager::ApplyProfileUseDatesFix() {
+  // Don't run if the fix has already been applied.
+  if (pref_service_->GetBoolean(prefs::kAutofillProfileUseDatesFixed))
+    return;
+
+  std::vector<AutofillProfile> profiles;
+  bool has_changed_data = false;
+  for (AutofillProfile* profile : web_profiles()) {
+    if (profile->use_date() == base::Time()) {
+      profile->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(14));
+      has_changed_data = true;
+    }
+    profiles.push_back(*profile);
+  }
+
+  // Set the pref so that this fix is never run again.
+  pref_service_->SetBoolean(prefs::kAutofillProfileUseDatesFixed, true);
+
+  if (has_changed_data)
+    SetProfiles(&profiles);
 }
 
 }  // namespace autofill

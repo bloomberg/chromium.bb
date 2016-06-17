@@ -4680,8 +4680,8 @@ TEST_F(PersonalDataManagerTest,
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
-
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
   // The |imported_profile| should have merged with |profile2|. |profile2|
   // should then have been discarded because it is similar to the verified
   // |profile1|.
@@ -4757,7 +4757,6 @@ TEST_F(PersonalDataManagerTest,
   base::MessageLoop::current()->Run();
 
   std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
-
   // The |imported_profile| should have merged with |profile1|. |profile1|
   // should then have been discarded because it is similar to the verified
   // |profile2|.
@@ -4870,6 +4869,110 @@ TEST_F(PersonalDataManagerTest,
             profiles[1]->use_date());
   EXPECT_GT(profile2.use_date() + TimeDelta::FromSeconds(2),
             profiles[1]->use_date());
+}
+
+// Tests that ApplyProfileUseDatesFix sets the use date of profiles from an
+// incorrect value of 0 to [two weeks from now]. Also tests that SetProfiles
+// does not modify any other profiles.
+TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix) {
+  // Set the kAutofillProfileUseDatesFixed pref to true so that the fix is not
+  // applied just yet.
+  personal_data_->pref_service_->SetBoolean(
+      prefs::kAutofillProfileUseDatesFixed, true);
+
+  // Create a profile. The use date will be set to now automatically.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Create another profile and set its use date to the default value.
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marge", "", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile2.set_use_date(base::Time());
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Get a sorted list of profiles. |profile1| will be first and |profile2| will
+  // be second.
+  std::vector<AutofillProfile*> saved_profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  ASSERT_EQ(2U, saved_profiles.size());
+
+  // The use dates should not have been modified.
+  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
+            saved_profiles[0]->use_date());
+  EXPECT_EQ(base::Time(), saved_profiles[1]->use_date());
+
+  // Set the pref to false to indicate the fix has never been run.
+  personal_data_->pref_service_->SetBoolean(
+      prefs::kAutofillProfileUseDatesFixed, false);
+
+  personal_data_->ApplyProfileUseDatesFix();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Get a sorted list of profiles.
+  saved_profiles = personal_data_->GetProfilesToSuggest();
+
+  ASSERT_EQ(2U, saved_profiles.size());
+
+  // |profile1|'s use date should not have been modified.
+  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
+            saved_profiles[0]->use_date());
+  // |profile2|'s use date should have been set to two weeks before now.
+  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(15),
+            saved_profiles[1]->use_date());
+  EXPECT_GE(base::Time::Now() - base::TimeDelta::FromDays(13),
+            saved_profiles[1]->use_date());
+}
+
+// Tests that ApplyProfileUseDatesFix does apply the fix if it's already been
+// applied.
+TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix_NotAppliedTwice) {
+  // Set the kAutofillProfileUseDatesFixed pref which means the fix has already
+  // been applied.
+  personal_data_->pref_service_->SetBoolean(
+      prefs::kAutofillProfileUseDatesFixed, true);
+
+  // Create two profiles.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marge", "", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile2.set_use_date(base::Time());
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Get a sorted list of profiles. |profile1| will be first and |profile2| will
+  // be second.
+  std::vector<AutofillProfile*> saved_profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  ASSERT_EQ(2U, saved_profiles.size());
+  // The use dates should not have been modified.
+  EXPECT_LE(base::Time::Now() - base::TimeDelta::FromDays(1),
+            saved_profiles[0]->use_date());
+  EXPECT_EQ(base::Time(), saved_profiles[1]->use_date());
 }
 
 }  // namespace autofill
