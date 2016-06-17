@@ -1515,6 +1515,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setDocumentURL:(const GURL&)newURL {
   if (newURL != _documentURL) {
+    CHECK(newURL.is_valid());
     _documentURL = newURL;
     _interactionRegisteredSinceLastURLChange = NO;
   }
