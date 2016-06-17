@@ -48,6 +48,7 @@ TEST(PaymentResponseTest, DataCopiedOver)
     input->total_amount->currency = "USD";
     input->total_amount->value = "5.00";
     input->stringified_details = "{\"transactionId\": 123}";
+    input->shipping_option = "standardShippingOption";
     input->payer_email = "abc@gmail.com";
     input->payer_phone = "0123";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -55,6 +56,7 @@ TEST(PaymentResponseTest, DataCopiedOver)
     PaymentResponse output(std::move(input), completeCallback);
 
     EXPECT_EQ("foo", output.methodName());
+    EXPECT_EQ("standardShippingOption", output.shippingOption());
     EXPECT_EQ("abc@gmail.com", output.payerEmail());
     EXPECT_EQ("0123", output.payerPhone());
 

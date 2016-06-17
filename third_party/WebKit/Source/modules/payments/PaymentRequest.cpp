@@ -457,7 +457,7 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
     DCHECK(!m_completeResolver);
 
     if (m_options.requestShipping()) {
-        if (!response->shipping_address) {
+        if (!response->shipping_address || response->shipping_option.isEmpty()) {
             m_showResolver->reject(DOMException::create(SyntaxError));
             clearResolversAndCloseMojoConnection();
             return;
@@ -471,9 +471,9 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         }
 
         m_shippingAddress = new PaymentAddress(response->shipping_address.Clone());
-        m_shippingOption = response->shipping_option_id;
+        m_shippingOption = response->shipping_option;
     } else {
-        if (response->shipping_address) {
+        if (response->shipping_address || !response->shipping_option.isNull()) {
             m_showResolver->reject(DOMException::create(SyntaxError));
             clearResolversAndCloseMojoConnection();
             return;

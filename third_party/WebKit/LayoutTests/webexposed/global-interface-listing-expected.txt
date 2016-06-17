@@ -4220,6 +4220,7 @@ interface PaymentResponse
     getter payerEmail
     getter payerPhone
     getter shippingAddress
+    getter shippingOption
     getter totalAmount
     method complete
     method constructor

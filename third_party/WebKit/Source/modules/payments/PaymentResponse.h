@@ -34,6 +34,7 @@ public:
     void totalAmount(PaymentCurrencyAmount& result) const { result = m_totalAmount; }
     ScriptValue details(ScriptState*, ExceptionState&) const;
     PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }
+    const String& shippingOption() const { return m_shippingOption; }
     const String& payerEmail() const { return m_payerEmail; }
     const String& payerPhone() const { return m_payerPhone; }
 
@@ -46,6 +47,7 @@ private:
     PaymentCurrencyAmount m_totalAmount;
     String m_stringifiedDetails;
     Member<PaymentAddress> m_shippingAddress;
+    String m_shippingOption;
     String m_payerEmail;
     String m_payerPhone;
     Member<PaymentCompleter> m_paymentCompleter;

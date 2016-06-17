@@ -10,7 +10,7 @@ enum PaymentComplete {
     ""
 };
 
-// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentresponse-interface
+// https://w3c.github.io/browser-payment-api/#paymentresponse-interface
 
 [
     RuntimeEnabled=PaymentRequest,
@@ -21,6 +21,7 @@ enum PaymentComplete {
     readonly attribute DOMString? payerPhone;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
     readonly attribute PaymentAddress? shippingAddress;
+    readonly attribute DOMString? shippingOption;
 
     [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "");
 };

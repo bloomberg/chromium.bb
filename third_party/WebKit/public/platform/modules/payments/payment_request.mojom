@@ -59,7 +59,7 @@ struct PaymentResponse {
   string stringified_details;
 
   PaymentAddress? shipping_address;
-  string? shipping_option_id;
+  string? shipping_option;
   string? payer_email;
   string? payer_phone;
 };

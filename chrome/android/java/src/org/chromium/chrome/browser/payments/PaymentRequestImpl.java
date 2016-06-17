@@ -676,7 +676,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         PaymentOption selectedShippingOption = mUiShippingOptions.getSelectedItem();
         if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
-            response.shippingOptionId = selectedShippingOption.getIdentifier();
+            response.shippingOption = selectedShippingOption.getIdentifier();
         }
 
         mClient.onPaymentResponse(response);

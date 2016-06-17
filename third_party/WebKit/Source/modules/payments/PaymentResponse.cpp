@@ -31,6 +31,7 @@ PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response, Paym
     , m_totalAmount(response->total_amount->To<PaymentCurrencyAmount>())
     , m_stringifiedDetails(response->stringified_details)
     , m_shippingAddress(response->shipping_address ? new PaymentAddress(std::move(response->shipping_address)) : nullptr)
+    , m_shippingOption(response->shipping_option)
     , m_payerEmail(response->payer_email)
     , m_payerPhone(response->payer_phone)
     , m_paymentCompleter(paymentCompleter)
