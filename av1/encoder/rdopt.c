@@ -3938,7 +3938,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           const uint8_t *src = x->plane[0].src.buf;
           const int rows = 4 * num_4x4_blocks_high_lookup[bsize];
           const int cols = 4 * num_4x4_blocks_wide_lookup[bsize];
-#if CONFIGAOM_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
             highbd_angle_estimation(src, src_stride, rows, cols,
                                     directional_mode_skip_mask);
