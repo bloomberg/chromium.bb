@@ -82,6 +82,7 @@ TAGS
 # /gnulib/
 /gnulib/arg-nonnull.h
 /gnulib/c++defs.h
+/gnulib/dirent.h
 /gnulib/m4/absolute-header.m4
 /gnulib/m4/ld-output-def.m4
 /gnulib/stddef.h

@@ -43,6 +43,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
   # Code from module absolute-header:
+  # Code from module dirent:
   # Code from module extensions:
   # Code from module extern-inline:
   # Code from module include_next:
@@ -79,6 +80,7 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='gnulib'
+  gl_DIRENT_H
   AC_REQUIRE([gl_EXTERN_INLINE])
   gl_LD_OUTPUT_DEF
   gl_FUNC_MALLOC_GNU
@@ -259,6 +261,7 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
+  lib/dirent.in.h
   lib/malloc.c
   lib/realloc.c
   lib/stddef.in.h
@@ -271,6 +274,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/unistd.in.h
   m4/00gnulib.m4
   m4/absolute-header.m4
+  m4/dirent_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
   m4/gnulib-common.m4
