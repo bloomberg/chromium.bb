@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.device.power_save_blocker;
 
 import android.view.View;
 
@@ -12,7 +12,7 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 
 import java.lang.ref.WeakReference;
 
-@JNINamespace("content")
+@JNINamespace("device")
 class PowerSaveBlocker {
     // WeakReference to prevent leaks in Android WebView.
     private WeakReference<View> mKeepScreenOnView;

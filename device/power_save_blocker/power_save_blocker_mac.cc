@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
@@ -13,13 +13,14 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 
-namespace content {
+namespace device {
 namespace {
 
 // Power management cannot be done on the UI thread. IOPMAssertionCreate does a
 // synchronous MIG call to configd, so if it is called on the main thread the UI
 // is at the mercy of another process. See http://crbug.com/79559 and
-// http://www.opensource.apple.com/source/IOKitUser/IOKitUser-514.16.31/pwr_mgt.subproj/IOPMLibPrivate.c .
+// http://www.opensource.apple.com/source/IOKitUser/IOKitUser-514.16.31/pwr_mgt.subproj/IOPMLibPrivate.c
+// .
 struct PowerSaveBlockerLazyInstanceTraits {
   static const bool kRegisterOnExit = false;
 #ifndef NDEBUG
@@ -31,7 +32,7 @@ struct PowerSaveBlockerLazyInstanceTraits {
     thread->Start();
     return thread;
   }
-  static void Delete(base::Thread* instance) { }
+  static void Delete(base::Thread* instance) {}
 };
 base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
     g_power_thread = LAZY_INSTANCE_INITIALIZER;
@@ -81,8 +82,8 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
         base::SysUTF8ToCFStringRef(description_));
     IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
                                                   cf_description, &assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess)
-        << "IOPMAssertionCreate: " << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionCreate: "
+                                              << result;
   }
 }
 
@@ -92,8 +93,8 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
 
   if (assertion_ != kIOPMNullAssertionID) {
     IOReturn result = IOPMAssertionRelease(assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess)
-        << "IOPMAssertionRelease: " << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionRelease: "
+                                              << result;
   }
 }
 
@@ -107,14 +108,12 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
   g_power_thread.Pointer()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&Delegate::ApplyBlock, delegate_));
+      FROM_HERE, base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   g_power_thread.Pointer()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&Delegate::RemoveBlock, delegate_));
+      FROM_HERE, base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
-}  // namespace content
+}  // namespace device

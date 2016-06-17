@@ -9,7 +9,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/cast_messages.h"
 #include "components/net_log/chrome_net_log.h"
-#include "content/public/browser/power_save_blocker_factory.h"
+#include "content/public/browser/browser_thread.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "media/cast/net/cast_transport.h"
 
 namespace {
@@ -148,10 +149,14 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   if (!power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more transports are active for Cast Streaming.");
-    power_save_blocker_ = content::CreatePowerSaveBlocker(
-        content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-        content::PowerSaveBlocker::kReasonOther,
-        "Cast is streaming content to a remote receiver");
+    power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        device::PowerSaveBlocker::kReasonOther,
+        "Cast is streaming content to a remote receiver",
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::FILE));
   }
 
   if (id_map_.Lookup(channel_id)) {

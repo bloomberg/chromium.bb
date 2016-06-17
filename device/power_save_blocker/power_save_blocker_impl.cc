@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 #include "build/build_config.h"
 
-namespace content {
+namespace device {
 
 PowerSaveBlocker::~PowerSaveBlocker() {}
 
@@ -21,4 +21,4 @@ std::unique_ptr<PowerSaveBlocker> PowerSaveBlocker::CreateWithTaskRunners(
       type, reason, description, ui_task_runner, blocking_task_runner));
 }
 
-}  // namespace content
+}  // namespace device

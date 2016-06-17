@@ -62,6 +62,7 @@ source_set("browser") {
       "//device/bluetooth",
       "//device/core",
       "//device/hid",
+      "//device/power_save_blocker",
       "//device/serial",
       "//device/usb",
       "//extensions/common/api/cast_channel:cast_channel_proto",

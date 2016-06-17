@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/power_policy_controller.h"
 
-namespace content {
+namespace device {
 
 namespace {
 
@@ -109,4 +109,4 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
                             base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
-}  // namespace content
+}  // namespace device

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
@@ -38,9 +38,9 @@ enum Request {
   NONE,
 };
 
-// Stub implementation of content::PowerSaveBlocker that just runs a
-// callback on destruction.
-class PowerSaveBlockerStub : public content::PowerSaveBlocker {
+// Stub implementation of device::PowerSaveBlocker that just runs a callback on
+// destruction.
+class PowerSaveBlockerStub : public device::PowerSaveBlocker {
  public:
   explicit PowerSaveBlockerStub(base::Closure unblock_callback)
       : unblock_callback_(unblock_callback) {
@@ -88,22 +88,24 @@ class PowerSaveBlockerStubManager {
 
  private:
   // Creates a new PowerSaveBlockerStub of type |type|.
-  std::unique_ptr<content::PowerSaveBlocker> CreateStub(
-      content::PowerSaveBlocker::PowerSaveBlockerType type,
-      content::PowerSaveBlocker::Reason reason,
-      const std::string& description) {
+  std::unique_ptr<device::PowerSaveBlocker> CreateStub(
+      device::PowerSaveBlocker::PowerSaveBlockerType type,
+      device::PowerSaveBlocker::Reason reason,
+      const std::string& description,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
     Request unblock_request = NONE;
     switch (type) {
-      case content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:
+      case device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:
         requests_.push_back(BLOCK_APP_SUSPENSION);
         unblock_request = UNBLOCK_APP_SUSPENSION;
         break;
-      case content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
+      case device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
         requests_.push_back(BLOCK_DISPLAY_SLEEP);
         unblock_request = UNBLOCK_DISPLAY_SLEEP;
         break;
     }
-    return std::unique_ptr<content::PowerSaveBlocker>(new PowerSaveBlockerStub(
+    return std::unique_ptr<device::PowerSaveBlocker>(new PowerSaveBlockerStub(
         base::Bind(&PowerSaveBlockerStubManager::AppendRequest,
                    weak_ptr_factory_.GetWeakPtr(), unblock_request)));
   }

@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "content/browser/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker_impl.h"
 // Xlib #defines Status, but we can't have that for some of our headers.
 #ifdef Status
 #undef Status
@@ -45,9 +45,9 @@ enum DBusAPI {
 // Can be OR'd together and passed as argument to the Inhibit() method
 // to specify which power management features we want to suspend.
 enum GnomeAPIInhibitFlags {
-  INHIBIT_LOGOUT            = 1,
-  INHIBIT_SWITCH_USER       = 2,
-  INHIBIT_SUSPEND_SESSION   = 4,
+  INHIBIT_LOGOUT = 1,
+  INHIBIT_SWITCH_USER = 2,
+  INHIBIT_SUSPEND_SESSION = 4,
   INHIBIT_MARK_SESSION_IDLE = 8
 };
 
@@ -68,7 +68,7 @@ const char kFreeDesktopAPIScreenObjectPath[] = "/org/freedesktop/ScreenSaver";
 
 }  // namespace
 
-namespace content {
+namespace device {
 
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
@@ -256,8 +256,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
       return;
     case GNOME_API:
       object_proxy = bus_->GetObjectProxy(
-          kGnomeAPIServiceName,
-          dbus::ObjectPath(kGnomeAPIObjectPath));
+          kGnomeAPIServiceName, dbus::ObjectPath(kGnomeAPIObjectPath));
       method_call.reset(
           new dbus::MethodCall(kGnomeAPIInterfaceName, "Inhibit"));
       message_writer.reset(new dbus::MessageWriter(method_call.get()));
@@ -366,8 +365,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
       return;
     case GNOME_API:
       object_proxy = bus_->GetObjectProxy(
-          kGnomeAPIServiceName,
-          dbus::ObjectPath(kGnomeAPIObjectPath));
+          kGnomeAPIServiceName, dbus::ObjectPath(kGnomeAPIObjectPath));
       method_call.reset(
           new dbus::MethodCall(kGnomeAPIInterfaceName, "Uninhibit"));
       break;
@@ -505,4 +503,4 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
     freedesktop_suspend_delegate_->CleanUp();
 }
 
-}  // namespace content
+}  // namespace device

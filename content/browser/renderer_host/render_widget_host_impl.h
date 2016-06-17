@@ -68,6 +68,12 @@ namespace cc {
 class CompositorFrameAck;
 }
 
+#if defined(OS_MACOSX)
+namespace device {
+class PowerSaveBlocker;
+}  // namespace device
+#endif
+
 namespace gfx {
 class Range;
 }
@@ -86,10 +92,6 @@ class WebCursor;
 struct EditCommand;
 struct ResizeParams;
 struct TextInputState;
-
-#if defined(OS_MACOSX)
-class PowerSaveBlocker;
-#endif
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -829,7 +831,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   base::TimeDelta new_content_rendering_delay_;
 
 #if defined(OS_MACOSX)
-  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 #endif
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
