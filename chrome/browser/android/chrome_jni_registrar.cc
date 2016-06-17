@@ -47,7 +47,6 @@
 #include "chrome/browser/android/feedback/screenshot_task.h"
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
-#include "chrome/browser/android/fullscreen/fullscreen_infobar_delegate.h"
 #include "chrome/browser/android/history_report/history_report_jni_bridge.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/java_exception_reporter.h"
@@ -282,8 +281,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"FontSizePrefsAndroid", FontSizePrefsAndroid::Register},
     {"ForeignSessionHelper",
      ForeignSessionHelper::RegisterForeignSessionHelper},
-    {"FullscreenInfoBarDelegate",
-     FullscreenInfoBarDelegate::RegisterFullscreenInfoBarDelegate},
     {"GeneratedPasswordSavedInfoBarDelegate",
      RegisterGeneratedPasswordSavedInfoBarDelegate},
     {"GroupedPermissionInfoBar", GroupedPermissionInfoBar::Register},

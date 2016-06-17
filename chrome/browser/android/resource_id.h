@@ -38,8 +38,6 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NOTIFICATIONS,
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_GEOLOCATION,
                     R.drawable.infobar_geolocation)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FROZEN_TAB, R.drawable.infobar_restore)
-DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FULLSCREEN,
-                    R.drawable.infobar_fullscreen)
 
 // WebsiteSettingsUI images, used in ConnectionInfoPopup
 // Good:
