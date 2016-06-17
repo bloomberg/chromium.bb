@@ -2742,7 +2742,9 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
   InitLauncherControllerWithBrowser();
   // App list and Browser shortcut ShelfItems are added.
   EXPECT_EQ(2, model_observer_->added());
-  EXPECT_EQ(1, model_observer_->changed());
+  // Browser shortcut item changed twice because the browser shortcut needs to
+  // be updated according to the ARC status when attaching profile.
+  EXPECT_EQ(2, model_observer_->changed());
 
   const std::string app_id = extension1_->id();
   // app_icon_loader is owned by ChromeLauncherControllerImpl.
@@ -2759,7 +2761,7 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
       app_panel_controller, app_id, ash::STATUS_RUNNING);
   int panel_index = model_observer_->last_index();
   EXPECT_EQ(3, model_observer_->added());
-  EXPECT_EQ(1, model_observer_->changed());
+  EXPECT_EQ(2, model_observer_->changed());
   EXPECT_EQ(1, app_icon_loader->fetch_count());
   model_observer_->clear_counts();
 

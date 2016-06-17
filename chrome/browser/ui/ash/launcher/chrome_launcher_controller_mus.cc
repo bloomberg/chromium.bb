@@ -227,6 +227,10 @@ ChromeLauncherControllerMus::GetBrowserShortcutLauncherItemController() {
   return nullptr;
 }
 
+void ChromeLauncherControllerMus::MayUpdateBrowserShortcutItem() {
+  NOTIMPLEMENTED();
+}
+
 LauncherItemController* ChromeLauncherControllerMus::GetLauncherItemController(
     const ash::ShelfID id) {
   NOTIMPLEMENTED();

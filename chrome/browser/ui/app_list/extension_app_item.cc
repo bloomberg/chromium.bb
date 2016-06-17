@@ -33,6 +33,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -169,6 +173,10 @@ void ExtensionAppItem::UpdateIcon() {
     icon = icon_->image_skia();
     const bool enabled = extensions::util::IsAppLaunchable(extension_id(),
                                                            profile());
+#if defined(OS_CHROMEOS)
+    extensions::util::MaybeApplyChromeBadge(profile(), id(), &icon);
+#endif
+
     if (!enabled)
       icon = CreateDisabledIcon(icon);
 

@@ -7,17 +7,19 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
+#include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/models/list_model_observer.h"
 
 class AppListControllerDelegate;
+class LauncherExtensionAppUpdater;
 class ExtensionAppItem;
 
 namespace extensions {
@@ -35,7 +37,7 @@ class ImageSkia;
 // with information from |profile|.
 class ExtensionAppModelBuilder : public AppListModelBuilder,
                                  public extensions::InstallObserver,
-                                 public extensions::ExtensionRegistryObserver {
+                                 public LauncherAppUpdater::Delegate {
  public:
   explicit ExtensionAppModelBuilder(AppListControllerDelegate* controller);
   ~ExtensionAppModelBuilder() override;
@@ -55,17 +57,13 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
       const extensions::Extension* extension) override;
   void OnShutdown() override;
 
-  // extensions::ExtensionRegistryObserver.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
-  void OnShutdown(extensions::ExtensionRegistry* registry) override;
+  // LauncherAppUpdater::Delegate:
+  void OnAppInstalled(content::BrowserContext* browser_context,
+                      const std::string& app_id) override;
+  void OnAppUpdated(content::BrowserContext* browser_context,
+                    const std::string& app_id) override;
+  void OnAppUninstalled(content::BrowserContext* browser_context,
+                        const std::string& app_id) override;
 
   // AppListItemListObserver.
   void OnListItemMoved(size_t from_index,
@@ -105,8 +103,8 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_ = nullptr;
 
-  // Listen extension's load, unload, uninstalled.
-  extensions::ExtensionRegistry* extension_registry_ = nullptr;
+  // Dispatches extension lifecycle events.
+  std::unique_ptr<LauncherExtensionAppUpdater> app_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilder);
 };

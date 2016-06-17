@@ -24,6 +24,10 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#endif
+
 namespace app_list {
 
 ExtensionAppResult::ExtensionAppResult(Profile* profile,
@@ -136,6 +140,10 @@ bool ExtensionAppResult::RunExtensionEnableFlow() {
 
 void ExtensionAppResult::UpdateIcon() {
   gfx::ImageSkia icon = icon_->image_skia();
+
+#if defined(OS_CHROMEOS)
+  extensions::util::MaybeApplyChromeBadge(profile(), app_id(), &icon);
+#endif
 
   if (!extensions::util::IsAppLaunchable(app_id(), profile())) {
     const color_utils::HSL shift = {-1, 0, 0.6};

@@ -49,6 +49,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_DATASAVER" file="network/notification_datasaver.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_LTE" file="network/notification_lte.png" />
 
+      <!-- Badge for Chrome Apps if Arc is enabled. -->
+      <structure type="chrome_scaled_image" name="IDR_ARC_DUAL_ICON_BADGE" file="arc/dual-icon-badge.png" />
+
       <!-- Default user profile images. -->
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_beaker.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_1" file="default_user_images/avatar_bee.png" />

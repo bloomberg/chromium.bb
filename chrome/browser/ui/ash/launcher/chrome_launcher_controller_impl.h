@@ -132,6 +132,7 @@ class ChromeLauncherControllerImpl
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
+  void MayUpdateBrowserShortcutItem() override;
   LauncherItemController* GetLauncherItemController(
       const ash::ShelfID id) override;
   bool IsBrowserFromActiveUser(Browser* browser) override;
@@ -172,8 +173,8 @@ class ChromeLauncherControllerImpl
                       const std::string& app_id) override;
   void OnAppUpdated(content::BrowserContext* browser_context,
                     const std::string& app_id) override;
-  void OnAppUninstalled(content::BrowserContext* browser_context,
-                        const std::string& app_id) override;
+  void OnAppUninstalledPrepared(content::BrowserContext* browser_context,
+                                const std::string& app_id) override;
 
  protected:
   // Creates a new app shortcut item and controller on the shelf at |index|.

@@ -1676,10 +1676,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
       CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
       ShelfButton* button = static_cast<ShelfButton*>(view);
       ReflectItemStatus(item, button);
-      // The browser shortcut is currently not a "real" item and as such the
-      // the image is bogous as well. We therefore keep the image as is for it.
-      if (item.type != TYPE_BROWSER_SHORTCUT)
-        button->SetImage(item.image);
+      button->SetImage(item.image);
       button->SchedulePaint();
       break;
     }

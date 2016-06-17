@@ -19,11 +19,14 @@ class LauncherAppUpdater {
   class Delegate {
    public:
     virtual void OnAppInstalled(content::BrowserContext* browser_context,
-                                const std::string& app_id) = 0;
+                                const std::string& app_id) {}
     virtual void OnAppUpdated(content::BrowserContext* browser_context,
-                              const std::string& app_id) = 0;
+                              const std::string& app_id) {}
+    virtual void OnAppUninstalledPrepared(
+        content::BrowserContext* browser_context,
+        const std::string& app_id) {}
     virtual void OnAppUninstalled(content::BrowserContext* browser_context,
-                                  const std::string& app_id) = 0;
+                                  const std::string& app_id) {}
 
    protected:
     virtual ~Delegate() {}

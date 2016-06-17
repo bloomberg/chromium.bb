@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -947,6 +948,20 @@ ChromeLauncherControllerImpl::GetBrowserShortcutLauncherItemController() {
   return nullptr;
 }
 
+void ChromeLauncherControllerImpl::MayUpdateBrowserShortcutItem() {
+  for (size_t index = 0; index < model_->items().size(); index++) {
+    ash::ShelfItem item = model_->items()[index];
+    if (item.type == ash::TYPE_BROWSER_SHORTCUT) {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      item.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
+      extensions::util::MaybeApplyChromeBadge(
+          profile_, extension_misc::kChromeAppId, &item.image);
+      model_->Set(index, item);
+      break;
+    }
+  }
+}
+
 LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
     const ash::ShelfID id) {
   if (!HasShelfIDToAppIDMapping(id))
@@ -1141,12 +1156,17 @@ void ChromeLauncherControllerImpl::OnAppInstalled(
 void ChromeLauncherControllerImpl::OnAppUpdated(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
+  if (app_id == extension_misc::kChromeAppId) {
+    MayUpdateBrowserShortcutItem();
+    return;
+  }
+
   AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
   if (app_icon_loader)
     app_icon_loader->UpdateImage(app_id);
 }
 
-void ChromeLauncherControllerImpl::OnAppUninstalled(
+void ChromeLauncherControllerImpl::OnAppUninstalledPrepared(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
   // Since we might have windowed apps of this type which might have
@@ -1349,6 +1369,8 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // of iterators because of model mutations as part of the loop.
   std::vector<std::string>::const_iterator pref_app_id(pinned_apps.begin());
   for (; index < max_index && pref_app_id != pinned_apps.end(); ++index) {
+    // Update apps icon if applicable.
+    OnAppUpdated(profile_, *pref_app_id);
     // Check if we have an item which we need to handle.
     if (*pref_app_id == extension_misc::kChromeAppId ||
         *pref_app_id == ash::kPinnedAppsPlaceholder ||
@@ -1443,6 +1465,8 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
 
   // Append unprocessed items from the pref to the end of the model.
   for (; pref_app_id != pinned_apps.end(); ++pref_app_id) {
+    // Update apps icon if applicable.
+    OnAppUpdated(profile_, *pref_app_id);
     // All items but the chrome and / or app list shortcut needs to be added.
     bool is_chrome = *pref_app_id == extension_misc::kChromeAppId;
     bool is_app_list = *pref_app_id == ash::kPinnedAppsPlaceholder;

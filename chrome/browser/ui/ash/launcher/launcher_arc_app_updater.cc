@@ -26,5 +26,6 @@ void LauncherArcAppUpdater::OnAppRegistered(
 }
 
 void LauncherArcAppUpdater::OnAppRemoved(const std::string& app_id) {
+  delegate()->OnAppUninstalledPrepared(browser_context(), app_id);
   delegate()->OnAppUninstalled(browser_context(), app_id);
 }
