@@ -597,9 +597,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         ->GetInputEventRouter()
         ->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
   }
-
-  if (!render_widget_host_->is_hidden())
-    EnsureBrowserCompositorView();
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -643,7 +640,6 @@ cc::SurfaceId RenderWidgetHostViewMac::SurfaceIdForTesting() const {
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
 
 void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
-  DCHECK(!render_widget_host_->is_hidden());
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::EnsureBrowserCompositorView");
 
@@ -720,7 +716,6 @@ void RenderWidgetHostViewMac::DestroySuspendedBrowserCompositorViewIfNeeded() {
 
   // This should only be reached if |render_widget_host_| is hidden, destroyed,
   // or in the process of being destroyed.
-  DCHECK(!render_widget_host_ || render_widget_host_->is_hidden());
   DestroyBrowserCompositorView();
 }
 
@@ -892,18 +887,16 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 void RenderWidgetHostViewMac::Show() {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:NO];
-  if (!render_widget_host_->is_hidden()) {
-    DCHECK_EQ(browser_compositor_state_, BrowserCompositorActive);
+  if (!render_widget_host_->is_hidden())
     return;
-  }
-
-  WasUnOccluded();
 
   // Re-create the browser compositor. If the DelegatedFrameHost has a cached
   // frame from the last time it was visible, then it will immediately be
   // drawn. If not, then the compositor will remain locked until a new delegated
   // frame is swapped.
   EnsureBrowserCompositorView();
+
+  WasUnOccluded();
 
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
@@ -924,11 +917,6 @@ void RenderWidgetHostViewMac::Hide() {
     // completes. As a result you won't get a thumbnail for the page unless you
     // execute these two statements in this specific order.
     render_widget_host_->WasHidden();
-    // Re-check hidden flag, as the thumbnail generation could have called
-    // WasUnOccluded and unhidden itself.
-    if (!render_widget_host_->is_hidden()) {
-      return;
-    }
     SuspendBrowserCompositorView();
   }
   DestroySuspendedBrowserCompositorViewIfNeeded();
@@ -944,7 +932,6 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
       render_widget_host_->GetLatencyComponentId(),
       0);
   render_widget_host_->WasShown(renderer_latency_info);
-  EnsureBrowserCompositorView();
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -1507,7 +1494,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     gfx::Size dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
     root_layer_->SetBounds(gfx::Rect(dip_size));
-    if (browser_compositor_ && browser_compositor_->compositor()) {
+    if (!render_widget_host_->is_hidden()) {
+      EnsureBrowserCompositorView();
       browser_compositor_->compositor()->SetScaleAndSize(
           scale_factor, pixel_size);
     }
