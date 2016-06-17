@@ -436,6 +436,10 @@ class Command;
 // Returns the size of the original (non-fullscreen) window.
 - (NSRect)savedRegularWindowFrame;
 
+// Returns true if the browser is in the process of entering/exiting
+// fullscreen.
+- (BOOL)isFullscreenTransitionInProgress;
+
 @end  // @interface BrowserWindowController(WindowType)
 
 // Fullscreen terminology:

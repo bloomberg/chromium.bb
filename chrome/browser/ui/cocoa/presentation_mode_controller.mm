@@ -52,7 +52,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   // As such, we should ignore the kMenuBarRevealEventKind event if it gives
   // us a fraction of 0.0 or 1.0, and rely on kEventMenuBarShown and
   // kEventMenuBarHidden to set these values.
-  if ([self isMainWindow]) {
+  if ([self isMainWindow] && ![self isFullscreenTransitionInProgress]) {
     if (GetEventKind(event) == kMenuBarRevealEventKind) {
       CGFloat revealFraction = 0;
       GetEventParameter(event, FOUR_CHAR_CODE('rvlf'), typeCGFloat, NULL,
@@ -424,6 +424,10 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   return [self shouldShowMenubarInImmersiveFullscreen]
              ? -[self floatingBarVerticalOffset]
              : 0;
+}
+
+- (BOOL)isFullscreenTransitionInProgress {
+  return [browserController_ isFullscreenTransitionInProgress];
 }
 
 - (BOOL)isMainWindow {

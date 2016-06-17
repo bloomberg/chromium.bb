@@ -2027,4 +2027,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return savedRegularWindowFrame_;
 }
 
+- (BOOL)isFullscreenTransitionInProgress {
+  return enteringAppKitFullscreen_ || exitingAppKitFullscreen_;
+}
+
 @end  // @implementation BrowserWindowController(WindowType)

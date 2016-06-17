@@ -145,6 +145,10 @@ enum SlidingStyle {
 // Returns true if the window is the main window.
 - (BOOL)isMainWindow;
 
+// Returns true if the browser is in the process of entering/exiting
+// fullscreen.
+- (BOOL)isFullscreenTransitionInProgress;
+
 @end
 
 // Private methods exposed for testing.
