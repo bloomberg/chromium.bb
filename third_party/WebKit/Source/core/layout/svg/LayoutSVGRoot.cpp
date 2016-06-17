@@ -153,11 +153,12 @@ void LayoutSVGRoot::layout()
 
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
+    m_isLayoutSizeChanged = selfNeedsLayout() || (svg->hasRelativeLengths() && oldSize != size());
     // When hasRelativeLengths() is false, no descendants have relative lengths
     // (hence no one is interested in viewport size changes).
-    m_isLayoutSizeChanged = svg->hasRelativeLengths() && (selfNeedsLayout() || oldSize != size());
+    bool layoutSizeChanged = m_isLayoutSizeChanged && svg->hasRelativeLengths();
 
-    SVGLayoutSupport::layoutChildren(firstChild(), false, m_didScreenScaleFactorChange, m_isLayoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), false, m_didScreenScaleFactorChange, layoutSizeChanged);
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();
