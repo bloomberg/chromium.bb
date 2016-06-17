@@ -9,10 +9,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/gfx/geometry/point.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
 
 // Implementation details: We use [NSApplication sendEvent:] instead
 // of [NSApplication postEvent:atStart:] so that the event gets sent
@@ -51,6 +55,10 @@ namespace {
 // Stores the current mouse location on the screen. So that we can use it
 // when firing keyboard and mouse click events.
 NSPoint g_mouse_location = { 0, 0 };
+
+// Stores the current pressed mouse buttons. Indexed by
+// ui_controls::MouseButton.
+bool g_mouse_button_down[3] = {false, false, false};
 
 bool g_ui_controls_enabled = false;
 
@@ -173,10 +181,63 @@ NSWindow* WindowAtCurrentMouseLocation() {
 
 }  // namespace
 
+// Donates testing implementations of NSEvent methods.
+@interface FakeNSEventTestingDonor : NSObject
+@end
+
+@implementation FakeNSEventTestingDonor
++ (NSPoint)mouseLocation {
+  return g_mouse_location;
+}
+
++ (NSUInteger)pressedMouseButtons {
+  NSUInteger result = 0;
+  const int buttons[3] = {
+      ui_controls::LEFT, ui_controls::RIGHT, ui_controls::MIDDLE};
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
+    if (g_mouse_button_down[buttons[i]])
+      result |= (1 << i);
+  }
+  return result;
+}
+@end
+
+namespace {
+
+// Swizzles several Cocoa functions that are used to directly get mouse state,
+// so that they will return the current simulated mouse position and pressed
+// mouse buttons.
+class MockNSEventClassMethods {
+ public:
+  static void Init() {
+    static MockNSEventClassMethods* swizzler = nullptr;
+    if (!swizzler) {
+      swizzler = new MockNSEventClassMethods();
+    }
+  }
+
+ private:
+  MockNSEventClassMethods()
+      : mouse_location_swizzler_([NSEvent class],
+                                 [FakeNSEventTestingDonor class],
+                                 @selector(mouseLocation)),
+        pressed_mouse_buttons_swizzler_([NSEvent class],
+                                        [FakeNSEventTestingDonor class],
+                                        @selector(pressedMouseButtons)) {}
+
+  base::mac::ScopedObjCClassSwizzler mouse_location_swizzler_;
+  base::mac::ScopedObjCClassSwizzler pressed_mouse_buttons_swizzler_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockNSEventClassMethods);
+};
+
+}  // namespace
+
 namespace ui_controls {
 
 void EnableUIControls() {
   g_ui_controls_enabled = true;
+  MockNSEventClassMethods::Init();
 }
 
 bool IsUIControlsEnabled() {
@@ -239,9 +300,7 @@ bool SendMouseMove(long x, long y) {
 // platforms.  E.g. (0,0) is upper-left.
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   CHECK(g_ui_controls_enabled);
-  CGFloat screenHeight =
-    [[[NSScreen screens] firstObject] frame].size.height;
-  g_mouse_location = NSMakePoint(x, screenHeight - y);  // flip!
+  g_mouse_location = gfx::ScreenPointToNSPoint(gfx::Point(x, y));  // flip!
 
   NSWindow* window = WindowAtCurrentMouseLocation();
 
@@ -250,16 +309,25 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
     pointInWindow = ui::ConvertPointFromScreenToWindow(window, pointInWindow);
   NSTimeInterval timestamp = TimeIntervalSinceSystemStartup();
 
+  NSEventType event_type = NSMouseMoved;
+  if (g_mouse_button_down[LEFT]) {
+    event_type = NSLeftMouseDragged;
+  } else if (g_mouse_button_down[RIGHT]) {
+    event_type = NSRightMouseDragged;
+  } else if (g_mouse_button_down[MIDDLE]) {
+    event_type = NSOtherMouseDragged;
+  }
+
   NSEvent* event =
-      [NSEvent mouseEventWithType:NSMouseMoved
+      [NSEvent mouseEventWithType:event_type
                          location:pointInWindow
                     modifierFlags:0
                         timestamp:timestamp
                      windowNumber:[window windowNumber]
                           context:nil
                       eventNumber:0
-                       clickCount:0
-                         pressure:0.0];
+                       clickCount:event_type == NSMouseMoved ? 0 : 1
+                         pressure:event_type == NSMouseMoved ? 0.0 : 1.0];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {
@@ -284,35 +352,38 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
     return (SendMouseEventsNotifyWhenDone(type, DOWN, base::Closure()) &&
             SendMouseEventsNotifyWhenDone(type, UP, task));
   }
-  NSEventType etype = NSLeftMouseDown;
+  NSEventType event_type = NSLeftMouseDown;
   if (type == LEFT) {
     if (state == UP) {
-      etype = NSLeftMouseUp;
+      event_type = NSLeftMouseUp;
     } else {
-      etype = NSLeftMouseDown;
+      event_type = NSLeftMouseDown;
     }
   } else if (type == MIDDLE) {
     if (state == UP) {
-      etype = NSOtherMouseUp;
+      event_type = NSOtherMouseUp;
     } else {
-      etype = NSOtherMouseDown;
+      event_type = NSOtherMouseDown;
     }
   } else if (type == RIGHT) {
     if (state == UP) {
-      etype = NSRightMouseUp;
+      event_type = NSRightMouseUp;
     } else {
-      etype = NSRightMouseDown;
+      event_type = NSRightMouseDown;
     }
   } else {
+    NOTREACHED();
     return false;
   }
+  g_mouse_button_down[type] = state == DOWN;
+
   NSWindow* window = WindowAtCurrentMouseLocation();
   NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = ui::ConvertPointFromScreenToWindow(window, pointInWindow);
 
   NSEvent* event =
-      [NSEvent mouseEventWithType:etype
+      [NSEvent mouseEventWithType:event_type
                          location:pointInWindow
                     modifierFlags:0
                         timestamp:TimeIntervalSinceSystemStartup()
@@ -320,7 +391,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
                           context:nil
                       eventNumber:0
                        clickCount:1
-                         pressure:(state == DOWN ? 1.0 : 0.0 )];
+                         pressure:state == DOWN ? 1.0 : 0.0];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {

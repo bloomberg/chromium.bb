@@ -34,6 +34,7 @@ class BridgedNativeWidgetTestApi;
 }
 
 class CocoaMouseCapture;
+class CocoaWindowMoveLoop;
 class DragDropClientMac;
 class NativeWidgetMac;
 class View;
@@ -100,6 +101,12 @@ class VIEWS_EXPORT BridgedNativeWidget
   void ReleaseCapture();
   bool HasCapture();
 
+  // Start moving the window, pinned to the mouse cursor, and monitor events.
+  // Return MOVE_LOOP_SUCCESSFUL on mouse up or MOVE_LOOP_CANCELED on premature
+  // termination via EndMoveLoop() or when window is destroyed during the drag.
+  Widget::MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset);
+  void EndMoveLoop();
+
   // See views::Widget.
   void SetNativeWindowProperty(const char* key, void* value);
   void* GetNativeWindowProperty(const char* key) const;
@@ -125,6 +132,10 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Called by the NSWindowDelegate when the size of the window changes.
   void OnSizeChanged();
+
+  // Called once by the NSWindowDelegate when the position of the window has
+  // changed.
+  void OnPositionChanged();
 
   // Called by the NSWindowDelegate when the visibility of the window may have
   // changed. For example, due to a (de)miniaturize operation, or the window
@@ -265,6 +276,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
+  std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.

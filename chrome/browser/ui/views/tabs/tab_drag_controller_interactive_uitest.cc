@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -188,7 +189,8 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
   // Resize the two windows so they're right next to each other.
   gfx::Rect work_area =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
+          ->GetDisplayNearestWindow(platform_util::GetViewForWindow(
+              browser()->window()->GetNativeWindow()))
           .work_area();
   gfx::Size half_size =
       gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
@@ -256,7 +258,7 @@ class ScreenEventGeneratorDelegate
 
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
 
 // Following classes verify a crash scenario. Specifically on Windows when focus
 // changes it can trigger capture being lost. This was causing a crash in tab
@@ -374,6 +376,12 @@ class DetachToBrowserTabDragControllerTest
     event_generator_.reset(
         new ui::test::EventGenerator(ash::Shell::GetPrimaryRootWindow()));
 #endif
+#if defined(OS_MACOSX)
+    // Currently MacViews' browser windows are shown in the background and could
+    // be obscured by other windows if there are any. This should be fixed in
+    // order to be consistent with other platforms.
+    EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+#endif  // OS_MACOSX
   }
 
   InputSource input_source() const {
@@ -852,9 +860,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(tab_strip2->GetWidget()->HasCapture());
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
+// TODO(tapted,mblsha): Disabled as the Mac IsMaximized() behavior is not
+// consistent with other platforms. crbug.com/603562
 #define MAYBE_DetachFromFullsizeWindow DISABLED_DetachFromFullsizeWindow
 #else
 #define MAYBE_DetachFromFullsizeWindow DetachFromFullsizeWindow
@@ -866,7 +876,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Resize the browser window so that it is as big as the work area.
   gfx::Rect work_area =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
+          ->GetDisplayNearestWindow(platform_util::GetViewForWindow(
+              browser()->window()->GetNativeWindow()))
           .work_area();
   browser()->window()->SetBounds(work_area);
   const gfx::Rect initial_bounds(browser()->window()->GetBounds());
@@ -920,9 +931,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(tab_strip2->GetWidget()->HasCapture());
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
+// TODO(tapted,mblsha): Disabled as the Mac IsMaximized() behavior is not
+// consistent with other platforms. crbug.com/603562
 #define MAYBE_DetachToOwnWindowFromMaximizedWindow \
   DISABLED_DetachToOwnWindowFromMaximizedWindow
 #else
@@ -1282,6 +1295,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, MAYBE_DragAll) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   browser()->tab_strip_model()->AddTabAtToSelection(0);
   browser()->tab_strip_model()->AddTabAtToSelection(1);
+  const gfx::Rect initial_bounds = browser()->window()->GetBounds();
 
   // Move to the first tab and drag it enough so that it would normally
   // detach.
@@ -1305,6 +1319,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, MAYBE_DragAll) {
 
   // Remaining browser window should not be maximized
   EXPECT_FALSE(browser()->window()->IsMaximized());
+
+  const gfx::Rect final_bounds = browser()->window()->GetBounds();
+  // Size unchanged, but it should have moved down.
+  EXPECT_EQ(initial_bounds.size(), final_bounds.size());
+  EXPECT_EQ(initial_bounds.origin().x(), final_bounds.origin().x());
+  // TODO(mblsha): Fails on MacViews because of crbug.com/518740
+  // EXPECT_EQ(initial_bounds.origin().y() + GetDetachY(tab_strip),
+  //           final_bounds.origin().y());
 }
 
 namespace {
@@ -1580,14 +1602,8 @@ void CancelOnNewTabWhenDraggingStep2(
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
 
-  // Add another tab. This should trigger exiting the nested loop. Add at the
-  // to exercise past crash when model/tabstrip got out of sync (474082).
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
   chrome::AddTabAt(browser_list->GetLastActive(), GURL(url::kAboutBlankURL),
                    0, false);
-  observer.Wait();
 }
 
 }  // namespace
@@ -1612,12 +1628,20 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   gfx::Point tab_0_center(
       GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(PressInput(tab_0_center));
+
+  // Add another tab. This should trigger exiting the nested loop. Add at the
+  // beginning to exercise past crash when model/tabstrip got out of sync.
+  // crbug.com/474082
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
       base::Bind(&CancelOnNewTabWhenDraggingStep2, this, browser_list)));
-  QuitWhenNotDragging();
+  observer.Wait();
 
   // Should be two windows and not dragging.
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -2201,6 +2225,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
   }
 
   void QuitWhenNotDragging() {
+    DCHECK(TabDragController::IsActive());
     test::QuitWhenNotDraggingImpl();
     base::MessageLoop::current()->Run();
   }

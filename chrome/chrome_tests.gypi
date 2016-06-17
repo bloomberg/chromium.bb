@@ -1752,7 +1752,6 @@
               'sources!': [
                 # Aura depended tests.
                 'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-                'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
               ]
             }, {
               'sources': [ '<@(chrome_interactive_ui_test_cocoa_sources)' ],

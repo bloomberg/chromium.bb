@@ -62,6 +62,8 @@
       'cocoa/cocoa_mouse_capture.h',
       'cocoa/cocoa_mouse_capture.mm',
       'cocoa/cocoa_mouse_capture_delegate.h',
+      'cocoa/cocoa_window_move_loop.h',
+      'cocoa/cocoa_window_move_loop.mm',
       'cocoa/native_widget_mac_nswindow.h',
       'cocoa/native_widget_mac_nswindow.mm',
       'cocoa/tooltip_manager_mac.h',
