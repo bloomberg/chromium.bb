@@ -102,6 +102,12 @@ int ToolbarActionsBarBubbleViews::GetDialogButtons() const {
   return buttons;
 }
 
+int ToolbarActionsBarBubbleViews::GetDefaultDialogButton() const {
+  // TODO(estade): we should set a default where approprite. See
+  // http://crbug.com/621122
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 base::string16 ToolbarActionsBarBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? delegate_->GetActionButtonText()
