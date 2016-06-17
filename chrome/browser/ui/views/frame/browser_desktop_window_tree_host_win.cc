@@ -23,14 +23,7 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/menu/native_menu_win.h"
-
-namespace {
-
-// The amount of additional non-client area to draw beyond what we have Windows
-// draw, in DIPs. Only used pre-Win 10.
-const int kDWMFrameBorderExtensionDips = 3;
-
-}  // namespace
+#include "ui/views/resources/grit/views_resources.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, public:
@@ -97,17 +90,16 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     return false;
   }
 
-  int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
   if (GetWidget()->IsFullscreen()) {
     // In fullscreen mode there is no frame.
-    border_thickness = 0;
-  } else if (!IsMaximized() &&
-             base::win::GetVersion() < base::win::VERSION_WIN10) {
-    // Reduce the Windows non-client border size because we extended the border
+    *insets = gfx::Insets();
+  } else {
+    const int frame_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    // Reduce the Windows non-client border size because we extend the border
     // into our client area in UpdateDWMFrame().
-    border_thickness -= kDWMFrameBorderExtensionDips;
+    *insets = gfx::Insets(0, frame_thickness, frame_thickness,
+                          frame_thickness) - GetClientEdgeThicknesses();
   }
-  insets->Set(0, border_thickness, border_thickness, border_thickness);
   return true;
 }
 
@@ -157,9 +149,10 @@ bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
 void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
+  HWND hwnd = GetHWND();
   switch (message) {
     case WM_CREATE:
-      minimize_button_metrics_.Init(GetHWND());
+      minimize_button_metrics_.Init(hwnd);
       break;
     case WM_WINDOWPOSCHANGED: {
       UpdateDWMFrame();
@@ -192,15 +185,15 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
         // This is necessary to avoid white flashing in the titlebar area around
         // the minimize/maximize/close buttons.
         DCHECK_EQ(0, insets.top());
-        HDC dc = GetDC(GetHWND());
+        HDC dc = GetDC(hwnd);
         MARGINS margins = GetDWMFrameMargins();
         RECT client_rect;
-        GetClientRect(GetHWND(), &client_rect);
+        GetClientRect(hwnd, &client_rect);
         HBRUSH brush = CreateSolidBrush(0);
         RECT rect = {0, 0, client_rect.right, margins.cyTopHeight};
         FillRect(dc, &rect, brush);
         DeleteObject(brush);
-        ReleaseDC(GetHWND(), dc);
+        ReleaseDC(hwnd, dc);
         did_gdi_clear_ = true;
       }
       break;
@@ -268,46 +261,53 @@ void BrowserDesktopWindowTreeHostWin::UpdateDWMFrame() {
   DwmExtendFrameIntoClientArea(GetHWND(), &margins);
 }
 
-MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
-  MARGINS margins = { 0 };
+gfx::Insets
+BrowserDesktopWindowTreeHostWin::GetClientEdgeThicknesses() const {
+  // Maximized windows have no visible client edge; the content goes to
+  // the edge of the screen.  Restored windows on Windows 10 don't paint
+  // the full 3D client edge, but paint content right to the edge of the
+  // client area.
+  if (IsMaximized() ||
+      (base::win::GetVersion() >= base::win::VERSION_WIN10))
+    return gfx::Insets();
 
+  const ui::ThemeProvider* const tp = GetWidget()->GetThemeProvider();
+    return gfx::Insets(
+        0, tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE)->width(),
+        tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER)->height(),
+        tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE)->width());
+}
+
+MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
   // If we're using the opaque frame or we're fullscreen we don't extend the
   // glass in at all because it won't be visible.
   if (!GetWidget()->ShouldUseNativeFrame() || GetWidget()->IsFullscreen())
-    return margins;
+    return MARGINS{0};
 
-  if (!IsMaximized()) {
-    if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-      gfx::Point dip_margin(kDWMFrameBorderExtensionDips,
-                            kDWMFrameBorderExtensionDips);
-      gfx::Point pixel_margin =
-          display::win::ScreenWin::DIPToScreenPoint(dip_margin);
-      margins.cxLeftWidth = pixel_margin.x();
-      margins.cxRightWidth = pixel_margin.x();
-      margins.cyBottomHeight = pixel_margin.y();
-
-      const bool md = ui::MaterialDesignController::IsModeMaterial();
-      if (!md) {
-        // Since the toolbar in non-md has rounded corners that show the glass
-        // frame behind, the extension of the glass area to the bottom of the
-        // tabstrip below isn't sufficient.  We need to go down further to the
-        // bottom of the rounded corner region.
-        margins.cyTopHeight = pixel_margin.y();
-      }
-    }
-    // Else, on Windows 10, we don't need extra border thickness because we draw
-    // right up to the edge of the client area and there are no rounded corners
-    // anywhere that we need to make sure are covered.
-  }
-
-  // Extend top for the tabstrip background.
+  // The glass should extend to the bottom of the tabstrip.
+  HWND hwnd = GetHWND();
   gfx::Rect tabstrip_bounds(
       browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
   tabstrip_bounds =
-      display::win::ScreenWin::DIPToClientRect(GetHWND(), tabstrip_bounds);
-  margins.cyTopHeight += tabstrip_bounds.bottom();
+      display::win::ScreenWin::DIPToClientRect(hwnd, tabstrip_bounds);
 
-  return margins;
+  // Extend inwards far enough to go under the semitransparent client edges.
+  const gfx::Insets thicknesses = GetClientEdgeThicknesses();
+  gfx::Point left_top = display::win::ScreenWin::DIPToClientPoint(
+      hwnd, gfx::Point(thicknesses.left(), thicknesses.top()));
+  gfx::Point right_bottom = display::win::ScreenWin::DIPToClientPoint(
+      hwnd, gfx::Point(thicknesses.right(), thicknesses.bottom()));
+
+  if (base::win::GetVersion() <= base::win::VERSION_WIN7) {
+    // The 2 px (not DIP) at the inner edges of the glass are a light and
+    // dark line, so we must inset further to account for those.
+    constexpr gfx::Vector2d kDWMEdgeThickness(2, 2);
+    left_top += kDWMEdgeThickness;
+    right_bottom += kDWMEdgeThickness;
+  }
+
+  return MARGINS{left_top.x(), right_bottom.x(),
+                 tabstrip_bounds.bottom() + left_top.y(), right_bottom.y()};
 }
 
 ////////////////////////////////////////////////////////////////////////////////

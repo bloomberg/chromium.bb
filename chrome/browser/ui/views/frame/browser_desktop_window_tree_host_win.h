@@ -56,7 +56,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   void FrameTypeChanged() override;
 
   void UpdateDWMFrame();
-
+  gfx::Insets GetClientEdgeThicknesses() const;
   MARGINS GetDWMFrameMargins() const;
 
   BrowserView* browser_view_;

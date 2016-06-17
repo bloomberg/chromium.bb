@@ -478,10 +478,8 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   const int y =
       client_bounds.y() + (md ? toolbar_bounds.y() : toolbar_bounds.bottom());
-  const int w = client_bounds.width();
   const int right = client_bounds.right();
   const int bottom = std::max(y, height() - ClientBorderThickness(false));
-  const int height = bottom - y;
 
   // Draw the client edge images.  For non-MD, we fill the toolbar color
   // underneath these images so they will lighten/darken it appropriately to
@@ -491,19 +489,23 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   if (!md)
     FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
-  const gfx::ImageSkia* const right_image =
-      tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-  const int img_w = right_image->width();
-  canvas->TileImageInt(*right_image, right, y, img_w, height);
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
-                       right, bottom);
-  const gfx::ImageSkia* const bottom_image =
-      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
-  canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
-                       x - img_w, bottom);
-  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
-                       y, img_w, height);
+  if (!md || (base::win::GetVersion() < base::win::VERSION_WIN10)) {
+    const gfx::ImageSkia* const right_image =
+        tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+    const int img_w = right_image->width();
+    const int height = bottom - y;
+    canvas->TileImageInt(*right_image, right, y, img_w, height);
+    canvas->DrawImageInt(
+        *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER), right, bottom);
+    const gfx::ImageSkia* const bottom_image =
+        tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+    canvas->TileImageInt(*bottom_image, x, bottom, client_bounds.width(),
+                         bottom_image->height());
+    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
+                         x - img_w, bottom);
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE),
+                         x - img_w, y, img_w, height);
+  }
   if (md)
     FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
 }
