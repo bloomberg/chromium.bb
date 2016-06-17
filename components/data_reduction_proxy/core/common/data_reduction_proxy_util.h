@@ -25,7 +25,7 @@ class ProxyInfo;
 
 namespace data_reduction_proxy {
 
-// TODO(ryansturm): Move these methods to util namespace. crbug.com/620161
+namespace util {
 
 // Returns true if the request method is idempotent.
 bool IsMethodIdempotent(const std::string& method);
@@ -48,6 +48,8 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,
                                  net::ProxyInfo* data_reduction_proxy_info);
+
+}  // namespace util
 
 namespace protobuf_parser {
 

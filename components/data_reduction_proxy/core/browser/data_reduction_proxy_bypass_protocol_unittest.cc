@@ -344,7 +344,8 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
         GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, NULL));
     request->set_method(tests[i].method);
-    EXPECT_EQ(tests[i].expected_result, IsMethodIdempotent(request->method()));
+    EXPECT_EQ(tests[i].expected_result,
+              util::IsMethodIdempotent(request->method()));
   }
 }
 

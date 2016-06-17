@@ -153,7 +153,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       net_log_(net_log),
       config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
-      config_service_url_(AddApiKeyToUrl(params::GetConfigServiceURL())),
+      config_service_url_(util::AddApiKeyToUrl(params::GetConfigServiceURL())),
       enabled_(false),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),

@@ -65,7 +65,7 @@ std::string SerializeData(const DataReductionProxyData& request_data,
 DataReductionProxyPingbackClient::DataReductionProxyPingbackClient(
     net::URLRequestContextGetter* url_request_context)
     : url_request_context_(url_request_context),
-      pingback_url_(AddApiKeyToUrl(params::GetPingbackURL())) {}
+      pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())) {}
 
 DataReductionProxyPingbackClient::~DataReductionProxyPingbackClient() {
   DCHECK(thread_checker_.CalledOnValidThread());

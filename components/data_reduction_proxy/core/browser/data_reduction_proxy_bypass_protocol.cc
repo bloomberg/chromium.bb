@@ -168,7 +168,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   // Retry if block-once was specified or if method is idempotent.
   return bypass_type == BYPASS_EVENT_TYPE_CURRENT ||
-         IsMethodIdempotent(request->method());
+         util::IsMethodIdempotent(request->method());
 }
 
 }  // namespace data_reduction_proxy

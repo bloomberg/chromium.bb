@@ -23,6 +23,8 @@ const char kApiKeyName[] = "key";
 #endif
 }  // namespace
 
+namespace util {
+
 bool IsMethodIdempotent(const std::string& method) {
   return method == "GET" || method == "OPTIONS" || method == "HEAD" ||
          method == "PUT" || method == "DELETE" || method == "TRACE";
@@ -57,6 +59,8 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
   data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
   return !data_reduction_proxy_info->proxy_server().is_direct();
 }
+
+}  // namespace util
 
 namespace protobuf_parser {
 

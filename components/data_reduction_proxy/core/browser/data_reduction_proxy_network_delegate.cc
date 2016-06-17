@@ -374,15 +374,16 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
   DCHECK(proxy_info.is_empty() || proxy_info.is_direct() ||
          !data_reduction_proxy_config_->IsDataReductionProxy(
              proxy_info.proxy_server().host_port_pair(), nullptr));
-  if (!EligibleForDataReductionProxy(proxy_info, request.url(),
-                                     request.method())) {
+  if (!util::EligibleForDataReductionProxy(proxy_info, request.url(),
+                                           request.method())) {
     return false;
   }
   net::ProxyConfig proxy_config =
       data_reduction_proxy_config_->ProxyConfigIgnoringHoldback();
   net::ProxyInfo data_reduction_proxy_info;
-  return ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
-                                     request.url(), &data_reduction_proxy_info);
+  return util::ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
+                                           request.url(),
+                                           &data_reduction_proxy_info);
 }
 
 }  // namespace data_reduction_proxy

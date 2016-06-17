@@ -108,12 +108,12 @@ void OnResolveProxyHandler(const GURL& url,
   DCHECK(result->is_empty() || result->is_direct() ||
          !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                        NULL));
-  if (!EligibleForDataReductionProxy(*result, url, method))
+  if (!util::EligibleForDataReductionProxy(*result, url, method))
     return;
   net::ProxyInfo data_reduction_proxy_info;
-  bool data_saver_proxy_used =
-      ApplyProxyConfigToProxyInfo(data_reduction_proxy_config, proxy_retry_info,
-                                  url, &data_reduction_proxy_info);
+  bool data_saver_proxy_used = util::ApplyProxyConfigToProxyInfo(
+      data_reduction_proxy_config, proxy_retry_info, url,
+      &data_reduction_proxy_info);
   if (data_saver_proxy_used)
     result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
   if (config->enabled_by_user_and_reachable() && url.SchemeIsHTTPOrHTTPS() &&
