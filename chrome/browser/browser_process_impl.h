@@ -129,6 +129,8 @@ class BrowserProcessImpl : public BrowserProcess,
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
       override;
+  subresource_filter::RulesetService* subresource_filter_ruleset_service()
+      override;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   void StartAutoupdateTimer() override;
@@ -172,6 +174,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
   void CreateSafeBrowsingDetectionService();
+  void CreateSubresourceFilterRulesetService();
   void CreateStatusTray();
   void CreateBackgroundModeManager();
   void CreateGCMDriver();
@@ -252,6 +255,10 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_safe_browsing_service_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
+
+  bool created_subresource_filter_ruleset_service_;
+  std::unique_ptr<subresource_filter::RulesetService>
+      subresource_filter_ruleset_service_;
 
   bool shutting_down_;
 

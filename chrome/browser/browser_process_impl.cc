@@ -98,6 +98,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -195,6 +197,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_notification_ui_manager_(false),
       created_notification_bridge_(false),
       created_safe_browsing_service_(false),
+      created_subresource_filter_ruleset_service_(false),
       shutting_down_(false),
       tearing_down_(false),
       download_status_updater_(new DownloadStatusUpdater),
@@ -856,6 +859,14 @@ safe_browsing::ClientSideDetectionService*
   return NULL;
 }
 
+subresource_filter::RulesetService*
+BrowserProcessImpl::subresource_filter_ruleset_service() {
+  DCHECK(CalledOnValidThread());
+  if (!created_subresource_filter_ruleset_service_)
+    CreateSubresourceFilterRulesetService();
+  return subresource_filter_ruleset_service_.get();
+}
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 void BrowserProcessImpl::StartAutoupdateTimer() {
   autoupdate_timer_.Start(FROM_HERE,
@@ -1125,6 +1136,25 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   safe_browsing_service_ =
       safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
+}
+
+void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
+  DCHECK(!subresource_filter_ruleset_service_);
+  created_subresource_filter_ruleset_service_ = true;
+
+  base::SequencedWorkerPool* blocking_pool =
+      content::BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          blocking_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  subresource_filter_ruleset_service_.reset(
+      new subresource_filter::RulesetService(
+          local_state(), blocking_task_runner,
+          user_data_dir.Append(subresource_filter::kRulesetBaseDirectoryName)));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {

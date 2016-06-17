@@ -4,11 +4,17 @@
 
 source_set("browser") {
   sources = [
+    "ruleset_distributor.h",
+    "ruleset_service.cc",
+    "ruleset_service.h",
+    "subresource_filter_constants.cc",
+    "subresource_filter_constants.h",
     "subresource_filter_features.cc",
     "subresource_filter_features.h",
   ]
   deps = [
     "//base",
+    "//components/prefs:prefs",
     "//components/subresource_filter/core/common",
     "//components/variations",
   ]
@@ -31,12 +37,16 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ruleset_service_unittest.cc",
     "subresource_filter_features_unittest.cc",
   ]
   deps = [
     ":browser",
     ":test_support",
     "//base",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

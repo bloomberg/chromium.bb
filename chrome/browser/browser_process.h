@@ -46,6 +46,10 @@ namespace safe_browsing {
 class SafeBrowsingService;
 }
 
+namespace subresource_filter {
+class RulesetService;
+}
+
 namespace variations {
 class VariationsService;
 }
@@ -221,6 +225,11 @@ class BrowserProcess {
   // client-side detection servers.
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() = 0;
+
+  // Returns the service providing versioned storage for rules used by the Safe
+  // Browsing subresource filter.
+  virtual subresource_filter::RulesetService*
+  subresource_filter_ruleset_service() = 0;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   // This will start a timer that, if Chrome is in persistent mode, will check

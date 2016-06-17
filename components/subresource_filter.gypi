@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../components/components.gyp:variations',
+        '../components/prefs/prefs.gyp:prefs',
         'subresource_filter_core_common',
       ],
       'include_dirs': [
@@ -18,6 +19,11 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'subresource_filter/core/browser/ruleset_distributor.h',
+        'subresource_filter/core/browser/ruleset_service.cc',
+        'subresource_filter/core/browser/ruleset_service.h',
+        'subresource_filter/core/browser/subresource_filter_constants.cc',
+        'subresource_filter/core/browser/subresource_filter_constants.h',
         'subresource_filter/core/browser/subresource_filter_features.cc',
         'subresource_filter/core/browser/subresource_filter_features.h',
       ],

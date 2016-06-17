@@ -90,6 +90,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -323,6 +324,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   ssl_config::SSLConfigServiceManager::RegisterPrefs(registry);
+  subresource_filter::RulesetVersion::RegisterPrefs(registry);
   startup_metric_utils::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
