@@ -97,6 +97,15 @@ cast_test_group("cast_tests") {
     ]
   } else if (is_cast_desktop_build || target_os == "android") {
     filters += [
+      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
+      # timeout to 90s from 45s to allow it to pass (b/19821476) (b/29415636).
+      # CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator
+      # times out occasionally, paricularly on the CQ bots; disable to reduce
+      # CQ flakiness (crbug/598406) (b/29415636).
+      # Running a batch of net_unittests has high overhead, so
+      # run tests in batches of 25 to reduce number of batches (b/23156294).
+      "net_unittests --gtest_filter=-CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator --test-launcher-timeout=90000 --test-launcher-batch-limit=25",
+
       # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
       "media_unittests --gtest_filter=-PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM",
     ]
