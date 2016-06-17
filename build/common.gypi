@@ -1284,6 +1284,7 @@
 
     # Turns on compiler optimizations in V8 in Debug build.
     'v8_optimized_debug%': 1,
+    'v8_tracing_include_dir': '<(DEPTH)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
