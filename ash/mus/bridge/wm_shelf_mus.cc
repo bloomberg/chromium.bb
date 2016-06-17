@@ -50,6 +50,11 @@ void WmShelfMus::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
   NOTIMPLEMENTED();
 }
 
+ShelfAutoHideState WmShelfMus::GetAutoHideState() const {
+  NOTIMPLEMENTED();
+  return SHELF_AUTO_HIDE_HIDDEN;
+}
+
 ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
   NOTIMPLEMENTED();
   return SHELF_BACKGROUND_DEFAULT;
@@ -62,6 +67,11 @@ void WmShelfMus::UpdateVisibilityState() {
 ShelfVisibilityState WmShelfMus::GetVisibilityState() const {
   NOTIMPLEMENTED();
   return shelf_layout_manager_->GetShelfWindow() ? SHELF_VISIBLE : SHELF_HIDDEN;
+}
+
+gfx::Rect WmShelfMus::GetUserWorkAreaBounds() const {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 void WmShelfMus::UpdateIconPositionForWindow(WmWindow* window) {

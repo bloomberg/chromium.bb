@@ -43,9 +43,11 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void SetAlignment(ShelfAlignment alignment) override;
   ShelfAutoHideBehavior GetAutoHideBehavior() const override;
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) override;
+  ShelfAutoHideState GetAutoHideState() const override;
   ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;
+  gfx::Rect GetUserWorkAreaBounds() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
   void AddObserver(WmShelfObserver* observer) override;
@@ -53,6 +55,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type) override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
@@ -60,7 +63,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   // ShelfIconObserver:
   void OnShelfIconPositionsChanged() override;
 
-  // May be null during login.
+  // May be null during login and during initialization of a secondary display.
   Shelf* shelf_ = nullptr;
 
   // Cached separately because it may be destroyed before |shelf_|.

@@ -68,10 +68,6 @@ class ASH_EXPORT Shelf {
   // user is logged in yet.
   static Shelf* ForWindow(const aura::Window* window);
 
-  // Returns the shelf for the display with |display_id| or null if that display
-  // does not exist or does not have a shelf.
-  static Shelf* ForDisplayId(int64_t display_id);
-
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
   bool IsHorizontalAlignment() const;

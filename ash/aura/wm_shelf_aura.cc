@@ -52,11 +52,15 @@ void WmShelfAura::ResetShelfLayoutManager() {
 }
 
 WmWindow* WmShelfAura::GetWindow() {
-  return WmWindowAura::Get(shelf_->shelf_widget()->GetNativeView());
+  // Use |shelf_layout_manager_| to access ShelfWidget because it is set
+  // before |shelf_| is available.
+  return WmWindowAura::Get(
+      shelf_layout_manager_->shelf_widget()->GetNativeView());
 }
 
 ShelfAlignment WmShelfAura::GetAlignment() const {
-  return shelf_->alignment();
+  // Can be called before |shelf_| is set when initializing a secondary monitor.
+  return shelf_ ? shelf_->alignment() : SHELF_ALIGNMENT_BOTTOM_LOCKED;
 }
 
 void WmShelfAura::SetAlignment(ShelfAlignment alignment) {
@@ -71,17 +75,26 @@ void WmShelfAura::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
   shelf_->SetAutoHideBehavior(behavior);
 }
 
+ShelfAutoHideState WmShelfAura::GetAutoHideState() const {
+  return shelf_layout_manager_->auto_hide_state();
+}
+
 ShelfBackgroundType WmShelfAura::GetBackgroundType() const {
-  return shelf_->shelf_widget()->GetBackgroundType();
+  return shelf_layout_manager_->shelf_widget()->GetBackgroundType();
 }
 
 void WmShelfAura::UpdateVisibilityState() {
-  shelf_->shelf_layout_manager()->UpdateVisibilityState();
+  shelf_layout_manager_->UpdateVisibilityState();
 }
 
 ShelfVisibilityState WmShelfAura::GetVisibilityState() const {
   return shelf_layout_manager_ ? shelf_layout_manager_->visibility_state()
                                : SHELF_HIDDEN;
+}
+
+gfx::Rect WmShelfAura::GetUserWorkAreaBounds() const {
+  return shelf_layout_manager_ ? shelf_layout_manager_->user_work_area_bounds()
+                               : gfx::Rect();
 }
 
 void WmShelfAura::UpdateIconPositionForWindow(WmWindow* window) {
@@ -115,6 +128,11 @@ void WmShelfAura::OnBackgroundUpdated(
 void WmShelfAura::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   FOR_EACH_OBSERVER(WmShelfObserver, observers_,
                     WillChangeVisibilityState(new_state));
+}
+
+void WmShelfAura::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
+  FOR_EACH_OBSERVER(WmShelfObserver, observers_,
+                    OnAutoHideStateChanged(new_state));
 }
 
 void WmShelfAura::OnShelfIconPositionsChanged() {

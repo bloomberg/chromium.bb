@@ -17,6 +17,7 @@ class ASH_EXPORT WmShelfObserver {
   virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
                                    BackgroundAnimatorChangeType change_type) {}
   virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
+  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
   virtual void OnShelfIconPositionsChanged() {}
 
  protected:

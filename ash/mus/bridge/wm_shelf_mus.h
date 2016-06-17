@@ -30,9 +30,11 @@ class WmShelfMus : public WmShelf {
   void SetAlignment(ShelfAlignment alignment) override;
   ShelfAutoHideBehavior GetAutoHideBehavior() const override;
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) override;
+  ShelfAutoHideState GetAutoHideState() const override;
   ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;
+  gfx::Rect GetUserWorkAreaBounds() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
   void AddObserver(WmShelfObserver* observer) override;

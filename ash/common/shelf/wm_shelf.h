@@ -29,11 +29,15 @@ class ASH_EXPORT WmShelf {
   virtual ShelfAutoHideBehavior GetAutoHideBehavior() const = 0;
   virtual void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) = 0;
 
+  virtual ShelfAutoHideState GetAutoHideState() const = 0;
+
   virtual ShelfBackgroundType GetBackgroundType() const = 0;
 
   virtual void UpdateVisibilityState() = 0;
 
   virtual ShelfVisibilityState GetVisibilityState() const = 0;
+
+  virtual gfx::Rect GetUserWorkAreaBounds() const = 0;
 
   virtual void UpdateIconPositionForWindow(WmWindow* window) = 0;
 

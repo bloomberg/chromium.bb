@@ -9,7 +9,9 @@
 
 #include "ash/ash_switches.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
@@ -179,6 +181,7 @@ ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
+// static
 display::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
   return Shell::GetInstance()
       ->display_manager()
@@ -186,16 +189,27 @@ display::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
       .GetActiveRotation();
 }
 
+// static
 display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
   return GetActiveDisplayRotation(display::Display::InternalDisplayId());
 }
 
+// static
 bool AshTestBase::SupportsMultipleDisplays() {
   return AshTestHelper::SupportsMultipleDisplays();
 }
 
+// static
 bool AshTestBase::SupportsHostWindowResize() {
   return AshTestHelper::SupportsHostWindowResize();
+}
+
+// static
+WmShelf* AshTestBase::GetPrimaryShelf() {
+  return WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->GetShelf();
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {

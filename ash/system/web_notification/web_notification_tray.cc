@@ -14,11 +14,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -219,8 +215,11 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
       message_center::MessageCenter::Get()));
-  popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(
-      status_area_widget->shelf_widget()->shelf_layout_manager()));
+  WmShelf* shelf = WmLookup::Get()
+                       ->GetWindowForWidget(status_area_widget)
+                       ->GetRootWindowController()
+                       ->GetShelf();
+  popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));
   // TODO(jamescook): Either MessagePopupCollection needs to become aware of
   // mus or we need some sort of parent/container provider.
   popup_collection_.reset(new message_center::MessagePopupCollection(

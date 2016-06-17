@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_observer.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,16 +25,17 @@ namespace ash {
 class AshPopupAlignmentDelegateTest;
 class ShelfLayoutManager;
 class WebNotificationTrayTest;
+class WmShelf;
 
 // The PopupAlignmentDelegate subclass for Ash. It needs to handle alignment of
 // the shelf and its autohide state.
 class ASH_EXPORT AshPopupAlignmentDelegate
     : public message_center::PopupAlignmentDelegate,
-      public ShelfLayoutManagerObserver,
+      public WmShelfObserver,
       public ShellObserver,
       public display::DisplayObserver {
  public:
-  explicit AshPopupAlignmentDelegate(ShelfLayoutManager* shelf);
+  explicit AshPopupAlignmentDelegate(WmShelf* shelf);
   ~AshPopupAlignmentDelegate() override;
 
   // Start observing the system.
@@ -71,7 +72,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // Overridden from ShellObserver:
   void OnDisplayWorkAreaInsetsChanged() override;
 
-  // Overridden from ShelfLayoutManagerObserver:
+  // WmShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
@@ -83,7 +84,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
   display::Screen* screen_;
   gfx::Rect work_area_;
-  ShelfLayoutManager* shelf_;
+  WmShelf* shelf_;
   int system_tray_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPopupAlignmentDelegate);

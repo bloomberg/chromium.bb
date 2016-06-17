@@ -6,12 +6,9 @@
 
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/common/wm_lookup.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -30,9 +27,9 @@ const int kToastMarginX = 3;
 // shadow).
 const int kNoToastMarginBorderAndShadowOffset = 2;
 
-}
+}  // namespace
 
-AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(ShelfLayoutManager* shelf)
+AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(WmShelf* shelf)
     : screen_(NULL), shelf_(shelf), system_tray_height_(0) {
   shelf_->AddObserver(this);
 }
@@ -60,8 +57,8 @@ void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
 
   // If the shelf is shown during auto-hide state, the distance from the edge
   // should be reduced by the height of shelf's shown height.
-  if (shelf_->visibility_state() == SHELF_AUTO_HIDE &&
-      shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
+  if (shelf_->GetVisibilityState() == SHELF_AUTO_HIDE &&
+      shelf_->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN) {
     system_tray_height_ -= GetShelfConstant(SHELF_SIZE) - kShelfAutoHideSize;
   }
 
@@ -112,19 +109,23 @@ ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
 }
 
 display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
-  return WmLookup::Get()
-      ->GetWindowForWidget(shelf_->shelf_widget())
-      ->GetDisplayNearestWindow();
+  return shelf_->GetWindow()->GetDisplayNearestWindow();
 }
 
 void AshPopupAlignmentDelegate::UpdateWorkArea() {
-  work_area_ = shelf_->user_work_area_bounds();
+  work_area_ = shelf_->GetUserWorkAreaBounds();
   DoUpdateIfPossible();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// ShellObserver:
 
 void AshPopupAlignmentDelegate::OnDisplayWorkAreaInsetsChanged() {
   UpdateWorkArea();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// WmShelfObserver:
 
 void AshPopupAlignmentDelegate::WillChangeVisibilityState(
     ShelfVisibilityState new_state) {
@@ -135,6 +136,9 @@ void AshPopupAlignmentDelegate::OnAutoHideStateChanged(
     ShelfAutoHideState new_state) {
   UpdateWorkArea();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// display::DisplayObserver:
 
 void AshPopupAlignmentDelegate::OnDisplayAdded(
     const display::Display& new_display) {}
