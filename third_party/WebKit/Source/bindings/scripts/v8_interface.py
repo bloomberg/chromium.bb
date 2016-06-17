@@ -78,8 +78,7 @@ def filter_has_constant_configuration(constants):
 def filter_has_special_getter(constants):
     return [constant for constant in constants if
             constant['measure_as'] or
-            constant['deprecate_as'] or
-            constant['origin_trial_enabled_function']]
+            constant['deprecate_as']]
 
 
 def filter_runtime_enabled(constants):
@@ -87,10 +86,29 @@ def filter_runtime_enabled(constants):
             constant['runtime_enabled_function']]
 
 
+def filter_origin_trial_enabled(constants):
+    return [constant for constant in constants if
+            constant['origin_trial_feature_name']]
+
+
 def constant_filters():
     return {'has_constant_configuration': filter_has_constant_configuration,
             'has_special_getter': filter_has_special_getter,
-            'runtime_enabled_constants': filter_runtime_enabled}
+            'runtime_enabled_constants': filter_runtime_enabled,
+            'origin_trial_enabled_constants': filter_origin_trial_enabled}
+
+
+def origin_trial_feature_names(constants, attributes):
+    """ Returns a list of the names of each origin trial feature used in this interface.
+
+    This list is the union of the sets of names used for constants and attributes.
+    """
+
+    feature_names = set(
+        [constant['origin_trial_feature_name'] for constant in constants if constant['origin_trial_feature_name']] +
+        [attribute['origin_trial_feature_name'] for attribute in attributes if attribute['origin_trial_feature_name']]
+    )
+    return sorted(feature_names)
 
 
 def interface_context(interface):
@@ -586,6 +604,10 @@ def interface_context(interface):
         'has_named_properties_object': is_global and context['named_property_getter'],
     })
 
+    # Origin Trials
+    context.update({
+        'origin_trial_feature_names': origin_trial_feature_names(context['constants'], context['attributes']),
+    })
     return context
 
 

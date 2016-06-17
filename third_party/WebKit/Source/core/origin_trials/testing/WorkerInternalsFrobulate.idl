@@ -4,5 +4,6 @@
 
 partial interface WorkerInternals {
     [OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean frobulate;
+    [OriginTrialEnabled=OriginTrialsSampleAPI, Reflect=kFrobulateConst] const unsigned short FROBULATE_CONST = 1;
 };
 

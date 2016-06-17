@@ -82,7 +82,7 @@ from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 import v8_union
-from v8_utilities import capitalize, cpp_name, unique_by
+from v8_utilities import capitalize, cpp_name, for_origin_trial_feature, unique_by
 from utilities import idl_filename_to_component, is_valid_component_dependency, is_testing_target, shorten_union_name
 
 
@@ -425,6 +425,7 @@ def initialize_jinja_env(cache_dir):
     jinja_env.filters.update({
         'blink_capitalize': capitalize,
         'exposed': exposed_if,
+        'for_origin_trial_feature': for_origin_trial_feature,
         'runtime_enabled': runtime_enabled_if,
         'unique_by': unique_by,
         })

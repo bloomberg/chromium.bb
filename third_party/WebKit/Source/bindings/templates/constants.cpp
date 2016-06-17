@@ -40,7 +40,7 @@ V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplat
 {% endfor %}
 {% endfilter %}
 {% endfor %}
-{# Constants with [DeprecateAs] or [MeasureAs] or [OriginTrialEnabled] #}
+{# Constants with [DeprecateAs] or [MeasureAs] #}
 {% for constant in constants | has_special_getter %}
 V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "{{constant.name}}", {{cpp_class}}V8Internal::{{constant.name}}ConstantGetterCallback);
 {% endfor %}

@@ -14,6 +14,7 @@ class WorkerInternals;
 class WorkerInternalsFrobulate final {
     STATIC_ONLY(WorkerInternalsFrobulate);
 public:
+    static const unsigned short kFrobulateConst = 1;
     static bool frobulate(WorkerInternals&) { return true; }
 };
 

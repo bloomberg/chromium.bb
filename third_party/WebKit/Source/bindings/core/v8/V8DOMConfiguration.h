@@ -143,6 +143,8 @@ public:
 
     static void installConstant(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration&);
 
+    static void installConstant(v8::Isolate*, v8::Local<v8::Function> interface, v8::Local<v8::Object> prototype, const ConstantConfiguration&);
+
     static void installConstantWithGetter(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback);
 
     // MethodConfiguration translates into calls to Set() for setting up an

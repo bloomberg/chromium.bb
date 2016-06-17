@@ -28,8 +28,8 @@ public:
     {% endfor %}
     {# Custom internal fields #}
     static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
-    {% for group in attributes|origin_trial_enabled_attributes|groupby('origin_trial_feature_name') %}{{newline}}
-    static void install{{group.grouper}}(ScriptState*, v8::Local<v8::Object> instance);
+    {% for origin_trial_feature_name in origin_trial_feature_names %}{{newline}}
+    static void install{{origin_trial_feature_name}}(ScriptState*, v8::Local<v8::Object> instance);
     {% endfor %}
 private:
     static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);

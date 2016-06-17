@@ -166,11 +166,8 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Local<ObjectOrTemplate> i
     }
 }
 
-void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const V8DOMConfiguration::ConstantConfiguration& constant)
+v8::Local<v8::Primitive> valueForConstant(v8::Isolate* isolate, const V8DOMConfiguration::ConstantConfiguration& constant)
 {
-    v8::Local<v8::String> constantName = v8AtomicString(isolate, constant.name);
-    v8::PropertyAttribute attributes =
-        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
     v8::Local<v8::Primitive> value;
     switch (constant.type) {
     case V8DOMConfiguration::ConstantTypeShort:
@@ -188,8 +185,28 @@ void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplat
     default:
         NOTREACHED();
     }
+    return value;
+}
+
+void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const V8DOMConfiguration::ConstantConfiguration& constant)
+{
+    v8::Local<v8::String> constantName = v8AtomicString(isolate, constant.name);
+    v8::PropertyAttribute attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
+    v8::Local<v8::Primitive> value = valueForConstant(isolate, constant);
     interfaceTemplate->Set(constantName, value, attributes);
     prototypeTemplate->Set(constantName, value, attributes);
+}
+
+void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::Function> interface, v8::Local<v8::Object> prototype, const V8DOMConfiguration::ConstantConfiguration& constant)
+{
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Name> name = v8AtomicString(isolate, constant.name);
+    v8::PropertyAttribute attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
+    v8::Local<v8::Primitive> value = valueForConstant(isolate, constant);
+    v8CallOrCrash(interface->DefineOwnProperty(context, name, value, attributes));
+    v8CallOrCrash(prototype->DefineOwnProperty(context, name, value, attributes));
 }
 
 template<class Configuration>
@@ -296,6 +313,11 @@ void V8DOMConfiguration::installConstants(v8::Isolate* isolate, v8::Local<v8::Fu
 void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration& constant)
 {
     installConstantInternal(isolate, interfaceTemplate, prototypeTemplate, constant);
+}
+
+void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Local<v8::Function> interface, v8::Local<v8::Object> prototype, const ConstantConfiguration& constant)
+{
+    installConstantInternal(isolate, interface, prototype, constant);
 }
 
 void V8DOMConfiguration::installConstantWithGetter(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback getter)

@@ -168,8 +168,8 @@ public:
     {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     {% endfor %}
     {% endif %}
-    {% for group in attributes|origin_trial_enabled_attributes|groupby('origin_trial_feature_name') %}{{newline}}
-    static void install{{group.grouper}}(ScriptState*, v8::Local<v8::Object> instance);
+    {% for origin_trial_feature_name in origin_trial_feature_names %}{{newline}}
+    static void install{{origin_trial_feature_name}}(ScriptState*, v8::Local<v8::Object> instance);
     {% endfor %}
     {% if has_partial_interface %}
 

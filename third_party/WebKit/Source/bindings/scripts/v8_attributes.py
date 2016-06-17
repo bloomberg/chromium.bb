@@ -226,8 +226,7 @@ def attribute_filters():
     return {'has_accessor_configuration': filter_has_accessor_configuration,
             'has_attribute_configuration': filter_has_attribute_configuration,
             'origin_trial_enabled_attributes': filter_origin_trial_enabled,
-            'runtime_enabled_attributes': filter_runtime_enabled,
-            }
+            'runtime_enabled_attributes': filter_runtime_enabled}
 
 
 ################################################################################
