@@ -194,6 +194,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  // TODO(sandersd): This should be moved to capabilities if we ever have a
+  // hardware decoder which supports alpha formats.
+  if (config.format() == PIXEL_FORMAT_YV12A) {
+    DVLOG(1) << "Alpha transparency formats are not supported.";
+    bound_init_cb.Run(false);
+    return;
+  }
+
   VideoDecodeAccelerator::Capabilities capabilities =
       factories_->GetVideoDecodeAcceleratorCapabilities();
   if (!IsProfileSupported(capabilities, config.profile(), config.coded_size(),
