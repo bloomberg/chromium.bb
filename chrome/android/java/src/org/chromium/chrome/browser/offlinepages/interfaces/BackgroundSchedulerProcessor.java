@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages.interfaces;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.offlinepages.DeviceConditions;
 
 /**
  * Interface to allow mocking out the BackgroundSchedulerProcessor, which must call static
@@ -17,5 +18,5 @@ public interface BackgroundSchedulerProcessor {
      * terminated).  If processing was already active or not able to process for some other reason,
      * returns false and this calling instance will not receive a callback.
      */
-    boolean startProcessing(Callback<Boolean> callback);
+    boolean startProcessing(DeviceConditions deviceConditions, Callback<Boolean> callback);
 }

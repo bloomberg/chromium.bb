@@ -9,6 +9,7 @@
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
@@ -28,10 +29,12 @@ void ProcessingDoneCallback(
 }  // namespace
 
 // JNI call to start request processing.
-static jboolean StartProcessing(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jobject>& j_callback_obj) {
+static jboolean StartProcessing(JNIEnv* env,
+                                const JavaParamRef<jclass>& jcaller,
+                                const jboolean j_power_connected,
+                                const jint j_battery_percentage,
+                                const jint j_net_connection_type,
+                                const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
@@ -42,14 +45,12 @@ static jboolean StartProcessing(
       RequestCoordinatorFactory::GetInstance()->
       GetForBrowserContext(profile);
   DVLOG(2) << "resource_coordinator: " << coordinator;
-  coordinator->StartProcessing(
-      base::Bind(&ProcessingDoneCallback, j_callback_ref));
-
-
-  base::Bind(&ProcessingDoneCallback, j_callback_ref);
-  // TODO(dougarnett): lookup/create RequestCoordinator KeyedService
-  // and call StartProcessing on it with bound j_callback_obj.
-  return false;
+  DeviceConditions device_conditions(
+      j_power_connected, j_battery_percentage,
+      static_cast<net::NetworkChangeNotifier::ConnectionType>(
+          j_net_connection_type));
+  return coordinator->StartProcessing(
+      device_conditions, base::Bind(&ProcessingDoneCallback, j_callback_ref));
 }
 
 void BackgroundSchedulerBridge::Schedule(

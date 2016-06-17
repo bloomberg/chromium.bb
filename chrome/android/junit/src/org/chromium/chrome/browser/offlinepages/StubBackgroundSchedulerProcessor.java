@@ -11,15 +11,21 @@ import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerPr
  * Custom stub for our own BackgroundSchedulerRequestProcessor.
  */
 public class StubBackgroundSchedulerProcessor implements BackgroundSchedulerProcessor {
-    private boolean mStartProcessingCalled = false;
+    private boolean mStartProcessingCalled;
+    private DeviceConditions mDeviceConditions;
 
     public boolean getStartProcessingCalled() {
         return mStartProcessingCalled;
     }
 
+    public DeviceConditions getDeviceConditions() {
+        return mDeviceConditions;
+    }
+
     @Override
-    public boolean startProcessing(Callback<Boolean> callback) {
+    public boolean startProcessing(DeviceConditions deviceConditions, Callback<Boolean> callback) {
         mStartProcessingCalled = true;
+        mDeviceConditions = deviceConditions;
         return true;
     }
 }

@@ -61,6 +61,7 @@
         'keyed_service_core',
       ],
       'sources': [
+        'offline_pages/background/device_conditions.h',
         'offline_pages/background/offliner.h',
         'offline_pages/background/offliner_factory.h',
         'offline_pages/background/offliner_policy.h',

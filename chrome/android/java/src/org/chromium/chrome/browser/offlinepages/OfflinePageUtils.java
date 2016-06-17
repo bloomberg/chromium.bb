@@ -201,28 +201,37 @@ public class OfflinePageUtils {
         };
     }
 
+    public static DeviceConditions getDeviceConditions(Context context) {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        // Note this is a sticky intent, so we aren't really registering a receiver, just getting
+        // the sticky intent.  That means that we don't need to unregister the filter later.
+        Intent batteryStatus = context.registerReceiver(null, filter);
+        if (batteryStatus == null) return null;
+
+        return new DeviceConditions(isPowerConnected(batteryStatus),
+                batteryPercentage(batteryStatus),
+                NetworkChangeNotifier.getInstance().getCurrentConnectionType());
+    }
+
     /**
      * Records UMA data when the Offline Pages Background Load service awakens.
      * @param context android context
      */
     public static void recordWakeupUMA(Context context, long taskScheduledTimeMillis) {
-        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        // Note this is a sticky intent, so we aren't really registering a receiver, just getting
-        // the sticky intent.  That means that we don't need to unregister the filter later.
-        Intent batteryStatus = context.registerReceiver(null, filter);
-        if (batteryStatus == null) return;
+        DeviceConditions deviceConditions = getDeviceConditions(context);
+        if (deviceConditions == null) return;
 
         // Report charging state.
         RecordHistogram.recordBooleanHistogram(
-                "OfflinePages.Wakeup.ConnectedToPower", isPowerConnected(batteryStatus));
+                "OfflinePages.Wakeup.ConnectedToPower", deviceConditions.isPowerConnected());
 
         // Report battery percentage.
         RecordHistogram.recordPercentageHistogram(
-                "OfflinePages.Wakeup.BatteryPercentage", batteryPercentage(batteryStatus));
+                "OfflinePages.Wakeup.BatteryPercentage", deviceConditions.getBatteryPercentage());
 
         // Report the default network found (or none, if we aren't connected).
-        int connectionType = NetworkChangeNotifier.getInstance().getCurrentConnectionType();
-        Log.d(TAG, "Found single network of type " + connectionType);
+        int connectionType = deviceConditions.getNetConnectionType();
+        Log.d(TAG, "Found default network of type " + connectionType);
         RecordHistogram.recordEnumeratedHistogram("OfflinePages.Wakeup.NetworkAvailable",
                 connectionType, ConnectionType.CONNECTION_LAST + 1);
 

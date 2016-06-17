@@ -24,8 +24,11 @@ public class BackgroundSchedulerBridge {
     // not receive a callback.
     // TODO(dougarnett): consider adding policy check api to let caller
     //     separately determine if not allowed by policy.
-    public static boolean startProcessing(Callback<Boolean> callback) {
-        return nativeStartProcessing(callback);
+    public static boolean startProcessing(
+            DeviceConditions deviceConditions, Callback<Boolean> callback) {
+        return nativeStartProcessing(deviceConditions.isPowerConnected(),
+                deviceConditions.getBatteryPercentage(), deviceConditions.getNetConnectionType(),
+                callback);
     }
 
     @CalledByNative
@@ -38,6 +41,6 @@ public class BackgroundSchedulerBridge {
         BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
     }
 
-    private static native boolean nativeStartProcessing(
-            Callback<Boolean> callback);
+    private static native boolean nativeStartProcessing(boolean powerConnected,
+            int batteryPercentage, int netConnectionType, Callback<Boolean> callback);
 }

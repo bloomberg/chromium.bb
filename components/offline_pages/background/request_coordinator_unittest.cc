@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
@@ -165,11 +166,13 @@ void RequestCoordinatorTest::SendOfflinerDoneCallback(
 
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
       base::Bind(
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
-  EXPECT_TRUE(coordinator()->StartProcessing(callback));
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
@@ -195,7 +198,6 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDone) {
-
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId, kUrl, kClientId, base::Time::Now());

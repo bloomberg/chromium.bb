@@ -86,6 +86,7 @@ void RequestCoordinator::RequestQueueEmpty() {
 }
 
 bool RequestCoordinator::StartProcessing(
+    const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
   scheduler_callback_ = callback;
   // TODO(petewil): Check existing conditions (should be passed down from
@@ -144,7 +145,6 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   }
 
   // TODO(petewil): Check time budget. Return to the scheduler if we are out.
-
 
   // Start a request if we have time.
   TryNextRequest();

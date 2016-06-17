@@ -13,9 +13,8 @@ import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerPr
  */
 public class BackgroundSchedulerProcessorImpl implements BackgroundSchedulerProcessor {
     @Override
-    public boolean startProcessing(Callback<Boolean> callback) {
-
-        BackgroundSchedulerBridge.startProcessing(callback);
+    public boolean startProcessing(DeviceConditions deviceConditions, Callback<Boolean> callback) {
+        BackgroundSchedulerBridge.startProcessing(deviceConditions, callback);
 
         return true;
     }

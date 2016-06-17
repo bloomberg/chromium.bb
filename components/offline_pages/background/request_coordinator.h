@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "url/gurl.h"
@@ -47,7 +48,8 @@ class RequestCoordinator : public KeyedService {
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
   // a callback. If processing was already active, returns false.
-  bool StartProcessing(const base::Callback<void(bool)>& callback);
+  bool StartProcessing(const DeviceConditions& device_conditions,
+                       const base::Callback<void(bool)>& callback);
 
   // Stops the current request processing if active. This is a way for
   // caller to abort processing; otherwise, processing will complete on

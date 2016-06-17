@@ -9,6 +9,7 @@ if (is_android) {
 # GYP: //components/offline_pages/offline_pages.gypi:background_offliner
 static_library("background_offliner") {
   sources = [
+    "device_conditions.h",
     "offliner.h",
     "offliner_factory.h",
     "offliner_policy.h",

@@ -36,7 +36,7 @@ public class BackgroundOfflinerTask {
      */
     public boolean startBackgroundRequests(Context context, Bundle bundle,
                                            ChromeBackgroundServiceWaiter waiter) {
-        processBackgroundRequests(bundle, waiter);
+        processBackgroundRequests(bundle, OfflinePageUtils.getDeviceConditions(context), waiter);
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
@@ -53,7 +53,8 @@ public class BackgroundOfflinerTask {
     // startBackgroundRequests instead of this method.
     @VisibleForTesting
     public void processBackgroundRequests(
-            Bundle bundle, final ChromeBackgroundServiceWaiter waiter) {
+            Bundle bundle, DeviceConditions deviceConditions,
+            final ChromeBackgroundServiceWaiter waiter) {
         // TODO(petewil): Nothing is holding the Wake Lock.  We need some solution to
         // keep hold of it.  Options discussed so far are having a fresh set of functions
         // to grab and release a countdown latch, or holding onto the wake lock ourselves,
@@ -76,6 +77,6 @@ public class BackgroundOfflinerTask {
         };
 
         // Pass the activation on to the bridge to the C++ RequestCoordinator.
-        mBridge.startProcessing(callback);
+        mBridge.startProcessing(deviceConditions, callback);
     }
 }
