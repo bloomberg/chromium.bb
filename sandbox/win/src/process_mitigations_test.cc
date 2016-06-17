@@ -1,35 +1,47 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <initguid.h>
+#include "sandbox/win/src/process_mitigations.h"
+
 #include <d3d9.h>
-#include <Opmapi.h>
+#include <initguid.h>
+#include <opmapi.h>
+#include <psapi.h>
 #include <windows.h>
 
 #include <map>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/startup_information.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
-#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/process_mitigations_win32k_policy.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/target_services.h"
-#include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/integration_tests/integration_tests_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+// Timeouts for synchronization.
+#define event_timeout \
+  static_cast<DWORD>((TestTimeouts::action_timeout()).InMillisecondsRoundedUp())
 
 // API defined in winbase.h.
 typedef decltype(GetProcessDEPPolicy)* GetProcessDEPPolicyFunction;
@@ -42,6 +54,10 @@ GetProcessMitigationPolicyFunction get_process_mitigation_policy;
 // APIs defined in wingdi.h.
 typedef decltype(AddFontMemResourceEx)* AddFontMemResourceExFunction;
 typedef decltype(RemoveFontMemResourceEx)* RemoveFontMemResourceExFunction;
+
+// APIs defined in integration_tests_common.h
+typedef decltype(WasHookCalled)* WasHookCalledFunction;
+typedef decltype(SetHook)* SetHookFunction;
 
 #if !defined(_WIN64)
 bool CheckWin8DepPolicy() {
@@ -59,7 +75,7 @@ bool CheckWin8AslrPolicy() {
   PROCESS_MITIGATION_ASLR_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessASLRPolicy,
                                      &policy, sizeof(policy))) {
-     return false;
+    return false;
   }
   return policy.EnableForceRelocateImages && policy.DisallowStrippedImages;
 }
@@ -68,9 +84,9 @@ bool CheckWin8AslrPolicy() {
 bool CheckWin8StrictHandlePolicy() {
   PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
-                                     ProcessStrictHandleCheckPolicy,
-                                     &policy, sizeof(policy))) {
-     return false;
+                                     ProcessStrictHandleCheckPolicy, &policy,
+                                     sizeof(policy))) {
+    return false;
   }
   return policy.RaiseExceptionOnInvalidHandleReference &&
          policy.HandleExceptionsPermanentlyEnabled;
@@ -79,19 +95,19 @@ bool CheckWin8StrictHandlePolicy() {
 bool CheckWin8Win32CallPolicy() {
   PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
-                                     ProcessSystemCallDisablePolicy,
-                                     &policy, sizeof(policy))) {
-     return false;
+                                     ProcessSystemCallDisablePolicy, &policy,
+                                     sizeof(policy))) {
+    return false;
   }
   return policy.DisallowWin32kSystemCalls;
 }
 
-bool CheckWin8DllExtensionPolicy() {
+bool CheckWin8ExtensionPointPolicy() {
   PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
                                      ProcessExtensionPointDisablePolicy,
                                      &policy, sizeof(policy))) {
-     return false;
+    return false;
   }
   return policy.DisableExtensionPoints;
 }
@@ -116,8 +132,309 @@ bool CheckWin10ImageLoadNoRemotePolicy() {
   return policy.NoRemoteImages;
 }
 
+// Spawn Windows process (with or without mitigation enabled).
+bool SpawnWinProc(PROCESS_INFORMATION* pi, bool success_test, HANDLE* event) {
+  base::win::StartupInformation startup_info;
+  DWORD creation_flags = 0;
+
+  if (!success_test) {
+    DWORD64 flags =
+        PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON;
+    // This test only runs on >= Win8, so don't have to handle
+    // illegal 64-bit flags on 32-bit <= Win7.
+    size_t flags_size = sizeof(flags);
+
+    if (!startup_info.InitializeProcThreadAttributeList(1) ||
+        !startup_info.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &flags, flags_size)) {
+      ADD_FAILURE();
+      return false;
+    }
+    creation_flags = EXTENDED_STARTUPINFO_PRESENT;
+  }
+
+  // Command line must be writable.
+  base::string16 cmd_writeable(g_winproc_file);
+
+  if (!::CreateProcessW(NULL, &cmd_writeable[0], NULL, NULL, FALSE,
+                        creation_flags, NULL, NULL, startup_info.startup_info(),
+                        pi)) {
+    ADD_FAILURE();
+    return false;
+  }
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(*event, event_timeout));
+
+  return true;
+}
+
+//------------------------------------------------------------------------------
+// 1. Spawn a Windows process (with or without mitigation enabled).
+// 2. Load the hook Dll locally.
+// 3. Create a global named event for the hook to trigger.
+// 4. Start the hook (for the specific WinProc or globally).
+// 5. Send a keystroke event.
+// 6. Ask the hook Dll if it received a hook callback.
+// 7. Cleanup the hooking.
+// 8. Signal the Windows process to shutdown.
+//
+// Do NOT use any ASSERTs in this function.  Cleanup required.
+//------------------------------------------------------------------------------
+void TestWin8ExtensionPointHookWrapper(bool is_success_test, bool global_hook) {
+  // Set up a couple global events that this test will use.
+  HANDLE winproc_event = ::CreateEventW(NULL, FALSE, FALSE, g_winproc_event);
+  if (winproc_event == NULL || winproc_event == INVALID_HANDLE_VALUE) {
+    ADD_FAILURE();
+    return;
+  }
+  base::win::ScopedHandle scoped_winproc_event(winproc_event);
+
+  HANDLE hook_event = ::CreateEventW(NULL, FALSE, FALSE, g_hook_event);
+  if (hook_event == NULL || hook_event == INVALID_HANDLE_VALUE) {
+    ADD_FAILURE();
+    return;
+  }
+  base::win::ScopedHandle scoped_hook_event(hook_event);
+
+  // 1. Spawn WinProc.
+  PROCESS_INFORMATION proc_info = {};
+  if (!SpawnWinProc(&proc_info, is_success_test, &winproc_event))
+    return;
+
+  // From this point on, no return on failure.  Cleanup required.
+  bool all_good = true;
+
+  // 2. Load the hook DLL.
+  base::FilePath hook_dll_path(g_hook_dll_file);
+  base::ScopedNativeLibrary dll(hook_dll_path);
+  EXPECT_TRUE(dll.is_valid());
+
+  HOOKPROC hook_proc =
+      reinterpret_cast<HOOKPROC>(dll.GetFunctionPointer(g_hook_handler_func));
+  WasHookCalledFunction was_hook_called =
+      reinterpret_cast<WasHookCalledFunction>(
+          dll.GetFunctionPointer(g_was_hook_called_func));
+  SetHookFunction set_hook = reinterpret_cast<SetHookFunction>(
+      dll.GetFunctionPointer(g_set_hook_func));
+  if (!hook_proc || !was_hook_called || !set_hook) {
+    ADD_FAILURE();
+    all_good = false;
+  }
+
+  // 3. Try installing the hook (either on a remote target thread,
+  //    or globally).
+  HHOOK hook = nullptr;
+  if (all_good) {
+    DWORD target = 0;
+    if (!global_hook)
+      target = proc_info.dwThreadId;
+    hook = ::SetWindowsHookExW(WH_KEYBOARD, hook_proc, dll.get(), target);
+    if (!hook) {
+      ADD_FAILURE();
+      all_good = false;
+    } else
+      // Pass the hook DLL the hook handle.
+      set_hook(hook);
+  }
+
+  // 4. Inject a keyboard event.
+  if (all_good) {
+    // Note: that PostThreadMessage and SendMessage APIs will not deliver
+    // a keystroke in such a way that triggers a "legitimate" hook.
+    // Have to use targetless SendInput or keybd_event.  The latter is
+    // less code and easier to work with.
+    keybd_event(VkKeyScan(L'A'), 0, 0, 0);
+    keybd_event(VkKeyScan(L'A'), 0, KEYEVENTF_KEYUP, 0);
+    // Give it a chance to hit the hook handler...
+    ::WaitForSingleObject(hook_event, event_timeout);
+
+    // 5. Did the hook get hit?  Was it expected to?
+    if (global_hook)
+      EXPECT_EQ((is_success_test ? true : false), was_hook_called());
+    else
+      // ***IMPORTANT: when targeting a specific thread id, the
+      // PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE
+      // mitigation does NOT disable the hook API.  It ONLY
+      // stops global hooks from running in a process.  Hence,
+      // the hook will hit (TRUE) even in the "failure"
+      // case for a non-global/targeted hook.
+      EXPECT_EQ((is_success_test ? true : true), was_hook_called());
+  }
+
+  // 6. Disable hook.
+  if (hook)
+    EXPECT_TRUE(::UnhookWindowsHookEx(hook));
+
+  // 7. Trigger shutdown of WinProc.
+  if (proc_info.hProcess) {
+    if (::PostThreadMessageW(proc_info.dwThreadId, WM_QUIT, 0, 0)) {
+      // Note: The combination/perfect-storm of a Global Hook, in a
+      // WinProc that has the EXTENSION_POINT_DISABLE mitigation ON, and the
+      // use of the SendInput or keybd_event API to inject a keystroke,
+      // results in the target becoming unresponsive.  If any one of these
+      // states are changed, the problem does not occur.  This means the WM_QUIT
+      // message is not handled and the call to WaitForSingleObject times out.
+      // Therefore not checking the return val.
+      ::WaitForSingleObject(winproc_event, event_timeout);
+    } else {
+      // Ensure no strays.
+      ::TerminateProcess(proc_info.hProcess, 0);
+      ADD_FAILURE();
+    }
+    EXPECT_TRUE(::CloseHandle(proc_info.hThread));
+    EXPECT_TRUE(::CloseHandle(proc_info.hProcess));
+  }
+}
+
+//------------------------------------------------------------------------------
+// 1. Set up the AppInit Dll in registry settings. (Enable)
+// 2. Spawn a Windows process (with or without mitigation enabled).
+// 3. Check if the AppInit Dll got loaded in the Windows process or not.
+// 4. Signal the Windows process to shutdown.
+// 5. Restore original reg settings.
+//
+// Do NOT use any ASSERTs in this function.  Cleanup required.
+//------------------------------------------------------------------------------
+void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
+  // 0.5 Get path of current module.  The appropriate build of the
+  //     AppInit DLL will be in the same directory (and the
+  //     full path is needed for reg).
+  wchar_t path[MAX_PATH];
+  if (!::GetModuleFileNameW(NULL, path, MAX_PATH)) {
+    ADD_FAILURE();
+    return;
+  }
+  // Only want the directory.  Switch file name for the AppInit DLL.
+  base::FilePath full_dll_path(path);
+  full_dll_path = full_dll_path.DirName();
+  full_dll_path = full_dll_path.Append(g_hook_dll_file);
+  wchar_t* non_const = const_cast<wchar_t*>(full_dll_path.value().c_str());
+  // Now make sure the path is in "short-name" form for registry.
+  DWORD length = ::GetShortPathNameW(non_const, NULL, 0);
+  std::vector<wchar_t> short_name(length);
+  if (!::GetShortPathNameW(non_const, &short_name[0], length)) {
+    ADD_FAILURE();
+    return;
+  }
+
+  // 1. Reg setup.
+  const wchar_t* app_init_reg_path =
+      L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows";
+  const wchar_t* dlls_value_name = L"AppInit_DLLs";
+  const wchar_t* enabled_value_name = L"LoadAppInit_DLLs";
+  const wchar_t* signing_value_name = L"RequireSignedAppInit_DLLs";
+  std::wstring orig_dlls;
+  std::wstring new_dlls;
+  DWORD orig_enabled_value = 0;
+  DWORD orig_signing_value = 0;
+  base::win::RegKey app_init_key(HKEY_LOCAL_MACHINE, app_init_reg_path,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
+  // Backup the existing settings.
+  if (!app_init_key.Valid() || !app_init_key.HasValue(dlls_value_name) ||
+      !app_init_key.HasValue(enabled_value_name) ||
+      ERROR_SUCCESS != app_init_key.ReadValue(dlls_value_name, &orig_dlls) ||
+      ERROR_SUCCESS !=
+          app_init_key.ReadValueDW(enabled_value_name, &orig_enabled_value)) {
+    ADD_FAILURE();
+    return;
+  }
+  if (app_init_key.HasValue(signing_value_name)) {
+    if (ERROR_SUCCESS !=
+        app_init_key.ReadValueDW(signing_value_name, &orig_signing_value)) {
+      ADD_FAILURE();
+      return;
+    }
+  }
+
+  // Set the new settings (obviously requires local admin privileges).
+  new_dlls = orig_dlls;
+  if (!orig_dlls.empty())
+    new_dlls.append(L",");
+  new_dlls.append(short_name.data());
+
+  // From this point on, no return on failure.  Cleanup required.
+  bool all_good = true;
+
+  if (app_init_key.HasValue(signing_value_name)) {
+    if (ERROR_SUCCESS !=
+        app_init_key.WriteValue(signing_value_name, static_cast<DWORD>(0))) {
+      ADD_FAILURE();
+      all_good = false;
+    }
+  }
+  if (ERROR_SUCCESS !=
+          app_init_key.WriteValue(dlls_value_name, new_dlls.c_str()) ||
+      ERROR_SUCCESS !=
+          app_init_key.WriteValue(enabled_value_name, static_cast<DWORD>(1))) {
+    ADD_FAILURE();
+    all_good = false;
+  }
+
+  // 2. Spawn WinProc.
+  HANDLE winproc_event = INVALID_HANDLE_VALUE;
+  base::win::ScopedHandle scoped_event;
+  PROCESS_INFORMATION proc_info = {};
+  if (all_good) {
+    winproc_event = ::CreateEventW(NULL, FALSE, FALSE, g_winproc_event);
+    if (winproc_event == NULL || winproc_event == INVALID_HANDLE_VALUE) {
+      ADD_FAILURE();
+      all_good = false;
+    } else {
+      scoped_event.Set(winproc_event);
+      if (!SpawnWinProc(&proc_info, is_success_test, &winproc_event))
+        all_good = false;
+    }
+  }
+
+  // 3. Check loaded modules in WinProc to see if the AppInit dll is loaded.
+  bool dll_loaded = false;
+  if (all_good) {
+    std::vector<HMODULE>(modules);
+    if (!base::win::GetLoadedModulesSnapshot(proc_info.hProcess, &modules)) {
+      ADD_FAILURE();
+      all_good = false;
+    } else {
+      for (auto module : modules) {
+        wchar_t name[MAX_PATH] = {};
+        if (::GetModuleFileNameExW(proc_info.hProcess, module, name,
+                                   MAX_PATH) &&
+            ::wcsstr(name, g_hook_dll_file)) {
+          // Found it.
+          dll_loaded = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // Was the test result as expected?
+  if (all_good)
+    EXPECT_EQ((is_success_test ? true : false), dll_loaded);
+
+  // 4. Trigger shutdown of WinProc.
+  if (proc_info.hProcess) {
+    if (::PostThreadMessageW(proc_info.dwThreadId, WM_QUIT, 0, 0)) {
+      ::WaitForSingleObject(winproc_event, event_timeout);
+    } else {
+      // Ensure no strays.
+      ::TerminateProcess(proc_info.hProcess, 0);
+      ADD_FAILURE();
+    }
+    EXPECT_TRUE(::CloseHandle(proc_info.hThread));
+    EXPECT_TRUE(::CloseHandle(proc_info.hProcess));
+  }
+
+  // 5. Reg Restore
+  EXPECT_EQ(ERROR_SUCCESS,
+            app_init_key.WriteValue(enabled_value_name, orig_enabled_value));
+  if (app_init_key.HasValue(signing_value_name))
+    EXPECT_EQ(ERROR_SUCCESS,
+              app_init_key.WriteValue(signing_value_name, orig_signing_value));
+  EXPECT_EQ(ERROR_SUCCESS,
+            app_init_key.WriteValue(dlls_value_name, orig_dlls.c_str()));
+}
+
 void TestWin10ImageLoadRemote(bool is_success_test) {
-  // ***Insert your manual testing share UNC path here!
+  // ***Insert a manual testing share UNC path here!
   // E.g.: \\\\hostname\\sharename\\calc.exe
   std::wstring unc = L"\"\\\\hostname\\sharename\\calc.exe\"";
 
@@ -526,17 +843,15 @@ SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
 //------------------------------------------------------------------------------
 // Win8 Checks:
 // MITIGATION_DEP(_NO_ATL_THUNK)
-// MITIGATION_EXTENSION_DLL_DISABLE
 // MITIGATION_RELOCATE_IMAGE(_REQUIRED) - ASLR, release only
 // MITIGATION_STRICT_HANDLE_CHECKS
 // >= Win8
 //------------------------------------------------------------------------------
 
-SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t** argv) {
   get_process_mitigation_policy =
-      reinterpret_cast<GetProcessMitigationPolicyFunction>(
-          ::GetProcAddress(::GetModuleHandleW(L"kernel32.dll"),
-                           "GetProcessMitigationPolicy"));
+      reinterpret_cast<GetProcessMitigationPolicyFunction>(::GetProcAddress(
+          ::GetModuleHandleW(L"kernel32.dll"), "GetProcessMitigationPolicy"));
   if (!get_process_mitigation_policy)
     return SBOX_TEST_NOT_FOUND;
 
@@ -553,9 +868,6 @@ SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t **argv) {
   if (!CheckWin8StrictHandlePolicy())
     return SBOX_TEST_THIRD_ERROR;
 
-  if (!CheckWin8DllExtensionPolicy())
-    return SBOX_TEST_FIFTH_ERROR;
-
   return SBOX_TEST_SUCCEEDED;
 }
 
@@ -566,12 +878,10 @@ TEST(ProcessMitigationsTest, CheckWin8) {
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  sandbox::MitigationFlags mitigations = MITIGATION_DEP |
-                                         MITIGATION_DEP_NO_ATL_THUNK |
-                                         MITIGATION_EXTENSION_DLL_DISABLE;
+  sandbox::MitigationFlags mitigations =
+      MITIGATION_DEP | MITIGATION_DEP_NO_ATL_THUNK;
 #if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
-  mitigations |= MITIGATION_RELOCATE_IMAGE |
-                 MITIGATION_RELOCATE_IMAGE_REQUIRED;
+  mitigations |= MITIGATION_RELOCATE_IMAGE | MITIGATION_RELOCATE_IMAGE_REQUIRED;
 #endif
 
   EXPECT_EQ(policy->SetProcessMitigations(mitigations), SBOX_ALL_OK);
@@ -588,17 +898,16 @@ TEST(ProcessMitigationsTest, CheckWin8) {
 // < Win8 x86
 //------------------------------------------------------------------------------
 
-SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t** argv) {
   GetProcessDEPPolicyFunction get_process_dep_policy =
-      reinterpret_cast<GetProcessDEPPolicyFunction>(
-          ::GetProcAddress(::GetModuleHandleW(L"kernel32.dll"),
-                           "GetProcessDEPPolicy"));
+      reinterpret_cast<GetProcessDEPPolicyFunction>(::GetProcAddress(
+          ::GetModuleHandleW(L"kernel32.dll"), "GetProcessDEPPolicy"));
   if (get_process_dep_policy) {
     BOOL is_permanent = FALSE;
     DWORD dep_flags = 0;
 
     if (!get_process_dep_policy(::GetCurrentProcess(), &dep_flags,
-        &is_permanent)) {
+                                &is_permanent)) {
       return SBOX_TEST_FIRST_ERROR;
     }
 
@@ -608,7 +917,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t **argv) {
   } else {
     NtQueryInformationProcessFunction query_information_process = NULL;
     ResolveNTFunctionPtr("NtQueryInformationProcess",
-                          &query_information_process);
+                         &query_information_process);
     if (!query_information_process)
       return SBOX_TEST_NOT_FOUND;
 
@@ -624,8 +933,8 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t **argv) {
     static const int MEM_EXECUTE_OPTION_PERMANENT = 8;
     dep_flags &= 0xff;
 
-    if (dep_flags != (MEM_EXECUTE_OPTION_DISABLE |
-                      MEM_EXECUTE_OPTION_PERMANENT)) {
+    if (dep_flags !=
+        (MEM_EXECUTE_OPTION_DISABLE | MEM_EXECUTE_OPTION_PERMANENT)) {
       return SBOX_TEST_FOURTH_ERROR;
     }
   }
@@ -641,10 +950,9 @@ TEST(ProcessMitigationsTest, CheckDep) {
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  EXPECT_EQ(policy->SetProcessMitigations(
-                MITIGATION_DEP |
-                MITIGATION_DEP_NO_ATL_THUNK |
-                MITIGATION_SEHOP),
+  EXPECT_EQ(policy->SetProcessMitigations(MITIGATION_DEP |
+                                          MITIGATION_DEP_NO_ATL_THUNK |
+                                          MITIGATION_SEHOP),
             SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"CheckDep"));
 }
@@ -655,11 +963,10 @@ TEST(ProcessMitigationsTest, CheckDep) {
 // >= Win8
 //------------------------------------------------------------------------------
 
-SBOX_TESTS_COMMAND int CheckWin8Lockdown(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int CheckWin8Lockdown(int argc, wchar_t** argv) {
   get_process_mitigation_policy =
-      reinterpret_cast<GetProcessMitigationPolicyFunction>(
-          ::GetProcAddress(::GetModuleHandleW(L"kernel32.dll"),
-                           "GetProcessMitigationPolicy"));
+      reinterpret_cast<GetProcessMitigationPolicyFunction>(::GetProcAddress(
+          ::GetModuleHandleW(L"kernel32.dll"), "GetProcessMitigationPolicy"));
   if (!get_process_mitigation_policy)
     return SBOX_TEST_NOT_FOUND;
 
@@ -1029,6 +1336,158 @@ TEST(ProcessMitigationsTest, CheckWin8Win32KRedirection) {
 }
 
 //------------------------------------------------------------------------------
+// Disable extension points (MITIGATION_EXTENSION_POINT_DISABLE).
+// >= Win8
+//------------------------------------------------------------------------------
+SBOX_TESTS_COMMAND int CheckWin8ExtensionPointSetting(int argc,
+                                                      wchar_t** argv) {
+  get_process_mitigation_policy =
+      reinterpret_cast<GetProcessMitigationPolicyFunction>(::GetProcAddress(
+          ::GetModuleHandleW(L"kernel32.dll"), "GetProcessMitigationPolicy"));
+  if (!get_process_mitigation_policy)
+    return SBOX_TEST_NOT_FOUND;
+
+  if (!CheckWin8ExtensionPointPolicy())
+    return SBOX_TEST_FIRST_ERROR;
+  return SBOX_TEST_SUCCEEDED;
+}
+
+// This test validates that setting the MITIGATION_EXTENSION_POINT_DISABLE
+// mitigation enables the setting on a process.
+TEST(ProcessMitigationsTest, CheckWin8ExtensionPointPolicySuccess) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  EXPECT_EQ(policy->SetProcessMitigations(MITIGATION_EXTENSION_POINT_DISABLE),
+            SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"CheckWin8ExtensionPointSetting"));
+}
+
+// This test validates that a "legitimate" global hook CAN be set on the
+// sandboxed proc/thread if the MITIGATION_EXTENSION_POINT_DISABLE
+// mitigation is not set.
+//
+// MANUAL testing only.
+TEST(ProcessMitigationsTest,
+     DISABLED_CheckWin8ExtensionPoint_GlobalHook_Success) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  // (is_success_test, global_hook)
+  TestWin8ExtensionPointHookWrapper(true, true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that setting the MITIGATION_EXTENSION_POINT_DISABLE
+// mitigation prevents a global hook on WinProc.
+//
+// MANUAL testing only.
+TEST(ProcessMitigationsTest,
+     DISABLED_CheckWin8ExtensionPoint_GlobalHook_Failure) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  // (is_success_test, global_hook)
+  TestWin8ExtensionPointHookWrapper(false, true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that a "legitimate" hook CAN be set on the sandboxed
+// proc/thread if the MITIGATION_EXTENSION_POINT_DISABLE mitigation is not set.
+//
+// MANUAL testing only.
+TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_Hook_Success) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  // (is_success_test, global_hook)
+  TestWin8ExtensionPointHookWrapper(true, false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// *** Important: MITIGATION_EXTENSION_POINT_DISABLE does NOT prevent
+// hooks targetted at a specific thread id.  It only prevents
+// global hooks.  So this test does NOT actually expect the hook
+// to fail (see TestWin8ExtensionPointHookWrapper function) even
+// with the mitigation on.
+//
+// MANUAL testing only.
+TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_Hook_Failure) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  // (is_success_test, global_hook)
+  TestWin8ExtensionPointHookWrapper(false, false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that an AppInit Dll CAN be added to a target
+// WinProc if the MITIGATION_EXTENSION_POINT_DISABLE mitigation is not set.
+//
+// MANUAL testing only.
+// Must run this test as admin/elevated.
+TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_AppInit_Success) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  TestWin8ExtensionPointAppInitWrapper(true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that setting the MITIGATION_EXTENSION_POINT_DISABLE
+// mitigation prevents the loading of any AppInit Dll into WinProc.
+//
+// MANUAL testing only.
+// Must run this test as admin/elevated.
+TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_AppInit_Failure) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex != NULL && mutex != INVALID_HANDLE_VALUE);
+  EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(mutex, event_timeout));
+
+  TestWin8ExtensionPointAppInitWrapper(false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+//------------------------------------------------------------------------------
 // Disable non-system font loads (MITIGATION_NONSYSTEM_FONT_DISABLE)
 // >= Win10
 //------------------------------------------------------------------------------
@@ -1193,7 +1652,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoRemotePolicySuccess) {
 // a remote UNC device, if the MITIGATION_IMAGE_LOAD_NO_REMOTE
 // mitigation is NOT set.
 //
-// DISABLED for automated testing bots.  Enable for manual testing.
+// MANUAL testing only.
 TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;
@@ -1205,7 +1664,7 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteSuccess) {
 // mitigation prevents creating a new process from a remote
 // UNC device.
 //
-// DISABLED for automated testing bots.  Enable for manual testing.
+// MANUAL testing only.
 TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;

@@ -197,6 +197,8 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
+        'sbox_integration_test_hook_dll',
+        'sbox_integration_test_win_proc',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
@@ -224,11 +226,37 @@
         'tests/common/test_utils.cc',
         'tests/common/test_utils.h',
         'tests/integration_tests/integration_tests.cc',
+        'tests/integration_tests/integration_tests_common.h',
       ],
       'link_settings': {
         'libraries': [
           '-ldxva2.lib',
         ],
+      },
+    },
+    {
+      'target_name': 'sbox_integration_test_hook_dll',
+      'type': 'shared_library',
+      'dependencies': [
+      ],
+      'sources': [
+        'tests/integration_tests/hooking_dll.cc',
+        'tests/integration_tests/integration_tests_common.h',
+      ],
+    },
+    {
+      'target_name': 'sbox_integration_test_win_proc',
+      'type': 'executable',
+      'dependencies': [
+      ],
+      'sources': [
+        'tests/integration_tests/hooking_win_proc.cc',
+        'tests/integration_tests/integration_tests_common.h',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+        },
       },
     },
     {

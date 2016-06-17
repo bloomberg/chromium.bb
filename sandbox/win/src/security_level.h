@@ -187,10 +187,14 @@ const MitigationFlags MITIGATION_STRICT_HANDLE_CHECKS             = 0x00000100;
 // PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON.
 const MitigationFlags MITIGATION_WIN32K_DISABLE                   = 0x00000200;
 
-// Disables common DLL injection methods (e.g. window hooks and
-// App_InitDLLs). Corresponds to
+// Prevents certain built-in third party extension points from being used.
+// - App_Init DLLs
+// - Winsock Layered Service Providers (LSPs)
+// - Global Windows Hooks (NOT thread-targeted hooks)
+// - Legacy Input Method Editors (IMEs).
+// I.e.: Disable legacy hooking mechanisms.  Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON.
-const MitigationFlags MITIGATION_EXTENSION_DLL_DISABLE            = 0x00000400;
+const MitigationFlags MITIGATION_EXTENSION_POINT_DISABLE = 0x00000400;
 
 // Prevents the process from loading non-system fonts into GDI.
 // Corresponds to

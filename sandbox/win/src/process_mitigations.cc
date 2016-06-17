@@ -137,8 +137,8 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
-  // Enable dll extension policies.
-  if (flags & MITIGATION_EXTENSION_DLL_DISABLE) {
+  // Enable extension point policies.
+  if (flags & MITIGATION_EXTENSION_POINT_DISABLE) {
     PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
     policy.DisableExtensionPoints = true;
 
@@ -254,7 +254,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
         PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON;
   }
 
-  if (flags & MITIGATION_EXTENSION_DLL_DISABLE) {
+  if (flags & MITIGATION_EXTENSION_POINT_DISABLE) {
     *policy_flags |=
         PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON;
   }
@@ -333,7 +333,7 @@ bool CanSetProcessMitigationsPostStartup(MitigationFlags flags) {
         MITIGATION_RELOCATE_IMAGE_REQUIRED |
         MITIGATION_BOTTOM_UP_ASLR |
         MITIGATION_STRICT_HANDLE_CHECKS |
-        MITIGATION_EXTENSION_DLL_DISABLE |
+        MITIGATION_EXTENSION_POINT_DISABLE |
         MITIGATION_DLL_SEARCH_ORDER |
         MITIGATION_HARDEN_TOKEN_IL_POLICY |
         MITIGATION_WIN32K_DISABLE |
