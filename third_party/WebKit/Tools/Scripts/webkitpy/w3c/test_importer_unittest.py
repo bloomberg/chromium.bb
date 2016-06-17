@@ -107,3 +107,12 @@ class TestImporterTest(unittest.TestCase):
                            'jstests': 0,
                            'reftests': 0,
                            'total_tests': 0}])
+
+    def test_executablebit(self):
+        # executable source files are executable after importing
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=FAKE_FILES)
+        host.filesystem.make_executable('/blink/w3c/dir/README.txt')
+        importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
+        importer.do_import()
+        self.assertTrue(host.filesystem.is_executable('/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/README.txt'))
