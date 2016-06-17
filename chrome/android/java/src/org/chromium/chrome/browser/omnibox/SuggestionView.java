@@ -332,9 +332,7 @@ class SuggestionView extends ViewGroup {
             setSuggestedQuery(suggestionItem, false, false, false);
             if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
-                showDescriptionLine(
-                        SpannableString.valueOf(mSuggestion.getDescription()),
-                        getStandardFontColor());
+                showDescriptionLine(SpannableString.valueOf(mSuggestion.getDescription()), false);
             } else {
                 mContentsView.mTextLine2.setVisibility(INVISIBLE);
             }
@@ -398,7 +396,7 @@ class SuggestionView extends ViewGroup {
         Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
         boolean hasMatch = applyHighlightToMatchRegions(
                 str, suggestion.getDisplayTextClassifications());
-        showDescriptionLine(str, URL_COLOR);
+        showDescriptionLine(str, true);
         return hasMatch;
     }
 
@@ -432,13 +430,23 @@ class SuggestionView extends ViewGroup {
      * Sets a description line for the omnibox suggestion.
      *
      * @param str The description text.
+     * @param isUrl Whether this text is a URL (as opposed to a normal string).
      */
-    private void showDescriptionLine(Spannable str, int textColor) {
-        if (mContentsView.mTextLine2.getVisibility() != VISIBLE) {
-            mContentsView.mTextLine2.setVisibility(VISIBLE);
+    private void showDescriptionLine(Spannable str, boolean isUrl) {
+        TextView textLine = mContentsView.mTextLine2;
+        if (textLine.getVisibility() != VISIBLE) {
+            textLine.setVisibility(VISIBLE);
         }
-        mContentsView.mTextLine2.setTextColor(textColor);
-        mContentsView.mTextLine2.setText(str, BufferType.SPANNABLE);
+        textLine.setText(str, BufferType.SPANNABLE);
+
+        // Force left-to-right rendering for URLs. See UrlBar constructor for details.
+        if (isUrl) {
+            textLine.setTextColor(URL_COLOR);
+            ApiCompatibilityUtils.setTextDirection(textLine, TEXT_DIRECTION_LTR);
+        } else {
+            textLine.setTextColor(getStandardFontColor());
+            ApiCompatibilityUtils.setTextDirection(textLine, TEXT_DIRECTION_INHERIT);
+        }
     }
 
     /**
