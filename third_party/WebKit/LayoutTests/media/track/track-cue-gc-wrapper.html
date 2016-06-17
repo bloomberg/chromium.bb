@@ -1,74 +1,55 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that added cue object wrappers live across garbage collections.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var cueIndex = 0;
+    var cueLimit = 10;
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-        var cue;
-        var track;
-        var j = 0;
-        var cueLimit = 10;
+    video.textTracks.custom = "trackList";
+    assert_true(video.textTracks.hasOwnProperty("custom"));
 
-        function checkNativeProperty()
-        {
-            cue = this;
-            testExpected("cue.hasOwnProperty('custom')", true);
-            if (++j >= cueLimit)
-                endTest();
-        }
+    // Add a text track to the video element.
+    var track = video.addTextTrack("captions", "regular captions track", "en");
+    track.custom = "track";
+    assert_true(track.hasOwnProperty("custom"));
 
-        function startTest()
-        {
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
+    // Add cues with own native property to the track with enter event listener.
+    for (var i = 0; i < cueLimit; i++) {
+        var cue = new VTTCue(i / 4, i / 2 + 1, "Label" + i);
+        cue.custom = "cue";
 
-            video.textTracks.custom = "trackList";
-            testExpected("video.textTracks.hasOwnProperty('custom')", true);
+        cue.onenter = t.step_func(function(event) {
+            var currentCue = event.target;
+            assert_true(currentCue.hasOwnProperty("custom"));
+            if (++cueIndex == cueLimit)
+                t.done();
+        });
 
-            consoleWrite("** Add a text track to the video element **");
+        track.addCue(cue);
+    }
 
-            track = video.addTextTrack("captions", "regular captions track", "en");
-            track.custom = "track";
-            testExpected("track.hasOwnProperty('custom')", true);
+    for (var i = 0; i < cueLimit; i++) {
+        var cue = track.cues[i];
+        assert_true(cue.hasOwnProperty("custom"));
+    }
 
-            consoleWrite("** Add cues with own native property to the track with enter event listener. **");
-            for (var i = 0; i < cueLimit; i++) {
-                var c = new VTTCue(i / 4, i / 2 + 1, "Label" + i);
-                c.custom = "cue";
-                c.addEventListener("enter", checkNativeProperty);
-                track.addCue(c);
-                c = null;
-            }
-            for (var i = 0; i < 10; i++) {
-                cue = track.cues[i];
-                testExpected("cue.hasOwnProperty('custom')", true);
-            }
+    // Trigger a garbage collection.
+    track = null;
+    gc();
 
-            consoleWrite("");
-            consoleWrite("** Trigger a garbage collection.  **");
-            track = null;
-            cue = null;
-            gc();
+    assert_true(video.textTracks.hasOwnProperty("custom"));
 
-            testExpected("video.textTracks.hasOwnProperty('custom')", true);
+    track = video.textTracks[0];
+    assert_true(track.hasOwnProperty("custom"));
 
-            track = video.textTracks[0];
-            testExpected("track.hasOwnProperty('custom')", true);
-
-            consoleWrite("");
-            consoleWrite("** Play the video and test cue wrappers.  **");
-            run("video.play()");
-            track.mode = "showing";
-        }
-        </script>
-    </head>
-
-    <body onload="startTest()">
-        <p>Tests that added cue object wrappers live across garbage collections.</p>
-        <video controls />
-    </body>
-</html>
+    // Play the video and test cue wrappers.
+    video.play();
+    track.mode = "showing";
+});
+</script>
