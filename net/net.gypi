@@ -2390,6 +2390,8 @@
       'data/url_request_unittest/expect-ct-header.html',
       'data/url_request_unittest/expect-ct-header.html.mock-http-headers',
       'data/url_request_unittest/filedir-sentinel',
+      'data/url_request_unittest/gzip-encoded',
+      'data/url_request_unittest/gzip-encoded.mock-http-headers',
       'data/url_request_unittest/hpkp-headers-report-only.html',
       'data/url_request_unittest/hpkp-headers-report-only.html.mock-http-headers',
       'data/url_request_unittest/hpkp-headers.html',

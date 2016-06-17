@@ -385,6 +385,12 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // are used for range requests or auth.
   int64_t GetTotalSentBytes() const;
 
+  // The size of the response body before removing any content encodings.
+  // Does not include redirects or sub-requests issued at lower levels (range
+  // requests or auth). Only includes bytes which have been read so far,
+  // including bytes from the cache.
+  int64_t GetRawBodyBytes() const;
+
   // Returns the current load state for the request. The returned value's
   // |param| field is an optional parameter describing details related to the
   // load state. Not all load states have a parameter.

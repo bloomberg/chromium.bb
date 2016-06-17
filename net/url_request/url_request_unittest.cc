@@ -7952,6 +7952,30 @@ TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnLoadOnlyFromCache) {
   EXPECT_FALSE(req->response_info().network_accessed);
 }
 
+TEST_F(URLRequestTestHTTP, RawBodyBytesNoContentEncoding) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      http_test_server()->GetURL("/simple.html"), DEFAULT_PRIORITY, &d));
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(5, req->GetRawBodyBytes());
+}
+
+TEST_F(URLRequestTestHTTP, RawBodyBytesGzipEncoding) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      http_test_server()->GetURL("/gzip-encoded"), DEFAULT_PRIORITY, &d));
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(30, req->GetRawBodyBytes());
+}
+
 class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
  public:
   // TODO(bengr): Merge this with the URLRequestInterceptorHTTPTest fixture,
@@ -10035,6 +10059,19 @@ TEST_F(URLRequestTestFTP, FTPCacheLoginBoxCredentials) {
     EXPECT_EQ(GetTestFileContents(), d->data_received());
   }
 }
+
+TEST_F(URLRequestTestFTP, RawBodyBytes) {
+  ASSERT_TRUE(ftp_test_server_.Start());
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      ftp_test_server_.GetURL("simple.html"), DEFAULT_PRIORITY, &d));
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(6, req->GetRawBodyBytes());
+}
+
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
 TEST_F(URLRequestTest, NetworkAccessedClearBeforeNetworkStart) {

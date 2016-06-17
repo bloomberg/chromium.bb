@@ -216,6 +216,10 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Whether we have processed the response for that request yet.
   bool has_response_started() const { return has_handled_response_; }
 
+  // The number of bytes read before passing to the filter. This value reflects
+  // bytes read even when there is no filter.
+  int64_t prefilter_bytes_read() const { return prefilter_bytes_read_; }
+
   // These methods are not applicable to all connections.
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual int GetResponseCode() const;
@@ -333,10 +337,6 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
 
   // Set the proxy server that was used, if any.
   void SetProxyServer(const HostPortPair& proxy_server);
-
-  // The number of bytes read before passing to the filter. This value reflects
-  // bytes read even when there is no filter.
-  int64_t prefilter_bytes_read() const { return prefilter_bytes_read_; }
 
   // The number of bytes read after passing through the filter. This value
   // reflects bytes read even when there is no filter.
