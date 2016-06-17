@@ -17,15 +17,17 @@ public class TabReparentingParams implements AsyncTabParams {
     private final Tab mTabToReparent;
     private final Intent mOriginalIntent;
     private final Runnable mFinalizeCallback;
+    private final boolean mStayInChrome;
 
     /**
      * Basic constructor for {@link TabReparentingParams}.
      */
-    public TabReparentingParams(
-            Tab tabToReparent, Intent originalIntent, Runnable finalizeCallback) {
+    public TabReparentingParams(Tab tabToReparent, Intent originalIntent, Runnable finalizeCallback,
+            boolean stayInChrome) {
         mTabToReparent = tabToReparent;
         mOriginalIntent = originalIntent;
         mFinalizeCallback = finalizeCallback;
+        mStayInChrome = stayInChrome;
     }
 
     @Override
@@ -51,6 +53,13 @@ public class TabReparentingParams implements AsyncTabParams {
     @Override
     public Tab getTabToReparent() {
         return mTabToReparent;
+    }
+
+    /**
+     * @return Whether the user should stay in Chrome after the tab is reparented.
+     */
+    public boolean shouldStayInChrome() {
+        return mStayInChrome;
     }
 
     /**

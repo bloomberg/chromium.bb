@@ -1091,7 +1091,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         intent.setClass(this, targetActivity);
         intent.setFlags(MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
 
-        tab.detachAndStartReparenting(intent, null, null);
+        tab.detachAndStartReparenting(intent, null, null, true);
     }
 
     @Override

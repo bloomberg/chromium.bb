@@ -1490,11 +1490,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param startActivityOptions Options to pass to {@link Activity#startActivity(Intent, Bundle)}
      * @param finalizeCallback A callback that will be called after the tab is attached to the new
      *                         host activity in {@link #attachAndFinishReparenting}.
+     * @param stayInChrome Whether the user should stay in Chrome after the tab is reparented.
      * @return Whether reparenting succeeded. If false, the tab was not removed and the intent was
      *         not fired.
      */
     public boolean detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
-            Runnable finalizeCallback) {
+            Runnable finalizeCallback, boolean stayInChrome) {
         ChromeActivity activity = getActivity();
         if (activity == null) return false;
 
@@ -1518,7 +1519,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // ensure the global count of tabs is correct. See crbug.com/611806.
             intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
             AsyncTabParamsManager.add(mId,
-                    new TabReparentingParams(this, intent, finalizeCallback));
+                    new TabReparentingParams(this, intent, finalizeCallback, stayInChrome));
 
             tabModelSelector.getModel(mIncognito).removeTab(this);
 

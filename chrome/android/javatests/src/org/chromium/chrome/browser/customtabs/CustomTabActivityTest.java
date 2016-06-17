@@ -49,6 +49,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -107,6 +108,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
     }
 
+    private static final String READ_IT_LATER_FEATURE = "ReadItLaterInMenu";
     private static final int MAX_MENU_CUSTOM_ITEMS = 5;
     private static final int NUM_CHROME_MENU_ITEMS = 3;
     private static final String
@@ -346,7 +348,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         openAppMenuAndAssertMenuShown();
         Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
-        final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
+        final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS
+                + (ChromeFeatureList.isEnabled(READ_IT_LATER_FEATURE) ? 1 : 0);
         final int actualMenuSize = getActualMenuSize(menu);
 
         assertNotNull("App menu is not initialized: ", menu);
@@ -389,7 +392,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         openAppMenuAndAssertMenuShown();
         Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
-        final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
+        final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS
+                + (ChromeFeatureList.isEnabled(READ_IT_LATER_FEATURE) ? 1 : 0);
         final int actualMenuSize = getActualMenuSize(menu);
         assertNotNull("App menu is not initialized: ", menu);
         assertEquals(expectedMenuSize, actualMenuSize);
@@ -433,27 +437,31 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     public void testOpenInBrowser() throws InterruptedException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
-        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
-        filter.addDataScheme(Uri.parse(mTestServer.getURL("/")).getScheme());
-        final ActivityMonitor monitor = getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
-        final String menuItemTitle = mActivity.getString(R.string.menu_open_in_product_default);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                MenuItem item = mActivity.getAppMenuHandler()
-                        .getAppMenu().getMenu().findItem(R.id.open_in_browser_id);
-                assertNotNull(item);
-                assertEquals(menuItemTitle, item.getTitle().toString());
-                mActivity.onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
-            }
-        });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getInstrumentation().checkMonitorHit(monitor, 1);
-            }
-        });
+        if (ChromeFeatureList.isEnabled(READ_IT_LATER_FEATURE)) {
+            // TODO(ianwen): implement this test after read it later becomes a settled feature.
+        } else {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
+            filter.addDataScheme(Uri.parse(mTestServer.getURL("/")).getScheme());
+            final ActivityMonitor monitor = getInstrumentation().addMonitor(filter, null, false);
+            final String menuItemTitle = mActivity.getString(R.string.menu_open_in_product_default);
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    MenuItem item = mActivity.getAppMenuHandler()
+                            .getAppMenu().getMenu().findItem(R.id.open_in_browser_id);
+                    assertNotNull(item);
+                    assertEquals(menuItemTitle, item.getTitle().toString());
+                    mActivity.onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
+                }
+            });
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return getInstrumentation().checkMonitorHit(monitor, 1);
+                }
+            });
+        }
     }
 
     /**
@@ -1287,7 +1295,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivity.openCurrentUrlInBrowser(true);
+                mActivity.openCurrentUrlInBrowser(true, true);
                 assertNull(mActivity.getActivityTab());
             }
         });

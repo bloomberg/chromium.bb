@@ -291,6 +291,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ReadItLater": [
+        {
+            "enable_features": [
+                "ReadItLaterInMenu"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "ReaderModeUI": [
         {
             "group_name": "AdaBoost"

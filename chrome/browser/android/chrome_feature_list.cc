@@ -38,6 +38,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPSnippetsFeature,
     &kNTPToolbarFeature,
     &kPhysicalWebFeature,
+    &kReadItLaterInMenu,
     &kSystemDownloadManager,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
@@ -77,6 +78,10 @@ const base::Feature kAndroidPayIntegrationV1 {
 
 const base::Feature kPhysicalWebFeature {
   "PhysicalWeb", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
+const base::Feature kReadItLaterInMenu {
+  "ReadItLaterInMenu", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 const base::Feature kSystemDownloadManager {
