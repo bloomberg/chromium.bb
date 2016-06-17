@@ -76,7 +76,7 @@ TEST(DeferredImageDecoderTestWoPlatform, mixImagesBmp)
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco)
 {
-    mixImages("/LayoutTests/fast/images/resources/1bit.ico", 70u, 0u);
+    mixImages("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", 1376u, 1u);
 }
 
 } // namespace blink

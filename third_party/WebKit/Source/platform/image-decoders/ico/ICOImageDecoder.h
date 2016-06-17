@@ -50,6 +50,7 @@ public:
     IntSize size() const override;
     IntSize frameSizeAtIndex(size_t) const override;
     bool setSize(unsigned width, unsigned height) override;
+    bool frameIsCompleteAtIndex(size_t) const override;
     // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
     // avoid accessing deleted memory, especially when calling this from
     // inside BMPImageReader!
@@ -74,6 +75,7 @@ private:
         uint16_t m_bitCount;
         IntPoint m_hotSpot;
         uint32_t m_imageOffset;
+        uint32_t m_byteSize;
     };
 
     // Returns true if |a| is a preferable icon entry to |b|.
