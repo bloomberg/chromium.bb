@@ -21,6 +21,7 @@
 #include "device/bluetooth/bluez/bluetooth_gatt_connection_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_pairing_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_service_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_socket_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
@@ -529,6 +530,12 @@ void BluetoothDeviceBlueZ::CreateGattConnection(
   Connect(NULL, base::Bind(&BluetoothDeviceBlueZ::OnCreateGattConnection,
                            weak_ptr_factory_.GetWeakPtr(), callback),
           error_callback);
+}
+
+std::vector<BluetoothServiceRecordBlueZ*>
+BluetoothDeviceBlueZ::GetServiceRecords() {
+  // TODO(rkc): Implement this.
+  return std::vector<BluetoothServiceRecordBlueZ*>();
 }
 
 BluetoothPairingBlueZ* BluetoothDeviceBlueZ::BeginPairing(

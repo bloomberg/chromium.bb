@@ -180,6 +180,8 @@
                 'bluez/bluetooth_remote_gatt_descriptor_bluez.h',
                 'bluez/bluetooth_remote_gatt_service_bluez.cc',
                 'bluez/bluetooth_remote_gatt_service_bluez.h',
+                'bluez/bluetooth_service_record_bluez.cc',
+                'bluez/bluetooth_service_record_bluez.h',
                 'bluez/bluetooth_socket_bluez.cc',
                 'bluez/bluetooth_socket_bluez.h',
                 'dbus/bluetooth_adapter_client.cc',

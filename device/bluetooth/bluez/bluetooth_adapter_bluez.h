@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
@@ -72,10 +73,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       public bluez::BluetoothInputClient::Observer,
       public bluez::BluetoothAgentServiceProvider::Delegate {
  public:
-  typedef base::Callback<void(const std::string& error_message)>
-      ErrorCompletionCallback;
-  typedef base::Callback<void(BluetoothAdapterProfileBlueZ* profile)>
-      ProfileRegisteredCallback;
+  using ErrorCompletionCallback =
+      base::Callback<void(const std::string& error_message)>;
+  using ProfileRegisteredCallback =
+      base::Callback<void(BluetoothAdapterProfileBlueZ* profile)>;
+  using ServiceRecordErrorCallback =
+      base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
   // Calls |init_callback| after a BluetoothAdapter is fully initialized.
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
@@ -122,6 +125,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
+
+  // These functions are specifically for use with ARC++. They have no need to
+  // exist for other platforms, hence we're putting them directly in the BlueZ
+  // specific code.
+
+  // Creates a service record with the SDP server running on this adapter. This
+  // only creates the record, it does not create a listening socket for the
+  // service.
+  void CreateServiceRecord(const BluetoothServiceRecordBlueZ& record,
+                           const base::Closure& callback,
+                           const ServiceRecordErrorCallback& error_callback);
+
+  // Removes a service record from the SDP server. This would result in the
+  // service not being discoverable in any further scans of the adapter. Any
+  // sockets listening on this service will need to be closed separately.
+  void RemoveServiceRecord(const device::BluetoothUUID& uuid,
+                           const base::Closure& callback,
+                           const ServiceRecordErrorCallback& error_callback);
 
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).

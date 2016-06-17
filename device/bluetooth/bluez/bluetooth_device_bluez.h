@@ -28,6 +28,7 @@ namespace bluez {
 
 class BluetoothAdapterBlueZ;
 class BluetoothPairingBlueZ;
+class BluetoothServiceRecordBlueZ;
 
 // The BluetoothDeviceBlueZ class implements BluetoothDevice for platforms using
 // BlueZ.
@@ -89,6 +90,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
             const base::Closure& callback,
             const ConnectErrorCallback& error_callback) override;
+
+  // Returns the complete list of service records discovered for on this
+  // device via SDP. If called before discovery is complete, it may return
+  // an incomplete list and/or stale cached records.
+  std::vector<BluetoothServiceRecordBlueZ*> GetServiceRecords();
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related

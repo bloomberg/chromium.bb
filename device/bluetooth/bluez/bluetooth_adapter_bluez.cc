@@ -811,6 +811,22 @@ void BluetoothAdapterBlueZ::OnRegisterAudioSink(
   callback.Run(audio_sink);
 }
 
+void BluetoothAdapterBlueZ::CreateServiceRecord(
+    const BluetoothServiceRecordBlueZ& record,
+    const base::Closure& callback,
+    const ServiceRecordErrorCallback& error_callback) {
+  // TODO(rkc): Implement this.
+  callback.Run();
+}
+
+void BluetoothAdapterBlueZ::RemoveServiceRecord(
+    const device::BluetoothUUID& uuid,
+    const base::Closure& callback,
+    const ServiceRecordErrorCallback& error_callback) {
+  // TODO(rkc): Implement this.
+  callback.Run();
+}
+
 BluetoothDeviceBlueZ* BluetoothAdapterBlueZ::GetDeviceWithPath(
     const dbus::ObjectPath& object_path) {
   if (!IsPresent())
