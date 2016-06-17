@@ -109,9 +109,9 @@ interface NotificationsHost {
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
   // Establishes full-duplex communication with the host.
-  Init(NotificationsHost host_ptr);
+  Init@0(NotificationsHost host_ptr);
 
   // Sends an event from Chrome notification UI to Android.
   // |event| is a type of occured event.
-  SendNotificationEventToAndroid(string key, ArcNotificationEvent event);
+  SendNotificationEventToAndroid@1(string key, ArcNotificationEvent event);
 };

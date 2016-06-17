@@ -10,11 +10,11 @@ interface VideoHost {
   // creating the client end of VideoAcceleratorService message pipe.
   // Replys invalid handle and empty token if any failure.
   [MinVersion=2]
-  OnRequestArcVideoAcceleratorChannel() => (handle channel_handle,
-                                            string token);
+  OnRequestArcVideoAcceleratorChannel@0() => (handle channel_handle,
+                                              string token);
 };
 
 interface VideoInstance {
   // Establishes full-duplex communication with the host.
-  Init(VideoHost host_ptr);
+  Init@0(VideoHost host_ptr);
 };

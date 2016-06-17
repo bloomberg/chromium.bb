@@ -13,7 +13,7 @@ enum AudioSwitch {
 
 interface AudioHost {
   // Tells the host to show the volume controls.
-  ShowVolumeControls();
+  ShowVolumeControls@0();
 };
 
 interface AudioInstance {

@@ -11,7 +11,7 @@ interface InputInstance {
   // The virtual device will be reading 'struct input_event's from |fd|.  The
   // ownership of |fd| will be transferred to the receiver, so the sender must
   // not close it.
-  RegisterInputDevice(string name,
-                      string device_type,
-                      handle fd);
+  RegisterInputDevice@0(string name,
+                        string device_type,
+                        handle fd);
 };

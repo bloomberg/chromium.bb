@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 module arc.mojom;
 
 // Represents total storage usage of Android applications.
@@ -14,7 +16,6 @@ struct ApplicationsSize {
     uint64 total_cache_bytes;
 };
 
-// Next MinVersion: 3
 // Next method ID: 5
 // Deprecated method ID: 1
 interface StorageManagerInstance {

@@ -7,14 +7,14 @@ module arc.mojom;
 interface ObbMounterHost {
   // Mounts the specified OBB file to the target path, the owner GID will be set
   // to the specified value.
-  MountObb(string obb_file,
-           string target_path,
-           int32 owner_gid) => (bool success);
+  MountObb@0(string obb_file,
+             string target_path,
+             int32 owner_gid) => (bool success);
 
   // Unmounts the OBB file mounted to the specifed path.
-  UnmountObb(string target_path) => (bool success);
+  UnmountObb@1(string target_path) => (bool success);
 };
 
 interface ObbMounterInstance {
-  Init(ObbMounterHost host_ptr);
+  Init@0(ObbMounterHost host_ptr);
 };

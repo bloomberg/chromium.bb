@@ -12,5 +12,5 @@ enum WindowManagerMode {
 
 interface WindowManagerInstance {
   // Informs of the currently used window mode.
-  OnWindowManagerModeChange(WindowManagerMode mode);
+  OnWindowManagerModeChange@0(WindowManagerMode mode);
 };

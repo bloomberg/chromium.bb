@@ -226,97 +226,99 @@ struct BluetoothGattDBElement {
 };
 
 interface BluetoothHost {
-  EnableAdapter() => (BluetoothAdapterState state);
-  DisableAdapter() => (BluetoothAdapterState state);
-  GetAdapterProperty(BluetoothPropertyType type);
-  SetAdapterProperty(BluetoothProperty property);
-  GetRemoteDeviceProperty(BluetoothAddress remote_addr,
-                          BluetoothPropertyType type);
-  SetRemoteDeviceProperty(BluetoothAddress remote_addr,
-                          BluetoothProperty property);
-  GetRemoteServiceRecord(BluetoothAddress remote_addr,
-                         BluetoothUUID uuid);
-  GetRemoteServices(BluetoothAddress remote_addr);
-  StartDiscovery();
-  CancelDiscovery();
-  CreateBond(BluetoothAddress addr, int32 transport);
-  RemoveBond(BluetoothAddress addr);
-  CancelBond(BluetoothAddress addr);
+  EnableAdapter@0() => (BluetoothAdapterState state);
+  DisableAdapter@1() => (BluetoothAdapterState state);
+  GetAdapterProperty@2(BluetoothPropertyType type);
+  SetAdapterProperty@3(BluetoothProperty property);
+  GetRemoteDeviceProperty@4(BluetoothAddress remote_addr,
+                            BluetoothPropertyType type);
+  SetRemoteDeviceProperty@5(BluetoothAddress remote_addr,
+                            BluetoothProperty property);
+  GetRemoteServiceRecord@6(BluetoothAddress remote_addr,
+                           BluetoothUUID uuid);
+  GetRemoteServices@7(BluetoothAddress remote_addr);
+  StartDiscovery@8();
+  CancelDiscovery@9();
+  CreateBond@10(BluetoothAddress addr, int32 transport);
+  RemoveBond@11(BluetoothAddress addr);
+  CancelBond@12(BluetoothAddress addr);
 
-  GetConnectionState(BluetoothAddress addr) => (bool connected);
+  GetConnectionState@13(BluetoothAddress addr) => (bool connected);
 
   // Bluetooth Gatt Client functions
-  [MinVersion=1] StartLEScan();
-  [MinVersion=1] StopLEScan();
-  [MinVersion=1] ConnectLEDevice(BluetoothAddress remote_addr);
-  [MinVersion=1] DisconnectLEDevice(BluetoothAddress remote_addr);
-  [MinVersion=1] SearchService(BluetoothAddress remote_addr);
-  [MinVersion=1] GetGattDB(BluetoothAddress remote_addr);
-  [MinVersion=1] StartLEListen() => (BluetoothGattStatus status);
-  [MinVersion=1] StopLEListen() => (BluetoothGattStatus status);
-  [MinVersion=1] ReadGattCharacteristic(BluetoothAddress remote_addr,
+  [MinVersion=1] StartLEScan@14();
+  [MinVersion=1] StopLEScan@15();
+  [MinVersion=1] ConnectLEDevice@16(BluetoothAddress remote_addr);
+  [MinVersion=1] DisconnectLEDevice@17(BluetoothAddress remote_addr);
+  [MinVersion=1] SearchService@18(BluetoothAddress remote_addr);
+  [MinVersion=1] GetGattDB@19(BluetoothAddress remote_addr);
+  [MinVersion=1] StartLEListen@20() => (BluetoothGattStatus status);
+  [MinVersion=1] StopLEListen@21() => (BluetoothGattStatus status);
+  [MinVersion=1] ReadGattCharacteristic@22(BluetoothAddress remote_addr,
+                                           BluetoothGattServiceID service_id,
+                                           BluetoothGattID char_id)
+      => (BluetoothGattValue value);
+  [MinVersion=1] WriteGattCharacteristic@23(BluetoothAddress remote_addr,
+                                            BluetoothGattServiceID service_id,
+                                            BluetoothGattID char_id,
+                                            BluetoothGattValue value)
+      => (BluetoothGattStatus status);
+  [MinVersion=1] ReadGattDescriptor@24(BluetoothAddress remote_addr,
+                                       BluetoothGattServiceID service_id,
+                                       BluetoothGattID char_id,
+                                       BluetoothGattID desc_id)
+      => (BluetoothGattValue value);
+  [MinVersion=1] WriteGattDescriptor@25(BluetoothAddress remote_addr,
                                         BluetoothGattServiceID service_id,
-                                        BluetoothGattID char_id)
-      => (BluetoothGattValue value);
-  [MinVersion=1] WriteGattCharacteristic(BluetoothAddress remote_addr,
-                                         BluetoothGattServiceID service_id,
-                                         BluetoothGattID char_id,
-                                         BluetoothGattValue value)
+                                        BluetoothGattID char_id,
+                                        BluetoothGattID desc_id,
+                                        BluetoothGattValue value)
       => (BluetoothGattStatus status);
-  [MinVersion=1] ReadGattDescriptor(BluetoothAddress remote_addr,
-                                    BluetoothGattServiceID service_id,
-                                    BluetoothGattID char_id,
-                                    BluetoothGattID desc_id)
-      => (BluetoothGattValue value);
-  [MinVersion=1] WriteGattDescriptor(BluetoothAddress remote_addr,
-                                     BluetoothGattServiceID service_id,
-                                     BluetoothGattID char_id,
-                                     BluetoothGattID desc_id,
-                                     BluetoothGattValue value)
+  [MinVersion=1] RegisterForGattNotification@26(
+      BluetoothAddress remote_addr,
+      BluetoothGattServiceID service_id,
+      BluetoothGattID char_id)
       => (BluetoothGattStatus status);
-  [MinVersion=1] RegisterForGattNotification(BluetoothAddress remote_addr,
-                                             BluetoothGattServiceID service_id,
-                                             BluetoothGattID char_id)
+  [MinVersion=1] DeregisterForGattNotification@27(
+      BluetoothAddress remote_addr,
+      BluetoothGattServiceID service_id,
+      BluetoothGattID char_id)
       => (BluetoothGattStatus status);
-  [MinVersion=1] DeregisterForGattNotification(BluetoothAddress remote_addr,
-                                               BluetoothGattServiceID service_id,
-                                               BluetoothGattID char_id)
-      => (BluetoothGattStatus status);
-  [MinVersion=1] ReadRemoteRssi(BluetoothAddress remote_addr)
+  [MinVersion=1] ReadRemoteRssi@28(BluetoothAddress remote_addr)
       => (int32 rssi);
 
 };
 
 interface BluetoothInstance {
-  Init(BluetoothHost host_ptr);
+  Init@0(BluetoothHost host_ptr);
 
-  OnAdapterProperties(BluetoothStatus status,
-                      array<BluetoothProperty> properties);
-  OnRemoteDeviceProperties(BluetoothStatus status,
-                           BluetoothAddress address,
-                           array<BluetoothProperty> properties);
-  OnDeviceFound(array<BluetoothProperty> properties);
-  OnDiscoveryStateChanged(BluetoothDiscoveryState state);
-  OnBondStateChanged(BluetoothStatus status,
-                     BluetoothAddress remote_addr,
-                     BluetoothBondState state);
-  OnAclStateChanged(BluetoothStatus status,
-                    BluetoothAddress remote_addr,
-                    BluetoothAclState state);
+  OnAdapterProperties@1(BluetoothStatus status,
+                        array<BluetoothProperty> properties);
+  OnRemoteDeviceProperties@2(BluetoothStatus status,
+                             BluetoothAddress address,
+                             array<BluetoothProperty> properties);
+  OnDeviceFound@3(array<BluetoothProperty> properties);
+  OnDiscoveryStateChanged@4(BluetoothDiscoveryState state);
+  OnBondStateChanged@5(BluetoothStatus status,
+                       BluetoothAddress remote_addr,
+                       BluetoothBondState state);
+  OnAclStateChanged@6(BluetoothStatus status,
+                      BluetoothAddress remote_addr,
+                      BluetoothAclState state);
 
   // Bluetooth Gatt Client callbacks
-  [MinVersion=1] OnLEDeviceFound(BluetoothAddress addr,
-                                 int32 rssi,
-                                 array<BluetoothAdvertisingData> adv_data);
-  [MinVersion=1] OnLEConnectionStateChange(BluetoothAddress remote_addr,
-                                           bool connected);
-  [MinVersion=1] OnSearchComplete(BluetoothAddress remote_addr,
-                                  BluetoothGattStatus status);
-  [MinVersion=1] OnGetGattDB(BluetoothAddress remote_addr,
-                             array<BluetoothGattDBElement> db);
-  [MinVersion=1] OnServicesRemoved(BluetoothAddress remote_addr,
-                                   uint16 start_handle,
-                                   uint16 end_handle);
-  [MinVersion=1] OnServicesAdded(BluetoothAddress remote_addr,
-                                 array<BluetoothGattDBElement> db);
+  [MinVersion=1] OnLEDeviceFound@7(BluetoothAddress addr,
+                                   int32 rssi,
+                                   array<BluetoothAdvertisingData> adv_data);
+  [MinVersion=1] OnLEConnectionStateChange@8(BluetoothAddress remote_addr,
+                                             bool connected);
+  [MinVersion=1] OnSearchComplete@9(BluetoothAddress remote_addr,
+                                    BluetoothGattStatus status);
+  [MinVersion=1] OnGetGattDB@10(BluetoothAddress remote_addr,
+                                array<BluetoothGattDBElement> db);
+  [MinVersion=1] OnServicesRemoved@11(BluetoothAddress remote_addr,
+                                      uint16 start_handle,
+                                      uint16 end_handle);
+  [MinVersion=1] OnServicesAdded@12(BluetoothAddress remote_addr,
+                                    array<BluetoothGattDBElement> db);
 };

@@ -31,5 +31,5 @@ interface AuthHost {
 
 interface AuthInstance {
   // Establishes full-duplex communication with the host.
-  Init(AuthHost host_ptr);
+  Init@0(AuthHost host_ptr);
 };

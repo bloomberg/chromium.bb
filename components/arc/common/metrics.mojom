@@ -25,9 +25,9 @@ struct BootProgressEvent {
 
 interface MetricsHost {
   // Report boot progress events from ARC instance.
-  ReportBootProgress(array<BootProgressEvent> events);
+  ReportBootProgress@0(array<BootProgressEvent> events);
 };
 
 interface MetricsInstance {
-  Init(MetricsHost host_ptr);
+  Init@0(MetricsHost host_ptr);
 };
