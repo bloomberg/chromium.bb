@@ -1911,12 +1911,16 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableVrShell,
                                switches::kDisableVrShell)},
+    {"enable-android-pay-integration-v1",
+     IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_NAME,
+     IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV1)},
 #endif
-
     {"enable-weak-memorycache",
      IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_NAME,
      IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWeakMemoryCache)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
