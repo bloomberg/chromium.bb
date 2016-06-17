@@ -8,9 +8,13 @@
 #include <memory>
 
 #include "cc/output/output_surface.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "components/mus/surfaces/surfaces_context_provider_delegate.h"
+
+namespace cc {
+class CompositorFrame;
+class SyntheticBeginFrameSource;
+}
 
 namespace mus {
 
@@ -21,7 +25,7 @@ class DirectOutputSurface : public cc::OutputSurface,
  public:
   explicit DirectOutputSurface(
       scoped_refptr<SurfacesContextProvider> context_provider,
-      base::SingleThreadTaskRunner* task_runner);
+      cc::SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DirectOutputSurface() override;
 
   // cc::OutputSurface implementation
@@ -33,7 +37,7 @@ class DirectOutputSurface : public cc::OutputSurface,
                                 const base::TimeDelta& interval) override;
 
  private:
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
 

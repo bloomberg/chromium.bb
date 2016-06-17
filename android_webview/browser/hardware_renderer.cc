@@ -20,9 +20,12 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_settings.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -58,15 +61,23 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace(), this);
 
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
+      new cc::StubBeginFrameSource);
+  std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
+      new cc::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(AwRenderThreadContextProvider::Create(
           gl_surface_, DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
+  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+      begin_frame_source.get(), nullptr,
+      output_surface_holder->capabilities().max_frames_pending));
   display_.reset(new cc::Display(
       surface_manager_.get(), nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings,
-      surface_id_allocator_->id_namespace(), nullptr /* task_runner */,
-      std::move(output_surface_holder)));
+      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
+      std::move(output_surface_holder), std::move(scheduler),
+      std::move(texture_mailbox_deleter)));
   display_->Initialize(this);
 }
 

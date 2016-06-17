@@ -30,11 +30,12 @@ class CC_SURFACES_EXPORT DisplaySchedulerClient {
 
 class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
  public:
-  DisplayScheduler(DisplaySchedulerClient* client,
-                   BeginFrameSource* begin_frame_source,
+  DisplayScheduler(BeginFrameSource* begin_frame_source,
                    base::SingleThreadTaskRunner* task_runner,
                    int max_pending_swaps);
   ~DisplayScheduler() override;
+
+  void SetClient(DisplaySchedulerClient* client);
 
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();

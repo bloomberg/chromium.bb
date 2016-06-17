@@ -13,6 +13,8 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/texture_mailbox_deleter.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -69,37 +71,39 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
         new PixelTestSoftwareOutputDevice);
     software_output_device->set_surface_expansion_size(surface_expansion_size);
     output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        std::move(software_output_device), nullptr);
+        std::move(software_output_device));
   } else {
     scoped_refptr<TestInProcessContextProvider> context(
         new TestInProcessContextProvider(nullptr));
     bool flipped_output_surface = false;
     output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        std::move(context), nullptr, flipped_output_surface, nullptr);
+        std::move(context), nullptr, flipped_output_surface);
   }
   output_surface->set_surface_expansion_size(surface_expansion_size);
 
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   CHECK(task_runner);
 
-  display_.reset(new Display(surface_manager_.get(), shared_bitmap_manager_,
-                             gpu_memory_buffer_manager_, RendererSettings(),
-                             surface_id_allocator_->id_namespace(), task_runner,
-                             std::move(output_surface)));
-  display_->SetEnlargePassTextureAmountForTesting(enlarge_pass_texture_amount_);
-
-  if (synchronous_composite_) {
-    bool init = display_->InitializeSynchronous(&display_client_);
-    CHECK(init);
-  } else {
-    begin_frame_source_.reset(new BackToBackBeginFrameSource(
+  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
+  std::unique_ptr<DisplayScheduler> scheduler;
+  if (!synchronous_composite_) {
+    begin_frame_source.reset(new BackToBackBeginFrameSource(
         base::MakeUnique<DelayBasedTimeSource>(task_runner)));
-    display_->SetBeginFrameSource(begin_frame_source_.get());
-
-    bool init = display_->Initialize(&display_client_);
-    CHECK(init);
+    scheduler.reset(new DisplayScheduler(
+        begin_frame_source.get(), task_runner,
+        output_surface->capabilities().max_frames_pending));
   }
 
+  display_.reset(new Display(
+      surface_manager_.get(), shared_bitmap_manager_,
+      gpu_memory_buffer_manager_, RendererSettings(),
+      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
+      std::move(output_surface), std::move(scheduler),
+      base::MakeUnique<TextureMailboxDeleter>(task_runner)));
+  display_->SetEnlargePassTextureAmountForTesting(enlarge_pass_texture_amount_);
+
+  bool init = display_->Initialize(&display_client_);
+  CHECK(init);
   return true;
 }
 

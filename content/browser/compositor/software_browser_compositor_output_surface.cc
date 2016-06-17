@@ -8,7 +8,6 @@
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -24,10 +23,10 @@ namespace content {
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-    base::SingleThreadTaskRunner* task_runner)
+    cc::SyntheticBeginFrameSource* begin_frame_source)
     : BrowserCompositorOutputSurface(std::move(software_device),
                                      vsync_manager,
-                                     task_runner),
+                                     begin_frame_source),
       weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::

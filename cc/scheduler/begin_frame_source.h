@@ -114,6 +114,15 @@ class CC_EXPORT BeginFrameSource {
   virtual void RemoveObserver(BeginFrameObserver* obs) = 0;
 };
 
+// A BeginFrameSource that does nothing.
+class StubBeginFrameSource : public BeginFrameSource {
+ public:
+  void DidFinishFrame(BeginFrameObserver* obs,
+                      size_t remaining_frames) override {}
+  void AddObserver(BeginFrameObserver* obs) override {}
+  void RemoveObserver(BeginFrameObserver* obs) override {}
+};
+
 // A frame source which ticks itself independently.
 class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSource {
  public:

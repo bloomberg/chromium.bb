@@ -21,6 +21,10 @@ class TestMessageLoop {
   explicit TestMessageLoop(MessageLoop::Type type);
   ~TestMessageLoop();
 
+  const scoped_refptr<SingleThreadTaskRunner>& task_runner() {
+    return loop_.task_runner();
+  }
+
  private:
   MessageLoop loop_;
 };

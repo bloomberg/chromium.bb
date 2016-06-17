@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "cc/output/output_surface_client.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -15,12 +14,10 @@ namespace cc {
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-    bool flipped_output_surface,
-    std::unique_ptr<BeginFrameSource> begin_frame_source)
+    bool flipped_output_surface)
     : OutputSurface(std::move(context_provider),
                     std::move(worker_context_provider),
                     nullptr),
-      begin_frame_source_(std::move(begin_frame_source)),
       external_stencil_test_(false) {
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.flipped_output_surface = flipped_output_surface;
@@ -28,32 +25,17 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
-    bool flipped_output_surface,
-    std::unique_ptr<BeginFrameSource> begin_frame_source)
+    bool flipped_output_surface)
     : PixelTestOutputSurface(std::move(context_provider),
                              nullptr,
-                             flipped_output_surface,
-                             std::move(begin_frame_source)) {}
+                             flipped_output_surface) {}
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    std::unique_ptr<BeginFrameSource> begin_frame_source)
+    std::unique_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(nullptr, nullptr, std::move(software_device)),
-      begin_frame_source_(std::move(begin_frame_source)),
       external_stencil_test_(false) {}
 
 PixelTestOutputSurface::~PixelTestOutputSurface() {}
-
-bool PixelTestOutputSurface::BindToClient(OutputSurfaceClient* client) {
-  if (!OutputSurface::BindToClient(client))
-    return false;
-
-  // TODO(enne): Once the renderer uses begin frame sources, this will
-  // always be valid.
-  if (begin_frame_source_)
-    client->SetBeginFrameSource(begin_frame_source_.get());
-  return true;
-}
 
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float scale_factor,

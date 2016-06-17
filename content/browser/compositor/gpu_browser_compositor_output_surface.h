@@ -37,7 +37,7 @@ class GpuBrowserCompositorOutputSurface
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ContextProviderCommandBuffer> context,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      base::SingleThreadTaskRunner* task_runner,
+      cc::SyntheticBeginFrameSource* begin_frame_source,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

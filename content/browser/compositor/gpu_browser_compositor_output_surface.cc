@@ -22,20 +22,19 @@ namespace content {
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     scoped_refptr<ContextProviderCommandBuffer> context,
     scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-    base::SingleThreadTaskRunner* task_runner,
+    cc::SyntheticBeginFrameSource* begin_frame_source,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      std::move(vsync_manager),
-                                     task_runner,
+                                     begin_frame_source,
                                      std::move(overlay_candidate_validator)),
       swap_buffers_completion_callback_(base::Bind(
           &GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
           base::Unretained(this))),
       update_vsync_parameters_callback_(base::Bind(
           &BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
-          base::Unretained(this))) {
-}
+          base::Unretained(this))) {}
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}
 

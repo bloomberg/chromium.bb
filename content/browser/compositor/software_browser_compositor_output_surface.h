@@ -27,7 +27,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   SoftwareBrowserCompositorOutputSurface(
       std::unique_ptr<cc::SoftwareOutputDevice> software_device,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      base::SingleThreadTaskRunner* task_runner);
+      cc::SyntheticBeginFrameSource* begin_frame_source);
 
   ~SoftwareBrowserCompositorOutputSurface() override;
 

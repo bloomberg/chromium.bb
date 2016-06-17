@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "cc/output/renderer_settings.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_output_surface.h"
@@ -28,8 +30,6 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   SurfaceDisplayOutputSurfaceTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
-        begin_frame_source_(new BackToBackBeginFrameSource(
-            base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()))),
         allocator_(0),
         display_size_(1920, 1080),
         display_rect_(display_size_),
@@ -39,19 +39,25 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
     std::unique_ptr<FakeOutputSurface> display_output_surface =
         FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
-    display_output_surface_->set_max_frames_pending(2);
 
-    display_.reset(new Display(&surface_manager_, &bitmap_manager_,
-                               &gpu_memory_buffer_manager_, renderer_settings_,
-                               allocator_.id_namespace(), task_runner_.get(),
-                               std::move(display_output_surface)));
+    std::unique_ptr<BeginFrameSource> begin_frame_source(
+        new BackToBackBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
+
+    int max_frames_pending = 2;
+    std::unique_ptr<DisplayScheduler> scheduler(new DisplayScheduler(
+        begin_frame_source.get(), task_runner_.get(), max_frames_pending));
+
+    display_.reset(new Display(
+        &surface_manager_, &bitmap_manager_, &gpu_memory_buffer_manager_,
+        RendererSettings(), allocator_.id_namespace(),
+        std::move(begin_frame_source), std::move(display_output_surface),
+        std::move(scheduler),
+        base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     delegated_output_surface_.reset(new SurfaceDisplayOutputSurface(
         &surface_manager_, &allocator_, display_.get(), context_provider_,
         nullptr));
 
-    // Set the Display's begin frame source like a real browser compositor
-    // output surface would.
-    display_->SetBeginFrameSource(begin_frame_source_.get());
     delegated_output_surface_->BindToClient(&delegated_output_surface_client_);
     display_->Resize(display_size_);
 
@@ -87,7 +93,6 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
  protected:
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   SurfaceIdAllocator allocator_;
 
   const gfx::Size display_size_;
@@ -95,7 +100,6 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   SurfaceManager surface_manager_;
   TestSharedBitmapManager bitmap_manager_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  RendererSettings renderer_settings_;
 
   scoped_refptr<TestContextProvider> context_provider_;
   FakeOutputSurface* display_output_surface_ = nullptr;

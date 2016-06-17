@@ -11,7 +11,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -19,21 +19,18 @@ namespace mus {
 
 DirectOutputSurface::DirectOutputSurface(
     scoped_refptr<SurfacesContextProvider> context_provider,
-    base::SingleThreadTaskRunner* task_runner)
+    cc::SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : cc::OutputSurface(context_provider, nullptr, nullptr),
-      synthetic_begin_frame_source_(new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner))),
+      synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {
   context_provider->SetDelegate(this);
 }
 
-DirectOutputSurface::~DirectOutputSurface() {}
+DirectOutputSurface::~DirectOutputSurface() = default;
 
 bool DirectOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   if (!cc::OutputSurface::BindToClient(client))
     return false;
-
-  client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
 
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =

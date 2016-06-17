@@ -16,7 +16,7 @@ class GpuOutputSurfaceMac
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      base::SingleThreadTaskRunner* task_runner,
+      cc::SyntheticBeginFrameSource* begin_frame_source,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);

@@ -14,7 +14,11 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/texture_mailbox_deleter.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
+#include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -46,11 +50,11 @@ class FakeReflector : public Reflector {
 class DirectOutputSurface : public cc::OutputSurface {
  public:
   DirectOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      const scoped_refptr<cc::ContextProvider>& worker_context_provider,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source)
-      : cc::OutputSurface(context_provider, worker_context_provider, nullptr),
-        begin_frame_source_(std::move(begin_frame_source)),
+      scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<cc::ContextProvider> worker_context_provider)
+      : cc::OutputSurface(std::move(context_provider),
+                          std::move(worker_context_provider),
+                          nullptr),
         weak_ptr_factory_(this) {}
 
   ~DirectOutputSurface() override {}
@@ -59,8 +63,6 @@ class DirectOutputSurface : public cc::OutputSurface {
   bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
-
-    client->SetBeginFrameSource(begin_frame_source_.get());
     return true;
   }
   void SwapBuffers(cc::CompositorFrame* frame) override {
@@ -87,8 +89,6 @@ class DirectOutputSurface : public cc::OutputSurface {
   }
 
  private:
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
-
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
@@ -150,36 +150,38 @@ void InProcessContextFactory::CreateOutputSurface(
           "UICompositor");
 
   std::unique_ptr<cc::OutputSurface> display_output_surface;
-  std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
-      new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(
-              compositor->task_runner().get())));
-
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     display_output_surface = base::WrapUnique(new cc::PixelTestOutputSurface(
         context_provider, shared_worker_context_provider_,
-        flipped_output_surface, std::move(begin_frame_source)));
+        flipped_output_surface));
   } else {
     display_output_surface = base::WrapUnique(new DirectOutputSurface(
-        context_provider, shared_worker_context_provider_,
-        std::move(begin_frame_source)));
+        context_provider, shared_worker_context_provider_));
   }
 
   if (surface_manager_) {
-    std::unique_ptr<cc::Display> display(new cc::Display(
+    std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
+        new cc::DelayBasedBeginFrameSource(
+            base::MakeUnique<cc::DelayBasedTimeSource>(
+                compositor->task_runner().get())));
+    std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+        begin_frame_source.get(), compositor->task_runner().get(),
+        display_output_surface->capabilities().max_frames_pending));
+    per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
         surface_manager_, GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
         compositor->GetRendererSettings(),
         compositor->surface_id_allocator()->id_namespace(),
-        compositor->task_runner().get(), std::move(display_output_surface)));
+        std::move(begin_frame_source), std::move(display_output_surface),
+        std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
+                                  compositor->task_runner().get()));
+
+    auto* display = per_compositor_data_[compositor.get()].get();
     std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
-            surface_manager_, compositor->surface_id_allocator(), display.get(),
+            surface_manager_, compositor->surface_id_allocator(), display,
             context_provider, shared_worker_context_provider_));
-
     compositor->SetOutputSurface(std::move(surface_output_surface));
-
-    per_compositor_data_[compositor.get()] = std::move(display);
   } else {
     compositor->SetOutputSurface(std::move(display_output_surface));
   }

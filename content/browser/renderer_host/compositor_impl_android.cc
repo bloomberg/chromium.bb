@@ -36,10 +36,12 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -152,30 +154,25 @@ void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
 }
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
-class OutputSurfaceWithoutParent : public cc::OutputSurface,
-                                   public CompositorImpl::VSyncObserver {
+class OutputSurfaceWithoutParent : public cc::OutputSurface {
  public:
   OutputSurfaceWithoutParent(
-      CompositorImpl* compositor,
       scoped_refptr<ContextProviderCommandBuffer> context_provider,
       const base::Callback<void(gpu::Capabilities)>&
-          populate_gpu_capabilities_callback,
-      std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
+          populate_gpu_capabilities_callback)
       : cc::OutputSurface(std::move(context_provider), nullptr, nullptr),
-        compositor_(compositor),
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
                        base::Unretained(this))),
         overlay_candidate_validator_(
             new display_compositor::
-                CompositorOverlayCandidateValidatorAndroid()),
-        begin_frame_source_(std::move(begin_frame_source)) {
+                CompositorOverlayCandidateValidatorAndroid()) {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
 
-  ~OutputSurfaceWithoutParent() override { compositor_->RemoveObserver(this); }
+  ~OutputSurfaceWithoutParent() override = default;
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
     GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
@@ -198,16 +195,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
 
     populate_gpu_capabilities_callback_.Run(
         context_provider_->ContextCapabilities());
-    compositor_->AddObserver(this);
-
-    client->SetBeginFrameSource(begin_frame_source_.get());
-
     return true;
-  }
-
-  void DetachFromClient() override {
-    client_->SetBeginFrameSource(nullptr);
-    OutputSurface::DetachFromClient();
   }
 
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -233,12 +221,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
     OutputSurface::OnSwapBuffersComplete();
   }
 
-  void OnVSync(base::TimeTicks timebase, base::TimeDelta interval) override {
-    client_->CommitVSyncParameters(timebase, interval);
-  }
-
  private:
-  CompositorImpl* compositor_;
   base::Callback<void(gpu::Capabilities)> populate_gpu_capabilities_callback_;
   base::CancelableCallback<void(
       const std::vector<ui::LatencyInfo>&,
@@ -246,17 +229,14 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>
       swap_buffers_completion_callback_;
   std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
-  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 };
 
 #if defined(ENABLE_VULKAN)
 class VulkanOutputSurface : public cc::OutputSurface {
  public:
-  VulkanOutputSurface(
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-      std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
-      : OutputSurface(std::move(vulkan_context_provider)),
-        begin_frame_source_(std::move(begin_frame_source)) {}
+  explicit VulkanOutputSurface(
+      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
+      : OutputSurface(std::move(vulkan_context_provider)) {}
 
   ~VulkanOutputSurface() override { Destroy(); }
 
@@ -276,7 +256,6 @@ class VulkanOutputSurface : public cc::OutputSurface {
   bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
-    client->SetBeginFrameSource(begin_frame_source_.get());
     return true;
   }
 
@@ -301,7 +280,6 @@ class VulkanOutputSurface : public cc::OutputSurface {
 
  private:
   std::unique_ptr<gpu::VulkanSurface> surface_;
-  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
 };
@@ -618,9 +596,8 @@ void CompositorImpl::CreateOutputSurface() {
 #if defined(ENABLE_VULKAN)
   std::unique_ptr<VulkanOutputSurface> vulkan_surface;
   if (vulkan_context_provider) {
-    vulkan_surface.reset(new VulkanOutputSurface(
-        std::move(vulkan_context_provider),
-        base::WrapUnique(new ExternalBeginFrameSource(this))));
+    vulkan_surface.reset(
+        new VulkanOutputSurface(std::move(vulkan_context_provider)));
     if (!vulkan_surface->Initialize(window_)) {
       vulkan_surface->Destroy();
       vulkan_surface.reset();
@@ -709,19 +686,25 @@ void CompositorImpl::CreateOutputSurface() {
     DCHECK(context_provider.get());
 
     display_output_surface = base::WrapUnique(new OutputSurfaceWithoutParent(
-        this, context_provider,
-        base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                   base::Unretained(this)),
-        base::WrapUnique(new ExternalBeginFrameSource(this))));
+        context_provider, base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                                     base::Unretained(this))));
   }
 
   cc::SurfaceManager* manager = GetSurfaceManager();
-  display_.reset(new cc::Display(manager, HostSharedBitmapManager::current(),
-                                 BrowserGpuMemoryBufferManager::current(),
-                                 host_->settings().renderer_settings,
-                                 surface_id_allocator_->id_namespace(),
-                                 base::ThreadTaskRunnerHandle::Get().get(),
-                                 std::move(display_output_surface)));
+  auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source(
+      new ExternalBeginFrameSource(this));
+  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+      begin_frame_source.get(), task_runner,
+      display_output_surface->capabilities().max_frames_pending));
+
+  display_.reset(new cc::Display(
+      manager, HostSharedBitmapManager::current(),
+      BrowserGpuMemoryBufferManager::current(),
+      host_->settings().renderer_settings,
+      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
+      std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(
       vulkan_context_provider

@@ -9,12 +9,12 @@
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "cc/output/output_surface.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 
 namespace cc {
 class SoftwareOutputDevice;
+class SyntheticBeginFrameSource;
 }
 
 namespace display_compositor {
@@ -74,16 +74,12 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;
 #endif
 
-  cc::SyntheticBeginFrameSource* begin_frame_source() {
-    return synthetic_begin_frame_source_.get();
-  }
-
  protected:
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       scoped_refptr<cc::ContextProvider> context,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      base::SingleThreadTaskRunner* task_runner,
+      cc::SyntheticBeginFrameSource* begin_frame_source,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
@@ -91,16 +87,16 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   BrowserCompositorOutputSurface(
       std::unique_ptr<cc::SoftwareOutputDevice> software_device,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      base::SingleThreadTaskRunner* task_runner);
+      cc::SyntheticBeginFrameSource* begin_frame_source);
 
   // Constructor used by the Vulkan implementation.
   BrowserCompositorOutputSurface(
       const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      base::SingleThreadTaskRunner* task_runner);
+      cc::SyntheticBeginFrameSource* begin_frame_source);
 
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  cc::SyntheticBeginFrameSource* synthetic_begin_frame_source_;
   ReflectorImpl* reflector_;
 
   // True when BeginFrame scheduling is enabled.

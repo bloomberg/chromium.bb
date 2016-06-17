@@ -59,8 +59,6 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
 
   gfx::Size enlarge_pass_texture_amount_;
 
-  std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
-
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;

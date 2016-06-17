@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -74,10 +77,10 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(scoped_refptr<cc::ContextProvider> context_provider,
                     scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-                    base::SingleThreadTaskRunner* task_runner)
+                    cc::SyntheticBeginFrameSource* begin_frame_source)
       : BrowserCompositorOutputSurface(std::move(context_provider),
                                        std::move(vsync_manager),
-                                       task_runner,
+                                       begin_frame_source,
                                        CreateTestValidatorOzone()) {
     surface_size_ = gfx::Size(256, 256);
     device_scale_factor_ = 1.f;
@@ -127,12 +130,15 @@ class ReflectorImplTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     task_runner_ = message_loop_->task_runner();
     compositor_task_runner_ = new FakeTaskRunner();
+    begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
+        base::MakeUnique<cc::DelayBasedTimeSource>(
+            compositor_task_runner_.get())));
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_.get()));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
-    output_surface_ = std::unique_ptr<TestOutputSurface>(new TestOutputSurface(
+    output_surface_ = base::MakeUnique<TestOutputSurface>(
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create()),
-        compositor_->vsync_manager(), compositor_task_runner_.get()));
+        compositor_->vsync_manager(), begin_frame_source_.get());
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
@@ -166,6 +172,7 @@ class ReflectorImplTest : public testing::Test {
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

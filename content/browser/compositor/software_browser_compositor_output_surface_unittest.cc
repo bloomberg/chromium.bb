@@ -7,8 +7,12 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
@@ -60,8 +64,10 @@ class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
 
 class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  public:
-  SoftwareBrowserCompositorOutputSurfaceTest();
-  ~SoftwareBrowserCompositorOutputSurfaceTest() override;
+  SoftwareBrowserCompositorOutputSurfaceTest()
+      : begin_frame_source_(base::MakeUnique<cc::DelayBasedTimeSource>(
+            message_loop_.task_runner().get())) {}
+  ~SoftwareBrowserCompositorOutputSurfaceTest() override = default;
 
   void SetUp() override;
   void TearDown() override;
@@ -72,21 +78,15 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  protected:
   std::unique_ptr<content::BrowserCompositorOutputSurface> output_surface_;
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  // TODO(crbug.com/616973): We shouldn't be using ThreadTaskRunnerHandle::Get()
+  // inside the OutputSurface, so we shouldn't need a MessageLoop. The
+  // OutputSurface should be using the TaskRunner given to the compositor.
+  base::TestMessageLoop message_loop_;
+  cc::DelayBasedBeginFrameSource begin_frame_source_;
   std::unique_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurfaceTest);
 };
-
-SoftwareBrowserCompositorOutputSurfaceTest::
-    SoftwareBrowserCompositorOutputSurfaceTest() {
-  // |message_loop_| is not used, but the main thread still has to exist for the
-  // compositor to use.
-  message_loop_.reset(new base::MessageLoopForUI);
-}
-
-SoftwareBrowserCompositorOutputSurfaceTest::
-    ~SoftwareBrowserCompositorOutputSurfaceTest() {}
 
 void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   bool enable_pixel_output = false;
@@ -94,7 +94,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
       ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   compositor_.reset(
-      new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
+      new ui::Compositor(context_factory, message_loop_.task_runner().get()));
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 
@@ -107,10 +107,8 @@ void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
 std::unique_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> device) {
-  return std::unique_ptr<content::BrowserCompositorOutputSurface>(
-      new content::SoftwareBrowserCompositorOutputSurface(
-          std::move(device), compositor_->vsync_manager(),
-          message_loop_->task_runner().get()));
+  return base::MakeUnique<content::SoftwareBrowserCompositorOutputSurface>(
+      std::move(device), compositor_->vsync_manager(), &begin_frame_source_);
 }
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {

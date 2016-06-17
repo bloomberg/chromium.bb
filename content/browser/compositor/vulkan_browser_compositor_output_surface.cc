@@ -13,8 +13,10 @@ namespace content {
 VulkanBrowserCompositorOutputSurface::VulkanBrowserCompositorOutputSurface(
     const scoped_refptr<cc::VulkanContextProvider>& context,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-    base::SingleThreadTaskRunner* task_runner)
-    : BrowserCompositorOutputSurface(context, vsync_manager, task_runner) {}
+    cc::SyntheticBeginFrameSource* begin_frame_source)
+    : BrowserCompositorOutputSurface(context,
+                                     vsync_manager,
+                                     begin_frame_source) {}
 
 VulkanBrowserCompositorOutputSurface::~VulkanBrowserCompositorOutputSurface() {
   Destroy();

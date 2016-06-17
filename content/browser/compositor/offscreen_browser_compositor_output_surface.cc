@@ -34,12 +34,12 @@ OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ContextProviderCommandBuffer> context,
         scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-        base::SingleThreadTaskRunner* task_runner,
+        cc::SyntheticBeginFrameSource* begin_frame_source,
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      std::move(vsync_manager),
-                                     task_runner,
+                                     begin_frame_source,
                                      std::move(overlay_candidate_validator)),
       fbo_(0),
       is_backbuffer_discarded_(false),

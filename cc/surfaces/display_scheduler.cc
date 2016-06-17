@@ -12,12 +12,10 @@
 
 namespace cc {
 
-DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
-                                   BeginFrameSource* begin_frame_source,
+DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
                                    base::SingleThreadTaskRunner* task_runner,
                                    int max_pending_swaps)
-    : client_(client),
-      begin_frame_source_(begin_frame_source),
+    : begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
       output_surface_lost_(false),
       root_surface_resources_locked_(true),
@@ -38,6 +36,10 @@ DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
 DisplayScheduler::~DisplayScheduler() {
   if (observing_begin_frame_source_)
     begin_frame_source_->RemoveObserver(this);
+}
+
+void DisplayScheduler::SetClient(DisplaySchedulerClient* client) {
+  client_ = client;
 }
 
 // If we try to draw when the root surface resources are locked, the

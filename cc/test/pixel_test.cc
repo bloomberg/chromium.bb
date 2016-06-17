@@ -128,9 +128,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
       new TestInProcessContextProvider(nullptr));
   scoped_refptr<TestInProcessContextProvider> worker(
       new TestInProcessContextProvider(compositor.get()));
-  output_surface_.reset(
-      new PixelTestOutputSurface(std::move(compositor), std::move(worker),
-                                 flipped_output_surface, nullptr));
+  output_surface_.reset(new PixelTestOutputSurface(
+      std::move(compositor), std::move(worker), flipped_output_surface));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
@@ -176,7 +175,7 @@ void PixelTest::EnableExternalStencilTest() {
 void PixelTest::SetUpSoftwareRenderer() {
   std::unique_ptr<SoftwareOutputDevice> device(
       new PixelTestSoftwareOutputDevice());
-  output_surface_.reset(new PixelTestOutputSurface(std::move(device), nullptr));
+  output_surface_.reset(new PixelTestOutputSurface(std::move(device)));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   bool delegated_sync_points_required = false;  // Meaningless for software.

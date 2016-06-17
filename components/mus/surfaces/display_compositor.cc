@@ -7,7 +7,11 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_settings.h"
+#include "cc/output/texture_mailbox_deleter.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "components/mus/surfaces/direct_output_surface.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 
@@ -36,29 +40,38 @@ DisplayCompositor::DisplayCompositor(
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(surfaces_context_provider->BindToCurrentThread());
 
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source(
+      new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
+
   std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (surfaces_context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
     display_output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
-        surfaces_context_provider, widget, task_runner_.get(), GL_TEXTURE_2D,
-        GL_RGB));
+        surfaces_context_provider, widget, synthetic_begin_frame_source.get(),
+        GL_TEXTURE_2D, GL_RGB));
 #else
     NOTREACHED();
 #endif
   } else {
-    display_output_surface = base::WrapUnique(
-        new DirectOutputSurface(surfaces_context_provider, task_runner_.get()));
+    display_output_surface = base::WrapUnique(new DirectOutputSurface(
+        surfaces_context_provider, synthetic_begin_frame_source.get()));
   }
 
   int max_frames_pending =
       display_output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  display_.reset(
-      new cc::Display(surfaces_state_->manager(), nullptr /* bitmap_manager */,
-                      nullptr /* gpu_memory_buffer_manager */,
-                      cc::RendererSettings(), allocator_.id_namespace(),
-                      task_runner_.get(), std::move(display_output_surface)));
+  std::unique_ptr<cc::DisplayScheduler> scheduler(
+      new cc::DisplayScheduler(synthetic_begin_frame_source.get(),
+                               task_runner_.get(), max_frames_pending));
+
+  display_.reset(new cc::Display(
+      surfaces_state_->manager(), nullptr /* bitmap_manager */,
+      nullptr /* gpu_memory_buffer_manager */, cc::RendererSettings(),
+      allocator_.id_namespace(), std::move(synthetic_begin_frame_source),
+      std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
 
   bool init = display_->Initialize(this);
   DCHECK(init);  // The context provider was already bound above.

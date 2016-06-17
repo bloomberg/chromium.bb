@@ -16,7 +16,8 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_renderer.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "cc/output/texture_mailbox_deleter.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
@@ -29,18 +30,6 @@
 #include "cc/output/vulkan_renderer.h"
 #endif
 
-namespace {
-
-class EmptyBeginFrameSource : public cc::BeginFrameSource {
- public:
-  void DidFinishFrame(cc::BeginFrameObserver* obs,
-                      size_t remaining_frames) override{};
-  void AddObserver(cc::BeginFrameObserver* obs) override{};
-  void RemoveObserver(cc::BeginFrameObserver* obs) override{};
-};
-
-}  // namespace
-
 namespace cc {
 
 Display::Display(SurfaceManager* manager,
@@ -48,22 +37,35 @@ Display::Display(SurfaceManager* manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
                  uint32_t compositor_surface_namespace,
-                 base::SingleThreadTaskRunner* task_runner,
-                 std::unique_ptr<OutputSurface> output_surface)
+                 std::unique_ptr<BeginFrameSource> begin_frame_source,
+                 std::unique_ptr<OutputSurface> output_surface,
+                 std::unique_ptr<DisplayScheduler> scheduler,
+                 std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
     : surface_manager_(manager),
       bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       compositor_surface_namespace_(compositor_surface_namespace),
-      task_runner_(task_runner),
+      begin_frame_source_(std::move(begin_frame_source)),
       output_surface_(std::move(output_surface)),
-      texture_mailbox_deleter_(task_runner) {
+      scheduler_(std::move(scheduler)),
+      texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
+  DCHECK(surface_manager_);
+  DCHECK(output_surface_);
+  DCHECK(texture_mailbox_deleter_);
+  DCHECK_EQ(!scheduler_, !begin_frame_source_);
+
   surface_manager_->AddObserver(this);
+
+  if (scheduler_)
+    scheduler_->SetClient(this);
 }
 
 Display::~Display() {
-  if (observed_begin_frame_source_)
-    surface_manager_->UnregisterBeginFrameSource(observed_begin_frame_source_);
+  // Only do this if Initialize() happened.
+  if (begin_frame_source_ && client_)
+    surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
+
   surface_manager_->RemoveObserver(this);
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -74,46 +76,21 @@ Display::~Display() {
   }
 }
 
-void Display::CreateScheduler() {
-  DCHECK(!scheduler_);
-  if (!task_runner_) {
-    // WebView doesn't have a task runner or a real begin frame source,
-    // so just create something fake here.
-    internal_begin_frame_source_.reset(new EmptyBeginFrameSource());
-    vsync_begin_frame_source_ = internal_begin_frame_source_.get();
-    observed_begin_frame_source_ = vsync_begin_frame_source_;
-  } else {
-    DCHECK(vsync_begin_frame_source_);
+bool Display::Initialize(DisplayClient* client) {
+  DCHECK(client);
+  client_ = client;
 
-    observed_begin_frame_source_ = vsync_begin_frame_source_;
-    if (settings_.disable_display_vsync) {
-      internal_begin_frame_source_.reset(new BackToBackBeginFrameSource(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_)));
-      observed_begin_frame_source_ = internal_begin_frame_source_.get();
-    }
+  // This must be done in Initialize() so that the caller can delay this until
+  // they are ready to receive a BeginFrameSource.
+  if (begin_frame_source_) {
+    surface_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
+                                               compositor_surface_namespace_);
   }
 
-  scheduler_.reset(
-      new DisplayScheduler(this, observed_begin_frame_source_, task_runner_,
-                           output_surface_->capabilities().max_frames_pending));
-  surface_manager_->RegisterBeginFrameSource(observed_begin_frame_source_,
-                                             compositor_surface_namespace_);
-}
-
-bool Display::Initialize(DisplayClient* client) {
-  client_ = client;
-  if (!output_surface_->BindToClient(this))
-    return false;
-  CreateScheduler();
-  return true;
-}
-
-bool Display::InitializeSynchronous(DisplayClient* client) {
-  client_ = client;
-  if (!output_surface_->BindToClient(this))
-    return false;
-  // No scheduler created here.
-  return true;
+  // TODO(danakj): The context given to the Display's OutputSurface should
+  // already be initialized, so Bind can not fail. DCHECK this instead of
+  // returning.
+  return output_surface_->BindToClient(this);
 }
 
 void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
@@ -184,7 +161,7 @@ void Display::InitializeRenderer() {
   if (output_surface_->context_provider()) {
     std::unique_ptr<GLRenderer> renderer = GLRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
-        &texture_mailbox_deleter_, settings_.highp_threshold_min);
+        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
@@ -192,7 +169,7 @@ void Display::InitializeRenderer() {
 #if defined(ENABLE_VULKAN)
     std::unique_ptr<VulkanRenderer> renderer = VulkanRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
-        &texture_mailbox_deleter_, settings_.highp_threshold_min);
+        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
@@ -357,15 +334,16 @@ void Display::DidSwapBuffersComplete() {
     renderer_->SwapBuffersComplete();
 }
 
+void Display::CommitVSyncParameters(base::TimeTicks timebase,
+                                    base::TimeDelta interval) {
+  // Display uses a BeginFrameSource instead.
+  NOTREACHED();
+}
+
 void Display::SetBeginFrameSource(BeginFrameSource* source) {
-  // It's expected that there's only a single source from the
-  // BrowserCompositorOutputSurface that corresponds to vsync.  The BFS is
-  // passed BrowserCompositorOutputSurface -> Display -> DisplayScheduler as an
-  // input.  DisplayScheduler makes a decision about which BFS to use and
-  // calls back to Display as DisplaySchedulerClient to register for that
-  // surface id.
-  DCHECK(!vsync_begin_frame_source_);
-  vsync_begin_frame_source_ = source;
+  // The BeginFrameSource is set from the constructor, it doesn't come
+  // from the OutputSurface for the Display.
+  NOTREACHED();
 }
 
 void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
