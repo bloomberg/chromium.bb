@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -33,23 +35,25 @@ const float kDisambiguationPopupMinScale = 2.0;
 // a certain clickable size after zooming
 float FindOptimalScaleFactor(const WebVector<WebRect>& target_rects,
                              float total_scale) {
-  using std::min;
-  using std::max;
-  if (!target_rects.size())  // shall never reach
+  DCHECK_GT(total_scale, 0.0f);
+  if (!target_rects.size()) {
+    NOTREACHED();
     return kDisambiguationPopupMinScale;
-  float smallest_target = min(target_rects[0].width * total_scale,
-                              target_rects[0].height * total_scale);
-  for (size_t i = 1; i < target_rects.size(); i++) {
-    smallest_target = min(smallest_target, target_rects[i].width * total_scale);
-    smallest_target = min(smallest_target,
-        target_rects[i].height * total_scale);
   }
-  smallest_target = max(smallest_target, 1.0f);
-  return min(kDisambiguationPopupMaxScale, max(kDisambiguationPopupMinScale,
-      kDisambiguationPopupMinimumTouchSize / smallest_target)) * total_scale;
+  int smallest_target = std::min(target_rects[0].width, target_rects[0].height);
+  for (size_t i = 1; i < target_rects.size(); i++) {
+    smallest_target = std::min(
+        {smallest_target, target_rects[i].width, target_rects[i].height});
+  }
+  const float smallest_target_f = std::max(smallest_target * total_scale, 1.0f);
+  return std::min(kDisambiguationPopupMaxScale,
+                  std::max(kDisambiguationPopupMinScale,
+                           kDisambiguationPopupMinimumTouchSize /
+                               smallest_target_f)) *
+         total_scale;
 }
 
-void TrimEdges(int *e1, int *e2, int max_combined) {
+void TrimEdges(int* e1, int* e2, int max_combined) {
   if (*e1 + *e2 <= max_combined)
     return;
 
@@ -89,6 +93,7 @@ gfx::Rect CropZoomArea(const gfx::Rect& zoom_rect,
 
 namespace content {
 
+// static
 float DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
     const gfx::Rect& tap_rect,
     const WebVector<WebRect>& target_rects,
