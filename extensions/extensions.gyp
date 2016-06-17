@@ -57,6 +57,7 @@
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         # For Mojo generated headers for generated_api.cc.
         '../device/serial/serial.gyp:device_serial_mojo',
+        '../device/power_save_blocker/power_save_blocker.gyp:device_power_save_blocker',
         '../device/usb/usb.gyp:device_usb',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',

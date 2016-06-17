@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-namespace content {
+namespace device {
 
 // TODO(derat): Consider renaming this file; '_ozone' is a misnomer as power
 // save is OS-specific, not display-system-specific.  This implementation
@@ -35,6 +35,6 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {}
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() { }
+PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {}
 
-}  // namespace content
+}  // namespace device

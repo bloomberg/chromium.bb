@@ -18,18 +18,18 @@
 #include "ui/compositor/compositor_animation_observer.h"
 
 namespace cc {
-
 class CopyOutputResult;
-
 }  // namespace cc
+
+namespace device {
+class PowerSaveBlocker;
+}  // namespace device
 
 namespace display_compositor {
 class ReadbackYUVInterface;
 }
 
 namespace content {
-
-class PowerSaveBlocker;
 
 class AuraWindowCaptureMachine
     : public media::VideoCaptureMachine,
@@ -124,7 +124,7 @@ class AuraWindowCaptureMachine
 
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
-  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   // WeakPtrs are used for the asynchronous capture callbacks passed to external
   // modules.  They are only valid on the UI thread and become invalidated

@@ -20,9 +20,12 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace device {
+class PowerSaveBlocker;
+}  // namespace device
+
 namespace content {
 
-class PowerSaveBlocker;
 class WebContents;
 class WebRTCInternalsUIObserver;
 
@@ -202,7 +205,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // While |peer_connection_data_| is non-empty, hold an instance of
   // PowerSaveBlocker.  This prevents the application from being suspended while
   // remoting.
-  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   // Set of render process hosts that |this| is registered as an observer on.
   base::hash_set<int> render_process_id_set_;

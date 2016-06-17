@@ -70,6 +70,7 @@ test("device_unittests") {
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/nfc",
+    "//device/power_save_blocker",
     "//device/vr",
     "//device/vr:fakes",
     "//device/vr:mojo_bindings",

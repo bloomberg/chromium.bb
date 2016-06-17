@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "content/public/browser/power_save_blocker_factory.h"
+#include "content/public/browser/browser_thread.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
@@ -17,17 +18,17 @@ namespace {
 
 const char kPowerSaveBlockerDescription[] = "extension";
 
-content::PowerSaveBlocker::PowerSaveBlockerType LevelToPowerSaveBlockerType(
+device::PowerSaveBlocker::PowerSaveBlockerType LevelToPowerSaveBlockerType(
     api::power::Level level) {
   switch (level) {
     case api::power::LEVEL_SYSTEM:
-      return content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension;
+      return device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension;
     case api::power::LEVEL_DISPLAY:  // fallthrough
     case api::power::LEVEL_NONE:
-      return content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
+      return device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
   }
   NOTREACHED() << "Unhandled level " << level;
-  return content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
+  return device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
 }
 
 base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>> g_factory =
@@ -72,9 +73,10 @@ void PowerAPI::RemoveRequest(const std::string& extension_id) {
 
 void PowerAPI::SetCreateBlockerFunctionForTesting(
     CreateBlockerFunction function) {
-  create_blocker_function_ = !function.is_null()
-                                 ? function
-                                 : base::Bind(&content::CreatePowerSaveBlocker);
+  create_blocker_function_ =
+      !function.is_null()
+          ? function
+          : base::Bind(&device::PowerSaveBlocker::CreateWithTaskRunners);
 }
 
 void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -86,7 +88,8 @@ void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 
 PowerAPI::PowerAPI(content::BrowserContext* context)
     : browser_context_(context),
-      create_blocker_function_(base::Bind(&content::CreatePowerSaveBlocker)),
+      create_blocker_function_(
+          base::Bind(&device::PowerSaveBlocker::CreateWithTaskRunners)),
       current_level_(api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }
@@ -111,12 +114,16 @@ void PowerAPI::UpdatePowerSaveBlocker() {
   // to ensure that there isn't a brief period where power management is
   // unblocked.
   if (!power_save_blocker_ || new_level != current_level_) {
-    content::PowerSaveBlocker::PowerSaveBlockerType type =
+    device::PowerSaveBlocker::PowerSaveBlockerType type =
         LevelToPowerSaveBlockerType(new_level);
-    std::unique_ptr<content::PowerSaveBlocker> new_blocker(
-        create_blocker_function_.Run(type,
-                                     content::PowerSaveBlocker::kReasonOther,
-                                     kPowerSaveBlockerDescription));
+    std::unique_ptr<device::PowerSaveBlocker> new_blocker(
+        create_blocker_function_.Run(
+            type, device::PowerSaveBlocker::kReasonOther,
+            kPowerSaveBlockerDescription,
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::UI),
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE)));
     power_save_blocker_.swap(new_blocker);
     current_level_ = new_level;
   }

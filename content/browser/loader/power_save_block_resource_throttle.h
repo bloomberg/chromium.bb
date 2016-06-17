@@ -13,9 +13,11 @@
 #include "base/timer/timer.h"
 #include "content/public/browser/resource_throttle.h"
 
-namespace content {
-
+namespace device {
 class PowerSaveBlocker;
+}  // namespace device
+
+namespace content {
 
 // This ResourceThrottle blocks power save until large upload request finishes.
 class PowerSaveBlockResourceThrottle : public ResourceThrottle {
@@ -33,7 +35,7 @@ class PowerSaveBlockResourceThrottle : public ResourceThrottle {
 
   const std::string host_;
   base::OneShotTimer timer_;
-  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockResourceThrottle);
 };

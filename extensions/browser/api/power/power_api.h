@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -53,10 +53,12 @@ class PowerReleaseKeepAwakeFunction : public SyncExtensionFunction {
 class PowerAPI : public BrowserContextKeyedAPI,
                  public extensions::ExtensionRegistryObserver {
  public:
-  typedef base::Callback<std::unique_ptr<content::PowerSaveBlocker>(
-      content::PowerSaveBlocker::PowerSaveBlockerType,
-      content::PowerSaveBlocker::Reason,
-      const std::string&)>
+  typedef base::Callback<std::unique_ptr<device::PowerSaveBlocker>(
+      device::PowerSaveBlocker::PowerSaveBlockerType,
+      device::PowerSaveBlocker::Reason,
+      const std::string&,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)>
       CreateBlockerFunction;
 
   static PowerAPI* Get(content::BrowserContext* context);
@@ -104,7 +106,7 @@ class PowerAPI : public BrowserContextKeyedAPI,
   // actually changing the system power-saving settings.
   CreateBlockerFunction create_blocker_function_;
 
-  std::unique_ptr<content::PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   // Current level used by |power_save_blocker_|.  Meaningless if
   // |power_save_blocker_| is NULL.

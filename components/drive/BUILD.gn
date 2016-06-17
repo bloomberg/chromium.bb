@@ -56,6 +56,7 @@ source_set("drive") {
 
     # TODO(lukasza): Remove this dependency (see DEPS file for more info).
     "//content/public/browser",
+    "//device/power_save_blocker",
     "//google_apis:google_apis",
     "//net:net",
     "//third_party/cacheinvalidation",
