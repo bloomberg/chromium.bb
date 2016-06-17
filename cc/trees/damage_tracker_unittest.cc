@@ -496,7 +496,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   LayerImpl* child = root->test_properties()->children[0];
 
   gfx::Transform transform;
-  transform.Translate3d(500.0, 500.0, 0.0);
+  transform.Translate3d(550.0, 500.0, 0.0);
   transform.ApplyPerspectiveDepth(1.0);
   transform.RotateAboutYAxis(45.0);
   transform.Translate3d(-50.0, -50.0, 0.0);
