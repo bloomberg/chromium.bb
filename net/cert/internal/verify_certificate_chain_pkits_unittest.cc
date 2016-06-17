@@ -80,7 +80,7 @@ class VerifyCertificateChainPkitsTestDelegate {
     der::GeneralizedTime time = {2011, 4, 15, 0, 0, 0};
 
     return VerifyCertificateChain(input_chain, trust_store, &signature_policy,
-                                  time);
+                                  time, nullptr);
   }
 };
 

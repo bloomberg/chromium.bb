@@ -289,7 +289,7 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   // trust anchors and Cast signature policy.
   if (!net::VerifyCertificateChain(input_chain, CastTrustStore::Get(),
                                    signature_policy.get(),
-                                   ConvertExplodedTime(time))) {
+                                   ConvertExplodedTime(time), nullptr)) {
     return false;
   }
 

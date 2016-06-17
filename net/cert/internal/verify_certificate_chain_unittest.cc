@@ -114,8 +114,17 @@ void RunTest(const char* file_name) {
 
   SimpleSignaturePolicy signature_policy(1024);
 
-  bool result =
-      VerifyCertificateChain(input_chain, trust_store, &signature_policy, time);
+  std::vector<scoped_refptr<ParsedCertificate>> trusted_chain;
+  bool result = VerifyCertificateChain(input_chain, trust_store,
+                                       &signature_policy, time, &trusted_chain);
+  if (result) {
+    ASSERT_EQ(trusted_chain.size(), input_chain.size() + 1);
+    ASSERT_TRUE(std::equal(input_chain.begin(), input_chain.end(),
+                           trusted_chain.begin()));
+    ASSERT_TRUE(trust_store.IsTrustedCertificate(trusted_chain.back().get()));
+  } else {
+    ASSERT_EQ(trusted_chain.size(), 0u);
+  }
 
   ASSERT_EQ(expected_result, result);
 }
@@ -235,8 +244,8 @@ TEST(VerifyCertificateChainTest, EmptyChainIsInvalid) {
   std::vector<scoped_refptr<ParsedCertificate>> chain;
   SimpleSignaturePolicy signature_policy(2048);
 
-  ASSERT_FALSE(
-      VerifyCertificateChain(chain, trust_store, &signature_policy, time));
+  ASSERT_FALSE(VerifyCertificateChain(chain, trust_store, &signature_policy,
+                                      time, nullptr));
 }
 
 // TODO(eroman): Add test that invalidate validity dates where the day or month
