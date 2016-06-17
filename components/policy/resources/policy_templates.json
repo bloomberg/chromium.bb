@@ -8434,7 +8434,7 @@
           'caption': '''Always send WiFi acess-points to server while resolving timezone.''',
         },
       ],
-      'supported_on': ['chrome_os:51-'],
+      'supported_on': ['chrome_os:53-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,

@@ -1855,11 +1855,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"opt-in-ime-menu", IDS_FLAGS_ENABLE_IME_MENU_NAME,
      IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
-    {"enable-system-timezone-automatic-detection",
-     IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_NAME,
-     IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION, kOsCrOS,
+    {"disable-system-timezone-automatic-detection",
+     IDS_FLAGS_DISABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_NAME,
+     IDS_FLAGS_DISABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)},
+         chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)},
     {"enable-native-cups",  // FLAGS:RECORD_UMA
      IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
      IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,

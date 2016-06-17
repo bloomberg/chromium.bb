@@ -1495,8 +1495,8 @@ void BrowserOptionsHandler::OnSystemTimezonePolicyChanged() {
 }
 
 void BrowserOptionsHandler::OnSystemTimezoneAutomaticDetectionPolicyChanged() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)) {
     return;
   }
 

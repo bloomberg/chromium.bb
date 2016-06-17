@@ -80153,6 +80153,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="716080990" label="restrict-iframe-permissions"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
+  <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>

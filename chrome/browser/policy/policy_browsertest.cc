@@ -3977,9 +3977,6 @@ class ChromeOSPolicyTest : public PolicyTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
     command_line->AppendSwitch(
         chromeos::switches::kAllowFailedPolicyFetchForTest);
-
-    command_line->AppendSwitch(
-        chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy);
   }
 
  protected:

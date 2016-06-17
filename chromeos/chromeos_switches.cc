@@ -370,9 +370,9 @@ const char kCrosRegion[] = "cros-region";
 const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// This flag enables SystemTimezoneAutomaticDetection policy.
-const char kEnableSystemTimezoneAutomaticDetectionPolicy[] =
-    "enable-system-timezone-automatic-detection";
+// This flag disables SystemTimezoneAutomaticDetection policy.
+const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
+    "disable-system-timezone-automatic-detection";
 
 // This flag enables material design OOBE UI.
 const char kEnableMdOobe[] = "enable-md-oobe";
