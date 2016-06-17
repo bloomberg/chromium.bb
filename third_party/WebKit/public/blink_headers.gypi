@@ -388,7 +388,7 @@
       "web/WebMediaDevicesRequest.h",
       "web/WebMediaPlayerAction.h",
       "web/WebMediaStreamRegistry.h",
-      "web/WebMemoryPressureListener.h",
+      "web/WebMemoryCoordinator.h",
       "web/WebMenuItemInfo.h",
       "web/WebMetaElement.h",
       "web/WebNavigationPolicy.h",

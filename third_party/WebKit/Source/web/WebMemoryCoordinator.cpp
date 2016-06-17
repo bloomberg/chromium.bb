@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebMemoryPressureListener.h"
+#include "public/web/WebMemoryCoordinator.h"
 
 #include "core/page/Page.h"
 #include "platform/MemoryPurgeController.h"
 
 namespace blink {
 
-void WebMemoryPressureListener::onMemoryPressure(WebMemoryPressureLevel pressureLevel)
+void WebMemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel pressureLevel)
 {
     Page::onMemoryPressure();
     MemoryPurgeController::onMemoryPressure(pressureLevel);
