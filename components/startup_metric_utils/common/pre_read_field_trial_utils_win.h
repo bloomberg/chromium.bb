@@ -30,9 +30,6 @@ struct PreReadOptions {
   // Pre-read DLLs using the ::PrefetchVirtualMemory function, if available.
   bool prefetch_virtual_memory : 1;
 
-  // Use a /prefetch argument when launching a process.
-  bool use_prefetch_argument : 1;
-
   // Pre-read chrome_child.dll in the browser process and not in child
   // processes.
   bool pre_read_chrome_child_in_browser : 1;

@@ -121,7 +121,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "ui/views/focus/view_storage.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -1318,8 +1317,7 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   }
 
 #if defined(OS_WIN)
-  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
-    new_cl->AppendArg(switches::kPrefetchArgumentBrowserBackground);
+  new_cl->AppendArg(switches::kPrefetchArgumentBrowserBackground);
 #endif  // defined(OS_WIN)
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";

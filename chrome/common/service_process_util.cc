@@ -33,10 +33,6 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_WIN)
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_MACOSX)
 
 namespace {
@@ -169,8 +165,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
                                   switches::kServiceProcess);
 
 #if defined(OS_WIN)
-  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
-    command_line->AppendArg(switches::kPrefetchArgumentOther);
+  command_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
 
   static const char* const kSwitchesToCopy[] = {

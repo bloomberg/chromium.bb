@@ -1008,8 +1008,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)
-  if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
-    cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
+  cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
 #endif  // defined(OS_WIN)
 
   if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)

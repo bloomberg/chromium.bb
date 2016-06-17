@@ -271,7 +271,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int sandbox_type) const override;
   bool IsWin32kLockdownEnabledForMimeType(
       const std::string& mime_type) const override;
-  bool ShouldUseWindowsPrefetchArgument() const override;
 #endif
   void RegisterRenderProcessMojoServices(
       content::ServiceRegistry* registry,

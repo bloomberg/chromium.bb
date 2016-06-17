@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/client/simulate_crash_win.h"
@@ -101,8 +100,8 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     if (embedded_handler) {
       arguments.push_back(std::string("--type=") + switches::kCrashpadHandler);
       // The prefetch argument added here has to be documented in
-      // chrome_switches.cc, below the kPrefetchArgument* constants. A
-      // constant can't be used here because crashpad can't depend on Chrome.
+      // chrome_switches.cc, below the kPrefetchArgument* constants. A constant
+      // can't be used here because crashpad can't depend on Chrome.
       arguments.push_back("/prefetch:7");
     } else {
       base::FilePath exe_dir = exe_file.DirName();

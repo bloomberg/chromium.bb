@@ -229,8 +229,7 @@ int main() {
   // except for the browser process. Any new process type will have to assign
   // itself a prefetch id. See kPrefetchArgument* constants in
   // content_switches.cc for details.
-  DCHECK(!startup_metric_utils::GetPreReadOptions().use_prefetch_argument ||
-         process_type.empty() ||
+  DCHECK(process_type.empty() ||
          HasValidWindowsPrefetchArgument(*command_line));
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {

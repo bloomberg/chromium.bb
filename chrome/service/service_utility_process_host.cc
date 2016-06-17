@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -227,9 +226,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
-
-  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
-    cmd_line.AppendArg(switches::kPrefetchArgumentOther);
+  cmd_line.AppendArg(switches::kPrefetchArgumentOther);
 
   if (Launch(&cmd_line, no_sandbox)) {
     ReportUmaEvent(SERVICE_UTILITY_STARTED);

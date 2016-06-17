@@ -33,7 +33,6 @@ const base::char16 kNoPreReadVariationName[] = L"NoPreRead";
 const base::char16 kHighPriorityVariationName[] = L"HighPriority";
 const base::char16 kPrefetchVirtualMemoryVariationName[] =
     L"PrefetchVirtualMemory";
-const base::char16 kNoPrefetchArgumentVariationName[] = L"NoPrefetchArgument";
 const base::char16 kPreReadChromeChildInBrowser[] =
     L"PreReadChromeChildInBrowser";
 
@@ -78,8 +77,6 @@ void InitializePreReadOptions(const base::string16& product_registry_path) {
   g_pre_read_options.high_priority = ReadBool(key, kHighPriorityVariationName);
   g_pre_read_options.prefetch_virtual_memory =
       ReadBool(key, kPrefetchVirtualMemoryVariationName);
-  g_pre_read_options.use_prefetch_argument =
-      !ReadBool(key, kNoPrefetchArgumentVariationName);
   g_pre_read_options.pre_read_chrome_child_in_browser =
       ReadBool(key, kPreReadChromeChildInBrowser);
 }

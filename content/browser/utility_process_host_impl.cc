@@ -314,8 +314,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
 #if defined(OS_WIN)
-    if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
-      cmd_line->AppendArg(switches::kPrefetchArgumentOther);
+    cmd_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
 
     if (no_sandbox_)
