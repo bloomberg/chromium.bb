@@ -163,6 +163,14 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
       case GL_ALPHA:
         gl_internal_format = GL_ALPHA16F_ARB;
         break;
+      // RED and RG are reached here because on Desktop GL core profile,
+      // LUMINANCE/ALPHA formats are emulated through RED and RG in Chrome.
+      case GL_RED:
+        gl_internal_format = GL_R16F;
+        break;
+      case GL_RG:
+        gl_internal_format = GL_RG16F;
+        break;
       default:
         NOTREACHED();
         break;
