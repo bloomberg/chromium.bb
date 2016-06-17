@@ -480,25 +480,10 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         }
     }
 
-    if (m_options.requestPayerEmail() && response->payer_email.isEmpty()) {
-        m_showResolver->reject(DOMException::create(SyntaxError));
-        clearResolversAndCloseMojoConnection();
-        return;
-    }
-
-    if (!m_options.requestPayerEmail() && !response->payer_email.isNull()) {
-        m_showResolver->reject(DOMException::create(SyntaxError));
-        clearResolversAndCloseMojoConnection();
-        return;
-    }
-
-    if (m_options.requestPayerPhone() && response->payer_phone.isEmpty()) {
-        m_showResolver->reject(DOMException::create(SyntaxError));
-        clearResolversAndCloseMojoConnection();
-        return;
-    }
-
-    if (!m_options.requestPayerPhone() && !response->payer_phone.isNull()) {
+    if ((m_options.requestPayerEmail() && response->payer_email.isEmpty())
+        || (m_options.requestPayerPhone() && response->payer_phone.isEmpty())
+        || (!m_options.requestPayerEmail() && !response->payer_email.isNull())
+        || (!m_options.requestPayerPhone() && !response->payer_phone.isNull())) {
         m_showResolver->reject(DOMException::create(SyntaxError));
         clearResolversAndCloseMojoConnection();
         return;
