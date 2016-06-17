@@ -4,7 +4,7 @@
 
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/desktop_background/desktop_background_controller.h"

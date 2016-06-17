@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"

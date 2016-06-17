@@ -111,7 +111,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"

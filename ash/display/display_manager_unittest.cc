@@ -5,7 +5,7 @@
 #include "ash/display/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"

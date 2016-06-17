@@ -4,7 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"

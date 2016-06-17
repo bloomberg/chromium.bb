@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/network/tray_network.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"

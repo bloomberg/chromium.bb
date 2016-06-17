@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"

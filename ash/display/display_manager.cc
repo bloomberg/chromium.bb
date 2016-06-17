@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/extended_mouse_warp_controller.h"

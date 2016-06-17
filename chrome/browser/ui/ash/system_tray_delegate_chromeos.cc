@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"

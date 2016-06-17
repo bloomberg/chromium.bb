@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"

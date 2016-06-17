@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/system_tray.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/date/tray_date.h"

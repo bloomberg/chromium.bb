@@ -4,8 +4,8 @@
 
 #include "ash/audio/sounds.h"
 
-#include "ash/ash_switches.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/ash_switches.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 

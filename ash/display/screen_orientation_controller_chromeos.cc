@@ -4,7 +4,7 @@
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"

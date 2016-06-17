@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 
 #include "base/command_line.h"
 #include "base/sys_info.h"

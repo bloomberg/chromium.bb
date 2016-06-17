@@ -5,7 +5,7 @@
 #include "ash/accelerators/debug_commands.h"
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/debug.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"

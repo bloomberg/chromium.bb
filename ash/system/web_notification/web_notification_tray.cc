@@ -4,7 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"

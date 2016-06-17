@@ -4,7 +4,7 @@
 
 #include "ash/test/test_suite.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"

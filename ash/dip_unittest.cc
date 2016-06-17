@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"

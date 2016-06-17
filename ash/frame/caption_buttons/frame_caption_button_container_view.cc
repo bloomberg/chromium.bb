@@ -7,7 +7,7 @@
 #include <cmath>
 #include <map>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/metrics/user_metrics_recorder.h"

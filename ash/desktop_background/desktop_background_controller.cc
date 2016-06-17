@@ -4,8 +4,8 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm_shell.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"

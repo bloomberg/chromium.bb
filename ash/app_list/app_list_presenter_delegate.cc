@@ -4,7 +4,7 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"

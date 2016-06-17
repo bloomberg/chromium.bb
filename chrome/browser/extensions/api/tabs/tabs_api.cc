@@ -95,7 +95,7 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(USE_ASH)
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #endif

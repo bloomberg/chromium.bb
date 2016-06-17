@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/audio/sounds.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/desktop_background/desktop_background_controller.h"

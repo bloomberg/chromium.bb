@@ -4,7 +4,7 @@
 
 #include "ash/display/mirror_window_controller.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"

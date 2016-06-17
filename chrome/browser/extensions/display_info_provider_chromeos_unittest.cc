@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/screen_util.h"

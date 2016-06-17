@@ -4,8 +4,8 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
-#include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"

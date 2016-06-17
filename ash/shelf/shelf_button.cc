@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/ash_switches.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"

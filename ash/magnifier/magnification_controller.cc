@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ash_switches.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"

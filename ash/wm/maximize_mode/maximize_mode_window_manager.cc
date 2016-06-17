@@ -4,8 +4,8 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
-#include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"

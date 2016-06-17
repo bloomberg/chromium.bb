@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 
-#include "ash/ash_switches.h"
 #include "ash/audio/sounds.h"
+#include "ash/common/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"

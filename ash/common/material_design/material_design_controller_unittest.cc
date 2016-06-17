@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/material_design_controller_test_api.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
-#include "ash/ash_switches.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter.h"
 #include "ash/shell.h"
