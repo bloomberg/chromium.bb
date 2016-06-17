@@ -27,8 +27,6 @@ class FakeProfileOAuth2TokenServiceIOSProvider
                       const std::set<std::string>& scopes,
                       const AccessTokenCallback& callback) override;
   std::vector<AccountInfo> GetAllAccounts() const override;
-  AccountInfo GetAccountInfoForEmail(const std::string& email) const override;
-  AccountInfo GetAccountInfoForGaia(const std::string& gaia) const override;
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       const std::string& gaia_id,
       NSError* error) const override;

@@ -9,18 +9,6 @@ ProfileOAuth2TokenServiceIOSProvider::GetAllAccounts() const {
   return std::vector<ProfileOAuth2TokenServiceIOSProvider::AccountInfo>();
 }
 
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo
-ProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForEmail(
-    const std::string& email) const {
-  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
-}
-
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo
-ProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForGaia(
-    const std::string& gaia) const {
-  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
-}
-
 void ProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,

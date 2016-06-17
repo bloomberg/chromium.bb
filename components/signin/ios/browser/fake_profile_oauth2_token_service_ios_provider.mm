@@ -32,26 +32,6 @@ FakeProfileOAuth2TokenServiceIOSProvider::GetAllAccounts() const {
 }
 
 ProfileOAuth2TokenServiceIOSProvider::AccountInfo
-FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForEmail(
-    const std::string& email) const {
-  for (const auto& account : accounts_) {
-    if (account.email == email)
-      return account;
-  }
-  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
-}
-
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo
-FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForGaia(
-    const std::string& gaia) const {
-  for (const auto& account : accounts_) {
-    if (account.gaia == gaia)
-      return account;
-  }
-  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
-}
-
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo
 FakeProfileOAuth2TokenServiceIOSProvider::AddAccount(const std::string& gaia,
                                                      const std::string& email) {
   ProfileOAuth2TokenServiceIOSProvider::AccountInfo account;

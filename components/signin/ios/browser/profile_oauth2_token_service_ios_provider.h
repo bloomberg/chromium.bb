@@ -56,14 +56,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   // Returns the ids of all accounts.
   virtual std::vector<AccountInfo> GetAllAccounts() const;
 
-  // Returns the account info composed of a GAIA id and email corresponding to
-  // email |email|.
-  virtual AccountInfo GetAccountInfoForEmail(const std::string& email) const;
-
-  // Returns the account info composed of a GAIA id and email corresponding to
-  // GAIA id |gaia|.
-  virtual AccountInfo GetAccountInfoForGaia(const std::string& gaia) const;
-
   // Starts fetching an access token for the account with id |gaia_id| with
   // the given |scopes|. Once the token is obtained, |callback| is called.
   virtual void GetAccessToken(const std::string& gaia_id,
