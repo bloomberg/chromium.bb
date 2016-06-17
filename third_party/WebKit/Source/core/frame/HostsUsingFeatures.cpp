@@ -75,8 +75,8 @@ void HostsUsingFeatures::countName(Feature feature, const String& name)
 
 void HostsUsingFeatures::clear()
 {
-    m_hostAndValues.clear();
     m_valueByName.clear();
+    m_urlAndValues.clear();
 }
 
 void HostsUsingFeatures::documentDetached(Document& document)
@@ -89,37 +89,56 @@ void HostsUsingFeatures::documentDetached(Document& document)
     if (!url.protocolIsInHTTPFamily())
         return;
 
-    m_hostAndValues.append(std::make_pair(url.host(), counter));
+    m_urlAndValues.append(std::make_pair(url, counter));
     document.HostsUsingFeaturesValue().clear();
     DCHECK(document.HostsUsingFeaturesValue().isEmpty());
 }
 
 void HostsUsingFeatures::updateMeasurementsAndClear()
 {
-    if (!m_hostAndValues.isEmpty())
+    if (!m_urlAndValues.isEmpty()) {
         recordHostToRappor();
+        recordETLDPlus1ToRappor();
+        m_urlAndValues.clear();
+    }
     if (!m_valueByName.isEmpty())
         recordNamesToRappor();
 }
 
 void HostsUsingFeatures::recordHostToRappor()
 {
-    DCHECK(!m_hostAndValues.isEmpty());
+    DCHECK(!m_urlAndValues.isEmpty());
 
     // Aggregate values by hosts.
     HashMap<String, HostsUsingFeatures::Value> aggregatedByHost;
-    for (const auto& hostAndValue : m_hostAndValues) {
-        DCHECK(!hostAndValue.first.isEmpty());
-        auto result = aggregatedByHost.add(hostAndValue.first, hostAndValue.second);
+    for (const auto& urlAndValue : m_urlAndValues) {
+        DCHECK(!urlAndValue.first.isEmpty());
+        auto result = aggregatedByHost.add(urlAndValue.first.host(), urlAndValue.second);
         if (!result.isNewEntry)
-            result.storedValue->value.aggregate(hostAndValue.second);
+            result.storedValue->value.aggregate(urlAndValue.second);
     }
 
     // Report to RAPPOR.
     for (auto& hostAndValue : aggregatedByHost)
         hostAndValue.value.recordHostToRappor(hostAndValue.key);
+}
 
-    m_hostAndValues.clear();
+void HostsUsingFeatures::recordETLDPlus1ToRappor()
+{
+    DCHECK(!m_urlAndValues.isEmpty());
+
+    // Aggregate values by URL.
+    HashMap<String, HostsUsingFeatures::Value> aggregatedByURL;
+    for (const auto& urlAndValue : m_urlAndValues) {
+        DCHECK(!urlAndValue.first.isEmpty());
+        auto result = aggregatedByURL.add(urlAndValue.first, urlAndValue.second);
+        if (!result.isNewEntry)
+            result.storedValue->value.aggregate(urlAndValue.second);
+    }
+
+    // Report to RAPPOR.
+    for (auto& urlAndValue : aggregatedByURL)
+        urlAndValue.value.recordETLDPlus1ToRappor(KURL(ParsedURLString, urlAndValue.key));
 }
 
 void HostsUsingFeatures::recordNamesToRappor()
@@ -155,10 +174,6 @@ void HostsUsingFeatures::Value::recordHostToRappor(const String& host)
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.Fullscreen.Insecure", host);
     if (get(Feature::GeolocationInsecureHost))
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.Geolocation.Insecure", host);
-    if (get(Feature::GetUserMediaInsecureHost))
-        Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Insecure", host);
-    if (get(Feature::GetUserMediaSecureHost))
-        Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Secure", host);
     if (get(Feature::ApplicationCacheManifestSelectInsecureHost))
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.ApplicationCacheManifestSelect.Insecure", host);
     if (get(Feature::ApplicationCacheAPIInsecureHost))
@@ -169,6 +184,14 @@ void HostsUsingFeatures::Value::recordNameToRappor(const String& name)
 {
     if (get(Feature::EventPath))
         Platform::current()->recordRappor("WebComponents.EventPath.Extensions", name);
+}
+
+void HostsUsingFeatures::Value::recordETLDPlus1ToRappor(const KURL& url)
+{
+    if (get(Feature::GetUserMediaInsecureHost))
+        Platform::current()->recordRapporURL("PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Insecure", WebURL(url));
+    if (get(Feature::GetUserMediaSecureHost))
+        Platform::current()->recordRapporURL("PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Secure", WebURL(url));
 }
 
 } // namespace blink

@@ -1439,6 +1439,27 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Insecure"
+    type="ETLD_PLUS_ONE">
+  <owner>guidou@chromium.org</owner>
+  <owner>grunell@chromium.org</owner>
+  <owner>hta@chromium.org</owner>
+  <summary>
+    The ETLD+1 of the URL that uses the getUserMedia API from an insecure
+    origin.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Secure"
+    type="ETLD_PLUS_ONE">
+  <owner>guidou@chromium.org</owner>
+  <owner>grunell@chromium.org</owner>
+  <owner>hta@chromium.org</owner>
+  <summary>
+    The ETLD+1 of the URL that uses the getUserMedia API from a secure origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
@@ -1495,7 +1516,9 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
   <summary>
-    The host of the URL that uses the getUserMedia API from an insecure origin.
+    **DEPRECATED. No longer reporting as of M53. Replaced by
+    PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Insecure The host of the URL that
+    uses the getUserMedia API from an insecure origin.
   </summary>
 </rappor-metric>
 
@@ -1503,7 +1526,9 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
   <summary>
-    The host of the URL that uses the getUserMedia API from a secure origin.
+    **DEPRECATED. No longer reporting as of M53. Replaced by
+    PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Secure. The host of the URL that
+    uses the getUserMedia API from a secure origin.
   </summary>
 </rappor-metric>
 

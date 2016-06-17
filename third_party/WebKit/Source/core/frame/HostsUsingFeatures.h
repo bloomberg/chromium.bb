@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -62,6 +63,7 @@ public:
         void aggregate(Value);
         void recordHostToRappor(const String& host);
         void recordNameToRappor(const String& name);
+        void recordETLDPlus1ToRappor(const KURL&);
 
     private:
         unsigned m_countBits : static_cast<unsigned>(Feature::NumberOfFeatures);
@@ -74,8 +76,9 @@ public:
 private:
     void recordHostToRappor();
     void recordNamesToRappor();
+    void recordETLDPlus1ToRappor();
 
-    Vector<std::pair<String, HostsUsingFeatures::Value>, 1> m_hostAndValues;
+    Vector<std::pair<KURL, HostsUsingFeatures::Value>, 1> m_urlAndValues;
     HashMap<String, HostsUsingFeatures::Value> m_valueByName;
 };
 

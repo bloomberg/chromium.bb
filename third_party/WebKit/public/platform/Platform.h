@@ -407,7 +407,7 @@ public:
     virtual WebURLLoaderMockFactory* getURLLoaderMockFactory() { return nullptr; }
 
     // Record to a RAPPOR privacy-preserving metric, see: https://www.chromium.org/developers/design-documents/rappor.
-    // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.
+    // recordRappor records a sample string, while recordRapporURL records the eTLD+1 of a url.
     virtual void recordRappor(const char* metric, const WebString& sample) { }
     virtual void recordRapporURL(const char* metric, const blink::WebURL& url) { }
 
