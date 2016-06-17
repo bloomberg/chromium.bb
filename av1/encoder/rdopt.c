@@ -3147,105 +3147,105 @@ static int64_t handle_inter_mode(
     *distortion = 0;
 #endif  // CONFIG_MOTION_VAR
 
-  if (!skip_txfm_sb) {
-    int skippable_y, skippable_uv;
-    int64_t sseuv = INT64_MAX;
-    int64_t rdcosty = INT64_MAX;
+    if (!skip_txfm_sb) {
+      int skippable_y, skippable_uv;
+      int64_t sseuv = INT64_MAX;
+      int64_t rdcosty = INT64_MAX;
 
-    // Y cost and distortion
-    av1_subtract_plane(x, bsize, 0);
-    super_block_yrd(cpi, x, rate_y, &distortion_y, &skippable_y, psse, bsize,
-                    ref_best_rd);
+      // Y cost and distortion
+      av1_subtract_plane(x, bsize, 0);
+      super_block_yrd(cpi, x, rate_y, &distortion_y, &skippable_y, psse, bsize,
+                      ref_best_rd);
 
-    if (*rate_y == INT_MAX) {
-      *rate2 = INT_MAX;
-      *distortion = INT64_MAX;
+      if (*rate_y == INT_MAX) {
+        *rate2 = INT_MAX;
+        *distortion = INT64_MAX;
 #if CONFIG_MOTION_VAR
-      if (mbmi->motion_mode != SIMPLE_TRANSLATION) {
-        continue;
-      } else {
+        if (mbmi->motion_mode != SIMPLE_TRANSLATION) {
+          continue;
+        } else {
 #endif  // CONFIG_MOTION_VAR
-      restore_dst_buf(xd, orig_dst, orig_dst_stride);
-      return INT64_MAX;
+          restore_dst_buf(xd, orig_dst, orig_dst_stride);
+          return INT64_MAX;
 #if CONFIG_MOTION_VAR
+        }
+#endif  // CONFIG_MOTION_VAR
       }
-#endif  // CONFIG_MOTION_VAR
-    }
 
-    *rate2 += *rate_y;
-    *distortion += distortion_y;
+      *rate2 += *rate_y;
+      *distortion += distortion_y;
 
-    rdcosty = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
-    rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, x->rddiv, 0, *psse));
+      rdcosty = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
+      rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, x->rddiv, 0, *psse));
 
-    if (!super_block_uvrd(cpi, x, rate_uv, &distortion_uv, &skippable_uv,
-                          &sseuv, bsize, ref_best_rd - rdcosty)) {
-      *rate2 = INT_MAX;
-      *distortion = INT64_MAX;
+      if (!super_block_uvrd(cpi, x, rate_uv, &distortion_uv, &skippable_uv,
+                            &sseuv, bsize, ref_best_rd - rdcosty)) {
+        *rate2 = INT_MAX;
+        *distortion = INT64_MAX;
 #if CONFIG_MOTION_VAR
-      continue;
+        continue;
 #else
       restore_dst_buf(xd, orig_dst, orig_dst_stride);
       return INT64_MAX;
 #endif  // CONFIG_MOTION_VAR
-    }
+      }
 
-    *psse += sseuv;
-    *rate2 += *rate_uv;
-    *distortion += distortion_uv;
-    *skippable = skippable_y && skippable_uv;
+      *psse += sseuv;
+      *rate2 += *rate_uv;
+      *distortion += distortion_uv;
+      *skippable = skippable_y && skippable_uv;
 #if CONFIG_MOTION_VAR
-    if (*skippable) {
-      *rate2 -= *rate_uv + *rate_y;
-      *rate_y = 0;
-      *rate_uv = 0;
-      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
-      mbmi->skip = 0;
-      // here mbmi->skip temporarily plays a role as what this_skip2 does
-    } else if (!xd->lossless[mbmi->segment_id] &&
-               (RDCOST(x->rdmult, x->rddiv,
-                       *rate_y + *rate_uv +
-                           av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
-                       *distortion) >=
-                RDCOST(x->rdmult, x->rddiv,
-                       av1_cost_bit(av1_get_skip_prob(cm, xd), 1), *psse))) {
-      *rate2 -= *rate_uv + *rate_y;
-      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
-      *distortion = *psse;
-      *rate_y = 0;
-      *rate_uv = 0;
-      mbmi->skip = 1;
+      if (*skippable) {
+        *rate2 -= *rate_uv + *rate_y;
+        *rate_y = 0;
+        *rate_uv = 0;
+        *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+        mbmi->skip = 0;
+        // here mbmi->skip temporarily plays a role as what this_skip2 does
+      } else if (!xd->lossless[mbmi->segment_id] &&
+                 (RDCOST(x->rdmult, x->rddiv,
+                         *rate_y + *rate_uv +
+                             av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
+                         *distortion) >=
+                  RDCOST(x->rdmult, x->rddiv,
+                         av1_cost_bit(av1_get_skip_prob(cm, xd), 1), *psse))) {
+        *rate2 -= *rate_uv + *rate_y;
+        *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+        *distortion = *psse;
+        *rate_y = 0;
+        *rate_uv = 0;
+        mbmi->skip = 1;
+      } else {
+        *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+        mbmi->skip = 0;
+      }
+      *disable_skip = 0;
+#endif  // CONFIG_MOTION_VAR
     } else {
-      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+      x->skip = 1;
+      *disable_skip = 1;
+
+#if CONFIG_MOTION_VAR
       mbmi->skip = 0;
+#endif  // CONFIG_MOTION_VAR
+
+      // The cost of skip bit needs to be added.
+      *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+
+      *distortion = skip_sse_sb;
     }
-    *disable_skip = 0;
-#endif  // CONFIG_MOTION_VAR
-  } else {
-    x->skip = 1;
-    *disable_skip = 1;
 
 #if CONFIG_MOTION_VAR
-    mbmi->skip = 0;
-#endif  // CONFIG_MOTION_VAR
-
-    // The cost of skip bit needs to be added.
-    *rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
-
-    *distortion = skip_sse_sb;
-  }
-
-#if CONFIG_MOTION_VAR
-  tmp_rd = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
-  if (mbmi->motion_mode == SIMPLE_TRANSLATION || (tmp_rd < best_rd)) {
-    best_mbmi = *mbmi;
-    best_rd = tmp_rd;
-    best_rate2 = *rate2;
-    best_distortion = *distortion;
-    best_skippable = *skippable;
-    best_xskip = x->skip;
-    best_disable_skip = *disable_skip;
-  }
+    tmp_rd = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
+    if (mbmi->motion_mode == SIMPLE_TRANSLATION || (tmp_rd < best_rd)) {
+      best_mbmi = *mbmi;
+      best_rd = tmp_rd;
+      best_rate2 = *rate2;
+      best_distortion = *distortion;
+      best_skippable = *skippable;
+      best_xskip = x->skip;
+      best_disable_skip = *disable_skip;
+    }
   }
 
   if (best_rd == INT64_MAX) {
