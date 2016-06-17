@@ -82,7 +82,10 @@ public:
     T* operator->() const { return m_ptr; }
 
     bool operator!() const { return !m_ptr; }
-    explicit operator bool() const { return m_ptr; }
+
+    // TODO(jbroman): Simplifying this in the obvious way causes a massive
+    // regression in a perf test on ARM. http://crbug.com/607208
+    explicit operator bool() const { return m_ptr ? &PassRefPtr::m_ptr : 0; }
 
     friend PassRefPtr adoptRef<T>(T*);
 
