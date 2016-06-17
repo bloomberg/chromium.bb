@@ -108,6 +108,12 @@ static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
+bool CheckIfMp4Vp9DemuxingEnabled(const std::string& codec_id,
+                                  const scoped_refptr<MediaLog>& media_log) {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVp9InMp4);
+}
+
 // AAC Object Type IDs that Chrome supports.
 static const int kAACLCObjectType = 2;
 static const int kAACSBRObjectType = 5;
@@ -162,10 +168,9 @@ static const CodecInfo kHEVCHEV1CodecInfo = { "hev1.*", CodecInfo::VIDEO, NULL,
 static const CodecInfo kHEVCHVC1CodecInfo = { "hvc1.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_HEVC };
 #endif
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-static const CodecInfo kMPEG4VP09CodecInfo = {"vp09.*", CodecInfo::VIDEO, NULL,
+static const CodecInfo kMPEG4VP09CodecInfo = {"vp09.*", CodecInfo::VIDEO,
+                                              &CheckIfMp4Vp9DemuxingEnabled,
                                               CodecInfo::HISTOGRAM_VP9};
-#endif
 static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
                                               &ValidateMP4ACodecID,
                                               CodecInfo::HISTOGRAM_MPEG4AAC };
@@ -198,9 +203,7 @@ static const CodecInfo* kVideoMP4Codecs[] = {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     &kHEVCHEV1CodecInfo,  &kHEVCHVC1CodecInfo,
 #endif
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
     &kMPEG4VP09CodecInfo,
-#endif
     &kMPEG4AACCodecInfo,  &kMPEG2AACLCCodecInfo, NULL};
 
 static const CodecInfo* kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,

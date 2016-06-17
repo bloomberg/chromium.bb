@@ -7,8 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/formats/mp4/avc.h"
@@ -683,18 +685,22 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       break;
     }
 #endif
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    case FOURCC_VP09: {
-      DVLOG(2) << __FUNCTION__ << " parsing VPCodecConfigurationRecord (vpcC)";
-      std::unique_ptr<VPCodecConfigurationRecord> vp_config(
-          new VPCodecConfigurationRecord());
-      RCHECK(reader->ReadChild(vp_config.get()));
-      frame_bitstream_converter = nullptr;
-      video_codec = kCodecVP9;
-      video_codec_profile = vp_config->profile;
+    case FOURCC_VP09:
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableVp9InMp4)) {
+        DVLOG(2) << __FUNCTION__
+                 << " parsing VPCodecConfigurationRecord (vpcC)";
+        std::unique_ptr<VPCodecConfigurationRecord> vp_config(
+            new VPCodecConfigurationRecord());
+        RCHECK(reader->ReadChild(vp_config.get()));
+        frame_bitstream_converter = nullptr;
+        video_codec = kCodecVP9;
+        video_codec_profile = vp_config->profile;
+      } else {
+        MEDIA_LOG(ERROR, reader->media_log()) << "VP9 in MP4 is not enabled.";
+        return false;
+      }
       break;
-    }
-#endif
     default:
       // Unknown/unsupported format
       MEDIA_LOG(ERROR, reader->media_log()) << __FUNCTION__
@@ -716,10 +722,10 @@ bool VideoSampleEntry::IsFormatValid() const {
     case FOURCC_HEV1:
     case FOURCC_HVC1:
 #endif
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    case FOURCC_VP09:
-#endif
       return true;
+    case FOURCC_VP09:
+      return base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVp9InMp4);
     default:
       return false;
   }

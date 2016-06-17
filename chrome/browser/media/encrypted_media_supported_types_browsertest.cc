@@ -24,6 +24,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/media_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -117,9 +118,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     video_mp4_codecs_.push_back("avc1.4D000C");  // Main profile.
     video_mp4_codecs_.push_back("avc3.64001F");  // High profile.
 
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    video_mp4_codecs_.push_back("vp09.01.01.08.02.01.01.00");
-#endif
+    video_mp4_codecs_.push_back("vp09.00.01.08.02.01.01.00");
 
     video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 
@@ -149,6 +148,11 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     invalid_codecs_.push_back("hev1.");
     invalid_codecs_.push_back("hvc1");
     invalid_codecs_.push_back("hvc1.");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableVp9InMp4);
   }
 
   typedef std::vector<std::string> CodecVector;

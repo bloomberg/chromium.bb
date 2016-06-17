@@ -3,5 +3,4 @@ include_rules = [
   "+media/video",  # For basic video functions.
   "+media/base",  # For basic media functions.
   "+media/cast",  # For cast streaming library.
-  "+media/media_features.h",  # For flag definitions.
 ]

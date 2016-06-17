@@ -63,6 +63,8 @@ MEDIA_EXPORT extern const char kVideoUnderflowThresholdMs[];
 
 MEDIA_EXPORT extern const char kDisableRTCSmoothnessAlgorithm[];
 
+MEDIA_EXPORT extern const char kEnableVp9InMp4[];
+
 }  // namespace switches
 
 namespace media {

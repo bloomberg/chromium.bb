@@ -1421,6 +1421,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableUnsafeES3APIs,
     switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
+    switches::kEnableVp9InMp4,
     switches::kEnableVtune,
     switches::kEnableWebBluetooth,
     switches::kEnableWebFontsInterventionTrigger,
