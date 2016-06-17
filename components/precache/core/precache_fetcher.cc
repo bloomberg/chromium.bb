@@ -159,14 +159,18 @@ class URLFetcherNullWriter : public net::URLFetcherResponseWriter {
   }
 };
 
-void AppendManifestURLIfNew(const std::string& prefix,
-                            const std::string& name,
-                            base::hash_set<std::string>* seen_manifest_urls,
-                            std::list<GURL>* unique_manifest_urls) {
+void AppendManifestURLIfValidAndNew(
+    const std::string& prefix,
+    const std::string& name,
+    base::hash_set<std::string>* seen_manifest_urls,
+    std::list<GURL>* unique_manifest_urls) {
   const std::string manifest_url = ConstructManifestURL(prefix, name);
   bool first_seen = seen_manifest_urls->insert(manifest_url).second;
-  if (first_seen)
-    unique_manifest_urls->push_back(GURL(manifest_url));
+  if (first_seen) {
+    GURL url(manifest_url);
+    if (url.is_valid())
+      unique_manifest_urls->push_back(url);
+  }
 }
 
 }  // namespace
@@ -509,14 +513,15 @@ void PrecacheFetcher::DetermineManifests() {
         ++rank;
         if (rank > unfinished_work_->config_settings().top_sites_count())
           break;
-        AppendManifestURLIfNew(prefix, host.hostname(), &seen_manifest_urls,
-                               &manifest_urls_to_fetch_);
+        AppendManifestURLIfValidAndNew(prefix, host.hostname(),
+                                       &seen_manifest_urls,
+                                       &manifest_urls_to_fetch_);
       }
 
       for (const std::string& host
           : unfinished_work_->config_settings().forced_site()) {
-        AppendManifestURLIfNew(prefix, host, &seen_manifest_urls,
-                               &manifest_urls_to_fetch_);
+        AppendManifestURLIfValidAndNew(prefix, host, &seen_manifest_urls,
+                                       &manifest_urls_to_fetch_);
       }
     }
     unfinished_work_->set_num_manifest_urls(manifest_urls_to_fetch_.size());
@@ -538,8 +543,12 @@ void PrecacheFetcher::OnManifestFetchComplete(const Fetcher& source) {
       const uint64_t resource_bitset =
           GetResourceBitset(manifest, experiment_id_);
       for (int i = 0; i < len; ++i) {
-        if (((0x1ULL << i) & resource_bitset) && manifest.resource(i).has_url())
-          resource_urls_to_fetch_.push_back(GURL(manifest.resource(i).url()));
+        if (((0x1ULL << i) & resource_bitset) &&
+            manifest.resource(i).has_url()) {
+          GURL url(manifest.resource(i).url());
+          if (url.is_valid())
+            resource_urls_to_fetch_.push_back(url);
+        }
       }
     }
   }

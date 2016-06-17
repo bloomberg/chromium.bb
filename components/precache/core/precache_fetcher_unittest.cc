@@ -1076,4 +1076,78 @@ TEST_F(PrecacheFetcherTest, FetcherPoolMaxLimitReached) {
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
+TEST_F(PrecacheFetcherTest, FilterInvalidManifestUrls) {
+  SetDefaultFlags();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kPrecacheManifestURLPrefix, "invalid-manifest-prefix");
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->add_top_host()->set_hostname("manifest.com");
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+
+  factory_.SetFakeResponse(GURL(kConfigURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  base::HistogramTester histogram;
+
+  {
+    PrecacheFetcher precache_fetcher(request_context_.get(), GURL(),
+                                     std::string(), std::move(unfinished_work),
+                                     kExperimentID, &precache_delegate_);
+    precache_fetcher.Start();
+
+    loop_.RunUntilIdle();
+  }
+
+  // The config is fetched, but not the invalid manifest URL.
+  EXPECT_EQ(1UL, url_callback_.requested_urls().size());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  // manifest.com will have been failed to complete, in this case.
+  EXPECT_THAT(histogram.GetAllSamples("Precache.Fetch.PercentCompleted"),
+              ElementsAre(base::Bucket(0, 1)));
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+}
+
+TEST_F(PrecacheFetcherTest, FilterInvalidResourceUrls) {
+  SetDefaultFlags();
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->add_top_host()->set_hostname("bad-manifest.com");
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+
+  factory_.SetFakeResponse(GURL(kConfigURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  PrecacheManifest bad_manifest;
+  bad_manifest.add_resource()->set_url("http://");
+
+  factory_.SetFakeResponse(GURL(kBadManifestURL),
+                           bad_manifest.SerializeAsString(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  base::HistogramTester histogram;
+
+  {
+    PrecacheFetcher precache_fetcher(request_context_.get(), GURL(),
+                                     std::string(), std::move(unfinished_work),
+                                     kExperimentID, &precache_delegate_);
+    precache_fetcher.Start();
+
+    loop_.RunUntilIdle();
+  }
+
+  // The config and manifest are fetched, but not the invalid resource URL.
+  EXPECT_EQ(2UL, url_callback_.requested_urls().size());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  // bad-manifest.com will have been completed.
+  EXPECT_THAT(histogram.GetAllSamples("Precache.Fetch.PercentCompleted"),
+              ElementsAre(base::Bucket(100, 1)));
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+}
+
 }  // namespace precache
