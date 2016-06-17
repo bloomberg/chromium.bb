@@ -85,15 +85,13 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       CreateAndConfigureStream(DemuxerStream::AUDIO);
       ASSERT_TRUE(audio_);
       EXPECT_TRUE(frame_processor_->AddTrack(audio_id_, audio_.get()));
-      audio_->Seek(base::TimeDelta());
-      audio_->StartReturningData();
+      seek(audio_.get(), base::TimeDelta());
     }
     if (has_video) {
       CreateAndConfigureStream(DemuxerStream::VIDEO);
       ASSERT_TRUE(video_);
       EXPECT_TRUE(frame_processor_->AddTrack(video_id_, video_.get()));
-      video_->Seek(base::TimeDelta());
-      video_->StartReturningData();
+      seek(video_.get(), base::TimeDelta());
     }
   }
 
@@ -250,6 +248,12 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   bool in_coded_frame_group() {
     return frame_processor_->coded_frame_group_last_dts_ !=
            kNoDecodeTimestamp();
+  }
+
+  void seek(ChunkDemuxerStream* stream, base::TimeDelta seek_time) {
+    stream->AbortReads();
+    stream->Seek(seek_time);
+    stream->StartReturningData();
   }
 
   base::MessageLoop message_loop_;
@@ -509,12 +513,9 @@ TEST_P(FrameProcessorTest, AudioOnly_NonSequentialProcessFrames) {
   } else {
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,40) }");
     EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
-    // TODO(wolenetz): Fix this need to seek to 0ms, possibly by having
-    // SourceBufferStream defer initial seek until next read. See
-    // http://crbug.com/371493.
-    audio_->AbortReads();
-    audio_->Seek(base::TimeDelta());
-    audio_->StartReturningData();
+    // Re-seek to 0ms now that we've appended data earlier than what has already
+    // satisfied our initial seek to start, above.
+    seek(audio_.get(), base::TimeDelta());
     CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
   }
 }
@@ -576,9 +577,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
     CheckExpectedRangesByTimestamp(video_.get(), "{ [0,20) [50,60) }");
     CheckReadsThenReadStalls(audio_.get(), "0 10 30 40 50");
     CheckReadsThenReadStalls(video_.get(), "0 10");
-    video_->AbortReads();
-    video_->Seek(frame_duration_ * 5);
-    video_->StartReturningData();
+    seek(video_.get(), frame_duration_ * 5);
     CheckReadsThenReadStalls(video_.get(), "50");
   }
 }
@@ -655,12 +654,10 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   }
 
   // Verify the buffers.
-  audio_->AbortReads();
-  audio_->Seek(fifty_five_ms);
-  audio_->StartReturningData();
-  video_->AbortReads();
-  video_->Seek(fifty_five_ms);
-  video_->StartReturningData();
+  // Re-seek now that we've appended data earlier than what already satisfied
+  // our initial seek to start.
+  seek(audio_.get(), fifty_five_ms);
+  seek(video_.get(), fifty_five_ms);
   if (using_sequence_mode) {
     CheckReadsThenReadStalls(
         audio_.get(),
@@ -671,20 +668,12 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   } else {
     CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
     CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
-    audio_->AbortReads();
-    audio_->Seek(frame_duration_ * 10);
-    audio_->StartReturningData();
-    video_->AbortReads();
-    video_->Seek(frame_duration_ * 10);
-    video_->StartReturningData();
+    seek(audio_.get(), frame_duration_ * 10);
+    seek(video_.get(), frame_duration_ * 10);
     CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
     CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
-    audio_->AbortReads();
-    audio_->Seek(frame_duration_ * 20);
-    audio_->StartReturningData();
-    video_->AbortReads();
-    video_->Seek(frame_duration_ * 20);
-    video_->StartReturningData();
+    seek(audio_.get(), frame_duration_ * 20);
+    seek(video_.get(), frame_duration_ * 20);
     CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
     CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
   }
@@ -871,9 +860,7 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
   // Abort the reads from last stall. We don't want those reads to "complete"
   // when we append below. We will initiate new reads to confirm the buffer
   // looks as we expect.
-  audio_->AbortReads();
-  audio_->Seek(base::TimeDelta());
-  audio_->StartReturningData();
+  seek(audio_.get(), base::TimeDelta());
 
   // Append a frame with 10ms duration, with 9ms falling after the window start.
   base::TimeDelta expected_duration =
