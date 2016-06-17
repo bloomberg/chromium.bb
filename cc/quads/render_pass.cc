@@ -35,6 +35,10 @@ const size_t kDefaultNumQuadsToReserve = 128;
 
 namespace cc {
 
+QuadList::QuadList()
+    : ListContainer<DrawQuad>(LargestDrawQuadSize(),
+                              kDefaultNumSharedQuadStatesToReserve) {}
+
 QuadList::QuadList(size_t default_size_to_reserve)
     : ListContainer<DrawQuad>(LargestDrawQuadSize(), default_size_to_reserve) {
 }

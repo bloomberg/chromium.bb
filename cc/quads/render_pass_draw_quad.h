@@ -19,6 +19,8 @@ namespace cc {
 
 class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
  public:
+  static const size_t kMaskResourceIdIndex = 0;
+
   RenderPassDrawQuad();
   RenderPassDrawQuad(const RenderPassDrawQuad& other);
   ~RenderPassDrawQuad() override;
@@ -74,8 +76,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  static const size_t kMaskResourceIdIndex = 0;
-
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

@@ -5,7 +5,12 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/input/selection.h"
 #include "cc/ipc/traits_test_service.mojom.h"
+#include "cc/quads/debug_border_draw_quad.h"
+#include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/render_pass_id.h"
+#include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/surface_draw_quad.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -47,6 +52,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
       const FilterOperations& f,
       const EchoFilterOperationsCallback& callback) override {
     callback.Run(f);
+  }
+
+  void EchoQuadList(const QuadList& q,
+                    const EchoQuadListCallback& callback) override {
+    callback.Run(q);
   }
 
   void EchoRenderPassId(const RenderPassId& r,
@@ -265,6 +275,72 @@ TEST_F(StructTraitsTest, FilterOperations) {
   for (size_t i = 0; i < input.size(); ++i) {
     EXPECT_EQ(input.at(i), output.at(i));
   }
+}
+
+TEST_F(StructTraitsTest, QuadListBasic) {
+  const DrawQuad::Material material1 = DrawQuad::DEBUG_BORDER;
+  const DrawQuad::Material material2 = DrawQuad::SOLID_COLOR;
+  const DrawQuad::Material material3 = DrawQuad::SURFACE_CONTENT;
+  const DrawQuad::Material material4 = DrawQuad::RENDER_PASS;
+  const gfx::Rect rect1(1234, 4321, 1357, 7531);
+  const gfx::Rect rect2(2468, 8642, 4321, 1234);
+  const gfx::Rect rect3(1029, 3847, 5610, 2938);
+  const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
+  const int32_t width1 = 1337;
+  const uint32_t color2 = 0xffffffff;
+  const SurfaceId surface_id(1234, 5678, 2468);
+  const RenderPassId render_pass_id(1234, 5678);
+
+  QuadList input;
+  DebugBorderDrawQuad* debug_quad =
+      input.AllocateAndConstruct<DebugBorderDrawQuad>();
+  debug_quad->material = material1;
+  debug_quad->rect = rect1;
+  debug_quad->width = width1;
+
+  SolidColorDrawQuad* solid_quad =
+      input.AllocateAndConstruct<SolidColorDrawQuad>();
+  solid_quad->material = material2;
+  solid_quad->rect = rect2;
+  solid_quad->color = color2;
+
+  SurfaceDrawQuad* surface_quad = input.AllocateAndConstruct<SurfaceDrawQuad>();
+  surface_quad->material = material3;
+  surface_quad->rect = rect3;
+  surface_quad->surface_id = surface_id;
+
+  RenderPassDrawQuad* render_pass_quad =
+      input.AllocateAndConstruct<RenderPassDrawQuad>();
+  render_pass_quad->material = material4;
+  render_pass_quad->rect = rect4;
+  render_pass_quad->render_pass_id = render_pass_id;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  QuadList output;
+  proxy->EchoQuadList(input, &output);
+
+  ASSERT_EQ(input.size(), output.size());
+
+  ASSERT_EQ(material1, output.ElementAt(0)->material);
+  EXPECT_EQ(rect1, output.ElementAt(0)->rect);
+  EXPECT_EQ(width1,
+            static_cast<DebugBorderDrawQuad*>(output.ElementAt(0))->width);
+
+  ASSERT_EQ(material2, output.ElementAt(1)->material);
+  EXPECT_EQ(rect2, output.ElementAt(1)->rect);
+  EXPECT_EQ(color2,
+            static_cast<SolidColorDrawQuad*>(output.ElementAt(1))->color);
+
+  ASSERT_EQ(material3, output.ElementAt(2)->material);
+  EXPECT_EQ(rect3, output.ElementAt(2)->rect);
+  EXPECT_EQ(surface_id,
+            static_cast<SurfaceDrawQuad*>(output.ElementAt(2))->surface_id);
+
+  ASSERT_EQ(material4, output.ElementAt(3)->material);
+  EXPECT_EQ(rect4, output.ElementAt(3)->rect);
+  EXPECT_EQ(
+      render_pass_id,
+      static_cast<RenderPassDrawQuad*>(output.ElementAt(3))->render_pass_id);
 }
 
 TEST_F(StructTraitsTest, RenderPassId) {

@@ -25,8 +25,6 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 
-using cc::mojom::Color;
-using cc::mojom::ColorPtr;
 using cc::mojom::DebugBorderQuadState;
 using cc::mojom::DebugBorderQuadStatePtr;
 using cc::mojom::DrawQuad;
@@ -83,11 +81,10 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
     case cc::mojom::Material::DEBUG_BORDER: {
       cc::DebugBorderDrawQuad* debug_border_quad =
           render_pass->CreateAndAppendDrawQuad<cc::DebugBorderDrawQuad>();
-      debug_border_quad->SetAll(
-          sqs, input->rect, input->opaque_rect, input->visible_rect,
-          input->needs_blending,
-          input->debug_border_quad_state->color.To<SkColor>(),
-          input->debug_border_quad_state->width);
+      debug_border_quad->SetAll(sqs, input->rect, input->opaque_rect,
+                                input->visible_rect, input->needs_blending,
+                                input->debug_border_quad_state->color,
+                                input->debug_border_quad_state->width);
       break;
     }
     case cc::mojom::Material::RENDER_PASS: {
@@ -95,15 +92,15 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
           render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
       RenderPassQuadState* render_pass_quad_state =
           input->render_pass_quad_state.get();
-      render_pass_quad->SetAll(
-          sqs, input->rect, input->opaque_rect, input->visible_rect,
-          input->needs_blending, render_pass_quad_state->render_pass_id,
-          render_pass_quad_state->mask_resource_id,
-          render_pass_quad_state->mask_uv_scale.OffsetFromOrigin(),
-          render_pass_quad_state->mask_texture_size,
-          render_pass_quad_state->filters,
-          render_pass_quad_state->filters_scale.OffsetFromOrigin(),
-          render_pass_quad_state->background_filters);
+      render_pass_quad->SetAll(sqs, input->rect, input->opaque_rect,
+                               input->visible_rect, input->needs_blending,
+                               render_pass_quad_state->render_pass_id,
+                               render_pass_quad_state->mask_resource_id,
+                               render_pass_quad_state->mask_uv_scale,
+                               render_pass_quad_state->mask_texture_size,
+                               render_pass_quad_state->filters,
+                               render_pass_quad_state->filters_scale,
+                               render_pass_quad_state->background_filters);
       break;
     }
     case cc::mojom::Material::SOLID_COLOR: {
@@ -113,8 +110,7 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
           render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
       color_quad->SetAll(
           sqs, input->rect, input->opaque_rect, input->visible_rect,
-          input->needs_blending,
-          input->solid_color_quad_state->color.To<SkColor>(),
+          input->needs_blending, input->solid_color_quad_state->color,
           input->solid_color_quad_state->force_anti_aliasing_off);
       break;
     }
@@ -133,8 +129,7 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
       TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;
       if (texture_quad_state.is_null() ||
-          texture_quad_state->vertex_opacity.is_null() ||
-          texture_quad_state->background_color.is_null())
+          texture_quad_state->vertex_opacity.is_null())
         return false;
       cc::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
@@ -143,7 +138,7 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
           input->needs_blending, texture_quad_state->resource_id, gfx::Size(),
           texture_quad_state->premultiplied_alpha,
           texture_quad_state->uv_top_left, texture_quad_state->uv_bottom_right,
-          texture_quad_state->background_color.To<SkColor>(),
+          texture_quad_state->background_color,
           &texture_quad_state->vertex_opacity.storage()[0],
           texture_quad_state->y_flipped, texture_quad_state->nearest_neighbor,
           texture_quad_state->secure_output_only);
@@ -189,18 +184,6 @@ bool ConvertDrawQuad(const DrawQuadPtr& input,
 }  // namespace
 
 // static
-ColorPtr TypeConverter<ColorPtr, SkColor>::Convert(const SkColor& input) {
-  ColorPtr color(Color::New());
-  color->rgba = input;
-  return color;
-}
-
-// static
-SkColor TypeConverter<SkColor, ColorPtr>::Convert(const ColorPtr& input) {
-  return input->rgba;
-}
-
-// static
 DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
     const cc::DrawQuad& input) {
   DrawQuadPtr quad = DrawQuad::New();
@@ -219,7 +202,7 @@ DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
           cc::DebugBorderDrawQuad::MaterialCast(&input);
       DebugBorderQuadStatePtr debug_border_state =
           DebugBorderQuadState::New();
-      debug_border_state->color = Color::From(debug_border_quad->color);
+      debug_border_state->color = debug_border_quad->color;
       debug_border_state->width = debug_border_quad->width;
       quad->debug_border_quad_state = std::move(debug_border_state);
       break;
@@ -230,12 +213,10 @@ DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
       RenderPassQuadStatePtr pass_state = RenderPassQuadState::New();
       pass_state->render_pass_id = render_pass_quad->render_pass_id;
       pass_state->mask_resource_id = render_pass_quad->mask_resource_id();
-      pass_state->mask_uv_scale =
-          gfx::PointAtOffsetFromOrigin(render_pass_quad->mask_uv_scale);
+      pass_state->mask_uv_scale = render_pass_quad->mask_uv_scale;
       pass_state->mask_texture_size = render_pass_quad->mask_texture_size;
       pass_state->filters = render_pass_quad->filters;
-      pass_state->filters_scale =
-          gfx::PointAtOffsetFromOrigin(render_pass_quad->filters_scale);
+      pass_state->filters_scale = render_pass_quad->filters_scale;
       pass_state->background_filters = render_pass_quad->background_filters;
       quad->render_pass_quad_state = std::move(pass_state);
       break;
@@ -244,7 +225,7 @@ DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
       const cc::SolidColorDrawQuad* color_quad =
           cc::SolidColorDrawQuad::MaterialCast(&input);
       SolidColorQuadStatePtr color_state = SolidColorQuadState::New();
-      color_state->color = Color::From(color_quad->color);
+      color_state->color = color_quad->color;
       color_state->force_anti_aliasing_off =
           color_quad->force_anti_aliasing_off;
       quad->solid_color_quad_state = std::move(color_state);
@@ -267,8 +248,7 @@ DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
       texture_state->premultiplied_alpha = texture_quad->premultiplied_alpha;
       texture_state->uv_top_left = texture_quad->uv_top_left;
       texture_state->uv_bottom_right = texture_quad->uv_bottom_right;
-      texture_state->background_color =
-          Color::From(texture_quad->background_color);
+      texture_state->background_color = texture_quad->background_color;
       Array<float> vertex_opacity(4);
       for (size_t i = 0; i < 4; ++i) {
         vertex_opacity[i] = texture_quad->vertex_opacity[i];

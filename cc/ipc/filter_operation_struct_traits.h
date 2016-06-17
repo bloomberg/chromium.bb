@@ -7,6 +7,7 @@
 
 #include "cc/ipc/filter_operation.mojom.h"
 #include "cc/output/filter_operation.h"
+#include "skia/public/interfaces/image_filter_struct_traits.h"
 
 namespace mojo {
 

@@ -13,6 +13,8 @@ namespace cc {
 
 class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
  public:
+  static const size_t kResourceIdIndex = 0;
+
   TileDrawQuad();
   ~TileDrawQuad() override;
 
@@ -48,8 +50,6 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
   ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
 
  private:
-  static const size_t kResourceIdIndex = 0;
-
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

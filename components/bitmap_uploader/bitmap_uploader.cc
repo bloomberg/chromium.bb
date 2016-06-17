@@ -142,8 +142,7 @@ void BitmapUploader::Upload() {
     texture_state->premultiplied_alpha = true;
     texture_state->uv_top_left.SetPoint(0.f, 0.f);
     texture_state->uv_bottom_right.SetPoint(1.f, 1.f);
-    texture_state->background_color = cc::mojom::Color::New();
-    texture_state->background_color->rgba = g_transparent_color;
+    texture_state->background_color = g_transparent_color;
     for (int i = 0; i < 4; ++i)
       texture_state->vertex_opacity.push_back(1.f);
     texture_state->y_flipped = false;
@@ -163,8 +162,7 @@ void BitmapUploader::Upload() {
 
     cc::mojom::SolidColorQuadStatePtr color_state =
         cc::mojom::SolidColorQuadState::New();
-    color_state->color = cc::mojom::Color::New();
-    color_state->color->rgba = color_;
+    color_state->color = color_;
     color_state->force_anti_aliasing_off = false;
 
     quad->solid_color_quad_state = std::move(color_state);

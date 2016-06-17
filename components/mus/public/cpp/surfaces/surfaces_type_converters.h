@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 class CompositorFrame;
@@ -30,15 +29,6 @@ class SharedQuadState;
 namespace mojo {
 
 // Types from quads.mojom
-template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<cc::mojom::ColorPtr, SkColor> {
-  static cc::mojom::ColorPtr Convert(const SkColor& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, cc::mojom::ColorPtr> {
-  static SkColor Convert(const cc::mojom::ColorPtr& input);
-};
-
 template <>
 struct MOJO_SURFACES_EXPORT
     TypeConverter<cc::mojom::DrawQuadPtr, cc::DrawQuad> {

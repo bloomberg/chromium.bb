@@ -11,27 +11,20 @@ import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
-struct Color {
-  uint32 rgba;
-};
-
 struct DebugBorderQuadState {
   // Debug border color.
-  Color color;
+  uint32 color;
 
   // Debug border width.
   int32 width;
 };
-
-// TODO(jamesr): Populate subtype fields.
-struct IoSurfaceContentQuadState {};
 
 struct RenderPassQuadState {
   cc.mojom.RenderPassId render_pass_id;
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;
-  gfx.mojom.PointF mask_uv_scale;
+  gfx.mojom.Vector2dF mask_uv_scale;
   gfx.mojom.Size mask_texture_size;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
@@ -41,7 +34,7 @@ struct RenderPassQuadState {
   // the render pass physical pixels. This scale is applied to the filter
   // parameters for pixel-moving filters. This scale should include
   // content-to-target-space scale, and device pixel ratio.
-  gfx.mojom.PointF filters_scale;
+  gfx.mojom.Vector2dF filters_scale;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
@@ -49,7 +42,7 @@ struct RenderPassQuadState {
 };
 
 struct SolidColorQuadState {
-  Color color;
+  uint32 color;
   bool force_anti_aliasing_off;
 };
 
@@ -62,7 +55,7 @@ struct TextureQuadState {
   bool premultiplied_alpha;
   gfx.mojom.PointF uv_top_left;
   gfx.mojom.PointF uv_bottom_right;
-  Color background_color;
+  uint32 background_color;
   array<float, 4> vertex_opacity;
   bool y_flipped;
   bool nearest_neighbor;
@@ -100,7 +93,8 @@ struct YUVVideoQuadState {
 };
 
 enum Material {
-  DEBUG_BORDER = 1,
+  INVALID,
+  DEBUG_BORDER,
   PICTURE_CONTENT,
   RENDER_PASS,
   SOLID_COLOR,
@@ -136,7 +130,6 @@ struct DrawQuad {
 
   // Only one of the following will be set, depending on the material.
   DebugBorderQuadState? debug_border_quad_state;
-  IoSurfaceContentQuadState? io_surface_quad_state;
   RenderPassQuadState? render_pass_quad_state;
   SolidColorQuadState? solid_color_quad_state;
   SurfaceQuadState? surface_quad_state;
@@ -144,6 +137,11 @@ struct DrawQuad {
   TileQuadState? tile_quad_state;
   StreamVideoQuadState? stream_video_quad_state;
   YUVVideoQuadState? yuv_video_quad_state;
+};
+
+struct QuadList {
+  array<Material> quad_types;
+  array<DrawQuad> quads;
 };
 
 struct RenderPass {

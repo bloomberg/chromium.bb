@@ -21,8 +21,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
-using cc::mojom::Color;
-using cc::mojom::ColorPtr;
 using cc::mojom::DebugBorderQuadState;
 using cc::mojom::DebugBorderQuadStatePtr;
 using cc::mojom::DrawQuad;
@@ -48,12 +46,6 @@ using mus::mojom::CompositorFramePtr;
 namespace mojo {
 namespace {
 
-
-TEST(SurfaceLibTest, Color) {
-  SkColor arbitrary_color = SK_ColorMAGENTA;
-  SkColor round_trip = Color::From(arbitrary_color).To<SkColor>();
-  EXPECT_EQ(arbitrary_color, round_trip);
-}
 
 class SurfaceLibQuadTest : public testing::Test {
  public:
@@ -97,7 +89,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
   EXPECT_EQ(needs_blending, mus_quad->needs_blending);
   ASSERT_TRUE(mus_quad->solid_color_quad_state);
   SolidColorQuadStatePtr& mus_color_state = mus_quad->solid_color_quad_state;
-  EXPECT_TRUE(Color::From(arbitrary_color).Equals(mus_color_state->color));
+  EXPECT_EQ(arbitrary_color, mus_color_state->color);
   EXPECT_EQ(force_anti_aliasing_off, mus_color_state->force_anti_aliasing_off);
 }
 
@@ -143,8 +135,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   EXPECT_EQ(premultiplied_alpha, mus_texture_state->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, mus_texture_state->uv_top_left);
   EXPECT_EQ(uv_bottom_right, mus_texture_state->uv_bottom_right);
-  EXPECT_TRUE(Color::From(background_color)
-                  .Equals(mus_texture_state->background_color));
+  EXPECT_EQ(background_color, mus_texture_state->background_color);
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_EQ(vertex_opacity[i], mus_texture_state->vertex_opacity[i]) << i;
   }
@@ -156,7 +147,6 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   DrawQuadPtr mus_texture_quad = DrawQuad::New();
   mus_texture_quad->material = cc::mojom::Material::TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
-  mus_texture_state->background_color = Color::New();
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
   RenderPassPtr mus_pass = RenderPass::New();
   mus_pass->id.layer_id = 1;
@@ -167,23 +157,6 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   std::unique_ptr<cc::RenderPass> pass =
       mus_pass.To<std::unique_ptr<cc::RenderPass>>();
 
-  EXPECT_FALSE(pass);
-}
-
-TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
-  DrawQuadPtr mus_texture_quad = DrawQuad::New();
-  mus_texture_quad->material = cc::mojom::Material::TEXTURE_CONTENT;
-  TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
-  mus_texture_state->vertex_opacity = mojo::Array<float>::New(4);
-  mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
-  RenderPassPtr mus_pass = RenderPass::New();
-  mus_pass->id.layer_id = 1;
-  mus_pass->id.index = 1u;
-  mus_pass->quads.push_back(std::move(mus_texture_quad));
-  mus_pass->shared_quad_states.push_back(cc::SharedQuadState());
-
-  std::unique_ptr<cc::RenderPass> pass =
-      mus_pass.To<std::unique_ptr<cc::RenderPass>>();
   EXPECT_FALSE(pass);
 }
 
@@ -351,8 +324,7 @@ TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {
   ASSERT_TRUE(mus_quad->debug_border_quad_state);
   DebugBorderQuadStatePtr& mus_debug_border_state =
       mus_quad->debug_border_quad_state;
-  EXPECT_TRUE(
-      Color::From(arbitrary_color).Equals(mus_debug_border_state->color));
+  EXPECT_EQ(arbitrary_color, mus_debug_border_state->color);
   EXPECT_EQ(width, mus_debug_border_state->width);
 }
 

@@ -27,6 +27,10 @@ namespace cc {
 template <class BaseElementType>
 class ListContainer {
  public:
+  ListContainer(ListContainer&& other) : helper_(sizeof(BaseElementType)) {
+    helper_.data_.swap(other.helper_.data_);
+  }
+
   // BaseElementType is the type of raw pointers this class hands out; however,
   // its derived classes might require different memory sizes.
   // max_size_for_derived_class the largest memory size required for all the
@@ -142,6 +146,11 @@ class ListContainer {
       ++at;
     }
     return result;
+  }
+
+  ListContainer& operator=(ListContainer&& other) {
+    helper_.data_.swap(other.helper_.data_);
+    return *this;
   }
 
   template <typename DerivedElementType>

@@ -17,6 +17,8 @@ namespace cc {
 
 class CC_EXPORT TextureDrawQuad : public DrawQuad {
  public:
+  static const size_t kResourceIdIndex = 0;
+
   TextureDrawQuad();
   TextureDrawQuad(const TextureDrawQuad& other);
 
@@ -77,8 +79,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  static const size_t kResourceIdIndex = 0;
-
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
