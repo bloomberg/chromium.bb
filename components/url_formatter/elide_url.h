@@ -84,6 +84,14 @@ base::string16 FormatUrlForSecurityDisplay(
 
 // This is a convenience function for formatting a url::Origin in a concise and
 // human-friendly way, to help users make security-related decisions.
+//
+// - Omits the port if it is 0 or the default for the scheme.
+//
+// Do not use this for origins which will be parsed or sent to other
+// applications.
+//
+// Generally, prefer SchemeDisplay::SHOW to omitting the scheme unless there is
+// plenty of indication as to whether the origin is secure elsewhere in the UX.
 base::string16 FormatOriginForSecurityDisplay(
     const url::Origin& origin,
     const SchemeDisplay scheme_display = SchemeDisplay::SHOW);
