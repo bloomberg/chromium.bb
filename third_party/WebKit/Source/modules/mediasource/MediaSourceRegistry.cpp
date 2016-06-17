@@ -67,7 +67,7 @@ void MediaSourceRegistry::unregisterURL(const KURL& url)
 URLRegistrable* MediaSourceRegistry::lookup(const String& url)
 {
     DCHECK(isMainThread());
-    return m_mediaSources.get(url);
+    return url.isNull() ? nullptr : m_mediaSources.get(url);
 }
 
 MediaSourceRegistry::MediaSourceRegistry()
