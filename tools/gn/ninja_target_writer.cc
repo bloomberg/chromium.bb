@@ -165,9 +165,13 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
       target_->output_type() == Target::ACTION_FOREACH)
     input_deps_sources.push_back(&target_->action_values().script());
 
-  // Input files.
-  for (const auto& input : target_->inputs())
-    input_deps_sources.push_back(&input);
+  // Input files are only considered for non-binary targets which use an
+  // implicit dependency instead. The implicit depedency in this case is
+  // handled separately by the binary target writer.
+  if (!target_->IsBinary()) {
+    for (const auto& input : target_->inputs())
+      input_deps_sources.push_back(&input);
+  }
 
   // For an action (where we run a script only once) the sources are the same
   // as the inputs. For action_foreach, the sources will be operated on

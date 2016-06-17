@@ -85,12 +85,9 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
     OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    // Since there is more than one dependency, a stamp file will be returned
-    // and the rule for the stamp file will be written to the stream.
-    EXPECT_EQ("obj/foo/target.inputdeps.stamp", dep.value());
-    EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
-                  "../../foo/input.txt obj/foo/base.stamp\n",
-              stream.str());
+    // Since there is only one dependency, a stamp file will be returned
+    // directly without writing any additional rules.
+    EXPECT_EQ("obj/foo/base.stamp", dep.value());
   }
 
   // Input deps for action which should depend on the base since its a hard dep

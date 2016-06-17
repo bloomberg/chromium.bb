@@ -31,6 +31,12 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   // Writes all flags for the compiler: includes, defines, cflags, etc.
   void WriteCompilerVars(const SourceFileTypeSet& used_types);
 
+  // Writes to the output stream a stamp rule for inputs, and
+  // returns the file to be appended to source rules that encodes the
+  // implicit dependencies for the current target. The returned OutputFile
+  // will be empty if there are no inputs.
+  OutputFile WriteInputsStampAndGetDep() const;
+
   // has_precompiled_headers is set when this substitution matches a tool type
   // that supports precompiled headers, and this target supports precompiled
   // headers. It doesn't indicate if the tool has precompiled headers (this
@@ -55,6 +61,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   // compiling this target. It will be empty if there are no input deps.
   void WritePCHCommands(const SourceFileTypeSet& used_types,
                         const OutputFile& input_dep,
+                        const OutputFile& order_only_dep,
                         std::vector<OutputFile>* object_files,
                         std::vector<OutputFile>* other_files);
 
@@ -63,16 +70,19 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
                        Toolchain::ToolType tool_type,
                        Tool::PrecompiledHeaderType header_type,
                        const OutputFile& input_dep,
+                       const OutputFile& order_only_dep,
                        std::vector<OutputFile>* object_files,
                        std::vector<OutputFile>* other_files);
 
   void WriteGCCPCHCommand(SubstitutionType flag_type,
                           Toolchain::ToolType tool_type,
+                          const OutputFile& input_dep,
                           const OutputFile& order_only_dep,
                           std::vector<OutputFile>* gch_files);
 
   void WriteWindowsPCHCommand(SubstitutionType flag_type,
                               Toolchain::ToolType tool_type,
+                              const OutputFile& input_dep,
                               const OutputFile& order_only_dep,
                               std::vector<OutputFile>* object_files);
 
@@ -84,6 +94,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   //
   // The files produced by the compiler will be added to two output vectors.
   void WriteSources(const std::vector<OutputFile>& pch_deps,
+                    const OutputFile& input_dep,
                     const OutputFile& order_only_dep,
                     std::vector<OutputFile>* object_files,
                     std::vector<SourceFile>* other_files);

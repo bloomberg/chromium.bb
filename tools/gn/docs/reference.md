@@ -4788,13 +4788,11 @@
   files in a target are compiled. So if you depend on generated headers,
   you do not typically need to list them in the inputs section.
 
-  Inputs for binary targets will be treated as order-only dependencies,
-  meaning that they will be forced up to date before compiling or
-  any files in the target, but changes in the inputs will not
-  necessarily force the target to compile. This is because it is
-  expected that the compiler will report the precise list of input
-  dependencies required to recompile each file once the initial build
-  is done.
+  Inputs for binary targets will be treated as implicit dependencies,
+  meaning that changes in any of the inputs will force all sources in
+  the target to be recompiled. If an input only applies to a subset of
+  source files, you may want to split those into a separate target to
+  avoid unnecessary recompiles.
 
 ```
 
