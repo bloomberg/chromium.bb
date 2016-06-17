@@ -11,25 +11,11 @@ for those executables involved).
 
 from __future__ import print_function
 
-import collections
-import ctypes
-import datetime
-import errno
-import functools
 import hashlib
 import httplib
-import multiprocessing
+import itertools
 import os
 import poster
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=F0401
-  import queue as Queue
-import random
-import signal
 import socket
 import sys
 import textwrap
@@ -45,10 +31,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import retry_util
-from chromite.lib import signals
 from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
@@ -57,6 +41,14 @@ from chromite.scripts import cros_generate_breakpad_symbols
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
 import isolateserver
+
+
+# We need this to run once per process. Do it at module import time as that
+# will let us avoid doing it inline at function call time (see UploadSymbolFile)
+# as that func might be called by the multiprocessing module which means we'll
+# do the opener logic multiple times overall. Plus, if you're importing this
+# module, it's a pretty good chance that you're going to need this.
+poster.streaminghttp.register_openers()
 
 
 # URLs used for uploading symbols.
@@ -74,9 +66,6 @@ DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
 # time as the round trip overhead will dominate.  Conversely, we avoid sending
 # all at once so we can start uploading symbols asap -- the symbol server is a
 # bit slow and will take longer than anything else.
-# TODO: A better algorithm would be adaptive.  If we have more than one symbol
-# in the upload queue waiting, we could send more symbols to the dedupe server
-# at a time.
 DEDUPE_LIMIT = 100
 
 # How long to wait for the server to respond with the results.  Note that the
@@ -84,10 +73,8 @@ DEDUPE_LIMIT = 100
 # second per item max.
 DEDUPE_TIMEOUT = DEDUPE_LIMIT
 
-# How long to wait for the notification to finish (in minutes).  If it takes
-# longer than this, we'll stop notifiying, but that's not a big deal as we
-# will be able to recover in later runs.
-DEDUPE_NOTIFY_TIMEOUT = 20
+# How long to wait for the notification to finish (in seconds).
+DEDUPE_NOTIFY_TIMEOUT = 240
 
 # The unique namespace in the dedupe server that only we use.  Helps avoid
 # collisions with all the hashed values and unrelated content.
@@ -107,7 +94,7 @@ UPLOAD_MIN_TIMEOUT = 2 * 60
 
 
 # Sleep for 200ms in between uploads to avoid DoS'ing symbol server.
-DEFAULT_SLEEP_DELAY = 0.2
+SLEEP_DELAY = 0.2
 
 
 # Number of seconds to wait before retrying an upload.  The delay will double
@@ -120,358 +107,34 @@ MAX_RETRIES = 6
 
 # Number of total errors, before uploads are no longer attempted.
 # This is used to avoid lots of errors causing unreasonable delays.
-# See the related, but independent, error values below.
 MAX_TOTAL_ERRORS_FOR_RETRY = 30
 
-# A watermark of transient errors which we allow recovery from.  If we hit
-# errors infrequently, overall we're probably doing fine.  For example, if
-# we have one failure every 100 passes, then we probably don't want to fail
-# right away.  But if we hit a string of failures in a row, we want to abort.
-#
-# The watermark starts at 0 (and can never go below that).  When this error
-# level is exceeded, we stop uploading.  When a failure happens, we add the
-# fail adjustment, and when an upload succeeds, we add the pass adjustment.
-# We want to penalize failures more so that we ramp up when there is a string
-# of them, but then slowly back off as things start working.
-#
-# A quick example:
-#  0.0: Starting point.
-#  0.0: Upload works, so add -0.5, and then clamp to 0.
-#  1.0: Upload fails, so add 1.0.
-#  2.0: Upload fails, so add 1.0.
-#  1.5: Upload works, so add -0.5.
-#  1.0: Upload works, so add -0.5.
-ERROR_WATERMARK = 3.0
-ERROR_ADJUST_FAIL = 1.0
-ERROR_ADJUST_PASS = -0.5
+
+class Counter(object):
+  """Simple API for a counter. Easy to pass around by reference."""
+  def __init__(self):
+    self.value = 0
+
+  def increment(self):
+    self.value += 1
 
 
-# A named tuple which hold a SymbolItem object and
-# a isolateserver._IsolateServerPushState item.
-SymbolElement = collections.namedtuple(
-    'SymbolElement', ('symbol_item', 'opaque_push_state'))
+def BatchGenerator(iterator, batch_size):
+  """Given an iterator, break into lists of size batch_size.
 
-
-def GetUploadTimeout(path):
-  """How long to wait for a specific file to upload to the crash server.
-
-  This is a function largely to make unittesting easier.
-
-  Args:
-    path: The path to the file to calculate the timeout for
-
-  Returns:
-    Timeout length (in seconds)
+  The result is a generator, that will only read in as many inputs as needed for
+  the current batch. The final result can be smaller than batch_size.
   """
-  # Scale the timeout based on the filesize.
-  return max(os.path.getsize(path) / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+  batch = []
+  for i in iterator:
+    batch.append(i)
+    if len(batch) >= batch_size:
+      yield batch
+      batch = []
 
-
-def SymUpload(upload_url, sym_item, product_name):
-  """Upload a symbol file to a HTTP server
-
-  The upload is a multipart/form-data POST with the following parameters:
-    code_file: the basename of the module, e.g. "app"
-    code_identifier: the module file's identifier
-    debug_file: the basename of the debugging file, e.g. "app"
-    debug_identifier: the debug file's identifier, usually consisting of
-                      the guid and age embedded in the pdb, e.g.
-                      "11111111BBBB3333DDDD555555555555F"
-    version: the file version of the module, e.g. "1.2.3.4"
-    product: HTTP-friendly product name
-    os: the operating system that the module was built for
-    cpu: the CPU that the module was built for
-    symbol_file: the contents of the breakpad-format symbol file
-
-  Args:
-    upload_url: The crash URL to POST the |sym_file| to
-    sym_item: A SymbolItem containing the path to the breakpad symbol to upload
-    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
-  """
-  sym_header = sym_item.sym_header
-  sym_file = sym_item.sym_file
-
-  fields = (
-      ('code_file', sym_header.name),
-      ('debug_file', sym_header.name),
-      ('debug_identifier', sym_header.id.replace('-', '')),
-      # The product/version fields are used by the server only for statistic
-      # purposes.  They do not impact symbolization, so they're safe to set
-      # to any value all the time.
-      # In this case, we use it to help see the load our build system is
-      # placing on the server.
-      # Not sure what to set for the version.  Maybe the git sha1 of this file.
-      # Note: the server restricts this to 30 chars.
-      #('version', None),
-      ('product', product_name),
-      ('os', sym_header.os),
-      ('cpu', sym_header.cpu),
-      poster.encode.MultipartParam.from_file('symbol_file', sym_file),
-  )
-
-  data, headers = poster.encode.multipart_encode(fields)
-  request = urllib2.Request(upload_url, data, headers)
-  request.add_header('User-agent', 'chromite.upload_symbols')
-  urllib2.urlopen(request, timeout=GetUploadTimeout(sym_file))
-
-
-def TestingSymUpload(upload_url, sym_item, _product_name):
-  """A stub version of SymUpload for --testing usage"""
-  cmd = ['sym_upload', sym_item.sym_file, upload_url]
-  # Randomly fail 80% of the time (the retry logic makes this 80%/3 per file).
-  returncode = random.randint(1, 100) <= 80
-  logging.debug('would run (and return %i): %s', returncode,
-                cros_build_lib.CmdToStr(cmd))
-  if returncode:
-    output = 'Failed to send the symbol file.'
-  else:
-    output = 'Successfully sent the symbol file.'
-  result = cros_build_lib.CommandResult(cmd=cmd, error=None, output=output,
-                                        returncode=returncode)
-  if returncode:
-    exceptions = (
-        socket.error('[socket.error] forced test fail'),
-        httplib.BadStatusLine('[BadStatusLine] forced test fail'),
-        urllib2.HTTPError(upload_url, 400, '[HTTPError] forced test fail',
-                          {}, None),
-        urllib2.URLError('[URLError] forced test fail'),
-    )
-    raise random.choice(exceptions)
-  else:
-    return result
-
-
-def ErrorLimitHit(num_errors, watermark_errors):
-  """See if our error limit has been hit
-
-  Args:
-    num_errors: A multiprocessing.Value of the raw number of failures.
-    watermark_errors: A multiprocessing.Value of the current rate of failures.
-
-  Returns:
-    True if our error limits have been exceeded.
-  """
-  return ((num_errors is not None and
-           num_errors.value > MAX_TOTAL_ERRORS_FOR_RETRY) or
-          (watermark_errors is not None and
-           watermark_errors.value > ERROR_WATERMARK))
-
-
-def _UpdateCounter(counter, adj):
-  """Update |counter| by |adj|
-
-  Handle atomic updates of |counter|.  Also make sure it does not
-  fall below 0.
-
-  Args:
-    counter: A multiprocessing.Value to update
-    adj: The value to add to |counter|
-  """
-  def _Update():
-    clamp = 0 if type(adj) is int else 0.0
-    counter.value = max(clamp, counter.value + adj)
-
-  if hasattr(counter, 'get_lock'):
-    with counter.get_lock():
-      _Update()
-  elif counter is not None:
-    _Update()
-
-
-def UploadSymbol(upload_url, symbol_element, product_name,
-                 file_limit=DEFAULT_FILE_LIMIT, sleep=0, num_errors=None,
-                 watermark_errors=None, failed_queue=None, passed_queue=None):
-  """Upload |sym_element.symbol_item| to |upload_url|
-
-  Args:
-    upload_url: The crash server to upload things to
-    symbol_element: A SymbolElement tuple. symbol_element.symbol_item is a
-                    SymbolItem object containing the path to the breakpad symbol
-                    to upload. symbol_element.opaque_push_state is an object of
-                    _IsolateServerPushState or None if the item doesn't have
-                    a push state.
-    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
-    file_limit: The max file size of a symbol file before we try to strip it
-    sleep: Number of seconds to sleep before running
-    num_errors: An object to update with the error count (needs a .value member)
-    watermark_errors: An object to track current error behavior (needs a .value)
-    failed_queue: When a symbol fails, add it to this queue
-    passed_queue: When a symbol passes, add it to this queue
-
-  Returns:
-    The number of errors that were encountered.
-  """
-  sym_file = symbol_element.symbol_item.sym_file
-  upload_item = symbol_element.symbol_item
-
-  if num_errors is None:
-    num_errors = ctypes.c_int()
-  if ErrorLimitHit(num_errors, watermark_errors):
-    # Abandon ship!  It's on fire!  NOoooooooooooOOOoooooo.
-    if failed_queue:
-      failed_queue.put(sym_file)
-    return 0
-
-  if sleep:
-    # Keeps us from DoS-ing the symbol server.
-    time.sleep(sleep)
-
-  logging.debug('uploading %s' % sym_file)
-
-  # Ideally there'd be a tempfile.SpooledNamedTemporaryFile that we could use.
-  with tempfile.NamedTemporaryFile(prefix='upload_symbols',
-                                   bufsize=0) as temp_sym_file:
-    if file_limit:
-      # If the symbols size is too big, strip out the call frame info.  The CFI
-      # is unnecessary for 32bit x86 targets where the frame pointer is used (as
-      # all of ours have) and it accounts for over half the size of the symbols
-      # uploaded.
-      file_size = os.path.getsize(sym_file)
-      if file_size > file_limit:
-        logging.warning('stripping CFI from %s due to size %s > %s', sym_file,
-                        file_size, file_limit)
-        temp_sym_file.writelines([x for x in open(sym_file, 'rb').readlines()
-                                  if not x.startswith('STACK CFI')])
-
-        upload_item = FakeItem(sym_file=temp_sym_file.name,
-                               sym_header=symbol_element.symbol_item.sym_header)
-
-    # Hopefully the crash server will let it through.  But it probably won't.
-    # Not sure what the best answer is in this case.
-    file_size = os.path.getsize(upload_item.sym_file)
-    if file_size > CRASH_SERVER_FILE_LIMIT:
-      logging.PrintBuildbotStepWarnings()
-      logging.warning('upload file %s is awfully large, risking rejection by '
-                      'the symbol server (%s > %s)', sym_file, file_size,
-                      CRASH_SERVER_FILE_LIMIT)
-
-    # Upload the symbol file.
-    success = False
-    try:
-      cros_build_lib.TimedCommand(
-          retry_util.RetryException,
-          (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
-          upload_url, upload_item, product_name, sleep=INITIAL_RETRY_DELAY,
-          timed_log_msg=('upload of %10i bytes took %%(delta)s: %s' %
-                         (file_size, os.path.basename(sym_file))))
-      success = True
-
-      if passed_queue:
-        passed_queue.put(symbol_element)
-    except urllib2.HTTPError as e:
-      logging.warning('could not upload: %s: HTTP %s: %s',
-                      os.path.basename(sym_file), e.code, e.reason)
-    except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
-      logging.warning('could not upload: %s: %s', os.path.basename(sym_file), e)
-    finally:
-      if success:
-        _UpdateCounter(watermark_errors, ERROR_ADJUST_PASS)
-      else:
-        _UpdateCounter(num_errors, 1)
-        _UpdateCounter(watermark_errors, ERROR_ADJUST_FAIL)
-        if failed_queue:
-          failed_queue.put(sym_file)
-
-  return num_errors.value
-
-
-# A dummy class that allows for stubbing in tests and SymUpload.
-FakeItem = cros_build_lib.Collection(
-    'FakeItem', sym_file=None, sym_header=None, content=lambda x: '')
-
-
-class SymbolItem(isolateserver.BufferItem):
-  """Turn a sym_file into an isolateserver.Item"""
-
-  ALGO = hashlib.sha1
-
-  def __init__(self, sym_file):
-    sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
-    super(SymbolItem, self).__init__(str(sym_header), self.ALGO)
-    self.sym_header = sym_header
-    self.sym_file = sym_file
-
-
-def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
-  """Send a symbol file to the swarming service
-
-  Notify the swarming service of a successful upload.  If the notification fails
-  for any reason, we ignore it.  We don't care as it just means we'll upload it
-  again later on, and the symbol server will handle that graciously.
-
-  This func runs in a different process from the main one, so we cannot share
-  the storage object.  Instead, we create our own.  This func stays alive for
-  the life of the process, so we only create one here overall.
-
-  Args:
-    dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
-    dedupe_queue: The queue to read SymbolElements from
-  """
-  if dedupe_queue is None:
-    return
-
-  sym_file = ''
-  try:
-    with timeout_util.Timeout(DEDUPE_TIMEOUT):
-      storage = isolateserver.get_storage_api(constants.ISOLATESERVER,
-                                              dedupe_namespace)
-    for symbol_element in iter(dedupe_queue.get, None):
-      if not symbol_element or not symbol_element.symbol_item:
-        continue
-      symbol_item = symbol_element.symbol_item
-      push_state = symbol_element.opaque_push_state
-      sym_file = symbol_item.sym_file if symbol_item.sym_file else ''
-      if push_state is not None:
-        with timeout_util.Timeout(DEDUPE_TIMEOUT):
-          logging.debug('sending %s to dedupe server', sym_file)
-          symbol_item.prepare(SymbolItem.ALGO)
-          storage.push(symbol_item, push_state, symbol_item.content())
-          logging.debug('sent %s', sym_file)
-    logging.info('dedupe notification finished; exiting')
-  except Exception:
-    logging.warning('posting %s to dedupe server failed',
-                    os.path.basename(sym_file), exc_info=True)
-
-    # Keep draining the queue though so it doesn't fill up.
-    while dedupe_queue.get() is not None:
-      continue
-
-
-def SymbolDeduplicator(storage, sym_paths):
-  """Filter out symbol files that we've already uploaded
-
-  Using the swarming service, ask it to tell us which symbol files we've already
-  uploaded in previous runs and/or by other bots.  If the query fails for any
-  reason, we'll just upload all symbols.  This is fine as the symbol server will
-  do the right thing and this phase is purely an optimization.
-
-  This code runs in the main thread which is why we can re-use the existing
-  storage object.  Saves us from having to recreate one all the time.
-
-  Args:
-    storage: An isolateserver.StorageApi object
-    sym_paths: List of symbol files to check against the dedupe server
-
-  Returns:
-    List of SymbolElement objects that have not been uploaded before
-  """
-  if not sym_paths:
-    return sym_paths
-
-  items = [SymbolItem(x) for x in sym_paths]
-  for item in items:
-    item.prepare(SymbolItem.ALGO)
-  if storage:
-    try:
-      with timeout_util.Timeout(DEDUPE_TIMEOUT):
-        items = storage.contains(items)
-      return [SymbolElement(symbol_item=item, opaque_push_state=push_state)
-              for (item, push_state) in items.iteritems()]
-    except Exception:
-      logging.warning('talking to dedupe server failed', exc_info=True)
-
-  return [SymbolElement(symbol_item=item, opaque_push_state=None)
-          for item in items]
+  if batch:
+    # if there was anything left in the final batch, yield it.
+    yield batch
 
 
 def IsTarball(path):
@@ -489,17 +152,73 @@ def IsTarball(path):
   return parts[-1] in ('tbz2', 'tbz', 'tgz', 'txz')
 
 
-def SymbolFinder(tempdir, paths):
+class SymbolFile(object):
+  """This class represents the state of a symbol file during processing.
+
+  Properties:
+    display_path: Name of symbol file that should be consistent between builds.
+    file_name: Transient path of the symbol file.
+    header: ReadSymsHeader output. Dict with assorted meta-data.
+    status: INITIAL, DUPLICATE, or UPLOADED based on status of processing.
+    dedupe_item: None or instance of DedupeItem for this symbol file.
+    dedupe_push_state: Opaque value to return to dedupe code for file.
+    display_name: Read only friendly (short) file name for logging.
+    file_size: Read only size of the symbol file.
+  """
+  INITIAL = 'initial'
+  DUPLICATE = 'duplicate'
+  UPLOADED = 'uploaded'
+
+  def __init__(self, display_path, file_name):
+    """An instance of this class represents a symbol file over time.
+
+    Args:
+      display_path: A unique/persistent between builds name to present to the
+                    crash server. It is the file name, relative to where it
+                    came from (tarball, breakpad dir, etc).
+      file_name: A the current location of the symbol file.
+    """
+    self.display_path = display_path
+    self.file_name = file_name
+    self.header = cros_generate_breakpad_symbols.ReadSymsHeader(file_name)
+    self.status = SymbolFile.INITIAL
+    self.dedupe_item = None
+    self.dedupe_push_state = None
+
+  @property
+  def display_name(self):
+    return os.path.basename(self.display_path)
+
+  def FileSize(self):
+    return os.path.getsize(self.file_name)
+
+
+class DedupeItem(isolateserver.BufferItem):
+  """Turn a SymbolFile into an isolateserver.Item"""
+
+  ALGO = hashlib.sha1
+
+  def __init__(self, symbol):
+    super(DedupeItem, self).__init__(str(symbol.header), self.ALGO)
+    self.symbol = symbol
+
+
+def FindSymbolFiles(tempdir, paths):
   """Locate symbol files in |paths|
 
+  This returns SymbolFile objects that contain file references which are valid
+  after this exits. Those files may exist externally, or be created in the
+  tempdir (say, when expanding tarballs). The caller must not consider
+  SymbolFile's valid after tempdir is cleaned up.
+
   Args:
-    tempdir: Path to use for temporary files (caller will clean up).
+    tempdir: Path to use for temporary files.
     paths: A list of input paths to walk. Files are returned w/out any checks.
       Dirs are searched for files that end in ".sym". Urls are fetched and then
       processed. Tarballs are unpacked and walked.
 
-  Returns:
-    Yield every viable sym file.
+  Yields:
+    A SymbolFile for every symbol file found in paths.
   """
   cache_dir = path_util.GetCacheDir()
   common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
@@ -524,287 +243,389 @@ def SymbolFinder(tempdir, paths):
         except cros_build_lib.RunCommandError as e:
           logging.warning('ignoring %s\n%s', p, e)
           continue
-        for p in SymbolFinder(tempdir, [ref.path]):
+        for p in FindSymbolFiles(tempdir, [ref.path]):
           yield p
 
     elif os.path.isdir(p):
       for root, _, files in os.walk(p):
         for f in files:
           if f.endswith('.sym'):
-            yield os.path.join(root, f)
+            # If p is '/tmp/foo' and filename is '/tmp/foo/bar/bar.sym',
+            # display_path = 'bar/bar.sym'
+            filename = os.path.join(root, f)
+            yield SymbolFile(display_path=filename[len(p):].lstrip('/'),
+                             file_name=filename)
 
     elif IsTarball(p):
       logging.info('processing files inside %s', p)
       tardir = tempfile.mkdtemp(dir=tempdir)
       cache.Untar(os.path.realpath(p), tardir)
-      for p in SymbolFinder(tardir, [tardir]):
+      for p in FindSymbolFiles(tardir, [tardir]):
         yield p
 
     else:
-      yield p
+      yield SymbolFile(display_path=p, file_name=p)
 
 
-def WriteQueueToFile(listing, queue, relpath=None):
-  """Write all the items in |queue| to the |listing|.
+def AdjustSymbolFileSize(symbol, tempdir, file_limit):
+  """Examine symbols files for size problems, and reduce if needed.
 
-  Note: The queue must have a sentinel None appended to the end.
+  If the symbols size is too big, strip out the call frame info.  The CFI
+  is unnecessary for 32bit x86 targets where the frame pointer is used (as
+  all of ours have) and it accounts for over half the size of the symbols
+  uploaded.
+
+  Stripped files will be created inside tempdir, and will be the callers
+  responsibility to clean up.
+
+  We also warn, if a symbols file is still too large after stripping.
 
   Args:
-    listing: Where to write out the list of files.
-    queue: The queue of paths to drain.
-    relpath: If set, write out paths relative to this one.
+    symbol: SymbolFile instance to be examined and modified as needed..
+    tempdir: A temporary directory we can create files in that the caller will
+             clean up.
+    file_limit: We only strip files which are larger than this limit.
+
+  Returns:
+    SymbolFile instance (original or modified as needed)
   """
-  if not listing:
-    # Still drain the queue so we make sure the producer has finished
-    # before we return.  Otherwise, the queue might get destroyed too
-    # quickly which will trigger a traceback in the producer.
-    while queue.get() is not None:
-      continue
-    return
+  file_size = symbol.FileSize()
 
-  with cros_build_lib.Open(listing, 'wb+') as f:
-    while True:
-      path = queue.get()
-      if path is None:
-        return
-      if relpath:
-        path = os.path.relpath(path, relpath)
-      f.write('%s\n' % path)
+  if file_limit and symbol.FileSize() > file_limit:
+    with tempfile.NamedTemporaryFile(
+        prefix='upload_symbols', bufsize=0,
+        dir=tempdir, delete=False) as temp_sym_file:
+
+      temp_sym_file.writelines(
+          [x for x in open(symbol.file_name, 'rb').readlines()
+           if not x.startswith('STACK CFI')]
+      )
+
+      original_file_size = file_size
+      symbol.file_name = temp_sym_file.name
+      file_size = symbol.FileSize()
+
+      logging.warning('stripped CFI for %s reducing size %s > %s',
+                      symbol.display_name, original_file_size, file_size)
+
+  # Hopefully the crash server will let it through.  But it probably won't.
+  # Not sure what the best answer is in this case.
+  if file_size >= CRASH_SERVER_FILE_LIMIT:
+    logging.PrintBuildbotStepWarnings()
+    logging.warning('upload file %s is awfully large, risking rejection by '
+                    'the symbol server (%s > %s)', symbol.display_path,
+                    file_size, CRASH_SERVER_FILE_LIMIT)
+
+  return symbol
+
+def OpenDeduplicateConnection(dedupe_namespace):
+  """Open a connection to the isolate server for Dedupe use.
+
+  Args:
+    dedupe_namespace: String id for the comparison namespace.
+
+  Returns:
+    Connection proxy, or None on failure.
+  """
+  try:
+    with timeout_util.Timeout(DEDUPE_TIMEOUT):
+      return isolateserver.get_storage_api(constants.ISOLATESERVER,
+                                           dedupe_namespace)
+  except Exception:
+    logging.warning('initializing isolate server connection failed',
+                    exc_info=True)
+    return None
 
 
-def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
-                  file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_limit=None, sym_paths=None, failed_list=None,
-                  root=None, retry=True, dedupe_namespace=None,
-                  product_name='ChromeOS'):
+def FindDuplicates(symbols, dedupe_namespace):
+  """Mark symbol files we've already uploaded as duplicates.
+
+  Using the swarming service, ask it to tell us which symbol files we've already
+  uploaded in previous runs and/or by other bots.  If the query fails for any
+  reason, we'll just upload all symbols.  This is fine as the symbol server will
+  do the right thing and this phase is purely an optimization.
+
+  Args:
+    symbols: An iterable of SymbolFiles to be uploaded.
+    dedupe_namespace: String id for the comparison namespace.
+
+  Yields:
+    All SymbolFiles from symbols, but duplicates have status updated to
+    DUPLICATE.
+  """
+  storage_query = OpenDeduplicateConnection(dedupe_namespace)
+
+  # We query isolate in batches, to reduce the number of network queries.
+  for batch in BatchGenerator(symbols, DEDUPE_LIMIT):
+    query_results = None
+
+    if storage_query:
+      # Convert SymbolFiles into DedupeItems.
+      items = [DedupeItem(x) for x in batch]
+      for item in items:
+        item.prepare(DedupeItem.ALGO)
+
+      # Look for duplicates.
+      try:
+        with timeout_util.Timeout(DEDUPE_TIMEOUT):
+          query_results = storage_query.contains(items)
+      except Exception:
+        logging.warning('talking to dedupe server failed', exc_info=True)
+        storage_query = None
+
+    if query_results is not None:
+      for b in batch:
+        b.status = SymbolFile.DUPLICATE
+
+      # Only the non-duplicates appear in the query_results.
+      for item, push_state in query_results.iteritems():
+        # Remember the dedupe state, so we can mark the symbol as uploaded
+        # later on.
+        item.symbol.status = SymbolFile.INITIAL
+        item.symbol.dedupe_item = item
+        item.symbol.dedupe_push_state = push_state
+
+    # Yield all symbols we haven't shown to be duplicates.
+    for b in batch:
+      if b.status == SymbolFile.DUPLICATE:
+        logging.debug('Found duplicate: %s', b.display_name)
+      yield b
+
+
+def PostForDeduplication(symbols, dedupe_namespace):
+  """Send a symbol file to the swarming service
+
+  Notify the isolate service of a successful upload. If the notification fails
+  for any reason, we ignore it. We don't care as it just means we'll upload it
+  again later on, and the symbol server will handle that graciously.
+
+  Args:
+    symbols: An iterable of SymbolFiles to be uploaded.
+    dedupe_namespace: String id for the comparison namespace.
+
+  Yields:
+    Each symbol from symbols, unmodified.
+  """
+  storage_query = OpenDeduplicateConnection(dedupe_namespace)
+
+  for s in symbols:
+    # If we can talk to isolate, and we uploaded this symbol, and we
+    # queried for it's presence before, upload to isolate now.
+
+    if storage_query and s.status == SymbolFile.UPLOADED and s.dedupe_item:
+      s.dedupe_item.prepare(DedupeItem.ALGO)
+      try:
+        with timeout_util.Timeout(DEDUPE_NOTIFY_TIMEOUT):
+          storage_query.push(s.dedupe_item, s.dedupe_push_state,
+                             s.dedupe_item.content())
+          logging.info('sent %s', s.display_name)
+      except Exception:
+        logging.warning('posting %s to dedupe server failed',
+                        os.path.basename(s.display_path), exc_info=True)
+        storage_query = None
+
+    yield s
+
+
+def GetUploadTimeout(symbol):
+  """How long to wait for a specific file to upload to the crash server.
+
+  This is a function largely to make unittesting easier.
+
+  Args:
+    symbol: A SymbolFile instance.
+
+  Returns:
+    Timeout length (in seconds)
+  """
+  # Scale the timeout based on the filesize.
+  return max(symbol.FileSize() / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+
+
+def UploadSymbolFile(upload_url, symbol, product_name):
+  """Upload a symbol file to the crash server.
+
+  The upload is a multipart/form-data POST with the following parameters:
+    code_file: the basename of the module, e.g. "app"
+    code_identifier: the module file's identifier
+    debug_file: the basename of the debugging file, e.g. "app"
+    debug_identifier: the debug file's identifier, usually consisting of
+                      the guid and age embedded in the pdb, e.g.
+                      "11111111BBBB3333DDDD555555555555F"
+    version: the file version of the module, e.g. "1.2.3.4"
+    product: HTTP-friendly product name
+    os: the operating system that the module was built for
+    cpu: the CPU that the module was built for
+    symbol_file: the contents of the breakpad-format symbol file
+
+  Args:
+    upload_url: The crash URL to POST the |sym_file| to
+    symbol: A SymbolFile instance.
+    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
+  """
+  fields = (
+      ('code_file', symbol.header.name),
+      ('debug_file', symbol.header.name),
+      ('debug_identifier', symbol.header.id.replace('-', '')),
+      # The product/version fields are used by the server only for statistic
+      # purposes.  They do not impact symbolization, so they're safe to set
+      # to any value all the time.
+      # In this case, we use it to help see the load our build system is
+      # placing on the server.
+      # Not sure what to set for the version.  Maybe the git sha1 of this file.
+      # Note: the server restricts this to 30 chars.
+      #('version', None),
+      ('product', product_name),
+      ('os', symbol.header.os),
+      ('cpu', symbol.header.cpu),
+      poster.encode.MultipartParam.from_file('symbol_file', symbol.file_name),
+  )
+
+  data, headers = poster.encode.multipart_encode(fields)
+  request = urllib2.Request(upload_url, data, headers)
+  request.add_header('User-agent', 'chromite.upload_symbols')
+  urllib2.urlopen(request, timeout=GetUploadTimeout(symbol))
+
+
+def PerformSymbolFileUpload(symbol, upload_url, failures,
+                            product_name='ChromeOS'):
+  """Upload the symbols to the crash server
+
+  Args:
+    symbol: An instance of SymbolFile.
+    upload_url: URL of crash server to upload too.
+    failures: Tracker for total upload failures.
+    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
+
+  Returns:
+    The same instance of SymbolFile (possibly with status UPLOADED).
+  """
+  if (failures.value < MAX_TOTAL_ERRORS_FOR_RETRY and
+      symbol.status == SymbolFile.INITIAL):
+    # Keeps us from DoS-ing the symbol server.
+    time.sleep(SLEEP_DELAY)
+    logging.info('Uploading symbol_file: %s', symbol.display_path)
+    try:
+      # This command retries the upload multiple times with growing delays. We
+      # only consider the upload a failure if these retries fail.
+      cros_build_lib.TimedCommand(
+          retry_util.RetryException,
+          (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
+          UploadSymbolFile,
+          upload_url, symbol, product_name,
+          sleep=INITIAL_RETRY_DELAY,
+          timed_log_msg=('upload of %10i bytes took %%(delta)s' %
+                         symbol.FileSize()))
+      symbol.status = SymbolFile.UPLOADED
+    except urllib2.HTTPError as e:
+      logging.warning('could not upload: %s: HTTP %s: %s',
+                      symbol.display_name, e.code, e.reason)
+      failures.increment()
+    except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
+      logging.warning('could not upload: %s: %s', symbol.display_name, e)
+      failures.increment()
+
+  # We pass the symbol along, on both success and failure.
+  return symbol
+
+
+def ReportResults(symbols, failures, failed_list):
+  """Log a summary of the symbol uploading.
+
+  This has the side effect of fully consuming the symbols iterator.
+
+  Args:
+    symbols: An iterator of SymbolFiles to be uploaded.
+    failures: Tracker for total upload failures.
+    failed_list: A filename at which to write out a list of our failed uploads.
+  """
+  upload_failures = []
+  result_counts = {
+      SymbolFile.INITIAL: 0,
+      SymbolFile.UPLOADED: 0,
+      SymbolFile.DUPLICATE: 0,
+  }
+
+  for s in symbols:
+    result_counts[s.status] += 1
+    if s.status == SymbolFile.INITIAL:
+      upload_failures.append(s)
+
+  logging.info('Uploaded %(uploaded)d, Skipped %(duplicate)d duplicates.',
+               result_counts)
+
+  if result_counts[SymbolFile.INITIAL]:
+    logging.PrintBuildbotStepWarnings()
+    logging.warning('%d non-recoverable upload errors caused %d skipped'
+                    ' uploads.',
+                    failures.value, result_counts[SymbolFile.INITIAL])
+
+  if failed_list is not None:
+    with open(failed_list, 'w') as fl:
+      for s in upload_failures:
+        fl.write('%s\n' % s.display_path)
+
+
+def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
+                  failed_list=None, upload_limit=None, strip_cfi=None):
   """Upload all the generated symbols for |board| to the crash server
 
-  You can use in a few ways:
-    * pass |board| to locate all of its symbols
-    * pass |breakpad_dir| to upload all the symbols in there
-    * pass |sym_paths| to upload specific symbols (or dirs of symbols)
-
   Args:
-    board: The board whose symbols we wish to upload
-    official: Use the official symbol server rather than the staging one
-    server: Explicit server to post symbols to
-    breakpad_dir: The full path to the breakpad directory where symbols live
-    file_limit: The max file size of a symbol file before we try to strip it
-    sleep: How long to sleep in between uploads
-    upload_limit: If set, only upload this many symbols (meant for testing)
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
-    failed_list: Write the names of all sym files we did not upload; can be a
-      filename or file-like object.
-    root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
-    retry: Whether we should retry failures.
-    dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
-    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
+    upload_url: URL of crash server to upload too.
+    product_name: A string for crash server stats purposes.
+                  Usually 'ChromeOS' or 'Android'.
+    dedupe_namespace: None for no deduping, or string namespace in isolate.
+    failed_list: A filename at which to write out a list of our failed uploads.
+    upload_limit: Integer listing how many files to upload. None for no limit.
+    strip_cfi: File size at which we strip out CFI data. None for no limit.
 
   Returns:
     The number of errors that were encountered.
   """
-  if server is None:
-    if official:
-      upload_url = OFFICIAL_UPLOAD_URL
-    else:
-      logging.warning('unofficial builds upload to the staging server')
-      upload_url = STAGING_UPLOAD_URL
-  else:
-    upload_url = server
+  # Note: This method looks like each step of processing is performed
+  # sequentially for all SymbolFiles, but instead each step is a generator that
+  # produces the next iteration only when it's read. This means that (except for
+  # some batching) each SymbolFile goes through all of these steps before the
+  # next one is processed at all.
 
-  if sym_paths:
-    logging.info('uploading specified symbols to %s', upload_url)
-  else:
-    if breakpad_dir is None:
-      if root is None:
-        raise ValueError('breakpad_dir requires root to be set')
-      breakpad_dir = os.path.join(
-          root,
-          cros_generate_breakpad_symbols.FindBreakpadDir(board).lstrip('/'))
-    logging.info('uploading all symbols to %s from %s', upload_url,
-                 breakpad_dir)
-    sym_paths = [breakpad_dir]
+  # Track unrecoverable errors, so we don't keep trying for too long.
+  failures = Counter()
 
-  # We use storage_query to ask the server about existing symbols.  The
-  # storage_notify_proc process is used to post updates to the server.  We
-  # cannot safely share the storage object between threads/processes, but
-  # we also want to minimize creating new ones as each object has to init
-  # new state (like server connections).
-  storage_query = None
-  if dedupe_namespace:
-    dedupe_limit = DEDUPE_LIMIT
-    dedupe_queue = multiprocessing.Queue()
-    try:
-      with timeout_util.Timeout(DEDUPE_TIMEOUT):
-        storage_query = isolateserver.get_storage_api(constants.ISOLATESERVER,
-                                                      dedupe_namespace)
-    except Exception:
-      logging.warning('initializing dedupe server connection failed',
-                      exc_info=True)
-  else:
-    dedupe_limit = 1
-    dedupe_queue = None
-  # Can't use parallel.BackgroundTaskRunner because that'll create multiple
-  # processes and we want only one the whole time (see comment above).
-  storage_notify_proc = multiprocessing.Process(
-      target=SymbolDeduplicatorNotify, args=(dedupe_namespace, dedupe_queue))
+  # This is used to hold striped
+  with osutils.TempDir(prefix='upload_symbols.') as tempdir:
+    symbols = FindSymbolFiles(tempdir, sym_paths)
 
-  bg_errors = multiprocessing.Value('i')
-  watermark_errors = multiprocessing.Value('f')
-  failed_queue = multiprocessing.Queue()
-  uploader = functools.partial(
-      UploadSymbol, upload_url, product_name=product_name,
-      file_limit=file_limit, sleep=sleep, num_errors=bg_errors,
-      watermark_errors=watermark_errors, failed_queue=failed_queue,
-      passed_queue=dedupe_queue)
+    if upload_limit is not None:
+      # Restrict symbols processed to the limit.
+      symbols = itertools.islice(symbols, None, upload_limit)
 
-  start_time = datetime.datetime.now()
-  Counters = cros_build_lib.Collection(
-      'Counters', upload_limit=upload_limit, uploaded_count=0, deduped_count=0)
-  counters = Counters()
+    # Strip CFI, if needed.
+    symbols = (AdjustSymbolFileSize(s, tempdir, strip_cfi) for s in symbols)
 
-  def _Upload(queue, counters, files):
-    if not files:
-      return
+    # Skip duplicates.
+    if dedupe_namespace:
+      symbols = FindDuplicates(symbols, dedupe_namespace)
 
-    missing_count = 0
-    for item in SymbolDeduplicator(storage_query, files):
-      missing_count += 1
+    # Perform uploads
+    symbols = (PerformSymbolFileUpload(s, upload_url, failures, product_name)
+               for s in symbols)
 
-      if counters.upload_limit == 0:
-        continue
+    # Record for future deduping.
+    if dedupe_namespace:
+      symbols = PostForDeduplication(symbols, dedupe_namespace)
 
-      queue.put((item,))
-      counters.uploaded_count += 1
-      if counters.upload_limit is not None:
-        counters.upload_limit -= 1
+    # Log the final results, and consume the symbols generator fully.
+    ReportResults(symbols, failures, failed_list)
 
-    counters.deduped_count += (len(files) - missing_count)
-
-  try:
-    storage_notify_proc.start()
-
-    with osutils.TempDir(prefix='upload_symbols.') as tempdir:
-      # For the first run, we collect the symbols that failed.  If the
-      # overall failure rate was low, we'll retry them on the second run.
-      for retry in (retry, False):
-        # We need to limit ourselves to one upload at a time to avoid the server
-        # kicking in DoS protection.  See these bugs for more details:
-        # http://crbug.com/209442
-        # http://crbug.com/212496
-        with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
-          dedupe_list = []
-          for sym_file in SymbolFinder(tempdir, sym_paths):
-            dedupe_list.append(sym_file)
-            dedupe_len = len(dedupe_list)
-            if dedupe_len < dedupe_limit:
-              if (counters.upload_limit is None or
-                  dedupe_len < counters.upload_limit):
-                continue
-
-            # We check the counter before _Upload so that we don't keep talking
-            # to the dedupe server.  Otherwise, we end up sending one symbol at
-            # a time to it and that slows things down a lot.
-            if counters.upload_limit == 0:
-              break
-
-            _Upload(queue, counters, dedupe_list)
-            dedupe_list = []
-          _Upload(queue, counters, dedupe_list)
-
-        # See if we need to retry, and if we haven't failed too many times yet.
-        if not retry or ErrorLimitHit(bg_errors, watermark_errors):
-          break
-
-        sym_paths = []
-        failed_queue.put(None)
-        while True:
-          sym_path = failed_queue.get()
-          if sym_path is None:
-            break
-          sym_paths.append(sym_path)
-
-        if sym_paths:
-          logging.warning('retrying %i symbols', len(sym_paths))
-          if counters.upload_limit is not None:
-            counters.upload_limit += len(sym_paths)
-          # Decrement the error count in case we recover in the second pass.
-          assert bg_errors.value >= len(sym_paths), \
-                 'more failed files than errors?'
-          bg_errors.value -= len(sym_paths)
-        else:
-          # No failed symbols, so just return now.
-          break
-
-    # If the user has requested it, save all the symbol files that we failed to
-    # upload to a listing file.  This should help with recovery efforts later.
-    failed_queue.put(None)
-    WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
-
-  finally:
-    logging.info('finished uploading; joining background process')
-    if dedupe_queue:
-      dedupe_queue.put(None)
-
-    # The notification might be slow going, so give it some time to finish.
-    # We have to poll here as the process monitor is watching for output and
-    # will kill us if we go silent for too long.
-    wait_minutes = DEDUPE_NOTIFY_TIMEOUT
-    while storage_notify_proc.is_alive() and wait_minutes > 0:
-      if dedupe_queue:
-        qsize = str(dedupe_queue.qsize())
-      else:
-        qsize = '[None]'
-      logging.info('waiting up to %i minutes for ~%s notifications',
-                   wait_minutes, qsize)
-      storage_notify_proc.join(60)
-      wait_minutes -= 1
-
-    # The process is taking too long, so kill it and complain.
-    if storage_notify_proc.is_alive():
-      logging.warning('notification process took too long')
-      logging.PrintBuildbotStepWarnings()
-
-      # Kill it gracefully first (traceback) before tacking it down harder.
-      pid = storage_notify_proc.pid
-      for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
-        logging.warning('sending %s to %i', signals.StrSignal(sig), pid)
-        # The process might have exited between the last check and the
-        # actual kill below, so ignore ESRCH errors.
-        try:
-          os.kill(pid, sig)
-        except OSError as e:
-          if e.errno == errno.ESRCH:
-            break
-          else:
-            raise
-        time.sleep(5)
-        if not storage_notify_proc.is_alive():
-          break
-
-      # Drain the queue so we don't hang when we finish.
-      try:
-        logging.warning('draining the notify queue manually')
-        with timeout_util.Timeout(60):
-          try:
-            while dedupe_queue.get_nowait():
-              pass
-          except Queue.Empty:
-            pass
-      except timeout_util.TimeoutError:
-        logging.warning('draining the notify queue failed; trashing it')
-        dedupe_queue.cancel_join_thread()
-
-  logging.info('uploaded %i symbols (%i were deduped) which took: %s',
-               counters.uploaded_count, counters.deduped_count,
-               datetime.datetime.now() - start_time)
-
-  return bg_errors.value
+  return failures.value
 
 
 def main(argv):
   parser = commandline.ArgumentParser(description=__doc__)
+
+  # TODO: Make sym_paths, breakpad_root, and root exclusive.
 
   parser.add_argument('sym_paths', type='path_or_uri', nargs='*', default=None,
                       help='symbol file or directory or URL or tarball')
@@ -820,17 +641,15 @@ def main(argv):
                       help='URI for custom symbol server')
   parser.add_argument('--regenerate', action='store_true', default=False,
                       help='regenerate all symbols')
-  parser.add_argument('--upload-limit', type=int, default=None,
+  parser.add_argument('--upload-limit', type=int,
                       help='only upload # number of symbols')
   parser.add_argument('--strip_cfi', type=int,
-                      default=CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024),
+                      default=DEFAULT_FILE_LIMIT,
                       help='strip CFI data for files above this size')
   parser.add_argument('--failed-list', type='path',
                       help='where to save a list of failed symbols')
   parser.add_argument('--dedupe', action='store_true', default=False,
                       help='use the swarming service to avoid re-uploading')
-  parser.add_argument('--testing', action='store_true', default=False,
-                      help='run in testing mode')
   parser.add_argument('--yes', action='store_true', default=False,
                       help='answer yes to all prompts')
   parser.add_argument('--product_name', type=str, default='ChromeOS',
@@ -838,6 +657,19 @@ def main(argv):
 
   opts = parser.parse_args(argv)
   opts.Freeze()
+
+  # Figure out the symbol files/directories to upload.
+  if opts.sym_paths:
+    sym_paths = opts.sym_paths
+  elif opts.breakpad_root:
+    sym_paths = [opts.breakpad_root]
+  elif opts.root:
+    if not opts.board:
+      raise ValueError('--board must be set if --root is used.')
+    breakpad_dir = cros_generate_breakpad_symbols.FindBreakpadDir(opts.board)
+    sym_paths = [os.path.join(opts.root, breakpad_dir.lstrip('/'))]
+  else:
+    raise ValueError('--sym_paths, --breakpad_root, or --root must be set.')
 
   if opts.sym_paths or opts.breakpad_root:
     if opts.regenerate:
@@ -847,21 +679,24 @@ def main(argv):
     if opts.board is None:
       cros_build_lib.Die('--board is required')
 
-  if opts.testing:
-    # TODO(build): Kill off --testing mode once unittests are up-to-snuff.
-    logging.info('running in testing mode')
-    # pylint: disable=W0601,W0603
-    global INITIAL_RETRY_DELAY, SymUpload, DEFAULT_SLEEP_DELAY
-    INITIAL_RETRY_DELAY = DEFAULT_SLEEP_DELAY = 0
-    SymUpload = TestingSymUpload
-
+  # Figure out the dedupe namespace.
   dedupe_namespace = None
   if opts.dedupe:
-    if opts.official_build and not opts.testing:
+    if opts.official_build:
       dedupe_namespace = OFFICIAL_DEDUPE_NAMESPACE_TMPL % opts.product_name
     else:
       dedupe_namespace = STAGING_DEDUPE_NAMESPACE_TMPL % opts.product_name
 
+  # Figure out which crash server to upload too.
+  upload_url = opts.server
+  if not upload_url:
+    if opts.official_build:
+      upload_url = OFFICIAL_UPLOAD_URL
+    else:
+      logging.warning('unofficial builds upload to the staging server')
+      upload_url = STAGING_UPLOAD_URL
+
+  # Confirm we really want the long upload.
   if not opts.yes:
     prolog = '\n'.join(textwrap.wrap(textwrap.dedent("""
         Uploading symbols for an entire Chromium OS build is really only
@@ -876,29 +711,24 @@ def main(argv):
       cros_build_lib.Die('better safe than sorry')
 
   ret = 0
+
+  # Regenerate symbols from binaries.
   if opts.regenerate:
     ret += cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
         opts.board, breakpad_dir=opts.breakpad_root)
 
-  ret += UploadSymbols(opts.board, official=opts.official_build,
-                       server=opts.server, breakpad_dir=opts.breakpad_root,
-                       file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
-                       upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
-                       failed_list=opts.failed_list, root=opts.root,
-                       dedupe_namespace=dedupe_namespace,
-                       product_name=opts.product_name)
+  # Do the upload.
+  ret += UploadSymbols(
+      sym_paths=sym_paths,
+      upload_url=upload_url,
+      product_name=opts.product_name,
+      dedupe_namespace=dedupe_namespace,
+      failed_list=opts.failed_list,
+      upload_limit=opts.upload_limit,
+      strip_cfi=opts.strip_cfi)
+
   if ret:
     logging.error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
     # return 0 in case we are a multiple of the mask.
-    ret = 1
-
-  return ret
-
-
-# We need this to run once per process.  Do it at module import time as that
-# will let us avoid doing it inline at function call time (see SymUpload) as
-# that func might be called by the multiprocessing module which means we'll
-# do the opener logic multiple times overall.  Plus, if you're importing this
-# module, it's a pretty good chance that you're going to need this.
-poster.streaminghttp.register_openers()
+    return 1
