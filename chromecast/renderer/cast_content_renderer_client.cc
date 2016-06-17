@@ -21,10 +21,15 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "media/base/media.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
+
+#if defined(OS_ANDROID)
+#include "media/base/android/media_codec_util.h"
+#endif  // OS_ANDROID
 
 namespace chromecast {
 namespace shell {
@@ -41,6 +46,15 @@ CastContentRendererClient::CastContentRendererClient()
     : allow_hidden_media_playback_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAllowHiddenMediaPlayback)) {
+#if defined(OS_ANDROID)
+  DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
+      << "MediaCodec is not available!";
+  // Platform decoder support must be enabled before we set the
+  // IsCodecSupportedCB because the latter instantiates the lazy MimeUtil
+  // instance, which caches the platform decoder supported state when it is
+  // constructed.
+  ::media::EnablePlatformDecoderSupport();
+#endif  // OS_ANDROID
 }
 
 CastContentRendererClient::~CastContentRendererClient() {
