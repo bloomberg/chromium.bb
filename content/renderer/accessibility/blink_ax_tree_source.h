@@ -39,7 +39,7 @@ class BlinkAXTreeSource
   void set_accessibility_focus_id(int id) { accessibility_focus_id_ = id; }
 
   // AXTreeSource implementation.
-  AXContentTreeData GetTreeData() const override;
+  bool GetTreeData(AXContentTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;
   blink::WebAXObject GetFromId(int32_t id) const override;
   int32_t GetId(blink::WebAXObject node) const override;

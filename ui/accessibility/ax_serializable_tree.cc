@@ -23,7 +23,10 @@ class AX_EXPORT AXTreeSourceAdapter
   ~AXTreeSourceAdapter() override {}
 
   // AXTreeSource implementation.
-  AXTreeData GetTreeData() const override { return tree_->data(); }
+  bool GetTreeData(AXTreeData* data) const override {
+    *data = tree_->data();
+    return true;
+  }
 
   AXNode* GetRoot() const override { return tree_->root(); }
 
