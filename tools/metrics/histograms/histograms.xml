@@ -64478,10 +64478,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="RESULT_PRODUCT_STATE_INVALID"/>
   <int value="9" label="RESULT_FAILED_TO_GET_PRODUCT_NAME"/>
   <int value="10" label="RESULT_FAILED_TO_GET_REMEDIATION_PATH"/>
-  <int value="11" label="RESULT_FAILED_TO_CONNECT_TO_WMI"/>
-  <int value="12" label="RESULT_FAILED_TO_SET_SECURITY_BLANKET"/>
-  <int value="13" label="RESULT_FAILED_TO_EXEC_WMI_QUERY"/>
-  <int value="14" label="RESULT_FAILED_TO_ITERATE_RESULTS"/>
 </enum>
 
 <enum name="AppBannersDismissEvent" type="int">
