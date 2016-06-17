@@ -205,6 +205,20 @@ TEST_F(WTFTypesTest, Serialization_WTFMapToMojoMap) {
   EXPECT_TRUE(kUTF8HelloWorld == str_map2["2"]);
 }
 
+TEST_F(WTFTypesTest, Serialization_PublicAPI) {
+  blink::TestWTFStructPtr input(blink::TestWTFStruct::New());
+  input->str = kHelloWorld;
+  input->integer = 42;
+
+  blink::TestWTFStructPtr cloned_input = input.Clone();
+
+  WTFArray<uint8_t> data = blink::TestWTFStruct::Serialize(&input);
+
+  blink::TestWTFStructPtr output;
+  ASSERT_TRUE(blink::TestWTFStruct::Deserialize(std::move(data), &output));
+  EXPECT_TRUE(cloned_input.Equals(output));
+}
+
 TEST_F(WTFTypesTest, SendString) {
   blink::TestWTFPtr ptr;
   TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));

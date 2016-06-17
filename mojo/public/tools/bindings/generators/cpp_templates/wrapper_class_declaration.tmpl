@@ -52,6 +52,23 @@ class {{struct.name}} {
                 T, {{struct.name}}>::value>::type* = nullptr>
   bool Equals(const T& other) const;
 
+{%- set serialization_result_type = "mojo::WTFArray<uint8_t>"
+        if for_blink else "mojo::Array<uint8_t>" %}
+
+  template <typename UserType>
+  static {{serialization_result_type}} Serialize(UserType* input) {
+    return mojo::internal::StructSerializeImpl<
+        {{struct.name}}Ptr, {{serialization_result_type}}>(input);
+  }
+
+  template <typename UserType>
+  static bool Deserialize({{serialization_result_type}} input,
+                          UserType* output) {
+    return mojo::internal::StructDeserializeImpl<
+        {{struct.name}}Ptr, {{serialization_result_type}}>(
+            std::move(input), output);
+  }
+
 {#--- Struct members #}
 {%  for field in struct.fields %}
 {%-   set type = field.kind|cpp_wrapper_type %}

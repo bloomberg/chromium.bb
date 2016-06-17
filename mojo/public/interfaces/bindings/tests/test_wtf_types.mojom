@@ -24,6 +24,11 @@ union TestWTFCodeGeneration2 {
   map<string, string?> str_map;
 };
 
+struct TestWTFStruct {
+  string str;
+  int32 integer;
+};
+
 interface TestWTF {
   EchoString(string? str) => (string? str);
   EchoStringArray(array<string?>? arr) => (array<string?>? arr);

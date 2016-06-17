@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/tests/rect_blink.h"
 #include "mojo/public/cpp/bindings/tests/rect_chromium.h"
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
+#include "mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
@@ -309,6 +310,36 @@ TEST_F(StructTraitsTest, EchoEnumWithTraits) {
         loop.Quit();
       });
   loop.Run();
+}
+
+TEST_F(StructTraitsTest, SerializeStructWithTraits) {
+  StructWithTraitsImpl input;
+  input.set_enum(EnumWithTraitsImpl::CUSTOM_VALUE_1);
+  input.set_bool(true);
+  input.set_uint32(7);
+  input.set_uint64(42);
+  input.set_string("hello world!");
+  input.get_mutable_string_array().assign({"hello", "world!"});
+  input.get_mutable_struct().value = 42;
+  input.get_mutable_struct_array().resize(2);
+  input.get_mutable_struct_array()[0].value = 1;
+  input.get_mutable_struct_array()[1].value = 2;
+  input.get_mutable_struct_map()["hello"] = NestedStructWithTraitsImpl(1024);
+  input.get_mutable_struct_map()["world"] = NestedStructWithTraitsImpl(2048);
+
+  mojo::Array<uint8_t> data = StructWithTraits::Serialize(&input);
+  StructWithTraitsImpl output;
+  ASSERT_TRUE(StructWithTraits::Deserialize(std::move(data), &output));
+
+  EXPECT_EQ(input.get_enum(), output.get_enum());
+  EXPECT_EQ(input.get_bool(), output.get_bool());
+  EXPECT_EQ(input.get_uint32(), output.get_uint32());
+  EXPECT_EQ(input.get_uint64(), output.get_uint64());
+  EXPECT_EQ(input.get_string(), output.get_string());
+  EXPECT_EQ(input.get_string_array(), output.get_string_array());
+  EXPECT_EQ(input.get_struct(), output.get_struct());
+  EXPECT_EQ(input.get_struct_array(), output.get_struct_array());
+  EXPECT_EQ(input.get_struct_map(), output.get_struct_map());
 }
 
 }  // namespace test

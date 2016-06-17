@@ -26,9 +26,10 @@ class StructHelper {
 }  // namespace internal
 
 // Smart pointer wrapping a mojom structure with move-only semantics.
-template <typename Struct>
+template <typename S>
 class StructPtr {
  public:
+  using Struct = S;
 
   StructPtr() : ptr_(nullptr) {}
   StructPtr(decltype(nullptr)) : ptr_(nullptr) {}
@@ -116,9 +117,10 @@ class StructPtr {
 };
 
 // Designed to be used when Struct is small and copyable.
-template <typename Struct>
+template <typename S>
 class InlinedStructPtr {
  public:
+  using Struct = S;
 
   InlinedStructPtr() : is_null_(true) {}
   InlinedStructPtr(decltype(nullptr)) : is_null_(true) {}
