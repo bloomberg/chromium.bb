@@ -25,14 +25,12 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-import os
 import re
 import unittest
 
 from webkitpy.common.host import Host
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
 from webkitpy.w3c.test_converter import _W3CTestConverter, convert_for_webkit
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem

@@ -25,11 +25,12 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+import HTMLParser
 import logging
 import re
 
 from webkitpy.common.host import Host
-from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup as Parser
+from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
 
 
 _log = logging.getLogger(__name__)
@@ -50,10 +51,13 @@ class TestParser(object):
     def load_file(self, filename, is_ref=False):
         if self.filesystem.isfile(filename):
             try:
-                doc = Parser(self.filesystem.read_binary_file(filename))
-            except:
+                doc = BeautifulSoup(self.filesystem.read_binary_file(filename))
+            except IOError:
+                _log.error("IOError: Failed to read %s", filename)
+                doc = None
+            except HTMLParser.HTMLParseError:
                 # FIXME: Figure out what to do if we can't parse the file.
-                _log.error("Failed to parse %s", filename)
+                _log.error("HTMLParseError: Failed to parse %s", filename)
                 doc = None
         else:
             if self.filesystem.isdir(filename):
@@ -82,10 +86,10 @@ class TestParser(object):
             return test_info
 
         if test_contents is not None:
-            self.test_doc = Parser(test_contents)
+            self.test_doc = BeautifulSoup(test_contents)
 
         if ref_contents is not None:
-            self.ref_doc = Parser(ref_contents)
+            self.ref_doc = BeautifulSoup(ref_contents)
 
         # First check if it's a reftest
         matches = self.reference_links_of_type('match') + self.reference_links_of_type('mismatch')
@@ -97,7 +101,7 @@ class TestParser(object):
 
             try:
                 ref_file = self.filesystem.join(self.filesystem.dirname(self.filename), matches[0]['href'])
-            except KeyError as e:
+            except KeyError:
                 # FIXME: Figure out what to do w/ invalid test files.
                 _log.error('%s has a reference link but is missing the "href"', self.filesystem)
                 return None
@@ -118,7 +122,7 @@ class TestParser(object):
 
         elif self.is_jstest():
             test_info = {'test': self.filename, 'jstest': True}
-        elif self.options['all'] is True and not('-ref' in self.filename) and not('reference' in self.filename):
+        elif self.options['all'] and '-ref' not in self.filename and 'reference' not in self.filename:
             test_info = {'test': self.filename}
 
         return test_info
@@ -140,12 +144,12 @@ class TestParser(object):
         elements_with_src_attributes = doc.findAll(src=re.compile('.*'))
         elements_with_href_attributes = doc.findAll(href=re.compile('.*'))
 
-        url_pattern = re.compile('url\(.*\)')
+        url_pattern = re.compile(r'url\(.*\)')
         urls = []
         for url in doc.findAll(text=url_pattern):
             url = re.search(url_pattern, url)
-            url = re.sub('url\([\'\"]?', '', url.group(0))
-            url = re.sub('[\'\"]?\)', '', url)
+            url = re.sub(r'url\([\'\"]?', '', url.group(0))
+            url = re.sub(r'[\'\"]?\)', '', url)
             urls.append(url)
 
         src_paths = [src_tag['src'] for src_tag in elements_with_src_attributes]
@@ -153,8 +157,8 @@ class TestParser(object):
 
         paths = src_paths + href_paths + urls
         for path in paths:
-            if not(path.startswith('http:')) and not(path.startswith('mailto:')):
-                uri_scheme_pattern = re.compile(r"[A-Za-z][A-Za-z+.-]*:")
+            if not path.startswith('http:') and not path.startswith('mailto:'):
+                uri_scheme_pattern = re.compile(r'[A-Za-z][A-Za-z+.-]*:')
                 if not uri_scheme_pattern.match(path):
                     support_files.append(path)
 

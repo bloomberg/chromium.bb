@@ -82,8 +82,8 @@ class _W3CTestConverter(HTMLParser):
         # These settings might vary between WebKit and Blink.
         self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSProperties.in')
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
-        prop_regex = '([\s{]|^)(' + "|".join(
-            prop.replace('-webkit-', '') for prop in self.prefixed_properties) + ')(\s+:|:)'
+        prop_regex = r'([\s{]|^)(' + '|'.join(
+            prop.replace('-webkit-', '') for prop in self.prefixed_properties) + r')(\s+:|:)'
         self.prop_re = re.compile(prop_regex)
 
     def output(self):
@@ -98,12 +98,12 @@ class _W3CTestConverter(HTMLParser):
 
         contents = self._filesystem.read_text_file(self._css_property_file)
         for line in contents.splitlines():
-            if re.match('^(#|//|$)', line):
+            if re.match(r'^(#|//|$)', line):
                 # skip comments and preprocessor directives.
                 continue
             prop = line.split()[0]
             # Find properties starting with the -webkit- prefix.
-            match = re.match('-webkit-([\w|-]*)', prop)
+            match = re.match(r'-webkit-([\w|-]*)', prop)
             if match:
                 prefixed_properties.append(match.group(1))
             else:
@@ -170,8 +170,8 @@ class _W3CTestConverter(HTMLParser):
                 converted = re.sub(re.escape(attr_value), new_style, converted)
             if attr_name == 'class' and 'instructions' in attr_value:
                 # Always hide instructions, they're for manual testers.
-                converted = re.sub(' style=".*?"', '', converted)
-                converted = re.sub('\>', ' style="display:none">', converted)
+                converted = re.sub(r' style=".*?"', '', converted)
+                converted = re.sub(r'\>', ' style="display:none">', converted)
 
         src_tags = ('script', 'img', 'style', 'frame', 'iframe', 'input', 'layer', 'textarea', 'video', 'audio')
         if tag in src_tags and self.reference_support_info is not None and self.reference_support_info != {}:
