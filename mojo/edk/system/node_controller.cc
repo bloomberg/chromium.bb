@@ -202,6 +202,14 @@ void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
   platform_handle = broker_->GetParentPlatformHandle();
   UMA_HISTOGRAM_TIMES("Mojo.System.GetParentPlatformHandleSyncTime",
                       timer.Elapsed());
+
+  if (!platform_handle.is_valid()) {
+    // Most likely the browser side of the channel has already been closed and
+    // the broker was unable to negotiate a NodeChannel pipe. In this case we
+    // can cancel parent connection.
+    DVLOG(1) << "Cannot connect to invalid parent channel.";
+    return;
+  }
 #endif
 
   io_task_runner_->PostTask(
