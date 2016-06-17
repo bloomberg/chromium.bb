@@ -11,6 +11,7 @@
 #include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -25,6 +26,7 @@ class LinkHandlerModel;
 namespace arc {
 
 class ActivityIconLoader;
+class SetWallpaperDelegate;
 
 // Receives intents from ARC.
 class ArcIntentHelperBridge : public ArcService,
@@ -32,8 +34,10 @@ class ArcIntentHelperBridge : public ArcService,
                               public mojom::IntentHelperHost,
                               public ash::LinkHandlerModelFactory {
  public:
-  ArcIntentHelperBridge(ArcBridgeService* bridge_service,
-                        const scoped_refptr<ActivityIconLoader>& icon_loader);
+  ArcIntentHelperBridge(
+      ArcBridgeService* bridge_service,
+      const scoped_refptr<ActivityIconLoader>& icon_loader,
+      std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate);
   ~ArcIntentHelperBridge() override;
 
   // ArcBridgeService::Observer
@@ -45,6 +49,7 @@ class ArcIntentHelperBridge : public ArcService,
   void OnOpenDownloads() override;
   void OnOpenUrl(const mojo::String& url) override;
   void OpenWallpaperPicker() override;
+  void SetWallpaper(mojo::Array<uint8_t> jpeg_data) override;
 
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
@@ -60,6 +65,9 @@ class ArcIntentHelperBridge : public ArcService,
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
+  std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

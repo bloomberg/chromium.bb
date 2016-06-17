@@ -16,7 +16,6 @@
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
@@ -41,7 +40,8 @@ ArcBridgeService* g_arc_bridge_service_for_testing = nullptr;
 
 ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
-    : blocking_task_runner_(blocking_task_runner) {
+    : blocking_task_runner_(blocking_task_runner),
+      icon_loader_(new ActivityIconLoader) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
@@ -59,9 +59,6 @@ ArcServiceManager::ArcServiceManager(
   AddService(
       base::WrapUnique(new ArcCrashCollectorBridge(arc_bridge_service())));
   AddService(base::WrapUnique(new ArcImeService(arc_bridge_service())));
-  icon_loader_ = new ActivityIconLoader;
-  AddService(base::WrapUnique(
-      new ArcIntentHelperBridge(arc_bridge_service(), icon_loader_)));
   AddService(base::WrapUnique(new ArcMetricsService(arc_bridge_service())));
   AddService(base::WrapUnique(new ArcNetHostImpl(arc_bridge_service())));
   AddService(base::WrapUnique(new ArcObbMounterBridge(arc_bridge_service())));

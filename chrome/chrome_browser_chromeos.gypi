@@ -78,6 +78,8 @@
         'browser/chromeos/arc/gpu_arc_video_service_host.h',
         'browser/chromeos/arc/arc_optin_uma.cc',
         'browser/chromeos/arc/arc_optin_uma.h',
+        'browser/chromeos/arc/arc_wallpaper_handler.cc',
+        'browser/chromeos/arc/arc_wallpaper_handler.h',
         'browser/chromeos/attestation/attestation_ca_client.cc',
         'browser/chromeos/attestation/attestation_ca_client.h',
         'browser/chromeos/attestation/attestation_policy_observer.cc',

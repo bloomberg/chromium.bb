@@ -79,6 +79,7 @@
         'arc/obb_mounter/arc_obb_mounter_bridge.h',
         'arc/power/arc_power_bridge.cc',
         'arc/power/arc_power_bridge.h',
+        'arc/set_wallpaper_delegate.h',
         'arc/storage_manager/arc_storage_manager.cc',
         'arc/storage_manager/arc_storage_manager.h',
         'arc/user_data/arc_user_data_service.cc',
