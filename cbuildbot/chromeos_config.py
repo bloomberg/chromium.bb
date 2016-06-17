@@ -316,7 +316,7 @@ class HWTestList(object):
                                     **default_dict)]
   @classmethod
   def ToolchainTest(cls, **kwargs):
-    """Return a list of HWTESTConfigs which run toolchain tests."""
+    """Return a list of HWTESTConfigs which run toolchain correctness tests."""
     default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
     default_dict.update(kwargs)
@@ -325,6 +325,14 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig('paygen_au_canary',
+                                    **default_dict),
+            config_lib.HWTestConfig('security',
+                                    **default_dict),
+            config_lib.HWTestConfig('kernel_daily_regression',
+                                    **default_dict),
+            config_lib.HWTestConfig('kernel_daily_benchmarks',
                                     **default_dict)]
 
 
@@ -2250,22 +2258,22 @@ def GetConfig():
       site_config.Add(
           'peppy-next-toolchain-llvm', llvm,
           boards=['peppy'],
-          useflags=append_useflags(['llvm-next']),
+          useflags=append_useflags(['llvm-next clang']),
       ),
       site_config.Add(
           'daisy-next-toolchain-llvm', _llvm_grouped,
           boards=['daisy'],
-          useflags=append_useflags(['llvm-next']),
+          useflags=append_useflags(['llvm-next clang']),
       ),
       site_config.Add(
           'x86-alex-next-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
-          useflags=append_useflags(['llvm-next']),
+          useflags=append_useflags(['llvm-next clang']),
       ),
       site_config.Add(
           'oak-next-toolchain-llvm', _llvm_grouped,
           boards=['oak'],
-          useflags=append_useflags(['llvm-next']),
+          useflags=append_useflags(['llvm-next clang']),
       ),
   )
 
