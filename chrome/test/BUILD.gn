@@ -1152,8 +1152,6 @@ if (!is_android) {
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",
-        "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
-        "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
 
         # chromeos does not support profile list avatar menu
         "../browser/profiles/profile_list_desktop_browsertest.cc",
@@ -1307,10 +1305,6 @@ if (!is_android) {
 
         # ProcessSingletonMac doesn"t do anything.
         "../browser/process_singleton_browsertest.cc",
-
-        # This test depends on GetCommandLineForRelaunch, which is not
-        # available on Mac.
-        "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
       ]
 
       if (safe_browsing_mode == 1) {
@@ -1425,14 +1419,25 @@ if (!is_android) {
     if (!enable_print_preview) {
       sources -= [
         "../browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc",
-        "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
-        "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
         "../browser/printing/print_preview_dialog_controller_browsertest.cc",
         "../browser/printing/print_preview_pdf_generated_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
         "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
         "data/webui/print_preview.cc",
         "data/webui/print_preview.h",
+      ]
+    }
+    if (!enable_print_preview || is_mac || is_chromeos) {
+      sources -= [
+        # This test depends on GetCommandLineForRelaunch, which is not
+        # available on Mac. It is also not intended to run on ChromeOS.
+        "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
+      ]
+    }
+    if (!enable_print_preview || is_chromeos) {
+      sources -= [
+        # Not intended to run on ChromeOS.
+        "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
       ]
     }
     if (enable_mdns) {
