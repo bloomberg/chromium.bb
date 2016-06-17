@@ -174,10 +174,14 @@ executable("mini_installer") {
   ]
   configs += [
     ":mini_installer_compiler_flags",
-    "//build/config/compiler:optimize_no_wpo",
     "//build/config/win:sdk_link",
     "//build/config/win:windowed",
   ]
+  if (!is_debug) {
+    configs += [ "//build/config/compiler:optimize_no_wpo" ]
+  } else {
+    configs += [ "//build/config/compiler:no_optimize" ]
+  }
 
   ldflags = [
     "/ENTRY:MainEntryPoint",
