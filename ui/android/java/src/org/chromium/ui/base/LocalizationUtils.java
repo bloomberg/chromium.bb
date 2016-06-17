@@ -76,17 +76,5 @@ public class LocalizationUtils {
         return nativeGetFirstStrongCharacterDirection(string);
     }
 
-    /**
-     * Jni binding to ui::TimeFormat::TimeRemaining. Converts milliseconds to
-     * time remaining format : "3 mins left", "2 days left".
-     * @param timeInMillis time in milliseconds
-     * @return time remaining
-     */
-    public static String getDurationString(long timeInMillis) {
-        return nativeGetDurationString(timeInMillis);
-    }
-
     private static native int nativeGetFirstStrongCharacterDirection(String string);
-
-    private static native String nativeGetDurationString(long timeInMillis);
 }

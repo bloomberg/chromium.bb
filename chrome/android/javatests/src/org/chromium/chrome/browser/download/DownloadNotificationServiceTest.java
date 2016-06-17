@@ -29,6 +29,8 @@ import java.util.UUID;
  */
 public class DownloadNotificationServiceTest extends
         ServiceTestCase<MockDownloadNotificationService> {
+    private static final int MILLIS_PER_SECOND = 1000;
+
     private static class MockDownloadManagerService extends DownloadManagerService {
         final List<DownloadItem> mDownloads = new ArrayList<DownloadItem>();
 
@@ -328,5 +330,32 @@ public class DownloadNotificationServiceTest extends
         assertEquals("test,2.pdf", entry.fileName);
         assertTrue(entry.isResumable);
         assertEquals(uuid, entry.downloadGuid);
+    }
+
+    @SmallTest
+    @Feature({"Download"})
+    public void testFormatRemainingTime() {
+        Context context = getSystemContext().getApplicationContext();
+        assertEquals("0 secs left", DownloadNotificationService.formatRemainingTime(context, 0));
+        assertEquals("1 sec left", DownloadNotificationService.formatRemainingTime(
+                context, MILLIS_PER_SECOND));
+        assertEquals("1 min left", DownloadNotificationService.formatRemainingTime(context,
+                DownloadNotificationService.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
+        assertEquals("2 mins left", DownloadNotificationService.formatRemainingTime(context,
+                149 * MILLIS_PER_SECOND));
+        assertEquals("3 mins left", DownloadNotificationService.formatRemainingTime(context,
+                150 * MILLIS_PER_SECOND));
+        assertEquals("1 hour left", DownloadNotificationService.formatRemainingTime(context,
+                DownloadNotificationService.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+        assertEquals("2 hours left", DownloadNotificationService.formatRemainingTime(context,
+                149 * DownloadNotificationService.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
+        assertEquals("3 hours left", DownloadNotificationService.formatRemainingTime(context,
+                150 * DownloadNotificationService.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
+        assertEquals("1 day left", DownloadNotificationService.formatRemainingTime(context,
+                DownloadNotificationService.SECONDS_PER_DAY * MILLIS_PER_SECOND));
+        assertEquals("2 days left", DownloadNotificationService.formatRemainingTime(context,
+                59 * DownloadNotificationService.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+        assertEquals("3 days left", DownloadNotificationService.formatRemainingTime(context,
+                60 * DownloadNotificationService.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
     }
 }

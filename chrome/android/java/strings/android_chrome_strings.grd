@@ -1637,6 +1637,30 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE" desc="Transient message shown when a file download has succeeded." meaning="Android">
         <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> downloaded
       </message>
+      <message name="IDS_REMAINING_DURATION_DAYS" desc="Message to show remaining duration in multiple days">
+        <ph name="DAYS">%1$d<ex>2</ex></ph> days left
+      </message>
+      <message name="IDS_REMAINING_DURATION_ONE_DAY" desc="Message to show remaining duration in 1 day">
+        1 day left
+      </message>
+      <message name="IDS_REMAINING_DURATION_HOURS" desc="Message to show remaining duration in multiple hours">
+        <ph name="HOURS">%1$d<ex>2</ex></ph> hours left
+      </message>
+      <message name="IDS_REMAINING_DURATION_ONE_HOUR" desc="Message to show remaining duration in 1 hour">
+        1 hour left
+      </message>
+      <message name="IDS_REMAINING_DURATION_MINUTES" desc="Message to show remaining duration in multiple minutes">
+        <ph name="MINUTES">%1$d<ex>2</ex></ph> mins left
+      </message>
+      <message name="IDS_REMAINING_DURATION_ONE_MINUTE" desc="Message to show remaining duration in 1 minute">
+        1 min left
+      </message>
+      <message name="IDS_REMAINING_DURATION_SECONDS" desc="Message to show remaining duration in multiple seconds">
+        <ph name="SECONDS">%1$d<ex>2</ex></ph> secs left
+      </message>
+      <message name="IDS_REMAINING_DURATION_ONE_SECOND" desc="Message to show remaining duration in 1 second">
+        1 sec left
+      </message>
       <message name="IDS_PROCEED_OMA_DOWNLOAD_MESSAGE" desc="A message within a modal dialog that confirms the user want to download an OMA DRM file.">
         Proceed to download the content?
       </message>

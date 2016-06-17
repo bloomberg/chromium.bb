@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.ui.base.LocalizationUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -63,6 +62,9 @@ public class DownloadNotificationService extends Service {
     private static final String NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
     // Notification Id starting value, to avoid conflicts from IDs used in prior versions.
     private static final int STARTING_NOTIFICATION_ID = 1000000;
+    @VisibleForTesting static final int SECONDS_PER_MINUTE = 60;
+    @VisibleForTesting static final int SECONDS_PER_HOUR = 60 * 60;
+    @VisibleForTesting static final int SECONDS_PER_DAY = 24 * 60 * 60;
     private final IBinder mBinder = new LocalBinder();
     private final List<DownloadSharedPreferenceEntry> mDownloadSharedPreferenceEntries =
             new ArrayList<DownloadSharedPreferenceEntry>();
@@ -169,7 +171,7 @@ public class DownloadNotificationService extends Service {
         if (!indeterminate) {
             NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
             String percentText = formatter.format(percentage / 100.0);
-            String duration = getDurationString(timeRemainingInMillis);
+            String duration = formatRemainingTime(mContext, timeRemainingInMillis);
             builder.setContentText(duration);
             if (Build.VERSION.CODENAME.equals("N")
                     || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
@@ -196,16 +198,6 @@ public class DownloadNotificationService extends Service {
         if (!mDownloadsInProgress.contains(downloadGuid)) {
             mDownloadsInProgress.add(downloadGuid);
         }
-    }
-
-    /**
-     * Converts milliseconds to time remaining format.
-     * @param timeRemainingInMillis Remaining download time in milliseconds.
-     * @return formatted remaining time string for display.
-     */
-    @VisibleForTesting
-    String getDurationString(long timeRemainingInMillis) {
-        return LocalizationUtils.getDurationString(timeRemainingInMillis);
     }
 
     /**
@@ -612,5 +604,57 @@ public class DownloadNotificationService extends Service {
         editor.putInt(NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
         editor.apply();
         return notificationId;
+    }
+
+    /**
+     * Format remaining time for the given millis, in the following format:
+     * 5 hours; will include 1 unit, can go down to seconds precision.
+     * This is similar to what android.java.text.Formatter.formatShortElapsedTime() does. Don't use
+     * ui::TimeFormat::Simple() as it is very expensive.
+     *
+     * @param context the application context.
+     * @param millis the remaining time in milli seconds.
+     * @return the formatted remaining time.
+     */
+    public static String formatRemainingTime(Context context, long millis) {
+        long secondsLong = millis / 1000;
+
+        int days = 0;
+        int hours = 0;
+        int minutes = 0;
+        if (secondsLong >= SECONDS_PER_DAY) {
+            days = (int) (secondsLong / SECONDS_PER_DAY);
+            secondsLong -= (long) days * SECONDS_PER_DAY;
+        }
+        if (secondsLong >= SECONDS_PER_HOUR) {
+            hours = (int) (secondsLong / SECONDS_PER_HOUR);
+            secondsLong -= (long) hours * SECONDS_PER_HOUR;
+        }
+        if (secondsLong >= SECONDS_PER_MINUTE) {
+            minutes = (int) (secondsLong / SECONDS_PER_MINUTE);
+            secondsLong -= (long) minutes * SECONDS_PER_MINUTE;
+        }
+        int seconds = (int) secondsLong;
+
+        if (days >= 2) {
+            days += (hours + 12) / 24;
+            return context.getString(R.string.remaining_duration_days, days);
+        } else if (days > 0) {
+            return context.getString(R.string.remaining_duration_one_day);
+        } else if (hours >= 2) {
+            hours += (minutes + 30) / 60;
+            return context.getString(R.string.remaining_duration_hours, hours);
+        } else if (hours > 0) {
+            return context.getString(R.string.remaining_duration_one_hour);
+        } else if (minutes >= 2) {
+            minutes += (seconds + 30) / 60;
+            return context.getString(R.string.remaining_duration_minutes, minutes);
+        } else if (minutes > 0) {
+            return context.getString(R.string.remaining_duration_one_minute);
+        } else if (seconds == 1) {
+            return context.getString(R.string.remaining_duration_one_second);
+        } else {
+            return context.getString(R.string.remaining_duration_seconds, seconds);
+        }
     }
 }

@@ -58,10 +58,5 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     public Context getApplicationContext() {
         return mContext == null ? super.getApplicationContext() : mContext;
     }
-
-    @Override
-    String getDurationString(long timeRemainingInMillis) {
-        return "";
-    }
 }
 
