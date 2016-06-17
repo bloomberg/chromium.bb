@@ -2239,11 +2239,6 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
         return;
     }
 
-    if (transformFeedbackActive() && !transformFeedbackPaused()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "drawElements", "transform feedback is active and not paused");
-        return;
-    }
-
     ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawElements(mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
@@ -4921,11 +4916,6 @@ void WebGLRenderingContextBase::useProgram(ScriptState* scriptState, WebGLProgra
         program = 0;
     if (program && !program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, "useProgram", "program not valid");
-        return;
-    }
-
-    if (transformFeedbackActive() && !transformFeedbackPaused()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "useProgram", "transform feedback is active and not paused");
         return;
     }
 

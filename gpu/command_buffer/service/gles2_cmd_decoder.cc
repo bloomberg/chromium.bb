@@ -3769,6 +3769,11 @@ void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
     TransformFeedback* transform_feedback = GetTransformFeedback(
         client_ids[ii]);
     if (transform_feedback) {
+      if (transform_feedback->active()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glDeleteTransformFeedbacks",
+                           "Deleting transform feedback is active");
+        return;
+      }
       if (state_.bound_transform_feedback.get() == transform_feedback) {
         // Bind to the default transform feedback.
         DCHECK(state_.default_transform_feedback.get());
@@ -5760,6 +5765,20 @@ bool GLES2DecoderImpl::GetHelper(
             read_buffer = back_buffer_read_buffer_;
           }
           *params = static_cast<GLint>(read_buffer);
+        }
+        return true;
+      case GL_TRANSFORM_FEEDBACK_ACTIVE:
+        *num_written = 1;
+        if (params) {
+          *params =
+              static_cast<GLint>(state_.bound_transform_feedback->active());
+        }
+        return true;
+      case GL_TRANSFORM_FEEDBACK_PAUSED:
+        *num_written = 1;
+        if (params) {
+          *params =
+              static_cast<GLint>(state_.bound_transform_feedback->paused());
         }
         return true;
     }

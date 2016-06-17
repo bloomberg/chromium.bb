@@ -278,11 +278,6 @@ protected:
     void resetUnpackParameters() override;
     void restoreUnpackParameters() override;
 
-    bool transformFeedbackActive() const override;
-    bool transformFeedbackPaused() const override;
-    void setTransformFeedbackActive(bool);
-    void setTransformFeedbackPaused(bool);
-
     Member<WebGLFramebuffer> m_readFramebufferBinding;
     Member<WebGLTransformFeedback> m_transformFeedbackBinding;
 
