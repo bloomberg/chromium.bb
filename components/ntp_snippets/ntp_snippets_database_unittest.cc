@@ -80,8 +80,6 @@ class NTPSnippetsDatabaseTest : public testing::Test {
 
   NTPSnippetsDatabase* db() { return db_.get(); }
 
-  bool db_inited() { return db_->database_initialized_; }
-
   void OnSnippetsLoaded(NTPSnippet::PtrVector snippets) {
     OnSnippetsLoadedImpl(snippets);
   }
@@ -101,36 +99,36 @@ TEST_F(NTPSnippetsDatabaseTest, Init) {
   ASSERT_FALSE(db());
 
   CreateDatabase();
-  EXPECT_FALSE(db_inited());
+  EXPECT_FALSE(db()->IsInitialized());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(db_inited());
+  EXPECT_TRUE(db()->IsInitialized());
 }
 
 TEST_F(NTPSnippetsDatabaseTest, LoadBeforeInit) {
   CreateDatabase();
-  EXPECT_FALSE(db_inited());
+  EXPECT_FALSE(db()->IsInitialized());
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(_));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(db_inited());
+  EXPECT_TRUE(db()->IsInitialized());
 }
 
 TEST_F(NTPSnippetsDatabaseTest, LoadAfterInit) {
   CreateDatabase();
-  EXPECT_FALSE(db_inited());
+  EXPECT_FALSE(db()->IsInitialized());
 
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(_)).Times(0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(db_inited());
+  EXPECT_TRUE(db()->IsInitialized());
 
   Mock::VerifyAndClearExpectations(this);
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(_));
   base::RunLoop().RunUntilIdle();
@@ -139,15 +137,15 @@ TEST_F(NTPSnippetsDatabaseTest, LoadAfterInit) {
 TEST_F(NTPSnippetsDatabaseTest, Save) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(db_inited());
+  ASSERT_TRUE(db()->IsInitialized());
 
   std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
 
-  db()->Save(*snippet);
+  db()->SaveSnippet(*snippet);
   base::RunLoop().RunUntilIdle();
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
@@ -158,8 +156,8 @@ TEST_F(NTPSnippetsDatabaseTest, Save) {
   // The snippet should still exist after recreating the database.
   CreateDatabase();
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
@@ -169,21 +167,21 @@ TEST_F(NTPSnippetsDatabaseTest, Save) {
 TEST_F(NTPSnippetsDatabaseTest, Update) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(db_inited());
+  ASSERT_TRUE(db()->IsInitialized());
 
   std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
 
-  db()->Save(*snippet);
+  db()->SaveSnippet(*snippet);
   base::RunLoop().RunUntilIdle();
 
   const std::string text("some text");
   snippet->set_snippet(text);
 
-  db()->Save(*snippet);
+  db()->SaveSnippet(*snippet);
   base::RunLoop().RunUntilIdle();
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
@@ -193,18 +191,18 @@ TEST_F(NTPSnippetsDatabaseTest, Update) {
 TEST_F(NTPSnippetsDatabaseTest, Delete) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(db_inited());
+  ASSERT_TRUE(db()->IsInitialized());
 
   std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
 
-  db()->Save(*snippet);
+  db()->SaveSnippet(*snippet);
   base::RunLoop().RunUntilIdle();
 
-  db()->Delete(snippet->id());
+  db()->DeleteSnippet(snippet->id());
   base::RunLoop().RunUntilIdle();
 
-  db()->Load(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                        base::Unretained(this)));
+  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
+                                base::Unretained(this)));
 
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(IsEmpty()));
   base::RunLoop().RunUntilIdle();

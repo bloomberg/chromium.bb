@@ -19,6 +19,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
@@ -31,6 +32,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ui/gfx/image/image.h"
 
+using image_fetcher::ImageDecoder;
 using image_fetcher::ImageFetcher;
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
@@ -186,6 +188,7 @@ NTPSnippetsService::NTPSnippetsService(
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     std::unique_ptr<ImageFetcher> image_fetcher,
+    std::unique_ptr<ImageDecoder> image_decoder,
     std::unique_ptr<NTPSnippetsDatabase> database)
     : state_(State::NOT_INITED),
       explicitly_disabled_(!enabled),
@@ -197,6 +200,7 @@ NTPSnippetsService::NTPSnippetsService(
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
+      image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
       fetch_after_load_(false) {
   // TODO(dgn) should be removed after branch point (https:://crbug.com/617585).
@@ -209,8 +213,8 @@ NTPSnippetsService::NTPSnippetsService(
 
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
-  database_->Load(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
-                             base::Unretained(this)));
+  database_->LoadSnippets(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
+                                     base::Unretained(this)));
 }
 
 NTPSnippetsService::~NTPSnippetsService() {
@@ -262,21 +266,10 @@ void NTPSnippetsService::RescheduleFetching() {
 void NTPSnippetsService::FetchSnippetImage(
     const std::string& snippet_id,
     const ImageFetchedCallback& callback) {
-  auto it =
-      std::find_if(snippets_.begin(), snippets_.end(),
-                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
-                     return snippet->id() == snippet_id;
-                   });
-  if (it == snippets_.end()) {
-    gfx::Image empty_image;
-    callback.Run(snippet_id, empty_image);
-    return;
-  }
-
-  const NTPSnippet& snippet = *it->get();
-  image_fetcher_->StartOrQueueNetworkRequest(
-      snippet.id(), snippet.salient_image_url(), callback);
-  // TODO(treib): Cache/persist the snippet image.
+  database_->LoadImage(
+      snippet_id,
+      base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
+                 base::Unretained(this), snippet_id, callback));
 }
 
 void NTPSnippetsService::ClearSnippets() {
@@ -286,7 +279,7 @@ void NTPSnippetsService::ClearSnippets() {
   if (snippets_.empty())
     return;
 
-  database_->Delete(snippets_);
+  database_->DeleteSnippets(snippets_);
   snippets_.clear();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
@@ -317,7 +310,8 @@ bool NTPSnippetsService::DiscardSnippet(const std::string& snippet_id) {
 
   (*it)->set_discarded(true);
 
-  database_->Save(**it);
+  database_->SaveSnippet(**it);
+  database_->DeleteImage((*it)->id());
 
   discarded_snippets_.push_back(std::move(*it));
   snippets_.erase(it);
@@ -331,7 +325,7 @@ void NTPSnippetsService::ClearDiscardedSnippets() {
   if (!initialized())
     return;
 
-  database_->Delete(discarded_snippets_);
+  database_->DeleteSnippets(discarded_snippets_);
   discarded_snippets_.clear();
 }
 
@@ -387,6 +381,24 @@ void NTPSnippetsService::OnStateChanged() {
   EnterState(GetStateForDependenciesStatus());
 }
 
+// image_fetcher::ImageFetcherDelegate implementation.
+void NTPSnippetsService::OnImageDataFetched(const std::string& snippet_id,
+                                            const std::string& image_data) {
+  if (image_data.empty())
+    return;
+
+  // Only save the image if the corresponding snippet still exists.
+  auto it =
+      std::find_if(snippets_.begin(), snippets_.end(),
+                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
+                     return snippet->id() == snippet_id;
+                   });
+  if (it == snippets_.end())
+    return;
+
+  database_->SaveImage(snippet_id, image_data);
+}
+
 void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
   DCHECK(state_ == State::NOT_INITED || state_ == State::SHUT_DOWN);
   if (state_ == State::SHUT_DOWN)
@@ -429,7 +441,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   }
   Compact(&snippets_);
   // Then delete the removed snippets from the database.
-  database_->Delete(to_delete);
+  database_->DeleteSnippets(to_delete);
 
   StoreSnippetHostsToPrefs(hosts);
 
@@ -455,17 +467,14 @@ void NTPSnippetsService::OnFetchFinished(
 
   ClearExpiredSnippets();
 
-  // If there are still more snippets than we want to show, move the extra ones
-  // over into |to_delete|.
-  NTPSnippet::PtrVector to_delete;
+  // If there are more snippets than we want to show, delete the extra ones.
   if (snippets_.size() > kMaxSnippetCount) {
-    to_delete.insert(
-        to_delete.end(),
+    NTPSnippet::PtrVector to_delete(
         std::make_move_iterator(snippets_.begin() + kMaxSnippetCount),
-                     std::make_move_iterator(snippets_.end()));
+        std::make_move_iterator(snippets_.end()));
     snippets_.resize(kMaxSnippetCount);
+    database_->DeleteSnippets(to_delete);
   }
-  database_->Delete(to_delete);
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
                               snippets_.size());
@@ -533,7 +542,7 @@ void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
   }
 
   // Save the new snippets to the DB.
-  database_->Save(new_snippets);
+  database_->SaveSnippets(new_snippets);
 
   // Insert the new snippets at the front.
   snippets_.insert(snippets_.begin(),
@@ -580,7 +589,7 @@ void NTPSnippetsService::ClearExpiredSnippets() {
   Compact(&discarded_snippets_);
 
   // Finally, actually delete the removed snippets from the DB.
-  database_->Delete(to_delete);
+  database_->DeleteSnippets(to_delete);
 
   // If there are any snippets left, schedule a timer for the next expiry.
   if (snippets_.empty() && discarded_snippets_.empty())
@@ -599,6 +608,56 @@ void NTPSnippetsService::ClearExpiredSnippets() {
   expiry_timer_.Start(FROM_HERE, next_expiry - expiry,
                       base::Bind(&NTPSnippetsService::ClearExpiredSnippets,
                                  base::Unretained(this)));
+}
+
+void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
+    const std::string& snippet_id,
+    const ImageFetchedCallback& callback,
+    std::string data) {
+  // |image_decoder_| is null on iOS and in tests.
+  if (image_decoder_ && !data.empty()) {
+    image_decoder_->DecodeImage(
+        std::move(data),
+        base::Bind(&NTPSnippetsService::OnSnippetImageDecoded,
+                   base::Unretained(this), snippet_id, callback));
+    return;
+  }
+
+  // Fetching from the DB failed; start a network fetch.
+  FetchSnippetImageFromNetwork(snippet_id, callback);
+}
+
+void NTPSnippetsService::OnSnippetImageDecoded(
+    const std::string& snippet_id,
+    const ImageFetchedCallback& callback,
+    const gfx::Image& image) {
+  if (!image.IsEmpty()) {
+    callback.Run(snippet_id, image);
+    return;
+  }
+
+  // If decoding the image failed, delete the DB entry.
+  database_->DeleteImage(snippet_id);
+
+  FetchSnippetImageFromNetwork(snippet_id, callback);
+}
+
+void NTPSnippetsService::FetchSnippetImageFromNetwork(
+    const std::string& snippet_id,
+    const ImageFetchedCallback& callback) {
+  auto it =
+      std::find_if(snippets_.begin(), snippets_.end(),
+                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
+                     return snippet->id() == snippet_id;
+                   });
+  if (it == snippets_.end()) {
+    callback.Run(snippet_id, gfx::Image());
+    return;
+  }
+
+  const NTPSnippet& snippet = *it->get();
+  image_fetcher_->StartOrQueueNetworkRequest(
+      snippet.id(), snippet.salient_image_url(), callback);
 }
 
 void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
@@ -642,6 +701,10 @@ void NTPSnippetsService::EnterStateShutdown() {
 void NTPSnippetsService::FinishInitialization() {
   snippets_fetcher_->SetCallback(
       base::Bind(&NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
+
+  // |image_fetcher_| can be null in tests.
+  if (image_fetcher_)
+    image_fetcher_->SetImageFetcherDelegate(this);
 
   // |sync_service_| can be null in tests or if sync is disabled.
   // This is a service we want to keep listening to all the time, independently

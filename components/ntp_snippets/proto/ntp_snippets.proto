@@ -25,3 +25,7 @@ message SnippetProto {
   repeated SnippetSourceProto sources = 8;
   optional bool discarded = 9;
 }
+
+message SnippetImageProto {
+  optional bytes data = 1;
+}

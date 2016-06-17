@@ -21,6 +21,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
@@ -326,7 +327,7 @@ class NTPSnippetsServiceTest : public testing::Test {
             fake_signin_manager_.get(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
             /*is_stable_channel=*/true)),
-        /*image_fetcher=*/nullptr,
+        /*image_fetcher=*/nullptr, /*image_decoder=*/nullptr,
         base::WrapUnique(new NTPSnippetsDatabase(database_dir_.path(),
                                                  task_runner))));
     if (enabled)

@@ -63,8 +63,13 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
 
 void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
                                          const std::string& image_data) {
-  // TODO(markusheintz): Add a method OnImageDataFetched on the delegate and
-  // call that here.
+  // Inform the ImageFetcherDelegate.
+  if (delegate_) {
+    auto it = pending_net_requests_.find(image_url);
+    DCHECK(it != pending_net_requests_.end());
+    delegate_->OnImageDataFetched(it->second.id, image_data);
+  }
+
   image_decoder_->DecodeImage(
       image_data,
       base::Bind(&ImageFetcherImpl::OnImageDecoded,

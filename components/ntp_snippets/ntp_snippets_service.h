@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -28,6 +29,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
+class RefCountedMemory;
 class Value;
 }
 
@@ -36,6 +38,7 @@ class Image;
 }
 
 namespace image_fetcher {
+class ImageDecoder;
 class ImageFetcher;
 }
 
@@ -65,7 +68,8 @@ class NTPSnippetsServiceObserver;
 
 // Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService,
-                           public sync_driver::SyncServiceObserver {
+                           public sync_driver::SyncServiceObserver,
+                           public image_fetcher::ImageFetcherDelegate {
  public:
   using ImageFetchedCallback =
       base::Callback<void(const std::string& snippet_id, const gfx::Image&)>;
@@ -82,6 +86,7 @@ class NTPSnippetsService : public KeyedService,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
                      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+                     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
                      std::unique_ptr<NTPSnippetsDatabase> database);
   ~NTPSnippetsService() override;
 
@@ -197,6 +202,10 @@ class NTPSnippetsService : public KeyedService,
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
+  // image_fetcher::ImageFetcherDelegate implementation.
+  void OnImageDataFetched(const std::string& snippet_id,
+                          const std::string& image_data) override;
+
   // Callback for the NTPSnippetsDatabase.
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
 
@@ -221,6 +230,17 @@ class NTPSnippetsService : public KeyedService,
   void FinishInitialization();
 
   void LoadingSnippetsFinished();
+
+  void OnSnippetImageFetchedFromDatabase(const std::string& snippet_id,
+                                         const ImageFetchedCallback& callback,
+                                         std::string data);
+
+  void OnSnippetImageDecoded(const std::string& snippet_id,
+                             const ImageFetchedCallback& callback,
+                             const gfx::Image& image);
+
+  void FetchSnippetImageFromNetwork(const std::string& snippet_id,
+                                    const ImageFetchedCallback& callback);
 
   // Returns whether the service should be enabled or disable depending on its
   // internal state and the state of its dependencies.
@@ -292,6 +312,7 @@ class NTPSnippetsService : public KeyedService,
   base::OneShotTimer expiry_timer_;
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
 
   // The database for persisting snippets.
   std::unique_ptr<NTPSnippetsDatabase> database_;

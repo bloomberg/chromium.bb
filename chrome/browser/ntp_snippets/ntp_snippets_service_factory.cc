@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/image_fetcher_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -41,6 +43,7 @@
 #endif  // OS_ANDROID
 
 using content::BrowserThread;
+using suggestions::ImageDecoderImpl;
 using suggestions::ImageFetcherImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
@@ -115,6 +118,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
           base::Bind(&safe_json::SafeJsonParser::Parse),
           chrome::GetChannel() == version_info::Channel::STABLE)),
       base::WrapUnique(new ImageFetcherImpl(request_context.get())),
+      base::WrapUnique(new ImageDecoderImpl()),
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)));
 }

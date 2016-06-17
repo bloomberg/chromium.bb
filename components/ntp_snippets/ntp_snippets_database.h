@@ -23,29 +23,47 @@ class FilePath;
 
 namespace ntp_snippets {
 
+class SnippetImageProto;
 class SnippetProto;
 
 class NTPSnippetsDatabase {
  public:
-  using SnippetsLoadedCallback = base::Callback<void(NTPSnippet::PtrVector)>;
+  using SnippetsCallback = base::Callback<void(NTPSnippet::PtrVector)>;
+  using SnippetImageCallback = base::Callback<void(std::string)>;
 
   NTPSnippetsDatabase(
       const base::FilePath& database_dir,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~NTPSnippetsDatabase();
 
+  // Returns whether the database has finished initialization. While this is
+  // false, loads may already be started (they'll be serviced after
+  // initialization finishes), but no updates are allowed.
+  bool IsInitialized() const;
+
   // Loads all snippets from storage and passes them to |callback|.
-  void Load(const SnippetsLoadedCallback& callback);
+  void LoadSnippets(const SnippetsCallback& callback);
 
   // Adds or updates the given snippet.
-  void Save(const NTPSnippet& snippet);
+  void SaveSnippet(const NTPSnippet& snippet);
   // Adds or updates all the given snippets.
-  void Save(const NTPSnippet::PtrVector& snippets);
+  void SaveSnippets(const NTPSnippet::PtrVector& snippets);
 
-  // Deletes the snippet with the given ID.
-  void Delete(const std::string& snippet_id);
-  // Deletes all the given snippets (identified by their IDs).
-  void Delete(const NTPSnippet::PtrVector& snippets);
+  // Deletes the snippet with the given ID, and its image.
+  void DeleteSnippet(const std::string& snippet_id);
+  // Deletes all the given snippets (identified by their IDs) and their images.
+  void DeleteSnippets(const NTPSnippet::PtrVector& snippets);
+
+  // Loads the image data for the snippet with the given ID and passes it to
+  // |callback|. Passes an empty string if not found.
+  void LoadImage(const std::string& snippet_id,
+                 const SnippetImageCallback& callback);
+
+  // Adds or updates the image data for the given snippet ID.
+  void SaveImage(const std::string& snippet_id, const std::string& image_data);
+
+  // Deletes the image data for the given snippet ID.
+  void DeleteImage(const std::string& snippet_id);
 
  private:
   friend class NTPSnippetsDatabaseTest;
@@ -53,23 +71,46 @@ class NTPSnippetsDatabase {
   using KeyEntryVector =
       leveldb_proto::ProtoDatabase<SnippetProto>::KeyEntryVector;
 
-  // Callbacks for ProtoDatabase operations.
+  using ImageKeyEntryVector =
+      leveldb_proto::ProtoDatabase<SnippetImageProto>::KeyEntryVector;
+
+  // Callbacks for ProtoDatabase<SnippetProto> operations.
   void OnDatabaseInited(bool success);
-  void OnDatabaseLoaded(const SnippetsLoadedCallback& callback,
+  void OnDatabaseLoaded(const SnippetsCallback& callback,
                         bool success,
                         std::unique_ptr<std::vector<SnippetProto>> entries);
   void OnDatabaseSaved(bool success);
 
-  void LoadImpl(const SnippetsLoadedCallback& callback);
+  // Callbacks for ProtoDatabase<SnippetImageProto> operations.
+  void OnImageDatabaseInited(bool success);
+  void OnImageDatabaseLoaded(const SnippetImageCallback& callback,
+                             bool success,
+                             std::unique_ptr<SnippetImageProto> entry);
+  void OnImageDatabaseSaved(bool success);
 
-  void SaveImpl(std::unique_ptr<KeyEntryVector> entries_to_save);
+  void ProcessPendingLoads();
 
-  void DeleteImpl(std::unique_ptr<std::vector<std::string>> keys_to_remove);
+  void LoadSnippetsImpl(const SnippetsCallback& callback);
+  void SaveSnippetsImpl(std::unique_ptr<KeyEntryVector> entries_to_save);
+  void DeleteSnippetsImpl(
+      std::unique_ptr<std::vector<std::string>> keys_to_remove);
+
+  void LoadImageImpl(const std::string& snippet_id,
+                     const SnippetImageCallback& callback);
+  void DeleteImagesImpl(
+      std::unique_ptr<std::vector<std::string>> keys_to_remove);
+
+  void ResetDatabases();
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database_;
   bool database_initialized_;
+  std::vector<SnippetsCallback> pending_snippets_callbacks_;
 
-  std::vector<SnippetsLoadedCallback> pending_load_callbacks_;
+  std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetImageProto>>
+      image_database_;
+  bool image_database_initialized_;
+  std::vector<std::pair<std::string, SnippetImageCallback>>
+      pending_image_callbacks_;
 
   base::WeakPtrFactory<NTPSnippetsDatabase> weak_ptr_factory_;
 

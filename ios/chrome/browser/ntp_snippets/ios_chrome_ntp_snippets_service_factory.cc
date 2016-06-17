@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -109,6 +110,8 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
+  // TODO(treib,markusheintz): Inject an image_fetcher::ImageDecoder once that's
+  // implemented on iOS. crbug.com/609127
   return base::WrapUnique(new ntp_snippets::NTPSnippetsService(
       false /* enabled */, chrome_browser_state->GetPrefs(), sync_service,
       suggestions_service, GetApplicationContext()->GetApplicationLocale(),
@@ -118,6 +121,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
                      GetChannel() == version_info::Channel::STABLE)),
       base::WrapUnique(new ImageFetcherImpl(request_context.get(),
                                             web::WebThread::GetBlockingPool())),
+      nullptr, /* image_decoder */
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner))));
 }
