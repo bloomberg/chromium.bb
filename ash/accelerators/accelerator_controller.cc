@@ -547,6 +547,15 @@ void HandlePositionCenter() {
   wm::CenterWindow(wm::GetActiveWindow());
 }
 
+bool CanHandleUnpin() {
+  wm::WindowState* window_state = wm::GetActiveWindowState();
+  return window_state && window_state->IsPinned();
+}
+
+void HandleUnpin() {
+  accelerators::Unpin();
+}
+
 #if defined(OS_CHROMEOS)
 void HandleBrightnessDown(BrightnessControlDelegate* delegate,
                           const ui::Accelerator& accelerator) {
@@ -1032,6 +1041,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleWindowSnapOrDock();
     case WINDOW_POSITION_CENTER:
       return CanHandlePositionCenter();
+    case UNPIN:
+      return CanHandleUnpin();
 #if defined(OS_CHROMEOS)
     case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_TOGGLE_TOUCH_PAD:
@@ -1286,6 +1297,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case WINDOW_POSITION_CENTER:
       HandlePositionCenter();
+      break;
+    case UNPIN:
+      HandleUnpin();
       break;
 #if defined(OS_CHROMEOS)
     case BRIGHTNESS_DOWN:

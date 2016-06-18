@@ -37,6 +37,9 @@ ASH_EXPORT bool ZoomInternalDisplay(bool up);
 // Reset the display zooming to the default state.
 ASH_EXPORT void ResetInternalDisplayZoom();
 
+// If it is in the pinned mode, exit from it.
+ASH_EXPORT void Unpin();
+
 }  // namespace accelerators
 }  // namespace ash
 

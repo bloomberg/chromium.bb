@@ -126,6 +126,7 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_FULLSCREEN },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_SHIFT_DOWN, TOGGLE_FULLSCREEN },
+  { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN, UNPIN },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, FOCUS_SHELF },
   { true, ui::VKEY_HELP, ui::EF_NONE, SHOW_KEYBOARD_OVERLAY },
   { true, ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -512,6 +513,7 @@ const AcceleratorAction kActionsAllowedInPinnedMode[] = {
     TAKE_WINDOW_SCREENSHOT,
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
+    UNPIN,
 #if defined(OS_CHROMEOS)
     LOCK_SCREEN,
     SUSPEND,

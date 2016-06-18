@@ -12,6 +12,7 @@
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/user_metrics.h"
@@ -105,6 +106,13 @@ void ResetInternalDisplayZoom() {
   } else {
     SetDisplayUIScale(display_manager->GetDisplayIdForUIScaling(), 1.0f);
   }
+}
+
+void Unpin() {
+  WmWindow* pinned_window =
+      Shell::GetInstance()->screen_pinning_controller()->pinned_window();
+  if (pinned_window)
+    pinned_window->GetWindowState()->Restore();
 }
 
 }  // namespace accelerators

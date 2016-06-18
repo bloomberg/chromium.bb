@@ -31,6 +31,9 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   // Returns true if in pinned mode, otherwise false.
   bool IsPinned() const;
 
+  // Returns the pinned window if in pinned mode, or nullptr.
+  WmWindow* pinned_window() const { return pinned_window_; }
+
   // Called when a new window is added to the container which has the pinned
   // window.
   void OnWindowAddedToPinnedContainer(WmWindow* new_window);
