@@ -140,7 +140,7 @@ class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
     # the ref builds are updated. crbug.com/386847
     config = tracing_config.TracingConfig()
     for c in ['webkit.console', 'blink.console', 'blink_gc']:
-      config.tracing_category_filter.AddIncludedCategory(c)
+      config.chrome_trace_config.tracing_category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config, timeout=1000)
 

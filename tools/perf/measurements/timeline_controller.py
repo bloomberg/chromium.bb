@@ -34,9 +34,11 @@ class TimelineController(object):
     if not tab.browser.platform.tracing_controller.IsChromeTracingSupported():
       raise Exception('Not supported')
     config = tracing_config.TracingConfig()
-    config.tracing_category_filter.AddFilterString(self.trace_categories)
+    config.chrome_trace_config.tracing_category_filter.AddFilterString(
+        self.trace_categories)
     for delay in page.GetSyntheticDelayCategories():
-      config.tracing_category_filter.AddSyntheticDelay(delay)
+      config.chrome_trace_config.tracing_category_filter.AddSyntheticDelay(
+          delay)
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config)
 

@@ -21,7 +21,7 @@ class DrawProperties(legacy_page_test.LegacyPageTest):
   def WillNavigateToPage(self, page, tab):
     del page  # unused
     config = tracing_config.TracingConfig()
-    config.tracing_category_filter.AddDisabledByDefault(
+    config.chrome_trace_config.tracing_category_filter.AddDisabledByDefault(
         'disabled-by-default-cc.debug.cdp-perf')
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config)
