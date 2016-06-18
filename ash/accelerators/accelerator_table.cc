@@ -464,7 +464,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
 const size_t kNonrepeatableActionsLength =
     arraysize(kNonrepeatableActions);
 
-const AcceleratorAction kActionsAllowedInAppMode[] = {
+const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
@@ -505,8 +505,21 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
 #endif  // defined(OS_CHROMEOS)
 };
 
-const size_t kActionsAllowedInAppModeLength =
-    arraysize(kActionsAllowedInAppMode);
+const size_t kActionsAllowedInAppModeOrPinnedModeLength =
+    arraysize(kActionsAllowedInAppModeOrPinnedMode);
+
+const AcceleratorAction kActionsAllowedInPinnedMode[] = {
+    TAKE_WINDOW_SCREENSHOT,
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+#if defined(OS_CHROMEOS)
+    LOCK_SCREEN,
+    SUSPEND,
+#endif
+};
+
+const size_t kActionsAllowedInPinnedModeLength =
+    arraysize(kActionsAllowedInPinnedMode);
 
 const AcceleratorAction kActionsNeedingWindow[] = {
     CYCLE_BACKWARD_MRU,

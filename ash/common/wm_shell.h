@@ -86,6 +86,18 @@ class ASH_EXPORT WmShell {
     simulate_modal_window_open_for_testing_ = modal_window_open;
   }
 
+  // Returns true if a window is currently pinned.
+  virtual bool IsPinned() = 0;
+
+  // Sets/Unsets the |window| to as a pinned window. If this is called with a
+  // window with WINDOW_STATE_TYPE_PINNED state, then this sets the |window|
+  // as a pinned window. Otherwise, this unsets it.
+  // For setting, a caller needs to guarantee that no windows are set
+  // as pinned window. For unsetting, a caller needs to guarantee that the
+  // |window| is the one which is currently set as a pinned window via previous
+  // this function invocation.
+  virtual void SetPinnedWindow(WmWindow* window) = 0;
+
   // Returns true if |window| can be shown for the current user. This is
   // intended to check if the current user matches the user associated with
   // |window|.
@@ -132,11 +144,6 @@ class ASH_EXPORT WmShell {
 
   virtual void AddShellObserver(ShellObserver* observer) = 0;
   virtual void RemoveShellObserver(ShellObserver* observer) = 0;
-
-  // Notifies |observers_| when entering or exiting pinned mode for
-  // |pinned_window|. Entering or exiting can be checked by looking at
-  // |pinned_window|'s window state.
-  virtual void NotifyPinnedStateChanged(WmWindow* pinned_window) = 0;
 
  protected:
   WmShell();

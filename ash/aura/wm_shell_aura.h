@@ -39,6 +39,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
   bool IsForceMaximizeOnFirstRun() override;
+  bool IsPinned() override;
+  void SetPinnedWindow(WmWindow* window) override;
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
@@ -59,7 +61,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
-  void NotifyPinnedStateChanged(WmWindow* pinned_window) override;
 
  private:
   // aura::client::ActivationChangeObserver:

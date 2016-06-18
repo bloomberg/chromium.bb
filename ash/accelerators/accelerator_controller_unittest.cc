@@ -1181,6 +1181,36 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ASSERT_EQ(w2, wm::GetActiveWindow());
 }
 
+TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
+  aura::Window* w1 = CreateTestWindowInShellWithId(0);
+  aura::Window* w2 = CreateTestWindowInShellWithId(1);
+  wm::ActivateWindow(w1);
+
+  {
+    wm::WMEvent pin_event(wm::WM_EVENT_PIN);
+    wm::WindowState* w1_state = wm::GetWindowState(w1);
+    w1_state->OnWMEvent(&pin_event);
+    ASSERT_TRUE(w1_state->IsPinned());
+  }
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+#if defined(OS_CHROMEOS)
+  // Power key (reserved) should always be handled.
+  LockStateController::TestApi test_api(
+      Shell::GetInstance()->lock_state_controller());
+  EXPECT_FALSE(test_api.is_animating_lock());
+  generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
+  EXPECT_TRUE(test_api.is_animating_lock());
+#endif
+
+  // A pinned window can consume ALT-TAB (preferred), but no side effect.
+  ASSERT_EQ(w1, wm::GetActiveWindow());
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_NE(w2, wm::GetActiveWindow());
+}
+
 #if defined(OS_CHROMEOS)
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::set<AcceleratorAction> all_actions;

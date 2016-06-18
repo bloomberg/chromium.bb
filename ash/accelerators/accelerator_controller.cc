@@ -915,8 +915,14 @@ void AcceleratorController::Init() {
     reserved_actions_.insert(kReservedActions[i]);
   for (size_t i = 0; i < kNonrepeatableActionsLength; ++i)
     nonrepeatable_actions_.insert(kNonrepeatableActions[i]);
-  for (size_t i = 0; i < kActionsAllowedInAppModeLength; ++i)
-    actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
+  for (size_t i = 0; i < kActionsAllowedInAppModeOrPinnedModeLength; ++i) {
+    actions_allowed_in_app_mode_.insert(
+        kActionsAllowedInAppModeOrPinnedMode[i]);
+    actions_allowed_in_pinned_mode_.insert(
+        kActionsAllowedInAppModeOrPinnedMode[i]);
+  }
+  for (size_t i = 0; i < kActionsAllowedInPinnedModeLength; ++i)
+    actions_allowed_in_pinned_mode_.insert(kActionsAllowedInPinnedMode[i]);
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
     actions_needing_window_.insert(kActionsNeedingWindow[i]);
   for (size_t i = 0; i < kActionsKeepingMenuOpenLength; ++i)
@@ -1399,6 +1405,11 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 
 AcceleratorController::AcceleratorProcessingRestriction
 AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
+  if (WmShell::Get()->IsPinned() &&
+      actions_allowed_in_pinned_mode_.find(action) ==
+          actions_allowed_in_pinned_mode_.end()) {
+    return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
+  }
   ash::Shell* shell = ash::Shell::GetInstance();
   if (!shell->session_state_delegate()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==

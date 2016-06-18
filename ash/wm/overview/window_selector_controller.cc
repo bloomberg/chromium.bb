@@ -32,6 +32,7 @@ bool WindowSelectorController::CanSelect() {
   return session_state_delegate->IsActiveUserSessionStarted() &&
          !session_state_delegate->IsScreenLocked() &&
          !WmShell::Get()->IsSystemModalWindowOpen() &&
+         !WmShell::Get()->IsPinned() &&
          WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
 }

@@ -155,6 +155,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnLockStateChanged(bool locked) override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
+  void OnPinnedStateChanged(WmWindow* pinned_window) override;
 
   // Overriden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(

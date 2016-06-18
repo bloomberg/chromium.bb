@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -1662,6 +1663,22 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
       root_window_controllers[1]->GetShelfLayoutManager()->visibility_state());
 }
 
+// Test for Pinned mode.
+TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
+  Shelf* shelf = GetShelf();
+
+  aura::Window* window1 = CreateTestWindow();
+  window1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window1->Show();
+
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  wm::PinWindow(window1);
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+
+  WmWindowAura::Get(window1)->GetWindowState()->Restore();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+}
 
 #if defined(OS_WIN)
 // RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962

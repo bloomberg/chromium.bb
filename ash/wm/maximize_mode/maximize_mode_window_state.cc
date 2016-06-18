@@ -130,7 +130,8 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
       UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN, true);
       break;
     case wm::WM_EVENT_PIN:
-      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED, true);
+      if (!WmShell::Get()->IsPinned())
+        UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED, true);
       break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
@@ -281,7 +282,7 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
 
   if (old_state_type == wm::WINDOW_STATE_TYPE_PINNED ||
       target_state == wm::WINDOW_STATE_TYPE_PINNED) {
-    WmShell::Get()->NotifyPinnedStateChanged(window_state->window());
+    WmShell::Get()->SetPinnedWindow(window_state->window());
   }
 
   if ((window_state->window()->GetTargetVisibility() ||

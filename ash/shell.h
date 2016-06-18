@@ -132,6 +132,7 @@ class ScopedTargetRootWindow;
 class ScreenAsh;
 class ScreenOrientationController;
 class ScreenshotController;
+class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
@@ -570,7 +571,12 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
   }
+
 #endif  // defined(OS_CHROMEOS)
+
+  ScreenPinningController* screen_pinning_controller() {
+    return screen_pinning_controller_.get();
+  }
 
   ToastManager* toast_manager() { return toast_manager_.get(); }
 
@@ -711,6 +717,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       display_configuration_controller_;
 
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
+  std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<PowerEventObserver> power_event_observer_;

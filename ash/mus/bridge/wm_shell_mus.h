@@ -53,6 +53,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
   bool IsForceMaximizeOnFirstRun() override;
+  bool IsPinned() override;
+  void SetPinnedWindow(WmWindow* window) override;
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
@@ -73,7 +75,6 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddShellObserver(ShellObserver* observer) override;
   void RemoveShellObserver(ShellObserver* observer) override;
-  void NotifyPinnedStateChanged(WmWindow* pinned_window) override;
 
  private:
   // Returns true if |window| is a window that can have active children.

@@ -205,10 +205,17 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
       next_state_type = WINDOW_STATE_TYPE_INACTIVE;
       break;
     case WM_EVENT_PIN:
-      // TODO(hidehiko): Check if the window can be pinnable. If a system modal
-      // window is openening, or if there already is another pinned window,
-      // the pinning should fail.
-      next_state_type = WINDOW_STATE_TYPE_PINNED;
+      // If there already is a pinned window, it is not allowed to set it
+      // to this window.
+      // TODO(hidehiko): If a system modal window is openening, the pinning
+      // probably should fail.
+      if (WmShell::Get()->IsPinned()) {
+        LOG(ERROR) << "An PIN event is triggered, while another window is "
+                   << "already in pinned mode.";
+        next_state_type = current_state_type;
+      } else {
+        next_state_type = WINDOW_STATE_TYPE_PINNED;
+      }
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case WM_EVENT_TOGGLE_MAXIMIZE:
@@ -579,7 +586,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
 
   if (next_state_type == WINDOW_STATE_TYPE_PINNED ||
       previous_state_type == WINDOW_STATE_TYPE_PINNED) {
-    WmShell::Get()->NotifyPinnedStateChanged(window_state->window());
+    WmShell::Get()->SetPinnedWindow(window_state->window());
   }
 }
 

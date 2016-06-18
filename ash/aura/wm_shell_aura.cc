@@ -16,6 +16,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/focus_client.h"
@@ -77,6 +78,15 @@ WmWindow* WmShellAura::GetRootWindowForNewWindows() {
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
+}
+
+bool WmShellAura::IsPinned() {
+  return Shell::GetInstance()->screen_pinning_controller()->IsPinned();
+}
+
+void WmShellAura::SetPinnedWindow(WmWindow* window) {
+  return Shell::GetInstance()->screen_pinning_controller()->SetPinnedWindow(
+      window);
 }
 
 bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
@@ -172,10 +182,6 @@ void WmShellAura::AddShellObserver(ShellObserver* observer) {
 
 void WmShellAura::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
-}
-
-void WmShellAura::NotifyPinnedStateChanged(WmWindow* pinned_window) {
-  wm_shell_common_->NotifyPinnedStateChanged(pinned_window);
 }
 
 void WmShellAura::OnWindowActivated(

@@ -182,6 +182,15 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
   return false;
 }
 
+bool WmShellMus::IsPinned() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WmShellMus::SetPinnedWindow(WmWindow* window) {
+  NOTIMPLEMENTED();
+}
+
 bool WmShellMus::CanShowWindowForUser(WmWindow* window) {
   NOTIMPLEMENTED();
   return true;
@@ -263,10 +272,6 @@ void WmShellMus::AddShellObserver(ShellObserver* observer) {
 
 void WmShellMus::RemoveShellObserver(ShellObserver* observer) {
   wm_shell_common_->RemoveShellObserver(observer);
-}
-
-void WmShellMus::NotifyPinnedStateChanged(WmWindow* pinned_window) {
-  wm_shell_common_->NotifyPinnedStateChanged(pinned_window);
 }
 
 // static

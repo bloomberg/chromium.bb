@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_types.h"
 #include "ash/common/wm_activation_observer.h"
@@ -36,6 +37,7 @@ class ASH_EXPORT WorkspaceLayoutManager
       public WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
       public WmRootWindowControllerObserver,
+      public ShellObserver,
       public wm::WindowStateObserver {
  public:
   WorkspaceLayoutManager(
@@ -88,6 +90,15 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
 
+  // ShellObserver overrides:
+  void OnFullscreenStateChanged(bool is_fullscreen, WmWindow* root) override {
+    // Do nothing. Fullscreen state change is observed by the
+    // WmRootWindowControllerObserver::OnFullscreenStateChanged().
+    // Because the name is conflicting, some compiler warns because this is
+    // hidden. To avoid it, we define it here, with empty body.
+  }
+  void OnPinnedStateChanged(WmWindow* pinned_window) override;
+
  private:
   typedef std::set<WmWindow*> WindowSet;
 
@@ -107,17 +118,9 @@ class ASH_EXPORT WorkspaceLayoutManager
   // has changed.
   void UpdateFullscreenState();
 
-  // Updates the bounds of the window for a stte type change from
-  // |old_show_type|.
-  void UpdateBoundsFromStateType(wm::WindowState* window_state,
-                                 wm::WindowStateType old_state_type);
-
-  // If |window_state| is maximized or fullscreen the bounds of the
-  // window are set and true is returned. Does nothing otherwise.
-  bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
-
-  // Animates the window bounds to |bounds|.
-  void SetChildBoundsAnimated(WmWindow* child, const gfx::Rect& bounds);
+  // Updates the always-on-top state for windows managed by this layout
+  // manager.
+  void UpdateAlwaysOnTop(WmWindow* window_on_top);
 
   WmWindow* window_;
   WmWindow* root_window_;

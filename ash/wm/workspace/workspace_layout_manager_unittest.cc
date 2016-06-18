@@ -665,6 +665,13 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_NE(nullptr, GetRootWindowController(fullscreen_window->GetRootWindow())
                          ->GetWindowForFullscreenMode());
+
+  // Adding a new always-on-top window is not affected by fullscreen.
+  std::unique_ptr<aura::Window> always_on_top_window3(CreateTestWindow(bounds));
+  always_on_top_window3->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
+
   // Making fullscreen window normal restores always on top windows.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_NORMAL);
@@ -672,8 +679,42 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_TRUE(
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_EQ(nullptr, GetRootWindowController(fullscreen_window->GetRootWindow())
                          ->GetWindowForFullscreenMode());
+}
+
+// Similary, pinned window causes always_on_top_ windows to stack below.
+TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  std::unique_ptr<aura::Window> pinned_window(CreateTestWindow(bounds));
+  std::unique_ptr<aura::Window> always_on_top_window1(CreateTestWindow(bounds));
+  std::unique_ptr<aura::Window> always_on_top_window2(CreateTestWindow(bounds));
+  always_on_top_window1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+
+  // Making a window pinned temporarily suspends always on top state.
+  wm::PinWindow(pinned_window.get());
+  EXPECT_FALSE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_FALSE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  // Adding a new always-on-top window also is affected by pinned mode.
+  std::unique_ptr<aura::Window> always_on_top_window3(CreateTestWindow(bounds));
+  always_on_top_window3->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_FALSE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  // Making pinned window normal restores always on top windows.
+  WmWindowAura::Get(pinned_window.get())->GetWindowState()->Restore();
+  EXPECT_TRUE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 // Tests fullscreen window size during root window resize.

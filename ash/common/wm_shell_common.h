@@ -35,6 +35,9 @@ class ASH_EXPORT WmShellCommon {
     return &shell_observers_;
   }
 
+  // Notifies |observers_| when entering or exiting pinned mode for
+  // |pinned_window|. Entering or exiting can be checked by looking at
+  // |pinned_window|'s window state.
   void NotifyPinnedStateChanged(WmWindow* pinned_window);
 
  private:

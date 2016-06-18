@@ -76,6 +76,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -766,6 +767,8 @@ Shell::~Shell() {
   power_button_controller_.reset();
   lock_state_controller_.reset();
 
+  screen_pinning_controller_.reset();
+
 #if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset();
 #endif
@@ -991,6 +994,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 #if defined(OS_CHROMEOS)
   sticky_keys_controller_.reset(new StickyKeysController);
 #endif
+  screen_pinning_controller_.reset(new ScreenPinningController(
+      wm_shell_common_.get(), window_tree_host_manager_.get()));
 
   lock_state_controller_.reset(new LockStateController);
   power_button_controller_.reset(new PowerButtonController(

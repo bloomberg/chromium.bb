@@ -186,7 +186,6 @@ void WindowState::Restore() {
 }
 
 void WindowState::DisableAlwaysOnTop(WmWindow* window_on_top) {
-  DCHECK(window_on_top);
   if (GetAlwaysOnTop()) {
     // |window_| is hidden first to avoid canceling fullscreen mode when it is
     // no longer always on top and gets added to default container. This avoids
@@ -200,7 +199,7 @@ void WindowState::DisableAlwaysOnTop(WmWindow* window_on_top) {
     // Technically it is possible that a |window_| could make itself
     // always_on_top really quickly. This is probably not a realistic case but
     // check if the two windows are in the same container just in case.
-    if (window_on_top->GetParent() == window_->GetParent())
+    if (window_on_top && window_on_top->GetParent() == window_->GetParent())
       window_->GetParent()->StackChildAbove(window_on_top, window_);
     if (visible)
       window_->Show();

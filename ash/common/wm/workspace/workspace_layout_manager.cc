@@ -34,6 +34,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
       delegate_(std::move(delegate)),
       work_area_in_parent_(wm::GetDisplayWorkAreaBounds(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
+  shell_->AddShellObserver(this);
   shell_->AddActivationObserver(this);
   root_window_->AddObserver(this);
   root_window_controller_->AddObserver(this);
@@ -44,10 +45,14 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   if (root_window_)
     root_window_->RemoveObserver(this);
-  for (WmWindow* window : windows_)
+  for (WmWindow* window : windows_) {
+    wm::WindowState* window_state = window->GetWindowState();
+    window_state->RemoveObserver(this);
     window->RemoveObserver(this);
+  }
   root_window_->GetRootWindowController()->RemoveObserver(this);
   shell_->RemoveActivationObserver(this);
+  shell_->RemoveShellObserver(this);
 }
 
 void WorkspaceLayoutManager::DeleteDelegate() {
@@ -76,6 +81,8 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (backdrop_delegate_)
     backdrop_delegate_->OnWindowAddedToLayout(child);
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
+  if (WmShell::Get()->IsPinned())
+    child->GetWindowState()->DisableAlwaysOnTop(nullptr);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(WmWindow* child) {
@@ -174,20 +181,15 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen) {
     return;
 
   is_fullscreen_ = is_fullscreen;
-  WmWindow* fullscreen_window =
-      is_fullscreen ? wm::GetWindowForFullscreenMode(window_) : nullptr;
-  // Changing always on top state may change window's parent. Iterate on a copy
-  // of |windows_| to avoid invalidating an iterator. Since both workspace and
-  // always_on_top containers' layouts are managed by this class all the
-  // appropriate windows will be included in the iteration.
-  WindowSet windows(windows_);
-  for (auto window : windows) {
-    wm::WindowState* window_state = window->GetWindowState();
-    if (is_fullscreen)
-      window_state->DisableAlwaysOnTop(fullscreen_window);
-    else
-      window_state->RestoreAlwaysOnTop();
+  if (WmShell::Get()->IsPinned()) {
+    // If this is in pinned mode, then this event does not trigger the
+    // always-on-top state change, because it is kept disabled regardless of
+    // the fullscreen state change.
+    return;
   }
+
+  UpdateAlwaysOnTop(is_fullscreen_ ? wm::GetWindowForFullscreenMode(window_)
+                                   : nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -219,9 +221,11 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(
     WmWindowProperty property) {
   if (property == WmWindowProperty::ALWAYS_ON_TOP &&
       window->GetBoolProperty(WmWindowProperty::ALWAYS_ON_TOP)) {
-    root_window_controller_->GetAlwaysOnTopController()
-        ->GetContainer(window)
-        ->AddChild(window);
+    WmWindow* container =
+        root_window_controller_->GetAlwaysOnTopController()->GetContainer(
+            window);
+    if (window->GetParent() != container)
+      container->AddChild(window);
   }
 }
 
@@ -284,6 +288,21 @@ void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// WorkspaceLayoutManager, ShellObserver implementation:
+
+void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
+  if (!WmShell::Get()->IsPinned() && is_fullscreen_) {
+    // On exiting from pinned mode, if the workspace is still in fullscreen
+    // mode, then this event does not trigger the restoring yet. On exiting
+    // from fullscreen, the temporarily disabled always-on-top property will be
+    // restored.
+    return;
+  }
+
+  UpdateAlwaysOnTop(WmShell::Get()->IsPinned() ? pinned_window : nullptr);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, private:
 
 void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
@@ -326,6 +345,21 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
   if (is_fullscreen != is_fullscreen_) {
     delegate_->OnFullscreenStateChanged(is_fullscreen);
     is_fullscreen_ = is_fullscreen;
+  }
+}
+
+void WorkspaceLayoutManager::UpdateAlwaysOnTop(WmWindow* window_on_top) {
+  // Changing always on top state may change window's parent. Iterate on a copy
+  // of |windows_| to avoid invalidating an iterator. Since both workspace and
+  // always_on_top containers' layouts are managed by this class all the
+  // appropriate windows will be included in the iteration.
+  WindowSet windows(windows_);
+  for (auto window : windows) {
+    wm::WindowState* window_state = window->GetWindowState();
+    if (window_on_top)
+      window_state->DisableAlwaysOnTop(window_on_top);
+    else
+      window_state->RestoreAlwaysOnTop();
   }
 }
 

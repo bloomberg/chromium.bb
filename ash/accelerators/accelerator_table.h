@@ -235,9 +235,16 @@ ASH_EXPORT extern const size_t kActionsAllowedAtModalWindowLength;
 ASH_EXPORT extern const AcceleratorAction kNonrepeatableActions[];
 ASH_EXPORT extern const size_t kNonrepeatableActionsLength;
 
-// Actions allowed in app mode.
-ASH_EXPORT extern const AcceleratorAction kActionsAllowedInAppMode[];
-ASH_EXPORT extern const size_t kActionsAllowedInAppModeLength;
+// Actions allowed in app mode or pinned mode.
+ASH_EXPORT extern const AcceleratorAction
+    kActionsAllowedInAppModeOrPinnedMode[];
+ASH_EXPORT extern const size_t kActionsAllowedInAppModeOrPinnedModeLength;
+
+// Actions that can be performed in pinned mode.
+// In pinned mode, the action listed this or "in app mode or pinned mode" table
+// can be performed.
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedInPinnedMode[];
+ASH_EXPORT extern const size_t kActionsAllowedInPinnedModeLength;
 
 // Actions that require at least 1 window.
 ASH_EXPORT extern const AcceleratorAction kActionsNeedingWindow[];
