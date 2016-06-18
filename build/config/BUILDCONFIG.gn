@@ -537,6 +537,12 @@ set_defaults("executable") {
   configs = _executable_configs
 }
 
+if (is_ios) {
+  set_defaults("ios_app_bundle") {
+    configs = _executable_configs
+  }
+}
+
 # Static library defaults.
 set_defaults("static_library") {
   configs = _native_compiler_configs
