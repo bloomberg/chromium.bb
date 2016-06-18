@@ -261,7 +261,7 @@
           ],
         }],
         [ 'OS == "ios"', {
-          # Only include these files on iOS when using NSS for cert 
+          # Only include these files on iOS when using NSS for cert
           # verification.
           'sources!': [
            'cert/x509_util_ios.cc',
@@ -577,6 +577,8 @@
         'dns/mock_mdns_socket_factory.h',
         'http/http_transaction_test_util.cc',
         'http/http_transaction_test_util.h',
+        'http/http_stream_factory_test_util.cc',
+        'http/http_stream_factory_test_util.h',
         'log/test_net_log.cc',
         'log/test_net_log.h',
         'log/test_net_log_entry.cc',
