@@ -176,12 +176,15 @@ static int check_cmd_bo(struct fd_ringbuffer *ring,
 	return msm_ring->submit.bos[cmd->submit_idx].handle == bo->handle;
 }
 
-static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
+/* Ensure that submit has corresponding entry in cmds table for the
+ * target cmdstream buffer:
+ */
+static void get_cmd(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target_ring, struct fd_bo *target_bo,
 		uint32_t submit_offset, uint32_t size, uint32_t type)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	struct drm_msm_gem_submit_cmd *cmd = NULL;
+	struct drm_msm_gem_submit_cmd *cmd;
 	uint32_t i;
 
 	/* figure out if we already have a cmd buf: */
@@ -191,24 +194,19 @@ static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
 				(cmd->size == size) &&
 				(cmd->type == type) &&
 				check_cmd_bo(ring, cmd, target_bo))
-			break;
-		cmd = NULL;
+			return;
 	}
 
 	/* create cmd buf if not: */
-	if (!cmd) {
-		uint32_t idx = APPEND(&msm_ring->submit, cmds);
-		APPEND(msm_ring, rings);
-		msm_ring->rings[idx] = target_ring;
-		cmd = &msm_ring->submit.cmds[idx];
-		cmd->type = type;
-		cmd->submit_idx = bo2idx(ring, target_bo, FD_RELOC_READ);
-		cmd->submit_offset = submit_offset;
-		cmd->size = size;
-		cmd->pad = 0;
-	}
-
-	return cmd;
+	i = APPEND(&msm_ring->submit, cmds);
+	APPEND(msm_ring, rings);
+	msm_ring->rings[i] = target_ring;
+	cmd = &msm_ring->submit.cmds[i];
+	cmd->type = type;
+	cmd->submit_idx = bo2idx(ring, target_bo, FD_RELOC_READ);
+	cmd->submit_offset = submit_offset;
+	cmd->size = size;
+	cmd->pad = 0;
 }
 
 static void * msm_ringbuffer_hostptr(struct fd_ringbuffer *ring)
@@ -360,11 +358,9 @@ static void msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		uint32_t submit_offset, uint32_t size)
 {
 	struct fd_bo *target_bo = to_msm_ringbuffer(target)->ring_bo;
-	struct drm_msm_gem_submit_cmd *cmd;
 
-	cmd = get_cmd(ring, target, target_bo, submit_offset, size,
+	get_cmd(ring, target, target_bo, submit_offset, size,
 			MSM_SUBMIT_CMD_IB_TARGET_BUF);
-	assert(cmd);
 
 	msm_ringbuffer_emit_reloc(ring, &(struct fd_reloc){
 		.bo = target_bo,
