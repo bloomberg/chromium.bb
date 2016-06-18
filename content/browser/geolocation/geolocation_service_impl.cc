@@ -188,7 +188,7 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
 
 void GeolocationServiceImpl::ReportCurrentPosition() {
   position_callback_.Run(current_position_.Clone());
-  position_callback_.reset();
+  position_callback_.Reset();
   has_position_to_report_ = false;
 }
 

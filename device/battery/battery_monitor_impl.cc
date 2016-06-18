@@ -55,7 +55,7 @@ void BatteryMonitorImpl::DidChange(const BatteryStatus& battery_status) {
 
 void BatteryMonitorImpl::ReportStatus() {
   callback_.Run(status_.Clone());
-  callback_.reset();
+  callback_.Reset();
 
   status_to_report_ = false;
 }

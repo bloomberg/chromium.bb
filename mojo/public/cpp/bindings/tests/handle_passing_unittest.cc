@@ -20,19 +20,18 @@ namespace {
 const char kText1[] = "hello";
 const char kText2[] = "world";
 
-class StringRecorder {
- public:
-  StringRecorder(std::string* buf, const base::Closure& closure)
-      : buf_(buf), closure_(closure) {}
-  void Run(const String& a) const {
-    *buf_ = a.To<std::string>();
-    closure_.Run();
-  }
+void RecordString(std::string* storage,
+                  const base::Closure& closure,
+                  String str) {
+  *storage = str.PassStorage();
+  closure.Run();
+}
 
- private:
-  std::string* buf_;
-  base::Closure closure_;
-};
+base::Callback<void(mojo::String)> MakeStringRecorder(
+    std::string* storage,
+    const base::Closure& closure) {
+  return base::Bind(&RecordString, storage, closure);
+}
 
 class ImportedInterfaceImpl : public imported::ImportedInterface {
  public:
@@ -166,40 +165,40 @@ class HandlePassingTest : public testing::Test {
   base::MessageLoop loop_;
 };
 
-struct DoStuffCallback {
-  DoStuffCallback(bool* got_response,
-                  std::string* got_text_reply,
-                  const base::Closure& closure)
-      : got_response(got_response),
-        got_text_reply(got_text_reply),
-        closure(closure) {}
+void DoStuff(bool* got_response,
+             std::string* got_text_reply,
+             const base::Closure& closure,
+             sample::ResponsePtr response,
+             String text_reply) {
+  *got_text_reply = text_reply;
 
-  void Run(sample::ResponsePtr response, const String& text_reply) const {
-    *got_text_reply = text_reply;
+  if (response->pipe.is_valid()) {
+    std::string text2;
+    EXPECT_TRUE(ReadTextMessage(response->pipe.get(), &text2));
 
-    if (response->pipe.is_valid()) {
-      std::string text2;
-      EXPECT_TRUE(ReadTextMessage(response->pipe.get(), &text2));
+    // Ensure that simply accessing response.pipe does not close it.
+    EXPECT_TRUE(response->pipe.is_valid());
 
-      // Ensure that simply accessing response.pipe does not close it.
-      EXPECT_TRUE(response->pipe.is_valid());
+    EXPECT_EQ(std::string(kText2), text2);
 
-      EXPECT_EQ(std::string(kText2), text2);
-
-      // Do some more tests of handle passing:
-      ScopedMessagePipeHandle p = std::move(response->pipe);
-      EXPECT_TRUE(p.is_valid());
-      EXPECT_FALSE(response->pipe.is_valid());
-    }
-
-    *got_response = true;
-    closure.Run();
+    // Do some more tests of handle passing:
+    ScopedMessagePipeHandle p = std::move(response->pipe);
+    EXPECT_TRUE(p.is_valid());
+    EXPECT_FALSE(response->pipe.is_valid());
   }
 
-  bool* got_response;
-  std::string* got_text_reply;
-  base::Closure closure;
-};
+  *got_response = true;
+  closure.Run();
+}
+
+void DoStuff2(bool* got_response,
+             std::string* got_text_reply,
+             const base::Closure& closure,
+             String text_reply) {
+  *got_response = true;
+  *got_text_reply = text_reply;
+  closure.Run();
+}
 
 TEST_F(HandlePassingTest, Basic) {
   sample::FactoryPtr factory;
@@ -223,17 +222,18 @@ TEST_F(HandlePassingTest, Basic) {
   bool got_response = false;
   std::string got_text_reply;
   base::RunLoop run_loop2;
-  DoStuffCallback cb(&got_response, &got_text_reply, run_loop2.QuitClosure());
-  factory->DoStuff(std::move(request), std::move(pipe0.handle0), cb);
+  factory->DoStuff(std::move(request), std::move(pipe0.handle0),
+                   base::Bind(&DoStuff, &got_response, &got_text_reply,
+                              run_loop2.QuitClosure()));
 
-  EXPECT_FALSE(*cb.got_response);
+  EXPECT_FALSE(got_response);
   int count_before = ImportedInterfaceImpl::do_something_count();
 
   run_loop.Run();
   run_loop2.Run();
 
-  EXPECT_TRUE(*cb.got_response);
-  EXPECT_EQ(kText1, *cb.got_text_reply);
+  EXPECT_TRUE(got_response);
+  EXPECT_EQ(kText1, got_text_reply);
   EXPECT_EQ(1, ImportedInterfaceImpl::do_something_count() - count_before);
 }
 
@@ -246,34 +246,16 @@ TEST_F(HandlePassingTest, PassInvalid) {
   bool got_response = false;
   std::string got_text_reply;
   base::RunLoop run_loop;
-  DoStuffCallback cb(&got_response, &got_text_reply, run_loop.QuitClosure());
-  factory->DoStuff(std::move(request), ScopedMessagePipeHandle(), cb);
+  factory->DoStuff(std::move(request), ScopedMessagePipeHandle(),
+                   base::Bind(&DoStuff, &got_response, &got_text_reply,
+                              run_loop.QuitClosure()));
 
-  EXPECT_FALSE(*cb.got_response);
+  EXPECT_FALSE(got_response);
 
   run_loop.Run();
 
-  EXPECT_TRUE(*cb.got_response);
+  EXPECT_TRUE(got_response);
 }
-
-struct DoStuff2Callback {
-  DoStuff2Callback(bool* got_response,
-                   std::string* got_text_reply,
-                   const base::Closure& closure)
-      : got_response(got_response),
-        got_text_reply(got_text_reply),
-        closure(closure) {}
-
-  void Run(const String& text_reply) const {
-    *got_response = true;
-    *got_text_reply = text_reply;
-    closure.Run();
-  }
-
-  bool* got_response;
-  std::string* got_text_reply;
-  base::Closure closure;
-};
 
 // Verifies DataPipeConsumer can be passed and read from.
 TEST_F(HandlePassingTest, DataPipe) {
@@ -302,15 +284,16 @@ TEST_F(HandlePassingTest, DataPipe) {
   bool got_response = false;
   std::string got_text_reply;
   base::RunLoop run_loop;
-  DoStuff2Callback cb(&got_response, &got_text_reply, run_loop.QuitClosure());
-  factory->DoStuff2(std::move(consumer_handle), cb);
+  factory->DoStuff2(std::move(consumer_handle),
+                    base::Bind(&DoStuff2, &got_response, &got_text_reply,
+                               run_loop.QuitClosure()));
 
-  EXPECT_FALSE(*cb.got_response);
+  EXPECT_FALSE(got_response);
 
   run_loop.Run();
 
-  EXPECT_TRUE(*cb.got_response);
-  EXPECT_EQ(expected_text_reply, *cb.got_text_reply);
+  EXPECT_TRUE(got_response);
+  EXPECT_EQ(expected_text_reply, got_text_reply);
 }
 
 TEST_F(HandlePassingTest, PipesAreClosed) {
@@ -371,10 +354,10 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
 
   base::RunLoop run_loop, run_loop2;
   std::string name1;
-  object1->GetName(StringRecorder(&name1, run_loop.QuitClosure()));
+  object1->GetName(MakeStringRecorder(&name1, run_loop.QuitClosure()));
 
   std::string name2;
-  object2->GetName(StringRecorder(&name2, run_loop2.QuitClosure()));
+  object2->GetName(MakeStringRecorder(&name2, run_loop2.QuitClosure()));
 
   run_loop.Run();
   run_loop2.Run();

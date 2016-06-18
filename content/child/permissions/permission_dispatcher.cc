@@ -350,7 +350,7 @@ void PermissionDispatcher::OnPermissionResponse(int worker_thread_id,
 void PermissionDispatcher::OnRequestPermissionsResponse(
     int worker_thread_id,
     uintptr_t callback_key,
-    const mojo::Array<PermissionStatus>& result) {
+    mojo::Array<PermissionStatus> result) {
   std::unique_ptr<blink::WebPermissionsCallback> callback =
       permissions_callbacks_.take_and_erase(callback_key);
   std::unique_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses(

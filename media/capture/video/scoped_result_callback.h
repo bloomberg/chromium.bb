@@ -32,7 +32,7 @@ class ScopedResultCallback {
 
   ScopedResultCallback& operator=(ScopedResultCallback&& other) {
     callback_ = other.callback_;
-    other.callback_.reset();
+    other.callback_.Reset();
     on_error_callback_ = other.on_error_callback_;
     other.on_error_callback_.Reset();
     return *this;
@@ -44,7 +44,7 @@ class ScopedResultCallback {
     // TODO(mcasas): Use base::ResetAndReturn() when mojo::Callback<> is
     // compatible with base::Callback<>, see https://crbug.com/596521.
     callback_.Run(std::forward<Args>(args)...);
-    callback_.reset();
+    callback_.Reset();
   }
 
  private:

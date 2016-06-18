@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -102,7 +103,8 @@ class AssociatedBinding {
         base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_, std::move(runner)));
     endpoint_client_->set_connection_error_handler(
-        [this]() { connection_error_handler_.Run(); });
+        base::Bind(&AssociatedBinding::RunConnectionErrorHandler,
+                   base::Unretained(this)));
 
     stub_.serialization_context()->router = endpoint_client_->router();
   }
@@ -112,7 +114,7 @@ class AssociatedBinding {
   void Close() {
     DCHECK(endpoint_client_);
     endpoint_client_.reset();
-    connection_error_handler_.reset();
+    connection_error_handler_.Reset();
   }
 
   // Unbinds and returns the associated interface request so it can be
@@ -125,7 +127,7 @@ class AssociatedBinding {
     request.Bind(endpoint_client_->PassHandle());
 
     endpoint_client_.reset();
-    connection_error_handler_.reset();
+    connection_error_handler_.Reset();
 
     return request;
   }
@@ -153,6 +155,11 @@ class AssociatedBinding {
   }
 
  private:
+  void RunConnectionErrorHandler() {
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
+  }
+
   std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
 
   typename Interface::Stub_ stub_;

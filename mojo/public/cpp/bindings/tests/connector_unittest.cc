@@ -9,6 +9,7 @@
 #include <string.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,7 +30,7 @@ class MessageAccumulator : public MessageReceiver {
     queue_.Push(message);
     if (!closure_.is_null()) {
       Closure closure = closure_;
-      closure_.reset();
+      closure_.Reset();
       closure.Run();
     }
     return true;
@@ -454,6 +455,11 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
   ASSERT_EQ(2, accumulator.number_of_calls());
 }
 
+void ForwardErrorHandler(bool* called, const base::Closure& callback) {
+  *called = true;
+  callback.Run();
+}
+
 TEST_F(ConnectorTest, RaiseError) {
   base::RunLoop run_loop, run_loop2;
   internal::Connector connector0(std::move(handle0_),
@@ -461,20 +467,16 @@ TEST_F(ConnectorTest, RaiseError) {
                                  base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called0 = false;
   connector0.set_connection_error_handler(
-      [&error_handler_called0, &run_loop]() {
-        error_handler_called0 = true;
-        run_loop.Quit();
-      });
+      base::Bind(&ForwardErrorHandler, &error_handler_called0,
+                 run_loop.QuitClosure()));
 
   internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND,
                                  base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called1 = false;
   connector1.set_connection_error_handler(
-      [&error_handler_called1, &run_loop2]() {
-        error_handler_called1 = true;
-        run_loop2.Quit();
-      });
+      base::Bind(&ForwardErrorHandler, &error_handler_called1,
+                 run_loop2.QuitClosure()));
 
   const char kText[] = "hello world";
 
@@ -516,6 +518,12 @@ TEST_F(ConnectorTest, RaiseError) {
   EXPECT_TRUE(connector1.is_valid());
 }
 
+void PauseConnectorAndRunClosure(internal::Connector* connector,
+                                 const base::Closure& closure) {
+  connector->PauseIncomingMethodCallProcessing();
+  closure.Run();
+}
+
 TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND,
@@ -536,10 +544,9 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   base::RunLoop run_loop;
   // Configure the accumulator such that it pauses after the first message is
   // received.
-  MessageAccumulator accumulator([&connector1, &run_loop]() {
-    connector1.PauseIncomingMethodCallProcessing();
-    run_loop.Quit();
-  });
+  MessageAccumulator accumulator(
+      base::Bind(&PauseConnectorAndRunClosure, &connector1,
+                 run_loop.QuitClosure()));
   connector1.set_incoming_receiver(&accumulator);
 
   run_loop.Run();
@@ -547,6 +554,16 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   // As we paused after the first message we should only have gotten one
   // message.
   ASSERT_EQ(1u, accumulator.size());
+}
+
+void AccumulateWithNestedLoop(MessageAccumulator* accumulator,
+                              const base::Closure& closure) {
+  base::RunLoop nested_run_loop;
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  accumulator->set_closure(nested_run_loop.QuitClosure());
+  nested_run_loop.Run();
+  closure.Run();
 }
 
 TEST_F(ConnectorTest, ProcessWhenNested) {
@@ -570,14 +587,8 @@ TEST_F(ConnectorTest, ProcessWhenNested) {
   MessageAccumulator accumulator;
   // When the accumulator gets the first message it spins a nested message
   // loop. The loop is quit when another message is received.
-  accumulator.set_closure([&accumulator, &connector1, &run_loop]() {
-    base::RunLoop nested_run_loop;
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
-    accumulator.set_closure([&nested_run_loop]() { nested_run_loop.Quit(); });
-    nested_run_loop.Run();
-    run_loop.Quit();
-  });
+  accumulator.set_closure(base::Bind(&AccumulateWithNestedLoop, &accumulator,
+                                     run_loop.QuitClosure()));
   connector1.set_incoming_receiver(&accumulator);
 
   run_loop.Run();

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -72,6 +73,14 @@ base::Callback<void(T)> EnumFail(const std::string& reason) {
 template <typename T>
 void ExpectError(InterfacePtr<T>* proxy, const base::Closure& callback) {
   proxy->set_connection_error_handler(callback);
+}
+
+template <typename Func, typename Arg>
+void RunSimpleLambda(Func func, Arg arg) { func(std::move(arg)); }
+
+template <typename Arg, typename Func>
+base::Callback<void(Arg)> BindSimpleLambda(Func func) {
+  return base::Bind(&RunSimpleLambda<Func, Arg>, func);
 }
 
 // This implements the generated Chromium variant of PicklePasser.
@@ -304,17 +313,18 @@ TEST_F(PickleTest, PickleArray) {
     // rather than doing a byte-for-byte copy of the element data, beacuse the
     // |baz| field should never be serialized.
     proxy->PassPickles(std::move(pickles),
-                       [&](Array<PickledStructChromium> passed) {
-                         ASSERT_FALSE(passed.is_null());
-                         ASSERT_EQ(2u, passed.size());
-                         EXPECT_EQ(1, passed[0].foo());
-                         EXPECT_EQ(2, passed[0].bar());
-                         EXPECT_EQ(0, passed[0].baz());
-                         EXPECT_EQ(3, passed[1].foo());
-                         EXPECT_EQ(4, passed[1].bar());
-                         EXPECT_EQ(0, passed[1].baz());
-                         run_loop.Quit();
-                       });
+                       BindSimpleLambda<Array<PickledStructChromium>>(
+                           [&](Array<PickledStructChromium> passed) {
+                             ASSERT_FALSE(passed.is_null());
+                             ASSERT_EQ(2u, passed.size());
+                             EXPECT_EQ(1, passed[0].foo());
+                             EXPECT_EQ(2, passed[0].bar());
+                             EXPECT_EQ(0, passed[0].baz());
+                             EXPECT_EQ(3, passed[1].foo());
+                             EXPECT_EQ(4, passed[1].bar());
+                             EXPECT_EQ(0, passed[1].baz());
+                             run_loop.Quit();
+                           }));
     run_loop.Run();
   }
 }
@@ -340,26 +350,28 @@ TEST_F(PickleTest, PickleArrayArray) {
   {
     base::RunLoop run_loop;
     // Verify that the array-of-arrays serializes and deserializes properly.
-    proxy->PassPickleArrays(std::move(pickle_arrays),
-                            [&](Array<Array<PickledStructChromium>> passed) {
-                              ASSERT_FALSE(passed.is_null());
-                              ASSERT_EQ(2u, passed.size());
-                              ASSERT_EQ(2u, passed[0].size());
-                              ASSERT_EQ(2u, passed[1].size());
-                              EXPECT_EQ(1, passed[0][0].foo());
-                              EXPECT_EQ(2, passed[0][0].bar());
-                              EXPECT_EQ(0, passed[0][0].baz());
-                              EXPECT_EQ(3, passed[0][1].foo());
-                              EXPECT_EQ(4, passed[0][1].bar());
-                              EXPECT_EQ(0, passed[0][1].baz());
-                              EXPECT_EQ(5, passed[1][0].foo());
-                              EXPECT_EQ(6, passed[1][0].bar());
-                              EXPECT_EQ(0, passed[1][0].baz());
-                              EXPECT_EQ(7, passed[1][1].foo());
-                              EXPECT_EQ(8, passed[1][1].bar());
-                              EXPECT_EQ(0, passed[1][1].baz());
-                              run_loop.Quit();
-                            });
+    proxy->PassPickleArrays(
+        std::move(pickle_arrays),
+        BindSimpleLambda<Array<Array<PickledStructChromium>>>(
+            [&](Array<Array<PickledStructChromium>> passed) {
+              ASSERT_FALSE(passed.is_null());
+              ASSERT_EQ(2u, passed.size());
+              ASSERT_EQ(2u, passed[0].size());
+              ASSERT_EQ(2u, passed[1].size());
+              EXPECT_EQ(1, passed[0][0].foo());
+              EXPECT_EQ(2, passed[0][0].bar());
+              EXPECT_EQ(0, passed[0][0].baz());
+              EXPECT_EQ(3, passed[0][1].foo());
+              EXPECT_EQ(4, passed[0][1].bar());
+              EXPECT_EQ(0, passed[0][1].baz());
+              EXPECT_EQ(5, passed[1][0].foo());
+              EXPECT_EQ(6, passed[1][0].bar());
+              EXPECT_EQ(0, passed[1][0].baz());
+              EXPECT_EQ(7, passed[1][1].foo());
+              EXPECT_EQ(8, passed[1][1].bar());
+              EXPECT_EQ(0, passed[1][1].baz());
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 }
@@ -376,15 +388,16 @@ TEST_F(PickleTest, PickleContainer) {
   {
     base::RunLoop run_loop;
     proxy->PassPickleContainer(std::move(pickle_container),
-                               [&](PickleContainerPtr passed) {
-                                 ASSERT_FALSE(passed.is_null());
-                                 EXPECT_EQ(42, passed->f_struct.foo());
-                                 EXPECT_EQ(43, passed->f_struct.bar());
-                                 EXPECT_EQ(0, passed->f_struct.baz());
-                                 EXPECT_EQ(PickledEnumChromium::VALUE_1,
-                                           passed->f_enum);
-                                 run_loop.Quit();
-                               });
+                               BindSimpleLambda<PickleContainerPtr>(
+                                   [&](PickleContainerPtr passed) {
+                                     ASSERT_FALSE(passed.is_null());
+                                     EXPECT_EQ(42, passed->f_struct.foo());
+                                     EXPECT_EQ(43, passed->f_struct.bar());
+                                     EXPECT_EQ(0, passed->f_struct.baz());
+                                     EXPECT_EQ(PickledEnumChromium::VALUE_1,
+                                               passed->f_enum);
+                                     run_loop.Quit();
+                                   }));
     run_loop.Run();
   }
 }

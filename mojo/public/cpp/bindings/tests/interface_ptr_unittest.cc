@@ -20,26 +20,6 @@ namespace mojo {
 namespace test {
 namespace {
 
-template <typename Method, typename Class>
-class RunnableImpl {
- public:
-  RunnableImpl(Method method, Class instance)
-      : method_(method), instance_(instance) {}
-  template <typename... Args>
-  void Run(Args... args) const {
-    (instance_->*method_)(args...);
-  }
-
- private:
-  Method method_;
-  Class instance_;
-};
-
-template <typename Method, typename Class>
-RunnableImpl<Method, Class> MakeRunnable(Method method, Class object) {
-  return RunnableImpl<Method, Class>(method, object);
-}
-
 typedef mojo::Callback<void(double)> CalcCallback;
 
 class MathCalculatorImpl : public math::Calculator {
@@ -222,6 +202,22 @@ class InterfacePtrTest : public testing::Test {
   base::MessageLoop loop_;
 };
 
+void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
+  *flag = true;
+  closure.Run();
+}
+
+void IgnoreValueAndRunClosure(const base::Closure& closure, int32_t value) {
+  closure.Run();
+}
+
+void ExpectValueAndRunClosure(uint32_t expected_value,
+                              const base::Closure& closure,
+                              uint32_t value) {
+  EXPECT_EQ(expected_value, value);
+  closure.Run();
+}
+
 TEST_F(InterfacePtrTest, IsBound) {
   math::CalculatorPtr calc;
   EXPECT_FALSE(calc.is_bound());
@@ -351,10 +347,8 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   bool encountered_error = false;
   base::RunLoop run_loop;
   proxy.set_connection_error_handler(
-      [&encountered_error, &run_loop]() {
-        encountered_error = true;
-        run_loop.Quit();
-      });
+      base::Bind(&SetFlagAndRunClosure, &encountered_error,
+                 run_loop.QuitClosure()));
 
   MathCalculatorUI calculator_ui(std::move(proxy));
 
@@ -418,12 +412,12 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   ReentrantServiceImpl impl(GetProxy(&proxy));
 
   base::RunLoop run_loop, run_loop2;
-  auto called_cb = [&run_loop](int32_t result) { run_loop.Quit(); };
-  auto called_cb2 = [&run_loop2](int32_t result) { run_loop2.Quit(); };
   proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                   called_cb);
+                   base::Bind(&IgnoreValueAndRunClosure,
+                              run_loop.QuitClosure()));
   proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                   called_cb2);
+                   base::Bind(&IgnoreValueAndRunClosure,
+                              run_loop2.QuitClosure()));
 
   run_loop.Run();
   run_loop2.Run();
@@ -439,12 +433,8 @@ TEST_F(InterfacePtrTest, QueryVersion) {
   EXPECT_EQ(0u, ptr.version());
 
   base::RunLoop run_loop;
-  auto callback = [&run_loop](uint32_t version) {
-    EXPECT_EQ(3u, version);
-    run_loop.Quit();
-  };
-  ptr.QueryVersion(callback);
-
+  ptr.QueryVersion(base::Bind(&ExpectValueAndRunClosure, 3u,
+                              run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(3u, ptr.version());
@@ -499,7 +489,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
         closure_(closure),
         binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
-        [this]() { *error_received_ = true; closure_.Run(); });
+        base::Bind(&SetFlagAndRunClosure, error_received_, closure_));
   }
   ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -573,7 +563,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
         closure_(closure),
         binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
-        [this]() { *error_received_ = true; closure_.Run(); });
+        base::Bind(&SetFlagAndRunClosure, error_received_, closure_));
   }
   ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -741,10 +731,7 @@ TEST_F(InterfacePtrTest, Fusion) {
   // Ping!
   bool called = false;
   base::RunLoop loop;
-  ptr->Ping([&called, &loop] {
-    called = true;
-    loop.Quit();
-  });
+  ptr->Ping(base::Bind(&SetFlagAndRunClosure, &called, loop.QuitClosure()));
   loop.Run();
   EXPECT_TRUE(called);
 }

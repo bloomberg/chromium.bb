@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -227,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   set_process_exit_callback(run_loop.QuitClosure());
 
   // Should reply with a bad message and cause process death.
-  service->DoSomething([]{});
+  service->DoSomething(base::Bind(&base::DoNothing));
 
   run_loop.Run();
 

@@ -52,7 +52,6 @@
         'public/cpp/bindings/tests/binding_callback_unittest.cc',
         'public/cpp/bindings/tests/binding_unittest.cc',
         'public/cpp/bindings/tests/buffer_unittest.cc',
-        'public/cpp/bindings/tests/callback_unittest.cc',
         'public/cpp/bindings/tests/connector_unittest.cc',
         'public/cpp/bindings/tests/constant_unittest.cc',
         'public/cpp/bindings/tests/container_test_util.cc',

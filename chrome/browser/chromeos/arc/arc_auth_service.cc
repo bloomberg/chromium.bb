@@ -474,7 +474,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
 void ArcAuthService::ShutdownBridge() {
   playstore_launcher_.reset();
-  auth_callback_.reset();
+  auth_callback_.Reset();
   ubertoken_fetcher_.reset();
   merger_fetcher_.reset();
   arc_bridge_service()->Shutdown();
@@ -532,7 +532,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
     auth_callback_.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
-    auth_callback_.reset();
+    auth_callback_.Reset();
     return;
   }
 

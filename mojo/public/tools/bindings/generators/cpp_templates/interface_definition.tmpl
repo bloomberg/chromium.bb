@@ -225,9 +225,37 @@ void {{proxy_name}}::{{method.name}}(
 {%-     set params_description =
             "%s.%s response"|format(interface.name, method.name) %}
 class {{class_name}}_{{method.name}}_ProxyToResponder
-    : public {{class_name}}::{{method.name}}Callback::Runnable {
+    : public base::RefCountedThreadSafe<
+          {{class_name}}_{{method.name}}_ProxyToResponder> {
  public:
-  ~{{class_name}}_{{method.name}}_ProxyToResponder() override {
+  static {{class_name}}::{{method.name}}Callback CreateCallback(
+      uint64_t request_id,
+      bool is_sync,
+      mojo::MessageReceiverWithStatus* responder,
+      scoped_refptr<mojo::internal::MultiplexRouter> router) {
+    scoped_refptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy
+        = new {{class_name}}_{{method.name}}_ProxyToResponder(
+            request_id, is_sync, responder, router);
+    return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
+                      proxy);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<
+      {{class_name}}_{{method.name}}_ProxyToResponder>;
+
+  {{class_name}}_{{method.name}}_ProxyToResponder(
+      uint64_t request_id,
+      bool is_sync,
+      mojo::MessageReceiverWithStatus* responder,
+      scoped_refptr<mojo::internal::MultiplexRouter> router)
+      : request_id_(request_id),
+        is_sync_(is_sync),
+        responder_(responder),
+        serialization_context_(std::move(router)) {
+  }
+
+  ~{{class_name}}_{{method.name}}_ProxyToResponder() {
 #if DCHECK_IS_ON()
     if (responder_) {
       // Is the Mojo application destroying the callback without running it
@@ -242,29 +270,22 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
     delete responder_;
   }
 
-  {{class_name}}_{{method.name}}_ProxyToResponder(
-      uint64_t request_id,
-      bool is_sync,
-      mojo::MessageReceiverWithStatus* responder,
-      scoped_refptr<mojo::internal::MultiplexRouter> router)
-      : request_id_(request_id),
-        is_sync_(is_sync),
-        responder_(responder),
-        serialization_context_(std::move(router)) {
-  }
+  void Run(
+      {{interface_macros.declare_responder_params(
+          "in_", method.response_parameters, for_blink)}});
 
-  void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) override;
-
- private:
   uint64_t request_id_;
   bool is_sync_;
   mojo::MessageReceiverWithStatus* responder_;
   // TODO(yzshen): maybe I should use a ref to the original one?
   mojo::internal::SerializationContext serialization_context_;
+
   DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
+
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
-    {{interface_macros.declare_params("in_", method.response_parameters)}}) {
+    {{interface_macros.declare_responder_params(
+        "in_", method.response_parameters, for_blink)}}) {
   {{struct_macros.get_serialized_size(response_params_struct, "in_%s",
                                       "&serialization_context_")}}
   mojo::internal::ResponseMessageBuilder builder(
@@ -338,13 +359,12 @@ bool {{class_name}}Stub::AcceptWithResponder(
       {{alloc_params(method.param_struct, "params", "message",
           "&serialization_context_", "{{class_name}}::{{method.name}}")|
               indent(4)}}
-      {{class_name}}::{{method.name}}Callback::Runnable* runnable =
-          new {{class_name}}_{{method.name}}_ProxyToResponder(
+      {{class_name}}::{{method.name}}Callback callback =
+          {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(
               message->request_id(),
               message->has_flag(mojo::internal::kMessageIsSync),
               responder,
               serialization_context_.router);
-      {{class_name}}::{{method.name}}Callback callback(runnable);
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");

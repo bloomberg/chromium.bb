@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -63,16 +64,12 @@ class InterfacePtrState<Interface, false> {
   void QueryVersion(const Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
-    // It is safe to capture |this| because the callback won't be run after this
-    // object goes away.
-    auto callback_wrapper = [this, callback](uint32_t version) {
-      this->version_ = version;
-      callback.Run(version);
-    };
-
     // Do a static cast in case the interface contains methods with the same
-    // name.
-    static_cast<ControlMessageProxy*>(proxy_)->QueryVersion(callback_wrapper);
+    // name. It is safe to capture |this| because the callback won't be run
+    // after this object goes away.
+    static_cast<ControlMessageProxy*>(proxy_)->QueryVersion(
+        base::Bind(&InterfacePtrState::OnQueryVersion, base::Unretained(this),
+                   callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -173,6 +170,12 @@ class InterfacePtrState<Interface, false> {
     proxy_ = new Proxy(router_);
   }
 
+  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+                      uint32_t version) {
+    version_ = version;
+    callback.Run(version);
+  }
+
   Proxy* proxy_;
   Router* router_;
 
@@ -213,17 +216,13 @@ class InterfacePtrState<Interface, true> {
   void QueryVersion(const Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
-    // It is safe to capture |this| because the callback won't be run after this
-    // object goes away.
-    auto callback_wrapper = [this, callback](uint32_t version) {
-      this->version_ = version;
-      callback.Run(version);
-    };
 
     // Do a static cast in case the interface contains methods with the same
-    // name.
-    static_cast<ControlMessageProxy*>(proxy_.get())
-        ->QueryVersion(callback_wrapper);
+    // name. It is safe to capture |this| because the callback won't be run
+    // after this object goes away.
+    static_cast<ControlMessageProxy*>(proxy_.get())->QueryVersion(
+        base::Bind(&InterfacePtrState::OnQueryVersion, base::Unretained(this),
+                   callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -332,6 +331,12 @@ class InterfacePtrState<Interface, true> {
         std::move(runner_)));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
+  }
+
+  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+                      uint32_t version) {
+    version_ = version;
+    callback.Run(version);
   }
 
   scoped_refptr<MultiplexRouter> router_;

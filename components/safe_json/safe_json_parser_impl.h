@@ -40,7 +40,7 @@ class SafeJsonParserImpl : public SafeJsonParser {
   void OnConnectionError();
 
   // mojom::SafeJsonParser::Parse callback.
-  void OnParseDone(const base::ListValue& wrapper, const mojo::String& error);
+  void OnParseDone(const base::ListValue& wrapper, mojo::String error);
 
   // Reports the result on the calling task runner via the |success_callback_|
   // or the |error_callback_|.

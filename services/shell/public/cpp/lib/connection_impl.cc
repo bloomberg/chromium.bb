@@ -117,7 +117,7 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 // ConnectionImpl, private:
 
 void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
-                                           const std::string& target_user_id,
+                                           mojo::String target_user_id,
                                            uint32_t target_application_id) {
   DCHECK(State::PENDING == state_);
 

@@ -69,6 +69,36 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   mojo::BindingSet<TypeTraitsTest> bindings_;
 };
 
+void ExpectFormFieldData(const FormFieldData& expected,
+                         const base::Closure& closure,
+                         const FormFieldData& passed) {
+  EXPECT_TRUE(expected.SameFieldAs(passed));
+  EXPECT_EQ(expected.option_values, passed.option_values);
+  EXPECT_EQ(expected.option_contents, passed.option_contents);
+  closure.Run();
+}
+
+void ExpectFormData(const FormData& expected,
+                    const base::Closure& closure,
+                    const FormData& passed) {
+  EXPECT_TRUE(expected.SameFormAs(passed));
+  closure.Run();
+}
+
+void ExpectFormFieldDataPredictions(const FormFieldDataPredictions& expected,
+                                    const base::Closure& closure,
+                                    const FormFieldDataPredictions& passed) {
+  EXPECT_EQ(expected, passed);
+  closure.Run();
+}
+
+void ExpectFormDataPredictions(const FormDataPredictions& expected,
+                               const base::Closure& closure,
+                               const FormDataPredictions& passed) {
+  EXPECT_EQ(expected, passed);
+  closure.Run();
+}
+
 TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   FormFieldData input;
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
@@ -76,12 +106,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormFieldData(input, [&input, &loop](const FormFieldData& passed) {
-    EXPECT_TRUE(input.SameFieldAs(passed));
-    EXPECT_EQ(input.option_values, passed.option_values);
-    EXPECT_EQ(input.option_contents, passed.option_contents);
-    loop.Quit();
-  });
+  proxy->PassFormFieldData(
+      input, base::Bind(&ExpectFormFieldData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -91,10 +117,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormData(input, [&input, &loop](const FormData& passed) {
-    EXPECT_TRUE(input.SameFormAs(passed));
-    loop.Quit();
-  });
+  proxy->PassFormData(
+      input, base::Bind(&ExpectFormData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -105,10 +129,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldDataPredictions) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormFieldDataPredictions(
-      input, [&input, &loop](const FormFieldDataPredictions& passed) {
-        EXPECT_TRUE(input == passed);
-        loop.Quit();
-      });
+      input,
+      base::Bind(&ExpectFormFieldDataPredictions, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -128,10 +150,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormDataPredictions(
-      input, [&input, &loop](const FormDataPredictions& passed) {
-        EXPECT_TRUE(input == passed);
-        loop.Quit();
-      });
+      input,
+      base::Bind(&ExpectFormDataPredictions, input, loop.QuitClosure()));
   loop.Run();
 }
 

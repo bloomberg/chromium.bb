@@ -30,7 +30,7 @@ void MojoProvisionFetcher::Retrieve(const std::string& default_url,
 
 void MojoProvisionFetcher::OnResponse(const ResponseCB& response_cb,
                                       bool success,
-                                      const std::string& response) {
+                                      mojo::String response) {
   response_cb.Run(success, response);
 }
 

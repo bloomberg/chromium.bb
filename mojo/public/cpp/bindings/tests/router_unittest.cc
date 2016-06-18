@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -219,6 +220,11 @@ TEST_F(RouterTest, LazyResponses) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
+void ForwardErrorHandler(bool* called, const base::Closure& callback) {
+  *called = true;
+  callback.Run();
+}
+
 // Tests that if the receiving application destroys the responder_ without
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
@@ -228,19 +234,15 @@ TEST_F(RouterTest, MissingResponses) {
                            base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called0 = false;
   router0.set_connection_error_handler(
-      [&error_handler_called0, &run_loop0]() {
-        error_handler_called0 = true;
-        run_loop0.Quit();
-      });
+      base::Bind(&ForwardErrorHandler, &error_handler_called0,
+                 run_loop0.QuitClosure()));
 
   internal::Router router1(std::move(handle1_), internal::FilterChain(), false,
                            base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called1 = false;
   router1.set_connection_error_handler(
-      [&error_handler_called1, &run_loop1]() {
-        error_handler_called1 = true;
-        run_loop1.Quit();
-      });
+      base::Bind(&ForwardErrorHandler, &error_handler_called1,
+                 run_loop1.QuitClosure()));
 
   base::RunLoop run_loop3;
   LazyResponseGenerator generator(run_loop3.QuitClosure());

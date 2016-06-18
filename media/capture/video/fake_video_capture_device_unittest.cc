@@ -138,8 +138,7 @@ class PhotoTakenListener : public base::RefCounted<PhotoTakenListener> {
  public:
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void DoOnPhotoTaken(const mojo::String& mime_type,
-                      mojo::Array<uint8_t> data) {
+  void DoOnPhotoTaken(mojo::String mime_type, mojo::Array<uint8_t> data) {
     // Only PNG images are supported right now.
     EXPECT_STREQ("image/png", mime_type.storage().c_str());
     // Not worth decoding the incoming data. Just check that the header is PNG.

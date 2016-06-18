@@ -172,7 +172,9 @@ void CommandBufferImpl::BindToRequest(
     mojo::InterfaceRequest<mus::mojom::CommandBuffer> request) {
   binding_.reset(
       new mojo::Binding<mus::mojom::CommandBuffer>(this, std::move(request)));
-  binding_->set_connection_error_handler([this]() { OnConnectionError(); });
+  binding_->set_connection_error_handler(
+      base::Bind(&CommandBufferImpl::OnConnectionError,
+                 base::Unretained(this)));
 }
 
 void CommandBufferImpl::InitializeOnGpuThread(

@@ -35,6 +35,11 @@ std::unique_ptr<TestCatalogStore> BuildTestCatalogStore() {
   return base::WrapUnique(new TestCatalogStore(std::move(apps)));
 }
 
+void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
+  *flag = true;
+  closure.Run();
+}
+
 }  // namespace
 
 // Uses BackgroundShell to start the shell in the background and connects to
@@ -64,10 +69,8 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
       "mojo:background_shell_test_app", &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
-  test_service->Test([&run_loop, &got_result]() {
-    got_result = true;
-    run_loop.Quit();
-  });
+  test_service->Test(base::Bind(&SetFlagAndRunClosure, &got_result,
+                                run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(got_result);
   EXPECT_TRUE(store->get_store_called());

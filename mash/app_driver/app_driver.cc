@@ -60,7 +60,7 @@ AppDriver::AppDriver()
 AppDriver::~AppDriver() {}
 
 void AppDriver::OnAvailableCatalogEntries(
-    const mojo::Array<catalog::mojom::EntryPtr>& entries) {
+    mojo::Array<catalog::mojom::EntryPtr> entries) {
   if (entries.empty()) {
     LOG(ERROR) << "Unable to install accelerators for launching chrome.";
     return;

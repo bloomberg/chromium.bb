@@ -27,8 +27,7 @@ class AppDriver : public shell::ShellClient,
   ~AppDriver() override;
 
  private:
-  void OnAvailableCatalogEntries(
-      const mojo::Array<catalog::mojom::EntryPtr>& entries);
+  void OnAvailableCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries);
 
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,

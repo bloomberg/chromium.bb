@@ -5,6 +5,17 @@
 {%-   endfor %}
 {%- endmacro %}
 
+{%- macro declare_responder_params(prefix, parameters, for_blink) %}
+{%-   for param in parameters -%}
+{%-     if (not param.kind|is_string_kind) or for_blink -%}
+{{param.kind|cpp_wrapper_param_type}} {{prefix}}{{param.name}}
+{%-     else %}
+mojo::String {{prefix}}{{param.name}}
+{%-     endif %}
+{%- if not loop.last %}, {% endif %}
+{%-   endfor %}
+{%- endmacro %}
+
 {%- macro declare_callback(method, for_blink) -%}
 mojo::Callback<void(
 {%-   for param in method.response_parameters -%}

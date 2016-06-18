@@ -606,7 +606,7 @@ void PresentationServiceImpl::NewSessionMojoCallbackWrapper::Run(
     blink::mojom::PresentationErrorPtr error) {
   DCHECK(!callback_.is_null());
   callback_.Run(std::move(session), std::move(error));
-  callback_.reset();
+  callback_.Reset();
 }
 
 }  // namespace content

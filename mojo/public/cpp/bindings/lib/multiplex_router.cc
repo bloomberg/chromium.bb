@@ -303,7 +303,8 @@ MultiplexRouter::MultiplexRouter(
   connector_.AllowWokenUpBySyncWatchOnSameThread();
   connector_.set_incoming_receiver(&header_validator_);
   connector_.set_connection_error_handler(
-      [this]() { OnPipeConnectionError(); });
+      base::Bind(&MultiplexRouter::OnPipeConnectionError,
+                 base::Unretained(this)));
 }
 
 MultiplexRouter::~MultiplexRouter() {

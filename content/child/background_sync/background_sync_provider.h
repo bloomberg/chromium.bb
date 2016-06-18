@@ -61,11 +61,11 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
   void RegisterCallback(
       std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
       blink::mojom::BackgroundSyncError error,
-      const blink::mojom::SyncRegistrationPtr& options);
+      blink::mojom::SyncRegistrationPtr options);
   void GetRegistrationsCallback(
       std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       blink::mojom::BackgroundSyncError error,
-      const mojo::Array<blink::mojom::SyncRegistrationPtr>& registrations);
+      mojo::Array<blink::mojom::SyncRegistrationPtr> registrations);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
   blink::mojom::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();

@@ -143,7 +143,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState, ExceptionState& 
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->TakePhoto(m_streamTrack->component()->source()->id(), createBaseCallback(bind<String, mojo::WTFArray<uint8_t>>(&ImageCapture::onTakePhoto, this, resolver)));
+    m_service->TakePhoto(m_streamTrack->component()->source()->id(), createBaseCallback(bind<const String&, mojo::WTFArray<uint8_t>>(&ImageCapture::onTakePhoto, this, resolver)));
     return promise;
 }
 

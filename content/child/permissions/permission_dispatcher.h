@@ -130,7 +130,7 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   void OnRequestPermissionsResponse(
       int worker_thread_id,
       uintptr_t callback_key,
-      const mojo::Array<blink::mojom::PermissionStatus>& status);
+      mojo::Array<blink::mojom::PermissionStatus> status);
   void OnPermissionChanged(blink::WebPermissionType type,
                            const std::string& origin,
                            blink::WebPermissionObserver* observer,

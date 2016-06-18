@@ -165,7 +165,7 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   void SendResults() {
     if (!callback_.is_null())
       callback_.Run(std::move(usage_data_));
-    callback_.reset();
+    callback_.Reset();
     weak_factory_.InvalidateWeakPtrs();
     workers_to_go_ = 0;
   }

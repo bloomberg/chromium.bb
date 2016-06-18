@@ -51,7 +51,8 @@ DeviceManagerImpl::DeviceManagerImpl(
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() {
-  connection_error_handler_.Run();
+  if (!connection_error_handler_.is_null())
+    connection_error_handler_.Run();
 }
 
 void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,

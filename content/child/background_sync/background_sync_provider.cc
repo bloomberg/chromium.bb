@@ -131,7 +131,7 @@ void BackgroundSyncProvider::WillStopCurrentWorkerThread() {
 void BackgroundSyncProvider::RegisterCallback(
     std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
     blink::mojom::BackgroundSyncError error,
-    const blink::mojom::SyncRegistrationPtr& options) {
+    blink::mojom::SyncRegistrationPtr options) {
   // TODO(iclelland): Determine the correct error message to return in each case
   std::unique_ptr<blink::WebSyncRegistration> result;
   switch (error) {
@@ -171,7 +171,7 @@ void BackgroundSyncProvider::RegisterCallback(
 void BackgroundSyncProvider::GetRegistrationsCallback(
     std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
     blink::mojom::BackgroundSyncError error,
-    const mojo::Array<blink::mojom::SyncRegistrationPtr>& registrations) {
+    mojo::Array<blink::mojom::SyncRegistrationPtr> registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case blink::mojom::BackgroundSyncError::NONE: {

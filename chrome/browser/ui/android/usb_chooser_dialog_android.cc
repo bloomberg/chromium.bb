@@ -136,7 +136,7 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
 
       device->RequestPermission(
           base::Bind(&OnDevicePermissionRequestComplete, device, callback_));
-      callback_.reset();  // Reset |callback_| so that it is only run once.
+      callback_.Reset();  // Reset |callback_| so that it is only run once.
 
       Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
                                         java_dialog_.obj());
@@ -150,8 +150,9 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
 }
 
 void UsbChooserDialogAndroid::Cancel() {
+  DCHECK(!callback_.is_null());
   callback_.Run(nullptr);
-  callback_.reset();  // Reset |callback_| so that it is only run once.
+  callback_.Reset();  // Reset |callback_| so that it is only run once.
   Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
                                     java_dialog_.obj());
 

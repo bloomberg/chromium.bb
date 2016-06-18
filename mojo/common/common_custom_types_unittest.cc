@@ -16,6 +16,43 @@ namespace common {
 namespace test {
 namespace {
 
+template <typename T>
+struct BounceTestTraits {
+  static void ExpectEquality(const T& a, const T& b) {
+    EXPECT_EQ(a, b);
+  }
+};
+
+template <>
+struct BounceTestTraits<base::DictionaryValue> {
+  static void ExpectEquality(const base::DictionaryValue& a,
+                             const base::DictionaryValue& b) {
+    EXPECT_TRUE(a.Equals(&b));
+  }
+};
+
+template <>
+struct BounceTestTraits<base::ListValue> {
+  static void ExpectEquality(const base::ListValue& a,
+                             const base::ListValue& b) {
+    EXPECT_TRUE(a.Equals(&b));
+  }
+};
+
+template <typename T>
+void DoExpectResponse(T* expected_value,
+                      const base::Closure& closure,
+                      const T& value) {
+  BounceTestTraits<T>::ExpectEquality(*expected_value, value);
+  closure.Run();
+}
+
+template <typename T>
+base::Callback<void(const T&)> ExpectResponse(T* expected_value,
+                                              const base::Closure& closure) {
+  return base::Bind(&DoExpectResponse<T>, expected_value, closure);
+}
+
 class TestFilePathImpl : public TestFilePath {
  public:
   explicit TestFilePathImpl(TestFilePathRequest request)
@@ -98,10 +135,7 @@ TEST_F(CommonCustomTypesTest, FilePath) {
   base::FilePath dir(FILE_PATH_LITERAL("hello"));
   base::FilePath file = dir.Append(FILE_PATH_LITERAL("world"));
 
-  ptr->BounceFilePath(file, [&run_loop, &file](const base::FilePath& out) {
-    EXPECT_EQ(file, out);
-    run_loop.Quit();
-  });
+  ptr->BounceFilePath(file, ExpectResponse(&file, run_loop.QuitClosure()));
 
   run_loop.Run();
 }
@@ -114,10 +148,7 @@ TEST_F(CommonCustomTypesTest, Time) {
 
   base::Time t = base::Time::Now();
 
-  ptr->BounceTime(t, [&run_loop, &t](const base::Time& out) {
-    EXPECT_EQ(t, out);
-    run_loop.Quit();
-  });
+  ptr->BounceTime(t, ExpectResponse(&t, run_loop.QuitClosure()));
 
   run_loop.Run();
 }
@@ -130,10 +161,7 @@ TEST_F(CommonCustomTypesTest, TimeDelta) {
 
   base::TimeDelta t = base::TimeDelta::FromDays(123);
 
-  ptr->BounceTimeDelta(t, [&run_loop, &t](const base::TimeDelta& out) {
-    EXPECT_EQ(t, out);
-    run_loop.Quit();
-  });
+  ptr->BounceTimeDelta(t, ExpectResponse(&t, run_loop.QuitClosure()));
 
   run_loop.Run();
 }
@@ -146,10 +174,7 @@ TEST_F(CommonCustomTypesTest, TimeTicks) {
 
   base::TimeTicks t = base::TimeTicks::Now();
 
-  ptr->BounceTimeTicks(t, [&run_loop, &t](const base::TimeTicks& out) {
-    EXPECT_EQ(t, out);
-    run_loop.Quit();
-  });
+  ptr->BounceTimeTicks(t, ExpectResponse(&t, run_loop.QuitClosure()));
 
   run_loop.Run();
 }
@@ -174,10 +199,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   {
     base::RunLoop run_loop;
     ptr->BounceDictionaryValue(
-        dict, [&run_loop, &dict](const base::DictionaryValue& out) {
-          EXPECT_TRUE(dict.Equals(&out));
-          run_loop.Quit();
-        });
+        dict, ExpectResponse(&dict, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -194,10 +216,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   }
   {
     base::RunLoop run_loop;
-    ptr->BounceListValue(list, [&run_loop, &list](const base::ListValue& out) {
-      EXPECT_TRUE(list.Equals(&out));
-      run_loop.Quit();
-    });
+    ptr->BounceListValue(list, ExpectResponse(&list, run_loop.QuitClosure()));
     run_loop.Run();
   }
 }

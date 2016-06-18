@@ -657,7 +657,7 @@ RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
 void OnGotInstanceID(shell::mojom::ConnectResult result,
-                     const std::string& user_id,
+                     mojo::String user_id,
                      uint32_t instance_id) {}
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {

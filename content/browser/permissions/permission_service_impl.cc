@@ -51,7 +51,7 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
 // with single requests.
 void PermissionRequestResponseCallbackWrapper(
     const mojo::Callback<void(PermissionStatus)>& callback,
-    const mojo::Array<PermissionStatus>& vector) {
+    mojo::Array<PermissionStatus> vector) {
   DCHECK_EQ(vector.size(), 1ul);
   callback.Run(vector[0]);
 }
@@ -216,7 +216,7 @@ void PermissionServiceImpl::OnRequestPermissionsResponse(
     const std::vector<PermissionStatus>& result) {
   PendingRequest* request = pending_requests_.Lookup(pending_request_id);
   PermissionsStatusCallback callback(request->callback);
-  request->callback.reset();
+  request->callback.Reset();
   pending_requests_.Remove(pending_request_id);
   callback.Run(mojo::Array<PermissionStatus>::From(result));
 }
@@ -242,7 +242,7 @@ void PermissionServiceImpl::CancelPendingOperations() {
           it(&pending_subscriptions_); !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->callback.Run(GetPermissionStatusFromType(
         it.GetCurrentValue()->permission, it.GetCurrentValue()->origin));
-    it.GetCurrentValue()->callback.reset();
+    it.GetCurrentValue()->callback.Reset();
     permission_manager->UnsubscribePermissionStatusChange(
         it.GetCurrentValue()->id);
   }
@@ -367,7 +367,7 @@ void PermissionServiceImpl::OnPermissionStatusChanged(
 
   PermissionStatusCallback callback = subscription->callback;
 
-  subscription->callback.reset();
+  subscription->callback.Reset();
   pending_subscriptions_.Remove(pending_subscription_id);
 
   callback.Run(status);

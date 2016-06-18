@@ -37,7 +37,7 @@ const char kTestDriverName[] = "exe:connect_test_driver";
 
 void ReceiveOneString(std::string* out_string,
                       base::RunLoop* loop,
-                      const mojo::String& in_string) {
+                      mojo::String in_string) {
   *out_string = in_string;
   loop->Quit();
 }
@@ -45,8 +45,8 @@ void ReceiveOneString(std::string* out_string,
 void ReceiveTwoStrings(std::string* out_string_1,
                        std::string* out_string_2,
                        base::RunLoop* loop,
-                       const mojo::String& in_string_1,
-                       const mojo::String& in_string_2) {
+                       mojo::String in_string_1,
+                       mojo::String in_string_2) {
   *out_string_1 = in_string_1;
   *out_string_2 = in_string_2;
   loop->Quit();

@@ -1238,6 +1238,10 @@ class UnionInterfaceImpl : public UnionInterface {
   }
 };
 
+void ExpectInt16(int16_t value, PodUnionPtr out) {
+  EXPECT_EQ(value, out->get_f_int16());
+}
+
 TEST(UnionTest, UnionInInterface) {
   base::MessageLoop run_loop;
   UnionInterfaceImpl impl;
@@ -1247,8 +1251,7 @@ TEST(UnionTest, UnionInInterface) {
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int16(16);
 
-  ptr->Echo(std::move(pod),
-            [](PodUnionPtr out) { EXPECT_EQ(16, out->get_f_int16()); });
+  ptr->Echo(std::move(pod), base::Bind(&ExpectInt16, 16));
   run_loop.RunUntilIdle();
 }
 

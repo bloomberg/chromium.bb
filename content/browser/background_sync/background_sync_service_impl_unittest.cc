@@ -63,7 +63,7 @@ void ErrorAndRegistrationCallback(
     blink::mojom::BackgroundSyncError* out_error,
     blink::mojom::SyncRegistrationPtr* out_registration,
     blink::mojom::BackgroundSyncError error,
-    const blink::mojom::SyncRegistrationPtr& registration) {
+    blink::mojom::SyncRegistrationPtr registration) {
   *called = true;
   *out_error = error;
   *out_registration = registration.Clone();

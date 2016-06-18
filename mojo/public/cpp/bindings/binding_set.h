@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,7 +30,8 @@ class BindingSet {
 
   void AddBinding(Interface* impl, InterfaceRequest<Interface> request) {
     auto binding = new Element(impl, std::move(request));
-    binding->set_connection_error_handler([this]() { OnConnectionError(); });
+    binding->set_connection_error_handler(
+        base::Bind(&BindingSet::OnConnectionError, base::Unretained(this)));
     bindings_.push_back(binding->GetWeakPtr());
   }
 
@@ -58,7 +60,8 @@ class BindingSet {
    public:
     Element(Interface* impl, InterfaceRequest<Interface> request)
         : binding_(impl, std::move(request)), weak_ptr_factory_(this) {
-      binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+      binding_.set_connection_error_handler(
+          base::Bind(&Element::OnConnectionError, base::Unretained(this)));
     }
 
     ~Element() {}
@@ -76,7 +79,8 @@ class BindingSet {
     void OnConnectionError() {
       Closure error_handler = error_handler_;
       delete this;
-      error_handler.Run();
+      if (!error_handler.is_null())
+        error_handler.Run();
     }
 
    private:
@@ -95,7 +99,8 @@ class BindingSet {
                                    }),
                     bindings_.end());
 
-    error_handler_.Run();
+    if (!error_handler_.is_null())
+      error_handler_.Run();
   }
 
   Closure error_handler_;

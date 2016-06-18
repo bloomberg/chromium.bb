@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -75,6 +76,27 @@ WTFMap<WTF::String, WTF::String> ConstructStringMap() {
   str_map.insert("2", WTF::String::fromUTF8(kUTF8HelloWorld));
 
   return str_map;
+}
+
+void ExpectString(const WTF::String& expected_string,
+                  const base::Closure& closure,
+                  const WTF::String& string) {
+  EXPECT_EQ(expected_string, string);
+  closure.Run();
+}
+
+void ExpectStringArray(WTFArray<WTF::String> expected_arr,
+                       const base::Closure& closure,
+                       WTFArray<WTF::String> arr) {
+  EXPECT_TRUE(expected_arr.Equals(arr));
+  closure.Run();
+}
+
+void ExpectStringMap(WTFMap<WTF::String, WTF::String> expected_map,
+                     const base::Closure& closure,
+                     WTFMap<WTF::String, WTF::String> map) {
+  EXPECT_TRUE(expected_map.Equals(map));
+  closure.Run();
 }
 
 }  // namespace
@@ -232,10 +254,8 @@ TEST_F(WTFTypesTest, SendString) {
     //   - deserialized as mojo::String;
     //   - serialized;
     //   - deserialized as WTF::String.
-    ptr->EchoString(strs[i], [&loop, &strs, &i](const WTF::String& str) {
-      EXPECT_EQ(strs[i], str);
-      loop.Quit();
-    });
+    ptr->EchoString(strs[i],
+                    base::Bind(&ExpectString, strs[i], loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -259,11 +279,10 @@ TEST_F(WTFTypesTest, SendStringArray) {
     //   - deserialized as mojo::Array<mojo::String>;
     //   - serialized;
     //   - deserialized as mojo::WTFArray<WTF::String>.
-    ptr->EchoStringArray(std::move(arrs[i]),
-                         [&loop, &expected_arr](WTFArray<WTF::String> arr) {
-                           EXPECT_TRUE(expected_arr.Equals(arr));
-                           loop.Quit();
-                         });
+    ptr->EchoStringArray(
+        std::move(arrs[i]),
+        base::Bind(&ExpectStringArray, base::Passed(&expected_arr),
+                   loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -289,10 +308,8 @@ TEST_F(WTFTypesTest, SendStringMap) {
     //   - deserialized as mojo::WTFMap<WTF::String, WTF::String>.
     ptr->EchoStringMap(
         std::move(maps[i]),
-        [&loop, &expected_map](WTFMap<WTF::String, WTF::String> map) {
-          EXPECT_TRUE(expected_map.Equals(map));
-          loop.Quit();
-        });
+        base::Bind(&ExpectStringMap, base::Passed(&expected_map),
+                   loop.QuitClosure()));
     loop.Run();
   }
 }

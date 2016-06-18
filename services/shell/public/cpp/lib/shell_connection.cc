@@ -63,7 +63,8 @@ void ShellConnection::Initialize(mojom::IdentityPtr identity,
   callback.Run(std::move(pending_connector_request_));
 
   DCHECK(binding_.is_bound());
-  binding_.set_connection_error_handler([this] { OnConnectionError(); });
+  binding_.set_connection_error_handler(
+      base::Bind(&ShellConnection::OnConnectionError, base::Unretained(this)));
 
   client_->Initialize(connector_.get(), identity_, id);
 }

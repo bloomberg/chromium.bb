@@ -209,7 +209,7 @@ class TestProcessManager : public extensions::ProcessManager {
 // Mockable class for awaiting RegisterMediaRouteProvider callbacks.
 class RegisterMediaRouteProviderHandler {
  public:
-  MOCK_METHOD1(Invoke, void(const std::string& instance_id));
+  MOCK_METHOD1(Invoke, void(mojo::String instance_id));
 };
 
 TEST_F(MediaRouterMojoImplTest, CreateRoute) {

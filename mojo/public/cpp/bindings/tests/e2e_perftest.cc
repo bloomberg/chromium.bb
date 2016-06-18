@@ -57,10 +57,10 @@ class PingPongTest {
 
  private:
   void DoPing();
-  void OnPingDone(const mojo::String& reply);
+  void OnPingDone(mojo::String reply);
 
   test::EchoServicePtr service_;
-  const base::Callback<void(const mojo::String&)> ping_done_callback_;
+  const base::Callback<void(mojo::String)> ping_done_callback_;
 
   int iterations_;
   int batch_size_;
@@ -106,7 +106,7 @@ void PingPongTest::DoPing() {
   }
 }
 
-void PingPongTest::OnPingDone(const mojo::String& reply) {
+void PingPongTest::OnPingDone(mojo::String reply) {
   DCHECK_GT(calls_outstanding_, 0);
   calls_outstanding_--;
 

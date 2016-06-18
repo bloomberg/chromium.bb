@@ -78,7 +78,7 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
   void DidChange(const device::BatteryStatus& battery_status) {
     if (!callback_.is_null()) {
       callback_.Run(battery_status.Clone());
-      callback_.reset();
+      callback_.Reset();
     }
   }
 

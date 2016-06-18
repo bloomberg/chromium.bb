@@ -67,6 +67,11 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   return output;
 }
 
+void ForwardSinkSearchCallback(const MediaSinkSearchResponseCallback& callback,
+                               mojo::String sink_id) {
+  callback.Run(sink_id);
+}
+
 }  // namespace
 
 MediaRouterMojoImpl::MediaRoutesQuery::MediaRoutesQuery() = default;
@@ -270,7 +275,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     bool off_the_record,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     interfaces::MediaRoutePtr media_route,
-    const mojo::String& error_text,
+    mojo::String error_text,
     interfaces::RouteRequestResultCode result_code) {
   std::unique_ptr<RouteRequestResult> result;
   if (media_route.is_null()) {
@@ -737,7 +742,8 @@ void MediaRouterMojoImpl::DoSearchSinks(
   sink_search_criteria->input = search_input;
   sink_search_criteria->domain = domain;
   media_route_provider_->SearchSinks(
-      sink_id, source_id, std::move(sink_search_criteria), sink_callback);
+      sink_id, source_id, std::move(sink_search_criteria),
+      base::Bind(&ForwardSinkSearchCallback, sink_callback));
 }
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(

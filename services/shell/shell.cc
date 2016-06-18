@@ -167,8 +167,10 @@ class Shell::Instance : public mojom::Connector,
 
   void ConnectToClient(std::unique_ptr<ConnectParams> params) {
     CHECK(shell_client_.is_bound());
-    params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
-                                   identity_.user_id(), id_);
+    if (!params->connect_callback().is_null()) {
+        params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
+                                       identity_.user_id(), id_);
+    }
     uint32_t source_id = mojom::kInvalidInstanceID;
     CapabilityRequest request;
     request.interfaces.insert("*");

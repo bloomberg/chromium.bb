@@ -77,7 +77,8 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0) {
   command_buffer_.set_connection_error_handler(
-      [this]() { Destroyed(gpu::error::kUnknown, gpu::error::kLostContext); });
+      base::Bind(&CommandBufferClientImpl::Destroyed, base::Unretained(this),
+                 gpu::error::kUnknown, gpu::error::kLostContext));
 }
 
 CommandBufferClientImpl::~CommandBufferClientImpl() {}

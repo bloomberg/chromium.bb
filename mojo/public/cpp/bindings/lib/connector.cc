@@ -339,7 +339,8 @@ void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
       WaitToReadMore();
   } else {
     error_ = true;
-    connection_error_handler_.Run();
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
   }
 }
 

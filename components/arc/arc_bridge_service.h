@@ -334,25 +334,25 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void CloseWindowManagerChannel();
 
   // Callbacks for QueryVersion.
-  void OnAppVersionReady(int32_t version);
-  void OnAudioVersionReady(int32_t version);
-  void OnAuthVersionReady(int32_t version);
-  void OnBluetoothVersionReady(int32_t version);
-  void OnClipboardVersionReady(int32_t version);
-  void OnCrashCollectorVersionReady(int32_t version);
-  void OnFileSystemVersionReady(int32_t version);
-  void OnImeVersionReady(int32_t version);
-  void OnIntentHelperVersionReady(int32_t version);
-  void OnMetricsVersionReady(int32_t version);
-  void OnNetVersionReady(int32_t version);
-  void OnNotificationsVersionReady(int32_t version);
-  void OnObbMounterVersionReady(int32_t version);
-  void OnPolicyVersionReady(int32_t version);
-  void OnPowerVersionReady(int32_t version);
-  void OnProcessVersionReady(int32_t version);
-  void OnStorageManagerVersionReady(int32_t version);
-  void OnVideoVersionReady(int32_t version);
-  void OnWindowManagerVersionReady(int32_t version);
+  void OnAppVersionReady(uint32_t version);
+  void OnAudioVersionReady(uint32_t version);
+  void OnAuthVersionReady(uint32_t version);
+  void OnBluetoothVersionReady(uint32_t version);
+  void OnClipboardVersionReady(uint32_t version);
+  void OnCrashCollectorVersionReady(uint32_t version);
+  void OnFileSystemVersionReady(uint32_t version);
+  void OnImeVersionReady(uint32_t version);
+  void OnIntentHelperVersionReady(uint32_t version);
+  void OnMetricsVersionReady(uint32_t version);
+  void OnNetVersionReady(uint32_t version);
+  void OnNotificationsVersionReady(uint32_t version);
+  void OnObbMounterVersionReady(uint32_t version);
+  void OnPolicyVersionReady(uint32_t version);
+  void OnPowerVersionReady(uint32_t version);
+  void OnProcessVersionReady(uint32_t version);
+  void OnStorageManagerVersionReady(uint32_t version);
+  void OnVideoVersionReady(uint32_t version);
+  void OnWindowManagerVersionReady(uint32_t version);
 
   // Mojo interfaces.
   mojom::AppInstancePtr app_ptr_;

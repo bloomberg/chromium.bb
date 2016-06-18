@@ -51,7 +51,7 @@ void MojoCdmPromise<T...>::resolve(const T&... result) {
       std::move(cdm_promise_result),
       mojo::TypeConverter<typename MojoTypeTrait<T>::MojoType, T>::Convert(
           result)...);
-  callback_.reset();
+  callback_.Reset();
 }
 
 template <typename... T>
@@ -61,7 +61,7 @@ void MojoCdmPromise<T...>::reject(MediaKeys::Exception exception,
   MarkPromiseSettled();
   callback_.Run(GetRejectResult(exception, system_code, error_message),
                 MojoTypeTrait<T>::DefaultValue()...);
-  callback_.reset();
+  callback_.Reset();
 }
 
 template class MojoCdmPromise<>;

@@ -61,7 +61,7 @@ void SafeJsonParserImpl::OnConnectionError() {
 }
 
 void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
-                                     const mojo::String& error) {
+                                     mojo::String error) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   // Shut down the utility process.

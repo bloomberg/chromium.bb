@@ -54,51 +54,34 @@ class ProviderImpl : public sample::Provider {
   Binding<sample::Provider> binding_;
 };
 
-class StringRecorder {
- public:
-  StringRecorder(std::string* buf, const base::Closure& closure)
-      : buf_(buf), closure_(closure) {}
-  void Run(const String& a) const {
-    *buf_ = a;
-    closure_.Run();
-  }
-  void Run(const String& a, const String& b) const {
-    *buf_ = a.get() + b.get();
-    closure_.Run();
-  }
+void RecordString(std::string* storage,
+                  const base::Closure& closure,
+                  String str) {
+  *storage = str;
+  closure.Run();
+}
 
- private:
-  std::string* buf_;
-  base::Closure closure_;
-};
+void RecordStrings(std::string* storage,
+                   const base::Closure& closure,
+                   String a,
+                   String b) {
+  *storage = a.get() + b.get();
+  closure.Run();
+}
 
-class EnumRecorder {
- public:
-  explicit EnumRecorder(sample::Enum* value, const base::Closure& closure)
-      : value_(value), closure_(closure) {}
-  void Run(sample::Enum a) const {
-    *value_ = a;
-    closure_.Run();
-  }
+void WriteToMessagePipe(const char* text,
+                        const base::Closure& closure,
+                        ScopedMessagePipeHandle handle) {
+  WriteTextMessage(handle.get(), text);
+  closure.Run();
+}
 
- private:
-  sample::Enum* value_;
-  base::Closure closure_;
-};
-
-class MessagePipeWriter {
- public:
-  MessagePipeWriter(const char* text, const base::Closure& closure)
-      : text_(text), closure_(closure) {}
-  void Run(ScopedMessagePipeHandle handle) const {
-    WriteTextMessage(handle.get(), text_);
-    closure_.Run();
-  }
-
- private:
-  std::string text_;
-  base::Closure closure_;
-};
+void RecordEnum(sample::Enum* storage,
+                const base::Closure& closure,
+                sample::Enum value) {
+  *storage = value;
+  closure.Run();
+}
 
 class RequestResponseTest : public testing::Test {
  public:
@@ -118,7 +101,7 @@ TEST_F(RequestResponseTest, EchoString) {
   std::string buf;
   base::RunLoop run_loop;
   provider->EchoString(String::From("hello"),
-                       StringRecorder(&buf, run_loop.QuitClosure()));
+                       base::Bind(&RecordString, &buf, run_loop.QuitClosure()));
 
   run_loop.Run();
 
@@ -133,7 +116,7 @@ TEST_F(RequestResponseTest, EchoStrings) {
   base::RunLoop run_loop;
   provider->EchoStrings(
       String::From("hello"), String::From(" world"),
-      StringRecorder(&buf, run_loop.QuitClosure()));
+      base::Bind(&RecordStrings, &buf, run_loop.QuitClosure()));
 
   run_loop.Run();
 
@@ -148,7 +131,7 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
   base::RunLoop run_loop;
   provider->EchoMessagePipeHandle(
       std::move(pipe2.handle1),
-      MessagePipeWriter("hello", run_loop.QuitClosure()));
+      base::Bind(&WriteToMessagePipe, "hello", run_loop.QuitClosure()));
 
   run_loop.Run();
 
@@ -165,8 +148,7 @@ TEST_F(RequestResponseTest, EchoEnum) {
   sample::Enum value;
   base::RunLoop run_loop;
   provider->EchoEnum(sample::Enum::VALUE,
-                     EnumRecorder(&value, run_loop.QuitClosure()));
-
+                     base::Bind(&RecordEnum, &value, run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(sample::Enum::VALUE, value);

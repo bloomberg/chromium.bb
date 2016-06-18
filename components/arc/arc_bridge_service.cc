@@ -108,7 +108,7 @@ void ArcBridgeService::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
       &ArcBridgeService::OnAppVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnAppVersionReady(int32_t version) {
+void ArcBridgeService::OnAppVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   app_ptr_ = std::move(temporary_app_ptr_);
   app_ptr_.set_connection_error_handler(base::Bind(
@@ -132,7 +132,7 @@ void ArcBridgeService::OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) {
       &ArcBridgeService::OnAudioVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnAudioVersionReady(int32_t version) {
+void ArcBridgeService::OnAudioVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   audio_ptr_ = std::move(temporary_audio_ptr_);
   audio_ptr_.set_connection_error_handler(base::Bind(
@@ -155,7 +155,7 @@ void ArcBridgeService::OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) {
       &ArcBridgeService::OnAuthVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnAuthVersionReady(int32_t version) {
+void ArcBridgeService::OnAuthVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   auth_ptr_ = std::move(temporary_auth_ptr_);
   auth_ptr_.set_connection_error_handler(base::Bind(
@@ -180,7 +180,7 @@ void ArcBridgeService::OnBluetoothInstanceReady(
       &ArcBridgeService::OnBluetoothVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnBluetoothVersionReady(int32_t version) {
+void ArcBridgeService::OnBluetoothVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   bluetooth_ptr_ = std::move(temporary_bluetooth_ptr_);
   bluetooth_ptr_.set_connection_error_handler(base::Bind(
@@ -205,7 +205,7 @@ void ArcBridgeService::OnClipboardInstanceReady(
       &ArcBridgeService::OnClipboardVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnClipboardVersionReady(int32_t version) {
+void ArcBridgeService::OnClipboardVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   clipboard_ptr_ = std::move(temporary_clipboard_ptr_);
   clipboard_ptr_.set_connection_error_handler(base::Bind(
@@ -231,7 +231,7 @@ void ArcBridgeService::OnCrashCollectorInstanceReady(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnCrashCollectorVersionReady(int32_t version) {
+void ArcBridgeService::OnCrashCollectorVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   crash_collector_ptr_ = std::move(temporary_crash_collector_ptr_);
   crash_collector_ptr_.set_connection_error_handler(
@@ -259,7 +259,7 @@ void ArcBridgeService::OnFileSystemInstanceReady(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnFileSystemVersionReady(int32_t version) {
+void ArcBridgeService::OnFileSystemVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   file_system_ptr_ = std::move(temporary_file_system_ptr_);
   file_system_ptr_.set_connection_error_handler(
@@ -285,7 +285,7 @@ void ArcBridgeService::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
       &ArcBridgeService::OnImeVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnImeVersionReady(int32_t version) {
+void ArcBridgeService::OnImeVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   ime_ptr_ = std::move(temporary_ime_ptr_);
   ime_ptr_.set_connection_error_handler(base::Bind(
@@ -311,7 +311,7 @@ void ArcBridgeService::OnIntentHelperInstanceReady(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnIntentHelperVersionReady(int32_t version) {
+void ArcBridgeService::OnIntentHelperVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   intent_helper_ptr_ = std::move(temporary_intent_helper_ptr_);
   intent_helper_ptr_.set_connection_error_handler(base::Bind(
@@ -336,7 +336,7 @@ void ArcBridgeService::OnMetricsInstanceReady(
       &ArcBridgeService::OnMetricsVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnMetricsVersionReady(int32_t version) {
+void ArcBridgeService::OnMetricsVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   metrics_ptr_ = std::move(temporary_metrics_ptr_);
   metrics_ptr_.set_connection_error_handler(base::Bind(
@@ -360,7 +360,7 @@ void ArcBridgeService::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
       &ArcBridgeService::OnNetVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnNetVersionReady(int32_t version) {
+void ArcBridgeService::OnNetVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   net_ptr_ = std::move(temporary_net_ptr_);
   net_ptr_.set_connection_error_handler(base::Bind(
@@ -386,7 +386,7 @@ void ArcBridgeService::OnNotificationsInstanceReady(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnNotificationsVersionReady(int32_t version) {
+void ArcBridgeService::OnNotificationsVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   notifications_ptr_ = std::move(temporary_notifications_ptr_);
   notifications_ptr_.set_connection_error_handler(
@@ -413,7 +413,7 @@ void ArcBridgeService::OnObbMounterInstanceReady(
       weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnObbMounterVersionReady(int32_t version) {
+void ArcBridgeService::OnObbMounterVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   obb_mounter_ptr_ = std::move(temporary_obb_mounter_ptr_);
   obb_mounter_ptr_.set_connection_error_handler(base::Bind(
@@ -438,7 +438,7 @@ void ArcBridgeService::OnPolicyInstanceReady(
       &ArcBridgeService::OnPolicyVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnPolicyVersionReady(int32_t version) {
+void ArcBridgeService::OnPolicyVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   policy_ptr_ = std::move(temporary_policy_ptr_);
   policy_ptr_.set_connection_error_handler(base::Bind(
@@ -462,7 +462,7 @@ void ArcBridgeService::OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) {
       &ArcBridgeService::OnPowerVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnPowerVersionReady(int32_t version) {
+void ArcBridgeService::OnPowerVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   power_ptr_ = std::move(temporary_power_ptr_);
   power_ptr_.set_connection_error_handler(base::Bind(
@@ -487,7 +487,7 @@ void ArcBridgeService::OnProcessInstanceReady(
       &ArcBridgeService::OnProcessVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnProcessVersionReady(int32_t version) {
+void ArcBridgeService::OnProcessVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   process_ptr_ = std::move(temporary_process_ptr_);
   process_ptr_.set_connection_error_handler(base::Bind(
@@ -513,7 +513,7 @@ void ArcBridgeService::OnStorageManagerInstanceReady(
       weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnStorageManagerVersionReady(int32_t version) {
+void ArcBridgeService::OnStorageManagerVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   storage_manager_ptr_ = std::move(temporary_storage_manager_ptr_);
   storage_manager_ptr_.set_connection_error_handler(base::Bind(
@@ -540,7 +540,7 @@ void ArcBridgeService::OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) {
       &ArcBridgeService::OnVideoVersionReady, weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnVideoVersionReady(int32_t version) {
+void ArcBridgeService::OnVideoVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   video_ptr_ = std::move(temporary_video_ptr_);
   video_ptr_.set_connection_error_handler(base::Bind(
@@ -566,7 +566,7 @@ void ArcBridgeService::OnWindowManagerInstanceReady(
       weak_factory_.GetWeakPtr()));
 }
 
-void ArcBridgeService::OnWindowManagerVersionReady(int32_t version) {
+void ArcBridgeService::OnWindowManagerVersionReady(uint32_t version) {
   DCHECK(CalledOnValidThread());
   window_manager_ptr_ = std::move(temporary_window_manager_ptr_);
   window_manager_ptr_.set_connection_error_handler(base::Bind(

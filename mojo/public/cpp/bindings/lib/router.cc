@@ -133,7 +133,8 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
   if (expects_sync_requests)
     connector_.AllowWokenUpBySyncWatchOnSameThread();
   connector_.set_incoming_receiver(filters_.GetHead());
-  connector_.set_connection_error_handler([this]() { OnConnectionError(); });
+  connector_.set_connection_error_handler(
+      base::Bind(&Router::OnConnectionError, base::Unretained(this)));
 }
 
 Router::~Router() {}
@@ -309,7 +310,8 @@ void Router::OnConnectionError() {
   }
 
   encountered_error_ = true;
-  error_handler_.Run();
+  if (!error_handler_.is_null())
+    error_handler_.Run();
 }
 
 // ----------------------------------------------------------------------------

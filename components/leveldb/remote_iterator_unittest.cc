@@ -14,9 +14,12 @@
 namespace leveldb {
 namespace {
 
+template <typename T>
+void DoCapture(T* t, T got_t) { *t = std::move(got_t); }
+
 template <typename T1>
-mojo::Callback<void(T1)> Capture(T1* t1) {
-  return [t1](T1 got_t1) { *t1 = std::move(got_t1); };
+base::Callback<void(T1)> Capture(T1* t1) {
+  return base::Bind(&DoCapture<T1>, t1);
 }
 
 class RemoteIteratorTest : public shell::test::ShellTest {

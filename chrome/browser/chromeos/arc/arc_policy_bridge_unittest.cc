@@ -51,28 +51,34 @@ char kFakeONC[] =
     "\"GUID\":\"{00f79111-51e0-e6e0-76b3b55450d80a1b}\"}"
     "]}";
 
-// Helper class to define the PolicyStringCallback that expects to be called
-// at least once and that expects a given string as parameter.
-class PolicyStringRunnable
-    : public arc::ArcPolicyBridge::GetPoliciesCallback::Runnable {
+// Helper class to define a PolicyStringCallback which verifies that it was run.
+// Wraps a bool initially set to |false| and verifies that it's been set to
+// |true| before destruction.
+class CheckedBoolean {
  public:
-  explicit PolicyStringRunnable(mojo::String expected)
-      : expected_(std::move(expected)) {}
-  ~PolicyStringRunnable() override { EXPECT_TRUE(was_run); }
-  void Run(const mojo::String& policies) override {
-    EXPECT_EQ(expected_, policies);
-    was_run = true;
-  }
+  CheckedBoolean() {}
+  ~CheckedBoolean() { EXPECT_TRUE(value_); }
+
+  void set_value(bool value) { value_ = value; }
 
  private:
-  mojo::String expected_;
-  bool was_run = false;
+  bool value_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckedBoolean);
 };
+
+void ExpectPolicyString(std::unique_ptr<CheckedBoolean> was_run,
+                        mojo::String expected,
+                        mojo::String policies) {
+  EXPECT_EQ(expected, policies);
+  was_run->set_value(true);
+}
 
 arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
     mojo::String expected) {
-  return arc::ArcPolicyBridge::GetPoliciesCallback(
-      new PolicyStringRunnable(std::move(expected)));
+  std::unique_ptr<CheckedBoolean> was_run(new CheckedBoolean);
+  return base::Bind(&ExpectPolicyString, base::Passed(&was_run),
+                    base::Passed(&expected));
 }
 
 }  // namespace

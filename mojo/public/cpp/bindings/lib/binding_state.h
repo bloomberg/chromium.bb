@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -58,7 +59,8 @@ class BindingState<Interface, false> {
                              Interface::HasSyncMethods_, std::move(runner));
     router_->set_incoming_receiver(&stub_);
     router_->set_connection_error_handler(
-        [this]() { connection_error_handler_.Run(); });
+        base::Bind(&BindingState::RunConnectionErrorHandler,
+                   base::Unretained(this)));
   }
 
   bool HasAssociatedInterfaces() const { return false; }
@@ -119,7 +121,12 @@ class BindingState<Interface, false> {
     router_->set_connection_error_handler(Closure());
     delete router_;
     router_ = nullptr;
-    connection_error_handler_.reset();
+    connection_error_handler_.Reset();
+  }
+
+  void RunConnectionErrorHandler() {
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
   }
 
   internal::Router* router_ = nullptr;
@@ -155,7 +162,8 @@ class BindingState<Interface, true> {
         Interface::HasSyncMethods_, std::move(runner)));
 
     endpoint_client_->set_connection_error_handler(
-        [this]() { connection_error_handler_.Run(); });
+        base::Bind(&BindingState::RunConnectionErrorHandler,
+                   base::Unretained(this)));
   }
 
   bool HasAssociatedInterfaces() const {
@@ -184,7 +192,7 @@ class BindingState<Interface, true> {
     endpoint_client_.reset();
     router_->CloseMessagePipe();
     router_ = nullptr;
-    connection_error_handler_.reset();
+    connection_error_handler_.Reset();
   }
 
   InterfaceRequest<Interface> Unbind() {
@@ -192,7 +200,7 @@ class BindingState<Interface, true> {
     InterfaceRequest<Interface> request =
         MakeRequest<Interface>(router_->PassMessagePipe());
     router_ = nullptr;
-    connection_error_handler_.reset();
+    connection_error_handler_.Reset();
     return request;
   }
 
@@ -220,6 +228,11 @@ class BindingState<Interface, true> {
   }
 
  private:
+  void RunConnectionErrorHandler() {
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
+  }
+
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
 

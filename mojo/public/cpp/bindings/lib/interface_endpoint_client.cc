@@ -265,7 +265,8 @@ void InterfaceEndpointClient::NotifyError() {
   if (encountered_error_)
     return;
   encountered_error_ = true;
-  error_handler_.Run();
+  if (!error_handler_.is_null())
+    error_handler_.Run();
 }
 
 bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {

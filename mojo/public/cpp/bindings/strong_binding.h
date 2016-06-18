@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -72,19 +73,22 @@ class StrongBinding {
   void Bind(ScopedMessagePipeHandle handle) {
     DCHECK(!binding_.is_bound());
     binding_.Bind(std::move(handle));
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+    binding_.set_connection_error_handler(
+        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   void Bind(InterfacePtr<Interface>* ptr) {
     DCHECK(!binding_.is_bound());
     binding_.Bind(ptr);
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+    binding_.set_connection_error_handler(
+        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   void Bind(InterfaceRequest<Interface> request) {
     DCHECK(!binding_.is_bound());
     binding_.Bind(std::move(request));
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+    binding_.set_connection_error_handler(
+        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   bool WaitForIncomingMethodCall() {
@@ -105,7 +109,8 @@ class StrongBinding {
   internal::Router* internal_router() { return binding_.internal_router(); }
 
   void OnConnectionError() {
-    connection_error_handler_.Run();
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
     delete binding_.impl();
   }
 

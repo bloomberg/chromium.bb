@@ -18,17 +18,21 @@ using filesystem::mojom::FileError;
 namespace leveldb {
 namespace {
 
+template <typename... Args> void IgnoreAllArgs(Args&&...) {}
+
+template <typename... Args>
+void DoCaptures(Args*... out_args, Args... in_args) {
+  IgnoreAllArgs((*out_args = std::move(in_args))...);
+}
+
 template <typename T1>
-mojo::Callback<void(T1)> Capture(T1* t1) {
-  return [t1](T1 got_t1) { *t1 = std::move(got_t1); };
+base::Callback<void(T1)> Capture(T1* t1) {
+  return base::Bind(&DoCaptures<T1>, t1);
 }
 
 template <typename T1, typename T2>
-mojo::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
-  return [t1, t2](T1 got_t1, T2 got_t2) {
-    *t1 = std::move(got_t1);
-    *t2 = std::move(got_t2);
-  };
+base::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
+  return base::Bind(&DoCaptures<T1, T2>, t1, t2);
 }
 
 class LevelDBServiceTest : public shell::test::ShellTest {

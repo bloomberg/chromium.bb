@@ -95,7 +95,7 @@ void UsbChooserController::Select(size_t index) {
   device::usb::DeviceInfoPtr device_info_ptr =
       device::usb::DeviceInfo::From(*devices_[index].first);
   callback_.Run(std::move(device_info_ptr));
-  callback_.reset();  // Reset |callback_| so that it is only run once.
+  callback_.Reset();  // Reset |callback_| so that it is only run once.
 
   RecordWebUsbChooserClosure(
       devices_[index].first->serial_number().empty()

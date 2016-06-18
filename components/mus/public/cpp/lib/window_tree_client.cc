@@ -30,6 +30,8 @@
 
 namespace mus {
 
+void DeleteWindowTreeClient(WindowTreeClient* client) { delete client; }
+
 Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
 }
@@ -688,7 +690,8 @@ void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
                                    bool drawn) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
-  tree_ptr_.set_connection_error_handler([this]() { delete this; });
+  tree_ptr_.set_connection_error_handler(
+      base::Bind(&DeleteWindowTreeClient, this));
 
   if (window_manager_delegate_) {
     tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,

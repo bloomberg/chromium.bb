@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -51,17 +52,12 @@ class AssociatedInterfacePtrState {
   }
 
   void QueryVersion(const Callback<void(uint32_t)>& callback) {
-    // It is safe to capture |this| because the callback won't be run after this
-    // object goes away.
-    auto callback_wrapper = [this, callback](uint32_t version) {
-      this->version_ = version;
-      callback.Run(version);
-    };
-
     // Do a static cast in case the interface contains methods with the same
-    // name.
+    // name. It is safe to capture |this| because the callback won't be run
+    // after this object goes away.
     static_cast<ControlMessageProxy*>(proxy_.get())
-        ->QueryVersion(callback_wrapper);
+        ->QueryVersion(base::Bind(&AssociatedInterfacePtrState::OnQueryVersion,
+                                  base::Unretained(this), callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -128,6 +124,12 @@ class AssociatedInterfacePtrState {
 
  private:
   using Proxy = typename Interface::Proxy_;
+
+  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+                      uint32_t version) {
+    version_ = version;
+    callback.Run(version);
+  }
 
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
   std::unique_ptr<Proxy> proxy_;

@@ -57,7 +57,7 @@ class ConnectionImpl : public Connection {
   base::WeakPtr<Connection> GetWeakPtr() override;
 
   void OnConnectionCompleted(shell::mojom::ConnectResult result,
-                             const std::string& target_user_id,
+                             mojo::String target_user_id,
                              uint32_t target_application_id);
 
   const std::string connection_name_;

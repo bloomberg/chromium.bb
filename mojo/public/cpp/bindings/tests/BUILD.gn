@@ -15,7 +15,6 @@ source_set("tests") {
     "binding_callback_unittest.cc",
     "binding_unittest.cc",
     "buffer_unittest.cc",
-    "callback_unittest.cc",
     "connector_unittest.cc",
     "constant_unittest.cc",
     "container_test_util.cc",

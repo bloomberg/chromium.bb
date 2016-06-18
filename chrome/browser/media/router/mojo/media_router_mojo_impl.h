@@ -314,7 +314,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       bool off_the_record,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       interfaces::MediaRoutePtr media_route,
-      const mojo::String& error_text,
+      mojo::String error_text,
       interfaces::RouteRequestResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
