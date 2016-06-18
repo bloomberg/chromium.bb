@@ -103,6 +103,8 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
     static PaymentOptionsPtr Convert(const blink::PaymentOptions& input)
     {
         PaymentOptionsPtr output = PaymentOptions::New();
+        output->request_payer_email = input.requestPayerEmail();
+        output->request_payer_phone = input.requestPayerPhone();
         output->request_shipping = input.requestShipping();
         return output;
     }

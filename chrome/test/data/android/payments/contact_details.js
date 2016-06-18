@@ -5,34 +5,24 @@
  */
 
 /* global PaymentRequest:false */
-/* global toDictionary:false */
 
 /**
- * Launches the PaymentRequest UI that offers free shipping worldwide.
+ * Launches the PaymentRequest UI that requests contact details.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    var request = new PaymentRequest(
-        [{supportedMethods: ['visa']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          shippingOptions: [{
-            id: 'freeShippingOption',
-            label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'},
-            selected: true
-          }]
-        },
-        {requestShipping: true});
-    request.show()
+    new PaymentRequest(
+        [{supportedMethods: ['visa']}],
+        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}},
+        {requestPayerEmail: true, requestPayerPhone: true})
+        .show()
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
                 print(
                     JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +
-                    resp.shippingOption + '<br>' +
-                    JSON.stringify(
-                        toDictionary(resp.shippingAddress), undefined, 2) +
-                    '<br>' + resp.methodName + '<br>' +
+                    resp.payerEmail + '<br>' + resp.payerPhone + '<br>' +
+                    resp.methodName + '<br>' +
                     JSON.stringify(resp.details, undefined, 2));
               })
               .catch(function(error) {

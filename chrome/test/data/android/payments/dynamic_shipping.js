@@ -30,7 +30,7 @@ function buy() {  // eslint-disable-line no-unused-vars
 
     request.show()
         .then(function(resp) {
-          resp.complete("success")
+          resp.complete('success')
               .then(function() {
                 print(
                     JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +

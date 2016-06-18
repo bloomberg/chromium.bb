@@ -92,6 +92,8 @@ struct PaymentDetails {
 };
 
 struct PaymentOptions {
+  bool request_payer_email;
+  bool request_payer_phone;
   bool request_shipping;
 };
 

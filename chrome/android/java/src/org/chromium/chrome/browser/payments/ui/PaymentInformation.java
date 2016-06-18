@@ -11,21 +11,25 @@ public class PaymentInformation {
     private final ShoppingCart mShoppingCart;
     private final SectionInformation mShippingAddresses;
     private final SectionInformation mShippingOptions;
+    private final SectionInformation mContactDetails;
     private final SectionInformation mPaymentMethods;
 
     /**
      * Builds the payment information to show in the PaymentRequest view.
      *
-     * @param shoppingCart The shopping cart.
+     * @param shoppingCart     The shopping cart.
      * @param sippingAddresses The shipping addresses.
-     * @param shippingOptions The shipping options.
-     * @param paymentMethods The payment methods.
+     * @param shippingOptions  The shipping options.
+     * @param contactDetails   The contact details.
+     * @param paymentMethods   The payment methods.
      */
     public PaymentInformation(ShoppingCart shoppingCart, SectionInformation shippingAddresses,
-            SectionInformation shippingOptions, SectionInformation paymentMethods) {
+            SectionInformation shippingOptions, SectionInformation contactDetails,
+            SectionInformation paymentMethods) {
         mShoppingCart = shoppingCart;
         mShippingAddresses = shippingAddresses;
         mShippingOptions = shippingOptions;
+        mContactDetails = contactDetails;
         mPaymentMethods = paymentMethods;
     }
 
@@ -84,6 +88,15 @@ public class PaymentInformation {
     public String getSelectedShippingOptionLabel() {
         PaymentOption option = mShippingOptions.getSelectedItem();
         return option != null ? option.getLabel() : null;
+    }
+
+    /**
+     * Returns the contact details.
+     *
+     * @return The contact details.
+     */
+    public SectionInformation getContactDetails() {
+        return mContactDetails;
     }
 
     /**

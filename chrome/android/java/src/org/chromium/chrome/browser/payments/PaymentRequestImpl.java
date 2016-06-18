@@ -120,6 +120,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private HashMap<String, JSONObject> mMethodData;
     private SectionInformation mShippingAddressesSection;
+    private SectionInformation mContactSection;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
     private SectionInformation mPaymentMethodsSection;
@@ -214,27 +215,40 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mMerchantNeedsShippingAddress =
                 requestShipping && mUiShippingOptions.getSelectedItem() == null;
 
-        List<AutofillAddress> addresses = new ArrayList<>();
-        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesToSuggest();
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillProfile profile = profiles.get(i);
-            if (profile.getCountryCode() != null
-                    && mRegionCodePattern.matcher(profile.getCountryCode()).matches()
-                    && profile.getStreetAddress() != null && profile.getRegion() != null
-                    && profile.getLocality() != null && profile.getDependentLocality() != null
-                    && profile.getPostalCode() != null && profile.getSortingCode() != null
-                    && profile.getCompanyName() != null && profile.getFullName() != null
-                    && profile.getPhoneNumber() != null) {
-                addresses.add(new AutofillAddress(profile));
+        boolean requestPayerEmail = options != null && options.requestPayerEmail;
+        boolean requestPayerPhone = options != null && options.requestPayerPhone;
+
+        if (requestShipping || requestPayerEmail || requestPayerPhone) {
+            List<AutofillProfile> profiles =
+                    PersonalDataManager.getInstance().getProfilesToSuggest();
+            List<AutofillContact> contacts = new ArrayList<>();
+            List<AutofillAddress> addresses = new ArrayList<>();
+            for (int i = 0; i < profiles.size(); i++) {
+                AutofillProfile profile = profiles.get(i);
+                if (canUseContactDetails(profile, requestPayerEmail, requestPayerPhone)) {
+                    contacts.add(new AutofillContact(
+                            requestPayerEmail ? profile.getEmailAddress() : null,
+                            requestPayerPhone ? profile.getPhoneNumber() : null));
+                }
+                if (canUseAddress(profile, requestShipping)) {
+                    addresses.add(new AutofillAddress(profile));
+                }
+            }
+
+            if (requestShipping) {
+                int selectedIndex = SectionInformation.NO_SELECTION;
+                if (!addresses.isEmpty() && mUiShippingOptions.getSelectedItem() != null) {
+                    selectedIndex = 0;
+                }
+                mShippingAddressesSection = new SectionInformation(
+                        PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, selectedIndex, addresses);
+            }
+
+            if (requestPayerEmail || requestPayerPhone) {
+                mContactSection = new SectionInformation(PaymentRequestUI.TYPE_CONTACT_DETAILS,
+                        contacts.isEmpty() ? SectionInformation.NO_SELECTION : 0, contacts);
             }
         }
-
-        int selectedIndex = SectionInformation.NO_SELECTION;
-        if (!addresses.isEmpty() && mUiShippingOptions.getSelectedItem() != null) {
-            selectedIndex = 0;
-        }
-        mShippingAddressesSection = new SectionInformation(
-                PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, selectedIndex, addresses);
 
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
@@ -256,12 +270,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS);
         }
 
-        mUI = new PaymentRequestUI(mContext, this, requestShipping, mMerchantName, mOrigin);
+        mUI = new PaymentRequestUI(mContext, this, requestShipping,
+                requestPayerEmail || requestPayerPhone, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
     }
 
-    private HashMap<String, JSONObject> getValidatedMethodData(PaymentMethodData[] methodData) {
+    private static HashMap<String, JSONObject> getValidatedMethodData(
+            PaymentMethodData[] methodData) {
         // Payment methodData are required.
         if (methodData == null || methodData.length == 0) return null;
         HashMap<String, JSONObject> result = new HashMap<>();
@@ -293,6 +309,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
         return result;
+    }
+
+    private static boolean canUseContactDetails(
+            AutofillProfile profile, boolean requestEmail, boolean requestPhone) {
+        return (requestEmail && !TextUtils.isEmpty(profile.getEmailAddress()))
+                || (requestPhone && !TextUtils.isEmpty(profile.getPhoneNumber()));
+    }
+
+    private boolean canUseAddress(AutofillProfile profile, boolean requestShipping) {
+        return requestShipping && profile.getCountryCode() != null
+                && mRegionCodePattern.matcher(profile.getCountryCode()).matches()
+                && profile.getStreetAddress() != null && profile.getRegion() != null
+                && profile.getLocality() != null && profile.getDependentLocality() != null
+                && profile.getPostalCode() != null && profile.getSortingCode() != null
+                && profile.getCompanyName() != null && profile.getFullName() != null
+                && profile.getPhoneNumber() != null;
     }
 
     /**
@@ -499,8 +531,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private void providePaymentInformation() {
-        mPaymentInformationCallback.onResult(new PaymentInformation(mUiShoppingCart,
-                mShippingAddressesSection, mUiShippingOptions, mPaymentMethodsSection));
+        mPaymentInformationCallback.onResult(
+                new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
+                        mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
     }
 
@@ -524,6 +557,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     callback.onResult(mShippingAddressesSection);
                 } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
                     callback.onResult(mUiShippingOptions);
+                } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
+                    callback.onResult(mContactSection);
                 } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
                     assert mPaymentMethodsSection != null;
                     callback.onResult(mPaymentMethodsSection);
@@ -548,6 +583,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
             mClient.onShippingOptionChange(option.getIdentifier());
+        } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
+            assert option instanceof AutofillContact;
+            mContactSection.setSelectedItem(option);
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             assert option instanceof PaymentInstrument;
             mPaymentMethodsSection.setSelectedItem(option);
@@ -560,6 +598,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onSectionAddOption(@PaymentRequestUI.DataType int optionType) {
         // TODO(rouslan, dfalcantara): Make this code do something more useful.
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+            PreferencesLauncher.launchSettingsPage(mContext, AutofillProfileEditor.class.getName());
+        } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             PreferencesLauncher.launchSettingsPage(mContext, AutofillProfileEditor.class.getName());
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             PreferencesLauncher.launchSettingsPage(
@@ -665,18 +705,32 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         response.totalAmount = mRawTotal.amount;
         response.stringifiedDetails = stringifiedDetails;
 
-        PaymentOption selectedShippingAddress = mShippingAddressesSection.getSelectedItem();
-        if (selectedShippingAddress != null) {
-            // Shipping addresses are created in show(). The should all be instances of
-            // AutofillAddress.
-            assert selectedShippingAddress instanceof AutofillAddress;
-            response.shippingAddress =
-                    ((AutofillAddress) selectedShippingAddress).toPaymentAddress();
+        if (mContactSection != null) {
+            PaymentOption selectedContact = mContactSection.getSelectedItem();
+            if (selectedContact != null) {
+                // Contacts are created in show(). These should all be instances of AutofillContact.
+                assert selectedContact instanceof AutofillContact;
+                response.payerEmail = ((AutofillContact) selectedContact).getPayerEmail();
+                response.payerPhone = ((AutofillContact) selectedContact).getPayerPhone();
+            }
         }
 
-        PaymentOption selectedShippingOption = mUiShippingOptions.getSelectedItem();
-        if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
-            response.shippingOption = selectedShippingOption.getIdentifier();
+        if (mShippingAddressesSection != null) {
+            PaymentOption selectedShippingAddress = mShippingAddressesSection.getSelectedItem();
+            if (selectedShippingAddress != null) {
+                // Shipping addresses are created in show(). These should all be instances of
+                // AutofillAddress.
+                assert selectedShippingAddress instanceof AutofillAddress;
+                response.shippingAddress =
+                        ((AutofillAddress) selectedShippingAddress).toPaymentAddress();
+            }
+        }
+
+        if (mUiShippingOptions != null) {
+            PaymentOption selectedShippingOption = mUiShippingOptions.getSelectedItem();
+            if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
+                response.shippingOption = selectedShippingOption.getIdentifier();
+            }
         }
 
         mClient.onPaymentResponse(response);
