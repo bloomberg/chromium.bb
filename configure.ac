@@ -547,7 +547,8 @@ AM_CONDITIONAL(BUILD_SETBACKLIGHT, test "x$enable_setbacklight" = "xyes")
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -Wextra -Wno-unused-parameter \
-		-Wno-missing-field-initializers -g -fvisibility=hidden \
+		-Wno-shift-negative-value -Wno-missing-field-initializers \
+		-g -fvisibility=hidden \
 		-Wstrict-prototypes -Wmissing-prototypes -Wsign-compare"
 fi
 AC_SUBST(GCC_CFLAGS)
