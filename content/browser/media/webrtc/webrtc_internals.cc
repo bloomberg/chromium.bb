@@ -500,12 +500,12 @@ void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
   } else if (!peer_connection_data_.empty() && !power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more PeerConnections are active.");
-    power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+    power_save_blocker_.reset(new device::PowerSaveBlocker(
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         device::PowerSaveBlocker::kReasonOther,
         "WebRTC has active PeerConnections",
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   }
 }
 

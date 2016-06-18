@@ -9,7 +9,8 @@
 
 #include <memory>
 
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker.h"
+
 // Xlib #defines Status, but we can't have that for some of our headers.
 #ifdef Status
 #undef Status
@@ -70,8 +71,8 @@ const char kFreeDesktopAPIScreenObjectPath[] = "/org/freedesktop/ScreenSaver";
 
 namespace device {
 
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   // Picks an appropriate D-Bus API to use based on the desktop environment.
   Delegate(PowerSaveBlockerType type,
@@ -166,7 +167,7 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::Delegate::Delegate(
+PowerSaveBlocker::Delegate::Delegate(
     PowerSaveBlockerType type,
     const std::string& description,
     bool freedesktop_only,
@@ -184,7 +185,7 @@ PowerSaveBlockerImpl::Delegate::Delegate(
   // object yet. We'll do it later in ApplyBlock(), on the FILE thread.
 }
 
-void PowerSaveBlockerImpl::Delegate::Init() {
+void PowerSaveBlocker::Delegate::Init() {
   base::AutoLock lock(lock_);
   DCHECK(!enqueue_apply_);
   enqueue_apply_ = true;
@@ -195,7 +196,7 @@ void PowerSaveBlockerImpl::Delegate::Init() {
                             base::Bind(&Delegate::InitOnUIThread, this));
 }
 
-void PowerSaveBlockerImpl::Delegate::CleanUp() {
+void PowerSaveBlocker::Delegate::CleanUp() {
   base::AutoLock lock(lock_);
   if (enqueue_apply_) {
     // If a call to ApplyBlock() has not yet been enqueued because we are still
@@ -213,7 +214,7 @@ void PowerSaveBlockerImpl::Delegate::CleanUp() {
   }
 }
 
-void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
+void PowerSaveBlocker::Delegate::InitOnUIThread() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   base::AutoLock lock(lock_);
   api_ = SelectAPI();
@@ -232,11 +233,11 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
   enqueue_apply_ = false;
 }
 
-bool PowerSaveBlockerImpl::Delegate::ShouldBlock() const {
+bool PowerSaveBlocker::Delegate::ShouldBlock() const {
   return freedesktop_only_ ? api_ == FREEDESKTOP_API : api_ != NO_API;
 }
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!bus_);  // ApplyBlock() should only be called once.
   DCHECK(!block_inflight_);
@@ -313,11 +314,10 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   block_inflight_ = true;
   object_proxy->CallMethod(
       method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&PowerSaveBlockerImpl::Delegate::ApplyBlockFinished, this));
+      base::Bind(&PowerSaveBlocker::Delegate::ApplyBlockFinished, this));
 }
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
-    dbus::Response* response) {
+void PowerSaveBlocker::Delegate::ApplyBlockFinished(dbus::Response* response) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(bus_);
   DCHECK(block_inflight_);
@@ -343,7 +343,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
   }
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(bus_);  // RemoveBlock() should only be called once.
   DCHECK(!unblock_inflight_);
@@ -394,11 +394,10 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   unblock_inflight_ = true;
   object_proxy->CallMethod(
       method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&PowerSaveBlockerImpl::Delegate::RemoveBlockFinished, this));
+      base::Bind(&PowerSaveBlocker::Delegate::RemoveBlockFinished, this));
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
-    dbus::Response* response) {
+void PowerSaveBlocker::Delegate::RemoveBlockFinished(dbus::Response* response) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(bus_);
   unblock_inflight_ = false;
@@ -413,7 +412,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
   bus_ = nullptr;
 }
 
-void PowerSaveBlockerImpl::Delegate::XSSSuspendSet(bool suspend) {
+void PowerSaveBlocker::Delegate::XSSSuspendSet(bool suspend) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (!XSSAvailable())
@@ -423,7 +422,7 @@ void PowerSaveBlockerImpl::Delegate::XSSSuspendSet(bool suspend) {
   XScreenSaverSuspend(display, suspend);
 }
 
-bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
+bool PowerSaveBlocker::Delegate::DPMSEnabled() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   XDisplay* display = gfx::GetXDisplay();
   BOOL enabled = false;
@@ -435,7 +434,7 @@ bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
   return enabled;
 }
 
-bool PowerSaveBlockerImpl::Delegate::XSSAvailable() {
+bool PowerSaveBlocker::Delegate::XSSAvailable() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   XDisplay* display = gfx::GetXDisplay();
   int dummy;
@@ -451,7 +450,7 @@ bool PowerSaveBlockerImpl::Delegate::XSSAvailable() {
   return major > 1 || (major == 1 && minor >= 1);
 }
 
-DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
+DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -474,7 +473,7 @@ DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
   return NO_API;
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -497,7 +496,7 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
   }
 }
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+PowerSaveBlocker::~PowerSaveBlocker() {
   delegate_->CleanUp();
   if (freedesktop_suspend_delegate_)
     freedesktop_suspend_delegate_->CleanUp();

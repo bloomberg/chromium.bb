@@ -149,14 +149,14 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   if (!power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more transports are active for Cast Streaming.");
-    power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+    power_save_blocker_.reset(new device::PowerSaveBlocker(
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         device::PowerSaveBlocker::kReasonOther,
         "Cast is streaming content to a remote receiver",
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),
         content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE));
+            content::BrowserThread::FILE)));
   }
 
   if (id_map_.Lookup(channel_id)) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
@@ -39,8 +39,8 @@ base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
 
 }  // namespace
 
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate(PowerSaveBlockerType type, const std::string& description)
       : type_(type),
@@ -59,7 +59,7 @@ class PowerSaveBlockerImpl::Delegate
   IOPMAssertionID assertion_;
 };
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
             g_power_thread.Pointer()->GetThreadId());
 
@@ -87,7 +87,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   }
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
             g_power_thread.Pointer()->GetThreadId());
 
@@ -98,7 +98,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   }
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -111,7 +111,7 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
       FROM_HERE, base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+PowerSaveBlocker::~PowerSaveBlocker() {
   g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE, base::Bind(&Delegate::RemoveBlock, delegate_));
 }

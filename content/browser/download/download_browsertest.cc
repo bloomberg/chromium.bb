@@ -255,12 +255,11 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  std::unique_ptr<device::PowerSaveBlocker> psb(
-      device::PowerSaveBlocker::CreateWithTaskRunners(
-          device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-          device::PowerSaveBlocker::kReasonOther, "Download in progress",
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
+      device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      device::PowerSaveBlocker::kReasonOther, "Download in progress",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   return new DownloadFileWithDelay(std::move(save_info),
                                    default_download_directory,
                                    std::move(stream),
@@ -355,12 +354,11 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
-    std::unique_ptr<device::PowerSaveBlocker> psb(
-        device::PowerSaveBlocker::CreateWithTaskRunners(
-            device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-            device::PowerSaveBlocker::kReasonOther, "Download in progress",
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+    std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
+        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        device::PowerSaveBlocker::kReasonOther, "Download in progress",
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
                                     std::move(stream),

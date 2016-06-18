@@ -41,11 +41,11 @@ const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
 }
 
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
-  power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+  power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonOther, "Uploading data to " + host_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 }
 
 }  // namespace content

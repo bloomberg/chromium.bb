@@ -34,6 +34,16 @@ device::PowerSaveBlocker::PowerSaveBlockerType LevelToPowerSaveBlockerType(
 base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>> g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
+std::unique_ptr<device::PowerSaveBlocker> CreatePowerSaveBlocker(
+    device::PowerSaveBlocker::PowerSaveBlockerType type,
+    device::PowerSaveBlocker::Reason reason,
+    const std::string& description,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+  return std::unique_ptr<device::PowerSaveBlocker>(new device::PowerSaveBlocker(
+      type, reason, description, ui_task_runner, file_task_runner));
+}
+
 }  // namespace
 
 bool PowerRequestKeepAwakeFunction::RunSync() {
@@ -74,9 +84,7 @@ void PowerAPI::RemoveRequest(const std::string& extension_id) {
 void PowerAPI::SetCreateBlockerFunctionForTesting(
     CreateBlockerFunction function) {
   create_blocker_function_ =
-      !function.is_null()
-          ? function
-          : base::Bind(&device::PowerSaveBlocker::CreateWithTaskRunners);
+      !function.is_null() ? function : base::Bind(&CreatePowerSaveBlocker);
 }
 
 void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -88,8 +96,7 @@ void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 
 PowerAPI::PowerAPI(content::BrowserContext* context)
     : browser_context_(context),
-      create_blocker_function_(
-          base::Bind(&device::PowerSaveBlocker::CreateWithTaskRunners)),
+      create_blocker_function_(base::Bind(&CreatePowerSaveBlocker)),
       current_level_(api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }

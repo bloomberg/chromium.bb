@@ -173,14 +173,11 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
       params.requested_format.frame_size,
       params.resolution_change_policy));
 
-  power_save_blocker_.reset(
-      device::PowerSaveBlocker::CreateWithTaskRunners(
-          device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          device::PowerSaveBlocker::kReasonOther,
-          "DesktopCaptureDevice is running",
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
-          .release());
+  power_save_blocker_.reset(new device::PowerSaveBlocker(
+      device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      device::PowerSaveBlocker::kReasonOther, "DesktopCaptureDevice is running",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
   desktop_capturer_->Start(this);
 

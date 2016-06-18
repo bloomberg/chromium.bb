@@ -42,9 +42,16 @@ enum Request {
 // destruction.
 class PowerSaveBlockerStub : public device::PowerSaveBlocker {
  public:
-  explicit PowerSaveBlockerStub(base::Closure unblock_callback)
-      : unblock_callback_(unblock_callback) {
-  }
+  PowerSaveBlockerStub(
+      base::Closure unblock_callback,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+      : PowerSaveBlocker(PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+                         PowerSaveBlocker::kReasonOther,
+                         "test",
+                         ui_task_runner,
+                         blocking_task_runner),
+        unblock_callback_(unblock_callback) {}
 
   ~PowerSaveBlockerStub() override { unblock_callback_.Run(); }
 
@@ -93,7 +100,7 @@ class PowerSaveBlockerStubManager {
       device::PowerSaveBlocker::Reason reason,
       const std::string& description,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner) {
     Request unblock_request = NONE;
     switch (type) {
       case device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:
@@ -107,7 +114,8 @@ class PowerSaveBlockerStubManager {
     }
     return std::unique_ptr<device::PowerSaveBlocker>(new PowerSaveBlockerStub(
         base::Bind(&PowerSaveBlockerStubManager::AppendRequest,
-                   weak_ptr_factory_.GetWeakPtr(), unblock_request)));
+                   weak_ptr_factory_.GetWeakPtr(), unblock_request),
+        ui_task_runner, blocking_task_runner));
   }
 
   void AppendRequest(Request request) {

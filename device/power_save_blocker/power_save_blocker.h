@@ -9,9 +9,14 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "device/power_save_blocker/power_save_blocker_export.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#endif  // OS_ANDROID
 
 namespace device {
 
@@ -44,19 +49,53 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
     kReasonOther,
   };
 
-  virtual ~PowerSaveBlocker() = 0;
-
   // Pass in the type of power save blocking desired. If multiple types of
   // blocking are desired, instantiate one PowerSaveBlocker for each type.
   // |reason| and |description| (a more-verbose, human-readable justification of
   // the blocking) may be provided to the underlying system APIs on some
   // platforms.
-  static std::unique_ptr<PowerSaveBlocker> CreateWithTaskRunners(
+  PowerSaveBlocker(
       PowerSaveBlockerType type,
       Reason reason,
       const std::string& description,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner);
+  virtual ~PowerSaveBlocker();
+
+#if defined(OS_ANDROID)
+  // On Android, the kPowerSaveBlockPreventDisplaySleep type of
+  // PowerSaveBlocker should associated with a View, so the blocker can be
+  // removed by the platform.
+  DEVICE_POWER_SAVE_BLOCKER_EXPORT void InitDisplaySleepBlocker(
+      const base::WeakPtr<ui::ViewAndroid>& view_android);
+#endif
+
+ private:
+  class Delegate;
+
+  // Implementations of this class may need a second object with different
+  // lifetime than the RAII container, or additional storage. This member is
+  // here for that purpose. If not used, just define the class as an empty
+  // RefCounted (or RefCountedThreadSafe) like so to make it compile:
+  // class PowerSaveBlocker::Delegate
+  //     : public base::RefCounted<PowerSaveBlocker::Delegate> {
+  //  private:
+  //   friend class base::RefCounted<Delegate>;
+  //   ~Delegate() {}
+  // };
+  scoped_refptr<Delegate> delegate_;
+
+#if defined(USE_X11)
+  // Since display sleep prevention also implies system suspend prevention, for
+  // the Linux FreeDesktop API case, there needs to be a second delegate to
+  // block system suspend when screen saver / display sleep is blocked.
+  scoped_refptr<Delegate> freedesktop_suspend_delegate_;
+#endif
+
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerSaveBlocker);
 };
 
 }  // namespace device

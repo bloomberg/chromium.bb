@@ -42,7 +42,6 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
 #include "device/power_save_blocker/power_save_blocker.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
 #endif
 
 namespace content {
@@ -501,13 +500,11 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
 
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 #if defined(OS_ANDROID)
-  power_save_blocker_.reset(static_cast<device::PowerSaveBlockerImpl*>(
-      device::PowerSaveBlocker::CreateWithTaskRunners(
-          device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          device::PowerSaveBlocker::kReasonOther, "DevTools",
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
-          .release()));
+  power_save_blocker_.reset(new device::PowerSaveBlocker(
+      device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      device::PowerSaveBlocker::kReasonOther, "DevTools",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   if (web_contents()->GetNativeView()) {
     view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
         web_contents()->GetNativeView()));

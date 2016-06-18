@@ -1293,13 +1293,11 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // does not go to sleep for the duration of reading a snapshot.
   if (pending_browser_snapshots_.empty()) {
     DCHECK(!power_save_blocker_);
-    power_save_blocker_.reset(
-        device::PowerSaveBlocker::CreateWithTaskRunners(
-            device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-            device::PowerSaveBlocker::kReasonOther, "GetSnapshot",
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
-            .release());
+    power_save_blocker_.reset(new device::PowerSaveBlocker(
+        device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+        device::PowerSaveBlocker::kReasonOther, "GetSnapshot",
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   }
 #endif
   pending_browser_snapshots_.insert(std::make_pair(id, callback));

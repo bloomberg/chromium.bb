@@ -114,23 +114,3 @@ include_rules = [
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 ]
-
-specific_include_rules = {
-  # See https://crbug.com/612337.
-  "(power_save_blocker_android\.cc"
-  "|power_save_blocker_android\.h"
-  "|power_save_blocker_chromeos\.cc"
-  "|power_save_blocker_impl\.cc"
-  "|power_save_blocker_impl\.h"
-  "|power_save_blocker_mac\.cc"
-  "|power_save_blocker_ozone\.cc"
-  "|power_save_blocker_win\.cc"
-  "|power_save_blocker_x11\.cc"
-  ")": [
-    "-content",
-
-    # These will move to //device/power_save_blocker.
-    "+content/browser/power_save_blocker_impl.h",
-    "+content/public/browser/power_save_blocker.h",
-  ],
-}

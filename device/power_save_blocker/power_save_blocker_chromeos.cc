@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 
 #include <string>
 
@@ -34,8 +34,8 @@ chromeos::PowerPolicyController::WakeLockReason GetWakeLockReason(
 
 }  // namespace
 
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate(PowerSaveBlockerType type,
            Reason reason,
@@ -91,7 +91,7 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -104,7 +104,7 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
                             base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+PowerSaveBlocker::~PowerSaveBlocker() {
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&Delegate::RemoveBlock, delegate_));
 }

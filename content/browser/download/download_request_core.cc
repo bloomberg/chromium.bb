@@ -204,11 +204,11 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
   DCHECK(request_);
   DCHECK(delegate_);
   RecordDownloadCount(UNTHROTTLED_COUNT);
-  power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+  power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonOther, "Download in progress",
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DownloadRequestData* request_data = DownloadRequestData::Get(request_);
   if (request_data) {
     save_info_ = request_data->TakeSaveInfo();

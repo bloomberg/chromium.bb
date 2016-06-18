@@ -15,7 +15,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/power_save_blocker/power_save_blocker.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
@@ -184,27 +183,27 @@ void MediaWebContentsObserver::ClearPowerSaveBlockers(
 
 void MediaWebContentsObserver::CreateAudioPowerSaveBlocker() {
   DCHECK(!audio_power_save_blocker_);
-  audio_power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+  audio_power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonAudioPlayback, "Playing audio",
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 }
 
 void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
   DCHECK(!video_power_save_blocker_);
   DCHECK(!active_video_players_.empty());
-  video_power_save_blocker_ = device::PowerSaveBlocker::CreateWithTaskRunners(
+  video_power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonVideoPlayback, "Playing video",
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 #if defined(OS_ANDROID)
   if (web_contents()->GetNativeView()) {
     view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
         web_contents()->GetNativeView()));
-    static_cast<device::PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
-        ->InitDisplaySleepBlocker(view_weak_factory_->GetWeakPtr());
+    video_power_save_blocker_.get()->InitDisplaySleepBlocker(
+        view_weak_factory_->GetWeakPtr());
   }
 #endif
 }

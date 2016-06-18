@@ -22,8 +22,6 @@
         # for Android isn't supported.
         'power_save_blocker.h',
         'power_save_blocker_chromeos.cc',
-        'power_save_blocker_impl.cc',
-        'power_save_blocker_impl.h',
         'power_save_blocker_mac.cc',
         'power_save_blocker_ozone.cc',
         'power_save_blocker_win.cc',

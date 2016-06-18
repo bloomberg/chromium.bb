@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_save_blocker/power_save_blocker_impl.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -13,8 +13,8 @@ namespace device {
 // save is OS-specific, not display-system-specific.  This implementation
 // ends up being used for non-ChromeOS Ozone platforms such as Chromecast.
 // See crbug.com/495661 for more detail.
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate() {}
 
@@ -25,7 +25,7 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -35,6 +35,6 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {}
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {}
+PowerSaveBlocker::~PowerSaveBlocker() {}
 
 }  // namespace device

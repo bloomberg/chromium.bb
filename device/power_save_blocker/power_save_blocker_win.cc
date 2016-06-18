@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/power_save_blocker/power_save_blocker.h"
+
 #include <windows.h>
 
 #include "base/bind.h"
@@ -10,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
 
 namespace device {
 namespace {
@@ -83,8 +84,8 @@ void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type, int delta) {
 
 }  // namespace
 
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate(PowerSaveBlockerType type,
            const std::string& description,
@@ -112,7 +113,7 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, 1);
@@ -120,7 +121,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   handle_.Set(CreatePowerRequest(RequestType(), description_));
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, -1);
@@ -128,7 +129,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DeletePowerRequest(RequestType(), handle_.Take());
 }
 
-POWER_REQUEST_TYPE PowerSaveBlockerImpl::Delegate::RequestType() {
+POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
   if (type_ == kPowerSaveBlockPreventDisplaySleep)
     return PowerRequestDisplayRequired;
 
@@ -138,7 +139,7 @@ POWER_REQUEST_TYPE PowerSaveBlockerImpl::Delegate::RequestType() {
   return PowerRequestExecutionRequired;
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -151,7 +152,7 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
                             base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+PowerSaveBlocker::~PowerSaveBlocker() {
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&Delegate::RemoveBlock, delegate_));
 }

@@ -99,7 +99,7 @@ struct DriveUploader::UploadFileInfo {
         progress_callback(progress_callback),
         content_length(0),
         next_start_position(-1),
-        power_save_blocker(device::PowerSaveBlocker::CreateWithTaskRunners(
+        power_save_blocker(new device::PowerSaveBlocker(
             device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
             device::PowerSaveBlocker::kReasonOther,
             "Upload in progress",

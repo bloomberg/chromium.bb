@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/power_save_blocker/power_save_blocker.h"
+
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "device/power_save_blocker/power_save_blocker_impl.h"
 #include "jni/PowerSaveBlocker_jni.h"
 #include "ui/android/view_android.h"
 
@@ -15,8 +16,8 @@ namespace device {
 
 using base::android::AttachCurrentThread;
 
-class PowerSaveBlockerImpl::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate(base::WeakPtr<ui::ViewAndroid> view_android,
            scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
@@ -38,7 +39,7 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::Delegate::Delegate(
+PowerSaveBlocker::Delegate::Delegate(
     base::WeakPtr<ui::ViewAndroid> view_android,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
     : view_android_(view_android), ui_task_runner_(ui_task_runner) {
@@ -46,9 +47,9 @@ PowerSaveBlockerImpl::Delegate::Delegate(
   java_power_save_blocker_.Reset(Java_PowerSaveBlocker_create(env));
 }
 
-PowerSaveBlockerImpl::Delegate::~Delegate() {}
+PowerSaveBlocker::Delegate::~Delegate() {}
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
@@ -59,7 +60,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   }
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
   JNIEnv* env = AttachCurrentThread();
@@ -69,7 +70,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   }
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description,
@@ -80,14 +81,14 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(
   // Don't support kPowerSaveBlockPreventAppSuspension
 }
 
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+PowerSaveBlocker::~PowerSaveBlocker() {
   if (delegate_.get()) {
     ui_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&Delegate::RemoveBlock, delegate_));
   }
 }
 
-void PowerSaveBlockerImpl::InitDisplaySleepBlocker(
+void PowerSaveBlocker::InitDisplaySleepBlocker(
     const base::WeakPtr<ui::ViewAndroid>& view_android) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (!view_android)
