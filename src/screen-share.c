@@ -40,6 +40,7 @@
 #include <wayland-client.h>
 
 #include "compositor.h"
+#include "weston.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
@@ -1108,6 +1109,7 @@ module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[])
 {
 	struct screen_share *ss;
+	struct weston_config *config = wet_get_config(compositor);
 	struct weston_config_section *section;
 
 	ss = zalloc(sizeof *ss);
@@ -1115,8 +1117,7 @@ module_init(struct weston_compositor *compositor,
 		return -1;
 	ss->compositor = compositor;
 
-	section = weston_config_get_section(compositor->config, "screen-share",
-					    NULL, NULL);
+	section = weston_config_get_section(config, "screen-share", NULL, NULL);
 
 	weston_config_section_get_string(section, "command", &ss->command, "");
 
