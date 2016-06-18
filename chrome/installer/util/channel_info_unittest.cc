@@ -243,33 +243,33 @@ TEST(ChannelInfoTest, GetStatsDefault) {
   EXPECT_EQ(L"", ci.GetStatsDefault());
   ci.set_value(L"-statsdef");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:");
+  ci.set_value(L"-statsdef=");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:0");
+  ci.set_value(L"-statsdef=0");
   EXPECT_EQ(L"0", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:1");
+  ci.set_value(L"-statsdef=1");
   EXPECT_EQ(L"1", ci.GetStatsDefault());
 
   ci.set_value(L"-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
   ci.set_value(L"-statsdef-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:-multi");
+  ci.set_value(L"-statsdef=-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:0-multi");
+  ci.set_value(L"-statsdef=0-multi");
   EXPECT_EQ(L"0", ci.GetStatsDefault());
-  ci.set_value(L"-statsdef:1-multi");
+  ci.set_value(L"-statsdef=1-multi");
   EXPECT_EQ(L"1", ci.GetStatsDefault());
 
   ci.set_value(L"2.0-beta-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
   ci.set_value(L"2.0-beta-statsdef-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"2.0-beta-statsdef:-multi");
+  ci.set_value(L"2.0-beta-statsdef=-multi");
   EXPECT_EQ(L"", ci.GetStatsDefault());
-  ci.set_value(L"2.0-beta-statsdef:0-multi");
+  ci.set_value(L"2.0-beta-statsdef=0-multi");
   EXPECT_EQ(L"0", ci.GetStatsDefault());
-  ci.set_value(L"2.0-beta-statsdef:1-multi");
+  ci.set_value(L"2.0-beta-statsdef=1-multi");
   EXPECT_EQ(L"1", ci.GetStatsDefault());
 }
 
