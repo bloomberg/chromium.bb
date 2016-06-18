@@ -54,7 +54,7 @@ public:
 
     // hasValue is set to true if a valid timeline value is returned.
     // otherwise defaultValue is returned.
-    float valueForContextTime(AudioDestinationHandler&, float defaultValue, bool& hasValue);
+    float valueForContextTime(AudioDestinationHandler&, float defaultValue, bool& hasValue, float minValue, float maxValue);
 
     // Given the time range in frames, calculates parameter values into the values buffer and
     // returns the last parameter value calculated for "values" or the defaultValue if none were
@@ -62,7 +62,7 @@ public:
     // calculated.  It should equal sampleRate for sample-accurate parameter changes, and otherwise
     // will usually match the render quantum size such that the parameter value changes once per
     // render quantum.
-    float valuesForFrameRange(size_t startFrame, size_t endFrame, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
+    float valuesForFrameRange(size_t startFrame, size_t endFrame, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate, float minValue, float maxValue);
 
     // Returns true if this AudioParam has any events on it.
     bool hasValues() const;

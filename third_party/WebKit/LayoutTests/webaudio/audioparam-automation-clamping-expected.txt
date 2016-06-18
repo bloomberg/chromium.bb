@@ -1,0 +1,14 @@
+CONSOLE WARNING: line 49: BiquadFilter.frequency.linearRampToValueAtTime value -1000 outside nominal range [0, 24000]; value will be clamped.
+Test Clamping of Automations.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Clamped signal in frame range [5618, 18382] equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.
+PASS Actual Clamp start (5618) is less than or equal to 5618.
+PASS Actual Clamp end (18383) is greater than or equal to 18382.
+PASS Clamping of BiquadFilter.frequency automation performed correctly.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -148,7 +148,7 @@ float AudioParamHandler::value()
     float v = intrinsicValue();
     if (deferredTaskHandler().isAudioThread()) {
         bool hasValue;
-        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), v, hasValue);
+        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), v, hasValue, minValue(), maxValue());
 
         if (hasValue)
             v = timelineValue;
@@ -180,7 +180,7 @@ bool AudioParamHandler::smooth()
     // If values have been explicitly scheduled on the timeline, then use the exact value.
     // Smoothing effectively is performed by the timeline.
     bool useTimelineValue = false;
-    float value = m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(), useTimelineValue);
+    float value = m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(), useTimelineValue, minValue(), maxValue());
 
     if (m_smoothedValue == value) {
         // Smoothed value has already approached and snapped to value.
@@ -238,7 +238,7 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
         // Calculate control-rate (k-rate) intrinsic value.
         bool hasValue;
         float value = intrinsicValue();
-        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), value, hasValue);
+        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), value, hasValue, minValue(), maxValue());
 
         if (hasValue)
             value = timelineValue;
@@ -274,7 +274,7 @@ void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOf
 
     // Note we're running control rate at the sample-rate.
     // Pass in the current value as default value.
-    setIntrinsicValue(m_timeline.valuesForFrameRange(startFrame, endFrame, intrinsicValue(), values, numberOfValues, sampleRate, sampleRate));
+    setIntrinsicValue(m_timeline.valuesForFrameRange(startFrame, endFrame, intrinsicValue(), values, numberOfValues, sampleRate, sampleRate, minValue(), maxValue()));
 }
 
 void AudioParamHandler::connect(AudioNodeOutput& output)

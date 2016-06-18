@@ -337,7 +337,7 @@ void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState&
     }
 }
 
-float AudioParamTimeline::valueForContextTime(AudioDestinationHandler& audioDestination, float defaultValue, bool& hasValue)
+float AudioParamTimeline::valueForContextTime(AudioDestinationHandler& audioDestination, float defaultValue, bool& hasValue, float minValue, float maxValue)
 {
     {
         MutexTryLocker tryLocker(m_eventsLock);
@@ -352,7 +352,7 @@ float AudioParamTimeline::valueForContextTime(AudioDestinationHandler& audioDest
     double sampleRate = audioDestination.sampleRate();
     size_t startFrame = audioDestination.currentSampleFrame();
     double controlRate = sampleRate / AudioHandler::ProcessingSizeInFrames; // one parameter change per render quantum
-    value = valuesForFrameRange(startFrame, startFrame + 1, defaultValue, &value, 1, sampleRate, controlRate);
+    value = valuesForFrameRange(startFrame, startFrame + 1, defaultValue, &value, 1, sampleRate, controlRate, minValue, maxValue);
 
     hasValue = true;
     return value;
@@ -365,7 +365,9 @@ float AudioParamTimeline::valuesForFrameRange(
     float* values,
     unsigned numberOfValues,
     double sampleRate,
-    double controlRate)
+    double controlRate,
+    float minValue,
+    float maxValue)
 {
     // We can't contend the lock in the realtime audio thread.
     MutexTryLocker tryLocker(m_eventsLock);
@@ -377,7 +379,13 @@ float AudioParamTimeline::valuesForFrameRange(
         return defaultValue;
     }
 
-    return valuesForFrameRangeImpl(startFrame, endFrame, defaultValue, values, numberOfValues, sampleRate, controlRate);
+    float lastValue = valuesForFrameRangeImpl(startFrame, endFrame, defaultValue, values, numberOfValues, sampleRate, controlRate);
+
+    // Clamp the values now to the nominal range
+    for (unsigned k = 0; k < numberOfValues; ++k)
+        values[k] = clampTo(values[k], minValue, maxValue);
+
+    return lastValue;
 }
 
 float AudioParamTimeline::valuesForFrameRangeImpl(
