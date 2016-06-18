@@ -34,7 +34,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     public boolean onUnbind(Intent intent) {
         super.onUnbind(intent);
-        mConnection.logCall("Service#onUnbind()", true);
+        if (mConnection != null) mConnection.logCall("Service#onUnbind()", true);
         return false; // No support for onRebind().
     }
 
