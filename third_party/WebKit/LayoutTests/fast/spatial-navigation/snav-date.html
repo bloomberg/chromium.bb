@@ -7,7 +7,7 @@ window.jsTestIsAsync = true;
 
 if (window.testRunner) {
     testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-    testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
+    window.internals.settings.setSpatialNavigationEnabled(true);
 }
 </script>
 </head>

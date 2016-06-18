@@ -762,12 +762,6 @@ void BlinkTestController::OnPrintMessage(const std::string& message) {
 void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
-
-  // Notifies the main RenderViewHost that Blink preferences changed so to avoid
-  // re-usage of cached preferences that are now stale.
-  RenderViewHost* main_render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-  main_render_view_host->OnWebkitPreferencesChanged();
 }
 
 void BlinkTestController::OnClearDevToolsLocalStorage() {
