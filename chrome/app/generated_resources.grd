@@ -543,10 +543,7 @@ are declared in build/common.gypi.
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
-            Reload frame
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
-            Save &amp;frame as...
+            Reload &amp;frame
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
             &amp;Print frame...
@@ -756,10 +753,7 @@ are declared in build/common.gypi.
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">
-            Reload Frame
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="In Title Case: The name of the Save Frame As command in the content area context menu">
-            Save &amp;Frame As...
+            Reload &amp;Frame
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="In Title Case: The name of the Print Frame command in the content area context menu">
             &amp;Print Frame...
