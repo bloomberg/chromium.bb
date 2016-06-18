@@ -130,17 +130,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
-            public boolean wouldReplaceURL() {
-                return false;
-            }
-
-            @Override
             public NewTabPage getNewTabPageForCurrentTab() {
-                return null;
-            }
-
-            @Override
-            public String getCorpusChipText() {
                 return null;
             }
 

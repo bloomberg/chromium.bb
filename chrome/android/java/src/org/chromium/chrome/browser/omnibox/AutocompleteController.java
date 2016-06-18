@@ -132,17 +132,16 @@ public class AutocompleteController {
      * @param profile The profile to use for starting the AutocompleteController.
      * @param omniboxText The text displayed in the omnibox.
      * @param url The url of the currently loaded web page.
-     * @param isQueryInOmnibox Whether the location bar is currently showing a search query.
      * @param focusedFromFakebox Whether the user entered the omnibox by tapping the fakebox on the
      *                           native NTP. This should be false on all other pages.
      */
     public void startZeroSuggest(Profile profile, String omniboxText, String url,
-            boolean isQueryInOmnibox, boolean focusedFromFakebox) {
+            boolean focusedFromFakebox) {
         if (profile == null || TextUtils.isEmpty(url)) return;
         mNativeAutocompleteControllerAndroid = nativeInit(profile);
         if (mNativeAutocompleteControllerAndroid != 0) {
             nativeOnOmniboxFocused(mNativeAutocompleteControllerAndroid, omniboxText, url,
-                    isQueryInOmnibox, focusedFromFakebox);
+                    focusedFromFakebox);
         }
     }
 
@@ -233,12 +232,12 @@ public class AutocompleteController {
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
     public void onSuggestionSelected(int selectedIndex, int type,
-            String currentPageUrl, boolean isQueryInOmnibox, boolean focusedFromFakebox,
-            long elapsedTimeSinceModified, int completedLength, WebContents webContents) {
+            String currentPageUrl, boolean focusedFromFakebox, long elapsedTimeSinceModified,
+            int completedLength, WebContents webContents) {
         // Don't natively log voice suggestion results as we add them in Java.
         if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
         nativeOnSuggestionSelected(mNativeAutocompleteControllerAndroid, selectedIndex,
-                currentPageUrl, isQueryInOmnibox, focusedFromFakebox, elapsedTimeSinceModified,
+                currentPageUrl, focusedFromFakebox, elapsedTimeSinceModified,
                 completedLength, webContents);
     }
 
@@ -323,12 +322,11 @@ public class AutocompleteController {
     private native void nativeStop(long nativeAutocompleteControllerAndroid, boolean clearResults);
     private native void nativeResetSession(long nativeAutocompleteControllerAndroid);
     private native void nativeOnSuggestionSelected(long nativeAutocompleteControllerAndroid,
-            int selectedIndex, String currentPageUrl, boolean isQueryInOmnibox,
+            int selectedIndex, String currentPageUrl,
             boolean focusedFromFakebox, long elapsedTimeSinceModified,
             int completedLength, WebContents webContents);
     private native void nativeOnOmniboxFocused(long nativeAutocompleteControllerAndroid,
-            String omniboxText, String currentUrl, boolean isQueryInOmnibox,
-            boolean focusedFromFakebox);
+            String omniboxText, String currentUrl, boolean focusedFromFakebox);
     private native void nativeDeleteSuggestion(long nativeAutocompleteControllerAndroid,
             int selectedIndex);
     private native String nativeUpdateMatchDestinationURLWithQueryFormulationTime(

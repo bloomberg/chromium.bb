@@ -52,7 +52,6 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_omnibox_text,
       const base::android::JavaParamRef<jstring>& j_current_url,
-      jboolean is_query_in_omnibox,
       jboolean focused_from_fakebox);
   void Stop(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& obj,
@@ -64,7 +63,6 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
       const base::android::JavaParamRef<jstring>& j_current_url,
-      jboolean is_query_in_omnibox,
       jboolean focused_from_fakebox,
       jlong elapsed_time_since_first_modified,
       jint completed_length,
@@ -120,7 +118,6 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
   // Classifies the type of page we are on.
   metrics::OmniboxEventProto::PageClassification ClassifyPage(
       const GURL& gurl,
-      bool is_query_in_omnibox,
       bool focused_from_fakebox) const;
 
   base::android::ScopedJavaLocalRef<jobject> BuildOmniboxSuggestion(

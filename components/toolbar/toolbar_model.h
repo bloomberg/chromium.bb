@@ -45,13 +45,6 @@ class ToolbarModel {
   // portion of the resulting URL.
   virtual base::string16 GetFormattedURL(size_t* prefix_end) const = 0;
 
-  // Some search URLs bundle a special "corpus" param that we can extract and
-  // display next to users' search terms in cases where we'd show the search
-  // terms instead of the URL anyway.  For example, a Google image search might
-  // show the corpus "Images:" plus a search string.  This is only used on
-  // mobile.
-  virtual base::string16 GetCorpusNameForMobile() const = 0;
-
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 

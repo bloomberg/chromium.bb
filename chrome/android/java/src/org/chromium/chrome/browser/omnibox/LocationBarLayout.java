@@ -179,9 +179,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     private boolean mIgnoreOmniboxItemSelection = true;
 
-    // True if we are showing the search query instead of the url.
-    private boolean mQueryInTheOmnibox = false;
-
     private String mOriginalUrl = "";
 
     private WindowAndroid mWindowAndroid;
@@ -933,7 +930,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         changeLocationBarIcon(
                 (!DeviceFormFactor.isTablet(getContext()) || !hasFocus) && isSecurityButtonShown());
         mUrlBar.setCursorVisible(hasFocus);
-        if (mQueryInTheOmnibox) mUrlBar.setSelection(mUrlBar.getSelectionEnd());
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
 
@@ -1008,7 +1004,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 && currentTab != null
                 && !currentTab.isIncognito()) {
             mAutocomplete.startZeroSuggest(currentTab.getProfile(), mUrlBar.getQueryText(),
-                    currentTab.getUrl(), mQueryInTheOmnibox, mUrlFocusedFromFakebox);
+                    currentTab.getUrl(), mUrlFocusedFromFakebox);
         }
     }
 
@@ -1072,12 +1068,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * it is set to the default one.
      */
     private void updateCustomSelectionActionModeCallback() {
-        if (mQueryInTheOmnibox) {
-            mUrlBar.setCustomSelectionActionModeCallback(
-                    mActionModeController.getActionModeCallback());
-        } else {
-            mUrlBar.setCustomSelectionActionModeCallback(mDefaultActionModeCallbackForTextEdit);
-        }
+        mUrlBar.setCustomSelectionActionModeCallback(mDefaultActionModeCallbackForTextEdit);
     }
 
     @Override
@@ -1161,8 +1152,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mSuggestionItems.get(0).getSuggestion());
-        } else if (mQueryInTheOmnibox) {
-            type = NavigationButtonType.MAGNIFIER;
         } else if (!mUrlHasFocus && getCurrentTab() != null && getCurrentTab().isOfflinePage()) {
             type = NavigationButtonType.OFFLINE;
         } else if (isTablet) {
@@ -1170,13 +1159,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
 
         if (type != mNavigationButtonType) setNavigationButtonType(type);
-    }
-
-    /**
-     * @return Whether the query is shown in the omnibox instead of the url.
-     */
-    public boolean showingQueryInTheOmnibox() {
-        return mQueryInTheOmnibox;
     }
 
     private int getSecurityLevel() {
@@ -1213,15 +1195,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        if (mQueryInTheOmnibox) {
-            if (securityLevel == ConnectionSecurityLevel.SECURE
-                    || securityLevel == ConnectionSecurityLevel.EV_SECURE) {
-                securityLevel = ConnectionSecurityLevel.NONE;
-            } else if (securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                    || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR) {
-                setUrlToPageUrl();
-            }
-        }
         int id = getSecurityIconResource(securityLevel, !shouldEmphasizeHttpsScheme());
         // ImageView#setImageResource is no-op if given resource is the current one.
         if (id == 0) {
@@ -1250,7 +1223,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     private void emphasizeUrl() {
-        if (!mQueryInTheOmnibox) mUrlBar.emphasizeUrl();
+        mUrlBar.emphasizeUrl();
     }
 
     @Override
@@ -1611,19 +1584,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 : "updateSuggestionUrlIfNeeded called before native initialization";
 
         String updatedUrl = null;
-        // Only replace URL queries for corpus search refinements, this does not work well
-        // for regular web searches.
-        // TODO(mariakhomenko): improve efficiency by just checking whether corpus exists.
-        if (mQueryInTheOmnibox && !suggestion.isUrlSuggestion()
-                && !TextUtils.isEmpty(mToolbarDataProvider.getCorpusChipText())) {
-            String query = suggestion.getFillIntoEdit();
-            Tab currentTab = getCurrentTab();
-            if (currentTab != null && !TextUtils.isEmpty(currentTab.getUrl())
-                    && !TextUtils.isEmpty(query)) {
-                updatedUrl = TemplateUrlService.getInstance().replaceSearchTermsInUrl(
-                        query, currentTab.getUrl());
-            }
-        } else if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
+        if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
             // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
             // for query in the omnibox and voice suggestions, but it's currently difficult to do.
             long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
@@ -2004,8 +1965,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             }
         }
 
-        mQueryInTheOmnibox = false;
-
         if (getCurrentTab() == null) {
             setUrlBarText("", null);
             return;
@@ -2024,25 +1983,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             return;
         }
 
-        boolean showingQuery = false;
-        String displayText = mToolbarDataProvider.getText();
-        if (!TextUtils.isEmpty(displayText) && mToolbarDataProvider.wouldReplaceURL()) {
-            if (getSecurityLevel() == ConnectionSecurityLevel.SECURITY_ERROR) {
-                assert false : "Search terms should not be shown for https error pages.";
-                displayText = url;
-            } else {
-                url = displayText.trim();
-                showingQuery = true;
-                mQueryInTheOmnibox = true;
-            }
-        }
-
-        if (setUrlBarText(url, displayText)) {
+        if (setUrlBarText(url, mToolbarDataProvider.getText())) {
             mUrlBar.deEmphasizeUrl();
             emphasizeUrl();
-        }
-        if (showingQuery) {
-            updateNavigationButton();
         }
         updateCustomSelectionActionModeCallback();
     }
@@ -2083,8 +2026,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
                 ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;
         mAutocomplete.onSuggestionSelected(matchPosition, type, currentPageUrl,
-                mQueryInTheOmnibox, mUrlFocusedFromFakebox, elapsedTimeSinceModified,
-                mUrlBar.getAutocompleteLength(), webContents);
+                mUrlFocusedFromFakebox, elapsedTimeSinceModified, mUrlBar.getAutocompleteLength(),
+                webContents);
         loadUrl(url, transition);
     }
 

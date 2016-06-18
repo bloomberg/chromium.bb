@@ -28,10 +28,6 @@ base::string16 TestToolbarModel::GetFormattedURL(size_t* prefix_end) const {
   return text_;
 }
 
-base::string16 TestToolbarModel::GetCorpusNameForMobile() const {
-  return base::string16();
-}
-
 GURL TestToolbarModel::GetURL() const {
   return url_;
 }

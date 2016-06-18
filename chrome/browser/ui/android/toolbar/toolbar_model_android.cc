@@ -39,20 +39,6 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(
                                                  toolbar_model_->GetText());
 }
 
-ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetCorpusChipText(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return base::android::ConvertUTF16ToJavaString(
-      env,
-      toolbar_model_->GetCorpusNameForMobile());
-}
-
-jboolean ToolbarModelAndroid::WouldReplaceURL(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return toolbar_model_->WouldReplaceURL();
-}
-
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jdelegate = weak_java_delegate_.get(env);

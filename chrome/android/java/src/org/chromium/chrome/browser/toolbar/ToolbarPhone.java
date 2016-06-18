@@ -1681,32 +1681,29 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (isLocationBarShownInNTP() && mNtpSearchBoxScrollPercent == 0f) return;
 
-        if (!FeatureUtilities.isDocumentMode(getContext())
-                || mPhoneLocationBar.showingQueryInTheOmnibox()) {
-            // The call to getLayout() can return null briefly during text changes, but as it
-            // is only needed for RTL calculations, we proceed if the location bar is showing
-            // LTR content.
-            boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mPhoneLocationBar);
-            if (!isLocationBarRtl || mUrlBar.getLayout() != null) {
-                int urlBarStartScrollX = 0;
-                if (isLocationBarRtl) {
-                    urlBarStartScrollX = (int) mUrlBar.getLayout().getPrimaryHorizontal(0);
-                    urlBarStartScrollX -= mUrlBar.getWidth();
-                }
+        // The call to getLayout() can return null briefly during text changes, but as it
+        // is only needed for RTL calculations, we proceed if the location bar is showing
+        // LTR content.
+        boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mPhoneLocationBar);
+        if (!isLocationBarRtl || mUrlBar.getLayout() != null) {
+            int urlBarStartScrollX = 0;
+            if (isLocationBarRtl) {
+                urlBarStartScrollX = (int) mUrlBar.getLayout().getPrimaryHorizontal(0);
+                urlBarStartScrollX -= mUrlBar.getWidth();
+            }
 
-                // If the scroll position matches the current scroll position, do not trigger
-                // this animation as it will cause visible jumps when going from cleared text
-                // back to page URLs (despite it continually calling setScrollX with the same
-                // number).
-                if (mUrlBar.getScrollX() != urlBarStartScrollX) {
-                    animator = ObjectAnimator.ofInt(
-                            mUrlBar,
-                            buildUrlScrollProperty(mPhoneLocationBar, isLocationBarRtl),
-                            urlBarStartScrollX);
-                    animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-                    animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                    animators.add(animator);
-                }
+            // If the scroll position matches the current scroll position, do not trigger
+            // this animation as it will cause visible jumps when going from cleared text
+            // back to page URLs (despite it continually calling setScrollX with the same
+            // number).
+            if (mUrlBar.getScrollX() != urlBarStartScrollX) {
+                animator = ObjectAnimator.ofInt(
+                        mUrlBar,
+                        buildUrlScrollProperty(mPhoneLocationBar, isLocationBarRtl),
+                        urlBarStartScrollX);
+                animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
+                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+                animators.add(animator);
             }
         }
     }

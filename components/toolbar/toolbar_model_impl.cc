@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/security_state_model.h"
@@ -64,26 +63,6 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
   return gfx::TruncateString(formatted_text, max_url_display_chars_ - 1,
                              gfx::CHARACTER_BREAK) +
          gfx::kEllipsisUTF16;
-}
-
-base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
-  if (!WouldPerformSearchTermReplacement(false))
-    return base::string16();
-  GURL url(GetURL());
-  // If there is a query in the url fragment look for the corpus name there,
-  // otherwise look for the corpus name in the query parameters.
-  const std::string& query_str(google_util::HasGoogleSearchQueryParam(
-      url.ref_piece()) ? url.ref() : url.query());
-  url::Component query(0, static_cast<int>(query_str.length())), key, value;
-  const char kChipKey[] = "sboxchip";
-  while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
-    if (key.is_nonempty() && query_str.substr(key.begin, key.len) == kChipKey) {
-      return net::UnescapeAndDecodeUTF8URLComponent(
-          query_str.substr(value.begin, value.len),
-          net::UnescapeRule::NORMAL);
-    }
-  }
-  return base::string16();
 }
 
 GURL ToolbarModelImpl::GetURL() const {

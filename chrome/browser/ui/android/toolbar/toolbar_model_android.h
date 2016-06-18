@@ -28,11 +28,6 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
   base::android::ScopedJavaLocalRef<jstring> GetText(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jstring> GetCorpusChipText(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  jboolean WouldReplaceURL(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
 
   // ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;

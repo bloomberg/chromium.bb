@@ -34,7 +34,6 @@ class ToolbarModelImpl : public ToolbarModel {
   // ToolbarModel:
   base::string16 GetText() const override;
   base::string16 GetFormattedURL(size_t* prefix_end) const override;
-  base::string16 GetCorpusNameForMobile() const override;
   GURL GetURL() const override;
   bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
   security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
