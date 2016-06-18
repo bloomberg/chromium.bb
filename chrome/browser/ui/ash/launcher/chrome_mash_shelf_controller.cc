@@ -95,7 +95,7 @@ void ChromeMashShelfController::Init() {
 
   if (arc::ArcAuthService::IsAllowedForProfile(profile)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
-        profile, extension_misc::EXTENSION_ICON_SMALL, nullptr, this));
+        profile, extension_misc::EXTENSION_ICON_SMALL, this));
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
 

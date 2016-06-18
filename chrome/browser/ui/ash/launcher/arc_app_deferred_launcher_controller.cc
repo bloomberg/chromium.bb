@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -22,11 +23,11 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
  public:
   SpinningEffectSource(
       const base::WeakPtr<ArcAppDeferredLauncherController>& host,
-      const std::string& app_id,
+      const std::string& shelf_app_id,
       const gfx::ImageSkia& image)
       : gfx::CanvasImageSource(image.size(), false /* is opaque */),
         host_(host),
-        app_id_(app_id),
+        shelf_app_id_(shelf_app_id),
         image_(image) {}
 
   ~SpinningEffectSource() override {}
@@ -39,15 +40,15 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
     canvas->DrawImageInt(image_, 0, 0);
 
     const int gap = kSpinningGapPercent * image_.width() / 100;
-    gfx::PaintThrobberSpinning(canvas,
-                               gfx::Rect(gap, gap, image_.width() - 2 * gap,
-                                         image_.height() - 2 * gap),
-                               SK_ColorWHITE, host_->GetActiveTime(app_id_));
+    gfx::PaintThrobberSpinning(
+        canvas, gfx::Rect(gap, gap, image_.width() - 2 * gap,
+                          image_.height() - 2 * gap),
+        SK_ColorWHITE, host_->GetActiveTime(shelf_app_id_));
   }
 
  private:
   base::WeakPtr<ArcAppDeferredLauncherController> host_;
-  const std::string app_id_;
+  const std::string shelf_app_id_;
   const gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(SpinningEffectSource);
@@ -68,16 +69,17 @@ ArcAppDeferredLauncherController::~ArcAppDeferredLauncherController() {
     ArcAppListPrefs::Get(observed_profile_)->RemoveObserver(this);
 }
 
-void ArcAppDeferredLauncherController::Apply(const std::string& app_id,
-                                             gfx::ImageSkia* image) {
+void ArcAppDeferredLauncherController::MaybeApplySpinningEffect(
+    const std::string& shelf_app_id,
+    gfx::ImageSkia* image) {
   DCHECK(image);
-  if (app_controller_map_.find(app_id) == app_controller_map_.end())
+  if (app_controller_map_.find(shelf_app_id) == app_controller_map_.end())
     return;
 
   const color_utils::HSL shift = {-1, 0, 0.25};
   *image = gfx::ImageSkia(
       new SpinningEffectSource(
-          weak_ptr_factory_.GetWeakPtr(), app_id,
+          weak_ptr_factory_.GetWeakPtr(), shelf_app_id,
           gfx::ImageSkiaOperations::CreateTransparentImage(
               gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image, shift),
               0.5)),
@@ -85,25 +87,30 @@ void ArcAppDeferredLauncherController::Apply(const std::string& app_id,
 }
 
 void ArcAppDeferredLauncherController::Close(const std::string& app_id) {
-  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
+  AppControllerMap::const_iterator it = app_controller_map_.find(shelf_app_id);
   if (it == app_controller_map_.end())
     return;
 
-  const ash::ShelfID shelf_id = owner_->GetShelfIDForAppID(app_id);
+  const ash::ShelfID shelf_id = owner_->GetShelfIDForAppID(shelf_app_id);
   const bool need_close_item =
       it->second == owner_->GetLauncherItemController(shelf_id);
   app_controller_map_.erase(it);
   if (need_close_item)
     owner_->CloseLauncherItem(shelf_id);
+  owner_->OnAppUpdated(owner_->GetProfile(), shelf_app_id);
 }
 
 void ArcAppDeferredLauncherController::OnAppReadyChanged(
     const std::string& app_id,
     bool ready) {
-  if (!ready)
+  if (!ready || app_controller_map_.empty())
     return;
 
-  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
+  AppControllerMap::const_iterator it = app_controller_map_.find(shelf_app_id);
   if (it == app_controller_map_.end())
     return;
 
@@ -117,8 +124,8 @@ void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
 }
 
 base::TimeDelta ArcAppDeferredLauncherController::GetActiveTime(
-    const std::string& app_id) const {
-  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+    const std::string& shelf_app_id) const {
+  AppControllerMap::const_iterator it = app_controller_map_.find(shelf_app_id);
   if (it == app_controller_map_.end())
     return base::TimeDelta();
 
@@ -144,7 +151,7 @@ void ArcAppDeferredLauncherController::RegisterNextUpdate() {
 void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
     const std::string& app_id) {
   const std::string shelf_app_id =
-      app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId : app_id;
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
   const ash::ShelfID shelf_id = owner_->GetShelfIDForAppID(shelf_app_id);
 
   if (shelf_id) {
@@ -158,7 +165,7 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   }
 
   ArcAppDeferredLauncherItemController* controller =
-      new ArcAppDeferredLauncherItemController(app_id, owner_,
+      new ArcAppDeferredLauncherItemController(shelf_app_id, owner_,
                                                weak_ptr_factory_.GetWeakPtr());
   if (shelf_id == 0) {
     owner_->CreateAppLauncherItem(controller, shelf_app_id,
@@ -171,5 +178,5 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   if (app_controller_map_.empty())
     RegisterNextUpdate();
 
-  app_controller_map_[app_id] = controller;
+  app_controller_map_[shelf_app_id] = controller;
 }

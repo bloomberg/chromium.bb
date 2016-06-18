@@ -587,7 +587,6 @@ TEST_F(ArcAppModelBuilderTest, IconLoader) {
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(profile(),
                                app_list::kListIconSize,
-                               nullptr,
                                &delegate);
   EXPECT_EQ(0UL, delegate.update_image_cnt());
   icon_loader.FetchImage(app_id);

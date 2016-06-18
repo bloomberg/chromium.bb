@@ -1752,10 +1752,8 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile) {
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
   if (arc::ArcAuthService::IsAllowedForProfile(profile_)) {
-    DCHECK(arc_deferred_launcher_.get());
-    std::unique_ptr<AppIconLoader> arc_app_icon_loader(
-        new ArcAppIconLoader(profile_, extension_misc::EXTENSION_ICON_SMALL,
-                             arc_deferred_launcher_.get(), this));
+    std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
+        profile_, extension_misc::EXTENSION_ICON_SMALL, this));
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
 
@@ -1909,6 +1907,8 @@ void ChromeLauncherControllerImpl::OnAppImageUpdated(
       continue;
     ash::ShelfItem item = model_->items()[index];
     item.image = image;
+    if (arc_deferred_launcher_)
+      arc_deferred_launcher_->MaybeApplySpinningEffect(id, &item.image);
     model_->Set(index, item);
     // It's possible we're waiting on more than one item, so don't break.
   }

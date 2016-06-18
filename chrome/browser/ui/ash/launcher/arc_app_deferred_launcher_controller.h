@@ -16,8 +16,7 @@
 class ArcAppDeferredLauncherItemController;
 class ChromeLauncherControllerImpl;
 
-class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
-                                         public ArcAppIconLoader::PostEffect {
+class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer {
  public:
   explicit ArcAppDeferredLauncherController(
       ChromeLauncherControllerImpl* owner);
@@ -25,11 +24,12 @@ class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
 
   base::TimeDelta GetActiveTime(const std::string& app_id) const;
 
-  // Register deferred Arc app launch.
+  // Registers deferred Arc app launch.
   void RegisterDeferredLaunch(const std::string& app_id);
 
-  // ArcAppIconLoader::PostEffect:
-  void Apply(const std::string& app_id, gfx::ImageSkia* image) override;
+  // Applies spinning effect if requested app is handled by deferred controller.
+  void MaybeApplySpinningEffect(const std::string& app_id,
+                                gfx::ImageSkia* image);
 
   // ArcAppListPrefs::Observer:
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
