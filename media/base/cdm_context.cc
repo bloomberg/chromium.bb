@@ -6,6 +6,8 @@
 
 namespace media {
 
+const int CdmContext::kInvalidCdmId = 0;
+
 CdmContext::CdmContext() {}
 
 CdmContext::~CdmContext() {}

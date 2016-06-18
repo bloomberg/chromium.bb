@@ -34,6 +34,8 @@ MojoRendererImpl::MojoRendererImpl(
 MojoRendererImpl::~MojoRendererImpl() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  CancelPendingCallbacks();
 }
 
 void MojoRendererImpl::Initialize(
@@ -44,8 +46,13 @@ void MojoRendererImpl::Initialize(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
 
+  if (encountered_error_) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
+    return;
+  }
+
   demuxer_stream_provider_ = demuxer_stream_provider;
-  client_ = client;
   init_cb_ = init_cb;
 
   // Create audio and video mojom::DemuxerStream and bind its lifetime to
@@ -68,10 +75,10 @@ void MojoRendererImpl::Initialize(
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
-  remote_renderer_->Initialize(
-      binding_.CreateInterfacePtrAndBind(), std::move(audio_stream),
-      std::move(video_stream),
-      base::Bind(&MojoRendererImpl::OnInitialized, base::Unretained(this)));
+  remote_renderer_->Initialize(binding_.CreateInterfacePtrAndBind(),
+                               std::move(audio_stream), std::move(video_stream),
+                               base::Bind(&MojoRendererImpl::OnInitialized,
+                                          base::Unretained(this), client));
 }
 
 void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
@@ -79,24 +86,44 @@ void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
+  DCHECK(!cdm_attached_cb.is_null());
+  DCHECK(cdm_attached_cb_.is_null());
+
+  if (encountered_error_) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(cdm_attached_cb, false));
+    return;
+  }
 
   int32_t cdm_id = cdm_context->GetCdmId();
   if (cdm_id == CdmContext::kInvalidCdmId) {
     DVLOG(2) << "MojoRendererImpl only works with remote CDMs but the CDM ID "
                 "is invalid.";
-    cdm_attached_cb.Run(false);
+    task_runner_->PostTask(FROM_HERE, base::Bind(cdm_attached_cb, false));
     return;
   }
 
   BindRemoteRendererIfNeeded();
-  remote_renderer_->SetCdm(cdm_id, cdm_attached_cb);
+
+  cdm_attached_cb_ = cdm_attached_cb;
+  remote_renderer_->SetCdm(cdm_id, base::Bind(&MojoRendererImpl::OnCdmAttached,
+                                              base::Unretained(this)));
 }
 
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
-  remote_renderer_->Flush(flush_cb);
+  DCHECK(!flush_cb.is_null());
+  DCHECK(flush_cb_.is_null());
+
+  if (encountered_error_) {
+    task_runner_->PostTask(FROM_HERE, flush_cb);
+    return;
+  }
+
+  flush_cb_ = flush_cb;
+  remote_renderer_->Flush(
+      base::Bind(&MojoRendererImpl::OnFlushed, base::Unretained(this)));
 }
 
 void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
@@ -116,6 +143,7 @@ void MojoRendererImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
+
   remote_renderer_->SetPlaybackRate(playback_rate);
 }
 
@@ -123,6 +151,7 @@ void MojoRendererImpl::SetVolume(float volume) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
+
   remote_renderer_->SetVolume(volume);
 }
 
@@ -135,13 +164,16 @@ base::TimeDelta MojoRendererImpl::GetMediaTime() {
 bool MojoRendererImpl::HasAudio() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(remote_renderer_.get());  // We always bind the renderer.
+  DCHECK(remote_renderer_.is_bound());
+
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
 }
 
 bool MojoRendererImpl::HasVideo() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(remote_renderer_.is_bound());
+
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 }
 
@@ -170,6 +202,8 @@ void MojoRendererImpl::OnError() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null());
 
+  encountered_error_ = true;
+
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
   client_->OnError(PIPELINE_ERROR_DECODE);
@@ -194,12 +228,11 @@ void MojoRendererImpl::OnConnectionError() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!init_cb_.is_null()) {
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    return;
-  }
+  encountered_error_ = true;
+  CancelPendingCallbacks();
 
-  client_->OnError(PIPELINE_ERROR_DECODE);
+  if (client_)
+    client_->OnError(PIPELINE_ERROR_DECODE);
 }
 
 void MojoRendererImpl::BindRemoteRendererIfNeeded() {
@@ -207,6 +240,8 @@ void MojoRendererImpl::BindRemoteRendererIfNeeded() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If |remote_renderer_| has already been bound, do nothing.
+  // Note that after Bind() is called, |remote_renderer_| is always bound even
+  // after connection error.
   if (remote_renderer_.is_bound())
     return;
 
@@ -221,13 +256,49 @@ void MojoRendererImpl::BindRemoteRendererIfNeeded() {
       base::Bind(&MojoRendererImpl::OnConnectionError, base::Unretained(this)));
 }
 
-void MojoRendererImpl::OnInitialized(bool success) {
+void MojoRendererImpl::OnInitialized(media::RendererClient* client,
+                                     bool success) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
 
+  // Only set |client_| after initialization succeeded. No client methods should
+  // be called before this.
+  if (success)
+    client_ = client;
+
   base::ResetAndReturn(&init_cb_).Run(
       success ? PIPELINE_OK : PIPELINE_ERROR_INITIALIZATION_FAILED);
+}
+
+void MojoRendererImpl::OnFlushed() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!flush_cb_.is_null());
+
+  base::ResetAndReturn(&flush_cb_).Run();
+}
+
+void MojoRendererImpl::OnCdmAttached(bool success) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!cdm_attached_cb_.is_null());
+
+  base::ResetAndReturn(&cdm_attached_cb_).Run(success);
+}
+
+void MojoRendererImpl::CancelPendingCallbacks() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
+
+  if (!flush_cb_.is_null())
+    base::ResetAndReturn(&flush_cb_).Run();
+
+  if (!cdm_attached_cb_.is_null())
+    base::ResetAndReturn(&cdm_attached_cb_).Run(false);
 }
 
 }  // namespace media

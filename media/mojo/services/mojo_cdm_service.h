@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,8 @@ class CdmFactory;
 
 // A mojom::ContentDecryptionModule implementation backed by a
 // media::MediaKeys.
-class MojoCdmService : public mojom::ContentDecryptionModule {
+class MEDIA_MOJO_EXPORT MojoCdmService
+    : NON_EXPORTED_BASE(public mojom::ContentDecryptionModule) {
  public:
   // Get the CDM associated with |cdm_id|, which is unique per process.
   // Can be called on any thread. The returned CDM is not guaranteed to be
@@ -37,7 +39,7 @@ class MojoCdmService : public mojom::ContentDecryptionModule {
   // render frame the caller is associated with. In the future, we should move
   // all out-of-process media players into the MojoMediaApplicaiton so that we
   // can use MojoCdmServiceContext (per render frame) to get the CDM.
-  static scoped_refptr<MediaKeys> MEDIA_MOJO_EXPORT LegacyGetCdm(int cdm_id);
+  static scoped_refptr<MediaKeys> LegacyGetCdm(int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   MojoCdmService(

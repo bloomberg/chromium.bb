@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 test("media_mojo_unittests") {
   sources = [
+    "clients/mojo_renderer_unittest.cc",
     "common/media_type_converters_unittest.cc",
     "common/mojo_shared_buffer_video_frame_unittest.cc",
     "services/mojo_cdm_allocator_unittest.cc",
@@ -17,6 +18,7 @@ test("media_mojo_unittests") {
     "//media",
     "//media:cdm_api",
     "//media/base:test_support",
+    "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//media/mojo/services",

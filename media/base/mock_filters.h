@@ -352,7 +352,11 @@ class MockCdmContext : public CdmContext {
   MOCK_METHOD0(GetDecryptor, Decryptor*());
   int GetCdmId() const override;
 
+  void set_cdm_id(int cdm_id);
+
  private:
+  int cdm_id_ = CdmContext::kInvalidCdmId;
+
   DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
 };
 

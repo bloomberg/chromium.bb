@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
 
@@ -19,7 +20,7 @@ class MediaKeys;
 class MojoCdmService;
 
 // A class that creates, owns and manages all MojoCdmService instances.
-class MojoCdmServiceContext {
+class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
  public:
   MojoCdmServiceContext();
   ~MojoCdmServiceContext();

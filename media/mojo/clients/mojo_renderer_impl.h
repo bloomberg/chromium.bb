@@ -73,8 +73,12 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   // Callback for connection error on |remote_renderer_|.
   void OnConnectionError();
 
-  // Called when |remote_renderer_| has finished initializing.
-  void OnInitialized(bool success);
+  // Callbacks for |remote_renderer_| methods.
+  void OnInitialized(media::RendererClient* client, bool success);
+  void OnFlushed();
+  void OnCdmAttached(bool success);
+
+  void CancelPendingCallbacks();
 
   // |task_runner| on which all methods are invoked, except for GetMediaTime(),
   // which can be called on any thread.
@@ -86,14 +90,14 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
 
   // Video frame overlays are rendered onto this sink.
   // Rendering of a new overlay is only needed when video natural size changes.
-  VideoRendererSink* video_renderer_sink_;
+  VideoRendererSink* video_renderer_sink_ = nullptr;
 
   // Provider of audio/video DemuxerStreams. Must be valid throughout the
   // lifetime of |this|.
-  DemuxerStreamProvider* demuxer_stream_provider_;
+  DemuxerStreamProvider* demuxer_stream_provider_ = nullptr;
 
   // Client of |this| renderer passed in Initialize.
-  media::RendererClient* client_;
+  media::RendererClient* client_ = nullptr;
 
   // This class is constructed on one thread and used exclusively on another
   // thread. This member is used to safely pass the RendererPtr from one thread
@@ -106,9 +110,11 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   // Binding for RendererClient, bound to the |task_runner_|.
   mojo::Binding<RendererClient> binding_;
 
-  // Callbacks passed to Initialize() that we forward messages from
-  // |remote_renderer_| through.
+  bool encountered_error_ = false;
+
   PipelineStatusCB init_cb_;
+  base::Closure flush_cb_;
+  CdmAttachedCB cdm_attached_cb_;
 
   // Lock used to serialize access for |time_|.
   mutable base::Lock lock_;

@@ -68,8 +68,8 @@ class RendererImplTest : public ::testing::Test {
         video_renderer_client_(nullptr),
         audio_renderer_client_(nullptr),
         initialization_status_(PIPELINE_OK) {
-    // SetDemuxerExpectations() adds overriding expectations for expected
-    // non-NULL streams.
+    // CreateAudioStream() and CreateVideoStream() overrides expectations for
+    // expected non-NULL streams.
     DemuxerStream* null_pointer = NULL;
     EXPECT_CALL(*demuxer_, GetStream(_))
         .WillRepeatedly(Return(null_pointer));

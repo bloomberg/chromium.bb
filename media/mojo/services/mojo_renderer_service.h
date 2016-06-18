@@ -17,6 +17,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
@@ -28,7 +29,8 @@ class Renderer;
 
 // A mojom::Renderer implementation that use a media::Renderer to render
 // media streams.
-class MojoRendererService : public mojom::Renderer, public RendererClient {
+class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
+                                              public RendererClient {
  public:
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.

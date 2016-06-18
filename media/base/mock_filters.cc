@@ -135,7 +135,11 @@ MockCdmContext::MockCdmContext() {}
 MockCdmContext::~MockCdmContext() {}
 
 int MockCdmContext::GetCdmId() const {
-  return CdmContext::kInvalidCdmId;
+  return cdm_id_;
+}
+
+void MockCdmContext::set_cdm_id(int cdm_id) {
+  cdm_id_ = cdm_id;
 }
 
 }  // namespace media
