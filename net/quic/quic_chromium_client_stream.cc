@@ -139,6 +139,11 @@ size_t QuicChromiumClientStream::WriteHeaders(
     const SpdyHeaderBlock& header_block,
     bool fin,
     QuicAckListenerInterface* ack_notifier_delegate) {
+  if (!session()->IsCryptoHandshakeConfirmed()) {
+    auto entry = header_block.find(":method");
+    DCHECK(entry != header_block.end());
+    DCHECK_NE("POST", entry->second);
+  }
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
       base::Bind(&QuicRequestNetLogCallback, id(), &header_block,

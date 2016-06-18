@@ -379,7 +379,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // disk cache. This job is started via a PostTask.
   void CreateAuxilaryJob(const QuicSessionKey& key,
                          int cert_verify_flags,
-                         bool is_post,
                          const BoundNetLog& net_log);
 
   // Returns a newly created QuicHttpStream owned by the caller.

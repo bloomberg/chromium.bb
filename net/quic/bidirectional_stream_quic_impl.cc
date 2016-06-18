@@ -33,6 +33,7 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       has_sent_headers_(false),
       has_received_headers_(false),
       send_request_headers_automatically_(true),
+      waiting_for_confirmation_(false),
       weak_factory_(this) {
   DCHECK(session_);
   session_->AddObserver(this);
@@ -281,6 +282,8 @@ bool BidirectionalStreamQuicImpl::HasSendHeadersComplete() {
 
 void BidirectionalStreamQuicImpl::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
+  if (waiting_for_confirmation_)
+    NotifyStreamReady();
 }
 
 void BidirectionalStreamQuicImpl::OnSessionClosed(
@@ -296,11 +299,11 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
     stream_->SetDelegate(this);
-    if (send_request_headers_automatically_) {
-      SendRequestHeaders();
+    if (!was_handshake_confirmed_ && request_info_->method == "POST") {
+      waiting_for_confirmation_ = true;
+      return;
     }
-    if (delegate_)
-      delegate_->OnStreamReady(has_sent_headers_);
+    NotifyStreamReady();
   } else {
     NotifyError(rv);
   }
@@ -330,6 +333,14 @@ void BidirectionalStreamQuicImpl::NotifyError(int error) {
     delegate->OnFailed(error);
     // |this| might be destroyed at this point.
   }
+}
+
+void BidirectionalStreamQuicImpl::NotifyStreamReady() {
+  if (send_request_headers_automatically_) {
+    SendRequestHeaders();
+  }
+  if (delegate_)
+    delegate_->OnStreamReady(has_sent_headers_);
 }
 
 void BidirectionalStreamQuicImpl::ResetStream() {

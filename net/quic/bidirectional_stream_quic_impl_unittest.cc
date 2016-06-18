@@ -68,16 +68,19 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
         on_data_sent_count_(0),
         not_expect_callback_(false),
         on_failed_called_(false),
-        send_request_headers_automatically_(true) {
+        send_request_headers_automatically_(true),
+        is_ready_(false) {
     loop_.reset(new base::RunLoop);
   }
 
   ~TestDelegateBase() override {}
 
   void OnStreamReady(bool request_headers_sent) override {
+    CHECK(!is_ready_);
     CHECK(!on_failed_called_);
     EXPECT_EQ(send_request_headers_automatically_, request_headers_sent);
     CHECK(!not_expect_callback_);
+    is_ready_ = true;
     loop_->Quit();
   }
 
@@ -194,6 +197,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   int on_data_read_count() const { return on_data_read_count_; }
   int on_data_sent_count() const { return on_data_sent_count_; }
   bool on_failed_called() const { return on_failed_called_; }
+  bool is_ready() const { return is_ready_; }
 
  protected:
   // Quits |loop_|.
@@ -220,6 +224,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   bool on_failed_called_;
   CompletionCallback callback_;
   bool send_request_headers_automatically_;
+  bool is_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegateBase);
 };
@@ -342,6 +347,8 @@ class BidirectionalStreamQuicImplTest
 
   // Configures the test fixture to use the list of expected writes.
   void Initialize() {
+    crypto_client_stream_factory_.set_handshake_mode(
+        MockCryptoClientStream::ZERO_RTT);
     mock_writes_.reset(new MockWrite[writes_.size()]);
     for (size_t i = 0; i < writes_.size(); i++) {
       if (writes_[i].packet == nullptr) {
@@ -382,7 +389,12 @@ class BidirectionalStreamQuicImplTest
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
     session_->GetCryptoStream()->CryptoConnect();
-    EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
+    EXPECT_TRUE(session_->IsEncryptionEstablished());
+  }
+
+  void ConfirmHandshake() {
+    crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+        QuicSession::HANDSHAKE_CONFIRMED);
   }
 
   void SetRequest(const std::string& method,
@@ -716,6 +728,8 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->DoNotSendRequestHeadersAutomatically();
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  EXPECT_FALSE(delegate->is_ready());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Sends request headers separately, which causes them to be sent in a
@@ -819,6 +833,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->DoNotSendRequestHeadersAutomatically();
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Send a Data packet.
@@ -916,6 +931,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->DoNotSendRequestHeadersAutomatically();
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Send a Data packet.
@@ -1006,6 +1022,84 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback();  // OnStreamReady
+
+  // Send a DATA frame.
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
+
+  delegate->SendData(buf, buf->size(), true);
+  delegate->WaitUntilNextCallback();  // OnDataSent
+
+  // Server acks the request.
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+
+  // Server sends the response headers.
+  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  size_t spdy_response_headers_frame_length;
+  QuicStreamOffset offset = 0;
+  ProcessPacket(ConstructResponseHeadersPacket(
+      2, !kFin, response_headers, &spdy_response_headers_frame_length,
+      &offset));
+
+  delegate->WaitUntilNextCallback();  // OnHeadersReceived
+  TestCompletionCallback cb;
+  int rv = delegate->ReadData(cb.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
+  const char kResponseBody[] = "Hello world!";
+  // Server sends data.
+  ProcessPacket(
+      ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0, kResponseBody));
+
+  EXPECT_EQ(static_cast<int>(strlen(kResponseBody)), cb.WaitForResult());
+
+  size_t spdy_trailers_frame_length;
+  SpdyHeaderBlock trailers;
+  trailers["foo"] = "bar";
+  trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
+  // Server sends trailers.
+  ProcessPacket(ConstructResponseTrailersPacket(
+      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+
+  delegate->WaitUntilNextCallback();  // OnTrailersReceived
+  trailers.erase(kFinalOffsetHeaderKey);
+  EXPECT_EQ(trailers, delegate->trailers());
+  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+
+  EXPECT_EQ(1, delegate->on_data_read_count());
+  EXPECT_EQ(1, delegate->on_data_sent_count());
+  EXPECT_EQ(kProtoQUIC1SPDY3, delegate->GetProtocol());
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length +
+                                 strlen(kUploadData)),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(
+      static_cast<int64_t>(spdy_response_headers_frame_length +
+                           strlen(kResponseBody) + spdy_trailers_frame_length),
+      delegate->GetTotalReceivedBytes());
+}
+
+TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
+  SetRequest("PUT", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, kUploadData,
+                               &client_maker_));
+  AddWrite(ConstructClientAckPacket(3, 3, 1));
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "PUT";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<TestDelegateBase> delegate(
+      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Send a DATA frame.
@@ -1084,6 +1178,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
@@ -1163,6 +1258,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
+  ConfirmHandshake();
 
   // Server sends a Rst.
   ProcessPacket(ConstructServerRstStreamPacket(1));
@@ -1202,6 +1298,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
+  ConfirmHandshake();
 
   // Server acks the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
@@ -1259,6 +1356,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
@@ -1314,6 +1412,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
@@ -1372,6 +1471,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
@@ -1422,6 +1522,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
       new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
                                DeleteStreamDelegate::ON_HEADERS_RECEIVED));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
@@ -1464,6 +1565,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
       read_buffer.get(), kReadBufferSize, DeleteStreamDelegate::ON_DATA_READ));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
+  ConfirmHandshake();
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.

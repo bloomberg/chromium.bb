@@ -611,17 +611,10 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  // Posts require handshake confirmation, so this will return asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, "POST", net_log_,
-                            callback_.callback()));
+  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
+                                /*cert_verify_flags=*/0, url_, "POST", net_log_,
+                                callback_.callback()));
 
-  // Confirm the handshake and verify that the stream is created.
-  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      QuicSession::HANDSHAKE_CONFIRMED);
-
-  EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
   EXPECT_TRUE(stream.get());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
@@ -3663,7 +3656,7 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   http_server_properties_.SetServerNetworkStats(server, stats1);
 
   crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::COLD_START);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");

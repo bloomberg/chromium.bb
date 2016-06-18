@@ -96,6 +96,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
     STATE_NONE,
     STATE_REQUEST_STREAM,
     STATE_SET_REQUEST_PRIORITY,
+    STATE_WAIT_FOR_CONFIRMATION,
+    STATE_WAIT_FOR_CONFIRMATION_COMPLETE,
     STATE_SEND_HEADERS,
     STATE_SEND_HEADERS_COMPLETE,
     STATE_READ_REQUEST_BODY,
@@ -112,6 +114,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int DoLoop(int rv);
   int DoStreamRequest();
   int DoSetRequestPriority();
+  int DoWaitForConfirmation();
+  int DoWaitForConfirmationComplete(int rv);
   int DoSendHeaders();
   int DoSendHeadersComplete(int rv);
   int DoReadRequestBody();

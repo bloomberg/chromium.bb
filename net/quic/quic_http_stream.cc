@@ -525,6 +525,13 @@ bool QuicHttpStream::HasSendHeadersComplete() {
 
 void QuicHttpStream::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
+  if (next_state_ == STATE_WAIT_FOR_CONFIRMATION_COMPLETE) {
+    int rv = DoLoop(OK);
+
+    if (rv != ERR_IO_PENDING && !callback_.is_null()) {
+      DoCallback(rv);
+    }
+  }
 }
 
 void QuicHttpStream::OnSessionClosed(int error, bool port_migration_detected) {
@@ -561,6 +568,13 @@ int QuicHttpStream::DoLoop(int rv) {
         break;
       case STATE_SET_REQUEST_PRIORITY:
         rv = DoSetRequestPriority();
+        break;
+      case STATE_WAIT_FOR_CONFIRMATION:
+        CHECK_EQ(OK, rv);
+        rv = DoWaitForConfirmation();
+        break;
+      case STATE_WAIT_FOR_CONFIRMATION_COMPLETE:
+        rv = DoWaitForConfirmationComplete(rv);
         break;
       case STATE_SEND_HEADERS:
         CHECK_EQ(OK, rv);
@@ -621,12 +635,28 @@ int QuicHttpStream::DoStreamRequest() {
 }
 
 int QuicHttpStream::DoSetRequestPriority() {
-  // Set priority according to request and, and advance to
-  // STATE_SEND_HEADERS.
+  // Set priority according to request
   DCHECK(stream_);
   DCHECK(response_info_);
   SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->SetPriority(priority);
+  next_state_ = STATE_WAIT_FOR_CONFIRMATION;
+  return OK;
+}
+
+int QuicHttpStream::DoWaitForConfirmation() {
+  next_state_ = STATE_WAIT_FOR_CONFIRMATION_COMPLETE;
+  if (!session_->IsCryptoHandshakeConfirmed() &&
+      request_info_->method == "POST") {
+    return ERR_IO_PENDING;
+  }
+  return OK;
+}
+
+int QuicHttpStream::DoWaitForConfirmationComplete(int rv) {
+  if (rv < 0)
+    return rv;
+
   next_state_ = STATE_SEND_HEADERS;
   return OK;
 }
