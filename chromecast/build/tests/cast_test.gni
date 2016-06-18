@@ -62,8 +62,10 @@
 
 import("//testing/test.gni")
 
-# This directory must be the same for every cast_test_group instance.
-_shared_dir = "$root_gen_dir/chromecast/tests"
+# Do not allow mixing of gtests and junit tests. All gtests must go into one
+# directory, while all junit tests must go into another directory.
+_gtest_gen_dir = "$root_gen_dir/chromecast/tests"
+_junit_gen_dir = "$root_gen_dir/chromecast/junit"
 
 # A group of test executables. Including test targets in this group makes it
 # possible for Chromecast build infrastructure to build and run them with
@@ -91,9 +93,25 @@ _shared_dir = "$root_gen_dir/chromecast/tests"
 #       cast_test_groups, where a higher number trumps a lower number.
 #       If not assigned, priority defaults to "1", the lowest priority.
 #
+#   test_type (optional)
+#       A string, which must be either "junit" or "gtest". If not defined,
+#       defaults to "gtest".
+#
 template("cast_test_group") {
   assert(defined(invoker.tests),
          "$target_name needs 'tests' listing the test() targets")
+
+  _test_type = "gtest"
+  if (defined(invoker.test_type)) {
+    assert(invoker.test_type == "gtest" || invoker.test_type == "junit")
+    _test_type = invoker.test_type
+  }
+
+  if (_test_type == "gtest") {
+    _shared_dir = _gtest_gen_dir
+  } else if (_test_type == "junit") {
+    _shared_dir = _junit_gen_dir
+  }
 
   # If a set of filters has not been defined, use the empty list.
   _filters = []
@@ -212,6 +230,9 @@ template("cast_test_group") {
 #       Set this to true to build all of the tests included in |test_groups|.
 #       Defaults to false. Note that if this is set to true, the test targets
 #       will be built after all the lists are generated.
+#   test_type (optional)
+#       A string, which must be either "junit" or "gtest". If not defined,
+#       defaults to "gtest".
 #
 template("cast_test_group_list") {
   assert(defined(invoker.test_groups), "$target_name needs 'test_groups'")
@@ -220,6 +241,18 @@ template("cast_test_group_list") {
          "$target_name needs 'build_list_path'")
 
   _pack_build_action = target_name + "_pack_build"
+
+  _test_type = "gtest"
+  if (defined(invoker.test_type)) {
+    assert(invoker.test_type == "gtest" || invoker.test_type == "junit")
+    _test_type = invoker.test_type
+  }
+
+  if (_test_type == "gtest") {
+    _shared_dir = _gtest_gen_dir
+  } else if (_test_type == "junit") {
+    _shared_dir = _junit_gen_dir
+  }
 
   # Generate a list of the "create_list" actions for each group. These will be
   # depended upon to ensure they're run before the "pack_build" step.

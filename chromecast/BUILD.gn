@@ -156,6 +156,27 @@ cast_test_group_list("cast_test_lists") {
   }
 }
 
+if (is_android) {
+  cast_test_group("cast_junit_tests") {
+    test_type = "junit"
+    tests = [
+      "//base:base_junit_tests",
+      "//content/public/android:content_junit_tests",
+      "//net/android:net_junit_tests",
+      "//testing/android/junit:junit_unit_tests",
+      "//ui/android:ui_junit_tests",
+    ]
+  }
+
+  cast_test_group_list("cast_junit_test_lists") {
+    test_type = "junit"
+    build_list_path = "$root_out_dir/junit/build_junit_test_list.txt"
+    run_list_path = "$root_out_dir/junit/run_junit_test_list.txt"
+    build_tests = true
+    test_groups = [ ":cast_junit_tests" ]
+  }
+}
+
 source_set("cast_shell_common") {
   deps = [
     ":cast_shell_pak",
