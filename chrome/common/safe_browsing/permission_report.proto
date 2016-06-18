@@ -34,9 +34,7 @@ message PermissionReport {
   optional SourceUI source_ui = 6;
 
   // The relevant field trials enabled for this report.
-  // TODO(stefanocs): Update field_trials field to store hashes instead of
-  // string.
-  repeated string field_trials = 7;
+  repeated FieldTrial field_trials = 7;
 
   // Platform
   enum PlatformType {
@@ -88,5 +86,18 @@ message PermissionReport {
     DURABLE_STORAGE = 7;
     AUDIO_CAPTURE = 8;
     VIDEO_CAPTURE = 9;
+  }
+
+  // Description of a field trial or experiment that the user is currently
+  // enrolled in. All metrics reported in this upload can potentially be
+  // influenced by the field trial.
+  message FieldTrial {
+    // The name of the field trial, as a 32-bit identifier. Currently, the
+    // identifier is a hash of the field trial's name.
+    optional fixed32 name_id = 1;
+
+    // The user's group within the field trial, as a 32-bit identifier.
+    // Currently, the identifier is a hash of the group's name.
+    optional fixed32 group_id = 2;
   }
 }
