@@ -63,6 +63,14 @@ static int is_compound_reference_allowed(const AV1_COMMON *cm) {
 }
 
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
+#if CONFIG_EXT_REFS
+  cm->comp_fwd_ref[0] = LAST_FRAME;
+  cm->comp_fwd_ref[1] = LAST2_FRAME;
+  cm->comp_fwd_ref[2] = LAST3_FRAME;
+  cm->comp_fwd_ref[3] = GOLDEN_FRAME;
+  cm->comp_bwd_ref[0] = BWDREF_FRAME;
+  cm->comp_bwd_ref[1] = ALTREF_FRAME;
+#else
   if (cm->ref_frame_sign_bias[LAST_FRAME] ==
       cm->ref_frame_sign_bias[GOLDEN_FRAME]) {
     cm->comp_fixed_ref = ALTREF_FRAME;
@@ -78,6 +86,7 @@ static void setup_compound_reference_mode(AV1_COMMON *cm) {
     cm->comp_var_ref[0] = GOLDEN_FRAME;
     cm->comp_var_ref[1] = ALTREF_FRAME;
   }
+#endif  // CONFIG_EXT_REFS
 }
 
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
@@ -169,21 +178,29 @@ static REFERENCE_MODE read_frame_reference_mode(const AV1_COMMON *cm,
 
 static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
   FRAME_CONTEXT *const fc = cm->fc;
-  int i;
+  int i, j;
 
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i)
       av1_diff_update_prob(r, &fc->comp_inter_prob[i]);
 
   if (cm->reference_mode != COMPOUND_REFERENCE)
-    for (i = 0; i < REF_CONTEXTS; ++i) {
-      av1_diff_update_prob(r, &fc->single_ref_prob[i][0]);
-      av1_diff_update_prob(r, &fc->single_ref_prob[i][1]);
-    }
+    for (i = 0; i < REF_CONTEXTS; ++i)
+      for (j = 0; j < (SINGLE_REFS - 1); ++j)
+        av1_diff_update_prob(r, &fc->single_ref_prob[i][j]);
 
   if (cm->reference_mode != SINGLE_REFERENCE)
+#if CONFIG_EXT_REFS
+    for (i = 0; i < REF_CONTEXTS; ++i) {
+      for (j = 0; j < (FWD_REFS - 1); ++j)
+        av1_diff_update_prob(r, &fc->comp_fwdref_prob[i][j]);
+      for (j = 0; j < (BWD_REFS - 1); ++j)
+        av1_diff_update_prob(r, &fc->comp_bwdref_prob[i][j]);
+    }
+#else
     for (i = 0; i < REF_CONTEXTS; ++i)
       av1_diff_update_prob(r, &fc->comp_ref_prob[i]);
+#endif  // CONFIG_EXT_REFS
 }
 
 static void update_mv_probs(aom_prob *p, int n, aom_reader *r) {
@@ -1979,8 +1996,15 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.comp_inter)));
   assert(!memcmp(cm->counts.single_ref, zero_counts.single_ref,
                  sizeof(cm->counts.single_ref)));
+#if CONFIG_EXT_REFS
+  assert(!memcmp(cm->counts.comp_fwdref, zero_counts.comp_fwdref,
+                 sizeof(cm->counts.comp_fwdref)));
+  assert(!memcmp(cm->counts.comp_bwdref, zero_counts.comp_bwdref,
+                 sizeof(cm->counts.comp_bwdref)));
+#else
   assert(!memcmp(cm->counts.comp_ref, zero_counts.comp_ref,
                  sizeof(cm->counts.comp_ref)));
+#endif  // CONFIG_EXT_REFS
   assert(!memcmp(&cm->counts.tx, &zero_counts.tx, sizeof(cm->counts.tx)));
   assert(!memcmp(cm->counts.skip, zero_counts.skip, sizeof(cm->counts.skip)));
 #if CONFIG_REF_MV

@@ -2570,34 +2570,115 @@ static void estimate_ref_frame_costs(const AV1_COMMON *cm,
     if (cm->reference_mode != COMPOUND_REFERENCE) {
       aom_prob ref_single_p1 = av1_get_pred_prob_single_ref_p1(cm, xd);
       aom_prob ref_single_p2 = av1_get_pred_prob_single_ref_p2(cm, xd);
+#if CONFIG_EXT_REFS
+      aom_prob ref_single_p3 = av1_get_pred_prob_single_ref_p3(cm, xd);
+      aom_prob ref_single_p4 = av1_get_pred_prob_single_ref_p4(cm, xd);
+      aom_prob ref_single_p5 = av1_get_pred_prob_single_ref_p5(cm, xd);
+#endif  // CONFIG_EXT_REFS
+
       unsigned int base_cost = av1_cost_bit(intra_inter_p, 1);
 
       if (cm->reference_mode == REFERENCE_MODE_SELECT)
         base_cost += av1_cost_bit(comp_inter_p, 0);
 
-      ref_costs_single[LAST_FRAME] = ref_costs_single[GOLDEN_FRAME] =
-          ref_costs_single[ALTREF_FRAME] = base_cost;
+      ref_costs_single[LAST_FRAME] =
+#if CONFIG_EXT_REFS
+          ref_costs_single[LAST2_FRAME] = ref_costs_single[LAST3_FRAME] =
+              ref_costs_single[BWDREF_FRAME] =
+#endif  // CONFIG_EXT_REFS
+                  ref_costs_single[GOLDEN_FRAME] =
+                      ref_costs_single[ALTREF_FRAME] = base_cost;
+
+#if CONFIG_EXT_REFS
+      ref_costs_single[LAST_FRAME] += av1_cost_bit(ref_single_p1, 0);
+      ref_costs_single[LAST2_FRAME] += av1_cost_bit(ref_single_p1, 0);
+      ref_costs_single[LAST3_FRAME] += av1_cost_bit(ref_single_p1, 0);
+      ref_costs_single[GOLDEN_FRAME] += av1_cost_bit(ref_single_p1, 0);
+      ref_costs_single[BWDREF_FRAME] += av1_cost_bit(ref_single_p1, 1);
+      ref_costs_single[ALTREF_FRAME] += av1_cost_bit(ref_single_p1, 1);
+
+      ref_costs_single[LAST_FRAME] += av1_cost_bit(ref_single_p3, 0);
+      ref_costs_single[LAST2_FRAME] += av1_cost_bit(ref_single_p3, 0);
+      ref_costs_single[LAST3_FRAME] += av1_cost_bit(ref_single_p3, 1);
+      ref_costs_single[GOLDEN_FRAME] += av1_cost_bit(ref_single_p3, 1);
+
+      ref_costs_single[BWDREF_FRAME] += av1_cost_bit(ref_single_p2, 0);
+      ref_costs_single[ALTREF_FRAME] += av1_cost_bit(ref_single_p2, 1);
+
+      ref_costs_single[LAST_FRAME] += av1_cost_bit(ref_single_p4, 0);
+      ref_costs_single[LAST2_FRAME] += av1_cost_bit(ref_single_p4, 1);
+
+      ref_costs_single[LAST3_FRAME] += av1_cost_bit(ref_single_p5, 0);
+      ref_costs_single[GOLDEN_FRAME] += av1_cost_bit(ref_single_p5, 1);
+#else
       ref_costs_single[LAST_FRAME] += av1_cost_bit(ref_single_p1, 0);
       ref_costs_single[GOLDEN_FRAME] += av1_cost_bit(ref_single_p1, 1);
       ref_costs_single[ALTREF_FRAME] += av1_cost_bit(ref_single_p1, 1);
       ref_costs_single[GOLDEN_FRAME] += av1_cost_bit(ref_single_p2, 0);
       ref_costs_single[ALTREF_FRAME] += av1_cost_bit(ref_single_p2, 1);
+#endif  // CONFIG_EXT_REFS
     } else {
       ref_costs_single[LAST_FRAME] = 512;
+#if CONFIG_EXT_REFS
+      ref_costs_single[LAST2_FRAME] = 512;
+      ref_costs_single[LAST3_FRAME] = 512;
+      ref_costs_single[BWDREF_FRAME] = 512;
+#endif  // CONFIG_EXT_REFS
       ref_costs_single[GOLDEN_FRAME] = 512;
       ref_costs_single[ALTREF_FRAME] = 512;
     }
     if (cm->reference_mode != SINGLE_REFERENCE) {
+#if CONFIG_EXT_REFS
+      aom_prob fwdref_comp_p = av1_get_pred_prob_comp_fwdref_p(cm, xd);
+      aom_prob fwdref_comp_p1 = av1_get_pred_prob_comp_fwdref_p1(cm, xd);
+      aom_prob fwdref_comp_p2 = av1_get_pred_prob_comp_fwdref_p2(cm, xd);
+      aom_prob bwdref_comp_p = av1_get_pred_prob_comp_bwdref_p(cm, xd);
+#else
       aom_prob ref_comp_p = av1_get_pred_prob_comp_ref_p(cm, xd);
+#endif  // CONFIG_EXT_REFS
+
       unsigned int base_cost = av1_cost_bit(intra_inter_p, 1);
 
       if (cm->reference_mode == REFERENCE_MODE_SELECT)
         base_cost += av1_cost_bit(comp_inter_p, 1);
 
-      ref_costs_comp[LAST_FRAME] = base_cost + av1_cost_bit(ref_comp_p, 0);
-      ref_costs_comp[GOLDEN_FRAME] = base_cost + av1_cost_bit(ref_comp_p, 1);
+      ref_costs_comp[LAST_FRAME] =
+#if CONFIG_EXT_REFS
+          ref_costs_comp[LAST2_FRAME] = ref_costs_comp[LAST3_FRAME] =
+#endif  // CONFIG_EXT_REFS
+              ref_costs_comp[GOLDEN_FRAME] = base_cost;
+
+#if CONFIG_EXT_REFS
+      ref_costs_comp[BWDREF_FRAME] = ref_costs_comp[ALTREF_FRAME] = 0;
+#endif  // CONFIG_EXT_REFS
+
+#if CONFIG_EXT_REFS
+      ref_costs_comp[LAST_FRAME] += av1_cost_bit(fwdref_comp_p, 0);
+      ref_costs_comp[LAST2_FRAME] += av1_cost_bit(fwdref_comp_p, 0);
+      ref_costs_comp[LAST3_FRAME] += av1_cost_bit(fwdref_comp_p, 1);
+      ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(fwdref_comp_p, 1);
+
+      ref_costs_comp[LAST_FRAME] += av1_cost_bit(fwdref_comp_p1, 1);
+      ref_costs_comp[LAST2_FRAME] += av1_cost_bit(fwdref_comp_p1, 0);
+
+      ref_costs_comp[LAST3_FRAME] += av1_cost_bit(fwdref_comp_p2, 0);
+      ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(fwdref_comp_p2, 1);
+
+      // NOTE: BWDREF and ALTREF each add an extra cost by coding 1 more bit.
+      ref_costs_comp[BWDREF_FRAME] += av1_cost_bit(bwdref_comp_p, 0);
+      ref_costs_comp[ALTREF_FRAME] += av1_cost_bit(bwdref_comp_p, 1);
+#else
+      ref_costs_comp[LAST_FRAME] += av1_cost_bit(ref_comp_p, 0);
+      ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p, 1);
+#endif  // CONFIG_EXT_REFS
     } else {
       ref_costs_comp[LAST_FRAME] = 512;
+#if CONFIG_EXT_REFS
+      ref_costs_comp[LAST2_FRAME] = 512;
+      ref_costs_comp[LAST3_FRAME] = 512;
+      ref_costs_comp[BWDREF_FRAME] = 512;
+      ref_costs_comp[ALTREF_FRAME] = 512;
+#endif  // CONFIG_EXT_REFS
       ref_costs_comp[GOLDEN_FRAME] = 512;
     }
   }

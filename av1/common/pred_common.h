@@ -83,6 +83,45 @@ static INLINE aom_prob av1_get_reference_mode_prob(const AV1_COMMON *cm,
   return cm->fc->comp_inter_prob[av1_get_reference_mode_context(cm, xd)];
 }
 
+#if CONFIG_EXT_REFS
+int av1_get_pred_context_comp_fwdref_p(const AV1_COMMON *cm,
+                                       const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_comp_fwdref_p(const AV1_COMMON *cm,
+                                                       const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_comp_fwdref_p(cm, xd);
+  return cm->fc->comp_fwdref_prob[pred_context][0];
+}
+
+int av1_get_pred_context_comp_fwdref_p1(const AV1_COMMON *cm,
+                                        const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_comp_fwdref_p1(const AV1_COMMON *cm,
+                                                        const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_comp_fwdref_p1(cm, xd);
+  return cm->fc->comp_fwdref_prob[pred_context][1];
+}
+
+int av1_get_pred_context_comp_fwdref_p2(const AV1_COMMON *cm,
+                                        const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_comp_fwdref_p2(const AV1_COMMON *cm,
+                                                        const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_comp_fwdref_p2(cm, xd);
+  return cm->fc->comp_fwdref_prob[pred_context][2];
+}
+
+int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
+                                       const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_comp_bwdref_p(const AV1_COMMON *cm,
+                                                       const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_comp_bwdref_p(cm, xd);
+  return cm->fc->comp_bwdref_prob[pred_context][0];
+}
+
+#else
+
 int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
                                     const MACROBLOCKD *xd);
 
@@ -91,6 +130,7 @@ static INLINE aom_prob av1_get_pred_prob_comp_ref_p(const AV1_COMMON *cm,
   const int pred_context = av1_get_pred_context_comp_ref_p(cm, xd);
   return cm->fc->comp_ref_prob[pred_context];
 }
+#endif  // CONFIG_EXT_REFS
 
 int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd);
 
@@ -105,6 +145,29 @@ static INLINE aom_prob av1_get_pred_prob_single_ref_p2(const AV1_COMMON *cm,
                                                        const MACROBLOCKD *xd) {
   return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p2(xd)][1];
 }
+
+#if CONFIG_EXT_REFS
+int av1_get_pred_context_single_ref_p3(const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_single_ref_p3(const AV1_COMMON *cm,
+                                                       const MACROBLOCKD *xd) {
+  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p3(xd)][2];
+}
+
+int av1_get_pred_context_single_ref_p4(const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_single_ref_p4(const AV1_COMMON *cm,
+                                                       const MACROBLOCKD *xd) {
+  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p4(xd)][3];
+}
+
+int av1_get_pred_context_single_ref_p5(const MACROBLOCKD *xd);
+
+static INLINE aom_prob av1_get_pred_prob_single_ref_p5(const AV1_COMMON *cm,
+                                                       const MACROBLOCKD *xd) {
+  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p5(xd)][4];
+}
+#endif  // CONFIG_EXT_REFS
 
 // Returns a context number for the given MB prediction signal
 // The mode info data structure has a one element border above and to the

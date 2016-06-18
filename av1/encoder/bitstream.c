@@ -409,15 +409,53 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     if (is_compound) {
+#if CONFIG_EXT_REFS
+      const int bit_fwd = (mbmi->ref_frame[0] == GOLDEN_FRAME ||
+                           mbmi->ref_frame[0] == LAST3_FRAME);
+      const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
+      aom_write(w, bit_fwd, av1_get_pred_prob_comp_fwdref_p(cm, xd));
+      if (!bit_fwd) {
+        const int bit1_fwd = mbmi->ref_frame[0] == LAST_FRAME;
+        aom_write(w, bit1_fwd, av1_get_pred_prob_comp_fwdref_p1(cm, xd));
+      } else {
+        const int bit2_fwd = mbmi->ref_frame[0] == GOLDEN_FRAME;
+        aom_write(w, bit2_fwd, av1_get_pred_prob_comp_fwdref_p2(cm, xd));
+      }
+      aom_write(w, bit_bwd, av1_get_pred_prob_comp_bwdref_p(cm, xd));
+#else
       aom_write(w, mbmi->ref_frame[0] == GOLDEN_FRAME,
                 av1_get_pred_prob_comp_ref_p(cm, xd));
+#endif  // CONFIG_EXT_REFS
     } else {
+#if CONFIG_EXT_REFS
+      const int bit0 = (mbmi->ref_frame[0] == ALTREF_FRAME ||
+                        mbmi->ref_frame[0] == BWDREF_FRAME);
+      aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
+
+      if (bit0) {
+        const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
+        aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
+      } else {
+        const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
+                          mbmi->ref_frame[0] == GOLDEN_FRAME);
+        aom_write(w, bit2, av1_get_pred_prob_single_ref_p3(cm, xd));
+
+        if (!bit2) {
+          const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
+          aom_write(w, bit3, av1_get_pred_prob_single_ref_p4(cm, xd));
+        } else {
+          const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
+          aom_write(w, bit4, av1_get_pred_prob_single_ref_p5(cm, xd));
+        }
+      }
+#else
       const int bit0 = mbmi->ref_frame[0] != LAST_FRAME;
       aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
       if (bit0) {
         const int bit1 = mbmi->ref_frame[0] != GOLDEN_FRAME;
         aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
       }
+#endif  // CONFIG_EXT_REFS
     }
   }
 }
@@ -1539,10 +1577,7 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   FRAME_CONTEXT *const fc = cm->fc;
   FRAME_COUNTS *counts = cpi->td.counts;
   aom_writer header_bc;
-  int i;
-#if CONFIG_MISC_FIXES
-  int j;
-#endif
+  int i, j;
 
   aom_start_encode(&header_bc, data);
 
@@ -1620,19 +1655,27 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
     }
 
-    if (cm->reference_mode != COMPOUND_REFERENCE) {
-      for (i = 0; i < REF_CONTEXTS; i++) {
-        av1_cond_prob_diff_update(&header_bc, &fc->single_ref_prob[i][0],
-                                  counts->single_ref[i][0]);
-        av1_cond_prob_diff_update(&header_bc, &fc->single_ref_prob[i][1],
-                                  counts->single_ref[i][1]);
-      }
-    }
+    if (cm->reference_mode != COMPOUND_REFERENCE)
+      for (i = 0; i < REF_CONTEXTS; i++)
+        for (j = 0; j < (SINGLE_REFS - 1); j++)
+          av1_cond_prob_diff_update(&header_bc, &fc->single_ref_prob[i][j],
+                                    counts->single_ref[i][j]);
 
     if (cm->reference_mode != SINGLE_REFERENCE)
+#if CONFIG_EXT_REFS
+      for (i = 0; i < REF_CONTEXTS; i++) {
+        for (j = 0; j < (FWD_REFS - 1); j++)
+          av1_cond_prob_diff_update(&header_bc, &fc->comp_fwdref_prob[i][j],
+                                    counts->comp_fwdref[i][j]);
+        for (j = 0; j < (BWD_REFS - 1); j++)
+          av1_cond_prob_diff_update(&header_bc, &fc->comp_bwdref_prob[i][j],
+                                    counts->comp_bwdref[i][j]);
+      }
+#else
       for (i = 0; i < REF_CONTEXTS; i++)
         av1_cond_prob_diff_update(&header_bc, &fc->comp_ref_prob[i],
                                   counts->comp_ref[i]);
+#endif  // CONFIG_EXT_REFS
 
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
       prob_diff_update(av1_intra_mode_tree, cm->fc->y_mode_prob[i],

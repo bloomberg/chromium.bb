@@ -395,12 +395,23 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
       cm->counts.comp_inter[i][j] += counts->comp_inter[i][j];
 
   for (i = 0; i < REF_CONTEXTS; i++)
-    for (j = 0; j < 2; j++)
+    for (j = 0; j < (SINGLE_REFS - 1); j++)
       for (k = 0; k < 2; k++)
         cm->counts.single_ref[i][j][k] += counts->single_ref[i][j][k];
 
+#if CONFIG_EXT_REFS
+  for (i = 0; i < REF_CONTEXTS; i++)
+    for (j = 0; j < (FWD_REFS - 1); j++)
+      for (k = 0; k < 2; k++)
+        cm->counts.comp_fwdref[i][j][k] += counts->comp_fwdref[i][j][k];
+  for (i = 0; i < REF_CONTEXTS; i++)
+    for (j = 0; j < (BWD_REFS - 1); j++)
+      for (k = 0; k < 2; k++)
+        cm->counts.comp_bwdref[i][j][k] += counts->comp_bwdref[i][j][k];
+#else
   for (i = 0; i < REF_CONTEXTS; i++)
     for (j = 0; j < 2; j++) cm->counts.comp_ref[i][j] += counts->comp_ref[i][j];
+#endif  // CONFIG_EXT_REFS
 
   for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
     for (j = 0; j < TX_SIZES; j++)

@@ -1221,19 +1221,59 @@ static void update_stats(AV1_COMMON *cm, ThreadData *td) {
       // the reference frame counts used to work out probabilities.
       if (inter_block) {
         const MV_REFERENCE_FRAME ref0 = mbmi->ref_frame[0];
+#if CONFIG_EXT_REFS
+        const MV_REFERENCE_FRAME ref1 = mbmi->ref_frame[1];
+#endif  // CONFIG_EXT_REFS
+
         if (cm->reference_mode == REFERENCE_MODE_SELECT)
           counts->comp_inter[av1_get_reference_mode_context(
               cm, xd)][has_second_ref(mbmi)]++;
 
         if (has_second_ref(mbmi)) {
+#if CONFIG_EXT_REFS
+          const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
+
+          counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p(cm,
+                                                                 xd)][0][bit]++;
+          if (!bit)
+            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p1(
+                cm, xd)][1][ref0 == LAST_FRAME]++;
+          else
+            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p2(
+                cm, xd)][2][ref0 == GOLDEN_FRAME]++;
+          counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(
+              cm, xd)][0][ref1 == ALTREF_FRAME]++;
+#else
           counts->comp_ref[av1_get_pred_context_comp_ref_p(
               cm, xd)][ref0 == GOLDEN_FRAME]++;
+#endif  // CONFIG_EXT_REFS
         } else {
+#if CONFIG_EXT_REFS
+          const int bit = (ref0 == ALTREF_FRAME || ref0 == BWDREF_FRAME);
+
+          counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0][bit]++;
+          if (bit) {
+            counts->single_ref[av1_get_pred_context_single_ref_p2(
+                xd)][1][ref0 != BWDREF_FRAME]++;
+          } else {
+            const int bit1 = !(ref0 == LAST2_FRAME || ref0 == LAST_FRAME);
+            counts
+                ->single_ref[av1_get_pred_context_single_ref_p3(xd)][2][bit1]++;
+            if (!bit1) {
+              counts->single_ref[av1_get_pred_context_single_ref_p4(
+                  xd)][3][ref0 != LAST_FRAME]++;
+            } else {
+              counts->single_ref[av1_get_pred_context_single_ref_p5(
+                  xd)][4][ref0 != LAST3_FRAME]++;
+            }
+          }
+#else
           counts->single_ref[av1_get_pred_context_single_ref_p1(
               xd)][0][ref0 != LAST_FRAME]++;
           if (ref0 != LAST_FRAME)
             counts->single_ref[av1_get_pred_context_single_ref_p2(
                 xd)][1][ref0 != GOLDEN_FRAME]++;
+#endif  // CONFIG_EXT_REFS
         }
       }
     }
@@ -2512,6 +2552,10 @@ static int check_dual_ref_flags(AV1_COMP *cpi) {
     return 0;
   } else {
     return (!!(ref_flags & AOM_GOLD_FLAG) + !!(ref_flags & AOM_LAST_FLAG) +
+#if CONFIG_EXT_REFS
+            !!(ref_flags & AOM_LAST2_FLAG) + !!(ref_flags & AOM_LAST3_FLAG) +
+            !!(ref_flags & AOM_BWD_FLAG) +
+#endif  // CONFIG_EXT_REFS
             !!(ref_flags & AOM_ALT_FLAG)) >= 2;
   }
 }
@@ -2737,9 +2781,18 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cpi->allow_comp_inter_inter = 0;
     } else {
       cpi->allow_comp_inter_inter = 1;
+#if CONFIG_EXT_REFS
+      cm->comp_fwd_ref[0] = LAST_FRAME;
+      cm->comp_fwd_ref[1] = LAST2_FRAME;
+      cm->comp_fwd_ref[2] = LAST3_FRAME;
+      cm->comp_fwd_ref[3] = GOLDEN_FRAME;
+      cm->comp_bwd_ref[0] = BWDREF_FRAME;
+      cm->comp_bwd_ref[1] = ALTREF_FRAME;
+#else
       cm->comp_fixed_ref = ALTREF_FRAME;
       cm->comp_var_ref[0] = LAST_FRAME;
       cm->comp_var_ref[1] = GOLDEN_FRAME;
+#endif  // CONFIG_EXT_REFS
     }
   } else {
     cpi->allow_comp_inter_inter = 0;

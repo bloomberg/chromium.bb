@@ -105,8 +105,18 @@ typedef enum {
 
 typedef enum {
   AOM_LAST_FLAG = 1 << 0,
+#if CONFIG_EXT_REFS
+  AOM_LAST2_FLAG = 1 << 1,
+  AOM_LAST3_FLAG = 1 << 2,
+  AOM_GOLD_FLAG = 1 << 3,
+  AOM_BWD_FLAG = 1 << 4,
+  AOM_ALT_FLAG = 1 << 5,
+  AOM_REFFRAME_ALL = (1 << 6) - 1
+#else
   AOM_GOLD_FLAG = 1 << 1,
   AOM_ALT_FLAG = 1 << 2,
+  AOM_REFFRAME_ALL = (1 << 3) - 1
+#endif  // CONFIG_EXT_REFS
 } AOM_REFFRAME;
 
 typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
@@ -181,6 +191,14 @@ typedef enum {
 #define INTRA_INTER_CONTEXTS 4
 #define COMP_INTER_CONTEXTS 5
 #define REF_CONTEXTS 5
+
+#if CONFIG_EXT_REFS
+#define FWD_REFS 4
+#define BWD_REFS 2
+#define SINGLE_REFS (FWD_REFS + BWD_REFS)
+#else
+#define SINGLE_REFS 3
+#endif  // CONFIG_EXT_REFS
 
 #ifdef __cplusplus
 }  // extern "C"
