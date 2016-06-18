@@ -25,7 +25,8 @@
             android:contentDescription="@string/accessibility_toolbar_btn_site_info"
             android:scaleType="center"
             android:visibility="gone" />
-        <FrameLayout
+        <view
+            class="org.chromium.chrome.browser.toolbar.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -54,7 +55,7 @@
                 android:singleLine="true"
                 android:paddingEnd="@dimen/toolbar_edge_padding"
                 android:textSize="@dimen/location_bar_url_text_size" />
-        </FrameLayout>
+        </view>
     </FrameLayout>
     <ImageButton
         android:id="@+id/action_button"

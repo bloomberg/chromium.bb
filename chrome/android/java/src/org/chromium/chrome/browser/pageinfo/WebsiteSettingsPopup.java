@@ -10,6 +10,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +35,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
@@ -69,6 +72,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -332,6 +336,18 @@ public class WebsiteSettingsPopup implements OnClickListener {
         mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.website_settings_url);
         mUrlTitle.setProfile(mProfile);
         mUrlTitle.setOnClickListener(this);
+        // Long press the url text to copy it to the clipboard.
+        mUrlTitle.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) mContext
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("url", mUrlTitle.getText());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
 
         mUrlConnectionMessage = (TextView) mContainer
                 .findViewById(R.id.website_settings_connection_message);

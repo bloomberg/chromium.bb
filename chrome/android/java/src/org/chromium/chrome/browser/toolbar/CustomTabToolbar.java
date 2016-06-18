@@ -26,6 +26,7 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -65,6 +66,23 @@ import java.util.List;
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
+
+    /**
+     * A simple {@link FrameLayout} that prevents its children from getting touch events. This is
+     * especially useful to prevent {@link UrlBar} from running custom touch logic since it is
+     * read-only in custom tabs.
+     */
+    public static class InterceptTouchLayout extends FrameLayout {
+        public InterceptTouchLayout(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent ev) {
+            return true;
+        }
+    }
+
     private static final int BRAND_COLOR_TRANSITION_DURATION_MS = 250;
     private static final int TITLE_ANIM_DELAY_MS = 800;
     private static final int STATE_DOMAIN_ONLY = 0;
@@ -87,7 +105,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private boolean mBrandColorTransitionActive;
 
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
-    private long mInitializeTimeStamp;
     private int mState = STATE_DOMAIN_ONLY;
     private String mFirstUrl;
     private boolean mShowsOfflinePage = false;
@@ -116,10 +133,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mUrlBar.setDelegate(this);
         mUrlBar.setEnabled(false);
         mUrlBar.setAllowFocus(false);
-        mUrlBar.setOnLongClickListener(this);
         mTitleBar = (TextView) findViewById(R.id.title_bar);
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
         mTitleUrlContainer = findViewById(R.id.title_url_container);
+        mTitleUrlContainer.setOnLongClickListener(this);
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
@@ -139,7 +156,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
         updateVisualsForState();
-        mInitializeTimeStamp = System.currentTimeMillis();
     }
 
     @Override
@@ -642,7 +658,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             return showAccessibilityToast(v, getResources().getString(R.string.close_tab));
         } else if (v == mCustomActionButton) {
             return showAccessibilityToast(v, mCustomActionButton.getContentDescription());
-        } else if (v == mUrlBar) {
+        } else if (v == mTitleUrlContainer) {
             ClipboardManager clipboard = (ClipboardManager) getContext()
                     .getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("url", mUrlBar.getText());
