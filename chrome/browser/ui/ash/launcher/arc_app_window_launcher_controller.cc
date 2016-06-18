@@ -299,7 +299,9 @@ void ArcAppWindowLauncherController::OnAppReadyChanged(
 }
 
 void ArcAppWindowLauncherController::OnAppRemoved(const std::string& app_id) {
-  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  AppControllerMap::const_iterator it = app_controller_map_.find(shelf_app_id);
   if (it == app_controller_map_.end())
     return;
 
@@ -314,7 +316,7 @@ void ArcAppWindowLauncherController::OnAppRemoved(const std::string& app_id) {
   for (const auto task_id : task_ids_to_remove)
     OnTaskDestroyed(task_id);
 
-  DCHECK(app_controller_map_.find(app_id) == app_controller_map_.end());
+  DCHECK(app_controller_map_.find(shelf_app_id) == app_controller_map_.end());
 }
 
 void ArcAppWindowLauncherController::OnTaskCreated(
