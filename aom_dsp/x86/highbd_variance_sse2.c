@@ -8,7 +8,11 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+
+#include <emmintrin.h>  // SSE2
+
 #include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
 #include "aom_ports/mem.h"
 
@@ -554,3 +558,133 @@ FNS(sse2);
 #undef FNS
 #undef FN
 #endif  // CONFIG_USE_X86INC
+
+void aom_highbd_upsampled_pred_sse2(uint16_t *pred, int width, int height,
+                                    const uint8_t *ref8, const int ref_stride) {
+  const int stride = ref_stride << 3;
+  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+  int i, j;
+
+  if (width >= 8) {
+    // read 8 points at one time
+    for (i = 0; i < height; i++) {
+      for (j = 0; j < width; j += 8) {
+        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
+        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 8));
+        __m128i s2 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 16));
+        __m128i s3 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 24));
+        __m128i s4 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 32));
+        __m128i s5 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 40));
+        __m128i s6 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 48));
+        __m128i s7 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 56));
+        __m128i t0, t1, t2, t3;
+
+        t0 = _mm_unpacklo_epi16(s0, s1);
+        t1 = _mm_unpacklo_epi16(s2, s3);
+        t2 = _mm_unpacklo_epi16(s4, s5);
+        t3 = _mm_unpacklo_epi16(s6, s7);
+        t0 = _mm_unpacklo_epi32(t0, t1);
+        t2 = _mm_unpacklo_epi32(t2, t3);
+        t0 = _mm_unpacklo_epi64(t0, t2);
+
+        _mm_storeu_si128((__m128i *)(pred), t0);
+        pred += 8;
+        ref += 64;  // 8 * 8;
+      }
+      ref += stride - (width << 3);
+    }
+  } else {
+    // read 4 points at one time
+    for (i = 0; i < height; i++) {
+      for (j = 0; j < width; j += 4) {
+        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
+        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 8));
+        __m128i s2 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 16));
+        __m128i s3 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 24));
+        __m128i t0, t1;
+
+        t0 = _mm_unpacklo_epi16(s0, s1);
+        t1 = _mm_unpacklo_epi16(s2, s3);
+        t0 = _mm_unpacklo_epi32(t0, t1);
+
+        _mm_storel_epi64((__m128i *)(pred), t0);
+        pred += 4;
+        ref += 4 * 8;
+      }
+      ref += stride - (width << 3);
+    }
+  }
+}
+
+void aom_highbd_comp_avg_upsampled_pred_sse2(uint16_t *comp_pred,
+                                             const uint8_t *pred8, int width,
+                                             int height, const uint8_t *ref8,
+                                             const int ref_stride) {
+  const __m128i one = _mm_set1_epi16(1);
+  const int stride = ref_stride << 3;
+  int i, j;
+  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+
+  if (width >= 8) {
+    // read 8 points at one time
+    for (i = 0; i < height; i++) {
+      for (j = 0; j < width; j += 8) {
+        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
+        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 8));
+        __m128i s2 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 16));
+        __m128i s3 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 24));
+        __m128i s4 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 32));
+        __m128i s5 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 40));
+        __m128i s6 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 48));
+        __m128i s7 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 56));
+        __m128i p0 = _mm_loadu_si128((const __m128i *)pred);
+        __m128i t0, t1, t2, t3;
+
+        t0 = _mm_unpacklo_epi16(s0, s1);
+        t1 = _mm_unpacklo_epi16(s2, s3);
+        t2 = _mm_unpacklo_epi16(s4, s5);
+        t3 = _mm_unpacklo_epi16(s6, s7);
+        t0 = _mm_unpacklo_epi32(t0, t1);
+        t2 = _mm_unpacklo_epi32(t2, t3);
+        t0 = _mm_unpacklo_epi64(t0, t2);
+
+        p0 = _mm_adds_epu16(t0, p0);
+        p0 = _mm_adds_epu16(p0, one);
+        p0 = _mm_srli_epi16(p0, 1);
+
+        _mm_storeu_si128((__m128i *)(comp_pred), p0);
+        comp_pred += 8;
+        pred += 8;
+        ref += 8 * 8;
+      }
+      ref += stride - (width << 3);
+    }
+  } else {
+    // read 4 points at one time
+    for (i = 0; i < height; i++) {
+      for (j = 0; j < width; j += 4) {
+        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
+        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 8));
+        __m128i s2 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 16));
+        __m128i s3 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + 24));
+        __m128i p0 = _mm_loadl_epi64((const __m128i *)pred);
+        __m128i t0, t1;
+
+        t0 = _mm_unpacklo_epi16(s0, s1);
+        t1 = _mm_unpacklo_epi16(s2, s3);
+        t0 = _mm_unpacklo_epi32(t0, t1);
+
+        p0 = _mm_adds_epu16(t0, p0);
+        p0 = _mm_adds_epu16(p0, one);
+        p0 = _mm_srli_epi16(p0, 1);
+
+        _mm_storel_epi64((__m128i *)(comp_pred), p0);
+        comp_pred += 4;
+        pred += 4;
+        ref += 4 * 8;
+      }
+      ref += stride - (width << 3);
+    }
+  }
+}

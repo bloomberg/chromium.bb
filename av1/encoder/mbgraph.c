@@ -60,7 +60,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
         x, dst_mv, ref_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
         &v_fn_ptr, 0, mv_sf->subpel_iters_per_step,
         cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL, 0,
-        0);
+        0, 0);
   }
 
   xd->mi[0]->mbmi.mode = NEWMV;

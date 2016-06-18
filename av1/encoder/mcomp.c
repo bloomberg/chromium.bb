@@ -197,6 +197,30 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
     v = INT_MAX;                                                             \
   }
 
+#define CHECK_BETTER0(v, r, c) CHECK_BETTER(v, r, c)
+
+static INLINE const uint8_t *upre(const uint8_t *buf, int stride, int r,
+                                  int c) {
+  return &buf[(r)*stride + (c)];
+}
+
+/* checks if (r, c) has better score than previous best */
+#define CHECK_BETTER1(v, r, c)                                                \
+  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                     \
+    thismse =                                                                 \
+        upsampled_pref_error(xd, vfp, z, src_stride, upre(y, y_stride, r, c), \
+                             y_stride, second_pred, w, h, &sse);              \
+    if ((v = MVC(r, c) + thismse) < besterr) {                                \
+      besterr = v;                                                            \
+      br = r;                                                                 \
+      bc = c;                                                                 \
+      *distortion = thismse;                                                  \
+      *sse1 = sse;                                                            \
+    }                                                                         \
+  } else {                                                                    \
+    v = INT_MAX;                                                              \
+  }
+
 #define FIRST_LEVEL_CHECKS                                       \
   {                                                              \
     unsigned int left, right, up, down, diag;                    \
@@ -248,22 +272,22 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
 // TODO(yunqingwang): SECOND_LEVEL_CHECKS_BEST was a rewrote of
 // SECOND_LEVEL_CHECKS, and SECOND_LEVEL_CHECKS should be rewritten
 // later in the same way.
-#define SECOND_LEVEL_CHECKS_BEST                \
-  {                                             \
-    unsigned int second;                        \
-    int br0 = br;                               \
-    int bc0 = bc;                               \
-    assert(tr == br || tc == bc);               \
-    if (tr == br && tc != bc) {                 \
-      kc = bc - tc;                             \
-    } else if (tr != br && tc == bc) {          \
-      kr = br - tr;                             \
-    }                                           \
-    CHECK_BETTER(second, br0 + kr, bc0);        \
-    CHECK_BETTER(second, br0, bc0 + kc);        \
-    if (br0 != br || bc0 != bc) {               \
-      CHECK_BETTER(second, br0 + kr, bc0 + kc); \
-    }                                           \
+#define SECOND_LEVEL_CHECKS_BEST(k)                \
+  {                                                \
+    unsigned int second;                           \
+    int br0 = br;                                  \
+    int bc0 = bc;                                  \
+    assert(tr == br || tc == bc);                  \
+    if (tr == br && tc != bc) {                    \
+      kc = bc - tc;                                \
+    } else if (tr != br && tc == bc) {             \
+      kr = br - tr;                                \
+    }                                              \
+    CHECK_BETTER##k(second, br0 + kr, bc0);        \
+    CHECK_BETTER##k(second, br0, bc0 + kc);        \
+    if (br0 != br || bc0 != bc) {                  \
+      CHECK_BETTER##k(second, br0 + kr, bc0 + kc); \
+    }                                              \
   }
 
 #define SETUP_SUBPEL_SEARCH                                         \
@@ -365,7 +389,7 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
     int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_upsampled_ref) {
   SETUP_SUBPEL_SEARCH;
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
@@ -377,6 +401,7 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
   (void)allow_hp;
   (void)forced_stop;
   (void)hstep;
+  (void)use_upsampled_ref;
 
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
@@ -434,8 +459,10 @@ int av1_find_best_sub_pixel_tree_pruned_more(
     int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_upsampled_ref) {
   SETUP_SUBPEL_SEARCH;
+  (void)use_upsampled_ref;
+
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
                                offset, mvjcost, mvcost, sse1, distortion);
@@ -498,8 +525,10 @@ int av1_find_best_sub_pixel_tree_pruned(
     int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_upsampled_ref) {
   SETUP_SUBPEL_SEARCH;
+  (void)use_upsampled_ref;
+
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
                                offset, mvjcost, mvcost, sse1, distortion);
@@ -585,21 +614,67 @@ static const MV search_step_table[12] = {
   { -2, 0 }, { 2, 0 }, { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 }
 };
 
-int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
-                                 const MV *ref_mv, int allow_hp,
-                                 int error_per_bit,
-                                 const aom_variance_fn_ptr_t *vfp,
-                                 int forced_stop, int iters_per_step,
-                                 int *cost_list, int *mvjcost, int *mvcost[2],
-                                 int *distortion, unsigned int *sse1,
-                                 const uint8_t *second_pred, int w, int h) {
+static int upsampled_pref_error(const MACROBLOCKD *xd,
+                                const aom_variance_fn_ptr_t *vfp,
+                                const uint8_t *const src, const int src_stride,
+                                const uint8_t *const y, int y_stride,
+                                const uint8_t *second_pred, int w, int h,
+                                unsigned int *sse) {
+  unsigned int besterr;
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    DECLARE_ALIGNED(16, uint16_t, pred16[64 * 64]);
+    if (second_pred != NULL)
+      aom_highbd_comp_avg_upsampled_pred(pred16, second_pred, w, h, y,
+                                         y_stride);
+    else
+      aom_highbd_upsampled_pred(pred16, w, h, y, y_stride);
+
+    besterr = vfp->vf(CONVERT_TO_BYTEPTR(pred16), w, src, src_stride, sse);
+  } else {
+    DECLARE_ALIGNED(16, uint8_t, pred[64 * 64]);
+#else
+  DECLARE_ALIGNED(16, uint8_t, pred[64 * 64]);
+  (void)xd;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    if (second_pred != NULL)
+      aom_comp_avg_upsampled_pred(pred, second_pred, w, h, y, y_stride);
+    else
+      aom_upsampled_pred(pred, w, h, y, y_stride);
+
+    besterr = vfp->vf(pred, w, src, src_stride, sse);
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif
+  return besterr;
+}
+
+static unsigned int upsampled_setup_center_error(
+    const MACROBLOCKD *xd, const MV *bestmv, const MV *ref_mv,
+    int error_per_bit, const aom_variance_fn_ptr_t *vfp,
+    const uint8_t *const src, const int src_stride, const uint8_t *const y,
+    int y_stride, const uint8_t *second_pred, int w, int h, int offset,
+    int *mvjcost, int *mvcost[2], unsigned int *sse1, int *distortion) {
+  unsigned int besterr = upsampled_pref_error(
+      xd, vfp, src, src_stride, y + offset, y_stride, second_pred, w, h, sse1);
+  *distortion = besterr;
+  besterr += mv_err_cost(bestmv, ref_mv, mvjcost, mvcost, error_per_bit);
+  return besterr;
+}
+
+int av1_find_best_sub_pixel_tree(
+    const MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
+    int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
+    int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
+    int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
+    int h, int use_upsampled_ref) {
   const uint8_t *const z = x->plane[0].src.buf;
   const uint8_t *const src_address = z;
   const int src_stride = x->plane[0].src.stride;
   const MACROBLOCKD *xd = &x->e_mbd;
   unsigned int besterr = INT_MAX;
   unsigned int sse;
-  int thismse;
+  unsigned int thismse;
   const int y_stride = xd->plane[0].pre[0].stride;
   const int offset = bestmv->row * y_stride + bestmv->col;
   const uint8_t *const y = xd->plane[0].pre[0].buf;
@@ -627,9 +702,15 @@ int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
   bestmv->row *= 8;
   bestmv->col *= 8;
 
-  besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
-                               src_stride, y, y_stride, second_pred, w, h,
-                               offset, mvjcost, mvcost, sse1, distortion);
+  // use_upsampled_ref can be 0 or 1
+  if (use_upsampled_ref)
+    besterr = upsampled_setup_center_error(
+        xd, bestmv, ref_mv, error_per_bit, vfp, z, src_stride, y, y_stride,
+        second_pred, w, h, (offset << 3), mvjcost, mvcost, sse1, distortion);
+  else
+    besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
+                                 src_stride, y, y_stride, second_pred, w, h,
+                                 offset, mvjcost, mvcost, sse1, distortion);
 
   (void)cost_list;  // to silence compiler warning
 
@@ -639,16 +720,25 @@ int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
       tr = br + search_step[idx].row;
       tc = bc + search_step[idx].col;
       if (tc >= minc && tc <= maxc && tr >= minr && tr <= maxr) {
-        const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
-        MV this_mv;
-        this_mv.row = tr;
-        this_mv.col = tc;
-        if (second_pred == NULL)
-          thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                             src_stride, &sse);
-        else
-          thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
-                              src_address, src_stride, &sse, second_pred);
+        MV this_mv = { tr, tc };
+
+        if (use_upsampled_ref) {
+          const uint8_t *const pre_address = y + tr * y_stride + tc;
+
+          thismse = upsampled_pref_error(xd, vfp, src_address, src_stride,
+                                         pre_address, y_stride, second_pred, w,
+                                         h, &sse);
+        } else {
+          const uint8_t *const pre_address =
+              y + (tr >> 3) * y_stride + (tc >> 3);
+          if (second_pred == NULL)
+            thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr),
+                               src_address, src_stride, &sse);
+          else
+            thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
+                                src_address, src_stride, &sse, second_pred);
+        }
+
         cost_array[idx] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost,
                                                 mvcost, error_per_bit);
 
@@ -670,14 +760,25 @@ int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
     tc = bc + kc;
     tr = br + kr;
     if (tc >= minc && tc <= maxc && tr >= minr && tr <= maxr) {
-      const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
       MV this_mv = { tr, tc };
-      if (second_pred == NULL)
-        thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                           src_stride, &sse);
-      else
-        thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                            src_stride, &sse, second_pred);
+
+      if (use_upsampled_ref) {
+        const uint8_t *const pre_address = y + tr * y_stride + tc;
+
+        thismse =
+            upsampled_pref_error(xd, vfp, src_address, src_stride, pre_address,
+                                 y_stride, second_pred, w, h, &sse);
+      } else {
+        const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
+
+        if (second_pred == NULL)
+          thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
+                             src_stride, &sse);
+        else
+          thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
+                              src_address, src_stride, &sse, second_pred);
+      }
+
       cost_array[4] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost,
                                             error_per_bit);
 
@@ -699,7 +800,13 @@ int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
       bc = tc;
     }
 
-    if (iters_per_step > 1 && best_idx != -1) SECOND_LEVEL_CHECKS_BEST;
+    if (iters_per_step > 1 && best_idx != -1) {
+      if (use_upsampled_ref) {
+        SECOND_LEVEL_CHECKS_BEST(1);
+      } else {
+        SECOND_LEVEL_CHECKS_BEST(0);
+      }
+    }
 
     tr = br;
     tc = bc;

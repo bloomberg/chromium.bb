@@ -412,6 +412,9 @@ typedef struct SPEED_FEATURES {
 
   // Fast approximation of av1_model_rd_from_var_lapndz
   int simple_model_rd_from_var;
+
+  // Do sub-pixel search in up-sampled reference frames
+  int use_upsampled_references;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

@@ -1463,6 +1463,18 @@ add_proto qw/unsigned int aom_get4x4sse_cs/, "const unsigned char *src_ptr, int 
 
 add_proto qw/void aom_comp_avg_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride";
 
+add_proto qw/void aom_upsampled_pred/, "uint8_t *pred, int width, int height, const uint8_t *ref, const int ref_stride";
+specialize qw/aom_upsampled_pred sse2/;
+add_proto qw/void aom_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, const int ref_stride";
+specialize qw/aom_comp_avg_upsampled_pred sse2/;
+
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  add_proto qw/void aom_highbd_upsampled_pred/, "uint16_t *pred, int width, int height, const uint8_t *ref8, const int ref_stride";
+  specialize qw/aom_highbd_upsampled_pred sse2/;
+  add_proto qw/void aom_highbd_comp_avg_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, const int ref_stride";
+  specialize qw/aom_highbd_comp_avg_upsampled_pred sse2/;
+}
+
 #
 # Subpixel Variance
 #

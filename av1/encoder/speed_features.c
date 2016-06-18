@@ -177,6 +177,7 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES;
     sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
+    sf->use_upsampled_references = 0;
   }
 
   if (speed >= 3) {
@@ -274,6 +275,7 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
   sf->use_fast_coef_costing = 1;
   sf->allow_exhaustive_searches = 0;
   sf->exhaustive_searches_thresh = INT_MAX;
+  sf->use_upsampled_references = 0;
 
   if (speed >= 1) {
     sf->use_square_partition_only = !frame_is_intra_only(cm);
@@ -485,6 +487,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->disable_filter_search_var_thresh = 0;
   sf->adaptive_interp_filter_search = 0;
   sf->allow_partition_search_skip = 0;
+  sf->use_upsampled_references = 1;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

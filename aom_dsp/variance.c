@@ -257,6 +257,38 @@ void aom_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
   }
 }
 
+// Get pred block from up-sampled reference.
+void aom_upsampled_pred_c(uint8_t *pred, int width, int height,
+                          const uint8_t *ref, const int ref_stride) {
+  const int stride = ref_stride << 3;
+  int i, j, k;
+
+  for (i = 0; i < height; i++) {
+    for (j = 0, k = 0; j < width; j++, k += 8) {
+      pred[j] = ref[k];
+    }
+    pred += width;
+    ref += stride;
+  }
+}
+
+void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
+                                   int width, int height, const uint8_t *ref,
+                                   const int ref_stride) {
+  const int stride = ref_stride << 3;
+  int i, j;
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      const int tmp = ref[(j << 3)] + pred[j];
+      comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
+    }
+    comp_pred += width;
+    pred += width;
+    ref += stride;
+  }
+}
+
 #if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_variance64(const uint8_t *a8, int a_stride,
                               const uint8_t *b8, int b_stride, int w, int h,
@@ -571,6 +603,41 @@ void aom_highbd_comp_avg_pred(uint16_t *comp_pred, const uint8_t *pred8,
     comp_pred += width;
     pred += width;
     ref += ref_stride;
+  }
+}
+
+void aom_highbd_upsampled_pred_c(uint16_t *pred, int width, int height,
+                                 const uint8_t *ref8, const int ref_stride) {
+  const int stride = ref_stride << 3;
+  int i, j;
+
+  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; ++j) {
+      pred[j] = ref[(j << 3)];
+    }
+    pred += width;
+    ref += stride;
+  }
+}
+
+void aom_highbd_comp_avg_upsampled_pred_c(uint16_t *comp_pred,
+                                          const uint8_t *pred8, int width,
+                                          int height, const uint8_t *ref8,
+                                          const int ref_stride) {
+  const int stride = ref_stride << 3;
+  int i, j;
+
+  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; ++j) {
+      const int tmp = pred[j] + ref[(j << 3)];
+      comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
+    }
+    comp_pred += width;
+    pred += width;
+    ref += stride;
   }
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
