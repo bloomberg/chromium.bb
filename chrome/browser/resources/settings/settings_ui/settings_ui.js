@@ -28,28 +28,12 @@ Polymer({
   },
 
   listeners: {
-    'sideNav.iron-select': 'onIronSelect_',
-    'paper-responsive-change': 'onPaperResponsiveChange_',
+    'sideNav.iron-activate': 'onIronActivate_',
   },
 
-  /**
-   * @param {!CustomEvent} e
-   * @private
-   */
-  onIronSelect_: function(e) {
-    if (Polymer.dom(e).path.indexOf(this.$.panel) >= 0) {
-      this.classList.remove('narrowing');
-      this.$.panel.closeDrawer();
-    }
-  },
-
-  /**
-   * @param {!CustomEvent} e
-   * @private
-   */
-  onPaperResponsiveChange_: function(e) {
-    if (Polymer.dom(e).rootTarget == this.$.panel)
-      this.classList.toggle('narrowing', e.detail.narrow);
+  /** @private */
+  onIronActivate_: function() {
+    this.$.panel.closeDrawer();
   },
 
   /** @private */

@@ -34,50 +34,6 @@
         position: relative;
       }
 
-      #drawer {
-        --paper-header-panel-shadow: {
-          /* Polymer's style transformation chokes on :host() and :not() (and
-           * many other things, it seems). Just hide the built-in shadow and
-           * duplicate its style. */
-          display: none;
-        };
-        /* Explicitly set this so that transitions work and look good. */
-        background-color: var(--settings-background-color);
-      }
-
-      #drawer .toolbar::after {
-        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-        content: '';
-        display: block;
-        height: 6px;
-      }
-
-      #drawer,
-      #drawer .toolbar,
-      #drawer .toolbar::after {
-        transition: background-color .3s, color .3s, height .3s;
-      }
-
-      :host(:not(.narrowing)) [narrow] #drawer,
-      :host(:not(.narrowing)) [narrow] #drawer .toolbar,
-      :host(:not(.narrowing)) [narrow] #drawer .toolbar::after {
-        transition: none;  /* Transition only when removing [narrow]. */
-      }
-
-      :host(:not(.narrowing)) [narrow] #drawer,
-      :host(:not(.narrowing)) [narrow] #drawer .toolbar {
-        background-color: white;
-      }
-
-      :host(:not(.narrowing)) [narrow] #drawer .toolbar {
-        color: var(--settings-nav-grey);
-      }
-
-      :host(:not(.narrowing)) [narrow] #drawer .toolbar::after {
-        border-bottom: var(--settings-separator-line);
-        height: 0;
-      }
-
       paper-header-panel[main] paper-icon-button {
         --iron-icon-fill-color: var(--settings-title-bar-color);
       }
@@ -159,10 +115,11 @@
         };
       }
 
-      /* Prevent paper-toolbar from setting the margin-right to 24px. */
       paper-icon-button#menu-button {
+        /* Prevent the menu icon from changing size with the window size. */
         flex-shrink: 0;
-        /* TODO(dschuyler): this margin is on the right regardless of language
+        /* Prevent paper-toolbar from setting the margin-right to 24px.
+         * TODO(dschuyler): this margin is on the right regardless of language
          * direction (e.g. rtl). Make a patch for paper-toolbar in Polymer. */
         margin-right: 0;
       }
@@ -179,6 +136,15 @@
         display: none;
       }
 
+      .paper-header {
+        -webkit-padding-start: 24px;
+        align-items: center;
+        border-bottom: var(--settings-separator-line);
+        display: flex;
+        font-size: 123.08%; /* go to 16px from 13px */
+        min-height: 56px;
+      }
+
       .last {
         display: flex;
         justify-content: flex-end;
@@ -190,15 +156,13 @@
     </settings-router>
     <paper-drawer-panel drawer-width="256px" id="panel" narrow="{{isNarrow_}}"
         responsive-width="900px" force-narrow>
-      <paper-header-panel drawer id="drawer">
-        <paper-toolbar class="toolbar">
-          <div class="heading">$i18n{settings}</div>
-        </paper-toolbar>
+      <paper-header-panel mode="waterfall" drawer>
+        <div class="paper-header">$i18n{settings}</div>
         <settings-menu current-route="{{currentRoute}}" id="sideNav">
         </settings-menu>
       </paper-header-panel>
-      <paper-header-panel main>
-        <paper-toolbar class="toolbar">
+      <paper-header-panel mode="waterfall" main>
+        <paper-toolbar>
           <paper-icon-button icon="settings:menu" id="menu-button"
               paper-drawer-toggle>
           </paper-icon-button>
