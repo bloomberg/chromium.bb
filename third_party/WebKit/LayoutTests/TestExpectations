@@ -1219,6 +1219,8 @@ crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
 crbug.com/619103 fast/table/border-collapsing/cached-change-row-border-color.html [ Failure ]
 crbug.com/619103 fast/table/border-collapsing/cached-change-tbody-border-color.html [ Failure ]
 crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
+crbug.com/619103 paint/invalidation/animated-gif.html [ Pass Failure ]
+crbug.com/619103 paint/invalidation/animated-gif-background.html [ Pass Failure ]
 crbug.com/619103 paint/invalidation/animated-gif-background-offscreen.html [ Pass Failure ]
 # TODO(wangxianzhu): Restore this after rebaseline.
 # crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
