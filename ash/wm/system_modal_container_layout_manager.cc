@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/dim_window.h"
 #include "ash/wm/window_util.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
@@ -87,9 +88,13 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
   if (key != aura::client::kModalKey)
     return;
 
-  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE) {
+  ui::ModalType new_modal = window->GetProperty(aura::client::kModalKey);
+  if (static_cast<ui::ModalType>(old) == new_modal)
+    return;
+
+  if (new_modal != ui::MODAL_TYPE_NONE) {
     AddModalWindow(window);
-  } else if (static_cast<ui::ModalType>(old) != ui::MODAL_TYPE_NONE) {
+  } else {
     RemoveModalWindow(window);
     Shell::GetInstance()->OnModalWindowRemoved(window);
   }
@@ -185,6 +190,8 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
     if (capture_window)
       capture_window->ReleaseCapture();
   }
+  DCHECK(!ContainsValue(modal_windows_, window));
+
   modal_windows_.push_back(window);
   Shell::GetInstance()->CreateModalBackground(window);
   window->parent()->StackChildAtTop(window);

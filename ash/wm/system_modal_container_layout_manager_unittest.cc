@@ -6,6 +6,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -646,6 +648,32 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_EQ(0, modal_window->bounds().y());
 
   ShowKeyboard(false);
+}
+
+TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
+  aura::Window* modal_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
+  views::Widget* widget = views::Widget::CreateWindowWithParent(
+      new TestWindow(false), modal_container);
+  widget->Show();
+  aura::Window* window = widget->GetNativeWindow();
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Setting twice should not cause error.
+  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  widget->Close();
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
 }
 
 }  // namespace test
