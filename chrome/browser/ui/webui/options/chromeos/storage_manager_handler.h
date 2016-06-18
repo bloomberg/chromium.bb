@@ -31,6 +31,7 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   void HandleUpdateStorageInfo(const base::ListValue* unused_args);
   void HandleOpenDownloads(const base::ListValue* unused_args);
   void HandleOpenArcStorage(const base::ListValue* unused_args);
+  void HandleClearDriveCache(const base::ListValue* unused_args);
 
   // Requests updating disk space information.
   void UpdateSizeStat();
@@ -44,11 +45,20 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Callback to update the UI about the size of Downloads directory.
   void OnGetDownloadsSize(int64_t size);
 
+  // Requests updating the size of Drive Cache.
+  void UpdateDriveCacheSize();
+
+  // Callback to update the UI about the size of Drive Cache.
+  void OnGetDriveCacheSize(int64_t size);
+
   // Requests updating the space size used by Android apps and cache.
   void UpdateArcSize();
 
   // Callback to update the UI about Android apps and cache.
   void OnGetArcSize(bool succeeded, arc::mojom::ApplicationsSizePtr size);
+
+  // Callback called when clearing Drive cache is done.
+  void OnClearDriveCacheDone(bool success);
 
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 

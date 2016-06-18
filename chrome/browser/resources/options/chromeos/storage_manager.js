@@ -34,6 +34,9 @@ cr.define('options', function() {
       $('storage-manager-label-downloads').onclick = function() {
         chrome.send('openDownloads');
       };
+      $('storage-manager-label-drive-cache').onclick = function() {
+        PageManager.showPageByName('storageClearDriveCache');
+      };
       $('storage-manager-label-arc').onclick = function() {
         chrome.send('openArcStorage');
       };
@@ -72,6 +75,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the size of Google Drive offline files.
+     * @param {string} size Formatted string of the size of Google Drive offline
+     *     files.
+     * @private
+     */
+    setDriveCacheSize_: function(size) {
+      $('storage-manager-size-drive-cache').textContent = size;
+    },
+
+    /**
      * Updates the total size of Android apps and cache.
      * @param {string} size Formatted string of the size of Android apps and
      * cache.
@@ -95,6 +108,7 @@ cr.define('options', function() {
   cr.makePublic(StorageManager, [
     'setArcSize',
     'setDownloadsSize',
+    'setDriveCacheSize',
     'setSizeStat',
     'showArcItem',
   ]);

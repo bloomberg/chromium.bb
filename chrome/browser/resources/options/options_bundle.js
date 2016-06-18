@@ -39,6 +39,7 @@
 <include src="chromeos/display_overscan.js">
 <include src="chromeos/keyboard_overlay.js">
 <include src="chromeos/pointer_overlay.js">
+<include src="chromeos/storage_clear_drive_cache_overlay.js">
 <include src="chromeos/storage_manager.js">
 <include src="chromeos/third_party_ime_confirm_overlay.js">
 <include src="chromeos/power_overlay.js">
@@ -53,6 +54,7 @@ var BluetoothPairing = options.BluetoothPairing;
 var KeyboardOverlay = options.KeyboardOverlay;
 var PointerOverlay = options.PointerOverlay;
 var PowerOverlay = options.PowerOverlay;
+var StorageClearDriveCacheOverlay = options.StorageClearDriveCacheOverlay;
 var StorageManager = options.StorageManager;
 var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>

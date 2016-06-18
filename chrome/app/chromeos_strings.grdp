@@ -2545,6 +2545,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE" desc="Title for the storage manager tab.">
     Storage
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_TAB_TITLE" desc="Title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
+    Offline files
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove Google Drive offline files.">
+    You can free up space by deleting Google Drive offline files. Files marked as "Available offline" or in use will not be deleted.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SIZE_CALCULATING" desc="In storage manager overlay, label for storage item's size indicating the size is being calculated.">
     Calculating...
   </message>
@@ -2563,8 +2569,14 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DOWNLOADS" desc="In storage manager overlay, label for the size of Downloads directory.">
     Downloads
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DRIVE_CACHE" desc="In storage manager overlay, label for the size of Google Drive's offline files.">
+    Offline files
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
     Android apps and cache
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
+    Delete all
   </message>
   <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
     Enable Guest browsing
