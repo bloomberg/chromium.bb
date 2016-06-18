@@ -30,7 +30,9 @@ AwRenderViewHostExt::AwRenderViewHostExt(
   DCHECK(client_);
 }
 
-AwRenderViewHostExt::~AwRenderViewHostExt() {}
+AwRenderViewHostExt::~AwRenderViewHostExt() {
+  ClearImageRequests();
+}
 
 void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
   DCHECK(CalledOnValidThread());
@@ -44,7 +46,7 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
   // because it only makes sense on the main frame.
   if (Send(new AwViewMsg_DocumentHasImages(
           web_contents()->GetMainFrame()->GetRoutingID(), this_id))) {
-    pending_document_has_images_requests_[this_id] = result;
+    image_requests_callback_map_[this_id] = result;
   } else {
     // Still have to respond to the API call WebView#docuemntHasImages.
     // Otherwise the listener of the response may be starved.
@@ -127,14 +129,18 @@ void AwRenderViewHostExt::RenderViewCreated(
       web_contents()->GetMainFrame()->GetRoutingID(), background_color_));
 }
 
-void AwRenderViewHostExt::RenderProcessGone(base::TerminationStatus status) {
-  DCHECK(CalledOnValidThread());
-  for (std::map<int, DocumentHasImagesResult>::iterator pending_req =
-           pending_document_has_images_requests_.begin();
-       pending_req != pending_document_has_images_requests_.end();
-      ++pending_req) {
-    pending_req->second.Run(false);
+void AwRenderViewHostExt::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  ClearImageRequests();
+}
+
+void AwRenderViewHostExt::ClearImageRequests() {
+  for (const auto& pair : image_requests_callback_map_) {
+    pair.second.Run(false);
   }
+
+  image_requests_callback_map_.clear();
 }
 
 void AwRenderViewHostExt::DidNavigateAnyFrame(
@@ -182,12 +188,12 @@ void AwRenderViewHostExt::OnDocumentHasImagesResponse(
 
   DCHECK(CalledOnValidThread());
   std::map<int, DocumentHasImagesResult>::iterator pending_req =
-      pending_document_has_images_requests_.find(msg_id);
-  if (pending_req == pending_document_has_images_requests_.end()) {
+      image_requests_callback_map_.find(msg_id);
+  if (pending_req == image_requests_callback_map_.end()) {
     DLOG(WARNING) << "unexpected DocumentHasImages Response: " << msg_id;
   } else {
     pending_req->second.Run(has_images);
-    pending_document_has_images_requests_.erase(pending_req);
+    image_requests_callback_map_.erase(pending_req);
   }
 }
 

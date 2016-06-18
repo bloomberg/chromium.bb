@@ -86,7 +86,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
  private:
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* view_host) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;
@@ -103,12 +104,15 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
                              const gfx::Size& contents_size);
 
   bool IsRenderViewReady() const;
+  void ClearImageRequests();
 
   AwRenderViewHostExtClient* client_;
 
   SkColor background_color_;
 
-  std::map<int, DocumentHasImagesResult> pending_document_has_images_requests_;
+  // A map from message id to result callback. Messages here are all for the
+  // *current* RVH.
+  std::map<int, DocumentHasImagesResult> image_requests_callback_map_;
 
   // Master copy of hit test data on the browser side. This is updated
   // as a result of DoHitTest called explicitly or when the FocusedNodeChanged
