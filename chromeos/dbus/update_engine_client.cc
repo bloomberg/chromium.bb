@@ -207,6 +207,17 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    callback));
   }
 
+  void GetEolStatus(const GetEolStatusCallback& callback) override {
+    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
+                                 update_engine::kGetEolStatus);
+
+    VLOG(1) << "Requesting to get end of life status";
+    update_engine_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnGetEolStatus,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     update_engine_proxy_ = bus->GetObjectProxy(
@@ -349,6 +360,34 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     callback.Run(channel);
   }
 
+  // Called when a response for GetEolStatus() is received.
+  void OnGetEolStatus(const GetEolStatusCallback& callback,
+                      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to request getting eol status";
+      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    int status;
+    if (!reader.PopInt32(&status)) {
+      LOG(ERROR) << "Incorrect response: " << response->ToString();
+      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      return;
+    }
+
+    // Validate the value of status
+    if (status > update_engine::EndOfLifeStatus::kEol ||
+        status < update_engine::EndOfLifeStatus::kSupported) {
+      LOG(ERROR) << "Incorrect status value: " << status;
+      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      return;
+    }
+
+    VLOG(1) << "Eol status received: " << status;
+    callback.Run(status);
+  }
+
   // Called when a status update signal is received.
   void StatusUpdateReceived(dbus::Signal* signal) {
     VLOG(1) << "Status update signal received: " << signal->ToString();
@@ -435,6 +474,10 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
       callback.Run(current_channel_);
     else
       callback.Run(target_channel_);
+  }
+
+  void GetEolStatus(const GetEolStatusCallback& callback) override {
+    callback.Run(update_engine::EndOfLifeStatus::kSupported);
   }
 
   std::string current_channel_;

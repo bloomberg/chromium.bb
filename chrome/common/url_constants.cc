@@ -784,4 +784,8 @@ const char kChooserBluetoothOverviewURL[] =
 const char kChooserUsbOverviewURL[] =
     "https://support.google.com/chrome?p=webusb";
 
+#if defined(OS_CHROMEOS)
+const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
+#endif
+
 }  // namespace chrome

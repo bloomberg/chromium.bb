@@ -113,6 +113,9 @@ class HelpHandler : public content::WebUIMessageHandler,
 
   // Callback for setting the regulatory label alt text.
   void OnRegulatoryLabelTextRead(const std::string& text);
+
+  // Callback for setting the eol string text.
+  void OnEolStatus(const int status);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

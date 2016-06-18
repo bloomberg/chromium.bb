@@ -179,6 +179,14 @@ void VersionUpdaterCros::GetChannel(bool get_current_channel,
   update_engine_client->GetChannel(get_current_channel, cb);
 }
 
+void VersionUpdaterCros::GetEolStatus(const EolStatusCallback& cb) {
+  UpdateEngineClient* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+
+  // Request the Eol Status.
+  update_engine_client->GetEolStatus(cb);
+}
+
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)
     : context_(web_contents ? web_contents->GetBrowserContext() : nullptr),
       last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),

@@ -1210,6 +1210,12 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile, browser_launched);
+
+  // Check to see if this profile should show EndOfLife Notification and show
+  // the message accordingly.
+  if (!ShouldShowEolNotification(profile))
+    return;
+  CheckEolStatus(profile);
 }
 
 void UserSessionManager::ActivateWizard(const std::string& screen_name) {
@@ -1669,6 +1675,18 @@ UserSessionManager::GetDefaultIMEState(Profile* profile) {
   return state;
 }
 
+void UserSessionManager::CheckEolStatus(Profile* profile) {
+  std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>::iterator
+      iter = eol_notification_handler_.find(profile);
+  if (iter == eol_notification_handler_.end()) {
+    auto eol_notification = base::WrapUnique(new EolNotification(profile));
+    iter = eol_notification_handler_
+               .insert(std::make_pair(profile, std::move(eol_notification)))
+               .first;
+  }
+  iter->second->CheckEolStatus();
+}
+
 EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
   if (!easy_unlock_key_manager_)
     easy_unlock_key_manager_.reset(new EasyUnlockKeyManager);
@@ -1849,6 +1867,24 @@ void UserSessionManager::Shutdown() {
 void UserSessionManager::CreateTokenUtilIfMissing() {
   if (!token_handle_util_.get())
     token_handle_util_.reset(new TokenHandleUtil());
+}
+
+bool UserSessionManager::ShouldShowEolNotification(Profile* profile) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableEolNotification)) {
+    return false;
+  }
+
+  // Do not show end of life notification if this device is managed by
+  // enterprise user.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    return false;
+  }
+
+  // Do not show end of life notification if this is a guest session
+  return !profile->IsGuestSession();
 }
 
 }  // namespace chromeos

@@ -45,6 +45,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -316,6 +317,11 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterInt64Pref(prefs::kHatsLastInteractionTimestamp,
                               base::Time().ToInternalValue());
+
+  // We don't sync EOL related prefs because they are device specific.
+  registry->RegisterBooleanPref(prefs::kEolNotificationDismissed, false);
+  registry->RegisterIntegerPref(prefs::kEolStatus,
+                                update_engine::EndOfLifeStatus::kSupported);
 }
 
 void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {

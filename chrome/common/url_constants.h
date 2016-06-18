@@ -594,6 +594,11 @@ extern const char kChooserBluetoothOverviewURL[];
 // The URL for the WebUsb help center article.
 extern const char kChooserUsbOverviewURL[];
 
+#if defined(OS_CHROMEOS)
+// The URL for EOL notification
+extern const char kEolNotificationURL[];
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

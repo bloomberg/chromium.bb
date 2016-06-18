@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -73,6 +74,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #endif
 
 using base::ListValue;
@@ -203,6 +205,20 @@ std::string ReadRegulatoryLabelText(const base::FilePath& path) {
   if (base::ReadFileToString(text_path, &contents))
     return contents;
   return std::string();
+}
+
+// Returns messages that applys to this eol status
+base::string16 GetEolMessage(int status) {
+  if (status == update_engine::EndOfLifeStatus::kSecurityOnly) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ABOUT_PAGE_EOL_SECURITY_ONLY,
+        base::ASCIIToUTF16(chrome::kEolNotificationURL));
+
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_ABOUT_PAGE_EOL_EOL,
+        base::ASCIIToUTF16(chrome::kEolNotificationURL));
+  }
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -516,6 +532,12 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
   version_updater_->GetChannel(false,
       base::Bind(&HelpHandler::OnTargetChannel, weak_factory_.GetWeakPtr()));
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableEolNotification)) {
+    version_updater_->GetEolStatus(
+        base::Bind(&HelpHandler::OnEolStatus, weak_factory_.GetWeakPtr()));
+  }
+
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
@@ -740,6 +762,24 @@ void HelpHandler::OnRegulatoryLabelTextRead(const std::string& text) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.setRegulatoryLabelText",
       base::StringValue(base::CollapseWhitespaceASCII(text, true)));
+}
+
+void HelpHandler::OnEolStatus(const int status) {
+  if (status == update_engine::EndOfLifeStatus::kSupported ||
+      IsEnterpriseManaged()) {
+    return;
+  }
+
+  if (status == update_engine::EndOfLifeStatus::kSupported) {
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "help.HelpPage.updateEolMessage", base::StringValue("device_supported"),
+        base::StringValue(""));
+  } else {
+    base::string16 message = GetEolMessage(status);
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "help.HelpPage.updateEolMessage", base::StringValue("device_endoflife"),
+        base::StringValue(message));
+  }
 }
 
 #endif  // defined(OS_CHROMEOS)

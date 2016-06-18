@@ -35,6 +35,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
                   bool is_powerwash_allowed) override;
   void GetChannel(bool get_current_channel,
                   const GetChannelCallback& callback) override;
+  void GetEolStatus(const GetEolStatusCallback& callback) override;
 
   // Pushes UpdateEngineClient::Status in the queue to test changing status.
   // GetLastStatus() returns the status set by this method in FIFO order.

@@ -174,6 +174,8 @@
         'browser/chromeos/drive/write_on_cache_file.h',
         'browser/chromeos/enrollment_dialog_view.cc',
         'browser/chromeos/enrollment_dialog_view.h',
+	'browser/chromeos/eol_notification.cc',
+	'browser/chromeos/eol_notification.h',
         'browser/chromeos/events/event_rewriter.cc',
         'browser/chromeos/events/event_rewriter.h',
         'browser/chromeos/events/event_rewriter_controller.cc',

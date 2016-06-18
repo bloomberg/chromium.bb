@@ -30,6 +30,8 @@ class VersionUpdaterCros : public VersionUpdater,
   // Gets the last update status, without triggering a new check or download.
   void GetUpdateStatus(const StatusCallback& callback);
 
+  void GetEolStatus(const EolStatusCallback& callback) override;
+
  protected:
   friend class VersionUpdater;
 

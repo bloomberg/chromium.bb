@@ -75,6 +75,9 @@ void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
                                         const GetChannelCallback& callback) {
 }
 
+void FakeUpdateEngineClient::GetEolStatus(
+    const GetEolStatusCallback& callback) {}
+
 void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {
   default_status_ = status;

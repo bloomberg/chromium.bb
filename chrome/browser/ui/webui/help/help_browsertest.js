@@ -123,4 +123,19 @@ TEST_F('HelpPageWebUITest', 'testRequestUpdate', function() {
   expectFalse(policyIcon.hidden);
 });
 
+// Test that the EndofLife String is shown and hidden properly.
+TEST_F('HelpPageWebUITest', 'testUpdateEolMessage', function() {
+  var container = $('update-status-container');
+  var update = $('request-update');
+  var message = $('eol-message');
+
+  help.HelpPage.updateEolMessage('device_supported', '');
+  expectTrue(message.hidden);
+
+  help.HelpPage.updateEolMessage('device_endoflife', '');
+  expectFalse(message.hidden);
+  expectTrue(update.disabled);
+  expectTrue(container.hidden);
+});
+
 GEN('#endif');

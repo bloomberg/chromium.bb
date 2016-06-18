@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/eol_notification.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -229,6 +230,9 @@ class UserSessionManager
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
       Profile* profile);
 
+  // Check given profile's EndofLife Status and show notification accordingly.
+  void CheckEolStatus(Profile* profile);
+
   // Note this could return NULL if not enabled.
   EasyUnlockKeyManager* GetEasyUnlockKeyManager();
 
@@ -377,6 +381,10 @@ class UserSessionManager
 
   void CreateTokenUtilIfMissing();
 
+  // Returns |true| if given profile show see EndofLife Notification when
+  // applicable.
+  bool ShouldShowEolNotification(Profile* profile);
+
   // Test API methods.
 
   // Injects |user_context| that will be used to create StubAuthenticator
@@ -461,6 +469,10 @@ class UserSessionManager
   // Per-user-session Input Methods states.
   std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State>,
       ProfileCompare> default_ime_states_;
+
+  // Per-user-session EndofLife Notification
+  std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>
+      eol_notification_handler_;
 
   // Manages Easy unlock cryptohome keys.
   std::unique_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;

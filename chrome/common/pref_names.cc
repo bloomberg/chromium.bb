@@ -873,6 +873,17 @@ const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
 // The salt and hash for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
+
+// An integer pref. Holds one of several values:
+// 0: Supported. Device is in supported state.
+// 1: Security Only. Device is in Security-Only update (after initial 5 years).
+// 2: EOL. Device is End of Life(No more updates expected).
+// This value needs to be consistent with EndOfLifeStatus enum.
+const char kEolStatus[] = "eol_status";
+
+// Boolean pref indicating the End Of Life notification was dismissed by the
+// user.
+const char kEolNotificationDismissed[] = "eol_notification_dismissed";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

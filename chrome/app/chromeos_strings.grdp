@@ -5793,6 +5793,29 @@ Battery full
     To check for updates, please use Ethernet or Wi-Fi.
   </message>
 
+  <!-- EOL Notification Strings -->
+  <message name="IDS_ABOUT_PAGE_EOL_SECURITY_ONLY" desc="The message in the about page to inform the user that this device is now receiving security updates only, containing the URLs.">
+     This device is receiving security updates only. <ph name="BEGIN_LINK_EOL">&lt;a target="_blank" href="$1"&gt;</ph>More info<ph name="END_LINK_EOL">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_ABOUT_PAGE_EOL_EOL" desc="The message in the about page to inform the user that this device will no longer receive regular security updates, containing the URLs.">
+    This device will no longer receive regular security updates. <ph name="BEGIN_LINK_EOL">&lt;a target="_blank" href="$1"&gt;</ph>More info<ph name="END_LINK_EOL">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_EOL_NOTIFICATION_SECURITY_ONLY" desc="Notification shown to inform the user that this device will no longer receive software updates.">
+    This device will no longer receive software updates.
+  </message>
+  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive regular security updates.">
+    This device will no longer receive regular security updates.
+  </message>
+  <message name="IDS_EOL_MORE_INFO_BUTTON" desc="A button label shown in the notification for eol status change to get more information.">
+    More info
+  </message>
+  <message name="IDS_FLAGS_ENABLE_EOL_NOTIFICATION_NAME" desc="Name of the about:flag option to enable eol notification.">
+    Enable Device End of Life notification.
+  </message>
+  <message name="IDS_FLAGS_ENABLE_EOL_NOTIFICATION_DESCRIPTION" desc="Description of the about:flag option to enable eol notification.">
+    Enable Notifcation when Device is End of Life.
+  </message>
+
   <!-- Genius App -->
   <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app shelf">
     Get Help

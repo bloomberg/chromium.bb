@@ -80129,6 +80129,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="546710806" label="disable-easy-signin"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
+  <int value="581118445" label="enable-eol-notification"/>
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
