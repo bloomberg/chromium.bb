@@ -334,7 +334,7 @@ void SynchronousCompositorHost::OnComputeScroll(
 
 void SynchronousCompositorHost::DidOverscroll(
     const DidOverscrollParams& over_scroll_params) {
-  client_->DidOverscroll(over_scroll_params.accumulated_overscroll,
+  client_->DidOverscroll(this, over_scroll_params.accumulated_overscroll,
                          over_scroll_params.latest_overscroll_delta,
                          over_scroll_params.current_fling_velocity);
 }
@@ -368,13 +368,13 @@ void SynchronousCompositorHost::ProcessCommonParams(
 
   if (need_invalidate_count_ != params.need_invalidate_count) {
     need_invalidate_count_ = params.need_invalidate_count;
-    client_->PostInvalidate();
+    client_->PostInvalidate(this);
   }
 
   if (did_activate_pending_tree_count_ !=
       params.did_activate_pending_tree_count) {
     did_activate_pending_tree_count_ = params.did_activate_pending_tree_count;
-    client_->DidUpdateContent();
+    client_->DidUpdateContent(this);
   }
 
   // Ensure only valid values from compositor are sent to client.
@@ -382,7 +382,7 @@ void SynchronousCompositorHost::ProcessCommonParams(
   // for that case here.
   if (params.page_scale_factor) {
     client_->UpdateRootLayerState(
-        gfx::ScrollOffsetToVector2dF(params.total_scroll_offset),
+        this, gfx::ScrollOffsetToVector2dF(params.total_scroll_offset),
         gfx::ScrollOffsetToVector2dF(params.max_scroll_offset),
         params.scrollable_size, params.page_scale_factor,
         params.min_page_scale_factor, params.max_page_scale_factor);

@@ -116,15 +116,17 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void DidDestroyCompositor(content::SynchronousCompositor* compositor,
                             int process_id,
                             int routing_id) override;
-  void PostInvalidate() override;
-  void DidUpdateContent() override;
-  void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset_dip,
+  void PostInvalidate(content::SynchronousCompositor* compositor) override;
+  void DidUpdateContent(content::SynchronousCompositor* compositor) override;
+  void UpdateRootLayerState(content::SynchronousCompositor* compositor,
+                            const gfx::Vector2dF& total_scroll_offset_dip,
                             const gfx::Vector2dF& max_scroll_offset_dip,
                             const gfx::SizeF& scrollable_size_dip,
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-  void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+  void DidOverscroll(content::SynchronousCompositor* compositor,
+                     const gfx::Vector2dF& accumulated_overscroll,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
 
@@ -153,7 +155,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void UpdateMemoryPolicy();
 
-  uint32_t GetCompositorID(content::SynchronousCompositor* compositor);
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.
   std::string ToString() const;

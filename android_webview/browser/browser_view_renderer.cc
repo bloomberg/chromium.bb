@@ -263,7 +263,7 @@ void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
   DCHECK(compositor_frame_consumer);
   if (compositor_frame_consumer != current_compositor_frame_consumer_)
     return;
-  PostInvalidate();
+  PostInvalidate(compositor_);
   external_draw_constraints_ =
       current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
   UpdateMemoryPolicy();
@@ -359,7 +359,7 @@ void BrowserViewRenderer::ClearView() {
 
   clear_view_ = true;
   // Always invalidate ignoring the compositor to actually clear the webview.
-  PostInvalidate();
+  PostInvalidate(compositor_);
 }
 
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
@@ -570,10 +570,14 @@ void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
   }
 }
 
-void BrowserViewRenderer::DidUpdateContent() {
+void BrowserViewRenderer::DidUpdateContent(
+    content::SynchronousCompositor* compositor) {
   TRACE_EVENT_INSTANT0("android_webview",
                        "BrowserViewRenderer::DidUpdateContent",
                        TRACE_EVENT_SCOPE_THREAD);
+  if (compositor != compositor_)
+    return;
+
   clear_view_ = false;
   if (on_new_picture_enable_)
     client_->OnNewPicture();
@@ -608,12 +612,16 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 }
 
 void BrowserViewRenderer::UpdateRootLayerState(
+    content::SynchronousCompositor* compositor,
     const gfx::Vector2dF& total_scroll_offset_dip,
     const gfx::Vector2dF& max_scroll_offset_dip,
     const gfx::SizeF& scrollable_size_dip,
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor) {
+  if (compositor != compositor_)
+    return;
+
   TRACE_EVENT_INSTANT1(
       "android_webview",
       "BrowserViewRenderer::UpdateRootLayerState",
@@ -666,9 +674,13 @@ BrowserViewRenderer::RootLayerStateAsValue(
 }
 
 void BrowserViewRenderer::DidOverscroll(
+    content::SynchronousCompositor* compositor,
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta,
     const gfx::Vector2dF& current_fling_velocity) {
+  if (compositor != compositor_)
+    return;
+
   const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
   if (accumulated_overscroll == latest_overscroll_delta)
     overscroll_rounding_error_ = gfx::Vector2dF();
@@ -684,9 +696,13 @@ void BrowserViewRenderer::DidOverscroll(
   client_->DidOverscroll(rounded_overscroll_delta, fling_velocity_pixels);
 }
 
-void BrowserViewRenderer::PostInvalidate() {
+void BrowserViewRenderer::PostInvalidate(
+    content::SynchronousCompositor* compositor) {
   TRACE_EVENT_INSTANT0("android_webview", "BrowserViewRenderer::PostInvalidate",
                        TRACE_EVENT_SCOPE_THREAD);
+  if (compositor != compositor_)
+    return;
+
   client_->PostInvalidate();
 }
 

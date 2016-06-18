@@ -33,20 +33,22 @@ class SynchronousCompositorClient {
                                     int routing_id) = 0;
 
   // See LayerScrollOffsetDelegate for details.
-  virtual void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset,
+  virtual void UpdateRootLayerState(SynchronousCompositor* compositor,
+                                    const gfx::Vector2dF& total_scroll_offset,
                                     const gfx::Vector2dF& max_scroll_offset,
                                     const gfx::SizeF& scrollable_size,
                                     float page_scale_factor,
                                     float min_page_scale_factor,
                                     float max_page_scale_factor) = 0;
 
-  virtual void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+  virtual void DidOverscroll(SynchronousCompositor* compositor,
+                             const gfx::Vector2dF& accumulated_overscroll,
                              const gfx::Vector2dF& latest_overscroll_delta,
                              const gfx::Vector2dF& current_fling_velocity) = 0;
 
-  virtual void PostInvalidate() = 0;
+  virtual void PostInvalidate(SynchronousCompositor* compositor) = 0;
 
-  virtual void DidUpdateContent() = 0;
+  virtual void DidUpdateContent(SynchronousCompositor* compositor) = 0;
 
  protected:
   SynchronousCompositorClient() {}

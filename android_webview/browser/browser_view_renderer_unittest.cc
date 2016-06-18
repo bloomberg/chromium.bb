@@ -20,7 +20,9 @@
 namespace android_webview {
 
 class SmokeTest : public RenderingTest {
-  void StartTest() override { browser_view_renderer_->PostInvalidate(); }
+  void StartTest() override {
+    browser_view_renderer_->PostInvalidate(compositor_.get());
+  }
 
   void DidDrawOnRT() override { EndTest(); }
 };
@@ -32,7 +34,7 @@ class ClearViewTest : public RenderingTest {
   ClearViewTest() : on_draw_count_(0) {}
 
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate();
+    browser_view_renderer_->PostInvalidate(compositor_.get());
     browser_view_renderer_->ClearView();
   }
 
@@ -41,8 +43,9 @@ class ClearViewTest : public RenderingTest {
     if (on_draw_count_ == 1) {
       // First OnDraw should be skipped due to ClearView.
       EXPECT_FALSE(success);
-      browser_view_renderer_->DidUpdateContent();  // Unset ClearView.
-      browser_view_renderer_->PostInvalidate();
+      browser_view_renderer_->DidUpdateContent(
+          compositor_.get());  // Unset ClearView.
+      browser_view_renderer_->PostInvalidate(compositor_.get());
     } else {
       // Following OnDraws should succeed.
       EXPECT_TRUE(success);
@@ -65,7 +68,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     new_constraints_ = ParentCompositorDrawConstraints(
         false, gfx::Transform(), window_->surface_size().IsEmpty());
     new_constraints_.transform.Scale(2.0, 2.0);
-    browser_view_renderer_->PostInvalidate();
+    browser_view_renderer_->PostInvalidate(compositor_.get());
   }
 
   void WillOnDraw() override {
@@ -157,7 +160,7 @@ class CompositorNoFrameTest : public RenderingTest {
   CompositorNoFrameTest() : on_draw_count_(0) {}
 
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate();
+    browser_view_renderer_->PostInvalidate(compositor_.get());
   }
 
   void WillOnDraw() override {
@@ -175,11 +178,11 @@ class CompositorNoFrameTest : public RenderingTest {
     if (0 == on_draw_count_) {
       // Should fail as there has been no frames from compositor.
       EXPECT_FALSE(success);
-      browser_view_renderer_->PostInvalidate();
+      browser_view_renderer_->PostInvalidate(compositor_.get());
     } else if (1 == on_draw_count_) {
       // Should succeed with frame from compositor.
       EXPECT_TRUE(success);
-      browser_view_renderer_->PostInvalidate();
+      browser_view_renderer_->PostInvalidate(compositor_.get());
     } else if (2 == on_draw_count_) {
       // Should still succeed with last frame, even if no frame from compositor.
       EXPECT_TRUE(success);
@@ -242,7 +245,7 @@ class ResourceRenderingTest : public RenderingTest {
   bool AdvanceFrame() {
     next_frame_ = GetFrame(frame_number_++);
     if (next_frame_) {
-      browser_view_renderer_->PostInvalidate();
+      browser_view_renderer_->PostInvalidate(compositor_.get());
       return true;
     }
     return false;
