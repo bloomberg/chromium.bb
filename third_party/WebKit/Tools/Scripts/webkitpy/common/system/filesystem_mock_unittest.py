@@ -44,47 +44,67 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
         self.teardown_generic_test_dir()
         self.fs = None
 
-    def quick_check(self, test_fn, good_fn, *tests):
+    def check_with_reference_function(self, test_function, good_function, tests):
         for test in tests:
             if hasattr(test, '__iter__'):
-                expected = good_fn(*test)
-                actual = test_fn(*test)
+                expected = good_function(*test)
+                actual = test_function(*test)
             else:
-                expected = good_fn(test)
-                actual = test_fn(test)
+                expected = good_function(test)
+                actual = test_function(test)
             self.assertEqual(expected, actual, 'given %s, expected %s, got %s' % (repr(test), repr(expected), repr(actual)))
 
     def test_join(self):
-        self.quick_check(self.fs.join,
-                         self.fs._slow_but_correct_join,
-                         ('',),
-                         ('', 'bar'),
-                         ('foo',),
-                         ('foo/',),
-                         ('foo', ''),
-                         ('foo/', ''),
-                         ('foo', 'bar'),
-                         ('foo', '/bar'),
-                         )
+        self.check_with_reference_function(
+            self.fs.join,
+            self.fs._slow_but_correct_join,
+            [
+                ('',),
+                ('', 'bar'),
+                ('foo',),
+                ('foo/',),
+                ('foo', ''),
+                ('foo/', ''),
+                ('foo', 'bar'),
+                ('foo', '/bar'),
+            ])
 
     def test_normpath(self):
-        self.quick_check(self.fs.normpath,
-                         self.fs._slow_but_correct_normpath,
-                         '',
-                         '/',
-                         '.',
-                         '/.',
-                         'foo',
-                         'foo/',
-                         'foo/.',
-                         'foo/bar',
-                         '/foo',
-                         'foo/../bar',
-                         'foo/../bar/baz',
-                         '../foo')
+        self.check_with_reference_function(
+            self.fs.normpath,
+            self.fs._slow_but_correct_normpath,
+            [
+                '',
+                '/',
+                '.',
+                '/.',
+                'foo',
+                'foo/',
+                'foo/.',
+                'foo/bar',
+                '/foo',
+                'foo/../bar',
+                'foo/../bar/baz',
+                '../foo',
+            ])
 
-    def test_relpath_win32(self):
-        pass
+    def test_abspath_given_abs_path(self):
+        self.assertEqual(self.fs.abspath('/some/path'), '/some/path')
+
+    def test_abspath_given_rel_path(self):
+        self.fs.cwd = '/home/user'
+        self.assertEqual(self.fs.abspath('docs/foo'), '/home/user/docs/foo')
+
+    def test_abspath_given_rel_path_up_dir(self):
+        self.fs.cwd = '/home/user'
+        self.assertEqual(self.fs.abspath('../../etc'), '/etc')
+
+    def test_relpath_down_one_dir(self):
+        self.assertEqual(self.fs.relpath('/foo/bar/', '/foo/'), 'bar')
+
+    def test_relpath_no_start_arg(self):
+        self.fs.cwd = '/home/user'
+        self.assertEqual(self.fs.relpath('/home/user/foo/bar'), 'foo/bar')
 
     def test_filesystem_walk(self):
         mock_dir = 'foo'
@@ -111,6 +131,13 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
                                                            ('foo/a', ['z'], ['x', 'y']),
                                                            ('foo/a/z', [], ['lyrics']),
                                                            ('foo/bar', [], ['quux', 'baz'])])
+
+    def test_relpath_win32(self):
+        # This unit test inherits tests from GenericFileSystemTests, but
+        # test_relpath_win32 doesn't work with a mock filesystem since sep
+        # is always '/' for MockFileSystem.
+        # FIXME: Remove this.
+        pass
 
     def test_executable(self):
         host = MockHost()
