@@ -52,7 +52,7 @@ crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
 crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.html [ Skip ]
 
-crbug.com/619983 [ Win ] svg/repaint/rounded-rect-height-change.html [ Failure ]
+crbug.com/619983 [ Win ] svg/repaint/rounded-rect-height-change.html [ NeedsRebaseline ]
 
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
@@ -1193,7 +1193,7 @@ crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 
 # Failure on Mac 10.9, temporarily disabled.
-crbug.com/621024 [ Mac10.9 ] svg/custom/pointer-events-image.svg [ Failure ]
+crbug.com/621024 [ Mac10.9 ] svg/custom/pointer-events-image.svg [ NeedsRebaseline ]
 
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
@@ -1351,12 +1351,8 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 
 crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
-crbug.com/620141 fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
-crbug.com/620141 paint/invalidation/animated-gif-background.html [ Pass Failure ]
-crbug.com/620141 paint/invalidation/animated-gif.html [ Pass Failure ]
-crbug.com/620141 svg/hixie/perf/005.xml [ Pass Failure ]
-crbug.com/620141 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
-crbug.com/620141 paint/selection/selection-drag-image-in-iframe.html [ Pass Failure ]
+crbug.com/620141 css3/filters/effect-hue-rotate-hw.html [ NeedsRebaseline ]
+crbug.com/620141 paint/selection/selection-drag-image-in-iframe.html [ NeedsRebaseline ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
@@ -1511,12 +1507,11 @@ crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pas
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
-crbug.com/613463 [ Win ] virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Failure Pass ]
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
-crbug.com/612874 [ Win ] tables/mozilla/marvin/backgr_simple-table-column-group.html [ Failure Pass ]
-crbug.com/612874 [ Win ] svg/wicd/test-scalable-background-image1.xhtml [ Failure Pass ]
+crbug.com/612874 [ Win ] tables/mozilla/marvin/backgr_simple-table-column-group.html [ NeedsRebaseline ]
+crbug.com/612874 [ Win ] svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
 
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
@@ -1547,19 +1542,15 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
-crbug.com/620126 svg/repaint/inner-svg-change-viewBox-contract.svg [ Pass Failure ]
-crbug.com/620126 svg/repaint/mask-clip-target-transform.svg [ Pass Failure ]
-crbug.com/620126 svg/custom/relative-sized-shadow-tree-content.xhtml [ Pass Failure ]
-crbug.com/620126 svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ Pass Failure ]
-crbug.com/620126 svg/custom/relative-sized-content.xhtml [ Pass Failure ]
-crbug.com/620126 svg/custom/resource-invalidate-on-target-update.svg [ Pass Failure ]
-crbug.com/620126 svg/custom/marker-viewBox-changes.svg [ Pass Failure ]
-crbug.com/620126 svg/custom/relative-sized-image.xhtml [ Pass Failure ]
-crbug.com/620126 svg/custom/js-late-clipPath-and-object-creation.svg [ Pass Failure ]
-crbug.com/620126 svg/custom/js-late-clipPath-creation.svg [ Pass Failure ]
+crbug.com/620126 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsRebaseline ]
+crbug.com/620126 svg/custom/js-late-clipPath-creation.svg [ NeedsRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-content.xhtml [ NeedsRebaseline ]
+crbug.com/620126 svg/custom/relative-sized-image.xhtml [ NeedsRebaseline ]
 
 # Failure on Linux Trusty, temporarily disabled.
-crbug.com/621025 [ Linux ] svg/custom/text-match-highlight.html [ Failure ]
+crbug.com/621025 [ Linux ] svg/custom/text-match-highlight.html [ NeedsRebaseline ]
 
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
