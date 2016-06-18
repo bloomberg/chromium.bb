@@ -11,17 +11,30 @@
       display: block;
     }
     #box {
-      background: white;
       overflow: auto;
+      width: 200px;
+    }
+    .category {
+      color: gray;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .type {
+      color: white;
+    }
+    .value {
+      --webkit-margin-start: 100px;
+      color: white;
     }
   </style>
   <template>
     <div id="box">
       <!-- TODO(oka): update appearance to match mocks. -->
-      <div>
-        size: [[size]]<br>
-        modificationTime: [[modificationTime]]
-      </div>
+      <div class="category" i18n-content="METADATA_BOX_GENERAL_INFO"></div>
+      <div class="type" i18n-content="METADATA_BOX_FILE_SIZE"></div>
+      <div class="value">[[size]]</div>
+      <div class="type" i18n-content="METADATA_BOX_MODIFICATION_TIME"></div>
+      <div class="value">[[modificationTime]]</div>
     </div>
   </template>
 </dom-module>

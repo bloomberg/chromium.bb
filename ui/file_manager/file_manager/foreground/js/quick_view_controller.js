@@ -168,8 +168,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
   var entry =
       (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
   assert(entry);
-  this.quickView_.filePath = entry.name;
-  return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
+  return this.metadataModel_.get([entry], ['thumbnailUrl', 'externalFileUrl'])
       .then(this.onMetadataLoaded_.bind(this, entry));
 };
 
@@ -181,15 +180,17 @@ QuickViewController.prototype.updateQuickView_ = function() {
  * @private
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
+  this.quickView_.clear();
+  this.quickView_.filePath = entry.name;
   var item = items[0];
   var type = FileType.getType(entry);
-  var thumbnailUrl = item.thumbnailUrl || item.croppedThumbnailUrl;
+  var thumbnailUrl = item.thumbnailUrl;
   if (type.type === 'image') {
     if (item.externalFileUrl) {
       // TODO(oka): Support Drive.
     } else {
       var url = thumbnailUrl || entry.toURL();
-      this.quickView_.setImageURL(url);
+      this.quickView_.image = url;
     }
   } else if (type.type === 'video') {
     // TODO(oka): Set thumbnail.
@@ -197,17 +198,23 @@ QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
       // TODO(oka): Support Drive.
     } else {
       var url = entry.toURL();
-      this.quickView_.setVideoURL(url);
+      this.quickView_.video = url;
     }
-    this.quickView_.setVideoURL(entry.toURL());
   } else if (type.type === 'audio') {
-    this.quickView_.setAudioURL(entry.toURL());
-    // TODO(oka): Set thumbnail.
     if (item.externalFileUrl) {
       // TODO(oka): Support Drive.
     } else {
-      this.quickView_.setAudioURL(url);
+      var url = entry.toURL();
+      this.quickView_.audio = url;
+      this.metadataModel_.get([entry], ['contentThumbnailUrl'])
+          .then(function(entry, items) {
+            var item = items[0];
+            if (item.contentThumbnailUrl)
+              this.quickView_.contentThumbnailUrl =
+                  item.contentThumbnailUrl;
+          }.bind(this, entry));
     }
-    this.quickView_.setAudioURL(entry.toURL());
+  } else {
+    this.quickView_.unsupported = true;
   }
 };

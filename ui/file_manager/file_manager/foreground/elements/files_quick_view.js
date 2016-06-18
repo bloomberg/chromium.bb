@@ -11,6 +11,8 @@ var FilesQuickView = Polymer({
     video: String,
     videoPoster: String,
     audio: String,
+    contentThumbnailUrl: String,
+    unsupported: Boolean,
 
     // metadata-box-active-changed event is fired on attribute change.
     metadataBoxActive: {
@@ -21,28 +23,16 @@ var FilesQuickView = Polymer({
   },
 
   listeners: {
-    'iron-overlay-closed': 'clear_',
+    'iron-overlay-closed': 'clear',
   },
 
-  setImageURL: function(url) {
-    this.clear_();
-    this.image = url;
-  },
-
-  setVideoURL: function(url) {
-    this.clear_();
-    this.video = url;
-  },
-
-  setAudioURL: function(url) {
-    this.clear_();
-    this.audio = url;
-  },
-
-  clear_: function() {
+  clear: function() {
+    this.filePath = '';
     this.image = '';
     this.video = '';
     this.audio = '';
+    this.contentThumbnailUrl = '';
+    this.unsupported = false;
   },
 
   // Open the dialog.

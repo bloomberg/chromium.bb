@@ -12,46 +12,9 @@
 <link rel="import" href="icons.html">
 
 <dom-module id="files-quick-view">
-  <style>
-    :host {
-      display: block;
-    }
-    paper-dialog {
-      background: black;
-      height: 100%;
-      margin: 10px;
-      width: 100%;
-    }
-    img, video, audio {
-      bottom: 0;
-      left: 0;
-      margin: auto;
-      max-height: 100%;
-      max-width: 100%;
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
-    #toolbar {
-      --paper-toolbar-background: rgba(0, 0, 0, 0.5);
-      color: white;
-      margin: 0;
-      z-index: 1;
-    }
-    #buttons {
-      position: absolute;
-      right: 0px;
-    }
-    #metadata-box {
-      position: absolute;
-      right: 0px;
-    }
-    #metadata-box[hidden] {
-      display: none;
-    }
-  </style>
+  <link rel="import" type="css" href="files_quick_view.css">
   <template>
-    <paper-dialog id="dialog">
+    <paper-dialog id="dialog" modal>
       <paper-toolbar id="toolbar">
         <div>[[filePath]]</div>
         <div id="buttons">
@@ -66,21 +29,34 @@
            </paper-button>
         </div>
       </paper-toolbar>
-      <template class="content" is="dom-if" if="[[image]]">
-        <div>
-          <img src="[[image]]"/>
-        </div>
-      </template>
-      <template class="content" is="dom-if" if="[[video]]">
-        <div>
-          <video controls autoplay src="[[video]]" poster="[[videoPoster]]"/>
-        </div>
-      </template>
-      <template class="content" is="dom-if" if="[[audio]]">
-        <div>
-          <audio autoplay controls src="[[audio]]"/>
-        </div>
-      </template>
+      <!-- TOOD(oka): Show default icon if image, video or audio was broken -->
+      <div>
+        <template is="dom-if" if="[[image]]">
+          <div generic-thumbnail="image">
+            <img class="content" src="[[image]]">
+          </div>
+        </template>
+        <template is="dom-if" if="[[video]]">
+          <div generic-thumbnail="video">
+            <!-- TODO(oka): Stop to autoplay if video is in Drive. -->
+            <video class="content" controls autoplay src="[[video]]" poster="[[videoPoster]]"></video>
+          </div>
+        </template>
+        <template is="dom-if" if="[[audio]]">
+          <template is="dom-if" if="[[contentThumbnailUrl]]">
+            <img class="content" src="[[contentThumbnailUrl]]">
+          </template>
+          <template is="dom-if" if="[[!contentThumbnailUrl]]">
+            <div class="content" generic-thumbnail="audio"></div>
+          </template>
+          <!-- TODO(oka): Stop to autoplay if video is in Drive. -->
+          <audio id="audio-control" autoplay controls src="[[audio]]"></audio>
+        </template>
+        <!-- TODO(oka): Support folder icon -->
+        <template is="dom-if" if="[[unsupported]]">
+          <div class="content" generic-thumbnail><div>
+        </template>
+      </div>
       <files-metadata-box id="metadata-box" hidden="{{!metadataBoxActive}}"></file-metadata-box>
     </paper-dialog>
   </template>

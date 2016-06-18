@@ -9,7 +9,7 @@ var FilesMetadataBox = Polymer({
     size: String,
     modiifcationTime: String,
     /*
-     * TODO(oka): Add the follwoing fields.
+     * TODO(oka): Add the following fields.
      * filePath: String,
      * imageWidth: Number,
      * imageHeight: Number,

@@ -1,0 +1,90 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: block;
+}
+
+paper-dialog {
+  background: black;
+  height: 70%;
+  width: 70%;
+}
+
+.content {
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  max-height: 100%;
+  max-width: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#audio-control {
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  width: 100%;
+}
+
+#toolbar {
+  --paper-toolbar-background: rgba(127, 127, 127, 0.5);
+  --paper-toolbar-height: 32px;
+  color: white;
+  margin: 0;
+  z-index: 1;
+}
+
+#buttons {
+  position: absolute;
+  right: 0px;
+}
+
+paper-button {
+  padding: 4px;
+}
+
+#metadata-box {
+  background: rgba(0, 0, 0, 0.5);
+  bottom: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 32px;
+  z-index: 1;
+}
+
+#metadata-box[hidden] {
+  display: none;
+}
+
+/* Large generic thumbnails, used when a file does not have a thumbnail. */
+[generic-thumbnail] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/filetype_placeholder_generic.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_generic.png) 2x);
+  background-position: center 50px;
+  background-repeat: no-repeat;
+}
+
+[generic-thumbnail='audio'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/filetype_placeholder_audio.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x);
+}
+
+[generic-thumbnail='image'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/filetype_placeholder_image.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_image.png) 2x);
+}
+
+[generic-thumbnail='video'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/filetype_placeholder_video.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_video.png) 2x);
+}
