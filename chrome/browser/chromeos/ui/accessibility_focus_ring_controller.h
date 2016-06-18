@@ -38,6 +38,9 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   // Draw a ring around the text caret. It fades out automatically.
   void SetCaretRing(const gfx::Point& location);
 
+  // Don't fade in / out, for testing.
+  void SetNoFadeForTesting();
+
  protected:
   AccessibilityFocusRingController();
   ~AccessibilityFocusRingController() override;

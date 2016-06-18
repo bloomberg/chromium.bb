@@ -33,7 +33,9 @@ class AccessibilityHighlightManager
   void HighlightCursor(bool cursor);
   void HighlightCaret(bool caret);
 
- private:
+  void RegisterObservers();
+
+ protected:
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -55,6 +57,9 @@ class AccessibilityHighlightManager
   // aura::client::CursorClientObserver
   void OnCursorVisibilityChanged(bool is_visible) override;
 
+  virtual bool IsCursorVisible();
+
+ private:
   void UpdateFocusAndCaretHighlights();
   void UpdateCursorHighlight();
 
@@ -68,6 +73,7 @@ class AccessibilityHighlightManager
   bool caret_visible_ = false;
   gfx::Point caret_point_;
 
+  bool registered_observers_ = false;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightManager);

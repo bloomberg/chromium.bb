@@ -34,14 +34,6 @@ ui::InputMethod* GetInputMethod(aura::Window* root_window) {
 }  // namespace
 
 AccessibilityHighlightManager::AccessibilityHighlightManager() {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->AddPreTargetHandler(this);
-  shell->cursor_manager()->AddObserver(this);
-  registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 content::NotificationService::AllSources());
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
-  ui::InputMethod* input_method = GetInputMethod(root_window);
-  input_method->AddObserver(this);
   focus_rect_ = OffscreenRect();
   cursor_point_ = OffscreenPoint();
   caret_point_ = OffscreenPoint();
@@ -52,18 +44,18 @@ AccessibilityHighlightManager::~AccessibilityHighlightManager() {
   if (!ash::Shell::HasInstance())
     return;
 
+  AccessibilityFocusRingController::GetInstance()->SetFocusRing(
+      std::vector<gfx::Rect>(),
+      AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
+  AccessibilityFocusRingController::GetInstance()->SetCaretRing(
+      OffscreenPoint());
+  AccessibilityFocusRingController::GetInstance()->SetCursorRing(
+      OffscreenPoint());
+
   ash::Shell* shell = ash::Shell::GetInstance();
-  if (shell) {
+  if (shell && registered_observers_) {
     shell->RemovePreTargetHandler(this);
     shell->cursor_manager()->RemoveObserver(this);
-
-    AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-        std::vector<gfx::Rect>(),
-        AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
-    AccessibilityFocusRingController::GetInstance()->SetCaretRing(
-        OffscreenPoint());
-    AccessibilityFocusRingController::GetInstance()->SetCursorRing(
-        OffscreenPoint());
 
     aura::Window* root_window = shell->GetPrimaryRootWindow();
     ui::InputMethod* input_method = GetInputMethod(root_window);
@@ -84,6 +76,18 @@ void AccessibilityHighlightManager::HighlightCursor(bool cursor) {
 void AccessibilityHighlightManager::HighlightCaret(bool caret) {
   caret_ = caret;
   UpdateFocusAndCaretHighlights();
+}
+
+void AccessibilityHighlightManager::RegisterObservers() {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->AddPreTargetHandler(this);
+  shell->cursor_manager()->AddObserver(this);
+  registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                 content::NotificationService::AllSources());
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  ui::InputMethod* input_method = GetInputMethod(root_window);
+  input_method->AddObserver(this);
+  registered_observers_ = true;
 }
 
 void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
@@ -130,6 +134,10 @@ void AccessibilityHighlightManager::OnCursorVisibilityChanged(bool is_visible) {
   UpdateCursorHighlight();
 }
 
+bool AccessibilityHighlightManager::IsCursorVisible() {
+  return ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible();
+}
+
 void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
   auto controller = AccessibilityFocusRingController::GetInstance();
 
@@ -161,7 +169,7 @@ void AccessibilityHighlightManager::UpdateCursorHighlight() {
   if (!cursor_)
     point = OffscreenPoint();
 
-  if (!ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible())
+  if (!IsCursorVisible())
     point = OffscreenPoint();
 
   AccessibilityFocusRingController::GetInstance()->SetCursorRing(point);

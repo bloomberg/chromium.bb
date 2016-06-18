@@ -698,6 +698,7 @@
       '../ui/base/ime/chromeos/input_method_whitelist.cc',
       '../ui/base/ime/chromeos/input_method_whitelist.h',
       'browser/apps/custom_launcher_page_browsertest_views.cc',
+      'browser/chromeos/accessibility/accessibility_highlight_manager_browsertest.cc',
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
       'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',

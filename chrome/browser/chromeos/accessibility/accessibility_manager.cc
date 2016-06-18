@@ -1095,8 +1095,10 @@ void AccessibilityManager::UpdateAccessibilityHighlightingFromPrefs() {
     return;
   }
 
-  if (!accessibility_highlight_manager_)
+  if (!accessibility_highlight_manager_) {
     accessibility_highlight_manager_.reset(new AccessibilityHighlightManager());
+    accessibility_highlight_manager_->RegisterObservers();
+  }
 
   accessibility_highlight_manager_->HighlightFocus(focus_highlight_enabled_);
   accessibility_highlight_manager_->HighlightCaret(caret_highlight_enabled_);

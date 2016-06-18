@@ -147,6 +147,15 @@ void AccessibilityFocusRingController::SetCaretRing(
   OnLayerChange(&caret_animation_info_);
 }
 
+void AccessibilityFocusRingController::SetNoFadeForTesting() {
+  focus_animation_info_.fade_in_time = base::TimeDelta();
+  focus_animation_info_.fade_out_time = base::TimeDelta::FromHours(1);
+  cursor_animation_info_.fade_in_time = base::TimeDelta();
+  cursor_animation_info_.fade_out_time = base::TimeDelta::FromHours(1);
+  caret_animation_info_.fade_in_time = base::TimeDelta();
+  caret_animation_info_.fade_out_time = base::TimeDelta::FromHours(1);
+}
+
 void AccessibilityFocusRingController::RectsToRings(
     const std::vector<gfx::Rect>& src_rects,
     std::vector<AccessibilityFocusRing>* rings) const {
