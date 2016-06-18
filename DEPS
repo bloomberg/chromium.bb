@@ -454,9 +454,6 @@ deps_os = {
     'src/third_party/httpcomponents-core':
      Var('chromium_git') + '/chromium/deps/httpcomponents-core.git' + '@' + '9f7180a96f8fa5cab23f793c14b413356d419e62',
 
-    'src/third_party/jarjar':
-     Var('chromium_git') + '/chromium/deps/jarjar.git' + '@' + '2e1ead4c68c450e0b77fe49e3f9137842b8b6920',
-
     'src/third_party/jsr-305/src':
       Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
 
