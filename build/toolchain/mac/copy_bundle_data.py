@@ -3,10 +3,22 @@
 # found in the LICENSE file.
 
 import argparse
+import errno
 import os
 import shutil
+import subprocess
 import sys
 
+# Copies a macOS or iOS resource into a bundle. Special handling is given to
+# .strings files.
+#
+# Usage: python copy_bundle_data.py path/to/source path/of/destination
+#
+# Note that if |source| is a directory, its contents will be copied to |dest|,
+# rather than copying the |source| directory itself. Example:
+#   copy_bundle_data.py out/Release/Foo.framework out/Release/App/Foo.framework
+# The contents of Foo.framwork will be copied into the destination path, which
+# includes the name of the destination framework, which is also Foo.framework.
 
 def DetectEncoding(data, default_encoding='UTF-8'):
   """Detects the encoding used by |data| from the Byte-Order-Mark if present.
@@ -80,25 +92,28 @@ def CopyFile(source, dest, strings_format):
     source: string, path to the source file
     dest: string, path to the destination file
   """
-  if os.path.isdir(source):
-    if os.path.exists(dest):
-      shutil.rmtree(dest)
-    # Copy tree.
-    # TODO(thakis): This copies file attributes like mtime, while the
-    # single-file branch below doesn't. This should probably be changed to
-    # be consistent with the single-file branch.
-    shutil.copytree(source, dest, symlinks=True)
-    return
-
-  if os.path.exists(dest):
-    os.unlink(dest)
+  try:
+    shutil.rmtree(dest)
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      pass
+    elif e.errno == errno.ENOTDIR:
+      os.unlink(dest)
+    else:
+      raise
 
   _, extension = os.path.splitext(source)
   if extension == '.strings':
     CopyStringsFile(source, dest, strings_format)
     return
 
-  shutil.copy(source, dest)
+  # If the source is a directory, add a trailing slash so its contents get
+  # copied, rather than copying the directory itself.
+  if os.path.isdir(source) and not source.endswith('/'):
+    source += '/'
+
+  subprocess.check_call(
+      ['rsync', '--recursive', '--perms', '--links', source, dest])
 
 
 def Main():
