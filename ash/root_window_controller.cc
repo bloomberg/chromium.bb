@@ -197,6 +197,53 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   }
 }
 
+bool IsWindowAboveContainer(aura::Window* window,
+                            aura::Window* blocking_container) {
+  std::vector<aura::Window*> target_path;
+  std::vector<aura::Window*> blocking_path;
+
+  while (window) {
+    target_path.push_back(window);
+    window = window->parent();
+  }
+
+  while (blocking_container) {
+    blocking_path.push_back(blocking_container);
+    blocking_container = blocking_container->parent();
+  }
+
+  // The root window is put at the end so that we compare windows at
+  // the same depth.
+  while (!blocking_path.empty()) {
+    if (target_path.empty())
+      return false;
+
+    aura::Window* target = target_path.back();
+    target_path.pop_back();
+    aura::Window* blocking = blocking_path.back();
+    blocking_path.pop_back();
+
+    // Still on the same path, continue.
+    if (target == blocking)
+      continue;
+
+    // This can happen only if unparented window is passed because
+    // first element must be the same root.
+    if (!target->parent() || !blocking->parent())
+      return false;
+
+    aura::Window* common_parent = target->parent();
+    DCHECK_EQ(common_parent, blocking->parent());
+    aura::Window::Windows windows = common_parent->children();
+    auto blocking_iter = std::find(windows.begin(), windows.end(), blocking);
+    // If the target window is above blocking window, the window can handle
+    // events.
+    return std::find(blocking_iter, windows.end(), target) != windows.end();
+  }
+
+  return true;
+}
+
 // A window delegate which does nothing. Used to create a window that
 // is a event target, but do nothing.
 class EmptyWindowDelegate : public aura::WindowDelegate {
@@ -361,6 +408,50 @@ void RootWindowController::Shutdown() {
 
   system_background_.reset();
   aura::client::SetScreenPositionClient(root_window, NULL);
+}
+
+bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
+  if (GetRootWindow() != window->GetRootWindow())
+    return false;
+
+  // Always allow events to fall through to the virtual keyboard even if
+  // displaying a system modal dialog.
+  if (IsVirtualKeyboardWindow(window))
+    return true;
+
+  aura::Window* blocking_container = nullptr;
+
+  int modal_container_id = 0;
+  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked()) {
+    blocking_container =
+        GetContainer(kShellWindowId_LockScreenContainersContainer);
+    modal_container_id = kShellWindowId_LockSystemModalContainer;
+  } else {
+    modal_container_id = kShellWindowId_SystemModalContainer;
+  }
+  aura::Window* modal_container = GetContainer(modal_container_id);
+  SystemModalContainerLayoutManager* modal_layout_manager = nullptr;
+  modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
+      modal_container->layout_manager());
+
+  if (modal_layout_manager->has_modal_background())
+    blocking_container = modal_container;
+  else
+    modal_container = nullptr;  // Don't check modal dialogs.
+
+  // In normal session.
+  if (!blocking_container)
+    return true;
+
+  if (!IsWindowAboveContainer(window, blocking_container))
+    return false;
+
+  // If the window is in the target modal container, only allow the top most
+  // one.
+  if (modal_container && modal_container->Contains(window))
+    return modal_layout_manager->IsPartOfActiveModalWindow(window);
+
+  return true;
 }
 
 SystemModalContainerLayoutManager*

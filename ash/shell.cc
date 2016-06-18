@@ -1178,18 +1178,10 @@ void Shell::InitRootWindow(aura::Window* root_window) {
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter) {
-    SystemModalContainerLayoutManager* layout_manager =
-        (*iter)->GetSystemModalLayoutManager(window);
-    if (layout_manager && layout_manager->CanWindowReceiveEvents(window))
-      return true;
-    // Allow events to fall through to the virtual keyboard even if displaying
-    // a system modal dialog.
-    if ((*iter)->IsVirtualKeyboardWindow(window))
+  for (RootWindowController* controller : controllers) {
+    if (controller->CanWindowReceiveEvents(window))
       return true;
   }
-
   return false;
 }
 

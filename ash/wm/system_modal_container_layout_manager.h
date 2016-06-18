@@ -54,8 +54,9 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
-  // Can a given |window| receive and handle input events?
-  bool CanWindowReceiveEvents(aura::Window* window);
+  // True if the window is either contained by the top most modal window,
+  // or contained by its transient children.
+  bool IsPartOfActiveModalWindow(aura::Window* window);
 
   // Activates next modal window if any. Returns false if there
   // are no more modal windows in this layout manager.

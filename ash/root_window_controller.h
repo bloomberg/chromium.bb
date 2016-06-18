@@ -168,6 +168,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
+  // True if the window can receive events on this root window.
+  bool CanWindowReceiveEvents(aura::Window* window);
+
   // Returns the layout-manager for the appropriate modal-container. If the
   // window is inside the lockscreen modal container, then the layout manager
   // for that is returned. Otherwise the layout manager for the default modal

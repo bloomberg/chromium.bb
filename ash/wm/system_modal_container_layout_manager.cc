@@ -118,22 +118,9 @@ void SystemModalContainerLayoutManager::OnKeyboardBoundsChanging(
   PositionDialogsAfterWorkAreaResize();
 }
 
-bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
+bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
     aura::Window* window) {
-  // We could get when we're at lock screen and there is modal window at
-  // system modal window layer which added event filter.
-  // Now this lock modal windows layer layout manager should not block events
-  // for windows at lock layer.
-  // See SystemModalContainerLayoutManagerTest.EventFocusContainers and
-  // http://crbug.com/157469
-  if (modal_windows_.empty())
-    return true;
-  // This container can not handle events if the screen is locked and it is not
-  // above the lock screen layer (crbug.com/110920).
-  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked() &&
-      container_->id() < ash::kShellWindowId_LockScreenContainer)
-    return true;
-  return wm::GetActivatableWindow(window) == modal_window();
+  return modal_window() && wm::GetActivatableWindow(window) == modal_window();
 }
 
 bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {

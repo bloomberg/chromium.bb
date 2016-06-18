@@ -4,6 +4,8 @@
 
 #include "ash/wm/system_modal_container_layout_manager.h"
 
+#include <memory>
+
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
@@ -15,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -674,6 +677,58 @@ TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
 
   widget->Close();
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+}
+
+namespace {
+
+class InputTestDelegate : public aura::test::TestWindowDelegate {
+ public:
+  InputTestDelegate() {}
+  ~InputTestDelegate() override {}
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override { mouse_event_count_++; }
+
+  int mouse_event_count() const { return mouse_event_count_; }
+
+ private:
+  int mouse_event_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(InputTestDelegate);
+};
+
+}  // namespace
+
+// Make sure that events are properly blocked in multi displays environment.
+TEST_F(SystemModalContainerLayoutManagerTest, BlockEvent) {
+  UpdateDisplay("500x500, 500x500");
+  InputTestDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
+  window->Show();
+
+  ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow(),
+                                           window.get());
+  event_generator.ClickLeftButton();
+  EXPECT_EQ(2, delegate.mouse_event_count());
+
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      new TestWindow(true), Shell::GetPrimaryRootWindow(),
+      gfx::Rect(200, 200, 100, 100));
+  widget->Show();
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Events should be blocked.
+  event_generator.ClickLeftButton();
+  EXPECT_EQ(2, delegate.mouse_event_count());
+  widget->Close();
+
+  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  event_generator.ClickLeftButton();
+  EXPECT_EQ(4, delegate.mouse_event_count());
+
+  // We need to delete window here because delegate is on the stack.
+  window.reset();
 }
 
 }  // namespace test
