@@ -9,33 +9,19 @@
 namespace shell {
 
 InterfaceRegistry::InterfaceRegistry(Connection* connection)
-    : InterfaceRegistry(nullptr, nullptr, connection) {}
+    : binding_(this), connection_(connection) {}
+InterfaceRegistry::~InterfaceRegistry() {}
 
-InterfaceRegistry::InterfaceRegistry(
-    mojom::InterfaceProviderPtr remote_interfaces,
-    mojom::InterfaceProviderRequest local_interfaces_request,
-    Connection* connection)
-    : binding_(this),
-      connection_(connection),
-      remote_interfaces_(std::move(remote_interfaces)) {
-  if (!local_interfaces_request.is_pending())
-    local_interfaces_request = GetProxy(&client_handle_);
+void InterfaceRegistry::Bind(
+    mojom::InterfaceProviderRequest local_interfaces_request) {
+  DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(local_interfaces_request));
 }
 
-InterfaceRegistry::~InterfaceRegistry() {}
-
-mojom::InterfaceProviderPtr InterfaceRegistry::TakeClientHandle() {
-  return std::move(client_handle_);
-}
-
-mojom::InterfaceProvider* InterfaceRegistry::GetRemoteInterfaces() {
-  return remote_interfaces_.get();
-}
-
-void InterfaceRegistry::SetRemoteInterfacesConnectionLostClosure(
-    const base::Closure& connection_lost_closure) {
-  remote_interfaces_.set_connection_error_handler(connection_lost_closure);
+void InterfaceRegistry::RemoveInterface(const std::string& name) {
+  auto it = name_to_binder_.find(name);
+  if (it != name_to_binder_.end())
+    name_to_binder_.erase(it);
 }
 
 // mojom::InterfaceProvider:
@@ -57,19 +43,11 @@ bool InterfaceRegistry::SetInterfaceBinderForName(
     const std::string& interface_name) {
   if (!connection_ ||
       (connection_ && connection_->AllowsInterface(interface_name))) {
-    RemoveInterfaceBinderForName(interface_name);
+    RemoveInterface(interface_name);
     name_to_binder_[interface_name] = std::move(binder);
     return true;
   }
   return false;
-}
-
-void InterfaceRegistry::RemoveInterfaceBinderForName(
-    const std::string& interface_name) {
-  NameToInterfaceBinderMap::iterator it = name_to_binder_.find(interface_name);
-  if (it == name_to_binder_.end())
-    return;
-  name_to_binder_.erase(it);
 }
 
 }  // namespace shell

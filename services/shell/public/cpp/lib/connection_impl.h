@@ -51,7 +51,9 @@ class ConnectionImpl : public Connection {
   uint32_t GetRemoteInstanceID() const override;
   void AddConnectionCompletedClosure(const mojo::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
+  mojom::InterfaceProvider* GetRemoteInterfaceProvider() override;
   InterfaceRegistry* GetInterfaceRegistry() override;
+  RemoteInterfaceRegistry* GetRemoteInterfaceRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
   void OnConnectionCompleted(shell::mojom::ConnectResult result,
@@ -67,6 +69,7 @@ class ConnectionImpl : public Connection {
   std::vector<mojo::Closure> connection_completed_callbacks_;
 
   InterfaceRegistry interfaces_;
+  RemoteInterfaceRegistry remote_interfaces_;
 
   const CapabilityRequest capability_request_;
   const bool allow_all_interfaces_;

@@ -51,10 +51,6 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
           base::WrapUnique(binder), interface_name);
     }
 
-    void RemoveInterfaceBinderForName(const std::string& interface_name) {
-      registry_->RemoveInterfaceBinderForName(interface_name);
-    }
-
    private:
     InterfaceRegistry* registry_;
     DISALLOW_COPY_AND_ASSIGN(TestApi);
@@ -66,23 +62,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // rules filtering which interfaces are allowed to be exposed to clients are
   // imposed on this registry. If null, they are not.
   explicit InterfaceRegistry(Connection* connection);
-  // Construct with an InterfaceProviderRequest and a Connection (which may be
-  // null, see note above about filtering).
-  InterfaceRegistry(mojom::InterfaceProviderPtr remote_interfaces,
-                    mojom::InterfaceProviderRequest local_interfaces_request,
-                    Connection* connection);
   ~InterfaceRegistry() override;
 
-  // Takes the client end of the InterfaceProvider pipe created in the
-  // constructor.
-  mojom::InterfaceProviderPtr TakeClientHandle();
-
-  // Returns a raw pointer to the remote InterfaceProvider.
-  mojom::InterfaceProvider* GetRemoteInterfaces();
-
-  // Sets a closure to be run when the remote InterfaceProvider pipe is closed.
-  void SetRemoteInterfacesConnectionLostClosure(
-      const base::Closure& connection_lost_closure);
+  void Bind(mojom::InterfaceProviderRequest local_interfaces_request);
 
   // Allows |Interface| to be exposed via this registry. Requests to bind will
   // be handled by |factory|. Returns true if the interface was exposed, false
@@ -109,23 +91,11 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
         Interface::Name_);
   }
 
-  // Binds |ptr| to an implementation of Interface in the remote application.
-  // |ptr| can immediately be used to start sending requests to the remote
-  // interface.
   template <typename Interface>
-  void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
-    mojo::MessagePipe pipe;
-    ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
-
-    // Local binders can be registered via TestApi.
-    auto it = name_to_binder_.find(Interface::Name_);
-    if (it != name_to_binder_.end()) {
-      it->second->BindInterface(connection_, Interface::Name_,
-                                std::move(pipe.handle1));
-      return;
-    }
-    remote_interfaces_->GetInterface(Interface::Name_, std::move(pipe.handle1));
+  void RemoveInterface() {
+    RemoveInterface(Interface::Name_);
   }
+  void RemoveInterface(const std::string& name);
 
  private:
   using NameToInterfaceBinderMap =
@@ -140,15 +110,10 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   bool SetInterfaceBinderForName(std::unique_ptr<InterfaceBinder> binder,
                                  const std::string& name);
 
-  void RemoveInterfaceBinderForName(const std::string& interface_name);
-
-  mojom::InterfaceProviderPtr client_handle_;
   mojo::Binding<mojom::InterfaceProvider> binding_;
   Connection* connection_;
 
   NameToInterfaceBinderMap name_to_binder_;
-
-  mojom::InterfaceProviderPtr remote_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceRegistry);
 };

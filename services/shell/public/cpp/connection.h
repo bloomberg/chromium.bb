@@ -14,12 +14,14 @@
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_registry.h"
+#include "services/shell/public/cpp/remote_interface_registry.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace shell {
 
 class InterfaceBinder;
+class RemoteInterfaceRegistry;
 
 // Represents a connection to another application. An instance of this class is
 // returned from Shell's ConnectToApplication(), and passed to ShellClient's
@@ -86,7 +88,7 @@ class Connection {
   // interface.
   template <typename Interface>
   void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
-    GetInterfaceRegistry()->GetInterface(ptr);
+    GetRemoteInterfaceRegistry()->GetInterface(ptr);
   }
 
   // Returns true if the remote application has the specified capability class
@@ -138,11 +140,17 @@ class Connection {
   // remote application.
   virtual bool AllowsInterface(const std::string& interface_name) const = 0;
 
-  // Returns the InterfaceRegistry that encapsulates the pair of
-  // InterfaceProviders between this application and the remote.
-  virtual InterfaceRegistry* GetInterfaceRegistry() = 0;
+  // Returns a raw pointer to the InterfaceProvider at the remote end.
+  virtual mojom::InterfaceProvider* GetRemoteInterfaceProvider() = 0;
 
  protected:
+  // Returns the InterfaceRegistry that implements the mojom::InterfaceProvider
+  // exposed to the remote application.
+  virtual InterfaceRegistry* GetInterfaceRegistry() = 0;
+
+  // Returns an object encapsulating a remote InterfaceProvider.
+  virtual RemoteInterfaceRegistry* GetRemoteInterfaceRegistry() = 0;
+
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 

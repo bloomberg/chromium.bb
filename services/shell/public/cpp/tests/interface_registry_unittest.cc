@@ -42,7 +42,7 @@ TEST(InterfaceRegistryTest, Ownership) {
     InterfaceBinder* b = new TestBinder(&delete_count);
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
-    test_api.RemoveInterfaceBinderForName("TC1");
+    registry->RemoveInterface("TC1");
     registry.reset();
     EXPECT_EQ(2, delete_count);
   }
