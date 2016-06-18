@@ -53,11 +53,13 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
 
   shell::mojom::InterfaceProviderPtr exposed_services_a;
   registry_a->Bind(GetProxy(&exposed_services_a));
-  registry_b->BindRemoteServiceProvider(std::move(exposed_services_a));
+  mojo::FuseInterface(registry_b->TakeRemoteRequest(),
+                      exposed_services_a.PassInterface());
 
   shell::mojom::InterfaceProviderPtr exposed_services_b;
   registry_b->Bind(GetProxy(&exposed_services_b));
-  registry_a->BindRemoteServiceProvider(std::move(exposed_services_b));
+  mojo::FuseInterface(registry_a->TakeRemoteRequest(),
+                      exposed_services_b.PassInterface());
 
   content::ServiceRegistryAndroid* wrapper_a =
       ServiceRegistryAndroid::Create(registry_a).release();

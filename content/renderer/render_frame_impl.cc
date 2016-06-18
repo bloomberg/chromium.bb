@@ -1106,6 +1106,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
 #endif
+      frame_binding_(this),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
@@ -1599,11 +1600,11 @@ void RenderFrameImpl::OnNavigate(
                    std::unique_ptr<StreamOverrideParameters>());
 }
 
-void RenderFrameImpl::BindServiceRegistry(
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr exposed_services) {
-  service_registry_.Bind(std::move(services));
-  service_registry_.BindRemoteServiceProvider(std::move(exposed_services));
+void RenderFrameImpl::Bind(mojom::FrameRequest request,
+                           mojom::FrameHostPtr host) {
+  frame_binding_.Bind(std::move(request));
+  frame_host_ = std::move(host);
+  frame_host_->GetInterfaceProvider(service_registry_.TakeRemoteRequest());
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -2508,6 +2509,13 @@ bool RenderFrameImpl::IsUsingLoFi() const {
 
 bool RenderFrameImpl::IsPasting() const {
   return is_pasting_;
+}
+
+// mojom::Frame implementation -------------------------------------------------
+
+void RenderFrameImpl::GetInterfaceProvider(
+    shell::mojom::InterfaceProviderRequest request) {
+  service_registry_.Bind(std::move(request));
 }
 
 // blink::WebFrameClient implementation ----------------------------------------

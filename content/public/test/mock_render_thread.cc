@@ -27,8 +27,7 @@ MockRenderThread::MockRenderThread()
       new_window_routing_id_(0),
       new_window_main_frame_routing_id_(0),
       new_window_main_frame_widget_routing_id_(0),
-      new_frame_routing_id_(0),
-      service_registry_(new ServiceRegistryImpl) {}
+      new_frame_routing_id_(0) {}
 
 MockRenderThread::~MockRenderThread() {
   while (!filters_.empty()) {
@@ -185,7 +184,8 @@ void MockRenderThread::ReleaseCachedFonts() {
 #endif  // OS_WIN
 
 ServiceRegistry* MockRenderThread::GetServiceRegistry() {
-  DCHECK(service_registry_);
+  if (!service_registry_)
+    service_registry_.reset(new ServiceRegistryImpl);
   return service_registry_.get();
 }
 

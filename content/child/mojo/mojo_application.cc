@@ -30,9 +30,9 @@ void MojoApplication::InitWithToken(const std::string& token) {
   shell::mojom::InterfaceProviderPtr services;
   shell::mojom::InterfaceProviderPtr exposed_services;
   service_registry_.Bind(GetProxy(&exposed_services));
-  application_setup->ExchangeInterfaceProviders(GetProxy(&services),
-                                                std::move(exposed_services));
-  service_registry_.BindRemoteServiceProvider(std::move(services));
+  application_setup->ExchangeInterfaceProviders(
+      service_registry_.TakeRemoteRequest(),
+      std::move(exposed_services));
 }
 
 }  // namespace content

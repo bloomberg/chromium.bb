@@ -230,10 +230,10 @@ mojom("mojo_bindings") {
 
   sources = [
     "application_setup.mojom",
+    "frame.mojom",
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",
     "process_control.mojom",
-    "render_frame_setup.mojom",
     "render_widget_window_tree_client_factory.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "storage_partition_service.mojom",

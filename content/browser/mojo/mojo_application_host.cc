@@ -13,6 +13,8 @@
 namespace content {
 namespace {
 
+// TODO(beng): remove this in favor of just using shell APIs directly.
+//             http://crbug.com/2072603002
 class ApplicationSetupImpl : public mojom::ApplicationSetup {
  public:
   ApplicationSetupImpl(ServiceRegistryImpl* service_registry,
@@ -29,7 +31,8 @@ class ApplicationSetupImpl : public mojom::ApplicationSetup {
       shell::mojom::InterfaceProviderRequest services,
       shell::mojom::InterfaceProviderPtr exposed_services) override {
     service_registry_->Bind(std::move(services));
-    service_registry_->BindRemoteServiceProvider(std::move(exposed_services));
+    mojo::FuseInterface(service_registry_->TakeRemoteRequest(),
+                        exposed_services.PassInterface());
   }
 
   mojo::Binding<mojom::ApplicationSetup> binding_;

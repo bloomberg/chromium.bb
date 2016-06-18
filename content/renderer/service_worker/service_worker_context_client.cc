@@ -43,6 +43,7 @@
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -276,8 +277,8 @@ void ServiceWorkerContextClient::BindServiceRegistry(
     shell::mojom::InterfaceProviderRequest services,
     shell::mojom::InterfaceProviderPtr exposed_services) {
   context_->service_registry.Bind(std::move(services));
-  context_->service_registry.BindRemoteServiceProvider(
-      std::move(exposed_services));
+  mojo::FuseInterface(context_->service_registry.TakeRemoteRequest(),
+                      exposed_services.PassInterface());
 }
 
 blink::WebURL ServiceWorkerContextClient::scope() const {

@@ -24,6 +24,7 @@
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,8 +105,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   render_process_service_registry_.ServiceRegistry::AddService(
       base::Bind(&MockEmbeddedWorkerSetup::Create, weak_factory_.GetWeakPtr()));
   shell::mojom::InterfaceProviderPtr services;
-  render_process_service_registry_.Bind(mojo::GetProxy(&services));
-  host_service_registry->BindRemoteServiceProvider(std::move(services));
+  render_process_service_registry_.Bind(
+      host_service_registry->TakeRemoteRequest());
   render_process_host_->SetServiceRegistry(std::move(host_service_registry));
 }
 
@@ -426,7 +427,11 @@ void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     shell::mojom::InterfaceProviderPtr exposed_services) {
   std::unique_ptr<ServiceRegistryImpl> new_registry(new ServiceRegistryImpl);
   new_registry->Bind(std::move(services));
-  new_registry->BindRemoteServiceProvider(std::move(exposed_services));
+  // TODO(beng): this shouldn't be necessary once we adjust this API to look
+  //             more like the one we've created for Frame.
+  //             http://crbug.com/621187
+  mojo::FuseInterface(new_registry->TakeRemoteRequest(),
+                      exposed_services.PassInterface());
   OnSetupMojo(new_registry.get());
   thread_id_service_registry_map_.add(thread_id, std::move(new_registry));
 }

@@ -23,6 +23,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_mode_enums.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/console_message_level.h"
@@ -164,6 +165,7 @@ struct StreamOverrideParameters;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
+      NON_EXPORTED_BASE(mojom::Frame),
       NON_EXPORTED_BASE(public blink::WebFrameClient),
       NON_EXPORTED_BASE(public blink::WebFrameSerializerClient) {
  public:
@@ -423,6 +425,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsUsingLoFi() const override;
   bool IsPasting() const override;
 
+  // mojom::Frame implementation:
+  void GetInterfaceProvider(
+      shell::mojom::InterfaceProviderRequest request) override;
+
   // blink::WebFrameClient implementation:
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params) override;
@@ -633,9 +639,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrameSerializerClient::FrameSerializationStatus status)
       override;
 
-  // Binds this render frame's service registry.
-  void BindServiceRegistry(shell::mojom::InterfaceProviderRequest services,
-                           shell::mojom::InterfaceProviderPtr exposed_services);
+  // Binds to the FrameHost in the browser.
+  void Bind(mojom::FrameRequest frame, mojom::FrameHostPtr frame_host);
 
   ManifestManager* manifest_manager();
 
@@ -1277,6 +1282,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // the RenderFrameImpl to NULL it out when it destructs.
   PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
+
+  mojo::Binding<mojom::Frame> frame_binding_;
+  mojom::FrameHostPtr frame_host_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

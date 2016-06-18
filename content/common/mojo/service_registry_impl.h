@@ -30,8 +30,7 @@ class CONTENT_EXPORT ServiceRegistryImpl
 
   // ServiceRegistry overrides.
   void Bind(shell::mojom::InterfaceProviderRequest request) override;
-  void BindRemoteServiceProvider(
-      shell::mojom::InterfaceProviderPtr service_provider) override;
+  shell::mojom::InterfaceProviderRequest TakeRemoteRequest() override;
   void AddService(
       const std::string& service_name,
       const ServiceFactory& service_factory,
@@ -61,13 +60,12 @@ class CONTENT_EXPORT ServiceRegistryImpl
 
   mojo::Binding<shell::mojom::InterfaceProvider> binding_;
   shell::mojom::InterfaceProviderPtr remote_provider_;
+  shell::mojom::InterfaceProviderRequest remote_provider_request_;
 
   std::map<
       std::string,
       std::pair<ServiceFactory, scoped_refptr<base::SingleThreadTaskRunner>>>
       service_factories_;
-  std::queue<std::pair<std::string, mojo::MessagePipeHandle> >
-      pending_connects_;
 
   std::map<std::string, ServiceFactory> service_overrides_;
 

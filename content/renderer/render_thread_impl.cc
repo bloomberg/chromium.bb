@@ -74,7 +74,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu_process_launch_causes.h"
-#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
@@ -316,16 +315,16 @@ void NotifyTimezoneChangeOnThisThread() {
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
 }
 
-class RenderFrameSetupImpl : public mojom::RenderFrameSetup {
+class FrameFactoryImpl : public mojom::FrameFactory {
  public:
-  explicit RenderFrameSetupImpl(
-      mojo::InterfaceRequest<mojom::RenderFrameSetup> request)
+  explicit FrameFactoryImpl(mojom::FrameFactoryRequest request)
       : routing_id_highmark_(-1), binding_(this, std::move(request)) {}
 
-  void ExchangeInterfaceProviders(
-      int32_t frame_routing_id,
-      shell::mojom::InterfaceProviderRequest services,
-      shell::mojom::InterfaceProviderPtr exposed_services) override {
+ private:
+  // mojom::FrameFactory:
+  void CreateFrame(int32_t frame_routing_id,
+                   mojom::FrameRequest frame_request,
+                   mojom::FrameHostPtr frame_host) override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
     // should be removed once it is fixed.
     CHECK_LT(routing_id_highmark_, frame_routing_id);
@@ -336,23 +335,21 @@ class RenderFrameSetupImpl : public mojom::RenderFrameSetup {
     // created due to a race between the message and a ViewMsg_New IPC that
     // triggers creation of the RenderFrame we want.
     if (!frame) {
-      RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, std::move(services), std::move(exposed_services));
+      RenderThreadImpl::current()->RegisterPendingFrameCreate(
+          frame_routing_id, std::move(frame_request), std::move(frame_host));
       return;
     }
 
-    frame->BindServiceRegistry(std::move(services),
-                               std::move(exposed_services));
+    frame->Bind(std::move(frame_request), std::move(frame_host));
   }
 
  private:
   int32_t routing_id_highmark_;
-  mojo::StrongBinding<mojom::RenderFrameSetup> binding_;
+  mojo::StrongBinding<mojom::FrameFactory> binding_;
 };
 
-void CreateRenderFrameSetup(
-    mojo::InterfaceRequest<mojom::RenderFrameSetup> request) {
-  new RenderFrameSetupImpl(std::move(request));
+void CreateFrameFactory(mojom::FrameFactoryRequest request) {
+  new FrameFactoryImpl(std::move(request));
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
@@ -823,7 +820,7 @@ void RenderThreadImpl::Init(
   GetContentClient()->renderer()->RegisterProcessMojoServices(
       service_registry());
 
-  service_registry()->AddService(base::Bind(CreateRenderFrameSetup));
+  service_registry()->AddService(base::Bind(CreateFrameFactory));
   service_registry()->AddService(base::Bind(CreateEmbeddedWorkerSetup));
 
 #if defined(MOJO_SHELL_CLIENT)
@@ -1024,24 +1021,17 @@ RenderThreadImpl::GetIOMessageLoopProxy() {
 
 void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
-  PendingRenderFrameConnectMap::iterator it =
-      pending_render_frame_connects_.find(routing_id);
-  if (it == pending_render_frame_connects_.end())
+  auto it = pending_frame_creates_.find(routing_id);
+  if (it == pending_frame_creates_.end())
     return;
 
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(routing_id);
   if (!frame)
     return;
 
-  scoped_refptr<PendingRenderFrameConnect> connection(it->second);
-  shell::mojom::InterfaceProviderRequest services(
-      std::move(connection->services()));
-  shell::mojom::InterfaceProviderPtr exposed_services(
-      std::move(connection->exposed_services()));
-  exposed_services.set_connection_error_handler(mojo::Closure());
-  pending_render_frame_connects_.erase(it);
-
-  frame->BindServiceRegistry(std::move(services), std::move(exposed_services));
+  scoped_refptr<PendingFrameCreate> create(it->second);
+  frame->Bind(it->second->TakeFrameRequest(), it->second->TakeFrameHost());
+  pending_frame_creates_.erase(it);
 }
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
@@ -1065,15 +1055,15 @@ void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32_t routing_id) {
   }
 }
 
-void RenderThreadImpl::RegisterPendingRenderFrameConnect(
+void RenderThreadImpl::RegisterPendingFrameCreate(
     int routing_id,
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr exposed_services) {
-  std::pair<PendingRenderFrameConnectMap::iterator, bool> result =
-      pending_render_frame_connects_.insert(std::make_pair(
+    mojom::FrameRequest frame_request,
+    mojom::FrameHostPtr frame_host) {
+  std::pair<PendingFrameCreateMap::iterator, bool> result =
+      pending_frame_creates_.insert(std::make_pair(
           routing_id,
-          make_scoped_refptr(new PendingRenderFrameConnect(
-              routing_id, std::move(services), std::move(exposed_services)))));
+          make_scoped_refptr(new PendingFrameCreate(
+              routing_id, std::move(frame_request), std::move(frame_host)))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
@@ -2059,29 +2049,27 @@ void RenderThreadImpl::ReleaseFreeMemory() {
     blink::decommitFreeableMemory();
 }
 
-RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
+RenderThreadImpl::PendingFrameCreate::PendingFrameCreate(
     int routing_id,
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr exposed_services)
+    mojom::FrameRequest frame_request,
+    mojom::FrameHostPtr frame_host)
     : routing_id_(routing_id),
-      services_(std::move(services)),
-      exposed_services_(std::move(exposed_services)) {
-  // The RenderFrame may be deleted before the ExchangeInterfaceProviders
-  // message is received. In that case, the RenderFrameHost should close the
-  // connection, which is detected by setting an error handler on
-  // |exposed_services_|.
-  exposed_services_.set_connection_error_handler(base::Bind(
-      &RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError,
+      frame_request_(std::move(frame_request)),
+      frame_host_(std::move(frame_host)) {
+  // The RenderFrame may be deleted before the CreateFrame message is received.
+  // In that case, the RenderFrameHost should cancel the create, which is
+  // detected by setting an error handler on |frame_host_|.
+  frame_host_.set_connection_error_handler(base::Bind(
+      &RenderThreadImpl::PendingFrameCreate::OnConnectionError,
       base::Unretained(this)));
 }
 
-RenderThreadImpl::PendingRenderFrameConnect::~PendingRenderFrameConnect() {
+RenderThreadImpl::PendingFrameCreate::~PendingFrameCreate() {
 }
 
-void RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError() {
+void RenderThreadImpl::PendingFrameCreate::OnConnectionError() {
   size_t erased =
-      RenderThreadImpl::current()->pending_render_frame_connects_.erase(
-          routing_id_);
+      RenderThreadImpl::current()->pending_frame_creates_.erase(routing_id_);
   DCHECK_EQ(1u, erased);
 }
 

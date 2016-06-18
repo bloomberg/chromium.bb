@@ -647,14 +647,13 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
 
   shell::mojom::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
-  shell::mojom::InterfaceProviderPtr services;
-  shell::mojom::InterfaceProviderRequest services_request = GetProxy(&services);
+  shell::mojom::InterfaceProviderRequest request =
+      service_registry_->TakeRemoteRequest();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(SetupMojoOnUIThread, process_id(), thread_id_,
-                 base::Passed(&services_request),
+                 base::Passed(&request),
                  base::Passed(exposed_services.PassInterface())));
-  service_registry_->BindRemoteServiceProvider(std::move(services));
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {

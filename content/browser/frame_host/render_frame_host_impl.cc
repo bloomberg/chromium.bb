@@ -57,7 +57,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
-#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -246,6 +245,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
+      frame_host_binding_(this),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -2384,17 +2384,13 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
     return;
 
   RegisterMojoServices();
-  mojom::RenderFrameSetupPtr setup;
+  mojom::FrameFactoryPtr frame_factory;
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
-      mojo::GetProxy(&setup));
+      mojo::GetProxy(&frame_factory));
 
-  shell::mojom::InterfaceProviderPtr exposed_services;
-  service_registry_->Bind(GetProxy(&exposed_services));
-
-  shell::mojom::InterfaceProviderPtr services;
-  setup->ExchangeInterfaceProviders(routing_id_, GetProxy(&services),
-                                    std::move(exposed_services));
-  service_registry_->BindRemoteServiceProvider(std::move(services));
+  frame_factory->CreateFrame(routing_id_, GetProxy(&frame_),
+                             frame_host_binding_.CreateInterfacePtrAndBind());
+  frame_->GetInterfaceProvider(service_registry_->TakeRemoteRequest());
 
 #if defined(OS_ANDROID)
   service_registry_android_ =
@@ -2412,6 +2408,8 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 #endif
 
   service_registry_.reset();
+  frame_.reset();
+  frame_host_binding_.Close();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
@@ -2672,6 +2670,11 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
   }
 
   Send(new FrameMsg_RunFileChooserResponse(routing_id_, files));
+}
+
+void RenderFrameHostImpl::GetInterfaceProvider(
+    shell::mojom::InterfaceProviderRequest interfaces) {
+  service_registry_->Bind(std::move(interfaces));
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

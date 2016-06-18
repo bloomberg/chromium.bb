@@ -15,13 +15,12 @@ ServiceRegistry* ServiceRegistry::Create() {
 }
 
 ServiceRegistryImpl::ServiceRegistryImpl()
-    : binding_(this), weak_factory_(this) {}
+    : binding_(this),
+      weak_factory_(this) {
+  remote_provider_request_ = GetProxy(&remote_provider_);
+}
 
 ServiceRegistryImpl::~ServiceRegistryImpl() {
-  while (!pending_connects_.empty()) {
-    mojo::CloseRaw(pending_connects_.front().second);
-    pending_connects_.pop();
-  }
 }
 
 void ServiceRegistryImpl::Bind(shell::mojom::InterfaceProviderRequest request) {
@@ -30,16 +29,9 @@ void ServiceRegistryImpl::Bind(shell::mojom::InterfaceProviderRequest request) {
       &ServiceRegistryImpl::OnConnectionError, base::Unretained(this)));
 }
 
-void ServiceRegistryImpl::BindRemoteServiceProvider(
-    shell::mojom::InterfaceProviderPtr service_provider) {
-  CHECK(!remote_provider_);
-  remote_provider_ = std::move(service_provider);
-  while (!pending_connects_.empty()) {
-    remote_provider_->GetInterface(
-        mojo::String::From(pending_connects_.front().first),
-        mojo::ScopedMessagePipeHandle(pending_connects_.front().second));
-    pending_connects_.pop();
-  }
+shell::mojom::InterfaceProviderRequest
+ServiceRegistryImpl::TakeRemoteRequest() {
+  return std::move(remote_provider_request_);
 }
 
 void ServiceRegistryImpl::AddService(
@@ -60,12 +52,6 @@ void ServiceRegistryImpl::ConnectToRemoteService(
   auto override_it = service_overrides_.find(service_name.as_string());
   if (override_it != service_overrides_.end()) {
     override_it->second.Run(std::move(handle));
-    return;
-  }
-
-  if (!remote_provider_) {
-    pending_connects_.push(
-        std::make_pair(service_name.as_string(), handle.release()));
     return;
   }
   remote_provider_->GetInterface(

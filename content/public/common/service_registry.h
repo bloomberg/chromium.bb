@@ -31,12 +31,10 @@ class CONTENT_EXPORT ServiceRegistry {
   // Binds this ServiceProvider implementation to a message pipe endpoint.
   virtual void Bind(shell::mojom::InterfaceProviderRequest request) = 0;
 
-  // Binds to a remote ServiceProvider. This will expose added services to the
-  // remote ServiceProvider with the corresponding handle and enable
-  // ConnectToRemoteService to provide access to services exposed by the remote
-  // ServiceProvider.
-  virtual void BindRemoteServiceProvider(
-      shell::mojom::InterfaceProviderPtr service_provider) = 0;
+  // ServiceRegistry is created with a bound InterfaceProviderPtr for remote
+  // interfaces, this is the server end of that pipe which should be passed
+  // to the remote end.
+  virtual shell::mojom::InterfaceProviderRequest TakeRemoteRequest() = 0;
 
   // Make the service created by |service_factory| available to the remote
   // ServiceProvider. In response to each request for a service,

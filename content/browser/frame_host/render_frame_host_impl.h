@@ -29,6 +29,7 @@
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/image_downloader/image_downloader.mojom.h"
@@ -99,9 +100,11 @@ struct FileChooserParams;
 struct Referrer;
 struct ResourceResponse;
 
-class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
-                                           public BrowserAccessibilityDelegate,
-                                           public SiteInstanceImpl::Observer {
+class CONTENT_EXPORT RenderFrameHostImpl
+    : public RenderFrameHost,
+      NON_EXPORTED_BASE(public mojom::FrameHost),
+      public BrowserAccessibilityDelegate,
+      public SiteInstanceImpl::Observer {
  public:
   using AXTreeSnapshotCallback =
       base::Callback<void(
@@ -155,6 +158,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   int GetProxyCount() override;
   void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
                               FileChooserParams::Mode permissions) override;
+
+  // mojom::FrameHost
+  void GetInterfaceProvider(
+      shell::mojom::InterfaceProviderRequest interfaces) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1018,6 +1025,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // history navigation of subframes to ensure that subframes navigate with the
   // same LoFi status as the top-level frame.
   LoFiState last_navigation_lofi_state_;
+
+  mojo::Binding<mojom::FrameHost> frame_host_binding_;
+  mojom::FramePtr frame_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

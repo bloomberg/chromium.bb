@@ -358,6 +358,7 @@ test("ash_unittests") {
     "//components/user_manager",
     "//content/public/browser",
     "//content/test:test_support",
+    "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",
