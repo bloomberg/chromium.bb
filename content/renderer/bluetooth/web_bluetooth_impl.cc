@@ -183,8 +183,12 @@ void WebBluetoothImpl::OnRequestDeviceComplete(
 void WebBluetoothImpl::GattServerDisconnected(const mojo::String& device_id) {
   auto device_iter = connected_devices_.find(device_id);
   if (device_iter != connected_devices_.end()) {
-    device_iter->second->dispatchGattServerDisconnected();
+    // Remove device from the map before calling dispatchGattServerDisconnected
+    // to avoid removing a device the gattserverdisconnected event handler might
+    // have re-connected.
+    blink::WebBluetoothDevice* device = device_iter->second;
     connected_devices_.erase(device_iter);
+    device->dispatchGattServerDisconnected();
   }
 }
 
