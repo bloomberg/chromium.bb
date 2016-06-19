@@ -2888,8 +2888,10 @@ void PaintLayer::markCompositingContainerChainForNeedsRepaint()
                 break;
             container = owner->enclosingLayer();
         }
+
         if (container->m_needsRepaint)
             break;
+
         container->setNeedsRepaintInternal();
         layer = container;
     }
@@ -2907,6 +2909,15 @@ PaintTiming* PaintLayer::paintTiming()
     if (Node* node = layoutObject()->node())
         return &PaintTiming::from(node->document());
     return nullptr;
+}
+
+void PaintLayer::endShouldKeepAliveAllClientsRecursive()
+{
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
+        child->endShouldKeepAliveAllClientsRecursive();
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    DisplayItemClient::endShouldKeepAliveAllClients(this);
+#endif
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
