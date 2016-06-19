@@ -336,12 +336,12 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
     if (t >= TWO_TOKEN && t < EOB_TOKEN) {
       int len = UNCONSTRAINED_NODES - p->skip_eob_node;
       int bits = v >> (n - len);
-      av1_write_tree(w, av1_coef_tree, p->context_tree, bits, len, i);
-      av1_write_tree(w, av1_coef_con_tree,
+      aom_write_tree(w, av1_coef_tree, p->context_tree, bits, len, i);
+      aom_write_tree(w, av1_coef_con_tree,
                      av1_pareto8_full[p->context_tree[PIVOT_NODE] - 1], v,
                      n - len, 0);
     } else {
-      av1_write_tree(w, av1_coef_tree, p->context_tree, v, n, i);
+      aom_write_tree(w, av1_coef_tree, p->context_tree, v, n, i);
     }
 
     if (b->base_val) {
@@ -382,7 +382,7 @@ static void write_segment_id(aom_writer *w, const struct segmentation *seg,
                              const struct segmentation_probs *segp,
                              int segment_id) {
   if (seg->enabled && seg->update_map)
-    av1_write_tree(w, av1_segment_tree, segp->tree_probs, segment_id, 3, 0);
+    aom_write_tree(w, av1_segment_tree, segp->tree_probs, segment_id, 3, 0);
 }
 
 // This function encodes the reference frame
