@@ -1,54 +1,36 @@
-        >
+<!DOCTYPE html>
+<title>Tests track deletion during setup.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
+<script>
+// This should not be necessary, but due to crbug.com/372245 style
+// gets dirtied during layout in LayoutTextTrackContainer which
+// causes assertions to fail when Document::scrollingElement is
+// queried during compositing update (a valid request).
+internals.settings.setCompositorWorkerEnabled(false);
+</script>
+<video>
+    <track src="captions-webvtt/metadata.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var track = document.querySelector("track");
+    setTimeout(function() {
+        video.parentNode.removeChild(video);
+    }, 61);
 
-        <script>
-            if (window.internals)
-            {
-                // This should not be necessary, but due to crbug.com/372245 style
-                // gets dirtied during layout in LayoutTextTrackContainer which
-                // causes assertions to fail when Document::scrollingElement is
-                // queried during compositing update (a valid request).
-                window.internals.settings.setCompositorWorkerEnabled(false);
-            }
-        </script>
-        <script src=../media-file.js></script>
-<script></script>
-<script></script>
-<script>setTimeout("try { var v = document.querySelector('video'); v.parentNode.removeChild(v); } catch(e) {}", 61);</script>
-<meta>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../video-test.js></script>
-        <script>
+    track.onload = t.step_func(function() {
+        var track2 = document.createElement("track");
+        video.appendChild(track2);
+        setTimeout(function() { t.done(); }, 100);
+    });
 
-            {
-            }
+    assert_equals(track.readyState, HTMLTrackElement.NONE);
+    assert_equals(track.track.mode, "disabled");
+    track.track.mode = "hidden";
 
-            function metadataTrackLoaded()
-            {
-                track2 = document.createElement('track');
-                video.appendChild(track2);
-                setTimeout("endTest()", 100);
-            }
-
-            function canplaythrough()
-            {
-                track1.track.mode = "hidden";
-                setTimeout("endTest()", 100);
-            }
-
-            function start()
-            {
-                consoleWrite("<feOffset>");
-                findMediaElement();
-
-                track1 = document.querySelectorAll('track')[0];
-                testExpected("track1.readyState", HTMLTrackElement.NONE);
-                testExpected("track1.track.mode", "disabled");
-
-                video.src = findMediaFile("video", "../content/test");
-                consoleWrite("");
-            }
-        </script>
-    <body onload="start()">
-<command><aside><kbd><video oncanplaythrough="canplaythrough()" >
-            <track src="captions-webvtt/metadata.vtt" onload="metadataTrackLoaded()">
+    video.src = findMediaFile("video", "../content/test");
+});
+</script>
