@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -16,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -137,7 +137,7 @@ class AssociatedBinding {
   // This method may only be called after this AssociatedBinding has been bound
   // to a message pipe. The error handler will be reset when this
   // AssociatedBinding is unbound or closed.
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
@@ -164,7 +164,7 @@ class AssociatedBinding {
 
   typename Interface::Stub_ stub_;
   Interface* impl_;
-  Closure connection_error_handler_;
+  base::Closure connection_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedBinding);
 };

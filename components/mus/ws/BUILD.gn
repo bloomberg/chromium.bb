@@ -101,7 +101,7 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//mojo/common:common_base",
-    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/tracing/public/cpp",

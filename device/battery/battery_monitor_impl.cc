@@ -30,7 +30,7 @@ BatteryMonitorImpl::~BatteryMonitorImpl() {
 }
 
 void BatteryMonitorImpl::QueryNextStatus(
-    const BatteryStatusCallback& callback) {
+    const QueryNextStatusCallback& callback) {
   if (!callback_.is_null()) {
     DVLOG(1) << "Overlapped call to QueryNextStatus!";
     delete this;

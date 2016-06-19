@@ -23,8 +23,8 @@ class ProviderImpl : public sample::Provider {
       : binding_(this, std::move(request)) {}
 
   void EchoString(const String& a,
-                  const Callback<void(String)>& callback) override {
-    Callback<void(String)> callback_copy;
+                  const EchoStringCallback& callback) override {
+    EchoStringCallback callback_copy;
     // Make sure operator= is used.
     callback_copy = callback;
     callback_copy.Run(a);
@@ -32,18 +32,17 @@ class ProviderImpl : public sample::Provider {
 
   void EchoStrings(const String& a,
                    const String& b,
-                   const Callback<void(String, String)>& callback) override {
+                   const EchoStringsCallback& callback) override {
     callback.Run(a, b);
   }
 
   void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
-      const Callback<void(ScopedMessagePipeHandle)>& callback) override {
+      const EchoMessagePipeHandleCallback& callback) override {
     callback.Run(std::move(a));
   }
 
-  void EchoEnum(sample::Enum a,
-                const Callback<void(sample::Enum)>& callback) override {
+  void EchoEnum(sample::Enum a, const EchoEnumCallback& callback) override {
     callback.Run(a);
   }
 

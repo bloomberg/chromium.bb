@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/leveldb_service_impl.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/user/user_id_map.h"
 #include "services/user/user_service.h"

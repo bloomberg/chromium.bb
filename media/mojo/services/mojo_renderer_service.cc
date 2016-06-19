@@ -36,11 +36,10 @@ MojoRendererService::MojoRendererService(
 MojoRendererService::~MojoRendererService() {
 }
 
-void MojoRendererService::Initialize(
-    mojom::RendererClientPtr client,
-    mojom::DemuxerStreamPtr audio,
-    mojom::DemuxerStreamPtr video,
-    const mojo::Callback<void(bool)>& callback) {
+void MojoRendererService::Initialize(mojom::RendererClientPtr client,
+                                     mojom::DemuxerStreamPtr audio,
+                                     mojom::DemuxerStreamPtr video,
+                                     const InitializeCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   client_ = std::move(client);
@@ -50,7 +49,7 @@ void MojoRendererService::Initialize(
       base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
 }
 
-void MojoRendererService::Flush(const mojo::Closure& callback) {
+void MojoRendererService::Flush(const FlushCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_PLAYING);
 
@@ -78,7 +77,7 @@ void MojoRendererService::SetVolume(float volume) {
 }
 
 void MojoRendererService::SetCdm(int32_t cdm_id,
-                                 const mojo::Callback<void(bool)>& callback) {
+                                 const SetCdmCallback& callback) {
   if (!mojo_cdm_service_context_) {
     DVLOG(1) << "CDM service context not available.";
     callback.Run(false);
@@ -139,7 +138,7 @@ void MojoRendererService::OnVideoOpacityChange(bool opaque) {
 }
 
 void MojoRendererService::OnStreamReady(
-    const mojo::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool)>& callback) {
   DCHECK_EQ(state_, STATE_INITIALIZING);
 
   renderer_->Initialize(
@@ -149,7 +148,7 @@ void MojoRendererService::OnStreamReady(
 }
 
 void MojoRendererService::OnRendererInitializeDone(
-    const mojo::Callback<void(bool)>& callback,
+    const base::Callback<void(bool)>& callback,
     PipelineStatus status) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_INITIALIZING);
@@ -188,7 +187,7 @@ void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
       base::Bind(&MojoRendererService::UpdateMediaTime, weak_this_, false));
 }
 
-void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {
+void MojoRendererService::OnFlushCompleted(const FlushCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_FLUSHING);
   state_ = STATE_PLAYING;
@@ -197,7 +196,7 @@ void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {
 
 void MojoRendererService::OnCdmAttached(
     scoped_refptr<MediaKeys> cdm,
-    const mojo::Callback<void(bool)>& callback,
+    const base::Callback<void(bool)>& callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << "(" << success << ")";
 

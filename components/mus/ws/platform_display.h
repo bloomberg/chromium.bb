@@ -21,7 +21,6 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/platform_display_delegate.h"
 #include "components/mus/ws/platform_display_init_params.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 

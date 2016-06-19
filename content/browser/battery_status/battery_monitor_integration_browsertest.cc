@@ -54,13 +54,11 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
   }
 
  private:
-  typedef mojo::Callback<void(device::BatteryStatusPtr)> BatteryStatusCallback;
-
   FakeBatteryMonitor(mojo::InterfaceRequest<BatteryMonitor> request)
       : binding_(this, std::move(request)) {}
   ~FakeBatteryMonitor() override {}
 
-  void QueryNextStatus(const BatteryStatusCallback& callback) override {
+  void QueryNextStatus(const QueryNextStatusCallback& callback) override {
     // We don't expect overlapped calls to QueryNextStatus.
     DCHECK(callback_.is_null());
 
@@ -84,7 +82,7 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
 
   std::unique_ptr<BatteryUpdateSubscription> subscription_;
   mojo::StrongBinding<BatteryMonitor> binding_;
-  BatteryStatusCallback callback_;
+  QueryNextStatusCallback callback_;
 };
 
 // Overrides the default service implementation with the test implementation

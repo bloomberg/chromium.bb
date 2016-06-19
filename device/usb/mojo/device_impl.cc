@@ -27,30 +27,9 @@ namespace usb {
 namespace {
 
 using MojoTransferInCallback =
-    mojo::Callback<void(TransferStatus, mojo::Array<uint8_t>)>;
+    base::Callback<void(TransferStatus, mojo::Array<uint8_t>)>;
 
-using MojoTransferOutCallback = mojo::Callback<void(TransferStatus)>;
-
-template <typename... Args>
-void CallMojoCallback(std::unique_ptr<mojo::Callback<void(Args...)>> callback,
-                      Args... args) {
-  callback->Run(args...);
-}
-
-// Generic wrapper to convert a Mojo callback to something we can rebind and
-// pass around. This is only usable for callbacks with no move-only arguments.
-template <typename... Args>
-base::Callback<void(Args...)> WrapMojoCallback(
-    const mojo::Callback<void(Args...)>& callback) {
-  // mojo::Callback is not thread safe. By wrapping |callback| in a scoped_ptr
-  // we guarantee that it will be freed when CallMojoCallback is run and not
-  // retained until the base::Callback is destroyed, which could happen on any
-  // thread. This pattern is also used below in places where this generic
-  // wrapper is not used.
-  auto callback_ptr =
-      base::WrapUnique(new mojo::Callback<void(Args...)>(callback));
-  return base::Bind(&CallMojoCallback<Args...>, base::Passed(&callback_ptr));
-}
+using MojoTransferOutCallback = base::Callback<void(TransferStatus)>;
 
 scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(
@@ -257,7 +236,7 @@ void DeviceImpl::SetConfiguration(uint8_t value,
 
   if (permission_provider_ &&
       permission_provider_->HasConfigurationPermission(value, device_)) {
-    device_handle_->SetConfiguration(value, WrapMojoCallback(callback));
+    device_handle_->SetConfiguration(value, callback);
   } else {
     callback.Run(false);
   }
@@ -290,8 +269,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
       permission_provider_->HasFunctionPermission(interface_it->first_interface,
                                                   config->configuration_value,
                                                   device_)) {
-    device_handle_->ClaimInterface(interface_number,
-                                   WrapMojoCallback(callback));
+    device_handle_->ClaimInterface(interface_number, callback);
   } else {
     callback.Run(false);
   }
@@ -304,8 +282,7 @@ void DeviceImpl::ReleaseInterface(uint8_t interface_number,
     return;
   }
 
-  device_handle_->ReleaseInterface(interface_number,
-                                   WrapMojoCallback(callback));
+  device_handle_->ReleaseInterface(interface_number, callback);
 }
 
 void DeviceImpl::SetInterfaceAlternateSetting(
@@ -317,8 +294,8 @@ void DeviceImpl::SetInterfaceAlternateSetting(
     return;
   }
 
-  device_handle_->SetInterfaceAlternateSetting(
-      interface_number, alternate_setting, WrapMojoCallback(callback));
+  device_handle_->SetInterfaceAlternateSetting(interface_number,
+                                               alternate_setting, callback);
 }
 
 void DeviceImpl::Reset(const ResetCallback& callback) {
@@ -327,7 +304,7 @@ void DeviceImpl::Reset(const ResetCallback& callback) {
     return;
   }
 
-  device_handle_->ResetDevice(WrapMojoCallback(callback));
+  device_handle_->ResetDevice(callback);
 }
 
 void DeviceImpl::ClearHalt(uint8_t endpoint,
@@ -337,7 +314,7 @@ void DeviceImpl::ClearHalt(uint8_t endpoint,
     return;
   }
 
-  device_handle_->ClearHalt(endpoint, WrapMojoCallback(callback));
+  device_handle_->ClearHalt(endpoint, callback);
 }
 
 void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,

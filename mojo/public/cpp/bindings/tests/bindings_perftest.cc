@@ -29,13 +29,13 @@ class PingServiceImpl : public test::PingService {
   ~PingServiceImpl() override {}
 
   // |PingService| methods:
-  void Ping(const Callback<void()>& callback) override;
+  void Ping(const PingCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
-void PingServiceImpl::Ping(const Callback<void()>& callback) {
+void PingServiceImpl::Ping(const PingCallback& callback) {
   callback.Run();
 }
 

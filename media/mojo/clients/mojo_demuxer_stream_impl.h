@@ -5,6 +5,7 @@
 #ifndef MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
 #define MEDIA_MOJO_CLIENTS_MOJO_DEMUXER_STREAM_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream.h"
@@ -33,7 +34,7 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
 
   // Sets an error handler that will be called if a connection error occurs on
   // the bound message pipe.
-  void set_connection_error_handler(const mojo::Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     binding_.set_connection_error_handler(error_handler);
   }
 

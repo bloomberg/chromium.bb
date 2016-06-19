@@ -12,13 +12,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
@@ -61,7 +61,7 @@ class InterfacePtrState<Interface, false> {
 
   uint32_t version() const { return version_; }
 
-  void QueryVersion(const Callback<void(uint32_t)>& callback) {
+  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
     // Do a static cast in case the interface contains methods with the same
@@ -128,7 +128,7 @@ class InterfacePtrState<Interface, false> {
     return router_ ? router_->encountered_error() : false;
   }
 
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     ConfigureProxyIfNecessary();
 
     DCHECK(router_);
@@ -170,7 +170,7 @@ class InterfacePtrState<Interface, false> {
     proxy_ = new Proxy(router_);
   }
 
-  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
                       uint32_t version) {
     version_ = version;
     callback.Run(version);
@@ -213,7 +213,7 @@ class InterfacePtrState<Interface, true> {
 
   uint32_t version() const { return version_; }
 
-  void QueryVersion(const Callback<void(uint32_t)>& callback) {
+  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
 
@@ -287,7 +287,7 @@ class InterfacePtrState<Interface, true> {
     return endpoint_client_ ? endpoint_client_->encountered_error() : false;
   }
 
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     ConfigureProxyIfNecessary();
 
     DCHECK(endpoint_client_);
@@ -333,7 +333,7 @@ class InterfacePtrState<Interface, true> {
     proxy_->serialization_context()->router = endpoint_client_->router();
   }
 
-  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
                       uint32_t version) {
     version_ = version;
     callback.Run(version);

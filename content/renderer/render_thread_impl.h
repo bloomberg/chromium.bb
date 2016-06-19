@@ -671,7 +671,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
     mojom::FrameRequest TakeFrameRequest() { return std::move(frame_request_); }
     mojom::FrameHostPtr TakeFrameHost() {
-      frame_host_.set_connection_error_handler(mojo::Closure());
+      frame_host_.set_connection_error_handler(base::Closure());
       return std::move(frame_host_);
     }
 

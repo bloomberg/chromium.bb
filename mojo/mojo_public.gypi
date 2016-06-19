@@ -17,7 +17,6 @@
       'public/cpp/bindings/associated_interface_request.h',
       'public/cpp/bindings/binding.h',
       'public/cpp/bindings/binding_set.h',
-      'public/cpp/bindings/callback.h',
       'public/cpp/bindings/enum_traits.h',
       'public/cpp/bindings/interface_ptr.h',
       'public/cpp/bindings/interface_ptr_set.h',

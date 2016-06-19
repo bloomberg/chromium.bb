@@ -117,7 +117,6 @@ source_set("bindings") {
   ]
 
   public_deps = [
-    ":callback",
     ":struct_traits",
     "//base",
     "//ipc:param_traits",
@@ -127,16 +126,6 @@ source_set("bindings") {
   deps = [
     "//base",
     "//mojo/public/interfaces/bindings:bindings_cpp_sources",
-  ]
-}
-
-source_set("callback") {
-  sources = [
-    "callback.h",
-  ]
-
-  public_deps = [
-    "//base",
   ]
 }
 

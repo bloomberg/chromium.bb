@@ -27,9 +27,7 @@ class StashServiceImpl : public StashService {
 
   // StashService overrides.
   void AddToStash(mojo::Array<StashedObjectPtr> stash) override;
-  void RetrieveStash(
-      const mojo::Callback<void(mojo::Array<StashedObjectPtr> stash)>& callback)
-      override;
+  void RetrieveStash(const RetrieveStashCallback& callback) override;
 
  private:
   mojo::StrongBinding<StashService> binding_;
@@ -52,8 +50,7 @@ void StashServiceImpl::AddToStash(
   backend_->AddToStash(std::move(stashed_objects));
 }
 
-void StashServiceImpl::RetrieveStash(
-    const mojo::Callback<void(mojo::Array<StashedObjectPtr>)>& callback) {
+void StashServiceImpl::RetrieveStash(const RetrieveStashCallback& callback) {
   if (!backend_) {
     callback.Run(mojo::Array<StashedObjectPtr>());
     return;

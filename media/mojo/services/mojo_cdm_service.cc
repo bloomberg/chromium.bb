@@ -125,7 +125,7 @@ void MojoCdmService::Initialize(const mojo::String& key_system,
 
 void MojoCdmService::SetServerCertificate(
     mojo::Array<uint8_t> certificate_data,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) {
+    const SetServerCertificateCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->SetServerCertificate(
       certificate_data.storage(),
@@ -136,8 +136,7 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
     mojom::ContentDecryptionModule::SessionType session_type,
     mojom::ContentDecryptionModule::InitDataType init_data_type,
     mojo::Array<uint8_t> init_data,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr, mojo::String)>&
-        callback) {
+    const CreateSessionAndGenerateRequestCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->CreateSessionAndGenerateRequest(
       static_cast<MediaKeys::SessionType>(session_type),
@@ -148,35 +147,31 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
 void MojoCdmService::LoadSession(
     mojom::ContentDecryptionModule::SessionType session_type,
     const mojo::String& session_id,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr, mojo::String)>&
-        callback) {
+    const LoadSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->LoadSession(static_cast<MediaKeys::SessionType>(session_type),
                     session_id.To<std::string>(),
                     base::WrapUnique(new NewSessionMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::UpdateSession(
-    const mojo::String& session_id,
-    mojo::Array<uint8_t> response,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) {
+void MojoCdmService::UpdateSession(const mojo::String& session_id,
+                                   mojo::Array<uint8_t> response,
+                                   const UpdateSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->UpdateSession(
       session_id.To<std::string>(), response.storage(),
       std::unique_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::CloseSession(
-    const mojo::String& session_id,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) {
+void MojoCdmService::CloseSession(const mojo::String& session_id,
+                                  const CloseSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->CloseSession(session_id.To<std::string>(),
                      base::WrapUnique(new SimpleMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::RemoveSession(
-    const mojo::String& session_id,
-    const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) {
+void MojoCdmService::RemoveSession(const mojo::String& session_id,
+                                   const RemoveSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->RemoveSession(session_id.To<std::string>(),
                       base::WrapUnique(new SimpleMojoCdmPromise(callback)));

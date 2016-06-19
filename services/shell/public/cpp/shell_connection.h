@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/connector.mojom.h"

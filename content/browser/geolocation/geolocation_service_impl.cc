@@ -122,7 +122,7 @@ void GeolocationServiceImpl::SetHighAccuracy(bool high_accuracy) {
 }
 
 void GeolocationServiceImpl::QueryNextPosition(
-    const PositionCallback& callback) {
+    const QueryNextPositionCallback& callback) {
   if (!position_callback_.is_null()) {
     DVLOG(1) << "Overlapped call to QueryNextPosition!";
     OnConnectionError();  // Simulate a connection error.

@@ -12,13 +12,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
@@ -51,7 +51,7 @@ class AssociatedInterfacePtrState {
     return endpoint_client_->interface_id();
   }
 
-  void QueryVersion(const Callback<void(uint32_t)>& callback) {
+  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     // Do a static cast in case the interface contains methods with the same
     // name. It is safe to capture |this| because the callback won't be run
     // after this object goes away.
@@ -108,7 +108,7 @@ class AssociatedInterfacePtrState {
     return endpoint_client_ ? endpoint_client_->encountered_error() : false;
   }
 
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(endpoint_client_);
     endpoint_client_->set_connection_error_handler(error_handler);
   }
@@ -125,7 +125,7 @@ class AssociatedInterfacePtrState {
  private:
   using Proxy = typename Interface::Proxy_;
 
-  void OnQueryVersion(const Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
                       uint32_t version) {
     version_ = version;
     callback.Run(version);
