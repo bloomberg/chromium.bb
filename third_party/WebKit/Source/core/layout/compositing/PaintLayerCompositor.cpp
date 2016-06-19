@@ -55,6 +55,7 @@
 #include "core/paint/FramePainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/Histogram.h"
+#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -646,12 +647,12 @@ bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer)
     return false;
 }
 
-String PaintLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
+PassRefPtr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(LayerTreeFlags flags) const
 {
     ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean || m_layoutView.frameView()->shouldThrottleRendering());
 
     if (!m_rootContentLayer)
-        return String();
+        return nullptr;
 
     // We skip dumping the scroll and clip layers to keep layerTreeAsText output
     // similar between platforms (unless we explicitly request dumping from the
@@ -660,7 +661,7 @@ String PaintLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     if (flags & LayerTreeIncludesRootLayer)
         rootLayer = rootGraphicsLayer();
 
-    return rootLayer->layerTreeAsText(flags);
+    return rootLayer->layerTreeAsJSON(flags);
 }
 
 PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(LayoutPart* layoutObject)

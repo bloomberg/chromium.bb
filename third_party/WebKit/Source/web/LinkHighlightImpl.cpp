@@ -367,7 +367,7 @@ void LinkHighlightImpl::updateGeometry()
             // we can just re-position the layer without needing to repaint.
             m_contentLayer->layer()->invalidate();
 
-            if (m_currentGraphicsLayer && m_currentGraphicsLayer->isTrackingOrCheckingPaintInvalidations())
+            if (m_currentGraphicsLayer)
                 m_currentGraphicsLayer->trackPaintInvalidation(LinkHighlightDisplayItemClientForTracking(), enclosingIntRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height)), PaintInvalidationFull);
         }
     } else {

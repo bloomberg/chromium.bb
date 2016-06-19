@@ -186,10 +186,6 @@ public:
 
     void setContentsNeedsDisplay();
 
-    // This is called only if we are tracking paint invalidation for testing, or ENABLE(ASSERT)
-    // for error checking and debugging.
-    void displayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
-
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);
 
@@ -201,14 +197,13 @@ public:
     // For hosting this GraphicsLayer in a native layer hierarchy.
     WebLayer* platformLayer() const;
 
-    typedef HashMap<int, int> RenderingContextMap;
-    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags, RenderingContextMap&) const;
-
     int paintCount() const { return m_paintCount; }
 
     // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
+
+    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
 
     void setTracksPaintInvalidations(bool);
     bool isTrackingOrCheckingPaintInvalidations() const
@@ -300,6 +295,9 @@ private:
     void setupContentsLayer(WebLayer*);
     void clearContentsLayerIfUnregistered();
     WebLayer* contentsLayerIfRegistered();
+
+    typedef HashMap<int, int> RenderingContextMap;
+    PassRefPtr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
 
 #if DCHECK_IS_ON()
     PassRefPtr<SkPicture> capturePicture();

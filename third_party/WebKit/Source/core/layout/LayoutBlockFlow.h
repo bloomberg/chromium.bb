@@ -379,7 +379,7 @@ private:
 
     void invalidatePaintForOverhangingFloats(bool paintAllDescendants) final;
     void invalidatePaintForOverflow() final;
-    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const override;
+    void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
     void clearFloats(EClear);
 

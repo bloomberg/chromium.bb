@@ -2829,9 +2829,9 @@ void LayoutBlockFlow::invalidatePaintForOverflow()
     m_paintInvalidationLogicalBottom = LayoutUnit();
 }
 
-void LayoutBlockFlow::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
+void LayoutBlockFlow::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const
 {
-    LayoutBlock::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
+    LayoutBlock::invalidateDisplayItemClients(invalidationReason);
 
     // If the block is a continuation or containing block of an inline continuation, invalidate the
     // start object of the continuations if it has focus ring because change of continuation may change
@@ -2849,7 +2849,7 @@ void LayoutBlockFlow::invalidateDisplayItemClients(const LayoutBoxModelObject& p
             startOfContinuations = firstChild->node()->layoutObject();
     }
     if (startOfContinuations && startOfContinuations->styleRef().outlineStyleIsAuto())
-        startOfContinuations->invalidateDisplayItemClient(*startOfContinuations);
+        startOfContinuations->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*startOfContinuations, invalidationReason);
 }
 
 void LayoutBlockFlow::clearFloats(EClear clear)

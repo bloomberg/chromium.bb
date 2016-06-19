@@ -292,10 +292,6 @@ public:
     // The rect is in the physical coordinate space of this layout object.
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason, const LayoutObject&) const;
 
-    // The third parameter should be equal to the DisplayItemClient if it happens to be a LayoutObject subclass. It is only used
-    // for debugging.
-    void invalidateDisplayItemClientOnBacking(const DisplayItemClient&, PaintInvalidationReason, const LayoutObject* = nullptr) const;
-
     // http://www.w3.org/TR/css3-background/#body-background
     // <html> root element with no background steals background from its first <body> child.
     // The used background for such body element should be the initial value. (i.e. transparent)

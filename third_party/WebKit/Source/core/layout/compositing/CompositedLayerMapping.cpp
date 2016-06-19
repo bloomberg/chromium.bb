@@ -2139,20 +2139,6 @@ void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(const LayoutR
     ApplyToGraphicsLayers(this, functor, ApplyToScrollingContentLayers);
 }
 
-void CompositedLayerMapping::scrollingDisplayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
-{
-    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason](GraphicsLayer* layer) {
-        layer->displayItemClientWasInvalidated(displayItemClient, paintInvalidationReason);
-    }, ApplyToScrollingContentLayers);
-}
-
-void CompositedLayerMapping::displayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
-{
-    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason](GraphicsLayer* layer) {
-        layer->displayItemClientWasInvalidated(displayItemClient, paintInvalidationReason);
-    }, ApplyToContentLayers);
-}
-
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)
 {
     for (size_t i = 0; i < layers.size() && i < maxSquashedLayerIndex; ++i) {

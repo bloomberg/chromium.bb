@@ -380,7 +380,7 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
 
 void InlineBox::invalidateDisplayItemClientsRecursively()
 {
-    getLineLayoutItem().invalidateDisplayItemClient(*this);
+    getLineLayoutItem().invalidateDisplayItemClient(*this, PaintInvalidationFull);
     if (!isInlineFlowBox())
         return;
     for (InlineBox* child = toInlineFlowBox(this)->firstChild(); child; child = child->nextOnLine())

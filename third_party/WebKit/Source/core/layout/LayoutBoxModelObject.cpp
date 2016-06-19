@@ -252,7 +252,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         bool newStyleIsFixedPosition = style()->position() == FixedPosition;
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
-            invalidateDisplayItemClientsIncludingNonCompositingDescendants(nullptr, PaintInvalidationStyleChange);
+            invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationStyleChange);
     }
 
     // The used style for body background may change due to computed style change
@@ -436,28 +436,6 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     } else {
         // Otherwise invalidate everything.
         layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason, object);
-    }
-}
-
-void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutObject* layoutObject) const
-{
-    displayItemClient.setDisplayItemsUncached();
-
-    // We need to inform the GraphicsLayer about this paint invalidation only when we are tracking
-    // paint invalidation or ENABLE(ASSERT).
-#if !ENABLE(ASSERT)
-    if (!frameView()->isTrackingPaintInvalidations())
-        return;
-#endif
-
-    if (layer()->groupedMapping()) {
-        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->displayItemClientWasInvalidated(displayItemClient, invalidationReason);
-    } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        if (layoutObject && layoutObject->compositedScrollsWithRespectTo(*this))
-            compositedLayerMapping->scrollingDisplayItemClientWasInvalidated(displayItemClient, invalidationReason);
-        else
-            compositedLayerMapping->displayItemClientWasInvalidated(displayItemClient, invalidationReason);
     }
 }
 

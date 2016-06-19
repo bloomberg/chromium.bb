@@ -60,7 +60,7 @@ public:
     LayoutScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
     const LayoutScrollbarPart* getPart(ScrollbarPart partType) const { return m_parts.get(partType); }
 
-    void invalidateDisplayItemClientsOfScrollbarParts(const LayoutBoxModelObject& paintInvalidationContainer);
+    void invalidateDisplayItemClientsOfScrollbarParts();
 
     DECLARE_VIRTUAL_TRACE();
 

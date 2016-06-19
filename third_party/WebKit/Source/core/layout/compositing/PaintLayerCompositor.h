@@ -37,6 +37,7 @@ class PaintLayer;
 class DocumentLifecycle;
 class GraphicsLayer;
 class IntPoint;
+class JSONObject;
 class Page;
 class LayoutPart;
 class Scrollbar;
@@ -146,7 +147,7 @@ public:
 
     bool scrollingLayerDidChange(PaintLayer*);
 
-    String layerTreeAsText(LayerTreeFlags);
+    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }

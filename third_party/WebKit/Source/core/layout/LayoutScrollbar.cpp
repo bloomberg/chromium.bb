@@ -358,10 +358,10 @@ int LayoutScrollbar::minimumThumbLength() const
     return orientation() == HorizontalScrollbar ? partLayoutObject->size().width() : partLayoutObject->size().height();
 }
 
-void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts(const LayoutBoxModelObject& paintInvalidationContainer)
+void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts()
 {
     for (auto& part : m_parts)
-        part.value->invalidateDisplayItemClientsIncludingNonCompositingDescendants(&paintInvalidationContainer, PaintInvalidationScroll);
+        part.value->invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationScroll);
 }
 
 } // namespace blink

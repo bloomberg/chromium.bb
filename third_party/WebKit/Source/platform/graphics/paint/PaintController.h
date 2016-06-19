@@ -55,12 +55,6 @@ public:
 
     void invalidateAll();
 
-    // Record when paint offsets change during paint.
-    void invalidatePaintOffset(const DisplayItemClient&);
-#if DCHECK_IS_ON()
-    bool paintOffsetWasInvalidated(const DisplayItemClient&) const;
-#endif
-
     // These methods are called during painting.
 
     // Provide a new set of paint chunk properties to apply to recorded display
@@ -147,14 +141,6 @@ public:
     void showDebugData() const;
 #endif
 
-    // This is called only if we are tracking paint invalidation for testing, or DCHECK_IS_ON()
-    // for error checking and debugging.
-    void displayItemClientWasInvalidated(const DisplayItemClient&);
-
-#if DCHECK_IS_ON()
-    bool hasInvalidations() { return !m_invalidations.isEmpty(); }
-#endif
-
 #if DCHECK_IS_ON()
     void assertDisplayItemClientsAreLive();
 #endif
@@ -207,12 +193,6 @@ private:
     DisplayItemList m_newDisplayItemList;
     PaintChunker m_newPaintChunks;
 
-#if DCHECK_IS_ON()
-    // Set of clients which had paint offset changes since the last commit. This is used for
-    // ensuring paint offsets are only updated once and are the same in all phases.
-    HashSet<const DisplayItemClient*> m_clientsWithPaintOffsetInvalidations;
-#endif
-
     // Allow display item construction to be disabled to isolate the costs of construction
     // in performance metrics.
     bool m_constructionDisabled;
@@ -229,9 +209,6 @@ private:
     int m_numCachedNewItems;
 
 #if DCHECK_IS_ON()
-    // Record the debug names of invalidated clients for assertion and debugging.
-    Vector<String> m_invalidations;
-
     // This is used to check duplicated ids during add(). We could also check
     // during commitNewDisplayItems(), but checking during add() helps developer
     // easily find where the duplicated ids are from.

@@ -63,6 +63,7 @@ class Cursor;
 class Element;
 class FloatSize;
 class HTMLFrameOwnerElement;
+class JSONArray;
 class LayoutPart;
 class LocalFrame;
 class KURL;
@@ -321,8 +322,11 @@ public:
 
     static void setInitialTracksPaintInvalidationsForTesting(bool);
 
+    // These methods are for testing.
     void setTracksPaintInvalidations(bool);
-    bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
+    bool isTrackingPaintInvalidations() const { return m_trackedObjectPaintInvalidations.get(); }
+    void trackObjectPaintInvalidation(const DisplayItemClient&, PaintInvalidationReason);
+    PassRefPtr<JSONArray> trackedObjectPaintInvalidationsAsJSON() const;
 
     using ScrollableAreaSet = HeapHashSet<Member<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);
@@ -819,8 +823,6 @@ private:
 
     bool m_safeToPropagateScrollToParent;
 
-    bool m_isTrackingPaintInvalidations; // Used for testing.
-
     unsigned m_visuallyNonEmptyCharacterCount;
     unsigned m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
@@ -918,6 +920,13 @@ private:
     bool m_needsScrollbarsUpdate;
     bool m_suppressAdjustViewSize;
     bool m_inPluginUpdate;
+
+    // For testing.
+    struct ObjectPaintInvalidation {
+        String name;
+        PaintInvalidationReason reason;
+    };
+    OwnPtr<Vector<ObjectPaintInvalidation>> m_trackedObjectPaintInvalidations;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

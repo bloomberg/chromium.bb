@@ -133,12 +133,6 @@ public:
     // Invalidates just scrolling content layers.
     void setScrollingContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
 
-    // This is called only if we are tracking paint invalidation for testing, or ENABLE(ASSERT)
-    // for error checking and debugging.
-    void displayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
-    // Invalidates just scrolling content layers.
-    void scrollingDisplayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
-
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
 

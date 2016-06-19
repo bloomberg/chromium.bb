@@ -937,7 +937,7 @@ void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& bo
     // If collapsed borders changed, invalidate the cell's display item client on the table's backing.
     // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders only.
     if (changed)
-        table()->invalidateDisplayItemClient(*this);
+        table()->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationStyleChange);
 
     addBorderStyle(borderValues, newValues.startBorder);
     addBorderStyle(borderValues, newValues.endBorder);

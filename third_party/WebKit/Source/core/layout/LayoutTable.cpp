@@ -1449,7 +1449,7 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
                 // Table cells paint container's background on the container's backing instead of its own (if any),
                 // so we must invalidate it by the containers.
                 if (section->backgroundChangedSinceLastPaintInvalidation()) {
-                    section->invalidateDisplayItemClient(*cell);
+                    section->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
                     invalidated = true;
                 } else if (hasColChangedBackground) {
                     ColAndColGroup colAndColGroup = colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
@@ -1457,12 +1457,12 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
                     LayoutTableCol* columnGroup = colAndColGroup.colgroup;
                     if ((columnGroup && columnGroup->backgroundChangedSinceLastPaintInvalidation())
                         || (column && column->backgroundChangedSinceLastPaintInvalidation())) {
-                        section->invalidateDisplayItemClient(*cell);
+                        section->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
                         invalidated = true;
                     }
                 }
                 if ((!invalidated || row->hasSelfPaintingLayer()) && row->backgroundChangedSinceLastPaintInvalidation())
-                    row->invalidateDisplayItemClient(*cell);
+                    row->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
             }
         }
     }

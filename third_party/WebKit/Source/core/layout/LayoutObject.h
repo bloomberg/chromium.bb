@@ -1128,7 +1128,6 @@ public:
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
-    void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect&) const;
 
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
@@ -1376,8 +1375,21 @@ public:
 
     virtual LayoutRect viewRect() const;
 
-    void invalidateDisplayItemClient(const DisplayItemClient&) const;
-    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(const LayoutBoxModelObject* paintInvalidationContainer, PaintInvalidationReason) const;
+    // TODO(wangxianzhu): Change the call sites to use the faster version if possible.
+    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& client, PaintInvalidationReason reason) const
+    {
+        slowSetPaintingLayerNeedsRepaint();
+        invalidateDisplayItemClient(client, reason);
+    }
+
+    // Sets painting layer needsRepaint, then calls invaldiateDisplayItemClient().
+    // Should use this version when PaintInvalidationState is available.
+    void setPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const PaintInvalidationState&, const DisplayItemClient&, PaintInvalidationReason) const;
+
+    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
+    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason) const;
+
+    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationReason) const;
 
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
@@ -1575,14 +1587,15 @@ protected:
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
     // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
-    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const;
+    virtual void invalidateDisplayItemClients(PaintInvalidationReason) const;
 
+    // This calls paintingLayer() which walks up the tree.
     // If possible, use the faster paintInvalidationState.paintingLayer().setNeedsRepaint().
-    void setPaintingLayerNeedsRepaint() const;
+    void slowSetPaintingLayerNeedsRepaint() const;
 
-    // Sets enclosing layer needsRepaint, then calls invalidateDisplayItemClients().
+    // Sets painting layer needsRepaint, then calls invalidateDisplayItemClients().
     // Should use this version when PaintInvalidationState is available.
-    void invalidateDisplayItemClientsWithPaintInvalidationState(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState&, PaintInvalidationReason) const;
+    void invalidateDisplayItemClientsWithPaintInvalidationState(const PaintInvalidationState&, PaintInvalidationReason) const;
 
     void setIsBackgroundAttachmentFixedObject(bool);
 
@@ -1663,9 +1676,6 @@ private:
     bool isTextOrSVGChild() const { return isText() || (isSVG() && !isSVGRoot()); }
 
     static bool isAllowedToModifyLayoutTreeStructure(Document&);
-
-    // The passed rect is mutated into the coordinate space of the paint invalidation container.
-    const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
     // Returns the parent for paint invalidation.
     // - For LayoutView, returns the owner layout object in the containing frame if any or nullptr;

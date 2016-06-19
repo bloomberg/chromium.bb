@@ -60,6 +60,8 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const P
 
 static void invalidateLineBoxPaintOffsetsInternal(PaintController& paintController, InlineFlowBox* inlineBox)
 {
+#if 0
+    // TODO(wangxianzhu): Implement this with PaintInvalidator.
     paintController.invalidatePaintOffset(*inlineBox);
     for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
         if (!child->getLineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
@@ -69,6 +71,7 @@ static void invalidateLineBoxPaintOffsetsInternal(PaintController& paintControll
         else
             paintController.invalidatePaintOffset(*child);
     }
+#endif
 }
 
 void LineBoxListPainter::invalidateLineBoxPaintOffsets(const PaintInfo& paintInfo) const

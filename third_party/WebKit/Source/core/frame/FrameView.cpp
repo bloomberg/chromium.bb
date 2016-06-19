@@ -87,6 +87,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Histogram.h"
 #include "platform/HostWindow.h"
+#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -133,7 +134,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType(MediaTypeNames::screen)
     , m_safeToPropagateScrollToParent(true)
-    , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
     , m_stickyPositionObjectCount(0)
     , m_inputEventsScaleFactorForEmulation(1)
@@ -220,7 +220,7 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_isTrackingPaintInvalidations = s_initialTrackAllPaintInvalidations;
+    m_trackedObjectPaintInvalidations = adoptPtr(s_initialTrackAllPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
@@ -383,7 +383,7 @@ void FrameView::invalidateRect(const IntRect& rect)
         layoutObject->borderTop() + layoutObject->paddingTop());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    layoutObject->invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(paintInvalidationRect));
+    layoutObject->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -2936,22 +2936,44 @@ void FrameView::setInitialTracksPaintInvalidationsForTesting(bool trackPaintInva
 
 void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
 {
-    if (trackPaintInvalidations == m_isTrackingPaintInvalidations)
+    if (trackPaintInvalidations == isTrackingPaintInvalidations())
         return;
 
     for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
         if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
-            layoutView.frameView()->m_isTrackingPaintInvalidations = trackPaintInvalidations;
+            layoutView.frameView()->m_trackedObjectPaintInvalidations = adoptPtr(trackPaintInvalidations ? new Vector<ObjectPaintInvalidation> : nullptr);
             layoutView.compositor()->setTracksPaintInvalidations(trackPaintInvalidations);
         }
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
         "FrameView::setTracksPaintInvalidations", TRACE_EVENT_SCOPE_GLOBAL, "enabled", trackPaintInvalidations);
+}
 
-    m_isTrackingPaintInvalidations = trackPaintInvalidations;
+void FrameView::trackObjectPaintInvalidation(const DisplayItemClient& client, PaintInvalidationReason reason)
+{
+    if (!m_trackedObjectPaintInvalidations)
+        return;
+
+    ObjectPaintInvalidation invalidation = { client.debugName(), reason };
+    m_trackedObjectPaintInvalidations->append(invalidation);
+}
+
+PassRefPtr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON() const
+{
+    if (!m_trackedObjectPaintInvalidations || m_trackedObjectPaintInvalidations->isEmpty())
+        return nullptr;
+
+    RefPtr<JSONArray> result = JSONArray::create();
+    for (const auto& item : *m_trackedObjectPaintInvalidations) {
+        RefPtr<JSONObject> itemJSON = JSONObject::create();
+        itemJSON->setString("object", item.name);
+        itemJSON->setString("reason", paintInvalidationReasonToString(item.reason));
+        result->pushObject(itemJSON);
+    }
+    return result;
 }
 
 void FrameView::addResizerArea(LayoutBox& resizerBox)

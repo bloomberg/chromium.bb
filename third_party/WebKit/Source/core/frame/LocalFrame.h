@@ -61,6 +61,7 @@ class InputMethodController;
 class IntPoint;
 class IntSize;
 class InstrumentingAgents;
+class JSONObject;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;

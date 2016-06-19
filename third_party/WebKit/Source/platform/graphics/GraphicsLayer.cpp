@@ -592,21 +592,15 @@ bool GraphicsLayer::hasTrackedPaintInvalidations() const
 
 void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, const IntRect& rect, PaintInvalidationReason reason)
 {
-    // The caller must check isTrackingOrCheckingPaintInvalidations() before calling this method
-    // to avoid constructing the rect unnecessarily.
-    DCHECK(isTrackingOrCheckingPaintInvalidations());
-
-    PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
-    // Omit the entry for trackObjectPaintInvalidation() if the last entry is for the same client.
-    // This is to avoid duplicated entries for setNeedsDisplayInRect() and trackObjectPaintInvalidation().
-    if (rect.isEmpty() && !tracking.trackedPaintInvalidations.isEmpty() && tracking.trackedPaintInvalidations.last().client == &client)
+    if (!isTrackingOrCheckingPaintInvalidations() || rect.isEmpty())
         return;
 
+    PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
     PaintInvalidationInfo info = { &client, client.debugName(), rect, reason };
     tracking.trackedPaintInvalidations.append(info);
 
 #if DCHECK_IS_ON()
-    if (!rect.isEmpty() && RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         // TODO(crbug.com/496260): Some antialiasing effects overflows the paint invalidation rect.
         IntRect r = rect;
         r.inflate(1);
@@ -714,14 +708,20 @@ static String pointerAsString(const void* ptr)
     return ts.release();
 }
 
-PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
+PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags) const
+{
+    RenderingContextMap renderingContextMap;
+    return layerTreeAsJSONInternal(flags, renderingContextMap);
+}
+
+PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
     RefPtr<JSONObject> json = JSONObject::create();
 
-    if (flags & LayerTreeIncludesDebugInfo) {
+    if (flags & LayerTreeIncludesDebugInfo)
         json->setString("this", pointerAsString(this));
-        json->setString("debugName", m_client->debugName(this));
-    }
+
+    json->setString("name", debugName());
 
     if (m_position != FloatPoint())
         json->setArray("position", pointAsJSONArray(m_position));
@@ -777,7 +777,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
         json->setArray("transform", transformAsJSONArray(m_transform));
 
     if (m_replicaLayer)
-        json->setObject("replicaLayer", m_replicaLayer->layerTreeAsJSON(flags, renderingContextMap));
+        json->setObject("replicaLayer", m_replicaLayer->layerTreeAsJSONInternal(flags, renderingContextMap));
 
     if (m_replicatedLayer)
         json->setString("replicatedLayer", flags & LayerTreeIncludesDebugInfo ? pointerAsString(m_replicatedLayer) : "");
@@ -861,7 +861,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     if (m_children.size()) {
         RefPtr<JSONArray> childrenJSON = JSONArray::create();
         for (size_t i = 0; i < m_children.size(); i++)
-            childrenJSON->pushObject(m_children[i]->layerTreeAsJSON(flags, renderingContextMap));
+            childrenJSON->pushObject(m_children[i]->layerTreeAsJSONInternal(flags, renderingContextMap));
         json->setArray("children", childrenJSON);
     }
 
@@ -870,9 +870,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
 String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
 {
-    RenderingContextMap renderingContextMap;
-    RefPtr<JSONObject> json = layerTreeAsJSON(flags, renderingContextMap);
-    return json->toPrettyJSONString();
+    return layerTreeAsJSON(flags)->toPrettyJSONString();
 }
 
 static const cc::Layer* ccLayerForWebLayer(const WebLayer* webLayer)
@@ -1103,8 +1101,7 @@ void GraphicsLayer::setContentsNeedsDisplay()
 {
     if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
         contentsLayer->invalidate();
-        if (isTrackingOrCheckingPaintInvalidations())
-            trackPaintInvalidation(*this, m_contentsRect, PaintInvalidationFull);
+        trackPaintInvalidation(*this, m_contentsRect, PaintInvalidationFull);
     }
 }
 
@@ -1119,8 +1116,7 @@ void GraphicsLayer::setNeedsDisplay()
         m_linkHighlights[i]->invalidate();
     getPaintController().invalidateAll();
 
-    if (isTrackingOrCheckingPaintInvalidations())
-        trackPaintInvalidation(*this, IntRect(IntPoint(), expandedIntSize(m_size)), PaintInvalidationFull);
+    trackPaintInvalidation(*this, IntRect(IntPoint(), expandedIntSize(m_size)), PaintInvalidationFull);
 }
 
 void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
@@ -1134,19 +1130,7 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
 
-    if (isTrackingOrCheckingPaintInvalidations())
-        trackPaintInvalidation(client, rect, invalidationReason);
-}
-
-void GraphicsLayer::displayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason)
-{
-    if (!drawsContent())
-        return;
-
-    getPaintController().displayItemClientWasInvalidated(displayItemClient);
-
-    if (isTrackingOrCheckingPaintInvalidations())
-        trackPaintInvalidation(displayItemClient, IntRect(), invalidationReason);
+    trackPaintInvalidation(client, rect, invalidationReason);
 }
 
 void GraphicsLayer::setContentsRect(const IntRect& rect)
