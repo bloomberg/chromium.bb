@@ -9,7 +9,6 @@
 #include <queue>
 #include <set>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -46,7 +45,7 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
                     mojo::InterfaceRequest<DeviceManager> request);
   ~DeviceManagerImpl() override;
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(const mojo::Closure& error_handler) {
     connection_error_handler_ = error_handler;
   }
 
@@ -76,7 +75,7 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
   ScopedObserver<UsbService, UsbService::Observer> observer_;
   DeviceManagerClientPtr client_;
 
-  base::Closure connection_error_handler_;
+  mojo::Closure connection_error_handler_;
 
   mojo::StrongBinding<DeviceManager> binding_;
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;

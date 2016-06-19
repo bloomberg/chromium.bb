@@ -112,8 +112,8 @@ std::unique_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
   return output;
 }
 
-void InvokeNewSessionCallbackWithError(
-    const PresentationServiceImpl::NewSessionCallback& callback) {
+void InvokeNewSessionMojoCallbackWithError(
+    const NewSessionMojoCallback& callback) {
   callback.Run(blink::mojom::PresentationSessionInfoPtr(),
                blink::mojom::PresentationError::From(PresentationError(
                    PRESENTATION_ERROR_UNKNOWN, "Internal error")));
@@ -218,8 +218,9 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
   screen_availability_listeners_.erase(listener_it);
 }
 
-void PresentationServiceImpl::StartSession(const mojo::String& presentation_url,
-                                           const NewSessionCallback& callback) {
+void PresentationServiceImpl::StartSession(
+    const mojo::String& presentation_url,
+    const NewSessionMojoCallback& callback) {
   DVLOG(2) << "StartSession";
   if (!delegate_) {
     callback.Run(
@@ -232,12 +233,12 @@ void PresentationServiceImpl::StartSession(const mojo::String& presentation_url,
   // There is a StartSession request in progress. To avoid queueing up
   // requests, the incoming request is rejected.
   if (start_session_request_id_ != kInvalidRequestSessionId) {
-    InvokeNewSessionCallbackWithError(callback);
+    InvokeNewSessionMojoCallbackWithError(callback);
     return;
   }
 
   start_session_request_id_ = GetNextRequestSessionId();
-  pending_start_session_cb_.reset(new NewSessionCallbackWrapper(callback));
+  pending_start_session_cb_.reset(new NewSessionMojoCallbackWrapper(callback));
   delegate_->StartSession(
       render_process_id_, render_frame_id_, presentation_url,
       base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
@@ -249,7 +250,7 @@ void PresentationServiceImpl::StartSession(const mojo::String& presentation_url,
 void PresentationServiceImpl::JoinSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id,
-    const NewSessionCallback& callback) {
+    const NewSessionMojoCallback& callback) {
   DVLOG(2) << "JoinSession";
   if (!delegate_) {
     callback.Run(blink::mojom::PresentationSessionInfoPtr(),
@@ -261,7 +262,7 @@ void PresentationServiceImpl::JoinSession(
 
   int request_session_id = RegisterJoinSessionCallback(callback);
   if (request_session_id == kInvalidRequestSessionId) {
-    InvokeNewSessionCallbackWithError(callback);
+    InvokeNewSessionMojoCallbackWithError(callback);
     return;
   }
   delegate_->JoinSession(
@@ -276,13 +277,13 @@ void PresentationServiceImpl::JoinSession(
 }
 
 int PresentationServiceImpl::RegisterJoinSessionCallback(
-    const NewSessionCallback& callback) {
+    const NewSessionMojoCallback& callback) {
   if (pending_join_session_cbs_.size() >= kMaxNumQueuedSessionRequests)
     return kInvalidRequestSessionId;
 
   int request_id = GetNextRequestSessionId();
   pending_join_session_cbs_[request_id].reset(
-      new NewSessionCallbackWrapper(callback));
+      new NewSessionMojoCallbackWrapper(callback));
   return request_id;
 }
 
@@ -377,7 +378,7 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
 void PresentationServiceImpl::SendSessionMessage(
     blink::mojom::PresentationSessionInfoPtr session,
     blink::mojom::SessionMessagePtr session_message,
-    const SendSessionMessageCallback& callback) {
+    const SendMessageMojoCallback& callback) {
   DVLOG(2) << "SendSessionMessage";
   DCHECK(!session_message.is_null());
   // send_message_callback_ should be null by now, otherwise resetting of
@@ -387,7 +388,7 @@ void PresentationServiceImpl::SendSessionMessage(
     return;
   }
 
-  send_message_callback_.reset(new SendSessionMessageCallback(callback));
+  send_message_callback_.reset(new SendMessageMojoCallback(callback));
   delegate_->SendMessage(
       render_process_id_, render_frame_id_,
       session.To<PresentationSessionInfo>(),
@@ -589,18 +590,18 @@ void PresentationServiceImpl::ScreenAvailabilityListenerImpl
   service_->client_->OnScreenAvailabilityNotSupported(availability_url_);
 }
 
-PresentationServiceImpl::NewSessionCallbackWrapper
-::NewSessionCallbackWrapper(const NewSessionCallback& callback)
+PresentationServiceImpl::NewSessionMojoCallbackWrapper
+::NewSessionMojoCallbackWrapper(const NewSessionMojoCallback& callback)
     : callback_(callback) {
 }
 
-PresentationServiceImpl::NewSessionCallbackWrapper
-::~NewSessionCallbackWrapper() {
+PresentationServiceImpl::NewSessionMojoCallbackWrapper
+::~NewSessionMojoCallbackWrapper() {
   if (!callback_.is_null())
-    InvokeNewSessionCallbackWithError(callback_);
+    InvokeNewSessionMojoCallbackWithError(callback_);
 }
 
-void PresentationServiceImpl::NewSessionCallbackWrapper::Run(
+void PresentationServiceImpl::NewSessionMojoCallbackWrapper::Run(
     blink::mojom::PresentationSessionInfoPtr session,
     blink::mojom::PresentationErrorPtr error) {
   DCHECK(!callback_.is_null());

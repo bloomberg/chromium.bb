@@ -17,7 +17,7 @@ mojo::String {{prefix}}{{param.name}}
 {%- endmacro %}
 
 {%- macro declare_callback(method, for_blink) -%}
-base::Callback<void(
+mojo::Callback<void(
 {%-   for param in method.response_parameters -%}
 {#- TODO(yzshen): For historical reasons, we use mojo::String here (instead of
     const mojo::String&) inconsistently. Preserve the behavior temporarily. #}

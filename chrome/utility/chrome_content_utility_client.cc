@@ -83,7 +83,8 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   ~ResourceUsageReporterImpl() override {}
 
  private:
-  void GetUsageData(const GetUsageDataCallback& callback) override {
+  void GetUsageData(const mojo::Callback<void(mojom::ResourceUsageDataPtr)>&
+                        callback) override {
     mojom::ResourceUsageDataPtr data = mojom::ResourceUsageData::New();
     size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
     if (total_heap_size) {

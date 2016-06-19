@@ -5,9 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 namespace mojo {
@@ -79,7 +79,7 @@ void ReportValidationError(ValidationContext* context,
 // validation.
 class ValidationErrorObserverForTesting {
  public:
-  explicit ValidationErrorObserverForTesting(const base::Closure& callback);
+  explicit ValidationErrorObserverForTesting(const Callback<void()>& callback);
   ~ValidationErrorObserverForTesting();
 
   ValidationError last_error() const { return last_error_; }
@@ -90,7 +90,7 @@ class ValidationErrorObserverForTesting {
 
  private:
   ValidationError last_error_;
-  base::Closure callback_;
+  Callback<void()> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };

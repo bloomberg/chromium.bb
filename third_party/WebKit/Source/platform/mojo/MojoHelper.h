@@ -6,6 +6,7 @@
 #define MojoHelper_h
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/heap/HeapAllocator.h"
 #include <utility>

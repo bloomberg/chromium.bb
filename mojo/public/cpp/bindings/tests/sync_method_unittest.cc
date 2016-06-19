@@ -38,61 +38,57 @@ class TestSyncCommonImpl {
  public:
   TestSyncCommonImpl() {}
 
-  using PingHandler = base::Callback<void(const base::Callback<void()>&)>;
-  using PingBinder = LambdaBinder<const base::Callback<void()>&>;
+  using PingHandler = Callback<void(const Callback<void()>&)>;
+  using PingBinder = LambdaBinder<const Callback<void()>&>;
   template <typename Func>
   void set_ping_handler(Func handler) {
     ping_handler_ = PingBinder::BindLambda(handler);
   }
 
-  using EchoHandler =
-      base::Callback<void(int32_t, const base::Callback<void(int32_t)>&)>;
-  using EchoBinder =
-      LambdaBinder<int32_t, const base::Callback<void(int32_t)>&>;
+  using EchoHandler = Callback<void(int32_t, const Callback<void(int32_t)>&)>;
+  using EchoBinder = LambdaBinder<int32_t, const Callback<void(int32_t)>&>;
   template <typename Func>
   void set_echo_handler(Func handler) {
     echo_handler_ = EchoBinder::BindLambda(handler);
   }
 
   using AsyncEchoHandler =
-      base::Callback<void(int32_t, const base::Callback<void(int32_t)>&)>;
-  using AsyncEchoBinder =
-      LambdaBinder<int32_t, const base::Callback<void(int32_t)>&>;
+      Callback<void(int32_t, const Callback<void(int32_t)>&)>;
+  using AsyncEchoBinder = LambdaBinder<int32_t, const Callback<void(int32_t)>&>;
   template <typename Func>
   void set_async_echo_handler(Func handler) {
     async_echo_handler_ = AsyncEchoBinder::BindLambda(handler);
   }
 
-  using SendInterfaceHandler = base::Callback<void(TestSyncAssociatedPtrInfo)>;
+  using SendInterfaceHandler = Callback<void(TestSyncAssociatedPtrInfo)>;
   using SendInterfaceBinder = LambdaBinder<TestSyncAssociatedPtrInfo>;
   template <typename Func>
   void set_send_interface_handler(Func handler) {
     send_interface_handler_ = SendInterfaceBinder::BindLambda(handler);
   }
 
-  using SendRequestHandler = base::Callback<void(TestSyncAssociatedRequest)>;
+  using SendRequestHandler = Callback<void(TestSyncAssociatedRequest)>;
   using SendRequestBinder = LambdaBinder<TestSyncAssociatedRequest>;
   template <typename Func>
   void set_send_request_handler(Func handler) {
     send_request_handler_ = SendRequestBinder::BindLambda(handler);
   }
 
-  void PingImpl(const base::Callback<void()>& callback) {
+  void PingImpl(const Callback<void()>& callback) {
     if (ping_handler_.is_null()) {
       callback.Run();
       return;
     }
     ping_handler_.Run(callback);
   }
-  void EchoImpl(int32_t value, const base::Callback<void(int32_t)>& callback) {
+  void EchoImpl(int32_t value, const Callback<void(int32_t)>& callback) {
     if (echo_handler_.is_null()) {
       callback.Run(value);
       return;
     }
     echo_handler_.Run(value, callback);
   }
-  void AsyncEchoImpl(int32_t value,
-                     const base::Callback<void(int32_t)>& callback) {
+  void AsyncEchoImpl(int32_t value, const Callback<void(int32_t)>& callback) {
     if (async_echo_handler_.is_null()) {
       callback.Run(value);
       return;

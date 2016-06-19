@@ -60,7 +60,7 @@ class SampleNamedObjectImpl : public sample::NamedObject {
       : binding_(this, std::move(request)) {}
   void SetName(const mojo::String& name) override { name_ = name; }
 
-  void GetName(const GetNameCallback& callback) override {
+  void GetName(const mojo::Callback<void(mojo::String)>& callback) override {
     callback.Run(name_);
   }
 
@@ -141,10 +141,12 @@ class SampleFactoryImpl : public sample::Factory {
   // interfaces.
   void RequestImportedInterface(
       InterfaceRequest<imported::ImportedInterface> imported,
-      const RequestImportedInterfaceCallback& callback) override {}
+      const mojo::Callback<void(InterfaceRequest<imported::ImportedInterface>)>&
+          callback) override {}
   void TakeImportedInterface(
       imported::ImportedInterfacePtr imported,
-      const TakeImportedInterfaceCallback& callback) override {}
+      const mojo::Callback<void(imported::ImportedInterfacePtr)>& callback)
+      override {}
 
  private:
   ScopedMessagePipeHandle pipe1_;

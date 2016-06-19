@@ -32,13 +32,16 @@ class SerialConnection : public serial::Connection {
   ~SerialConnection() override;
 
   // serial::Connection overrides.
-  void GetInfo(const GetInfoCallback& callback) override;
+  void GetInfo(
+      const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback) override;
   void SetOptions(serial::ConnectionOptionsPtr options,
-                  const SetOptionsCallback& callback) override;
+                  const mojo::Callback<void(bool)>& callback) override;
   void SetControlSignals(serial::HostControlSignalsPtr signals,
-                         const SetControlSignalsCallback& callback) override;
-  void GetControlSignals(const GetControlSignalsCallback& callback) override;
-  void Flush(const FlushCallback& callback) override;
+                         const mojo::Callback<void(bool)>& callback) override;
+  void GetControlSignals(
+      const mojo::Callback<void(serial::DeviceControlSignalsPtr)>& callback)
+      override;
+  void Flush(const mojo::Callback<void(bool)>& callback) override;
 
  private:
   void OnSendPipeReady(std::unique_ptr<ReadOnlyBuffer> buffer);

@@ -83,7 +83,7 @@ class BrowserTargetImpl : public mojom::BrowserTarget {
   ~BrowserTargetImpl() override {}
 
   // mojom::BrowserTarget overrides:
-  void Start(const StartCallback& closure) override {
+  void Start(const mojo::Closure& closure) override {
     closure.Run();
   }
   void Stop() override {

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,7 +24,7 @@ class BindingSet {
   BindingSet() {}
   ~BindingSet() { CloseAllBindings(); }
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(const Closure& error_handler) {
     error_handler_ = error_handler;
   }
 
@@ -67,7 +66,7 @@ class BindingSet {
 
     ~Element() {}
 
-    void set_connection_error_handler(const base::Closure& error_handler) {
+    void set_connection_error_handler(const Closure& error_handler) {
       error_handler_ = error_handler;
     }
 
@@ -78,7 +77,7 @@ class BindingSet {
     void Close() { binding_.Close(); }
 
     void OnConnectionError() {
-      base::Closure error_handler = error_handler_;
+      Closure error_handler = error_handler_;
       delete this;
       if (!error_handler.is_null())
         error_handler.Run();
@@ -86,7 +85,7 @@ class BindingSet {
 
    private:
     Binding<Interface> binding_;
-    base::Closure error_handler_;
+    Closure error_handler_;
     base::WeakPtrFactory<Element> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Element);
@@ -104,7 +103,7 @@ class BindingSet {
       error_handler_.Run();
   }
 
-  base::Closure error_handler_;
+  Closure error_handler_;
   std::vector<base::WeakPtr<Element>> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingSet);

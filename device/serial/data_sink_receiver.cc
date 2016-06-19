@@ -50,7 +50,7 @@ class DataSinkReceiver::Buffer : public ReadOnlyBuffer {
 class DataSinkReceiver::DataFrame {
  public:
   explicit DataFrame(mojo::Array<uint8_t> data,
-                     const serial::DataSink::OnDataCallback& callback);
+                     const mojo::Callback<void(uint32_t, int32_t)>& callback);
 
   // Returns the number of unconsumed bytes remaining of this data frame.
   uint32_t GetRemainingBytes();
@@ -67,7 +67,7 @@ class DataSinkReceiver::DataFrame {
  private:
   mojo::Array<uint8_t> data_;
   uint32_t offset_;
-  const serial::DataSink::OnDataCallback callback_;
+  const mojo::Callback<void(uint32_t, int32_t)> callback_;
 };
 
 DataSinkReceiver::DataSinkReceiver(
@@ -121,7 +121,7 @@ void DataSinkReceiver::Cancel(int32_t error) {
 
 void DataSinkReceiver::OnData(
     mojo::Array<uint8_t> data,
-    const serial::DataSink::OnDataCallback& callback) {
+    const mojo::Callback<void(uint32_t, int32_t)>& callback) {
   if (current_error_) {
     callback.Run(0, current_error_);
     return;
@@ -256,7 +256,7 @@ void DataSinkReceiver::Buffer::DoneWithError(uint32_t bytes_read,
 
 DataSinkReceiver::DataFrame::DataFrame(
     mojo::Array<uint8_t> data,
-    const serial::DataSink::OnDataCallback& callback)
+    const mojo::Callback<void(uint32_t, int32_t)>& callback)
     : data_(std::move(data)), offset_(0), callback_(callback) {
   DCHECK_LT(0u, data_.size());
 }

@@ -56,7 +56,8 @@ void SerialServiceImpl::CreateOnMessageLoop(
                                    ui_task_runner, base::Passed(&request)));
 }
 
-void SerialServiceImpl::GetDevices(const GetDevicesCallback& callback) {
+void SerialServiceImpl::GetDevices(
+    const mojo::Callback<void(mojo::Array<serial::DeviceInfoPtr>)>& callback) {
   callback.Run(GetDeviceEnumerator()->GetDevices());
 }
 

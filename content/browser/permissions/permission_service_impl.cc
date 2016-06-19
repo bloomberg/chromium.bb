@@ -50,7 +50,7 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
 // This function allows the usage of the the multiple request map
 // with single requests.
 void PermissionRequestResponseCallbackWrapper(
-    const base::Callback<void(PermissionStatus)>& callback,
+    const mojo::Callback<void(PermissionStatus)>& callback,
     mojo::Array<PermissionStatus> vector) {
   DCHECK_EQ(vector.size(), 1ul);
   callback.Run(vector[0]);
@@ -59,7 +59,7 @@ void PermissionRequestResponseCallbackWrapper(
 } // anonymous namespace
 
 PermissionServiceImpl::PendingRequest::PendingRequest(
-    const RequestPermissionsCallback& callback,
+    const PermissionsStatusCallback& callback,
     int request_count)
     : callback(callback),
       request_count(request_count) {
@@ -162,7 +162,7 @@ void PermissionServiceImpl::RequestPermissions(
     mojo::Array<PermissionName> permissions,
     const mojo::String& origin,
     bool user_gesture,
-    const RequestPermissionsCallback& callback) {
+    const PermissionsStatusCallback& callback) {
   if (permissions.is_null()) {
     callback.Run(mojo::Array<PermissionStatus>());
     return;
@@ -215,7 +215,7 @@ void PermissionServiceImpl::OnRequestPermissionsResponse(
     int pending_request_id,
     const std::vector<PermissionStatus>& result) {
   PendingRequest* request = pending_requests_.Lookup(pending_request_id);
-  RequestPermissionsCallback callback(request->callback);
+  PermissionsStatusCallback callback(request->callback);
   request->callback.Reset();
   pending_requests_.Remove(pending_request_id);
   callback.Run(mojo::Array<PermissionStatus>::From(result));

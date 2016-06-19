@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -48,7 +47,7 @@ class IntegerSenderImpl : public IntegerSender {
 
   AssociatedBinding<IntegerSender>* binding() { return &binding_; }
 
-  void set_connection_error_handler(const base::Closure& handler) {
+  void set_connection_error_handler(const Closure& handler) {
     binding_.set_connection_error_handler(handler);
   }
 

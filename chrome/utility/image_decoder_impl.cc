@@ -41,7 +41,7 @@ void ImageDecoderImpl::DecodeImage(
     mojo::Array<uint8_t> encoded_data,
     mojom::ImageCodec codec,
     bool shrink_to_fit,
-    const DecodeImageCallback& callback) {
+    const mojo::Callback<void(const SkBitmap&)>& callback) {
   if (encoded_data.size() == 0) {
     callback.Run(SkBitmap());
     return;

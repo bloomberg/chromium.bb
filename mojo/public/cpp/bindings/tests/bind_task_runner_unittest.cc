@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -125,7 +124,7 @@ class IntegerSenderImpl : public IntegerSender {
 
   ~IntegerSenderImpl() override {}
 
-  using EchoHandler = base::Callback<void(int32_t, const EchoCallback&)>;
+  using EchoHandler = Callback<void(int32_t, const EchoCallback&)>;
 
   void set_echo_handler(const EchoHandler& handler) { echo_handler_ = handler; }
 
@@ -158,7 +157,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
 
   ~IntegerSenderConnectionImpl() override {}
 
-  void set_get_sender_notification(const base::Closure& notification) {
+  void set_get_sender_notification(const Closure& notification) {
     get_sender_notification_ = notification;
   }
   void GetSender(IntegerSenderAssociatedRequest sender) override {
@@ -178,7 +177,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   Binding<IntegerSenderConnection> binding_;
   std::unique_ptr<SenderType> sender_impl_;
   scoped_refptr<base::SingleThreadTaskRunner> sender_runner_;
-  base::Closure get_sender_notification_;
+  Closure get_sender_notification_;
 };
 
 class BindTaskRunnerTest : public testing::Test {

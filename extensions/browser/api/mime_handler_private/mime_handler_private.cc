@@ -65,7 +65,7 @@ MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {
 }
 
 void MimeHandlerServiceImpl::GetStreamInfo(
-    const GetStreamInfoCallback& callback) {
+    const mojo::Callback<void(mime_handler::StreamInfoPtr)>& callback) {
   if (!stream_) {
     callback.Run(mime_handler::StreamInfoPtr());
     return;
@@ -73,7 +73,8 @@ void MimeHandlerServiceImpl::GetStreamInfo(
   callback.Run(mojo::ConvertTo<mime_handler::StreamInfoPtr>(*stream_));
 }
 
-void MimeHandlerServiceImpl::AbortStream(const AbortStreamCallback& callback) {
+void MimeHandlerServiceImpl::AbortStream(
+    const mojo::Callback<void()>& callback) {
   if (!stream_) {
     callback.Run();
     return;
@@ -83,7 +84,7 @@ void MimeHandlerServiceImpl::AbortStream(const AbortStreamCallback& callback) {
 }
 
 void MimeHandlerServiceImpl::OnStreamClosed(
-    const AbortStreamCallback& callback) {
+    const mojo::Callback<void()>& callback) {
   callback.Run();
 }
 

@@ -37,7 +37,9 @@ class SerialServiceImpl : public serial::SerialService {
       mojo::InterfaceRequest<serial::SerialService> request);
 
   // SerialService overrides.
-  void GetDevices(const GetDevicesCallback& callback) override;
+  void GetDevices(
+      const mojo::Callback<void(mojo::Array<serial::DeviceInfoPtr>)>& callback)
+      override;
   void Connect(
       const mojo::String& path,
       serial::ConnectionOptionsPtr options,

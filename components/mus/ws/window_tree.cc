@@ -31,6 +31,7 @@
 #include "ui/platform_window/text_input_state.h"
 
 using mojo::Array;
+using mojo::Callback;
 using mojo::InterfaceRequest;
 using mojo::String;
 
@@ -1119,7 +1120,7 @@ void WindowTree::ReorderWindow(uint32_t change_id,
 
 void WindowTree::GetWindowTree(
     Id window_id,
-    const base::Callback<void(Array<mojom::WindowDataPtr>)>& callback) {
+    const Callback<void(Array<mojom::WindowDataPtr>)>& callback) {
   std::vector<const ServerWindow*> windows(
       GetWindowTree(ClientWindowId(window_id)));
   callback.Run(WindowsToWindowDatas(windows));

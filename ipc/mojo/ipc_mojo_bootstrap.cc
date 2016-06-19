@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -75,7 +74,7 @@ void MojoServerBootstrap::OnInitDone(int32_t peer_pid) {
   }
 
   set_state(STATE_READY);
-  bootstrap_.set_connection_error_handler(base::Closure());
+  bootstrap_.set_connection_error_handler(mojo::Closure());
   delegate()->OnPipesAvailable(std::move(send_channel_),
                                std::move(receive_channel_request_), peer_pid);
 }
@@ -94,7 +93,7 @@ class MojoClientBootstrap : public MojoBootstrap, public mojom::Bootstrap {
   void Init(mojom::ChannelAssociatedRequest receive_channel,
             mojom::ChannelAssociatedPtrInfo send_channel,
             int32_t peer_pid,
-            const InitCallback& callback) override;
+            const mojo::Callback<void(int32_t)>& callback) override;
 
   mojo::Binding<mojom::Bootstrap> binding_;
 
@@ -112,10 +111,10 @@ void MojoClientBootstrap::Connect() {
 void MojoClientBootstrap::Init(mojom::ChannelAssociatedRequest receive_channel,
                                mojom::ChannelAssociatedPtrInfo send_channel,
                                int32_t peer_pid,
-                               const InitCallback& callback) {
+                               const mojo::Callback<void(int32_t)>& callback) {
   callback.Run(GetSelfPID());
   set_state(STATE_READY);
-  binding_.set_connection_error_handler(base::Closure());
+  binding_.set_connection_error_handler(mojo::Closure());
   delegate()->OnPipesAvailable(std::move(send_channel),
                                std::move(receive_channel), peer_pid);
 }

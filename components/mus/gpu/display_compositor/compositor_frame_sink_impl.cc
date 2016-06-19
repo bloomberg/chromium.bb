@@ -15,7 +15,7 @@ namespace gpu {
 namespace {
 
 void CallCallback(
-    const mojom::CompositorFrameSink::SubmitCompositorFrameCallback& callback,
+    const mojo::Callback<void(mojom::CompositorFrameDrawStatus)>& callback,
     cc::SurfaceDrawStatus draw_status) {
   callback.Run(static_cast<mojom::CompositorFrameDrawStatus>(draw_status));
 }

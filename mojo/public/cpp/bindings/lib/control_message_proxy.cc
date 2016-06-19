@@ -20,7 +20,7 @@ namespace internal {
 
 namespace {
 
-using RunCallback = base::Callback<void(QueryVersionResultPtr)>;
+using RunCallback = Callback<void(QueryVersionResultPtr)>;
 
 class RunResponseForwardToCallback : public MessageReceiver {
  public:
@@ -88,7 +88,7 @@ void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
   ALLOW_UNUSED_LOCAL(ok);
 }
 
-void RunVersionCallback(const base::Callback<void(uint32_t)>& callback,
+void RunVersionCallback(const Callback<void(uint32_t)>& callback,
                         QueryVersionResultPtr query_version_result) {
   callback.Run(query_version_result->version);
 }
@@ -100,7 +100,7 @@ ControlMessageProxy::ControlMessageProxy(MessageReceiverWithResponder* receiver)
 }
 
 void ControlMessageProxy::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
+    const Callback<void(uint32_t)>& callback) {
   SendRunMessage(receiver_, QueryVersion::New(),
                  base::Bind(&RunVersionCallback, callback), &context_);
 }

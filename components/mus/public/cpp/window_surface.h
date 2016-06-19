@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -36,7 +35,7 @@ class WindowSurface : public mojom::SurfaceClient {
   void BindToThread();
 
   void SubmitCompositorFrame(mojom::CompositorFramePtr frame,
-                             const base::Closure& callback);
+                             const mojo::Closure& callback);
 
   void set_client(WindowSurfaceClient* client) { client_ = client; }
 

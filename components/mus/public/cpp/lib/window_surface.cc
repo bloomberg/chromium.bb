@@ -35,7 +35,7 @@ void WindowSurface::BindToThread() {
 }
 
 void WindowSurface::SubmitCompositorFrame(mojom::CompositorFramePtr frame,
-                                          const base::Closure& callback) {
+                                          const mojo::Closure& callback) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!surface_)

@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,7 +20,7 @@ namespace mojo {
 namespace test {
 namespace {
 
-typedef base::Callback<void(double)> CalcCallback;
+typedef mojo::Callback<void(double)> CalcCallback;
 
 class MathCalculatorImpl : public math::Calculator {
  public:

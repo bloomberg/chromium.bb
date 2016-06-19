@@ -172,7 +172,7 @@ void BitmapUploader::Upload() {
   frame->passes.push_back(std::move(pass));
 
   // TODO(rjkroege, fsamuel): We should throttle frames.
-  surface_->SubmitCompositorFrame(std::move(frame), base::Closure());
+  surface_->SubmitCompositorFrame(std::move(frame), mojo::Closure());
 }
 
 uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {

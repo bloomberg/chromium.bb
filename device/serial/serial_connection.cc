@@ -39,28 +39,29 @@ SerialConnection::~SerialConnection() {
   io_handler_->CancelWrite(serial::SendError::DISCONNECTED);
 }
 
-void SerialConnection::GetInfo(const GetInfoCallback& callback) {
+void SerialConnection::GetInfo(
+    const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback) {
   callback.Run(io_handler_->GetPortInfo());
 }
 
 void SerialConnection::SetOptions(serial::ConnectionOptionsPtr options,
-                                  const SetOptionsCallback& callback) {
+                                  const mojo::Callback<void(bool)>& callback) {
   callback.Run(io_handler_->ConfigurePort(*options));
   io_handler_->CancelRead(device::serial::ReceiveError::NONE);
 }
 
 void SerialConnection::SetControlSignals(
     serial::HostControlSignalsPtr signals,
-    const SetControlSignalsCallback& callback) {
+    const mojo::Callback<void(bool)>& callback) {
   callback.Run(io_handler_->SetControlSignals(*signals));
 }
 
 void SerialConnection::GetControlSignals(
-    const GetControlSignalsCallback& callback) {
+    const mojo::Callback<void(serial::DeviceControlSignalsPtr)>& callback) {
   callback.Run(io_handler_->GetControlSignals());
 }
 
-void SerialConnection::Flush(const FlushCallback& callback) {
+void SerialConnection::Flush(const mojo::Callback<void(bool)>& callback) {
   callback.Run(io_handler_->Flush());
 }
 

@@ -51,7 +51,7 @@ class InterfaceImpl : public sample::Provider {
  public:
   InterfaceImpl()
       : last_server_value_seen_(0),
-        callback_saved_(new EchoIntCallback) {}
+        callback_saved_(new Callback<void(int32_t)>()) {}
 
   ~InterfaceImpl() override {
     if (callback_saved_) {
@@ -78,7 +78,7 @@ class InterfaceImpl : public sample::Provider {
   // sample::Provider implementation
 
   // Saves its two input values in member variables and does nothing else.
-  void EchoInt(int32_t x, const EchoIntCallback& callback) override {
+  void EchoInt(int32_t x, const Callback<void(int32_t)>& callback) override {
     last_server_value_seen_ = x;
     *callback_saved_ = callback;
     if (!closure_.is_null()) {
@@ -88,23 +88,24 @@ class InterfaceImpl : public sample::Provider {
   }
 
   void EchoString(const String& a,
-                  const EchoStringCallback& callback) override {
+                  const Callback<void(String)>& callback) override {
     CHECK(false) << "Not implemented.";
   }
 
   void EchoStrings(const String& a,
                    const String& b,
-                   const EchoStringsCallback& callback) override {
+                   const Callback<void(String, String)>& callback) override {
     CHECK(false) << "Not implemented.";
   }
 
   void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
-      const EchoMessagePipeHandleCallback& callback) override {
+      const Callback<void(ScopedMessagePipeHandle)>& callback) override {
     CHECK(false) << "Not implemented.";
   }
 
-  void EchoEnum(sample::Enum a, const EchoEnumCallback& callback) override {
+  void EchoEnum(sample::Enum a,
+                const Callback<void(sample::Enum)>& callback) override {
     CHECK(false) << "Not implemented.";
   }
 
@@ -116,7 +117,7 @@ class InterfaceImpl : public sample::Provider {
 
  private:
   int32_t last_server_value_seen_;
-  EchoIntCallback* callback_saved_;
+  Callback<void(int32_t)>* callback_saved_;
   base::Closure closure_;
 };
 

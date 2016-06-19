@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "cc/ipc/surface_id.mojom.h"
@@ -345,7 +344,7 @@ class WindowTree : public mojom::WindowTree,
                      mojom::OrderDirection direction) override;
   void GetWindowTree(
       Id window_id,
-      const base::Callback<void(mojo::Array<mojom::WindowDataPtr>)>& callback)
+      const mojo::Callback<void(mojo::Array<mojom::WindowDataPtr>)>& callback)
       override;
   void SetCapture(uint32_t change_id, Id window_id) override;
   void ReleaseCapture(uint32_t change_id, Id window_id) override;

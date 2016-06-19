@@ -26,6 +26,8 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
   ~BackgroundSyncClientImpl() override;
 
  private:
+  using SyncCallback =
+      mojo::Callback<void(blink::mojom::ServiceWorkerEventStatus)>;
   explicit BackgroundSyncClientImpl(
       mojo::InterfaceRequest<blink::mojom::BackgroundSyncServiceClient>
           request);

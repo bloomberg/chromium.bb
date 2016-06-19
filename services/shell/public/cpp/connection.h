@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "services/shell/public/cpp/connect.h"
 #include "services/shell/public/cpp/identity.h"
@@ -135,7 +134,7 @@ class Connection {
   // shell and remote metadata is available. Useful only for connections created
   // via Connector::Connect(). Once the connection is complete, metadata is
   // available immediately.
-  virtual void AddConnectionCompletedClosure(const base::Closure& callback) = 0;
+  virtual void AddConnectionCompletedClosure(const mojo::Closure& callback) = 0;
 
   // Returns true if the Shell allows |interface_name| to be exposed to the
   // remote application.

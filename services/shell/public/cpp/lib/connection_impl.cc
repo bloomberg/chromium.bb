@@ -85,7 +85,7 @@ uint32_t ConnectionImpl::GetRemoteInstanceID() const {
 }
 
 void ConnectionImpl::AddConnectionCompletedClosure(
-    const base::Closure& callback) {
+    const mojo::Closure& callback) {
   if (IsPending())
     connection_completed_callbacks_.push_back(callback);
   else
@@ -126,7 +126,7 @@ void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
       State::CONNECTED : State::DISCONNECTED;
   remote_id_ = target_application_id;
   remote_.set_user_id(target_user_id);
-  std::vector<base::Closure> callbacks;
+  std::vector<mojo::Closure> callbacks;
   callbacks.swap(connection_completed_callbacks_);
   for (auto callback : callbacks)
     callback.Run();

@@ -17,6 +17,12 @@ namespace content {
 
 namespace {
 
+template<typename R, typename... Args>
+void RunMojoCallback(const mojo::Callback<R(Args...)>& callback, Args... args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  callback.Run(std::forward<Args>(args)...);
+}
+
 void RunFailedGetCapabilitiesCallback(
     const ImageCaptureImpl::GetCapabilitiesCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -32,7 +38,8 @@ void RunTakePhotoCallbackOnUIThread(
     mojo::Array<uint8_t> data) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, mime_type, base::Passed(std::move(data))));
+      base::Bind(&RunMojoCallback<void, mojo::String, mojo::Array<uint8_t>>,
+                 callback, mime_type, base::Passed(std::move(data))));
 }
 
 void RunFailedTakePhotoCallback(const ImageCaptureImpl::TakePhotoCallback& cb) {

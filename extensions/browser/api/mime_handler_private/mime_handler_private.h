@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_MIME_HANDLER_PRIVATE_MIME_HANDLER_PRIVATE_H_
 #define EXTENSIONS_BROWSER_API_MIME_HANDLER_PRIVATE_MIME_HANDLER_PRIVATE_H_
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -29,11 +28,12 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
   ~MimeHandlerServiceImpl() override;
 
   // mime_handler::MimeHandlerService overrides.
-  void GetStreamInfo(const GetStreamInfoCallback& callback) override;
-  void AbortStream(const AbortStreamCallback& callback) override;
+  void GetStreamInfo(const mojo::Callback<void(mime_handler::StreamInfoPtr)>&
+                         callback) override;
+  void AbortStream(const mojo::Callback<void()>& callback) override;
 
   // Invoked by the callback used to abort |stream_|.
-  void OnStreamClosed(const AbortStreamCallback& callback);
+  void OnStreamClosed(const mojo::Callback<void()>& callback);
 
   // A handle to the stream being handled by the MimeHandlerViewGuest.
   base::WeakPtr<StreamContainer> stream_;

@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -34,6 +33,10 @@ struct LoadCommittedDetails;
 struct PresentationSessionMessage;
 class RenderFrameHost;
 
+using NewSessionMojoCallback =
+    mojo::Callback<void(blink::mojom::PresentationSessionInfoPtr,
+                        blink::mojom::PresentationErrorPtr)>;
+
 // Implementation of Mojo PresentationService.
 // It handles Presentation API requests coming from Blink / renderer process
 // and delegates the requests to the embedder's media router via
@@ -47,10 +50,6 @@ class CONTENT_EXPORT PresentationServiceImpl
       public WebContentsObserver,
       public PresentationServiceDelegate::Observer {
  public:
-  using NewSessionCallback =
-      base::Callback<void(blink::mojom::PresentationSessionInfoPtr,
-                          blink::mojom::PresentationErrorPtr)>;
-
   ~PresentationServiceImpl() override;
 
   // Static factory method to create an instance of PresentationServiceImpl.
@@ -96,9 +95,11 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
+  using PresentationSessionMojoCallback =
+      mojo::Callback<void(blink::mojom::PresentationSessionInfoPtr)>;
   using SessionMessagesCallback =
-      base::Callback<void(mojo::Array<blink::mojom::SessionMessagePtr>)>;
-  using SendSessionMessageCallback = base::Callback<void(bool)>;
+      mojo::Callback<void(mojo::Array<blink::mojom::SessionMessagePtr>)>;
+  using SendMessageMojoCallback = mojo::Callback<void(bool)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -122,21 +123,21 @@ class CONTENT_EXPORT PresentationServiceImpl
     PresentationServiceImpl* const service_;
   };
 
-  // Ensures the provided NewSessionCallback is invoked exactly once
+  // Ensures the provided NewSessionMojoCallback is invoked exactly once
   // before it goes out of scope.
-  class NewSessionCallbackWrapper {
+  class NewSessionMojoCallbackWrapper {
    public:
-    explicit NewSessionCallbackWrapper(
-        const NewSessionCallback& callback);
-    ~NewSessionCallbackWrapper();
+    explicit NewSessionMojoCallbackWrapper(
+        const NewSessionMojoCallback& callback);
+    ~NewSessionMojoCallbackWrapper();
 
     void Run(blink::mojom::PresentationSessionInfoPtr session,
              blink::mojom::PresentationErrorPtr error);
 
    private:
-    NewSessionCallback callback_;
+    NewSessionMojoCallback callback_;
 
-    DISALLOW_COPY_AND_ASSIGN(NewSessionCallbackWrapper);
+    DISALLOW_COPY_AND_ASSIGN(NewSessionMojoCallbackWrapper);
   };
 
   // |render_frame_host|: The RFH this instance is associated with.
@@ -155,14 +156,14 @@ class CONTENT_EXPORT PresentationServiceImpl
   void StopListeningForScreenAvailability(const mojo::String& url) override;
   void StartSession(
       const mojo::String& presentation_url,
-      const NewSessionCallback& callback) override;
+      const NewSessionMojoCallback& callback) override;
   void JoinSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id,
-      const NewSessionCallback& callback) override;
+      const NewSessionMojoCallback& callback) override;
   void SendSessionMessage(blink::mojom::PresentationSessionInfoPtr session_info,
                           blink::mojom::SessionMessagePtr session_message,
-                          const SendSessionMessageCallback& callback) override;
+                          const SendMessageMojoCallback& callback) override;
   void CloseConnection(const mojo::String& presentation_url,
                        const mojo::String& presentation_id) override;
   void Terminate(const mojo::String& presentation_url,
@@ -235,7 +236,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Associates a JoinSession |callback| with a unique request ID and
   // stores it in a map.
   // Returns a positive value on success.
-  int RegisterJoinSessionCallback(const NewSessionCallback& callback);
+  int RegisterJoinSessionCallback(const NewSessionMojoCallback& callback);
 
   // Invoked by the embedder's PresentationServiceDelegate when a
   // PresentationConnection's state has changed.
@@ -263,10 +264,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // For StartSession requests.
   // Set to a positive value when a StartSession request is being processed.
   int start_session_request_id_;
-  std::unique_ptr<NewSessionCallbackWrapper> pending_start_session_cb_;
+  std::unique_ptr<NewSessionMojoCallbackWrapper> pending_start_session_cb_;
 
   // For JoinSession requests.
-  base::hash_map<int, linked_ptr<NewSessionCallbackWrapper>>
+  base::hash_map<int, linked_ptr<NewSessionMojoCallbackWrapper>>
       pending_join_session_cbs_;
 
   // RAII binding of |this| to an Presentation interface request.
@@ -274,7 +275,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::unique_ptr<mojo::Binding<blink::mojom::PresentationService>> binding_;
 
   // There can be only one send message request at a time.
-  std::unique_ptr<SendSessionMessageCallback> send_message_callback_;
+  std::unique_ptr<SendMessageMojoCallback> send_message_callback_;
 
   std::unique_ptr<SessionMessagesCallback> on_session_messages_callback_;
 

@@ -55,23 +55,29 @@ class MEDIA_MOJO_EXPORT MojoCdmService
                   const mojo::String& security_origin,
                   mojom::CdmConfigPtr cdm_config,
                   const InitializeCallback& callback) final;
-  void SetServerCertificate(mojo::Array<uint8_t> certificate_data,
-                            const SetServerCertificateCallback& callback) final;
+  void SetServerCertificate(
+      mojo::Array<uint8_t> certificate_data,
+      const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) final;
   void CreateSessionAndGenerateRequest(
       mojom::ContentDecryptionModule::SessionType session_type,
       mojom::ContentDecryptionModule::InitDataType init_data_type,
       mojo::Array<uint8_t> init_data,
-      const CreateSessionAndGenerateRequestCallback& callback) final;
+      const mojo::Callback<void(mojom::CdmPromiseResultPtr, mojo::String)>&
+          callback) final;
   void LoadSession(mojom::ContentDecryptionModule::SessionType session_type,
                    const mojo::String& session_id,
-                   const LoadSessionCallback& callback) final;
-  void UpdateSession(const mojo::String& session_id,
-                     mojo::Array<uint8_t> response,
-                     const UpdateSessionCallback& callback) final;
-  void CloseSession(const mojo::String& session_id,
-                    const CloseSessionCallback& callback) final;
-  void RemoveSession(const mojo::String& session_id,
-                     const RemoveSessionCallback& callback) final;
+                   const mojo::Callback<void(mojom::CdmPromiseResultPtr,
+                                             mojo::String)>& callback) final;
+  void UpdateSession(
+      const mojo::String& session_id,
+      mojo::Array<uint8_t> response,
+      const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) final;
+  void CloseSession(
+      const mojo::String& session_id,
+      const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) final;
+  void RemoveSession(
+      const mojo::String& session_id,
+      const mojo::Callback<void(mojom::CdmPromiseResultPtr)>& callback) final;
 
   // Get CDM to be used by the media pipeline.
   scoped_refptr<MediaKeys> GetCdm();

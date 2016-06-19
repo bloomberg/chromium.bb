@@ -5,9 +5,9 @@
 #ifndef MEDIA_CAPTURE_VIDEO_SCOPED_RESULT_CALLBACK_H_
 #define MEDIA_CAPTURE_VIDEO_SCOPED_RESULT_CALLBACK_H_
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/callback.h"
 
 namespace media {
 
@@ -41,7 +41,10 @@ class ScopedResultCallback {
   template <typename... Args>
   void Run(Args... args) {
     on_error_callback_.Reset();
-    base::ResetAndReturn(&callback_).Run(std::forward<Args>(args)...);
+    // TODO(mcasas): Use base::ResetAndReturn() when mojo::Callback<> is
+    // compatible with base::Callback<>, see https://crbug.com/596521.
+    callback_.Run(std::forward<Args>(args)...);
+    callback_.Reset();
   }
 
  private:

@@ -21,11 +21,13 @@ class BatteryMonitorImpl : public BatteryMonitor {
       mojo::InterfaceRequest<BatteryMonitor> request);
 
  private:
+  typedef mojo::Callback<void(BatteryStatusPtr)> BatteryStatusCallback;
+
   explicit BatteryMonitorImpl(mojo::InterfaceRequest<BatteryMonitor> request);
   ~BatteryMonitorImpl() override;
 
   // BatteryMonitor methods:
-  void QueryNextStatus(const QueryNextStatusCallback& callback) override;
+  void QueryNextStatus(const BatteryStatusCallback& callback) override;
 
   void RegisterSubscription();
   void DidChange(const BatteryStatus& battery_status);
@@ -34,7 +36,7 @@ class BatteryMonitorImpl : public BatteryMonitor {
   mojo::StrongBinding<BatteryMonitor> binding_;
   std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>
       subscription_;
-  QueryNextStatusCallback callback_;
+  BatteryStatusCallback callback_;
   BatteryStatus status_;
   bool status_to_report_;
 
