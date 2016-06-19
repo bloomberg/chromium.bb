@@ -201,7 +201,7 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
         DCHECK(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
         DCHECK(currentIt->hasValidClient());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-        CHECK(currentIt->client().isAlive());
+        CHECK(clientCacheIsValid(currentIt->client()) || !currentIt->isCacheable());
 #endif
         updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()), gpuAnalyzer);
         ++currentIt;
@@ -280,7 +280,9 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
 
         if (newDisplayItemHasCachedType) {
             DCHECK(newDisplayItem.isCached());
-            DCHECK(clientCacheIsValid(newDisplayItem.client()));
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+            CHECK(clientCacheIsValid(newDisplayItem.client()));
+#endif
             if (!isSynchronized) {
                 currentIt = findOutOfOrderCachedItem(newDisplayItemId, outOfOrderIndexContext);
 

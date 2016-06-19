@@ -2853,10 +2853,16 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 
 void PaintLayer::setNeedsRepaint()
 {
-    m_needsRepaint = true;
+    setNeedsRepaintInternal();
 
     // Do this unconditionally to ensure container chain is marked when compositing status of the layer changes.
     markCompositingContainerChainForNeedsRepaint();
+}
+
+void PaintLayer::setNeedsRepaintInternal()
+{
+    m_needsRepaint = true;
+    setDisplayItemsUncached(); // Invalidate as a display item client.
 }
 
 void PaintLayer::markCompositingContainerChainForNeedsRepaint()
@@ -2884,7 +2890,7 @@ void PaintLayer::markCompositingContainerChainForNeedsRepaint()
         }
         if (container->m_needsRepaint)
             break;
-        container->m_needsRepaint = true;
+        container->setNeedsRepaintInternal();
         layer = container;
     }
 }

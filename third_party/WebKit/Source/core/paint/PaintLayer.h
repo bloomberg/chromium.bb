@@ -772,6 +772,7 @@ private:
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void clearPaginationRecursive();
 
+    void setNeedsRepaintInternal();
     void markCompositingContainerChainForNeedsRepaint();
 
     PaintLayerRareData& ensureRareData()
