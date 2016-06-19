@@ -9,6 +9,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/StyleImage.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -113,9 +115,9 @@ class UnderlyingImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingImageChecker() final {}
 
-    static PassOwnPtr<UnderlyingImageChecker> create(const InterpolationValue& underlying)
+    static std::unique_ptr<UnderlyingImageChecker> create(const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingImageChecker(underlying));
+        return wrapUnique(new UnderlyingImageChecker(underlying));
     }
 
 private:
@@ -151,9 +153,9 @@ class ParentImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentImageChecker() final {}
 
-    static PassOwnPtr<ParentImageChecker> create(CSSPropertyID property, StyleImage* inheritedImage)
+    static std::unique_ptr<ParentImageChecker> create(CSSPropertyID property, StyleImage* inheritedImage)
     {
-        return adoptPtr(new ParentImageChecker(property, inheritedImage));
+        return wrapUnique(new ParentImageChecker(property, inheritedImage));
     }
 
 private:

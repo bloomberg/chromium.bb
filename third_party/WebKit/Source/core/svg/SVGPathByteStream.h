@@ -21,8 +21,9 @@
 #define SVGPathByteStream_h
 
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -35,14 +36,14 @@ union ByteType {
 class SVGPathByteStream {
     USING_FAST_MALLOC(SVGPathByteStream);
 public:
-    static PassOwnPtr<SVGPathByteStream> create()
+    static std::unique_ptr<SVGPathByteStream> create()
     {
-        return adoptPtr(new SVGPathByteStream);
+        return wrapUnique(new SVGPathByteStream);
     }
 
-    PassOwnPtr<SVGPathByteStream> clone() const
+    std::unique_ptr<SVGPathByteStream> clone() const
     {
-        return adoptPtr(new SVGPathByteStream(m_data));
+        return wrapUnique(new SVGPathByteStream(m_data));
     }
 
     typedef Vector<unsigned char> Data;

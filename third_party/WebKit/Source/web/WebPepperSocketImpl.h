@@ -37,8 +37,8 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebPepperSocket.h"
 #include "public/web/WebPepperSocketClient.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -69,7 +69,7 @@ public:
     // WebSocketChannelClient methods proxied by WebPepperSocketChannelClientProxy.
     void didConnect(const String& subprotocol, const String& extensions);
     void didReceiveTextMessage(const String& payload);
-    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload);
+    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);
     void didError();
     void didConsumeBufferedAmount(unsigned long consumed);
     void didStartClosingHandshake();

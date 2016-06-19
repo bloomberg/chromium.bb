@@ -9,7 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
-
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -120,7 +120,7 @@ private:
     bool m_detached;
 
     SourceStream* m_stream;
-    OwnPtr<v8::ScriptCompiler::StreamedSource> m_source;
+    std::unique_ptr<v8::ScriptCompiler::StreamedSource> m_source;
     bool m_loadingFinished; // Whether loading from the network is done.
     // Whether the V8 side processing is done. Will be used by the main thread
     // and the streamer thread; guarded by m_mutex.
@@ -151,7 +151,7 @@ private:
     // Encoding of the streamed script. Saved for sanity checking purposes.
     v8::ScriptCompiler::StreamedSource::Encoding m_encoding;
 
-    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
+    std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
 };
 
 } // namespace blink

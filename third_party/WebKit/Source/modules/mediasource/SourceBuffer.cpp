@@ -53,8 +53,8 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/WebSourceBuffer.h"
 #include "wtf/MathExtras.h"
-
 #include <limits>
+#include <memory>
 #include <sstream>
 
 using blink::WebSourceBuffer;
@@ -96,14 +96,14 @@ WTF::String webTimeRangesToString(const WebTimeRanges& ranges)
 
 } // namespace
 
-SourceBuffer* SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
+SourceBuffer* SourceBuffer::create(std::unique_ptr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
     SourceBuffer* sourceBuffer = new SourceBuffer(std::move(webSourceBuffer), source, asyncEventQueue);
     sourceBuffer->suspendIfNeeded();
     return sourceBuffer;
 }
 
-SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
+SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(source->getExecutionContext())
     , m_webSourceBuffer(std::move(webSourceBuffer))

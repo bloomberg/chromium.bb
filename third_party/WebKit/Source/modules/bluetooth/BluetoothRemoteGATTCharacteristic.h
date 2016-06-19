@@ -13,9 +13,8 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,11 +40,11 @@ class BluetoothRemoteGATTCharacteristic final
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
 public:
-    explicit BluetoothRemoteGATTCharacteristic(ExecutionContext*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
+    explicit BluetoothRemoteGATTCharacteristic(ExecutionContext*, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>);
 
     // Interface required by CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebBluetoothRemoteGATTCharacteristicInit>;
-    static BluetoothRemoteGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
+    using WebType = std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>;
+    static BluetoothRemoteGATTCharacteristic* take(ScriptPromiseResolver*, std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>);
 
     // Save value.
     void setValue(DOMDataView*);
@@ -88,7 +87,7 @@ protected:
     void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
 
 private:
-    OwnPtr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;
+    std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;
     bool m_stopped;
     Member<BluetoothCharacteristicProperties> m_properties;
     Member<DOMDataView> m_value;

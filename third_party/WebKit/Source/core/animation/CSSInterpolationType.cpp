@@ -10,14 +10,16 @@
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ResolvedVariableChecker> create(CSSPropertyID property, const CSSVariableReferenceValue* variableReference, const CSSValue* resolvedValue)
+    static std::unique_ptr<ResolvedVariableChecker> create(CSSPropertyID property, const CSSVariableReferenceValue* variableReference, const CSSValue* resolvedValue)
     {
-        return adoptPtr(new ResolvedVariableChecker(property, variableReference, resolvedValue));
+        return wrapUnique(new ResolvedVariableChecker(property, variableReference, resolvedValue));
     }
 
 private:

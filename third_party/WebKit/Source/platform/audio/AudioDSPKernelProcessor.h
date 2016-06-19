@@ -33,10 +33,9 @@
 
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioProcessor.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,7 +54,7 @@ public:
 
     // Subclasses create the appropriate type of processing kernel here.
     // We'll call this to create a kernel for each channel.
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() = 0;
+    virtual std::unique_ptr<AudioDSPKernel> createKernel() = 0;
 
     // AudioProcessor methods
     void initialize() override;
@@ -69,7 +68,7 @@ public:
     double latencyTime() const override;
 
 protected:
-    Vector<OwnPtr<AudioDSPKernel>> m_kernels;
+    Vector<std::unique_ptr<AudioDSPKernel>> m_kernels;
     mutable Mutex m_processLock;
     bool m_hasJustReset;
 };

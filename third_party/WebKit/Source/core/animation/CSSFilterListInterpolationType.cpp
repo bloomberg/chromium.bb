@@ -9,6 +9,8 @@
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -16,9 +18,9 @@ namespace {
 
 class UnderlyingFilterListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingFilterListChecker> create(PassRefPtr<NonInterpolableList> nonInterpolableList)
+    static std::unique_ptr<UnderlyingFilterListChecker> create(PassRefPtr<NonInterpolableList> nonInterpolableList)
     {
-        return adoptPtr(new UnderlyingFilterListChecker(nonInterpolableList));
+        return wrapUnique(new UnderlyingFilterListChecker(nonInterpolableList));
     }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -43,9 +45,9 @@ private:
 
 class InheritedFilterListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<InheritedFilterListChecker> create(CSSPropertyID property, const FilterOperations& filterOperations)
+    static std::unique_ptr<InheritedFilterListChecker> create(CSSPropertyID property, const FilterOperations& filterOperations)
     {
-        return adoptPtr(new InheritedFilterListChecker(property, filterOperations));
+        return wrapUnique(new InheritedFilterListChecker(property, filterOperations));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue&) const final
@@ -67,7 +69,7 @@ private:
 InterpolationValue convertFilterList(const FilterOperations& filterOperations, double zoom)
 {
     size_t length = filterOperations.size();
-    OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
+    std::unique_ptr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
         InterpolationValue filterResult = FilterInterpolationFunctions::maybeConvertFilter(*filterOperations.operations()[i], zoom);
@@ -111,7 +113,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(const CSSVa
 
     const CSSValueList& list = toCSSValueList(value);
     size_t length = list.length();
-    OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
+    std::unique_ptr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
         InterpolationValue itemResult = FilterInterpolationFunctions::maybeConvertCSSFilter(list.item(i));
@@ -151,7 +153,7 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::maybeMergeSingles(Int
     size_t longerLength = toNonInterpolableList(*longer.nonInterpolableValue).length();
     InterpolableList& shorterInterpolableList = toInterpolableList(*shorter.interpolableValue);
     const NonInterpolableList& longerNonInterpolableList = toNonInterpolableList(*longer.nonInterpolableValue);
-    OwnPtr<InterpolableList> extendedInterpolableList = InterpolableList::create(longerLength);
+    std::unique_ptr<InterpolableList> extendedInterpolableList = InterpolableList::create(longerLength);
     for (size_t i = 0; i < longerLength; i++) {
         if (i < shorterLength)
             extendedInterpolableList->set(i, std::move(shorterInterpolableList.getMutable(i)));
@@ -188,7 +190,7 @@ void CSSFilterListInterpolationType::composite(UnderlyingValueOwner& underlyingV
     if (length <= underlyingLength)
         return;
 
-    OwnPtr<InterpolableList> extendedInterpolableList = InterpolableList::create(length);
+    std::unique_ptr<InterpolableList> extendedInterpolableList = InterpolableList::create(length);
     for (size_t i = 0; i < length; i++) {
         if (i < underlyingLength)
             extendedInterpolableList->set(i, std::move(underlyingInterpolableList.getMutable(i)));

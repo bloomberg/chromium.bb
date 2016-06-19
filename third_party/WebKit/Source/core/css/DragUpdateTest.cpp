@@ -10,6 +10,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +19,7 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
     // Check that when dragging the div in the document below, you only get a
     // single element style recalc.
 
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     HTMLDocument& document = toHTMLDocument(dummyPageHolder->document());
     document.documentElement()->setInnerHTML("<style>div {width:100px;height:100px} div:-webkit-drag { background-color: green }</style>"
         "<div>"
@@ -44,7 +45,7 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate)
     // Check that when dragging the div in the document below, you get a
     // single element style recalc.
 
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     HTMLDocument& document = toHTMLDocument(dummyPageHolder->document());
     document.documentElement()->setInnerHTML("<style>div {width:100px;height:100px} div:-webkit-drag .drag { background-color: green }</style>"
         "<div>"
@@ -70,7 +71,7 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate)
     // Check that when dragging the div in the document below, you get a
     // single element style recalc.
 
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     HTMLDocument& document = toHTMLDocument(dummyPageHolder->document());
     document.documentElement()->setInnerHTML("<style>div {width:100px;height:100px} div:-webkit-drag + .drag { background-color: green }</style>"
         "<div>"

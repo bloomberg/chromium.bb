@@ -4,10 +4,12 @@
 
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
 
+#include <memory>
+
 namespace blink {
 
 
-PassOwnPtr<InterpolableNumber> consumeControlAxis(double value, bool isAbsolute, double currentValue)
+std::unique_ptr<InterpolableNumber> consumeControlAxis(double value, bool isAbsolute, double currentValue)
 {
     return InterpolableNumber::create(isAbsolute ? value : currentValue + value);
 }
@@ -18,7 +20,7 @@ double consumeInterpolableControlAxis(const InterpolableValue* number, bool isAb
     return isAbsolute ? value : value - currentValue;
 }
 
-PassOwnPtr<InterpolableNumber> consumeCoordinateAxis(double value, bool isAbsolute, double& currentValue)
+std::unique_ptr<InterpolableNumber> consumeCoordinateAxis(double value, bool isAbsolute, double& currentValue)
 {
     if (isAbsolute)
         currentValue = value;
@@ -34,7 +36,7 @@ double consumeInterpolableCoordinateAxis(const InterpolableValue* number, bool i
     return isAbsolute ? currentValue : currentValue - previousValue;
 }
 
-PassOwnPtr<InterpolableValue> consumeClosePath(const PathSegmentData&, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeClosePath(const PathSegmentData&, PathCoordinates& coordinates)
 {
     coordinates.currentX = coordinates.initialX;
     coordinates.currentY = coordinates.initialY;
@@ -51,10 +53,10 @@ PathSegmentData consumeInterpolableClosePath(const InterpolableValue&, SVGPathSe
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeSingleCoordinate(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeSingleCoordinate(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
-    OwnPtr<InterpolableList> result = InterpolableList::create(2);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
     result->set(1, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
 
@@ -85,10 +87,10 @@ PathSegmentData consumeInterpolableSingleCoordinate(const InterpolableValue& val
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeCurvetoCubic(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeCurvetoCubic(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
-    OwnPtr<InterpolableList> result = InterpolableList::create(6);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(6);
     result->set(0, consumeControlAxis(segment.x1(), isAbsolute, coordinates.currentX));
     result->set(1, consumeControlAxis(segment.y1(), isAbsolute, coordinates.currentY));
     result->set(2, consumeControlAxis(segment.x2(), isAbsolute, coordinates.currentX));
@@ -113,10 +115,10 @@ PathSegmentData consumeInterpolableCurvetoCubic(const InterpolableValue& value, 
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeCurvetoQuadratic(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeCurvetoQuadratic(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
-    OwnPtr<InterpolableList> result = InterpolableList::create(4);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(4);
     result->set(0, consumeControlAxis(segment.x1(), isAbsolute, coordinates.currentX));
     result->set(1, consumeControlAxis(segment.y1(), isAbsolute, coordinates.currentY));
     result->set(2, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
@@ -137,10 +139,10 @@ PathSegmentData consumeInterpolableCurvetoQuadratic(const InterpolableValue& val
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeArc(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeArc(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
-    OwnPtr<InterpolableList> result = InterpolableList::create(7);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(7);
     result->set(0, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
     result->set(1, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
     result->set(2, InterpolableNumber::create(segment.r1()));
@@ -167,7 +169,7 @@ PathSegmentData consumeInterpolableArc(const InterpolableValue& value, SVGPathSe
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeLinetoHorizontal(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeLinetoHorizontal(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
     return consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX);
@@ -182,7 +184,7 @@ PathSegmentData consumeInterpolableLinetoHorizontal(const InterpolableValue& val
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeLinetoVertical(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeLinetoVertical(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
     return consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY);
@@ -197,10 +199,10 @@ PathSegmentData consumeInterpolableLinetoVertical(const InterpolableValue& value
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> consumeCurvetoCubicSmooth(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> consumeCurvetoCubicSmooth(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segment.command);
-    OwnPtr<InterpolableList> result = InterpolableList::create(4);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(4);
     result->set(0, consumeControlAxis(segment.x2(), isAbsolute, coordinates.currentX));
     result->set(1, consumeControlAxis(segment.y2(), isAbsolute, coordinates.currentY));
     result->set(2, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
@@ -221,7 +223,7 @@ PathSegmentData consumeInterpolableCurvetoCubicSmooth(const InterpolableValue& v
     return segment;
 }
 
-PassOwnPtr<InterpolableValue> SVGPathSegInterpolationFunctions::consumePathSeg(const PathSegmentData& segment, PathCoordinates& coordinates)
+std::unique_ptr<InterpolableValue> SVGPathSegInterpolationFunctions::consumePathSeg(const PathSegmentData& segment, PathCoordinates& coordinates)
 {
     switch (segment.command) {
     case PathSegClosePath:

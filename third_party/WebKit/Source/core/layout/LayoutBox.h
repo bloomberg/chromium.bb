@@ -28,6 +28,8 @@
 #include "core/layout/OverflowModel.h"
 #include "core/layout/ScrollEnums.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -87,12 +89,12 @@ public:
     LayoutBox* m_snapContainer;
     // For snap container, the descendant snap areas that contribute snap
     // points.
-    OwnPtr<SnapAreaSet> m_snapAreas;
+    std::unique_ptr<SnapAreaSet> m_snapAreas;
 
     SnapAreaSet& ensureSnapAreas()
     {
         if (!m_snapAreas)
-            m_snapAreas = adoptPtr(new SnapAreaSet);
+            m_snapAreas = wrapUnique(new SnapAreaSet);
 
         return *m_snapAreas;
     }
@@ -1059,7 +1061,7 @@ private:
     LayoutBoxRareData& ensureRareData()
     {
         if (!m_rareData)
-            m_rareData = adoptPtr(new LayoutBoxRareData());
+            m_rareData = wrapUnique(new LayoutBoxRareData());
         return *m_rareData.get();
     }
 
@@ -1122,13 +1124,13 @@ protected:
     LayoutUnit m_maxPreferredLogicalWidth;
 
     // Our overflow information.
-    OwnPtr<BoxOverflowModel> m_overflow;
+    std::unique_ptr<BoxOverflowModel> m_overflow;
 
 private:
     // The inline box containing this LayoutBox, for atomic inline elements.
     InlineBox* m_inlineBoxWrapper;
 
-    OwnPtr<LayoutBoxRareData> m_rareData;
+    std::unique_ptr<LayoutBoxRareData> m_rareData;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBox, isBox());

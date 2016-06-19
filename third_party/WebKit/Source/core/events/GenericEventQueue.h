@@ -30,7 +30,6 @@
 #include "core/events/EventQueue.h"
 #include "core/events/EventTarget.h"
 #include "platform/Timer.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

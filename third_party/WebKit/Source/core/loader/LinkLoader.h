@@ -41,7 +41,6 @@
 #include "platform/PrerenderClient.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

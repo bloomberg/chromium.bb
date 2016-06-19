@@ -48,7 +48,9 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
 #include "public/platform/Platform.h"
+#include "wtf/PtrUtil.h"
 #include <algorithm>
+#include <memory>
 
 namespace blink {
 
@@ -148,7 +150,7 @@ void PaintLayerStackingNode::rebuildZOrderLists()
                 PaintLayer* layer = toLayoutBoxModelObject(child)->layer();
                 // Create the buffer if it doesn't exist yet.
                 if (!m_posZOrderList)
-                    m_posZOrderList = adoptPtr(new Vector<PaintLayerStackingNode*>);
+                    m_posZOrderList = wrapUnique(new Vector<PaintLayerStackingNode*>);
                 m_posZOrderList->append(layer->stackingNode());
             }
         }
@@ -161,15 +163,15 @@ void PaintLayerStackingNode::rebuildZOrderLists()
     m_zOrderListsDirty = false;
 }
 
-void PaintLayerStackingNode::collectLayers(OwnPtr<Vector<PaintLayerStackingNode*>>& posBuffer, OwnPtr<Vector<PaintLayerStackingNode*>>& negBuffer)
+void PaintLayerStackingNode::collectLayers(std::unique_ptr<Vector<PaintLayerStackingNode*>>& posBuffer, std::unique_ptr<Vector<PaintLayerStackingNode*>>& negBuffer)
 {
     if (layer()->isInTopLayer())
         return;
 
     if (isStacked()) {
-        OwnPtr<Vector<PaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
+        std::unique_ptr<Vector<PaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
-            buffer = adoptPtr(new Vector<PaintLayerStackingNode*>);
+            buffer = wrapUnique(new Vector<PaintLayerStackingNode*>);
         buffer->append(this);
     }
 

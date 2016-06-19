@@ -48,6 +48,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -306,7 +307,7 @@ void TestWebRemoteFrameClient::frameDetached(DetachType type)
 
 void TestWebViewClient::initializeLayerTreeView()
 {
-    m_layerTreeView = adoptPtr(new WebLayerTreeViewImplForTesting);
+    m_layerTreeView = wrapUnique(new WebLayerTreeViewImplForTesting);
 }
 
 } // namespace FrameTestHelpers

@@ -26,10 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/DynamicsCompressorKernel.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
+#include "platform/audio/DynamicsCompressorKernel.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <cmath>
 
@@ -72,7 +73,7 @@ void DynamicsCompressorKernel::setNumberOfChannels(unsigned numberOfChannels)
 
     m_preDelayBuffers.clear();
     for (unsigned i = 0; i < numberOfChannels; ++i)
-        m_preDelayBuffers.append(adoptPtr(new AudioFloatArray(MaxPreDelayFrames)));
+        m_preDelayBuffers.append(wrapUnique(new AudioFloatArray(MaxPreDelayFrames)));
 }
 
 void DynamicsCompressorKernel::setPreDelayTime(float preDelayTime)

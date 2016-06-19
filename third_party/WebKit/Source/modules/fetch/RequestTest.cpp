@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 namespace {
@@ -27,7 +28,7 @@ public:
     ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
 };
 
 TEST_F(ServiceWorkerRequestTest, FromString)

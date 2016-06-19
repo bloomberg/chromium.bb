@@ -37,6 +37,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -479,7 +480,7 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
 
     if (catchUpIfNecessary == DoNotCatchUp || time < m_desiredFrameStartTime) {
         // Haven't yet reached time for next frame to start; delay until then.
-        m_frameTimer = adoptPtr(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimation));
+        m_frameTimer = wrapUnique(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimation));
         m_frameTimer->startOneShot(std::max(m_desiredFrameStartTime - time, 0.), BLINK_FROM_HERE);
     } else {
         // We've already reached or passed the time for the next frame to start.
@@ -503,7 +504,7 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
         // may be in the past, meaning the next time through this function we'll
         // kick off the next advancement sooner than this frame's duration would
         // suggest.
-        m_frameTimer = adoptPtr(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimationWithoutCatchUp));
+        m_frameTimer = wrapUnique(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimationWithoutCatchUp));
         m_frameTimer->startOneShot(0, BLINK_FROM_HERE);
     }
 }

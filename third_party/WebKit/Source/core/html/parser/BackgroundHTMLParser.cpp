@@ -33,7 +33,9 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,7 +82,7 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& i
 
 #endif
 
-void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, PassOwnPtr<WebTaskRunner> loadingTaskRunner)
+void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, std::unique_ptr<Configuration> config, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
 {
     new BackgroundHTMLParser(reference, std::move(config), documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData, std::move(loadingTaskRunner));
     // Caller must free by calling stop().
@@ -92,18 +94,18 @@ BackgroundHTMLParser::Configuration::Configuration()
 {
 }
 
-BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, PassOwnPtr<WebTaskRunner> loadingTaskRunner)
+BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, std::unique_ptr<Configuration> config, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
     : m_weakFactory(reference, this)
-    , m_token(adoptPtr(new HTMLToken))
+    , m_token(wrapUnique(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(config->options))
     , m_treeBuilderSimulator(config->options)
     , m_options(config->options)
     , m_outstandingTokenLimit(config->outstandingTokenLimit)
     , m_parser(config->parser)
-    , m_pendingTokens(adoptPtr(new CompactHTMLTokenStream))
+    , m_pendingTokens(wrapUnique(new CompactHTMLTokenStream))
     , m_pendingTokenLimit(config->pendingTokenLimit)
     , m_xssAuditor(std::move(config->xssAuditor))
-    , m_preloadScanner(adoptPtr(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
+    , m_preloadScanner(wrapUnique(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
     , m_decoder(std::move(config->decoder))
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_parsedChunkQueue(config->parsedChunkQueue.release())
@@ -124,7 +126,7 @@ void BackgroundHTMLParser::appendRawBytesFromParserThread(const char* data, int 
     updateDocument(m_decoder->decode(data, dataLength));
 }
 
-void BackgroundHTMLParser::appendRawBytesFromMainThread(PassOwnPtr<Vector<char>> buffer)
+void BackgroundHTMLParser::appendRawBytesFromMainThread(std::unique_ptr<Vector<char>> buffer)
 {
     ASSERT(m_decoder);
     updateDocument(m_decoder->decode(buffer->data(), buffer->size()));
@@ -137,7 +139,7 @@ void BackgroundHTMLParser::appendDecodedBytes(const String& input)
     pumpTokenizer();
 }
 
-void BackgroundHTMLParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
+void BackgroundHTMLParser::setDecoder(std::unique_ptr<TextResourceDecoder> decoder)
 {
     ASSERT(decoder);
     m_decoder = std::move(decoder);
@@ -168,7 +170,7 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
     appendDecodedBytes(decodedData);
 }
 
-void BackgroundHTMLParser::resumeFrom(PassOwnPtr<Checkpoint> checkpoint)
+void BackgroundHTMLParser::resumeFrom(std::unique_ptr<Checkpoint> checkpoint)
 {
     m_parser = checkpoint->parser;
     m_token = std::move(checkpoint->token);
@@ -240,7 +242,7 @@ void BackgroundHTMLParser::pumpTokenizer()
         {
             TextPosition position = TextPosition(m_input.current().currentLine(), m_input.current().currentColumn());
 
-            if (OwnPtr<XSSInfo> xssInfo = m_xssAuditor->filterToken(FilterTokenRequest(*m_token, m_sourceTracker, m_tokenizer->shouldAllowCDATA()))) {
+            if (std::unique_ptr<XSSInfo> xssInfo = m_xssAuditor->filterToken(FilterTokenRequest(*m_token, m_sourceTracker, m_tokenizer->shouldAllowCDATA()))) {
                 xssInfo->m_textPosition = position;
                 m_pendingXSSInfos.append(std::move(xssInfo));
             }
@@ -287,7 +289,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     checkThatXSSInfosAreSafeToSendToAnotherThread(m_pendingXSSInfos);
 #endif
 
-    OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
+    std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk = wrapUnique(new HTMLDocumentParser::ParsedChunk);
     TRACE_EVENT_WITH_FLOW0("blink,loading", "BackgroundHTMLParser::sendTokensToMainThread", chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
     chunk->preloads.swap(m_pendingPreloads);
     if (m_viewportDescription.set)
@@ -309,7 +311,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
             threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
     }
 
-    m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
+    m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);
 }
 
 } // namespace blink

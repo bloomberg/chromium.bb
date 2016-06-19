@@ -7,6 +7,7 @@
 
 #include "core/animation/InterpolationValue.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +19,7 @@ namespace FilterInterpolationFunctions {
 
 InterpolationValue maybeConvertCSSFilter(const CSSValue&);
 InterpolationValue maybeConvertFilter(const FilterOperation&, double zoom);
-PassOwnPtr<InterpolableValue> createNoneValue(const NonInterpolableValue&);
+std::unique_ptr<InterpolableValue> createNoneValue(const NonInterpolableValue&);
 bool filtersAreCompatible(const NonInterpolableValue&, const NonInterpolableValue&);
 FilterOperation* createFilter(const InterpolableValue&, const NonInterpolableValue&, const StyleResolverState&);
 

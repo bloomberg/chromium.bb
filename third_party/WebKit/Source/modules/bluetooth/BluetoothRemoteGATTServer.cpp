@@ -15,7 +15,6 @@
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -97,14 +96,14 @@ public:
 
         if (m_quantity == mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
             DCHECK_EQ(1u, webServices.size());
-            m_resolver->resolve(BluetoothRemoteGATTService::take(m_resolver, adoptPtr(webServices[0])));
+            m_resolver->resolve(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webServices[0])));
             return;
         }
 
         HeapVector<Member<BluetoothRemoteGATTService>> services;
         services.reserveInitialCapacity(webServices.size());
         for (WebBluetoothRemoteGATTService* webService : webServices) {
-            services.append(BluetoothRemoteGATTService::take(m_resolver, adoptPtr(webService)));
+            services.append(BluetoothRemoteGATTService::take(m_resolver, wrapUnique(webService)));
         }
         m_resolver->resolve(services);
     }

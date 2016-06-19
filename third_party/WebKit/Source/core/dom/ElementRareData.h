@@ -38,7 +38,7 @@
 #include "core/style/StyleInheritedData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -158,7 +158,7 @@ private:
     Member<AttrNodeList> m_attrNodeList;
     Member<InlineCSSStyleDeclaration> m_cssomWrapper;
     Member<InlineStylePropertyMap> m_cssomMapWrapper;
-    OwnPtr<CompositorProxiedPropertySet> m_proxiedProperties;
+    std::unique_ptr<CompositorProxiedPropertySet> m_proxiedProperties;
 
     Member<ElementAnimations> m_elementAnimations;
     Member<NodeIntersectionObserverData> m_intersectionObserverData;

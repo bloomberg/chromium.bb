@@ -15,6 +15,7 @@
 #include "core/style/ShadowList.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 namespace {
@@ -46,7 +47,7 @@ private:
     }
 
     LayoutText* m_layoutText;
-    OwnPtr<PaintController> m_paintController;
+    std::unique_ptr<PaintController> m_paintController;
     GraphicsContext m_context;
 };
 

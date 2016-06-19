@@ -12,7 +12,6 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"

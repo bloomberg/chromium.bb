@@ -27,8 +27,8 @@
 
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,7 +39,7 @@ public:
     DelayProcessor(float sampleRate, unsigned numberOfChannels, AudioParamHandler& delayTime, double maxDelayTime);
     ~DelayProcessor() override;
 
-    PassOwnPtr<AudioDSPKernel> createKernel() override;
+    std::unique_ptr<AudioDSPKernel> createKernel() override;
 
     AudioParamHandler& delayTime() const { return *m_delayTime; }
     double maxDelayTime() { return m_maxDelayTime; }

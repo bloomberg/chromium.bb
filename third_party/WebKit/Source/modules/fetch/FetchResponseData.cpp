@@ -11,6 +11,7 @@
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -189,7 +190,7 @@ FetchResponseData* FetchResponseData::clone(ScriptState* scriptState)
     FetchResponseData* newResponse = create();
     newResponse->m_type = m_type;
     if (m_terminationReason) {
-        newResponse->m_terminationReason = adoptPtr(new TerminationReason);
+        newResponse->m_terminationReason = wrapUnique(new TerminationReason);
         *newResponse->m_terminationReason = *m_terminationReason;
     }
     newResponse->m_url = m_url;

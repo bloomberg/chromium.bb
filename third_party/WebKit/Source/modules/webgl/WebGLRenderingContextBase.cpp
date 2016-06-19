@@ -93,11 +93,10 @@
 #include "public/platform/Platform.h"
 #include "public/platform/functional/WebFunction.h"
 #include "wtf/Functional.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
-
 #include <memory>
 
 namespace blink {
@@ -537,18 +536,18 @@ struct ContextProviderCreationInfo {
     Platform::GraphicsInfo* glInfo;
     ScriptState* scriptState;
     // Outputs.
-    OwnPtr<WebGraphicsContext3DProvider> createdContextProvider;
+    std::unique_ptr<WebGraphicsContext3DProvider> createdContextProvider;
 };
 
 static void createContextProviderOnMainThread(ContextProviderCreationInfo* creationInfo, WaitableEvent* waitableEvent)
 {
     ASSERT(isMainThread());
-    creationInfo->createdContextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+    creationInfo->createdContextProvider = wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
         creationInfo->contextAttributes, creationInfo->scriptState->getExecutionContext()->url(), 0, creationInfo->glInfo));
     waitableEvent->signal();
 }
 
-static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThread(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo* glInfo, ScriptState* scriptState)
+static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThread(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo* glInfo, ScriptState* scriptState)
 {
     WaitableEvent waitableEvent;
     ContextProviderCreationInfo creationInfo;
@@ -561,7 +560,7 @@ static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThr
     return std::move(creationInfo.createdContextProvider);
 }
 
-PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     // Exactly one of these must be provided.
     DCHECK_EQ(!canvas, !!scriptState);
@@ -570,10 +569,10 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContex
 
     Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
     Platform::GraphicsInfo glInfo;
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider;
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
     if (isMainThread()) {
         const auto& url = canvas ? canvas->document().topDocument().url() : scriptState->getExecutionContext()->url();
-        contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+        contextProvider = wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
             contextAttributes, url, 0, &glInfo));
     } else {
         contextProvider = createContextProviderOnWorkerThread(contextAttributes, &glInfo, scriptState);
@@ -599,7 +598,7 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContex
     return contextProvider;
 }
 
-PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
@@ -619,7 +618,7 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
     return createContextProviderInternal(canvas, nullptr, attributes, webGLVersion);
 }
 
-PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     return createContextProviderInternal(nullptr, scriptState, attributes, webGLVersion);
 }
@@ -878,15 +877,15 @@ bool isSRGBFormat(GLenum internalformat)
 
 } // namespace
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(nullptr, passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
 { }
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, nullptr, std::move(contextProvider), requestedAttributes)
 { }
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas, passedOffscreenCanvas)
     , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
@@ -937,7 +936,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
 }
 
-PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider)
+PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider)
 {
     bool premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
     bool wantAlphaChannel = m_requestedAttributes.alpha();
@@ -4434,9 +4433,9 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(TexImageFunctionI
             }
 
             // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
-            OwnPtr<ImageBufferSurface> surface = adoptPtr(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
+            std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
             if (surface->isValid()) {
-                OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(std::move(surface)));
+                std::unique_ptr<ImageBuffer> imageBuffer(ImageBuffer::create(std::move(surface)));
                 if (imageBuffer) {
                     // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
                     // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
@@ -4486,7 +4485,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
     ASSERT(bitmap->bitmapImage());
     RefPtr<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
     SkPixmap pixmap;
-    OwnPtr<uint8_t[]> pixelData;
+    std::unique_ptr<uint8_t[]> pixelData;
     uint8_t* pixelDataPtr = nullptr;
     // TODO(crbug.com/613411): peekPixels fails if the SkImage is texture-backed
     // Use texture mailbox in that case.
@@ -6091,7 +6090,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 
     Platform::ContextAttributes attributes = toPlatformContextAttributes(m_requestedAttributes, version());
     Platform::GraphicsInfo glInfo;
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
         attributes, canvas()->document().topDocument().url(), 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider->bindToCurrentThread()) {
@@ -6133,7 +6132,7 @@ String WebGLRenderingContextBase::ensureNotNull(const String& text) const
 }
 
 WebGLRenderingContextBase::LRUImageBufferCache::LRUImageBufferCache(int capacity)
-    : m_buffers(adoptArrayPtr(new OwnPtr<ImageBuffer>[capacity]))
+    : m_buffers(wrapArrayUnique(new std::unique_ptr<ImageBuffer>[capacity]))
     , m_capacity(capacity)
 {
 }
@@ -6151,7 +6150,7 @@ ImageBuffer* WebGLRenderingContextBase::LRUImageBufferCache::imageBuffer(const I
         return buf;
     }
 
-    OwnPtr<ImageBuffer> temp(ImageBuffer::create(size));
+    std::unique_ptr<ImageBuffer> temp(ImageBuffer::create(size));
     if (!temp)
         return nullptr;
     i = std::min(m_capacity - 1, i);

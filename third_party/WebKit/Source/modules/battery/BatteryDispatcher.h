@@ -10,7 +10,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/battery_status.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

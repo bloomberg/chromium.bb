@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -152,10 +153,10 @@ protected:
     CSSMatrix(const String&, ExceptionState&);
 
     // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
-    // supports 16-byte alignment but Oilpan doesn't. So we use an OwnPtr
+    // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
     // to allocate TransformationMatrix on PartitionAlloc.
     // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
-    OwnPtr<TransformationMatrix> m_matrix;
+    std::unique_ptr<TransformationMatrix> m_matrix;
 };
 
 } // namespace blink

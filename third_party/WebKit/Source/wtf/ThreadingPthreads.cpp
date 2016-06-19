@@ -35,8 +35,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"

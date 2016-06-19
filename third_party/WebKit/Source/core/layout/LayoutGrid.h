@@ -29,6 +29,7 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
 #include "core/style/GridPositionsResolver.h"
+#include <memory>
 
 namespace blink {
 
@@ -132,7 +133,7 @@ private:
 
     void placeItemsOnGrid();
     void populateExplicitGridAndOrderIterator();
-    PassOwnPtr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const LayoutBox&, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
+    std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const LayoutBox&, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
     void placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
     void placeAutoMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
     void placeAutoMajorAxisItemOnGrid(LayoutBox&, std::pair<size_t, size_t>& autoPlacementCursor);
@@ -156,7 +157,7 @@ private:
     template <TrackSizeComputationPhase> void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
     typedef HashSet<size_t, DefaultHash<size_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<size_t>> TrackIndexSet;
-    double computeFlexFactorUnitSize(const Vector<GridTrack>&, GridTrackSizingDirection, double flexFactorSum, LayoutUnit& leftOverSpace, const Vector<size_t, 8>& flexibleTracksIndexes, PassOwnPtr<TrackIndexSet> tracksToTreatAsInflexible = nullptr) const;
+    double computeFlexFactorUnitSize(const Vector<GridTrack>&, GridTrackSizingDirection, double flexFactorSum, LayoutUnit& leftOverSpace, const Vector<size_t, 8>& flexibleTracksIndexes, std::unique_ptr<TrackIndexSet> tracksToTreatAsInflexible = nullptr) const;
     double findFlexFactorUnitSize(const Vector<GridTrack>&, const GridSpan&, GridTrackSizingDirection, LayoutUnit leftOverSpace) const;
 
     const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection, size_t) const;

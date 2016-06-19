@@ -62,7 +62,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/MathExtras.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 

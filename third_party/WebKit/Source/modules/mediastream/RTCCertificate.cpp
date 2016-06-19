@@ -30,10 +30,12 @@
 
 #include "modules/mediastream/RTCCertificate.h"
 
+#include "wtf/PtrUtil.h"
+
 namespace blink {
 
 RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
-    : m_certificate(adoptPtr(certificate.release()))
+    : m_certificate(wrapUnique(certificate.release()))
 {
 }
 

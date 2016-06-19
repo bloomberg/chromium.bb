@@ -18,6 +18,8 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -172,11 +174,11 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event)
     // This is only called when we have out-of-process iframes, which
     // need to forward input events across processes.
     // FIXME: Add a check for out-of-process iframes enabled.
-    OwnPtr<WebInputEvent> webEvent;
+    std::unique_ptr<WebInputEvent> webEvent;
     if (event->isKeyboardEvent())
-        webEvent = adoptPtr(new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
+        webEvent = wrapUnique(new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
     else if (event->isMouseEvent())
-        webEvent = adoptPtr(new WebMouseEventBuilder(m_webFrame->frame()->view(), LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()), *static_cast<MouseEvent*>(event)));
+        webEvent = wrapUnique(new WebMouseEventBuilder(m_webFrame->frame()->view(), LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()), *static_cast<MouseEvent*>(event)));
 
     // Other or internal Blink events should not be forwarded.
     if (!webEvent || webEvent->type == WebInputEvent::Undefined)

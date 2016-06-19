@@ -27,6 +27,8 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -68,9 +70,9 @@ Settings::Settings()
 {
 }
 
-PassOwnPtr<Settings> Settings::create()
+std::unique_ptr<Settings> Settings::create()
 {
-    return adoptPtr(new Settings);
+    return wrapUnique(new Settings);
 }
 
 SETTINGS_SETTER_BODIES

@@ -11,6 +11,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,7 +42,7 @@ public:
     CanvasRenderingContext* getCanvasRenderingContext(ScriptState*, const String&, const CanvasContextCreationAttributes&);
     CanvasRenderingContext* renderingContext() { return m_context; }
 
-    static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
+    static void registerRenderingContextFactory(std::unique_ptr<CanvasRenderingContextFactory>);
 
     bool originClean() const;
     void setOriginTainted() { m_originClean = false; }
@@ -51,7 +52,7 @@ public:
 private:
     explicit OffscreenCanvas(const IntSize&);
 
-    using ContextFactoryVector = Vector<OwnPtr<CanvasRenderingContextFactory>>;
+    using ContextFactoryVector = Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
     static ContextFactoryVector& renderingContextFactories();
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 

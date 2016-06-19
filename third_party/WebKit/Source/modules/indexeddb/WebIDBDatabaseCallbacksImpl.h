@@ -30,16 +30,16 @@
 #include "public/platform/WebString.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
 class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
     USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
 public:
-    static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(IDBDatabaseCallbacks*);
+    static std::unique_ptr<WebIDBDatabaseCallbacksImpl> create(IDBDatabaseCallbacks*);
 
     ~WebIDBDatabaseCallbacksImpl() override;
 

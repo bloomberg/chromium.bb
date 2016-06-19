@@ -7,6 +7,7 @@
 
 #include "core/workers/WorkerThread.h"
 #include "modules/ModulesExport.h"
+#include <memory>
 
 namespace blink {
 
@@ -14,7 +15,7 @@ class InProcessWorkerObjectProxy;
 
 class MODULES_EXPORT CompositorWorkerThread final : public WorkerThread {
 public:
-    static PassOwnPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
+    static std::unique_ptr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
     ~CompositorWorkerThread() override;
 
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
@@ -29,7 +30,7 @@ public:
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
 
-    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
     bool isOwningBackingThread() const override { return false; }
 
 private:

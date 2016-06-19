@@ -29,6 +29,7 @@
 #include "platform/animation/TimingFunction.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/text/Base64.h"
+#include <memory>
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";
@@ -425,7 +426,7 @@ String InspectorAnimationAgent::createCSSId(blink::Animation& animation)
 
     Element* element = effect->target();
     HeapVector<Member<CSSStyleDeclaration>> styles = m_cssAgent->matchingStyles(element);
-    OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
+    std::unique_ptr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
     addStringToDigestor(digestor.get(), type);
     addStringToDigestor(digestor.get(), animation.id());
     for (CSSPropertyID property : cssProperties) {

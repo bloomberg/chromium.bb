@@ -7,8 +7,8 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/background_sync/SyncError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -30,7 +30,7 @@ void SyncRegistrationCallbacks::onSuccess(std::unique_ptr<WebSyncRegistration> w
         return;
     }
 
-    OwnPtr<WebSyncRegistration> registration = adoptPtr(webSyncRegistration.release());
+    std::unique_ptr<WebSyncRegistration> registration = wrapUnique(webSyncRegistration.release());
     if (!registration) {
         m_resolver->resolve(v8::Null(m_resolver->getScriptState()->isolate()));
         return;

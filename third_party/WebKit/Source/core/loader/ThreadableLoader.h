@@ -36,7 +36,7 @@
 #include "platform/CrossThreadCopier.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -166,8 +166,8 @@ public:
     // ThreadableLoaderClient methods:
     // - may call cancel()
     // - can destroy the ThreadableLoader instance in them (by clearing
-    //   OwnPtr<ThreadableLoader>).
-    static PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    //   std::unique_ptr<ThreadableLoader>).
+    static std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
     // The methods on the ThreadableLoaderClient passed on create() call
     // may be called synchronous to start() call.

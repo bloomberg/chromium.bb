@@ -45,10 +45,10 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
+#include <memory>
 
 namespace blink {
 
@@ -141,7 +141,7 @@ public:
     void addConsoleMessage(ConsoleMessage*) final;
     ConsoleMessageStorage* messageStorage();
 
-    void exceptionUnhandled(const String& errorMessage, PassOwnPtr<SourceLocation>);
+    void exceptionUnhandled(const String& errorMessage, std::unique_ptr<SourceLocation>);
 
     virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) { }
 
@@ -153,10 +153,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
+    WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     void applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers);
 
-    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
+    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
     void addMessageToWorkerConsole(ConsoleMessage*);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 

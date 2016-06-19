@@ -28,7 +28,6 @@
 
 #include "core/css/CSSStyleDeclaration.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

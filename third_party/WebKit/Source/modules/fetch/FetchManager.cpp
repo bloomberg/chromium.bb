@@ -38,9 +38,9 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,7 +64,7 @@ public:
     ~Loader() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
     void didFinishLoading(unsigned long, double) override;
     void didFail(const ResourceError&) override;
     void didFailAccessControlCheck(const ResourceError&) override;
@@ -80,7 +80,7 @@ public:
         // SRIVerifier takes ownership of |handle| and |response|.
         // |updater| must be garbage collected. The other arguments
         // all must have the lifetime of the give loader.
-        SRIVerifier(PassOwnPtr<WebDataConsumerHandle> handle, CompositeDataConsumerHandle::Updater* updater, Response* response, FetchManager::Loader* loader, String integrityMetadata, const KURL& url)
+        SRIVerifier(std::unique_ptr<WebDataConsumerHandle> handle, CompositeDataConsumerHandle::Updater* updater, Response* response, FetchManager::Loader* loader, String integrityMetadata, const KURL& url)
             : m_handle(std::move(handle))
             , m_updater(updater)
             , m_response(response)
@@ -141,13 +141,13 @@ public:
             visitor->trace(m_loader);
         }
     private:
-        OwnPtr<WebDataConsumerHandle> m_handle;
+        std::unique_ptr<WebDataConsumerHandle> m_handle;
         Member<CompositeDataConsumerHandle::Updater> m_updater;
         Member<Response> m_response;
         Member<FetchManager::Loader> m_loader;
         String m_integrityMetadata;
         KURL m_url;
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
         Vector<char> m_buffer;
         bool m_finished;
     };
@@ -167,7 +167,7 @@ private:
     Member<FetchManager> m_fetchManager;
     Member<ScriptPromiseResolver> m_resolver;
     Member<FetchRequestData> m_request;
-    OwnPtr<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
     bool m_failed;
     bool m_finished;
     int m_responseHttpStatusCode;
@@ -206,7 +206,7 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_executionContext);
 }
 
-void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT(handle);
 
@@ -562,7 +562,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     request.setHTTPMethod(m_request->method());
     request.setFetchRequestMode(m_request->mode());
     request.setFetchCredentialsMode(m_request->credentials());
-    const Vector<OwnPtr<FetchHeaderList::Header>>& list = m_request->headerList()->list();
+    const Vector<std::unique_ptr<FetchHeaderList::Header>>& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
         request.addHTTPHeaderField(AtomicString(list[i]->first), AtomicString(list[i]->second));
     }

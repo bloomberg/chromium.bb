@@ -29,7 +29,9 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -48,9 +50,9 @@ protected:
 
 class EventFactory final : public EventFactoryBase {
 public:
-    static PassOwnPtr<EventFactory> create()
+    static std::unique_ptr<EventFactory> create()
     {
-        return adoptPtr(new EventFactory());
+        return wrapUnique(new EventFactory());
     }
 
     Event* create(ExecutionContext*, const String& eventType) override;

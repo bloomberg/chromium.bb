@@ -17,6 +17,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,14 +42,14 @@ public:
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>);
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(WebExternalTextureMailbox&);
-    static PassRefPtr<SkImage> getSkImageFromDecoder(PassOwnPtr<ImageDecoder>);
+    static PassRefPtr<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
 
     // Type and helper function required by CallbackPromiseAdapter:
     using WebType = sk_sp<SkImage>;
     static ImageBitmap* take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
-    PassOwnPtr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);
+    std::unique_ptr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;

@@ -8,6 +8,8 @@
 #include "core/animation/ImageSlicePropertyFunctions.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -82,9 +84,9 @@ namespace {
 
 class UnderlyingSliceTypesChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingSliceTypesChecker> create(const SliceTypes& underlyingTypes)
+    static std::unique_ptr<UnderlyingSliceTypesChecker> create(const SliceTypes& underlyingTypes)
     {
-        return adoptPtr(new UnderlyingSliceTypesChecker(underlyingTypes));
+        return wrapUnique(new UnderlyingSliceTypesChecker(underlyingTypes));
     }
 
     static SliceTypes getUnderlyingSliceTypes(const InterpolationValue& underlying)
@@ -107,9 +109,9 @@ private:
 
 class InheritedSliceTypesChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<InheritedSliceTypesChecker> create(CSSPropertyID property, const SliceTypes& inheritedTypes)
+    static std::unique_ptr<InheritedSliceTypesChecker> create(CSSPropertyID property, const SliceTypes& inheritedTypes)
     {
-        return adoptPtr(new InheritedSliceTypesChecker(property, inheritedTypes));
+        return wrapUnique(new InheritedSliceTypesChecker(property, inheritedTypes));
     }
 
 private:
@@ -129,7 +131,7 @@ private:
 
 InterpolationValue convertImageSlice(const ImageSlice& slice, double zoom)
 {
-    OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
+    std::unique_ptr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     const Length* sides[SideIndexCount] = {};
     sides[SideTop] = &slice.slices.top();
     sides[SideRight] = &slice.slices.right();
@@ -176,7 +178,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertValue(const CSSVa
         return nullptr;
 
     const CSSBorderImageSliceValue& slice = toCSSBorderImageSliceValue(value);
-    OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
+    std::unique_ptr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     const CSSPrimitiveValue* sides[SideIndexCount];
     sides[SideTop] = slice.slices().top();
     sides[SideRight] = slice.slices().right();

@@ -10,8 +10,6 @@
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

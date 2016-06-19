@@ -25,9 +25,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
+#include <memory>
 
 namespace blink {
 class CSSSelectorList;
@@ -252,7 +251,7 @@ public:
     void setValue(const AtomicString&, bool matchLowerCase);
     void setAttribute(const QualifiedName&, AttributeMatchType);
     void setArgument(const AtomicString&);
-    void setSelectorList(PassOwnPtr<CSSSelectorList>);
+    void setSelectorList(std::unique_ptr<CSSSelectorList>);
 
     void setNth(int a, int b);
     bool matchNth(int count) const;
@@ -338,7 +337,7 @@ private:
         } m_bits;
         QualifiedName m_attribute; // used for attribute selector
         AtomicString m_argument; // Used for :contains, :lang, :nth-*
-        OwnPtr<CSSSelectorList> m_selectorList; // Used for :-webkit-any and :not
+        std::unique_ptr<CSSSelectorList> m_selectorList; // Used for :-webkit-any and :not
 
     private:
         RareData(const AtomicString& value);

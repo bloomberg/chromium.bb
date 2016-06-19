@@ -35,7 +35,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

@@ -10,6 +10,7 @@
 #include "core/animation/PropertyInterpolationTypesMapping.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/animation/TypedInterpolationValue.h"
+#include <memory>
 
 namespace blink {
 
@@ -51,13 +52,13 @@ private:
 
     using ConversionCheckers = InterpolationType::ConversionCheckers;
 
-    PassOwnPtr<TypedInterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
+    std::unique_ptr<TypedInterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
     const TypedInterpolationValue* ensureValidInterpolation(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     void clearCache() const;
     bool isCacheValid(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     bool isNeutralKeyframeActive() const;
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
-    PassOwnPtr<TypedInterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
+    std::unique_ptr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
+    std::unique_ptr<TypedInterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     void addConversionCheckers(const InterpolationType&, ConversionCheckers&) const;
     void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;
@@ -68,9 +69,9 @@ private:
     RefPtr<PropertySpecificKeyframe> m_endKeyframe;
     double m_currentFraction;
     mutable bool m_isCached;
-    mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;
+    mutable std::unique_ptr<PrimitiveInterpolation> m_cachedPairConversion;
     mutable ConversionCheckers m_conversionCheckers;
-    mutable OwnPtr<TypedInterpolationValue> m_cachedValue;
+    mutable std::unique_ptr<TypedInterpolationValue> m_cachedValue;
 };
 
 DEFINE_TYPE_CASTS(InvalidatableInterpolation, Interpolation, value, value->isInvalidatableInterpolation(), value.isInvalidatableInterpolation());

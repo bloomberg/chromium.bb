@@ -9,9 +9,7 @@
 #include "platform/TaskSynchronizer.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -37,7 +35,7 @@ public:
 
     void taskDone();
 
-    static void runScriptStreamingTask(PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
+    static void runScriptStreamingTask(std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
 
 private:
     ScriptStreamerThread()
@@ -52,7 +50,7 @@ private:
 
     // At the moment, we only use one thread, so we can only stream one script
     // at a time. FIXME: Use a thread pool and stream multiple scripts.
-    OwnPtr<WebThread> m_thread;
+    std::unique_ptr<WebThread> m_thread;
     bool m_runningTask;
     mutable Mutex m_mutex; // Guards m_runningTask.
 };

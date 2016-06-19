@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
+#include <memory>
 #include <v8-debug.h>
 #include <v8.h>
 
@@ -115,11 +116,11 @@ private:
     // This RefPtr doesn't cause a cycle because all persistent handles that DOMWrapperWorld holds are weak.
     RefPtr<DOMWrapperWorld> m_world;
 
-    // This OwnPtr causes a cycle:
-    // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState --(OwnPtr)--> V8PerContextData
-    // So you must explicitly clear the OwnPtr by calling disposePerContextData()
+    // This std::unique_ptr causes a cycle:
+    // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState --(std::unique_ptr)--> V8PerContextData
+    // So you must explicitly clear the std::unique_ptr by calling disposePerContextData()
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
-    OwnPtr<V8PerContextData> m_perContextData;
+    std::unique_ptr<V8PerContextData> m_perContextData;
 
 #if ENABLE(ASSERT)
     bool m_globalObjectDetached;

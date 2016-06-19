@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "platform/web_memory_allocator_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

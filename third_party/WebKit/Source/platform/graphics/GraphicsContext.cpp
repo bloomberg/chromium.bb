@@ -49,6 +49,7 @@
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
+#include <memory>
 
 namespace blink {
 
@@ -175,7 +176,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
     if (contextDisabled())
         return;
 
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
+    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     if (!color.alpha()) {
         // When shadow-only but there is no shadow, we use an empty draw looper
         // to disable rendering of the source primitive.  When not shadow-only, we
@@ -194,7 +195,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
     setDrawLooper(std::move(drawLooperBuilder));
 }
 
-void GraphicsContext::setDrawLooper(PassOwnPtr<DrawLooperBuilder> drawLooperBuilder)
+void GraphicsContext::setDrawLooper(std::unique_ptr<DrawLooperBuilder> drawLooperBuilder)
 {
     if (contextDisabled())
         return;
@@ -433,7 +434,7 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
         clip(rect.rect());
     }
 
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
+    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     drawLooperBuilder->addShadow(FloatSize(shadowOffset), shadowBlur, shadowColor,
         DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
     setDrawLooper(std::move(drawLooperBuilder));

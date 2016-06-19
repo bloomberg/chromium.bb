@@ -36,6 +36,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,7 +47,7 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
-    static SharedWorkerGlobalScope* create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
+    static SharedWorkerGlobalScope* create(const String& name, SharedWorkerThread*, std::unique_ptr<WorkerThreadStartupData>);
     ~SharedWorkerGlobalScope() override;
 
     bool isSharedWorkerGlobalScope() const override { return true; }
@@ -63,8 +64,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
-    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
+    SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
+    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
 
     String m_name;
 };

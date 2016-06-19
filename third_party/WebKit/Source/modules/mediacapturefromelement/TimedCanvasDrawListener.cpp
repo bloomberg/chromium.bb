@@ -4,9 +4,11 @@
 
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
+#include <memory>
+
 namespace blink {
 
-TimedCanvasDrawListener::TimedCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+TimedCanvasDrawListener::TimedCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler> handler, double frameRate)
     : CanvasDrawListener(std::move(handler))
     , m_frameInterval(1 / frameRate)
     , m_requestFrameTimer(this, &TimedCanvasDrawListener::requestFrameTimerFired)
@@ -16,7 +18,7 @@ TimedCanvasDrawListener::TimedCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHand
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
 
 // static
-TimedCanvasDrawListener* TimedCanvasDrawListener::create(PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+TimedCanvasDrawListener* TimedCanvasDrawListener::create(std::unique_ptr<WebCanvasCaptureHandler> handler, double frameRate)
 {
     TimedCanvasDrawListener* listener = new TimedCanvasDrawListener(std::move(handler), frameRate);
     listener->m_requestFrameTimer.startRepeating(listener->m_frameInterval, BLINK_FROM_HERE);

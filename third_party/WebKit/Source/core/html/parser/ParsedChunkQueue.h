@@ -7,12 +7,11 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "wtf/Deque.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -33,16 +32,16 @@ public:
 
     ~ParsedChunkQueue();
 
-    bool enqueue(PassOwnPtr<HTMLDocumentParser::ParsedChunk>);
+    bool enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk>);
     void clear();
 
-    void takeAll(Vector<OwnPtr<HTMLDocumentParser::ParsedChunk>>&);
+    void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>&);
 
 private:
     ParsedChunkQueue();
 
     Mutex m_mutex;
-    Vector<OwnPtr<HTMLDocumentParser::ParsedChunk>> m_pendingChunks;
+    Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>> m_pendingChunks;
 };
 
 } // namespace blink

@@ -9,6 +9,8 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -52,16 +54,16 @@ float CSSLengthInterpolationType::effectiveZoom(const ComputedStyle& style) cons
     return LengthPropertyFunctions::isZoomedLength(cssProperty()) ? style.effectiveZoom() : 1;
 }
 
-PassOwnPtr<InterpolableValue> CSSLengthInterpolationType::createInterpolablePixels(double pixels)
+std::unique_ptr<InterpolableValue> CSSLengthInterpolationType::createInterpolablePixels(double pixels)
 {
-    OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
+    std::unique_ptr<InterpolableList> interpolableList = createNeutralInterpolableValue();
     interpolableList->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixels));
     return std::move(interpolableList);
 }
 
 InterpolationValue CSSLengthInterpolationType::createInterpolablePercent(double percent)
 {
-    OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
+    std::unique_ptr<InterpolableList> interpolableList = createNeutralInterpolableValue();
     interpolableList->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(percent));
     return InterpolationValue(std::move(interpolableList), CSSLengthNonInterpolableValue::create(true));
 }
@@ -72,17 +74,17 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& 
         return nullptr;
 
     PixelsAndPercent pixelsAndPercent = length.getPixelsAndPercent();
-    OwnPtr<InterpolableList> values = createNeutralInterpolableValue();
+    std::unique_ptr<InterpolableList> values = createNeutralInterpolableValue();
     values->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
     return InterpolationValue(std::move(values), CSSLengthNonInterpolableValue::create(length.hasPercent()));
 }
 
-PassOwnPtr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolableValue()
+std::unique_ptr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolableValue()
 {
     const size_t length = CSSPrimitiveValue::LengthUnitTypeCount;
-    OwnPtr<InterpolableList> values = InterpolableList::create(length);
+    std::unique_ptr<InterpolableList> values = InterpolableList::create(length);
     for (size_t i = 0; i < length; i++)
         values->set(i, InterpolableNumber::create(0));
     return values;
@@ -102,7 +104,7 @@ bool CSSLengthInterpolationType::nonInterpolableValuesAreCompatible(const NonInt
 }
 
 void CSSLengthInterpolationType::composite(
-    OwnPtr<InterpolableValue>& underlyingInterpolableValue,
+    std::unique_ptr<InterpolableValue>& underlyingInterpolableValue,
     RefPtr<NonInterpolableValue>& underlyingNonInterpolableValue,
     double underlyingFraction,
     const InterpolableValue& interpolableValue,
@@ -136,7 +138,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSVal
     CSSLengthArray lengthArray;
     primitiveValue.accumulateLengthArray(lengthArray);
 
-    OwnPtr<InterpolableList> values = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    std::unique_ptr<InterpolableList> values = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
         values->set(i, InterpolableNumber::create(lengthArray.values[i]));
 
@@ -146,9 +148,9 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSVal
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
+    static std::unique_ptr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
     {
-        return adoptPtr(new ParentLengthChecker(property, length));
+        return wrapUnique(new ParentLengthChecker(property, length));
     }
 
 private:

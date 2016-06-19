@@ -7,11 +7,11 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -49,7 +49,7 @@ private:
     AtomicString m_lastEventId;
 
     Member<Client> m_client;
-    OwnPtr<TextCodec> m_codec;
+    std::unique_ptr<TextCodec> m_codec;
 
     bool m_isRecognizingCRLF = false;
     bool m_isRecognizingBOM = true;

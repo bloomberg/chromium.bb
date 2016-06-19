@@ -37,6 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -123,15 +124,15 @@ private:
     DOMWrapperWorld(v8::Isolate*, int worldId, int extensionGroup);
 
     static void weakCallbackForDOMObjectHolder(const v8::WeakCallbackInfo<DOMObjectHolderBase>&);
-    void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);
+    void registerDOMObjectHolderInternal(std::unique_ptr<DOMObjectHolderBase>);
     void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
     static unsigned isolatedWorldCount;
 
     const int m_worldId;
     const int m_extensionGroup;
-    OwnPtr<DOMDataStore> m_domDataStore;
-    HashSet<OwnPtr<DOMObjectHolderBase>> m_domObjectHolders;
+    std::unique_ptr<DOMDataStore> m_domDataStore;
+    HashSet<std::unique_ptr<DOMObjectHolderBase>> m_domObjectHolders;
 };
 
 } // namespace blink

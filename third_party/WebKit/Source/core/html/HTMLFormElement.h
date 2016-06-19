@@ -29,7 +29,6 @@
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/loader/FormSubmission.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

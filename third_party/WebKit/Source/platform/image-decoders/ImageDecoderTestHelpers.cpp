@@ -9,8 +9,8 @@
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/StringHasher.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,7 +39,7 @@ unsigned hashBitmap(const SkBitmap& bitmap)
 
 static unsigned createDecodingBaseline(DecoderCreator createDecoder, SharedBuffer* data)
 {
-    OwnPtr<ImageDecoder> decoder = createDecoder();
+    std::unique_ptr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data, true);
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     return hashBitmap(frame->bitmap());
@@ -47,7 +47,7 @@ static unsigned createDecodingBaseline(DecoderCreator createDecoder, SharedBuffe
 
 void createDecodingBaseline(DecoderCreator createDecoder, SharedBuffer* data, Vector<unsigned>* baselineHashes)
 {
-    OwnPtr<ImageDecoder> decoder = createDecoder();
+    std::unique_ptr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data, true);
     size_t frameCount = decoder->frameCount();
     for (size_t i = 0; i < frameCount; ++i) {
@@ -65,7 +65,7 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
     Vector<unsigned> baselineHashes;
     createDecodingBaseline(createDecoder, data.get(), &baselineHashes);
 
-    OwnPtr<ImageDecoder> decoder = createDecoder();
+    std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
     size_t frameCount = 0;
     size_t framesDecoded = 0;
@@ -129,7 +129,7 @@ void testMergeBuffer(DecoderCreator createDecoder, const char* file)
     RefPtr<SharedBuffer> segmentedData = SharedBuffer::create();
     segmentedData->append(data->data(), data->size());
 
-    OwnPtr<ImageDecoder> decoder = createDecoder();
+    std::unique_ptr<ImageDecoder> decoder = createDecoder();
     decoder->setData(segmentedData.get(), true);
 
     ASSERT_TRUE(decoder->isSizeAvailable());

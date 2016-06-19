@@ -17,9 +17,9 @@
 #include "platform/geometry/IntSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Compiler.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,7 +41,7 @@ private:
     void SetUp() override;
 
     Persistent<HTMLDocument> m_document;
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void FlatTreeTraversalTest::SetUp()

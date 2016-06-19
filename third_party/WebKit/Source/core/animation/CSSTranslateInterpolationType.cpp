@@ -8,6 +8,8 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/transforms/TranslateTransformOperation.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -17,9 +19,9 @@ class ParentTranslateChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentTranslateChecker() {}
 
-    static PassOwnPtr<ParentTranslateChecker> create(PassRefPtr<TranslateTransformOperation> parentTranslate)
+    static std::unique_ptr<ParentTranslateChecker> create(PassRefPtr<TranslateTransformOperation> parentTranslate)
     {
-        return adoptPtr(new ParentTranslateChecker(parentTranslate));
+        return wrapUnique(new ParentTranslateChecker(parentTranslate));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
@@ -49,7 +51,7 @@ enum TranslateComponentIndex {
 
 InterpolationValue createNeutralValue()
 {
-    OwnPtr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
     result->set(TranslateX, CSSLengthInterpolationType::createNeutralInterpolableValue());
     result->set(TranslateY, CSSLengthInterpolationType::createNeutralInterpolableValue());
     result->set(TranslateZ, CSSLengthInterpolationType::createNeutralInterpolableValue());
@@ -61,7 +63,7 @@ InterpolationValue convertTranslateOperation(const TranslateTransformOperation* 
     if (!translate)
         return createNeutralValue();
 
-    OwnPtr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
     result->set(TranslateX, CSSLengthInterpolationType::maybeConvertLength(translate->x(), zoom).interpolableValue);
     result->set(TranslateY, CSSLengthInterpolationType::maybeConvertLength(translate->y(), zoom).interpolableValue);
     result->set(TranslateZ, CSSLengthInterpolationType::maybeConvertLength(Length(translate->z(), Fixed), zoom).interpolableValue);
@@ -96,7 +98,7 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(const CSSVal
     if (list.length() < 1 || list.length() > 3)
         return nullptr;
 
-    OwnPtr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
     for (size_t i = 0; i < TranslateComponentIndexCount; i++) {
         InterpolationValue component = nullptr;
         if (i < list.length()) {

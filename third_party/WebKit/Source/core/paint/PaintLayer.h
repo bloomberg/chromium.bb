@@ -60,7 +60,8 @@
 #include "platform/graphics/SquashingDisallowedReasons.h"
 #include "public/platform/WebBlendMode.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -99,7 +100,7 @@ struct PaintLayerRareData {
     // Our current relative position offset.
     LayoutSize offsetForInFlowPosition;
 
-    OwnPtr<TransformationMatrix> transform;
+    std::unique_ptr<TransformationMatrix> transform;
 
     // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if we are not paginated.
     //
@@ -124,14 +125,14 @@ struct PaintLayerRareData {
 
     // If the layer paints into its own backings, this keeps track of the backings.
     // It's nullptr if the layer is not composited or paints into grouped backing.
-    OwnPtr<CompositedLayerMapping> compositedLayerMapping;
+    std::unique_ptr<CompositedLayerMapping> compositedLayerMapping;
 
     // If the layer paints into grouped backing (i.e. squashed), this points to the
     // grouped CompositedLayerMapping. It's null if the layer is not composited or
     // paints into its own backing.
     CompositedLayerMapping* groupedMapping;
 
-    OwnPtr<PaintLayerReflectionInfo> reflectionInfo;
+    std::unique_ptr<PaintLayerReflectionInfo> reflectionInfo;
 
     Persistent<PaintLayerFilterInfo> filterInfo;
 
@@ -695,7 +696,7 @@ public:
     ClipRectsCache& ensureClipRectsCache() const
     {
         if (!m_clipRectsCache)
-            m_clipRectsCache = adoptPtr(new ClipRectsCache);
+            m_clipRectsCache = wrapUnique(new ClipRectsCache);
         return *m_clipRectsCache;
     }
     void clearClipRectsCache() const { m_clipRectsCache.reset(); }
@@ -782,7 +783,7 @@ private:
     PaintLayerRareData& ensureRareData()
     {
         if (!m_rareData)
-            m_rareData = adoptPtr(new PaintLayerRareData);
+            m_rareData = wrapUnique(new PaintLayerRareData);
         return *m_rareData;
     }
 
@@ -882,19 +883,19 @@ private:
     const PaintLayer* m_ancestorOverflowLayer;
 
     AncestorDependentCompositingInputs m_ancestorDependentCompositingInputs;
-    OwnPtr<RareAncestorDependentCompositingInputs> m_rareAncestorDependentCompositingInputs;
+    std::unique_ptr<RareAncestorDependentCompositingInputs> m_rareAncestorDependentCompositingInputs;
 
     Persistent<PaintLayerScrollableArea> m_scrollableArea;
 
-    mutable OwnPtr<ClipRectsCache> m_clipRectsCache;
+    mutable std::unique_ptr<ClipRectsCache> m_clipRectsCache;
 
-    OwnPtr<PaintLayerStackingNode> m_stackingNode;
+    std::unique_ptr<PaintLayerStackingNode> m_stackingNode;
 
     IntSize m_previousScrollOffsetAccumulationForPainting;
     RefPtr<ClipRects> m_previousPaintingClipRects;
     LayoutRect m_previousPaintDirtyRect;
 
-    OwnPtr<PaintLayerRareData> m_rareData;
+    std::unique_ptr<PaintLayerRareData> m_rareData;
 
     DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };

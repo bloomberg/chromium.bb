@@ -9,6 +9,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -18,7 +19,7 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 
     // Create a new context so the contents of the filter can be drawn and cached.
     m_paintController = PaintController::create();
-    m_context = adoptPtr(new GraphicsContext(*m_paintController));
+    m_context = wrapUnique(new GraphicsContext(*m_paintController));
 
     filterData->m_state = FilterData::RecordingContent;
     return m_context.get();

@@ -96,6 +96,8 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 #if OS(MACOSX)
 #include "public/web/mac/WebSubstringUtil.h"
@@ -1864,7 +1866,7 @@ static void configueCompositingWebView(WebSettings* settings)
 
 TEST_F(WebViewTest, ShowPressOnTransformedLink)
 {
-    OwnPtr<FrameTestHelpers::TestWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FrameTestHelpers::TestWebViewClient());
+    std::unique_ptr<FrameTestHelpers::TestWebViewClient> fakeCompositingWebViewClient = wrapUnique(new FrameTestHelpers::TestWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webViewImpl = webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(), nullptr, &configueCompositingWebView);
 

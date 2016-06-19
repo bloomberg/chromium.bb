@@ -35,10 +35,10 @@
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
+#include <memory>
 
 namespace blink {
 
@@ -90,7 +90,7 @@ public:
     explicit ResourceResponse(CrossThreadResourceResponseData*);
 
     // Gets a copy of the data suitable for passing to another thread.
-    PassOwnPtr<CrossThreadResourceResponseData> copyData() const;
+    std::unique_ptr<CrossThreadResourceResponseData> copyData() const;
 
     ResourceResponse();
     ResourceResponse(const KURL&, const AtomicString& mimeType, long long expectedLength, const AtomicString& textEncodingName, const String& filename);
@@ -391,7 +391,7 @@ public:
     String m_suggestedFilename;
     int m_httpStatusCode;
     String m_httpStatusText;
-    OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
+    std::unique_ptr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     time_t m_lastModifiedDate;
     RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
     CString m_securityInfo;

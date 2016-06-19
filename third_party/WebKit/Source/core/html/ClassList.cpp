@@ -25,6 +25,7 @@
 #include "core/html/ClassList.h"
 
 #include "core/dom/Document.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ const SpaceSplitString& ClassList::classNames() const
     ASSERT(m_element->hasClass());
     if (m_element->document().inQuirksMode()) {
         if (!m_classNamesForQuirksMode)
-            m_classNamesForQuirksMode = adoptPtr(new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
+            m_classNamesForQuirksMode = wrapUnique(new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
         return *m_classNamesForQuirksMode.get();
     }
     return m_element->classNames();

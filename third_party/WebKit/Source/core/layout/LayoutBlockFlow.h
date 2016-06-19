@@ -43,6 +43,7 @@
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/line/TrailingObjects.h"
+#include <memory>
 
 namespace blink {
 
@@ -615,8 +616,8 @@ private:
     bool checkIfIsSelfCollapsingBlock() const;
 
 protected:
-    OwnPtr<LayoutBlockFlowRareData> m_rareData;
-    OwnPtr<FloatingObjects> m_floatingObjects;
+    std::unique_ptr<LayoutBlockFlowRareData> m_rareData;
+    std::unique_ptr<FloatingObjects> m_floatingObjects;
 
     friend class MarginInfo;
     friend class LineWidth; // needs to know FloatingObject

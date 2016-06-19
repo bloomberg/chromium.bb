@@ -21,7 +21,6 @@
 #ifndef WTF_HashFunctions_h
 #define WTF_HashFunctions_h
 
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <memory>
@@ -155,18 +154,6 @@ struct RefPtrHash : PtrHash<T> {
 };
 
 template <typename T>
-struct OwnPtrHash : PtrHash<T> {
-    using PtrHash<T>::hash;
-    static unsigned hash(const OwnPtr<T>& key) { return hash(key.get()); }
-
-    static bool equal(const OwnPtr<T>& a, const OwnPtr<T>& b)
-    {
-        return a.get() == b.get();
-    }
-    static bool equal(const OwnPtr<T>& a, T* b) { return a == b; }
-};
-
-template <typename T>
 struct UniquePtrHash : PtrHash<T> {
     using PtrHash<T>::hash;
     static unsigned hash(const std::unique_ptr<T>& key) { return hash(key.get()); }
@@ -213,10 +200,6 @@ struct DefaultHash<T*> {
 template <typename T>
 struct DefaultHash<RefPtr<T>> {
     using Hash = RefPtrHash<T>;
-};
-template <typename T>
-struct DefaultHash<OwnPtr<T>> {
-    using Hash = OwnPtrHash<T>;
 };
 template <typename T>
 struct DefaultHash<std::unique_ptr<T>> {

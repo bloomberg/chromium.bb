@@ -78,7 +78,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -127,7 +127,7 @@ private:
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, PassRefPtr<SecurityOrigin> targetOrigin, PassOwnPtr<SourceLocation> location, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, PassRefPtr<SecurityOrigin> targetOrigin, std::unique_ptr<SourceLocation> location, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_event(event)
         , m_window(&window)
@@ -141,7 +141,7 @@ public:
 
     MessageEvent* event() const { return m_event; }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
-    PassOwnPtr<SourceLocation> takeLocation() { return std::move(m_location); }
+    std::unique_ptr<SourceLocation> takeLocation() { return std::move(m_location); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
     void stop() override
     {
@@ -184,7 +184,7 @@ private:
     Member<MessageEvent> m_event;
     Member<LocalDOMWindow> m_window;
     RefPtr<SecurityOrigin> m_targetOrigin;
-    OwnPtr<SourceLocation> m_location;
+    std::unique_ptr<SourceLocation> m_location;
     RefPtr<UserGestureToken> m_userGestureToken;
     bool m_disposalAllowed;
 };
@@ -695,7 +695,7 @@ void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
     m_postMessageTimers.remove(timer);
 }
 
-void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event* event, PassOwnPtr<SourceLocation> location)
+void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event* event, std::unique_ptr<SourceLocation> location)
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.

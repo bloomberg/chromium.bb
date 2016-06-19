@@ -35,8 +35,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/custom/V0CustomElementLifecycleCallbacks.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -52,7 +52,7 @@ public:
 
     ~V8V0CustomElementLifecycleCallbacks() override;
 
-    bool setBinding(PassOwnPtr<V0CustomElementBinding>);
+    bool setBinding(std::unique_ptr<V0CustomElementBinding>);
 
     DECLARE_VIRTUAL_TRACE();
 

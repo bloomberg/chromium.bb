@@ -26,8 +26,8 @@
 #ifndef FilePrintStream_h
 #define FilePrintStream_h
 
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PrintStream.h"
+#include <memory>
 #include <stdio.h>
 
 namespace WTF {
@@ -42,7 +42,7 @@ public:
     FilePrintStream(FILE*, AdoptionMode = Adopt);
     ~FilePrintStream() override;
 
-    static PassOwnPtr<FilePrintStream> open(const char* filename, const char* mode);
+    static std::unique_ptr<FilePrintStream> open(const char* filename, const char* mode);
 
     FILE* file() { return m_file; }
 

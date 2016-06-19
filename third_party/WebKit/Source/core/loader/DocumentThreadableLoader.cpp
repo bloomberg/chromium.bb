@@ -55,6 +55,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -124,13 +126,13 @@ static const int kMaxCORSRedirects = 20;
 void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     // The loader will be deleted as soon as this function exits.
-    OwnPtr<DocumentThreadableLoader> loader = adoptPtr(new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions));
+    std::unique_ptr<DocumentThreadableLoader> loader = wrapUnique(new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions));
     loader->start(request);
 }
 
-PassOwnPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+std::unique_ptr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    return adoptPtr(new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions));
+    return wrapUnique(new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions));
 }
 
 DocumentThreadableLoader::DocumentThreadableLoader(Document& document, ThreadableLoaderClient* client, BlockingBehavior blockingBehavior, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
@@ -451,7 +453,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         // TODO(horo): If we support any API which expose the internal body, we
         // will have to read the body. And also HTTPCache changes will be needed
         // because it doesn't store the body of redirect responses.
-        responseReceived(resource, redirectResponse, adoptPtr(new EmptyDataHandle()));
+        responseReceived(resource, redirectResponse, wrapUnique(new EmptyDataHandle()));
 
         if (!self) {
             request = ResourceRequest();
@@ -596,7 +598,7 @@ void DocumentThreadableLoader::didReceiveResourceTiming(Resource* resource, cons
     // |this| may be dead here.
 }
 
-void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
@@ -630,7 +632,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
         return;
     }
 
-    OwnPtr<CrossOriginPreflightResultCacheItem> preflightResult = adoptPtr(new CrossOriginPreflightResultCacheItem(effectiveAllowCredentials()));
+    std::unique_ptr<CrossOriginPreflightResultCacheItem> preflightResult = wrapUnique(new CrossOriginPreflightResultCacheItem(effectiveAllowCredentials()));
     if (!preflightResult->parse(response, accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginMethod(m_actualRequest.httpMethod(), accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginHeaders(m_actualRequest.httpHeaderFields(), accessControlErrorDescription)) {
@@ -656,7 +658,7 @@ void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, 
     frame->console().reportResourceResponseReceived(loader, identifier, response);
 }
 
-void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT(m_client);
 

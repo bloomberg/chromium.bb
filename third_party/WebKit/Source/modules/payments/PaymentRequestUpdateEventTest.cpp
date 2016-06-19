@@ -12,7 +12,7 @@
 #include "modules/payments/PaymentUpdater.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 namespace {

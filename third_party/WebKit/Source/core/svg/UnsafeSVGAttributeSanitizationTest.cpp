@@ -27,6 +27,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 // Test that SVG content with JavaScript URLs is sanitized by removing
 // the URLs. This sanitization happens when the content is pasted or
@@ -76,7 +77,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptHrefIsStripped)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     width='1cm' height='1cm'>"
@@ -98,7 +99,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptXlinkHrefIsStripped)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -121,7 +122,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     width='1cm' height='1cm'>"
@@ -143,7 +144,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -166,7 +167,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptHrefIsStripped_entityWithoutSemicolonInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     width='1cm' height='1cm'>"
@@ -188,7 +189,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptXlinkHrefIsStripped_entityWithoutSemicolonInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -216,7 +217,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnimatedAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     width='1cm' height='1cm'>"
@@ -240,7 +241,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnimatedAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol)
 {
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(1, 1));
     static const char unsafeContent[] =
         "<svg xmlns='http://www.w3.org/2000/svg' "
         "     xmlns:xlink='http://www.w3.org/1999/xlink'"

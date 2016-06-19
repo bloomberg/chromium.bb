@@ -7,13 +7,14 @@
 
 #include "core/loader/ThreadableLoader.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 class MockThreadableLoader : public ThreadableLoader {
 public:
-    static PassOwnPtr<MockThreadableLoader> create() { return adoptPtr(new testing::StrictMock<MockThreadableLoader>); }
+    static std::unique_ptr<MockThreadableLoader> create() { return wrapUnique(new testing::StrictMock<MockThreadableLoader>); }
 
     MOCK_METHOD1(start, void(const ResourceRequest&));
     MOCK_METHOD1(overrideTimeout, void(unsigned long));

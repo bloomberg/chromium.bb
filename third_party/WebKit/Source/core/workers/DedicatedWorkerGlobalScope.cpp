@@ -41,10 +41,11 @@
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include <memory>
 
 namespace blink {
 
-DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
+DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, std::unique_ptr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
     // Note: startupData is finalized on return. After the relevant parts has been
     // passed along to the created 'context'.
@@ -55,7 +56,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::create(DedicatedWorkerTh
     return context;
 }
 
-DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
+DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, std::move(starterOriginPrivilegeData), workerClients)
 {
 }
@@ -72,7 +73,7 @@ const AtomicString& DedicatedWorkerGlobalScope::interfaceName() const
 void DedicatedWorkerGlobalScope::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
     thread()->workerObjectProxy().postMessageToWorkerObject(message, std::move(channels));

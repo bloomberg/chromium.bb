@@ -27,8 +27,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -162,17 +161,17 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::Vector<OwnPtr<DestructCounter>> OwnPtrVector;
+typedef WTF::Vector<std::unique_ptr<DestructCounter>> OwnPtrVector;
 
 TEST(VectorTest, OwnPtr)
 {
     int destructNumber = 0;
     OwnPtrVector vector;
-    vector.append(adoptPtr(new DestructCounter(0, &destructNumber)));
-    vector.append(adoptPtr(new DestructCounter(1, &destructNumber)));
+    vector.append(wrapUnique(new DestructCounter(0, &destructNumber)));
+    vector.append(wrapUnique(new DestructCounter(1, &destructNumber)));
     EXPECT_EQ(2u, vector.size());
 
-    OwnPtr<DestructCounter>& counter0 = vector.first();
+    std::unique_ptr<DestructCounter>& counter0 = vector.first();
     ASSERT_EQ(0, counter0->get());
     int counter1 = vector.last()->get();
     ASSERT_EQ(1, counter1);
@@ -180,7 +179,7 @@ TEST(VectorTest, OwnPtr)
 
     size_t index = 0;
     for (OwnPtrVector::iterator iter = vector.begin(); iter != vector.end(); ++iter) {
-        OwnPtr<DestructCounter>* refCounter = iter;
+        std::unique_ptr<DestructCounter>* refCounter = iter;
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()->get()));
         EXPECT_EQ(index, static_cast<size_t>((*refCounter)->get()));
         index++;
@@ -188,7 +187,7 @@ TEST(VectorTest, OwnPtr)
     EXPECT_EQ(0, destructNumber);
 
     for (index = 0; index < vector.size(); index++) {
-        OwnPtr<DestructCounter>& refCounter = vector[index];
+        std::unique_ptr<DestructCounter>& refCounter = vector[index];
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
     }
     EXPECT_EQ(0, destructNumber);
@@ -200,7 +199,7 @@ TEST(VectorTest, OwnPtr)
     EXPECT_EQ(1u, vector.size());
     EXPECT_EQ(1, destructNumber);
 
-    OwnPtr<DestructCounter> ownCounter1 = std::move(vector[0]);
+    std::unique_ptr<DestructCounter> ownCounter1 = std::move(vector[0]);
     vector.remove(0);
     ASSERT_EQ(counter1, ownCounter1->get());
     ASSERT_EQ(0u, vector.size());
@@ -212,9 +211,9 @@ TEST(VectorTest, OwnPtr)
     size_t count = 1025;
     destructNumber = 0;
     for (size_t i = 0; i < count; i++)
-        vector.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
+        vector.prepend(wrapUnique(new DestructCounter(i, &destructNumber)));
 
-    // Vector relocation must not destruct OwnPtr element.
+    // Vector relocation must not destruct std::unique_ptr element.
     EXPECT_EQ(0, destructNumber);
     EXPECT_EQ(count, vector.size());
 

@@ -35,11 +35,11 @@
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/TaskSynchronizer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -73,9 +73,9 @@ private:
 
 class Database::DatabaseOpenTask final : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
+    static std::unique_ptr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
     {
-        return adoptPtr(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
+        return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
     }
 
 private:
@@ -94,9 +94,9 @@ private:
 
 class Database::DatabaseCloseTask final : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseCloseTask> create(Database* db, TaskSynchronizer* synchronizer)
+    static std::unique_ptr<DatabaseCloseTask> create(Database* db, TaskSynchronizer* synchronizer)
     {
-        return adoptPtr(new DatabaseCloseTask(db, synchronizer));
+        return wrapUnique(new DatabaseCloseTask(db, synchronizer));
     }
 
 private:
@@ -113,9 +113,9 @@ public:
     ~DatabaseTransactionTask() override;
 
     // Transaction task is never synchronous, so no 'synchronizer' parameter.
-    static PassOwnPtr<DatabaseTransactionTask> create(SQLTransactionBackend* transaction)
+    static std::unique_ptr<DatabaseTransactionTask> create(SQLTransactionBackend* transaction)
     {
-        return adoptPtr(new DatabaseTransactionTask(transaction));
+        return wrapUnique(new DatabaseTransactionTask(transaction));
     }
 
     SQLTransactionBackend* transaction() const { return m_transaction.get(); }
@@ -134,9 +134,9 @@ private:
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseTableNamesTask> create(Database* db, TaskSynchronizer* synchronizer, Vector<String>& names)
+    static std::unique_ptr<DatabaseTableNamesTask> create(Database* db, TaskSynchronizer* synchronizer, Vector<String>& names)
     {
-        return adoptPtr(new DatabaseTableNamesTask(db, synchronizer, names));
+        return wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
     }
 
 private:

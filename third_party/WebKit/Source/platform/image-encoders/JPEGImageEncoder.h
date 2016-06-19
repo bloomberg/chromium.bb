@@ -33,8 +33,8 @@
 
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +44,7 @@ class PLATFORM_EXPORT JPEGImageEncoderState {
     USING_FAST_MALLOC(JPEGImageEncoderState);
     WTF_MAKE_NONCOPYABLE(JPEGImageEncoderState);
 public:
-    static PassOwnPtr<JPEGImageEncoderState> create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output);
+    static std::unique_ptr<JPEGImageEncoderState> create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output);
     JPEGImageEncoderState() {}
     virtual ~JPEGImageEncoderState() {}
 };
@@ -63,7 +63,7 @@ public:
     // be safer.
     static bool encode(const ImageDataBuffer&, const double& quality, Vector<unsigned char>*);
 
-    static bool encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState>, const unsigned char*, int numRowsCompleted = 0);
+    static bool encodeWithPreInitializedState(std::unique_ptr<JPEGImageEncoderState>, const unsigned char*, int numRowsCompleted = 0);
     static int progressiveEncodeRowsJpegHelper(JPEGImageEncoderState*, unsigned char*, int, const double, double);
     static int computeCompressionQuality(const double& quality);
 

@@ -8,6 +8,7 @@
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -17,8 +18,8 @@ class WebCanvasCaptureHandler;
 class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>);
-    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
+    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, std::unique_ptr<WebCanvasCaptureHandler>);
+    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, std::unique_ptr<WebCanvasCaptureHandler>, double frameRate);
 
     HTMLCanvasElement* canvas() const;
     void requestFrame();
@@ -29,8 +30,8 @@ public:
 
 private:
     CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&, MediaStreamComponent*);
-    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>);
-    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
+    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, std::unique_ptr<WebCanvasCaptureHandler>);
+    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, std::unique_ptr<WebCanvasCaptureHandler>, double frameRate);
 
     Member<HTMLCanvasElement> m_canvasElement;
     Member<CanvasDrawListener> m_drawListener;

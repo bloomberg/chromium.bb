@@ -30,7 +30,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -95,7 +96,7 @@ private:
 TEST(ImageLayerChromiumTest, imageLayerContentReset)
 {
     FakeGraphicsLayerClient client;
-    OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
+    std::unique_ptr<FakeGraphicsLayer> graphicsLayer = wrapUnique(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
     ASSERT_FALSE(graphicsLayer->hasContentsLayer());
@@ -117,7 +118,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset)
 TEST(ImageLayerChromiumTest, opaqueImages)
 {
     FakeGraphicsLayerClient client;
-    OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
+    std::unique_ptr<FakeGraphicsLayer> graphicsLayer = wrapUnique(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
     bool opaque = true;

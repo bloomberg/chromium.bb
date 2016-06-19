@@ -26,10 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/DynamicsCompressor.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/audio/DynamicsCompressor.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -195,8 +196,8 @@ void DynamicsCompressor::reset()
 
 void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels)
 {
-    m_sourceChannels = adoptArrayPtr(new const float* [numberOfChannels]);
-    m_destinationChannels = adoptArrayPtr(new float* [numberOfChannels]);
+    m_sourceChannels = wrapArrayUnique(new const float* [numberOfChannels]);
+    m_destinationChannels = wrapArrayUnique(new float* [numberOfChannels]);
 
     m_compressor.setNumberOfChannels(numberOfChannels);
     m_numberOfChannels = numberOfChannels;

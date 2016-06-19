@@ -30,7 +30,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 class SkImage;
 
@@ -95,7 +95,7 @@ public:
     size_t frameBytesAtIndex(size_t) const;
 
 private:
-    OwnPtr<DeferredImageDecoder> m_decoder;
+    std::unique_ptr<DeferredImageDecoder> m_decoder;
 };
 
 } // namespace blink

@@ -14,6 +14,8 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -71,13 +73,13 @@ void WorkerBackingThread::initialize()
     V8Initializer::initializeWorker(m_isolate);
     m_backingThread->initialize();
 
-    OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
+    std::unique_ptr<V8IsolateInterruptor> interruptor = wrapUnique(new V8IsolateInterruptor(m_isolate));
     ThreadState::current()->addInterruptor(std::move(interruptor));
     ThreadState::current()->registerTraceDOMWrappers(m_isolate,
         V8GCController::traceDOMWrappers,
         nullptr);
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
-        V8PerIsolateData::enableIdleTasks(m_isolate, adoptPtr(new V8IdleTaskRunner(backingThread().platformThread().scheduler())));
+        V8PerIsolateData::enableIdleTasks(m_isolate, wrapUnique(new V8IdleTaskRunner(backingThread().platformThread().scheduler())));
     if (m_isOwningThread)
         Platform::current()->didStartWorkerThread();
 }

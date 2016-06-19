@@ -5,9 +5,11 @@
 #include "modules/fetch/FetchDataLoader.h"
 
 #include "core/html/parser/TextResourceDecoder.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/typed_arrays/ArrayBufferBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -101,11 +103,11 @@ private:
         m_client.clear();
     }
 
-    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     Member<FetchDataLoader::Client> m_client;
 
     String m_mimeType;
-    OwnPtr<BlobData> m_blobData;
+    std::unique_ptr<BlobData> m_blobData;
 };
 
 class FetchDataLoaderAsArrayBuffer
@@ -128,7 +130,7 @@ protected:
         ASSERT(!m_rawData);
         ASSERT(!m_reader);
         m_client = client;
-        m_rawData = adoptPtr(new ArrayBufferBuilder());
+        m_rawData = wrapUnique(new ArrayBufferBuilder());
         m_reader = handle->obtainReader(this);
     }
 
@@ -191,10 +193,10 @@ protected:
         m_client.clear();
     }
 
-    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     Member<FetchDataLoader::Client> m_client;
 
-    OwnPtr<ArrayBufferBuilder> m_rawData;
+    std::unique_ptr<ArrayBufferBuilder> m_rawData;
 };
 
 class FetchDataLoaderAsString
@@ -277,10 +279,10 @@ protected:
         m_client.clear();
     }
 
-    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     Member<FetchDataLoader::Client> m_client;
 
-    OwnPtr<TextResourceDecoder> m_decoder;
+    std::unique_ptr<TextResourceDecoder> m_decoder;
     StringBuilder m_builder;
 };
 
@@ -369,7 +371,7 @@ protected:
         m_outStream.clear();
     }
 
-    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     Member<FetchDataLoader::Client> m_client;
 
     Member<Stream> m_outStream;

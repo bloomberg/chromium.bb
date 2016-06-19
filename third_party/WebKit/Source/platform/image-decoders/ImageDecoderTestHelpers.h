@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 class SkBitmap;
 
@@ -11,7 +11,7 @@ namespace blink {
 class ImageDecoder;
 class SharedBuffer;
 
-using DecoderCreator = PassOwnPtr<ImageDecoder>(*)();
+using DecoderCreator = std::unique_ptr<ImageDecoder>(*)();
 PassRefPtr<SharedBuffer> readFile(const char* fileName);
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName);
 unsigned hashBitmap(const SkBitmap&);

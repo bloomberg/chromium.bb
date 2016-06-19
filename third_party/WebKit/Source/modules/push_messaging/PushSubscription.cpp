@@ -13,12 +13,12 @@
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/Base64.h"
+#include <memory>
 
 namespace blink {
 
-PushSubscription* PushSubscription::take(ScriptPromiseResolver*, PassOwnPtr<WebPushSubscription> pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
+PushSubscription* PushSubscription::take(ScriptPromiseResolver*, std::unique_ptr<WebPushSubscription> pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
 {
     if (!pushSubscription)
         return nullptr;

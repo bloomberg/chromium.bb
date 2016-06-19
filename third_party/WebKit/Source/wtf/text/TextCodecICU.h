@@ -29,6 +29,7 @@
 
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 #include <unicode/utypes.h>
 
 typedef struct UConverter UConverter;
@@ -46,7 +47,7 @@ public:
 
 private:
     TextCodecICU(const TextEncoding&);
-    static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
+    static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
 
     String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
     CString encode(const UChar*, size_t length, UnencodableHandling) override;

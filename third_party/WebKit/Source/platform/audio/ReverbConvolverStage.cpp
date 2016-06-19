@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolver.h"
+#include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbInputBuffer.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -48,16 +48,16 @@ ReverbConvolverStage::ReverbConvolverStage(const float* impulseResponse, size_t,
     ASSERT(accumulationBuffer);
 
     if (!m_directMode) {
-        m_fftKernel = adoptPtr(new FFTFrame(fftSize));
+        m_fftKernel = wrapUnique(new FFTFrame(fftSize));
         m_fftKernel->doPaddedFFT(impulseResponse + stageOffset, stageLength);
-        m_fftConvolver = adoptPtr(new FFTConvolver(fftSize));
+        m_fftConvolver = wrapUnique(new FFTConvolver(fftSize));
     } else {
         ASSERT(!stageOffset);
         ASSERT(stageLength <= fftSize / 2);
 
-        m_directKernel = adoptPtr(new AudioFloatArray(fftSize / 2));
+        m_directKernel = wrapUnique(new AudioFloatArray(fftSize / 2));
         m_directKernel->copyToRange(impulseResponse, 0, stageLength);
-        m_directConvolver = adoptPtr(new DirectConvolver(renderSliceSize));
+        m_directConvolver = wrapUnique(new DirectConvolver(renderSliceSize));
     }
     m_temporaryBuffer.allocate(renderSliceSize);
 

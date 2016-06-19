@@ -7,6 +7,7 @@
 #include "core/animation/UnderlyingValueOwner.h"
 #include "core/css/CSSValueList.h"
 #include "wtf/MathExtras.h"
+#include <memory>
 
 namespace blink {
 
@@ -53,7 +54,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(Interpo
     }
 
     if (startLength == 0) {
-        OwnPtr<InterpolableValue> startInterpolableValue = end.interpolableValue->cloneAndZero();
+        std::unique_ptr<InterpolableValue> startInterpolableValue = end.interpolableValue->cloneAndZero();
         return PairwiseInterpolationValue(
             std::move(startInterpolableValue),
             std::move(end.interpolableValue),
@@ -61,7 +62,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(Interpo
     }
 
     if (endLength == 0) {
-        OwnPtr<InterpolableValue> endInterpolableValue = start.interpolableValue->cloneAndZero();
+        std::unique_ptr<InterpolableValue> endInterpolableValue = start.interpolableValue->cloneAndZero();
         return PairwiseInterpolationValue(
             std::move(start.interpolableValue),
             std::move(endInterpolableValue),
@@ -69,8 +70,8 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(Interpo
     }
 
     size_t finalLength = lowestCommonMultiple(startLength, endLength);
-    OwnPtr<InterpolableList> resultStartInterpolableList = InterpolableList::create(finalLength);
-    OwnPtr<InterpolableList> resultEndInterpolableList = InterpolableList::create(finalLength);
+    std::unique_ptr<InterpolableList> resultStartInterpolableList = InterpolableList::create(finalLength);
+    std::unique_ptr<InterpolableList> resultEndInterpolableList = InterpolableList::create(finalLength);
     Vector<RefPtr<NonInterpolableValue>> resultNonInterpolableValues(finalLength);
 
     InterpolableList& startInterpolableList = toInterpolableList(*start.interpolableValue);
@@ -104,7 +105,7 @@ static void repeatToLength(InterpolationValue& value, size_t length)
     if (currentLength == length)
         return;
     ASSERT(currentLength < length);
-    OwnPtr<InterpolableList> newInterpolableList = InterpolableList::create(length);
+    std::unique_ptr<InterpolableList> newInterpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> newNonInterpolableValues(length);
     for (size_t i = length; i-- > 0;) {
         newInterpolableList->set(i, i < currentLength ? std::move(interpolableList.getMutable(i)) : interpolableList.get(i % currentLength)->clone());

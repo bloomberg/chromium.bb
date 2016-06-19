@@ -12,8 +12,7 @@
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
-
+#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -26,9 +25,9 @@ class WebLayer;
 class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
     WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
 public:
-    static PassOwnPtr<CompositorAnimationPlayer> create()
+    static std::unique_ptr<CompositorAnimationPlayer> create()
     {
-        return adoptPtr(new CompositorAnimationPlayer());
+        return wrapUnique(new CompositorAnimationPlayer());
     }
 
     ~CompositorAnimationPlayer();

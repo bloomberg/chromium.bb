@@ -46,9 +46,9 @@
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -160,7 +160,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback*
 
     FileWriter* fileWriter = FileWriter::create(getExecutionContext());
     FileWriterBaseCallback* conversionCallback = ConvertToFileWriterCallback::create(successCallback);
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback, m_context);
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback, m_context);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
 }
 

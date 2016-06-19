@@ -6,6 +6,8 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -57,9 +59,9 @@ static FontWeight doubleToFontWeight(double value)
 
 class ParentFontWeightChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentFontWeightChecker> create(FontWeight fontWeight)
+    static std::unique_ptr<ParentFontWeightChecker> create(FontWeight fontWeight)
     {
-        return adoptPtr(new ParentFontWeightChecker(fontWeight));
+        return wrapUnique(new ParentFontWeightChecker(fontWeight));
     }
 
 private:

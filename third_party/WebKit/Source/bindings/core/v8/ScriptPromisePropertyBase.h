@@ -11,9 +11,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Compiler.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -63,7 +63,7 @@ protected:
     NEVER_INLINE void resetBase();
 
 private:
-    typedef Vector<OwnPtr<ScopedPersistent<v8::Object>>> WeakPersistentSet;
+    typedef Vector<std::unique_ptr<ScopedPersistent<v8::Object>>> WeakPersistentSet;
 
     void resolveOrRejectInternal(v8::Local<v8::Promise::Resolver>);
     v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);

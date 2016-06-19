@@ -8,7 +8,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/ServiceRegistry.h"
 #include "wtf/Assertions.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

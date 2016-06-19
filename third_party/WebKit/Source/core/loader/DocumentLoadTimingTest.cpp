@@ -7,6 +7,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class DocumentLoadTimingTest : public testing::Test {
 
 TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder)
 {
-    OwnPtr<DummyPageHolder> dummyPage = DummyPageHolder::create();
+    std::unique_ptr<DummyPageHolder> dummyPage = DummyPageHolder::create();
     DocumentLoadTiming timing(*(dummyPage->document().loader()));
 
     double delta = -1000;
@@ -30,7 +31,7 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder)
 
 TEST_F(DocumentLoadTimingTest, correctTimingDeltas)
 {
-    OwnPtr<DummyPageHolder> dummyPage = DummyPageHolder::create();
+    std::unique_ptr<DummyPageHolder> dummyPage = DummyPageHolder::create();
     DocumentLoadTiming timing(*(dummyPage->document().loader()));
 
     double navigationStartDelta = -456;

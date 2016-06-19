@@ -34,7 +34,7 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -51,7 +51,7 @@ public:
     GLuint getBackingTextureHandleForOverwrite() override;
 
 private:
-    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
+    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
     sk_sp<SkSurface> m_surface; // Uses m_contextProvider.
 };
 

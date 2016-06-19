@@ -7,7 +7,8 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -36,7 +37,7 @@ public:
         : m_ownCopy(false)
     {
         if (other.m_data)
-            m_data = adoptPtr(new Persistent<T>(other.m_data->get()));
+            m_data = wrapUnique(new Persistent<T>(other.m_data->get()));
 
         // Invalidated, subsequent mutations will happen on a new copy.
         //
@@ -62,7 +63,7 @@ public:
     void init()
     {
         ASSERT(!m_data);
-        m_data = adoptPtr(new Persistent<T>(T::create()));
+        m_data = wrapUnique(new Persistent<T>(T::create()));
         m_ownCopy = true;
     }
 
@@ -83,7 +84,7 @@ public:
     void operator=(std::nullptr_t) { m_data.clear(); }
 private:
     // Reduce size of DataPersistent<> by delaying creation of Persistent<>.
-    OwnPtr<Persistent<T>> m_data;
+    std::unique_ptr<Persistent<T>> m_data;
     unsigned m_ownCopy:1;
 };
 

@@ -37,6 +37,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringUTF8Adaptor.h"
+#include <memory>
 #include <stdio.h>
 
 namespace blink {
@@ -72,8 +73,8 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const char* name, const char* scope, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char* argNames[], const unsigned char argTypes[],
     const unsigned long long argValues[],
-    PassOwnPtr<TracedValue> tracedValue1,
-    PassOwnPtr<TracedValue> tracedValue2,
+    std::unique_ptr<TracedValue> tracedValue1,
+    std::unique_ptr<TracedValue> tracedValue2,
     unsigned flags)
 {
     std::unique_ptr<base::trace_event::ConvertableToTraceFormat> convertables[2];

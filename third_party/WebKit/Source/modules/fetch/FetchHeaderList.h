@@ -7,10 +7,10 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <utility>
 
 namespace blink {
@@ -39,7 +39,7 @@ public:
 
     bool containsNonSimpleHeader() const;
 
-    const Vector<OwnPtr<Header>>& list() const { return m_headerList; }
+    const Vector<std::unique_ptr<Header>>& list() const { return m_headerList; }
     const Header& entry(size_t index) const { return *(m_headerList[index].get()); }
 
     static bool isValidHeaderName(const String&);
@@ -49,7 +49,7 @@ public:
 
 private:
     FetchHeaderList();
-    Vector<OwnPtr<Header>> m_headerList;
+    Vector<std::unique_ptr<Header>> m_headerList;
 };
 
 } // namespace blink

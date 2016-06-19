@@ -45,10 +45,12 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/WTF.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -74,7 +76,7 @@ static WebThread::TaskObserver* s_endOfTaskRunner = nullptr;
 
 static ModulesInitializer& modulesInitializer()
 {
-    DEFINE_STATIC_LOCAL(OwnPtr<ModulesInitializer>, initializer, (adoptPtr(new ModulesInitializer)));
+    DEFINE_STATIC_LOCAL(std::unique_ptr<ModulesInitializer>, initializer, (wrapUnique(new ModulesInitializer)));
     return *initializer;
 }
 

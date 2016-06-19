@@ -10,9 +10,9 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace cc {
 class Layer;
@@ -55,7 +55,7 @@ public:
 
 private:
     class DummyRectClient;
-    Vector<OwnPtr<DummyRectClient>> m_dummyClients;
+    Vector<std::unique_ptr<DummyRectClient>> m_dummyClients;
 
     // Exists if m_built is false.
     DisplayItemList m_displayItemList;

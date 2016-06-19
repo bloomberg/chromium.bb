@@ -48,8 +48,8 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -149,7 +149,7 @@ private:
     }
 
     void rebuildZOrderLists();
-    void collectLayers(OwnPtr<Vector<PaintLayerStackingNode*>>& posZOrderList, OwnPtr<Vector<PaintLayerStackingNode*>>& negZOrderList);
+    void collectLayers(std::unique_ptr<Vector<PaintLayerStackingNode*>>& posZOrderList, std::unique_ptr<Vector<PaintLayerStackingNode*>>& negZOrderList);
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
@@ -169,8 +169,8 @@ private:
     // that have z-indices of 0 (or is treated as 0 for positioned objects) or greater.
     // m_negZOrderList holds descendants within our stacking context with
     // negative z-indices.
-    OwnPtr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
-    OwnPtr<Vector<PaintLayerStackingNode*>> m_negZOrderList;
+    std::unique_ptr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
+    std::unique_ptr<Vector<PaintLayerStackingNode*>> m_negZOrderList;
 
     // This boolean caches whether the z-order lists above are dirty.
     // It is only ever set for stacking contexts, as no other element can

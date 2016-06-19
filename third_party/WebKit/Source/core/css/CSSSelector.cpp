@@ -34,6 +34,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
+#include <memory>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -766,7 +767,7 @@ void CSSSelector::setArgument(const AtomicString& value)
     m_data.m_rareData->m_argument = value;
 }
 
-void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
+void CSSSelector::setSelectorList(std::unique_ptr<CSSSelectorList> selectorList)
 {
     createRareData();
     m_data.m_rareData->m_selectorList = std::move(selectorList);

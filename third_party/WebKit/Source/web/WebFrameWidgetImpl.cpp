@@ -61,6 +61,8 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -344,7 +346,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& in
         if (inputEvent.type == WebInputEvent::MouseUp)
             mouseCaptureLost();
 
-        OwnPtr<UserGestureIndicator> gestureIndicator;
+        std::unique_ptr<UserGestureIndicator> gestureIndicator;
 
         AtomicString eventType;
         switch (inputEvent.type) {
@@ -356,12 +358,12 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& in
             break;
         case WebInputEvent::MouseDown:
             eventType = EventTypeNames::mousedown;
-            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+            gestureIndicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
             m_mouseCaptureGestureToken = gestureIndicator->currentToken();
             break;
         case WebInputEvent::MouseUp:
             eventType = EventTypeNames::mouseup;
-            gestureIndicator = adoptPtr(new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
+            gestureIndicator = wrapUnique(new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
             break;
         default:
             NOTREACHED();

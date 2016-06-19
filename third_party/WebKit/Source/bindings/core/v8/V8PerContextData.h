@@ -40,10 +40,10 @@
 #include "gin/public/gin_embedders.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -59,7 +59,7 @@ class CORE_EXPORT V8PerContextData final {
     USING_FAST_MALLOC(V8PerContextData);
     WTF_MAKE_NONCOPYABLE(V8PerContextData);
 public:
-    static PassOwnPtr<V8PerContextData> create(v8::Local<v8::Context>);
+    static std::unique_ptr<V8PerContextData> create(v8::Local<v8::Context>);
 
     static V8PerContextData* from(v8::Local<v8::Context>);
 
@@ -84,7 +84,7 @@ public:
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
-    void addCustomElementBinding(PassOwnPtr<V0CustomElementBinding>);
+    void addCustomElementBinding(std::unique_ptr<V0CustomElementBinding>);
 
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
     void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
@@ -108,12 +108,12 @@ private:
     typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Function, v8::kNotWeak> ConstructorMap;
     ConstructorMap m_constructorMap;
 
-    OwnPtr<gin::ContextHolder> m_contextHolder;
+    std::unique_ptr<gin::ContextHolder> m_contextHolder;
 
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    typedef Vector<OwnPtr<V0CustomElementBinding>> V0CustomElementBindingList;
+    typedef Vector<std::unique_ptr<V0CustomElementBinding>> V0CustomElementBindingList;
     V0CustomElementBindingList m_customElementBindings;
 
     // This is owned by a static hash map in V8DOMActivityLogger.

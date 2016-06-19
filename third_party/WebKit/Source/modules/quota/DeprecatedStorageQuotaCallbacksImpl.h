@@ -36,7 +36,6 @@
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "platform/StorageQuotaCallbacks.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

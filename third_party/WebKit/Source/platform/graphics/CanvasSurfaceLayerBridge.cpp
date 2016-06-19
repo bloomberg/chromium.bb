@@ -9,6 +9,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -16,7 +17,7 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge()
 {
     m_solidColorLayer = cc::SolidColorLayer::Create();
     m_solidColorLayer->SetBackgroundColor(SK_ColorBLUE);
-    m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_solidColorLayer.get()));
+    m_webLayer = wrapUnique(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_solidColorLayer.get()));
     GraphicsLayer::registerContentsLayer(m_webLayer.get());
 }
 

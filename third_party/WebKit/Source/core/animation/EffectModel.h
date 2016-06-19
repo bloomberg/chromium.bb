@@ -37,7 +37,6 @@
 #include "core/animation/PropertyHandle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

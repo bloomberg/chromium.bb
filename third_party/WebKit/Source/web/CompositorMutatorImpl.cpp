@@ -14,6 +14,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "web/CompositorProxyClientImpl.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -30,7 +31,7 @@ void createCompositorMutatorClient(std::unique_ptr<CompositorMutatorClient>* ptr
 } // namespace
 
 CompositorMutatorImpl::CompositorMutatorImpl()
-    : m_animationManager(adoptPtr(new CustomCompositorAnimationManager))
+    : m_animationManager(wrapUnique(new CustomCompositorAnimationManager))
     , m_client(nullptr)
 {
 }

@@ -10,7 +10,8 @@
 #include "platform/graphics/CompositorMutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 using ::testing::_;
 
@@ -38,7 +39,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply)
     MockCompositoMutationsTarget target;
 
     CompositorMutatorClient client(new StubCompositorMutator, &target);
-    OwnPtr<CompositorMutations> mutations = adoptPtr(new CompositorMutations());
+    std::unique_ptr<CompositorMutations> mutations = wrapUnique(new CompositorMutations());
     client.setMutationsForTesting(std::move(mutations));
 
     EXPECT_CALL(target, applyMutations(_));

@@ -12,6 +12,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ShadowData.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include <memory>
 
 namespace blink {
 
@@ -195,7 +196,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(const Filter
     return result;
 }
 
-PassOwnPtr<InterpolableValue> FilterInterpolationFunctions::createNoneValue(const NonInterpolableValue& untypedNonInterpolableValue)
+std::unique_ptr<InterpolableValue> FilterInterpolationFunctions::createNoneValue(const NonInterpolableValue& untypedNonInterpolableValue)
 {
     switch (toFilterNonInterpolableValue(untypedNonInterpolableValue).type()) {
     case FilterOperation::GRAYSCALE:

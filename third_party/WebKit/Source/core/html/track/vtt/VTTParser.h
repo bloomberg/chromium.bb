@@ -39,8 +39,8 @@
 #include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTTokenizer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -139,7 +139,7 @@ private:
     static bool collectTimeStamp(VTTScanner& input, double& timeStamp);
 
     BufferedLineReader m_lineReader;
-    OwnPtr<TextResourceDecoder> m_decoder;
+    std::unique_ptr<TextResourceDecoder> m_decoder;
     AtomicString m_currentId;
     double m_currentStartTime;
     double m_currentEndTime;

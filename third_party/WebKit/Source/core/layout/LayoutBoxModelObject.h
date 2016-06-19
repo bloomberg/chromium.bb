@@ -30,6 +30,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -370,15 +372,15 @@ private:
     LayoutBoxModelObjectRareData& ensureRareData()
     {
         if (!m_rareData)
-            m_rareData = adoptPtr(new LayoutBoxModelObjectRareData());
+            m_rareData = wrapUnique(new LayoutBoxModelObjectRareData());
         return *m_rareData.get();
     }
 
     // The PaintLayer associated with this object.
     // |m_layer| can be nullptr depending on the return value of layerTypeRequired().
-    OwnPtr<PaintLayer> m_layer;
+    std::unique_ptr<PaintLayer> m_layer;
 
-    OwnPtr<LayoutBoxModelObjectRareData> m_rareData;
+    std::unique_ptr<LayoutBoxModelObjectRareData> m_rareData;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, isBoxModelObject());

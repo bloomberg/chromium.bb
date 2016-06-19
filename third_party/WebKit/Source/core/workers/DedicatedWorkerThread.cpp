@@ -34,12 +34,14 @@
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
+std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
 {
-    return adoptPtr(new DedicatedWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin));
+    return wrapUnique(new DedicatedWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin));
 }
 
 DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
@@ -54,7 +56,7 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 {
 }
 
-WorkerGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+WorkerGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }

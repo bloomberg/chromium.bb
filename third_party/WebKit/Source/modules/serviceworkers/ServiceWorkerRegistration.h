@@ -15,7 +15,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
 #include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -48,7 +48,7 @@ public:
 
     // Returns an existing registration object for the handle if it exists.
     // Otherwise, returns a new registration object.
-    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
+    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
     ServiceWorker* installing() { return m_installing; }
     ServiceWorker* waiting() { return m_waiting; }
@@ -68,7 +68,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
+    ServiceWorkerRegistration(ExecutionContext*, std::unique_ptr<WebServiceWorkerRegistration::Handle>);
     void dispose();
 
     // ActiveScriptWrappable overrides.
@@ -78,7 +78,7 @@ private:
     void stop() override;
 
     // A handle to the registration representation in the embedder.
-    OwnPtr<WebServiceWorkerRegistration::Handle> m_handle;
+    std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;
 
     Member<ServiceWorker> m_installing;
     Member<ServiceWorker> m_waiting;
@@ -90,7 +90,7 @@ private:
 class ServiceWorkerRegistrationArray {
     STATIC_ONLY(ServiceWorkerRegistrationArray);
 public:
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<OwnPtr<WebServiceWorkerRegistration::Handle>>* webServiceWorkerRegistrations)
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>* webServiceWorkerRegistrations)
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (auto& registration : *webServiceWorkerRegistrations)

@@ -24,8 +24,8 @@
 #include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -171,7 +171,7 @@ PresentationConnection::~PresentationConnection()
 }
 
 // static
-PresentationConnection* PresentationConnection::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationConnectionClient> client, PresentationRequest* request)
+PresentationConnection* PresentationConnection::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebPresentationConnectionClient> client, PresentationRequest* request)
 {
     ASSERT(resolver);
     ASSERT(client);
@@ -190,7 +190,7 @@ PresentationConnection* PresentationConnection::take(ScriptPromiseResolver* reso
 }
 
 // static
-PresentationConnection* PresentationConnection::take(PresentationController* controller, PassOwnPtr<WebPresentationConnectionClient> client, PresentationRequest* request)
+PresentationConnection* PresentationConnection::take(PresentationController* controller, std::unique_ptr<WebPresentationConnectionClient> client, PresentationRequest* request)
 {
     ASSERT(controller);
     ASSERT(request);
@@ -355,7 +355,7 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t
 
     switch (m_binaryType) {
     case BinaryTypeBlob: {
-        OwnPtr<BlobData> blobData = BlobData::create();
+        std::unique_ptr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(data, length);
         Blob* blob = Blob::create(BlobDataHandle::create(std::move(blobData), length));
         dispatchEvent(MessageEvent::create(blob));

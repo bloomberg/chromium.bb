@@ -31,8 +31,8 @@
 #include "platform/text/LocaleICU.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 #include <unicode/uvernum.h>
 
 namespace blink {
@@ -89,49 +89,49 @@ protected:
 
     String monthFormat(const char* localeString)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->monthFormat();
     }
 
     String localizedDateFormatText(const char* localeString)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->timeFormat();
     }
 
     String localizedShortDateFormatText(const char* localeString)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->shortTimeFormat();
     }
 
     String shortMonthLabel(const char* localeString, unsigned index)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->shortMonthLabels()[index];
     }
 
     String shortStandAloneMonthLabel(const char* localeString, unsigned index)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->shortStandAloneMonthLabels()[index];
     }
 
     String standAloneMonthLabel(const char* localeString, unsigned index)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->standAloneMonthLabels()[index];
     }
 
     Labels timeAMPMLabels(const char* localeString)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return Labels(locale->timeAMPMLabels());
     }
 
     bool isRTL(const char* localeString)
     {
-        OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
+        std::unique_ptr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->isRTL();
     }
 };
@@ -237,7 +237,7 @@ TEST_F(LocaleICUTest, timeAMPMLabels)
 
 static String testDecimalSeparator(const AtomicString& localeIdentifier)
 {
-    OwnPtr<Locale> locale = Locale::create(localeIdentifier);
+    std::unique_ptr<Locale> locale = Locale::create(localeIdentifier);
     return locale->localizedDecimalSeparator();
 }
 
@@ -249,7 +249,7 @@ TEST_F(LocaleICUTest, localizedDecimalSeparator)
 
 void testNumberIsReversible(const AtomicString& localeIdentifier, const char* original, const char* shouldHave = 0)
 {
-    OwnPtr<Locale> locale = Locale::create(localeIdentifier);
+    std::unique_ptr<Locale> locale = Locale::create(localeIdentifier);
     String localized = locale->convertToLocalizedNumber(original);
     if (shouldHave)
         EXPECT_TRUE(localized.contains(shouldHave));

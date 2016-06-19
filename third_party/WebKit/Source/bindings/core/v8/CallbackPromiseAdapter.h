@@ -33,10 +33,8 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "public/platform/WebCallbacks.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/TypeTraits.h"
-
 #include <memory>
 
 namespace blink {
@@ -50,7 +48,7 @@ namespace blink {
 //    called trivial WebType holder is used. For example,
 //    CallbackPromiseAdapter<bool, void> is a subclass of
 //    WebCallbacks<bool, void>.
-//  - If a WebType is OwnPtr<T>, its corresponding type parameter on
+//  - If a WebType is std::unique_ptr<T>, its corresponding type parameter on
 //    WebCallbacks is std::unique_ptr<T>, because WebCallbacks must be exposed to
 //    Chromium.
 //
@@ -64,9 +62,9 @@ namespace blink {
 // Example:
 // class MyClass {
 // public:
-//     using WebType = OwnPtr<WebMyClass>;
+//     using WebType = std::unique_ptr<WebMyClass>;
 //     static PassRefPtr<MyClass> take(ScriptPromiseResolver* resolver,
-//         PassOwnPtr<WebMyClass> webInstance)
+//         std::unique_ptr<WebMyClass> webInstance)
 //     {
 //         return MyClass::create(webInstance);
 //     }
@@ -82,20 +80,20 @@ namespace blink {
 //     }
 //     ...
 // };
-// OwnPtr<WebCallbacks<std::unique_ptr<WebMyClass>, const WebMyErrorClass&>>
-//     callbacks = adoptPtr(new CallbackPromiseAdapter<MyClass, MyErrorClass>(
+// std::unique_ptr<WebCallbacks<std::unique_ptr<WebMyClass>, const WebMyErrorClass&>>
+//     callbacks = wrapUnique(new CallbackPromiseAdapter<MyClass, MyErrorClass>(
 //     resolver));
 // ...
 //
-// OwnPtr<WebCallbacks<bool, const WebMyErrorClass&>> callbacks2 =
-//     adoptPtr(new CallbackPromiseAdapter<bool, MyErrorClass>(resolver));
+// std::unique_ptr<WebCallbacks<bool, const WebMyErrorClass&>> callbacks2 =
+//     wrapUnique(new CallbackPromiseAdapter<bool, MyErrorClass>(resolver));
 // ...
 //
 //
 // In order to implement the above exceptions, we have template classes below.
 // OnSuccess and OnError provide onSuccess and onError implementation, and there
 // are utility templates that provide
-//  - OwnPtr - WebPassOwnPtr translation ([Web]PassType[Impl], adopt, pass),
+//  - std::unique_ptr - WebPassOwnPtr translation ([Web]PassType[Impl], adopt, pass),
 //  - trivial WebType holder (TrivialWebTypeHolder).
 
 namespace internal {
@@ -125,24 +123,24 @@ private:
         using Type = T;
     };
     template <typename T>
-    struct PassTypeImpl<OwnPtr<T>> {
-        using Type = PassOwnPtr<T>;
+    struct PassTypeImpl<std::unique_ptr<T>> {
+        using Type = std::unique_ptr<T>;
     };
     template <typename T>
     struct WebPassTypeImpl {
         using Type = T;
     };
     template <typename T>
-    struct WebPassTypeImpl<OwnPtr<T>> {
+    struct WebPassTypeImpl<std::unique_ptr<T>> {
         using Type = std::unique_ptr<T>;
     };
     template <typename T> using PassType = typename PassTypeImpl<T>::Type;
     template <typename T> using WebPassType = typename WebPassTypeImpl<T>::Type;
     template <typename T> static T& adopt(T& x) { return x; }
     template <typename T>
-    static PassOwnPtr<T> adopt(std::unique_ptr<T>& x) { return adoptPtr(x.release()); }
+    static std::unique_ptr<T> adopt(std::unique_ptr<T>& x) { return std::move(x); }
     template <typename T> static PassType<T> pass(T& x) { return x; }
-    template <typename T> static PassOwnPtr<T> pass(OwnPtr<T>& x) { return std::move(x); }
+    template <typename T> static std::unique_ptr<T> pass(std::unique_ptr<T>& x) { return std::move(x); }
 
     template <typename S, typename T>
     class Base : public WebCallbacks<WebPassType<typename S::WebType>, WebPassType<typename T::WebType>> {

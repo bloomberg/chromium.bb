@@ -34,8 +34,8 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -50,7 +50,7 @@ class PLATFORM_EXPORT BlobRegistry {
     STATIC_ONLY(BlobRegistry);
 public:
     // Methods for controlling Blobs.
-    static void registerBlobData(const String& uuid, PassOwnPtr<BlobData>);
+    static void registerBlobData(const String& uuid, std::unique_ptr<BlobData>);
     static void addBlobDataRef(const String& uuid);
     static void removeBlobDataRef(const String& uuid);
     static void registerPublicBlobURL(SecurityOrigin*, const KURL&, PassRefPtr<BlobDataHandle>);

@@ -10,15 +10,16 @@
 #include "platform/fonts/UTF16TextIterator.h"
 #include "platform/text/Character.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
 RunSegmenter::RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation runOrientation)
     : m_bufferSize(bufferSize)
     , m_candidateRange({ 0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationKeep, FontFallbackPriority::Text })
-    , m_scriptRunIterator(adoptPtr(new ScriptRunIterator(buffer, bufferSize)))
-    , m_orientationIterator(runOrientation == FontOrientation::VerticalMixed ? adoptPtr(new OrientationIterator(buffer, bufferSize, runOrientation)) : nullptr)
-    , m_symbolsIterator(adoptPtr(new SymbolsIterator(buffer, bufferSize)))
+    , m_scriptRunIterator(wrapUnique(new ScriptRunIterator(buffer, bufferSize)))
+    , m_orientationIterator(runOrientation == FontOrientation::VerticalMixed ? wrapUnique(new OrientationIterator(buffer, bufferSize, runOrientation)) : nullptr)
+    , m_symbolsIterator(wrapUnique(new SymbolsIterator(buffer, bufferSize)))
     , m_lastSplit(0)
     , m_scriptRunIteratorPosition(0)
     , m_orientationIteratorPosition(runOrientation == FontOrientation::VerticalMixed ? 0 : m_bufferSize)

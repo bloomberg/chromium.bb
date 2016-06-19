@@ -13,10 +13,10 @@
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
+#include <memory>
 
 namespace blink {
 
@@ -27,16 +27,16 @@ class ExecutionContext;
 class MODULES_EXPORT FetchFormDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(FetchFormDataConsumerHandle);
 public:
-    static PassOwnPtr<FetchDataConsumerHandle> create(const String& body);
-    static PassOwnPtr<FetchDataConsumerHandle> create(DOMArrayBuffer* body);
-    static PassOwnPtr<FetchDataConsumerHandle> create(DOMArrayBufferView* body);
-    static PassOwnPtr<FetchDataConsumerHandle> create(const void* data, size_t);
-    static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<EncodedFormData> body);
+    static std::unique_ptr<FetchDataConsumerHandle> create(const String& body);
+    static std::unique_ptr<FetchDataConsumerHandle> create(DOMArrayBuffer* body);
+    static std::unique_ptr<FetchDataConsumerHandle> create(DOMArrayBufferView* body);
+    static std::unique_ptr<FetchDataConsumerHandle> create(const void* data, size_t);
+    static std::unique_ptr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<EncodedFormData> body);
     // Use FetchBlobDataConsumerHandle for blobs.
 
     ~FetchFormDataConsumerHandle() override;
 
-    static PassOwnPtr<FetchDataConsumerHandle> createForTest(
+    static std::unique_ptr<FetchDataConsumerHandle> createForTest(
         ExecutionContext*,
         PassRefPtr<EncodedFormData> body,
         FetchBlobDataConsumerHandle::LoaderFactory*);

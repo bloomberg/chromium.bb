@@ -83,6 +83,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/Platform.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/CString.h"
@@ -982,7 +983,7 @@ void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependen
     if (rareCompositingInputs.isDefault())
         m_rareAncestorDependentCompositingInputs.reset();
     else
-        m_rareAncestorDependentCompositingInputs = adoptPtr(new RareAncestorDependentCompositingInputs(rareCompositingInputs));
+        m_rareAncestorDependentCompositingInputs = wrapUnique(new RareAncestorDependentCompositingInputs(rareCompositingInputs));
     m_hasAncestorWithClipPath = hasAncestorWithClipPath;
     m_needsAncestorDependentCompositingInputsUpdate = false;
 }
@@ -1451,7 +1452,7 @@ void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
     ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
     if (layoutObject()->hasReflection()) {
         if (!ensureRareData().reflectionInfo)
-            m_rareData->reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
+            m_rareData->reflectionInfo = wrapUnique(new PaintLayerReflectionInfo(*layoutBox()));
         m_rareData->reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_rareData && m_rareData->reflectionInfo) {
         m_rareData->reflectionInfo = nullptr;
@@ -1462,7 +1463,7 @@ void PaintLayer::updateStackingNode()
 {
     ASSERT(!m_stackingNode);
     if (requiresStackingNode())
-        m_stackingNode = adoptPtr(new PaintLayerStackingNode(this));
+        m_stackingNode = wrapUnique(new PaintLayerStackingNode(this));
     else
         m_stackingNode = nullptr;
 }
@@ -2333,7 +2334,7 @@ void PaintLayer::ensureCompositedLayerMapping()
     if (m_rareData && m_rareData->compositedLayerMapping)
         return;
 
-    ensureRareData().compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
+    ensureRareData().compositedLayerMapping = wrapUnique(new CompositedLayerMapping(*this));
     m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
     updateOrRemoveFilterEffectBuilder();

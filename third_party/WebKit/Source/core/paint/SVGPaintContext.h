@@ -33,6 +33,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/transforms/AffineTransform.h"
+#include <memory>
 
 namespace blink {
 
@@ -85,14 +86,14 @@ private:
 
     const LayoutObject& m_object;
     PaintInfo m_paintInfo;
-    OwnPtr<PaintInfo> m_filterPaintInfo;
+    std::unique_ptr<PaintInfo> m_filterPaintInfo;
     LayoutSVGResourceFilter* m_filter;
     LayoutSVGResourceClipper* m_clipper;
     SVGClipPainter::ClipperState m_clipperState;
     LayoutSVGResourceMasker* m_masker;
-    OwnPtr<CompositingRecorder> m_compositingRecorder;
-    OwnPtr<ClipPathRecorder> m_clipPathRecorder;
-    OwnPtr<SVGFilterRecordingContext> m_filterRecordingContext;
+    std::unique_ptr<CompositingRecorder> m_compositingRecorder;
+    std::unique_ptr<ClipPathRecorder> m_clipPathRecorder;
+    std::unique_ptr<SVGFilterRecordingContext> m_filterRecordingContext;
 #if ENABLE(ASSERT)
     bool m_applyClipMaskAndFilterIfNecessaryCalled;
 #endif

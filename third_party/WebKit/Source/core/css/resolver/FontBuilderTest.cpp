@@ -11,6 +11,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -26,7 +27,7 @@ public:
     Settings& settings() { return *document().settings(); }
 
 private:
-    OwnPtr<DummyPageHolder> m_dummy;
+    std::unique_ptr<DummyPageHolder> m_dummy;
 };
 
 using BuilderFunc = void (*)(FontBuilder&);

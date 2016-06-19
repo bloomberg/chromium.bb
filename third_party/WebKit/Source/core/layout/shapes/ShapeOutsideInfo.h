@@ -36,7 +36,8 @@
 #include "core/style/ShapeValue.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -93,7 +94,7 @@ public:
     LayoutUnit shapeLogicalWidth() const { return computedShape().shapeMarginLogicalBoundingBox().width(); }
     LayoutUnit shapeLogicalHeight() const { return computedShape().shapeMarginLogicalBoundingBox().height(); }
 
-    static PassOwnPtr<ShapeOutsideInfo> createInfo(const LayoutBox& layoutBox) { return adoptPtr(new ShapeOutsideInfo(layoutBox)); }
+    static std::unique_ptr<ShapeOutsideInfo> createInfo(const LayoutBox& layoutBox) { return wrapUnique(new ShapeOutsideInfo(layoutBox)); }
     static bool isEnabledFor(const LayoutBox&);
 
     ShapeOutsideDeltas computeDeltasForContainingBlockLine(const LineLayoutBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
@@ -126,12 +127,12 @@ protected:
     { }
 
 private:
-    PassOwnPtr<Shape> createShapeForImage(StyleImage*, float shapeImageThreshold, WritingMode, float margin) const;
+    std::unique_ptr<Shape> createShapeForImage(StyleImage*, float shapeImageThreshold, WritingMode, float margin) const;
 
     LayoutUnit logicalTopOffset() const;
     LayoutUnit logicalLeftOffset() const;
 
-    typedef HashMap<const LayoutBox*, OwnPtr<ShapeOutsideInfo>> InfoMap;
+    typedef HashMap<const LayoutBox*, std::unique_ptr<ShapeOutsideInfo>> InfoMap;
     static InfoMap& infoMap()
     {
         DEFINE_STATIC_LOCAL(InfoMap, staticInfoMap, ());
@@ -139,7 +140,7 @@ private:
     }
 
     const LayoutBox& m_layoutBox;
-    mutable OwnPtr<Shape> m_shape;
+    mutable std::unique_ptr<Shape> m_shape;
     LayoutSize m_referenceBoxLogicalSize;
     ShapeOutsideDeltas m_shapeOutsideDeltas;
     mutable bool m_isComputingShape;

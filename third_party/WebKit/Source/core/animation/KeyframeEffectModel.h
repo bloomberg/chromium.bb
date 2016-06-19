@@ -44,6 +44,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -83,7 +84,7 @@ public:
         return m_keyframeGroups->get(property)->keyframes();
     }
 
-    using KeyframeGroupMap = HashMap<PropertyHandle, OwnPtr<PropertySpecificKeyframeGroup>>;
+    using KeyframeGroupMap = HashMap<PropertyHandle, std::unique_ptr<PropertySpecificKeyframeGroup>>;
     const KeyframeGroupMap& getPropertySpecificKeyframeGroups() const
     {
         ensureKeyframeGroups();
@@ -140,7 +141,7 @@ protected:
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
-    mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+    mutable std::unique_ptr<KeyframeGroupMap> m_keyframeGroups;
     mutable InterpolationEffect m_interpolationEffect;
     mutable int m_lastIteration;
     mutable double m_lastFraction;

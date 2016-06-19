@@ -36,6 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include <memory>
 
 namespace blink {
 
@@ -227,7 +228,7 @@ private:
     // want to own that ID. This is *unvalidated*, it includes possible duplicates.
     // This is used so that when an element with an ID is added to the tree or changes
     // its ID, we can quickly determine if it affects an aria-owns relationship.
-    HashMap<String, OwnPtr<HashSet<AXID>>> m_idToAriaOwnersMapping;
+    HashMap<String, std::unique_ptr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
     HeapVector<std::pair<Member<AXObject>, AXNotification>> m_notificationsToPost;

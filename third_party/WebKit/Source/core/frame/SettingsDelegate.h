@@ -33,8 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -43,7 +42,7 @@ class Settings;
 class CORE_EXPORT SettingsDelegate {
     DISALLOW_NEW();
 public:
-    explicit SettingsDelegate(PassOwnPtr<Settings>);
+    explicit SettingsDelegate(std::unique_ptr<Settings>);
     virtual ~SettingsDelegate();
 
     Settings* settings() const { return m_settings.get(); }
@@ -67,7 +66,7 @@ public:
     virtual void settingsChanged(ChangeType) = 0;
 
 protected:
-    OwnPtr<Settings> const m_settings;
+    std::unique_ptr<Settings> const m_settings;
 };
 
 } // namespace blink

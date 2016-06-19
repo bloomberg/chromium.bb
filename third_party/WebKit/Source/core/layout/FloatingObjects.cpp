@@ -29,8 +29,9 @@
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
-
+#include "wtf/PtrUtil.h"
 #include <algorithm>
+#include <memory>
 
 using namespace WTF;
 
@@ -88,9 +89,9 @@ bool FloatingObject::shouldPaintForCompositedLayoutPart()
     return m_layoutObject->layer() && m_layoutObject->layer()->isSelfPaintingOnlyBecauseIsCompositedPart() && !RuntimeEnabledFeatures::slimmingPaintV2Enabled();
 }
 
-PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
+std::unique_ptr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
 {
-    OwnPtr<FloatingObject> newObj = adoptPtr(new FloatingObject(layoutObject));
+    std::unique_ptr<FloatingObject> newObj = wrapUnique(new FloatingObject(layoutObject));
 
     // If a layer exists, the float will paint itself. Otherwise someone else will.
     newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer() || newObj->shouldPaintForCompositedLayoutPart());
@@ -105,14 +106,14 @@ bool FloatingObject::shouldPaint() const
     return m_shouldPaint && !m_layoutObject->hasSelfPaintingLayer();
 }
 
-PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
+std::unique_ptr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
 {
-    return adoptPtr(new FloatingObject(layoutObject(), getType(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
+    return wrapUnique(new FloatingObject(layoutObject(), getType(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
 }
 
-PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
+std::unique_ptr<FloatingObject> FloatingObject::unsafeClone() const
 {
-    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint, m_isDescendant, false));
+    std::unique_ptr<FloatingObject> cloneObject = wrapUnique(new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint, m_isDescendant, false));
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject;
 }
@@ -406,7 +407,7 @@ void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
 void FloatingObjects::moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap& map)
 {
     while (!m_set.isEmpty()) {
-        OwnPtr<FloatingObject> floatingObject = m_set.takeFirst();
+        std::unique_ptr<FloatingObject> floatingObject = m_set.takeFirst();
         LayoutBox* layoutObject = floatingObject->layoutObject();
         map.add(layoutObject, std::move(floatingObject));
     }
@@ -466,11 +467,11 @@ void FloatingObjects::removePlacedObject(FloatingObject& floatingObject)
     markLowestFloatLogicalBottomCacheAsDirty();
 }
 
-FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
+FloatingObject* FloatingObjects::add(std::unique_ptr<FloatingObject> floatingObject)
 {
-    FloatingObject* newObject = floatingObject.leakPtr();
+    FloatingObject* newObject = floatingObject.release();
     increaseObjectsCount(newObject->getType());
-    m_set.add(adoptPtr(newObject));
+    m_set.add(wrapUnique(newObject));
     if (newObject->isPlaced())
         addPlacedObject(*newObject);
     markLowestFloatLogicalBottomCacheAsDirty();
@@ -480,7 +481,7 @@ FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
 void FloatingObjects::remove(FloatingObject* toBeRemoved)
 {
     decreaseObjectsCount(toBeRemoved->getType());
-    OwnPtr<FloatingObject> floatingObject = m_set.take(toBeRemoved);
+    std::unique_ptr<FloatingObject> floatingObject = m_set.take(toBeRemoved);
     ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
     if (floatingObject->isPlaced())
         removePlacedObject(*floatingObject);

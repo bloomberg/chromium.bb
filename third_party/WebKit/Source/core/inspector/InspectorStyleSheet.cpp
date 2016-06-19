@@ -53,8 +53,7 @@
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 #include <algorithm>
@@ -884,13 +883,13 @@ DEFINE_TRACE(InspectorStyle)
 InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
     : m_id(IdentifiersFactory::createIdentifier())
     , m_listener(listener)
-    , m_lineEndings(adoptPtr(new LineEndings()))
+    , m_lineEndings(wrapUnique(new LineEndings()))
 {
 }
 
 void InspectorStyleSheetBase::onStyleSheetTextChanged()
 {
-    m_lineEndings = adoptPtr(new LineEndings());
+    m_lineEndings = wrapUnique(new LineEndings());
     if (listener())
         listener()->styleSheetChanged(this);
 }

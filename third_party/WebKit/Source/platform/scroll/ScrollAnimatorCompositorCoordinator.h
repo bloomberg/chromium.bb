@@ -16,7 +16,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -63,7 +63,7 @@ protected:
     IntSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }
 
     void resetAnimationIds();
-    bool addAnimation(PassOwnPtr<CompositorAnimation>);
+    bool addAnimation(std::unique_ptr<CompositorAnimation>);
     void removeAnimation();
     virtual void abortAnimation();
 
@@ -139,7 +139,7 @@ protected:
         RunningOnCompositorButNeedsAdjustment,
     };
 
-    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
+    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
     int m_compositorAnimationAttachedToLayerId;
     RunState m_runState;
     int m_compositorAnimationId;

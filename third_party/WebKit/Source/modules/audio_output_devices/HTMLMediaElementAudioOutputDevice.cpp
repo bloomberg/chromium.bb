@@ -11,6 +11,8 @@
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/audio_output_devices/SetSinkIdCallbacks.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -59,11 +61,11 @@ void SetSinkIdResolver::timerFired(Timer<SetSinkIdResolver>* timer)
 {
     ExecutionContext* context = getExecutionContext();
     ASSERT(context && context->isDocument());
-    OwnPtr<SetSinkIdCallbacks> callbacks = adoptPtr(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
+    std::unique_ptr<SetSinkIdCallbacks> callbacks = wrapUnique(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
     WebMediaPlayer* webMediaPlayer = m_element->webMediaPlayer();
     if (webMediaPlayer) {
-        // Using leakPtr() to transfer ownership because |webMediaPlayer| is a platform object that takes raw pointers
-        webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.leakPtr());
+        // Using release() to transfer ownership because |webMediaPlayer| is a platform object that takes raw pointers
+        webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.release());
     } else {
         if (AudioOutputDeviceClient* client = AudioOutputDeviceClient::from(context)) {
             client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId, std::move(callbacks));

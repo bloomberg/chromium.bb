@@ -24,7 +24,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -60,7 +60,7 @@ private:
     void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
     void removeResourcesFromLayoutObject(LayoutObject*);
 
-    typedef HashMap<const LayoutObject*, OwnPtr<SVGResources>> CacheMap;
+    typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
     CacheMap m_cache;
 };
 

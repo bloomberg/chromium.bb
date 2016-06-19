@@ -45,6 +45,7 @@
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Atomics.h"
 #include <limits>
+#include <memory>
 
 using blink::WebIDBDatabase;
 
@@ -66,14 +67,14 @@ const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has
 const char IDBDatabase::transactionReadOnlyErrorMessage[] = "The transaction is read-only.";
 const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection is closed.";
 
-IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, IDBDatabaseCallbacks* callbacks)
+IDBDatabase* IDBDatabase::create(ExecutionContext* context, std::unique_ptr<WebIDBDatabase> database, IDBDatabaseCallbacks* callbacks)
 {
     IDBDatabase* idbDatabase = new IDBDatabase(context, std::move(database), callbacks);
     idbDatabase->suspendIfNeeded();
     return idbDatabase;
 }
 
-IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, IDBDatabaseCallbacks* callbacks)
+IDBDatabase::IDBDatabase(ExecutionContext* context, std::unique_ptr<WebIDBDatabase> backend, IDBDatabaseCallbacks* callbacks)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_backend(std::move(backend))
@@ -311,7 +312,7 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
     }
 
     int64_t transactionId = nextTransactionId();
-    m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).leakPtr(), objectStoreIds, mode);
+    m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).release(), objectStoreIds, mode);
 
     return IDBTransaction::create(scriptState, transactionId, scope, mode, this);
 }

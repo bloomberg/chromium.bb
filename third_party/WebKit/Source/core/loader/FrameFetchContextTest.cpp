@@ -48,6 +48,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -122,7 +123,7 @@ protected:
         return childFetchContext;
     }
 
-    OwnPtr<DummyPageHolder> dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> dummyPageHolder;
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
     // as the ResourceFetcher and Document live due to indirect usage.
     Persistent<DocumentLoader> documentLoader;

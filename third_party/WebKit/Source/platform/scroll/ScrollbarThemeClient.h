@@ -31,7 +31,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

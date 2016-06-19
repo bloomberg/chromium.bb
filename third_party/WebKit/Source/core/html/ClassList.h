@@ -29,7 +29,7 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/Element.h"
 #include "core/dom/SpaceSplitString.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,7 +64,7 @@ private:
     void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::classAttr, value); }
 
     Member<Element> m_element;
-    mutable OwnPtr<SpaceSplitString> m_classNamesForQuirksMode;
+    mutable std::unique_ptr<SpaceSplitString> m_classNamesForQuirksMode;
 };
 
 } // namespace blink

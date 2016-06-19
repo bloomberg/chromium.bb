@@ -37,14 +37,14 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -61,9 +61,9 @@ class WorkerThreadableLoader final : public ThreadableLoader, private Threadable
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-    static PassOwnPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+    static std::unique_ptr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     {
-        return adoptPtr(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
+        return wrapUnique(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
     }
 
     ~WorkerThreadableLoader() override;
@@ -110,7 +110,7 @@ private:
 
         // All executed on the main thread.
         void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) final;
-        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
+        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) final;
         void didReceiveData(const char*, unsigned dataLength) final;
         void didDownloadData(int dataLength) final;
         void didReceiveCachedMetadata(const char*, int dataLength) final;
@@ -142,13 +142,13 @@ private:
 
         // All executed on the main thread.
         void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
-        void mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData>);
+        void mainThreadStart(std::unique_ptr<CrossThreadResourceRequestData>);
         void mainThreadDestroy(ExecutionContext*);
         void mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext*);
         void mainThreadCancel(ExecutionContext*);
 
         // Only to be used on the main thread.
-        OwnPtr<ThreadableLoader> m_mainThreadLoader;
+        std::unique_ptr<ThreadableLoader> m_mainThreadLoader;
 
         // ThreadableLoaderClientWrapper is to be used on the worker context thread.
         // The ref counting is done on either thread:
@@ -185,7 +185,7 @@ private:
         void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) override;
 
         bool m_done;
-        OwnPtr<WaitableEvent> m_loaderDoneEvent;
+        std::unique_ptr<WaitableEvent> m_loaderDoneEvent;
         // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
         // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
         // on the worker context thread only after |m_loaderDoneEvent| is signaled.

@@ -8,7 +8,6 @@
 #include "core/fetch/CachedMetadataHandler.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

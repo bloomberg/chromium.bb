@@ -30,7 +30,7 @@
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/DownSampler.h"
 #include "platform/audio/UpSampler.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -62,12 +62,12 @@ protected:
     WaveShaperProcessor* getWaveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
 
     // Oversampling.
-    OwnPtr<AudioFloatArray> m_tempBuffer;
-    OwnPtr<AudioFloatArray> m_tempBuffer2;
-    OwnPtr<UpSampler> m_upSampler;
-    OwnPtr<DownSampler> m_downSampler;
-    OwnPtr<UpSampler> m_upSampler2;
-    OwnPtr<DownSampler> m_downSampler2;
+    std::unique_ptr<AudioFloatArray> m_tempBuffer;
+    std::unique_ptr<AudioFloatArray> m_tempBuffer2;
+    std::unique_ptr<UpSampler> m_upSampler;
+    std::unique_ptr<DownSampler> m_downSampler;
+    std::unique_ptr<UpSampler> m_upSampler2;
+    std::unique_ptr<DownSampler> m_downSampler2;
 };
 
 } // namespace blink

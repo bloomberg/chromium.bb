@@ -33,7 +33,8 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,14 +42,14 @@ class V8IdleTaskAdapter : public WebThread::IdleTask {
     USING_FAST_MALLOC(V8IdleTaskAdapter);
     WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
 public:
-    V8IdleTaskAdapter(v8::IdleTask* task) : m_task(adoptPtr(task)) { }
+    V8IdleTaskAdapter(v8::IdleTask* task) : m_task(wrapUnique(task)) { }
     ~V8IdleTaskAdapter() override { }
     void run(double delaySeconds) override
     {
         m_task->Run(delaySeconds);
     }
 private:
-    OwnPtr<v8::IdleTask> m_task;
+    std::unique_ptr<v8::IdleTask> m_task;
 };
 
 class V8IdleTaskRunner : public gin::V8IdleTaskRunner {

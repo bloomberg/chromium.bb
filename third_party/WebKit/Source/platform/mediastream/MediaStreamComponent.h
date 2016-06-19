@@ -38,6 +38,7 @@
 #include "wtf/Forward.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -78,7 +79,7 @@ public:
     void setSourceProvider(WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 
     TrackData* getTrackData() const { return m_trackData.get(); }
-    void setTrackData(PassOwnPtr<TrackData> trackData) { m_trackData = std::move(trackData); }
+    void setTrackData(std::unique_ptr<TrackData> trackData) { m_trackData = std::move(trackData); }
     void getSettings(WebMediaStreamTrack::Settings&);
 
     DECLARE_TRACE();
@@ -114,7 +115,7 @@ private:
     String m_id;
     bool m_enabled;
     bool m_muted;
-    OwnPtr<TrackData> m_trackData;
+    std::unique_ptr<TrackData> m_trackData;
 };
 
 typedef HeapVector<Member<MediaStreamComponent>> MediaStreamComponentVector;

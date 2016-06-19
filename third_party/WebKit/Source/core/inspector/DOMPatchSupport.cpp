@@ -53,6 +53,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/CString.h"
+#include <memory>
 
 namespace blink {
 
@@ -399,7 +400,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::createDigest(Node* node, UnusedNodesMa
 {
     Digest* digest = new Digest(node);
 
-    OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
+    std::unique_ptr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
     DigestValue digestResult;
 
     Node::NodeType nodeType = node->getNodeType();
@@ -419,7 +420,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::createDigest(Node* node, UnusedNodesMa
 
         AttributeCollection attributes = element.attributesWithoutUpdate();
         if (!attributes.isEmpty()) {
-            OwnPtr<WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
+            std::unique_ptr<WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
             for (auto& attribute : attributes) {
                 addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
                 addStringToDigestor(attrsDigestor.get(), attribute.value().getString());

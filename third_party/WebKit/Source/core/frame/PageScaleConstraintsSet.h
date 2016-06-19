@@ -37,7 +37,8 @@
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,9 +47,9 @@ namespace blink {
 class CORE_EXPORT PageScaleConstraintsSet {
     USING_FAST_MALLOC(PageScaleConstraintsSet);
 public:
-    static PassOwnPtr<PageScaleConstraintsSet> create()
+    static std::unique_ptr<PageScaleConstraintsSet> create()
     {
-        return adoptPtr(new PageScaleConstraintsSet);
+        return wrapUnique(new PageScaleConstraintsSet);
     }
 
     void setDefaultConstraints(const PageScaleConstraints&);

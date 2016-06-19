@@ -46,7 +46,9 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebSourceBuffer.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
+#include <memory>
 
 using blink::WebMediaSource;
 using blink::WebSourceBuffer;
@@ -148,7 +150,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     String codecs = contentType.parameter("codecs");
-    OwnPtr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, exceptionState);
+    std::unique_ptr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, exceptionState);
 
     if (!webSourceBuffer) {
         DCHECK(exceptionState.code() == NotSupportedError || exceptionState.code() == QuotaExceededError);
@@ -285,7 +287,7 @@ DEFINE_TRACE(MediaSource)
     ActiveDOMObject::trace(visitor);
 }
 
-void MediaSource::setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource> webMediaSource)
+void MediaSource::setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource> webMediaSource)
 {
     TRACE_EVENT_ASYNC_END0("media", "MediaSource::attachToElement", this);
     DCHECK(webMediaSource);
@@ -577,13 +579,13 @@ void MediaSource::stop()
     m_webMediaSource.reset();
 }
 
-PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const String& codecs, ExceptionState& exceptionState)
+std::unique_ptr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const String& codecs, ExceptionState& exceptionState)
 {
     WebSourceBuffer* webSourceBuffer = 0;
 
     switch (m_webMediaSource->addSourceBuffer(type, codecs, &webSourceBuffer)) {
     case WebMediaSource::AddStatusOk:
-        return adoptPtr(webSourceBuffer);
+        return wrapUnique(webSourceBuffer);
     case WebMediaSource::AddStatusNotSupported:
         DCHECK(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type

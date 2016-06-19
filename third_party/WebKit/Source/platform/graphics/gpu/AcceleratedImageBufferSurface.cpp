@@ -35,7 +35,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -43,7 +43,7 @@ namespace blink {
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
 {
-    m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    m_contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!m_contextProvider)
         return;
     GrContext* grContext = m_contextProvider->grContext();

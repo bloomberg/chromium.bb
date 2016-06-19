@@ -49,8 +49,11 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DataLog.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/allocator/Partitions.h"
+#include <memory>
+#include <v8.h>
 
 #if OS(WIN)
 #include <stddef.h>
@@ -66,8 +69,6 @@
 #include <pthread_np.h>
 #endif
 
-#include <v8.h>
-
 namespace blink {
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = nullptr;
@@ -77,7 +78,7 @@ uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 
 ThreadState::ThreadState(bool perThreadHeapEnabled)
     : m_thread(currentThread())
-    , m_persistentRegion(adoptPtr(new PersistentRegion()))
+    , m_persistentRegion(wrapUnique(new PersistentRegion()))
 #if OS(WIN) && COMPILER(MSVC)
     , m_threadStackSize(0)
 #endif
@@ -132,7 +133,7 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
         m_arenas[arenaIndex] = new NormalPageArena(this, arenaIndex);
     m_arenas[BlinkGC::LargeObjectArenaIndex] = new LargeObjectArena(this, BlinkGC::LargeObjectArenaIndex);
 
-    m_likelyToBePromptlyFreed = adoptArrayPtr(new int[likelyToBePromptlyFreedArraySize]);
+    m_likelyToBePromptlyFreed = wrapArrayUnique(new int[likelyToBePromptlyFreedArraySize]);
     clearArenaAges();
 
     // There is little use of weak references and collections off the main thread;
@@ -447,7 +448,7 @@ void ThreadState::threadLocalWeakProcessing()
     // Due to the complexity, we just forbid allocations.
     NoAllocationScope noAllocationScope(this);
 
-    OwnPtr<Visitor> visitor = Visitor::create(this, BlinkGC::ThreadLocalWeakProcessing);
+    std::unique_ptr<Visitor> visitor = Visitor::create(this, BlinkGC::ThreadLocalWeakProcessing);
 
     // Perform thread-specific weak processing.
     while (popAndInvokeThreadLocalWeakCallback(visitor.get())) { }
@@ -1320,7 +1321,7 @@ void ThreadState::copyStackUntilSafePointScope()
     }
 }
 
-void ThreadState::addInterruptor(PassOwnPtr<BlinkGCInterruptor> interruptor)
+void ThreadState::addInterruptor(std::unique_ptr<BlinkGCInterruptor> interruptor)
 {
     ASSERT(checkThread());
     SafePointScope scope(BlinkGC::HeapPointersOnStack);

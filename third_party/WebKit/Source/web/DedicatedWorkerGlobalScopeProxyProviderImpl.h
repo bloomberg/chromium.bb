@@ -33,7 +33,6 @@
 
 #include "core/workers/DedicatedWorkerGlobalScopeProxyProvider.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

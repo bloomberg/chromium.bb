@@ -11,7 +11,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

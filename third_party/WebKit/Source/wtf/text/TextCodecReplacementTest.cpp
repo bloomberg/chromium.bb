@@ -5,12 +5,12 @@
 #include "wtf/text/TextCodecReplacement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -32,7 +32,7 @@ TEST(TextCodecReplacement, Aliases)
 TEST(TextCodecReplacement, DecodesToFFFD)
 {
     TextEncoding encoding(replacementAlias);
-    OwnPtr<TextCodec> codec(newTextCodec(encoding));
+    std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
 
     bool sawError = false;
     const char testCase[] = "hello world";
@@ -47,7 +47,7 @@ TEST(TextCodecReplacement, DecodesToFFFD)
 TEST(TextCodecReplacement, EncodesToUTF8)
 {
     TextEncoding encoding(replacementAlias);
-    OwnPtr<TextCodec> codec(newTextCodec(encoding));
+    std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
 
     // "Kanji" in Chinese characters.
     const UChar testCase[] = { 0x6F22, 0x5B57 };

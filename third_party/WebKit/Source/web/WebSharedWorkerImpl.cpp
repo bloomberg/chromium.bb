@@ -72,6 +72,8 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -170,7 +172,7 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
     DCHECK(!m_loadingDocument);
     DCHECK(!m_mainScriptLoader);
-    m_networkProvider = adoptPtr(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
+    m_networkProvider = wrapUnique(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = WorkerScriptLoader::create();
     m_mainScriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
     m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
@@ -217,7 +219,7 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* WebSharedWorkerImpl::createClie
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::reportException(const String& errorMessage, PassOwnPtr<SourceLocation>)
+void WebSharedWorkerImpl::reportException(const String& errorMessage, std::unique_ptr<SourceLocation>)
 {
     // Not suppported in SharedWorker.
 }
@@ -331,11 +333,11 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     WorkerClients* workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients, LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->getSecurityOrigin());
-    provideContentSettingsClientToWorker(workerClients, adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
+    provideContentSettingsClientToWorker(workerClients, wrapUnique(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
     ContentSecurityPolicy* contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
-    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
+    std::unique_ptr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
         m_loadingDocument->userAgent(),
         m_mainScriptLoader->script(),

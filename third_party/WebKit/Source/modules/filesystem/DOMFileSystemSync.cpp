@@ -43,6 +43,8 @@
 #include "platform/FileMetadata.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -101,9 +103,9 @@ public:
         }
     };
 
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
     {
-        return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
+        return wrapUnique(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
     }
 
     void didFail(int code) override
@@ -212,7 +214,7 @@ FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, 
     FileError::ErrorCode errorCode = FileError::OK;
     LocalErrorCallback* errorCallback = LocalErrorCallback::create(errorCode);
 
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback, m_context);
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback, m_context);
     callbacks->setShouldBlockUntilCompletion(true);
 
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));

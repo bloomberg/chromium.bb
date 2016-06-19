@@ -8,15 +8,14 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTransformOperations.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
 class PLATFORM_EXPORT CompositorTransformKeyframe {
     WTF_MAKE_NONCOPYABLE(CompositorTransformKeyframe);
 public:
-    CompositorTransformKeyframe(double time, PassOwnPtr<CompositorTransformOperations> value);
+    CompositorTransformKeyframe(double time, std::unique_ptr<CompositorTransformOperations> value);
     ~CompositorTransformKeyframe();
 
     double time() const;
@@ -24,7 +23,7 @@ public:
 
 private:
     double m_time;
-    OwnPtr<CompositorTransformOperations> m_value;
+    std::unique_ptr<CompositorTransformOperations> m_value;
 };
 
 } // namespace blink

@@ -21,7 +21,9 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "wtf/PtrUtil.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace blink {
 
@@ -277,7 +279,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleProperties)
     EXPECT_NE(0UL, elementId);
 
     TransformationMatrix transformMatrix(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44);
-    OwnPtr<CompositorMutation> mutation = adoptPtr(new CompositorMutation);
+    std::unique_ptr<CompositorMutation> mutation = wrapUnique(new CompositorMutation);
     mutation->setTransform(TransformationMatrix::toSkMatrix44(transformMatrix));
     mutation->setOpacity(0.5);
 
@@ -291,7 +293,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleProperties)
     }
 
     // Verify that updating one property does not impact others
-    mutation = adoptPtr(new CompositorMutation);
+    mutation = wrapUnique(new CompositorMutation);
     mutation->setOpacity(0.8);
 
     proxiedElement->updateFromCompositorMutation(*mutation);

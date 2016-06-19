@@ -31,6 +31,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -158,7 +159,7 @@ private:
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     WeakPtr<Task> m_pendingTask; // owned by Microtask
-    OwnPtr<IncrementLoadEventDelayCount> m_loadDelayCounter;
+    std::unique_ptr<IncrementLoadEventDelayCount> m_loadDelayCounter;
     bool m_hasPendingLoadEvent : 1;
     bool m_hasPendingErrorEvent : 1;
     bool m_imageComplete : 1;

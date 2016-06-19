@@ -8,7 +8,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

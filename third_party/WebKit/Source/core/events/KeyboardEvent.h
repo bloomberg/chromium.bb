@@ -27,6 +27,7 @@
 #include "core/CoreExport.h"
 #include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
+#include <memory>
 
 namespace blink {
 
@@ -97,7 +98,7 @@ private:
 
     void initLocationModifiers(unsigned location);
 
-    OwnPtr<PlatformKeyboardEvent> m_keyEvent;
+    std::unique_ptr<PlatformKeyboardEvent> m_keyEvent;
     String m_keyIdentifier;
     String m_code;
     String m_key;

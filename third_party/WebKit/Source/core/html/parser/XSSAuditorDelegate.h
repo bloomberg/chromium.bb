@@ -28,11 +28,11 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -43,9 +43,9 @@ class XSSInfo {
     USING_FAST_MALLOC(XSSInfo);
     WTF_MAKE_NONCOPYABLE(XSSInfo);
 public:
-    static PassOwnPtr<XSSInfo> create(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
+    static std::unique_ptr<XSSInfo> create(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
     {
-        return adoptPtr(new XSSInfo(originalURL, didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
+        return wrapUnique(new XSSInfo(originalURL, didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
     }
 
     String buildConsoleError() const;
@@ -84,7 +84,7 @@ private:
     KURL m_reportURL;
 };
 
-typedef Vector<OwnPtr<XSSInfo>> XSSInfoStream;
+typedef Vector<std::unique_ptr<XSSInfo>> XSSInfoStream;
 
 } // namespace blink
 

@@ -45,6 +45,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/indexeddb/WebIDBFactory.h"
+#include <memory>
 
 namespace blink {
 
@@ -81,7 +82,7 @@ IDBRequest* IDBFactory::getDatabaseNames(ScriptState* scriptState, ExceptionStat
         return request;
     }
 
-    Platform::current()->idbFactory()->getDatabaseNames(WebIDBCallbacksImpl::create(request).leakPtr(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
+    Platform::current()->idbFactory()->getDatabaseNames(WebIDBCallbacksImpl::create(request).release(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
     return request;
 }
 
@@ -115,7 +116,7 @@ IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const Strin
         return request;
     }
 
-    Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).leakPtr(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).leakPtr(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
+    Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).release(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).release(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
     return request;
 }
 
@@ -143,7 +144,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
         return request;
     }
 
-    Platform::current()->idbFactory()->deleteDatabase(name, WebIDBCallbacksImpl::create(request).leakPtr(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
+    Platform::current()->idbFactory()->deleteDatabase(name, WebIDBCallbacksImpl::create(request).release(), WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()));
     return request;
 }
 

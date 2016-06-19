@@ -32,7 +32,7 @@
 #include "public/platform/WebBlobData.h"
 
 #include "platform/blob/BlobData.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -94,18 +94,18 @@ WebString WebBlobData::contentType() const
     return m_private->contentType();
 }
 
-WebBlobData::WebBlobData(PassOwnPtr<BlobData> data)
+WebBlobData::WebBlobData(std::unique_ptr<BlobData> data)
     : m_private(std::move(data))
 {
 }
 
-WebBlobData& WebBlobData::operator=(PassOwnPtr<BlobData> data)
+WebBlobData& WebBlobData::operator=(std::unique_ptr<BlobData> data)
 {
     m_private.reset(std::move(data));
     return *this;
 }
 
-WebBlobData::operator PassOwnPtr<BlobData>()
+WebBlobData::operator std::unique_ptr<BlobData>()
 {
     return m_private.release();
 }

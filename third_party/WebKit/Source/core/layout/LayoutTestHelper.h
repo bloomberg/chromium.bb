@@ -13,8 +13,8 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace blink {
 
@@ -60,7 +60,7 @@ private:
     Persistent<LocalFrame> m_subframe;
     Persistent<FrameLoaderClient> m_frameLoaderClient;
     Persistent<FrameLoaderClient> m_childFrameLoaderClient;
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
 class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {

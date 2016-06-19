@@ -10,6 +10,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -36,7 +37,7 @@ TEST(HTMLInputElementTest, NoAssertWhenMovedInNewDocument)
     toHTMLBodyElement(html->firstChild())->setInnerHTML("<input type='range' />", ASSERT_NO_EXCEPTION);
     documentWithoutFrame->appendChild(html);
 
-    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
     auto& document = pageHolder->document();
     EXPECT_NE(nullptr, document.frameHost());
 

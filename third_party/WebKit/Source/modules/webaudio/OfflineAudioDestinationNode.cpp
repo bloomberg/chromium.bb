@@ -22,16 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "core/dom/CrossThreadTask.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/OfflineAudioContext.h"
+#include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "public/platform/Platform.h"
+#include "wtf/PtrUtil.h"
 #include <algorithm>
 
 namespace blink {
@@ -41,7 +42,7 @@ const size_t OfflineAudioDestinationHandler::renderQuantumSize = 128;
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, AudioBuffer* renderTarget)
     : AudioDestinationHandler(node, renderTarget->sampleRate())
     , m_renderTarget(renderTarget)
-    , m_renderThread(adoptPtr(Platform::current()->createThread("offline audio renderer")))
+    , m_renderThread(wrapUnique(Platform::current()->createThread("offline audio renderer")))
     , m_framesProcessed(0)
     , m_framesToProcess(0)
     , m_isRenderingStarted(false)

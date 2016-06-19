@@ -39,6 +39,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/loader/DocumentWriter.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
+#include <memory>
 
 
 namespace blink {
@@ -71,7 +72,7 @@ void HTMLImportLoader::startLoading(RawResource* resource)
     setResource(resource);
 }
 
-void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
     // Resource may already have been loaded with the import loader

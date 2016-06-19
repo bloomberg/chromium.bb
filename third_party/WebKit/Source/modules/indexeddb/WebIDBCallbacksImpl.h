@@ -30,9 +30,9 @@
 #define WebIDBCallbacksImpl_h
 
 #include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -47,7 +47,7 @@ struct WebIDBValue;
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
     USING_FAST_MALLOC(WebIDBCallbacksImpl);
 public:
-    static PassOwnPtr<WebIDBCallbacksImpl> create(IDBRequest*);
+    static std::unique_ptr<WebIDBCallbacksImpl> create(IDBRequest*);
 
     ~WebIDBCallbacksImpl() override;
 

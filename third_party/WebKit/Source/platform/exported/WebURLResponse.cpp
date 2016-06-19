@@ -39,7 +39,9 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoadTiming.h"
 #include "wtf/Allocator.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,11 +57,11 @@ public:
 
 private:
     explicit ExtraDataContainer(WebURLResponse::ExtraData* extraData)
-        : m_extraData(adoptPtr(extraData))
+        : m_extraData(wrapUnique(extraData))
     {
     }
 
-    OwnPtr<WebURLResponse::ExtraData> m_extraData;
+    std::unique_ptr<WebURLResponse::ExtraData> m_extraData;
 };
 
 } // namespace

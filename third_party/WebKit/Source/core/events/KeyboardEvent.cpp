@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -73,7 +74,7 @@ KeyboardEvent::KeyboardEvent()
 
 KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* view)
     : UIEventWithKeyState(eventTypeForKeyboardEventType(key.type()), true, true, view, 0, key.getModifiers(), key.timestamp(), InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
-    , m_keyEvent(adoptPtr(new PlatformKeyboardEvent(key)))
+    , m_keyEvent(wrapUnique(new PlatformKeyboardEvent(key)))
     , m_keyIdentifier(key.keyIdentifier())
     , m_code(key.code())
     , m_key(key.key())

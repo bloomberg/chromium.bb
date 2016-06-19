@@ -20,8 +20,9 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 #include <utility>
 
 class SkPicture;
@@ -39,9 +40,9 @@ class PLATFORM_EXPORT PaintController {
     WTF_MAKE_NONCOPYABLE(PaintController);
     USING_FAST_MALLOC(PaintController);
 public:
-    static PassOwnPtr<PaintController> create()
+    static std::unique_ptr<PaintController> create()
     {
-        return adoptPtr(new PaintController());
+        return wrapUnique(new PaintController());
     }
 
     ~PaintController()

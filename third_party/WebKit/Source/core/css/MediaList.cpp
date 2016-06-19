@@ -25,6 +25,7 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/css/parser/MediaQueryParser.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -159,7 +160,7 @@ String MediaQuerySet::mediaText() const
 
 DEFINE_TRACE(MediaQuerySet)
 {
-    // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery>>>).
+    // We don't support tracing of vectors of OwnPtrs (ie. std::unique_ptr<Vector<std::unique_ptr<MediaQuery>>>).
     // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
     visitor->trace(m_queries);
 }

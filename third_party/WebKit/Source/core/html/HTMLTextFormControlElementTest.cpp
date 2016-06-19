@@ -21,7 +21,8 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -38,8 +39,8 @@ protected:
     void forceLayoutFlag();
 
 private:
-    OwnPtr<SpellCheckerClient> m_spellCheckerClient;
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<SpellCheckerClient> m_spellCheckerClient;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 
     Persistent<HTMLDocument> m_document;
     Persistent<HTMLTextFormControlElement> m_textControl;
@@ -62,7 +63,7 @@ void HTMLTextFormControlElementTest::SetUp()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    m_spellCheckerClient = adoptPtr(new DummySpellCheckerClient);
+    m_spellCheckerClient = wrapUnique(new DummySpellCheckerClient);
     pageClients.spellCheckerClient = m_spellCheckerClient.get();
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 

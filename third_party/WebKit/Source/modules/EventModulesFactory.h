@@ -8,7 +8,9 @@
 #include "core/events/EventFactory.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -16,9 +18,9 @@ class Event;
 
 class EventModulesFactory final : public EventFactoryBase {
 public:
-    static PassOwnPtr<EventModulesFactory> create()
+    static std::unique_ptr<EventModulesFactory> create()
     {
-        return adoptPtr(new EventModulesFactory());
+        return wrapUnique(new EventModulesFactory());
     }
 
     Event* create(ExecutionContext*, const String& eventType) override;

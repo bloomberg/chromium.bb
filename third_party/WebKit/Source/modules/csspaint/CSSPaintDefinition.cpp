@@ -17,6 +17,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/PaintGeneratedImage.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -55,7 +56,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, co
     DCHECK(layoutObject.node());
 
     PaintRenderingContext2D* renderingContext = PaintRenderingContext2D::create(
-        ImageBuffer::create(adoptPtr(new RecordingImageBufferSurface(size))));
+        ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size))));
     Geometry* geometry = Geometry::create(size);
     StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
         CSSComputedStyleDeclaration::create(layoutObject.node()),

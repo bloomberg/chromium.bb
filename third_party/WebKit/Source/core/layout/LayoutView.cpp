@@ -44,6 +44,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "public/platform/Platform.h"
+#include "wtf/PtrUtil.h"
 #include <inttypes.h>
 
 namespace blink {
@@ -243,7 +244,7 @@ void LayoutView::layout()
     if (pageLogicalHeight() && shouldUsePrintingLayout()) {
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
         if (!m_fragmentationContext)
-            m_fragmentationContext = adoptPtr(new ViewFragmentationContext(*this));
+            m_fragmentationContext = wrapUnique(new ViewFragmentationContext(*this));
     } else if (m_fragmentationContext) {
         m_fragmentationContext.reset();
     }
@@ -952,7 +953,7 @@ bool LayoutView::usesCompositing() const
 PaintLayerCompositor* LayoutView::compositor()
 {
     if (!m_compositor)
-        m_compositor = adoptPtr(new PaintLayerCompositor(*this));
+        m_compositor = wrapUnique(new PaintLayerCompositor(*this));
 
     return m_compositor.get();
 }

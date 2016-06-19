@@ -103,10 +103,12 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringConcatenate.h"
+#include <memory>
 
 namespace blink {
 
@@ -1113,9 +1115,9 @@ void ChromeClientImpl::didObserveNonGetFetchFromScript() const
         m_webView->pageImportanceSignals()->setIssuedNonGetFetchFromScript();
 }
 
-PassOwnPtr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(BlameContext* blameContext)
+std::unique_ptr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(BlameContext* blameContext)
 {
-    return adoptPtr(m_webView->scheduler()->createFrameScheduler(blameContext).release());
+    return wrapUnique(m_webView->scheduler()->createFrameScheduler(blameContext).release());
 }
 
 double ChromeClientImpl::lastFrameTimeMonotonic() const

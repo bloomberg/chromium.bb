@@ -25,6 +25,7 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 #include "core/style/ShadowData.h"
+#include <memory>
 
 namespace blink {
 
@@ -310,7 +311,7 @@ private:
     void setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 protected:
-    OwnPtr<SimpleOverflowModel> m_overflow;
+    std::unique_ptr<SimpleOverflowModel> m_overflow;
 
     bool isInlineFlowBox() const final { return true; }
 

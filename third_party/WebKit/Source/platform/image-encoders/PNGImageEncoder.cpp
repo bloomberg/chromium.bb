@@ -31,7 +31,8 @@
 #include "platform/image-encoders/PNGImageEncoder.h"
 
 #include "platform/graphics/ImageBuffer.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,7 +46,7 @@ static void writeOutput(png_structp png, png_bytep data, png_size_t size)
     static_cast<Vector<unsigned char>*>(png_get_io_ptr(png))->append(data, size);
 }
 
-PassOwnPtr<PNGImageEncoderState> PNGImageEncoderState::create(const IntSize& imageSize, Vector<unsigned char>* output)
+std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::create(const IntSize& imageSize, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
         return nullptr;
@@ -73,7 +74,7 @@ PassOwnPtr<PNGImageEncoderState> PNGImageEncoderState::create(const IntSize& ima
     png_set_IHDR(png, info, imageSize.width(), imageSize.height(), 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
     png_write_info(png, info);
 
-    return adoptPtr(new PNGImageEncoderState(png, info));
+    return wrapUnique(new PNGImageEncoderState(png, info));
 }
 
 void PNGImageEncoder::writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState* encoderState)
@@ -88,7 +89,7 @@ void PNGImageEncoder::finalizePng(PNGImageEncoderState* encoderState)
 
 static bool encodePixels(const IntSize& imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)
 {
-    OwnPtr<PNGImageEncoderState> encoderState = PNGImageEncoderState::create(imageSize, output);
+    std::unique_ptr<PNGImageEncoderState> encoderState = PNGImageEncoderState::create(imageSize, output);
     if (!encoderState.get())
         return false;
 

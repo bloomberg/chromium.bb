@@ -26,15 +26,6 @@
 
 namespace WTF {
 
-template <typename T> class OwnPtr;
-#if COMPILER(MSVC)
-#ifndef PassOwnPtr
-#define PassOwnPtr OwnPtr
-#endif
-#else
-template <typename T>
-using PassOwnPtr = OwnPtr<T>;
-#endif
 template <typename T> class PassRefPtr;
 template <typename T> class RefPtr;
 template <size_t size> class SizeSpecificPartitionAllocator;
@@ -63,8 +54,6 @@ class Uint32Array;
 
 } // namespace WTF
 
-using WTF::OwnPtr;
-using WTF::PassOwnPtr;
 using WTF::PassRefPtr;
 using WTF::RefPtr;
 using WTF::Vector;

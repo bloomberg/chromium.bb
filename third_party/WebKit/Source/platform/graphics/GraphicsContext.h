@@ -41,7 +41,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 class SkBitmap;
 class SkImage;
@@ -215,7 +215,7 @@ public:
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
     // The builder passed into this method will be destroyed.
-    void setDrawLooper(PassOwnPtr<DrawLooperBuilder>);
+    void setDrawLooper(std::unique_ptr<DrawLooperBuilder>);
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
     void drawFocusRing(const Path&, int width, int offset, const Color&);
@@ -343,7 +343,7 @@ private:
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.
     // We do not delete from this stack to avoid memory churn.
-    Vector<OwnPtr<GraphicsContextState>> m_paintStateStack;
+    Vector<std::unique_ptr<GraphicsContextState>> m_paintStateStack;
     // Current index on the stack. May not be the last thing on the stack.
     unsigned m_paintStateIndex;
     // Raw pointer to the current state.

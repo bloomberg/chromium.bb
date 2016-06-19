@@ -33,6 +33,7 @@
 #include "platform/text/DateTimeFormat.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -176,7 +177,7 @@ String DateTimeStringBuilder::toString()
 
 Locale& Locale::defaultLocale()
 {
-    static Locale* locale = Locale::create(defaultLanguage()).leakPtr();
+    static Locale* locale = Locale::create(defaultLanguage()).release();
     ASSERT(isMainThread());
     return *locale;
 }

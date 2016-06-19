@@ -31,7 +31,6 @@
 #include "core/inspector/InspectorMemoryAgent.h"
 
 #include "core/inspector/InstanceCounters.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

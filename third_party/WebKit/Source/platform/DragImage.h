@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 class SkImage;
 
@@ -47,12 +48,12 @@ class PLATFORM_EXPORT DragImage {
     USING_FAST_MALLOC(DragImage);
     WTF_MAKE_NONCOPYABLE(DragImage);
 public:
-    static PassOwnPtr<DragImage> create(Image*,
+    static std::unique_ptr<DragImage> create(Image*,
         RespectImageOrientationEnum = DoNotRespectImageOrientation, float deviceScaleFactor = 1,
         InterpolationQuality = InterpolationHigh, float opacity = 1,
         FloatSize imageScale = FloatSize(1, 1));
 
-    static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
+    static std::unique_ptr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
     ~DragImage();
 
     static FloatSize clampedImageScale(const IntSize&, const IntSize&, const IntSize& maxSize);

@@ -27,6 +27,7 @@
 #define TextCodecUTF8_h
 
 #include "wtf/text/TextCodec.h"
+#include <memory>
 
 namespace WTF {
 
@@ -39,7 +40,7 @@ protected:
     TextCodecUTF8() : m_partialSequenceSize(0) { }
 
 private:
-    static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
+    static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
 
     String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
     CString encode(const UChar*, size_t length, UnencodableHandling) override;

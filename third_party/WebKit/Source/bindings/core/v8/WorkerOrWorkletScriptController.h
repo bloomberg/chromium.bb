@@ -38,7 +38,6 @@
 #include "core/CoreExport.h"
 #include "platform/text/CompressibleString.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
 #include <v8.h>

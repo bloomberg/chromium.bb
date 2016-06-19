@@ -37,8 +37,8 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -101,7 +101,7 @@ public:
     static void destroy(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
-    static void enableIdleTasks(v8::Isolate*, PassOwnPtr<gin::V8IdleTaskRunner>);
+    static void enableIdleTasks(v8::Isolate*, std::unique_ptr<gin::V8IdleTaskRunner>);
 
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
@@ -136,11 +136,11 @@ public:
     // to C++ from script, after executing a script task (e.g. callback,
     // event) or microtasks (e.g. promise). This is explicitly needed for
     // Indexed DB transactions per spec, but should in general be avoided.
-    void addEndOfScopeTask(PassOwnPtr<EndOfScopeTask>);
+    void addEndOfScopeTask(std::unique_ptr<EndOfScopeTask>);
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setThreadDebugger(PassOwnPtr<ThreadDebugger>);
+    void setThreadDebugger(std::unique_ptr<ThreadDebugger>);
     ThreadDebugger* threadDebugger();
 
     using ActiveScriptWrappableSet = HeapHashSet<WeakMember<ActiveScriptWrappable>>;
@@ -162,7 +162,7 @@ private:
     bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>, V8FunctionTemplateMap&);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>, V8FunctionTemplateMap&);
 
-    OwnPtr<gin::IsolateHolder> m_isolateHolder;
+    std::unique_ptr<gin::IsolateHolder> m_isolateHolder;
 
     // m_interfaceTemplateMapFor{,Non}MainWorld holds function templates for
     // the inerface objects.
@@ -173,8 +173,8 @@ private:
     V8FunctionTemplateMap m_operationTemplateMapForMainWorld;
     V8FunctionTemplateMap m_operationTemplateMapForNonMainWorld;
 
-    OwnPtr<StringCache> m_stringCache;
-    OwnPtr<V8HiddenValue> m_hiddenValue;
+    std::unique_ptr<StringCache> m_stringCache;
+    std::unique_ptr<V8HiddenValue> m_hiddenValue;
     std::unique_ptr<V8PrivateProperty> m_privateProperty;
     ScopedPersistent<v8::Value> m_liveRoot;
     RefPtr<ScriptState> m_scriptRegexpScriptState;
@@ -188,8 +188,8 @@ private:
     bool m_isHandlingRecursionLevelError;
     bool m_isReportingException;
 
-    Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-    OwnPtr<ThreadDebugger> m_threadDebugger;
+    Vector<std::unique_ptr<EndOfScopeTask>> m_endOfScopeTasks;
+    std::unique_ptr<ThreadDebugger> m_threadDebugger;
 
     Persistent<ActiveScriptWrappableSet> m_activeScriptWrappables;
     std::unique_ptr<ScriptWrappableVisitor> m_scriptWrappableVisitor;

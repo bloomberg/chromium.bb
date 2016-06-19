@@ -38,6 +38,7 @@
 #include "core/frame/UseCounter.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
+#include <memory>
 
 namespace blink {
 
@@ -99,7 +100,7 @@ Blob* Blob::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArra
     if (normalizeLineEndingsToNative)
         UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
-    OwnPtr<BlobData> blobData = BlobData::create();
+    std::unique_ptr<BlobData> blobData = BlobData::create();
     blobData->setContentType(options.type().lower());
 
     populateBlobData(blobData.get(), blobParts, normalizeLineEndingsToNative);
@@ -112,7 +113,7 @@ Blob* Blob::create(const unsigned char* data, size_t bytes, const String& conten
 {
     ASSERT(data);
 
-    OwnPtr<BlobData> blobData = BlobData::create();
+    std::unique_ptr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     blobData->appendBytes(data, bytes);
     long long blobSize = blobData->length();
@@ -177,7 +178,7 @@ Blob* Blob::slice(long long start, long long end, const String& contentType, Exc
     clampSliceOffsets(size, start, end);
 
     long long length = end - start;
-    OwnPtr<BlobData> blobData = BlobData::create();
+    std::unique_ptr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     blobData->appendBlob(m_blobDataHandle, start, length);
     return Blob::create(BlobDataHandle::create(std::move(blobData), length));
@@ -199,7 +200,7 @@ void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionSt
     // size as zero. Blob and FileReader operations now throws on
     // being passed a Blob in that state. Downstream uses of closed Blobs
     // (e.g., XHR.send()) consider them as empty.
-    OwnPtr<BlobData> blobData = BlobData::create();
+    std::unique_ptr<BlobData> blobData = BlobData::create();
     blobData->setContentType(type());
     m_blobDataHandle = BlobDataHandle::create(std::move(blobData), 0);
     m_isClosed = true;

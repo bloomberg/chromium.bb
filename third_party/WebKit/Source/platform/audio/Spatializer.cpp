@@ -4,14 +4,16 @@
 
 #include "platform/audio/Spatializer.h"
 #include "platform/audio/StereoPanner.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<Spatializer> Spatializer::create(PanningModel model, float sampleRate)
+std::unique_ptr<Spatializer> Spatializer::create(PanningModel model, float sampleRate)
 {
     switch (model) {
     case PanningModelEqualPower:
-        return adoptPtr(new StereoPanner(sampleRate));
+        return wrapUnique(new StereoPanner(sampleRate));
     default:
         ASSERT_NOT_REACHED();
         return nullptr;

@@ -11,6 +11,8 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebScriptExecutionCallback.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -65,9 +67,9 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
 {
     // after calling the destructor of object - object will be unsubscribed from
     // resumed and contextDestroyed LifecycleObserver methods
-    OwnPtr<UserGestureIndicator> indicator;
+    std::unique_ptr<UserGestureIndicator> indicator;
     if (m_userGesture)
-        indicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+        indicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
 
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     Vector<v8::Local<v8::Value>> results;

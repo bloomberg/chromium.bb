@@ -12,6 +12,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include <memory>
 
 namespace blink {
 
@@ -37,7 +38,7 @@ public:
     DOMTimerCoordinator* timers() override { return nullptr; }
 
     void addConsoleMessage(ConsoleMessage*) override { }
-    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) override { }
+    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) override { }
 
     void setIsSecureContext(bool);
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;

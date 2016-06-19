@@ -33,14 +33,15 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSafeRefCounted.h"
+#include <memory>
 
 namespace blink {
 
 class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
 public:
-    WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
+    WebCryptoKeyPrivate(std::unique_ptr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
         : handle(std::move(handle))
         , type(type)
         , extractable(extractable)
@@ -50,7 +51,7 @@ public:
         ASSERT(!algorithm.isNull());
     }
 
-    const OwnPtr<WebCryptoKeyHandle> handle;
+    const std::unique_ptr<WebCryptoKeyHandle> handle;
     const WebCryptoKeyType type;
     const bool extractable;
     const WebCryptoKeyAlgorithm algorithm;
@@ -60,7 +61,7 @@ public:
 WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
 {
     WebCryptoKey key;
-    key.m_private = adoptRef(new WebCryptoKeyPrivate(adoptPtr(handle), type, extractable, algorithm, usages));
+    key.m_private = adoptRef(new WebCryptoKeyPrivate(wrapUnique(handle), type, extractable, algorithm, usages));
     return key;
 }
 

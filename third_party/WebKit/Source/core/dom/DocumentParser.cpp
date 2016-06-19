@@ -29,6 +29,7 @@
 #include "core/dom/DocumentParserClient.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "wtf/Assertions.h"
+#include <memory>
 
 namespace blink {
 
@@ -50,7 +51,7 @@ DEFINE_TRACE(DocumentParser)
     visitor->trace(m_clients);
 }
 
-void DocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder>)
+void DocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder>)
 {
     ASSERT_NOT_REACHED();
 }

@@ -16,6 +16,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/PtrUtil.h"
 
 namespace {
 
@@ -366,8 +367,8 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent)
         PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
         if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-            m_lastPinchAnchorCss = adoptPtr(new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
-            m_lastPinchAnchorDip = adoptPtr(new IntPoint(gestureEvent.position()));
+            m_lastPinchAnchorCss = wrapUnique(new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+            m_lastPinchAnchorDip = wrapUnique(new IntPoint(gestureEvent.position()));
             m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
         }
         if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {

@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #if INSIDE_BLINK
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 #endif
 
 #include "public/platform/WebCommon.h"
@@ -104,7 +104,7 @@ public:
     // If |client| is not null and the handle is not waiting, client
     // notification is called asynchronously.
 #if INSIDE_BLINK
-    PassOwnPtr<Reader> obtainReader(Client*);
+    std::unique_ptr<Reader> obtainReader(Client*);
 #endif
 
     // Returns a string literal (e.g. class name) for debugging only.

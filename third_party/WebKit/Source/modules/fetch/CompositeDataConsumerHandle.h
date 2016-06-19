@@ -9,9 +9,9 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -32,7 +32,7 @@ public:
         ~Updater();
 
         // |handle| must not be null and must not be locked.
-        void update(PassOwnPtr<WebDataConsumerHandle> /* handle */);
+        void update(std::unique_ptr<WebDataConsumerHandle> /* handle */);
         DEFINE_INLINE_TRACE() { }
 
     private:
@@ -46,11 +46,11 @@ public:
     // associated updater will be bound to the calling thread.
     // |handle| must not be null and must not be locked.
     template<typename T>
-    static PassOwnPtr<WebDataConsumerHandle> create(PassOwnPtr<WebDataConsumerHandle> handle, T* updater)
+    static std::unique_ptr<WebDataConsumerHandle> create(std::unique_ptr<WebDataConsumerHandle> handle, T* updater)
     {
         ASSERT(handle);
         Updater* u = nullptr;
-        OwnPtr<CompositeDataConsumerHandle> p = adoptPtr(new CompositeDataConsumerHandle(std::move(handle), &u));
+        std::unique_ptr<CompositeDataConsumerHandle> p = wrapUnique(new CompositeDataConsumerHandle(std::move(handle), &u));
         *updater = u;
         return std::move(p);
     }
@@ -62,7 +62,7 @@ private:
 
     const char* debugName() const override { return "CompositeDataConsumerHandle"; }
 
-    CompositeDataConsumerHandle(PassOwnPtr<WebDataConsumerHandle>, Updater**);
+    CompositeDataConsumerHandle(std::unique_ptr<WebDataConsumerHandle>, Updater**);
 
     RefPtr<Context> m_context;
 };

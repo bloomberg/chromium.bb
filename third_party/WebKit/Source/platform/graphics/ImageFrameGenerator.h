@@ -33,13 +33,13 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 class SkData;
 struct SkYUVSizeInfo;
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ImageDecoderFactory {
 public:
     ImageDecoderFactory() {}
     virtual ~ImageDecoderFactory() { }
-    virtual PassOwnPtr<ImageDecoder> create() = 0;
+    virtual std::unique_ptr<ImageDecoder> create() = 0;
 };
 
 class PLATFORM_EXPORT ImageFrameGenerator final : public ThreadSafeRefCounted<ImageFrameGenerator> {
@@ -95,7 +95,7 @@ private:
     friend class ImageFrameGeneratorTest;
     friend class DeferredImageDecoderTest;
     // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
-    void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = std::move(factory); }
+    void setImageDecoderFactory(std::unique_ptr<ImageDecoderFactory> factory) { m_imageDecoderFactory = std::move(factory); }
 
     void setHasAlpha(size_t index, bool hasAlpha);
 
@@ -111,7 +111,7 @@ private:
     size_t m_frameCount;
     Vector<bool> m_hasAlpha;
 
-    OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;
+    std::unique_ptr<ImageDecoderFactory> m_imageDecoderFactory;
 
     // Prevents multiple decode operations on the same data.
     Mutex m_decodeMutex;

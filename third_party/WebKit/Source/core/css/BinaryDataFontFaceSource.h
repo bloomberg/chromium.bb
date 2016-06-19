@@ -6,7 +6,7 @@
 #define BinaryDataFontFaceSource_h
 
 #include "core/css/CSSFontFaceSource.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -22,7 +22,7 @@ public:
 private:
     PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
-    OwnPtr<FontCustomPlatformData> m_customPlatformData;
+    std::unique_ptr<FontCustomPlatformData> m_customPlatformData;
 };
 
 } // namespace blink

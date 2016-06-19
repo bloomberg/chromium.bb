@@ -37,6 +37,7 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
 #include "wtf/HashMap.h"
+#include <memory>
 
 namespace blink {
 
@@ -83,7 +84,7 @@ private:
     void setTimer(Timer<ImageQualityController>*);
 
     ObjectLayerSizeMap m_objectLayerSizeMap;
-    OwnPtr<Timer<ImageQualityController>> m_timer;
+    std::unique_ptr<Timer<ImageQualityController>> m_timer;
     double m_frameTimeWhenTimerStarted;
 
     // For calling set().

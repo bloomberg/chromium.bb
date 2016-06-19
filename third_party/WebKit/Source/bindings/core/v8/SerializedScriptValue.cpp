@@ -52,9 +52,11 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/ByteOrder.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 namespace blink {
 
@@ -176,7 +178,7 @@ void SerializedScriptValue::transferImageBitmaps(v8::Isolate* isolate, const Ima
         }
     }
 
-    OwnPtr<ImageBitmapContentsArray> contents = adoptPtr(new ImageBitmapContentsArray);
+    std::unique_ptr<ImageBitmapContentsArray> contents = wrapUnique(new ImageBitmapContentsArray);
     HeapHashSet<Member<ImageBitmap>> visited;
     for (size_t i = 0; i < imageBitmaps.size(); ++i) {
         if (visited.contains(imageBitmaps[i]))
@@ -221,7 +223,7 @@ void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, const Arr
         }
     }
 
-    OwnPtr<ArrayBufferContentsArray> contents = adoptPtr(new ArrayBufferContentsArray(arrayBuffers.size()));
+    std::unique_ptr<ArrayBufferContentsArray> contents = wrapUnique(new ArrayBufferContentsArray(arrayBuffers.size()));
 
     HeapHashSet<Member<DOMArrayBufferBase>> visited;
     for (size_t i = 0; i < arrayBuffers.size(); ++i) {

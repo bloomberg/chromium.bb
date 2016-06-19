@@ -42,7 +42,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -95,7 +95,7 @@ public:
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
     void didReceiveData(const char*, unsigned) override;
     void didFinishLoading(unsigned long, double) override;
     void didFail(const ResourceError&) override;
@@ -122,7 +122,7 @@ private:
     State m_state;
 
     Member<EventSourceParser> m_parser;
-    OwnPtr<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
     Timer<EventSource> m_connectTimer;
 
     unsigned long long m_reconnectDelay;

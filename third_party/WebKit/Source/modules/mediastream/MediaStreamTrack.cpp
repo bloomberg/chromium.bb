@@ -42,6 +42,7 @@
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSourceInfo.h"
 #include "wtf/Assertions.h"
+#include <memory>
 
 namespace blink {
 
@@ -255,7 +256,7 @@ bool MediaStreamTrack::hasPendingActivity() const
     return !ended() && hasEventListeners(EventTypeNames::ended);
 }
 
-PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
+std::unique_ptr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
 {
     return MediaStreamCenter::instance().createWebAudioSourceFromMediaStreamTrack(component());
 }

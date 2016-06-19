@@ -3,8 +3,10 @@
 
 #include "{{namespace}}Names.h"
 
+#include "wtf/PtrUtil.h"
 #include "wtf/StaticConstructors.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 namespace blink {
 namespace {{namespace}}Names {
@@ -22,9 +24,9 @@ const {{namespace}}QualifiedName& {{tag|symbol}}Tag = reinterpret_cast<{{namespa
 {% endfor %}
 
 
-PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
+std::unique_ptr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 {
-    OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
+    std::unique_ptr<const {{namespace}}QualifiedName*[]> tags = wrapArrayUnique(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
     for (size_t i = 0; i < {{namespace}}TagsCount; i++)
         tags[i] = reinterpret_cast<{{namespace}}QualifiedName*>(&{{suffix}}TagStorage) + i;
     return tags;
@@ -40,9 +42,9 @@ const QualifiedName& {{attr|symbol}}Attr = reinterpret_cast<QualifiedName*>(&{{s
 {% endfor %}
 
 {% if namespace != 'HTML' %}
-PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
+std::unique_ptr<const QualifiedName*[]> get{{namespace}}Attrs()
 {
-    OwnPtr<const QualifiedName*[]> attrs = adoptArrayPtr(new const QualifiedName*[{{namespace}}AttrsCount]);
+    std::unique_ptr<const QualifiedName*[]> attrs = wrapArrayUnique(new const QualifiedName*[{{namespace}}AttrsCount]);
     for (size_t i = 0; i < {{namespace}}AttrsCount; i++)
         attrs[i] = reinterpret_cast<QualifiedName*>(&{{suffix}}AttrStorage) + i;
     return attrs;

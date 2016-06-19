@@ -8,10 +8,12 @@
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/graphics/Path.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-StylePath::StylePath(PassOwnPtr<SVGPathByteStream> pathByteStream)
+StylePath::StylePath(std::unique_ptr<SVGPathByteStream> pathByteStream)
     : m_byteStream(std::move(pathByteStream))
     , m_pathLength(std::numeric_limits<float>::quiet_NaN())
 {
@@ -22,7 +24,7 @@ StylePath::~StylePath()
 {
 }
 
-PassRefPtr<StylePath> StylePath::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+PassRefPtr<StylePath> StylePath::create(std::unique_ptr<SVGPathByteStream> pathByteStream)
 {
     return adoptRef(new StylePath(std::move(pathByteStream)));
 }
@@ -36,7 +38,7 @@ StylePath* StylePath::emptyPath()
 const Path& StylePath::path() const
 {
     if (!m_path) {
-        m_path = adoptPtr(new Path);
+        m_path = wrapUnique(new Path);
         buildPathFromByteStream(*m_byteStream, *m_path);
     }
     return *m_path;

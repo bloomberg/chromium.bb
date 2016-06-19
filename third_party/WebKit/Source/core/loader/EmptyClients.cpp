@@ -40,6 +40,8 @@
 #include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -111,9 +113,9 @@ String EmptyChromeClient::acceptLanguages()
     return String();
 }
 
-PassOwnPtr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler(BlameContext*)
+std::unique_ptr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler(BlameContext*)
 {
-    return adoptPtr(new EmptyFrameScheduler());
+    return wrapUnique(new EmptyFrameScheduler());
 }
 
 NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool, bool)
@@ -149,12 +151,12 @@ Widget* EmptyFrameLoaderClient::createPlugin(HTMLPlugInElement*, const KURL&, co
     return nullptr;
 }
 
-PassOwnPtr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*)
+std::unique_ptr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*)
 {
     return nullptr;
 }
 
-PassOwnPtr<WebMediaSession> EmptyFrameLoaderClient::createWebMediaSession()
+std::unique_ptr<WebMediaSession> EmptyFrameLoaderClient::createWebMediaSession()
 {
     return nullptr;
 }
@@ -163,12 +165,12 @@ void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*)
 {
 }
 
-PassOwnPtr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
+std::unique_ptr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;
 }
 
-PassOwnPtr<WebApplicationCacheHost> EmptyFrameLoaderClient::createApplicationCacheHost(WebApplicationCacheHostClient*)
+std::unique_ptr<WebApplicationCacheHost> EmptyFrameLoaderClient::createApplicationCacheHost(WebApplicationCacheHostClient*)
 {
     return nullptr;
 }

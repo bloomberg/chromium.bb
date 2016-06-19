@@ -32,8 +32,8 @@
 #define V8DOMActivityLogger_h
 
 #include "core/CoreExport.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -61,7 +61,7 @@ public:
     // extensions and their activity loggers in the main world, we require an
     // extension ID. Otherwise, extension activities may be logged under
     // a wrong extension ID.
-    static void setActivityLogger(int worldId, const String&, PassOwnPtr<V8DOMActivityLogger>);
+    static void setActivityLogger(int worldId, const String&, std::unique_ptr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId, const String& extensionId);
     static V8DOMActivityLogger* activityLogger(int worldId, const KURL&);
 

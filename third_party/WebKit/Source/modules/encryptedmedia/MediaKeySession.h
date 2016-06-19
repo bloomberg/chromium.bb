@@ -36,6 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
+#include <memory>
 
 namespace blink {
 
@@ -118,7 +119,7 @@ private:
     void finishLoad();
 
     Member<GenericEventQueue> m_asyncEventQueue;
-    OwnPtr<WebContentDecryptionModuleSession> m_session;
+    std::unique_ptr<WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.
     WeakMember<MediaKeys> m_mediaKeys;

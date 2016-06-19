@@ -7,6 +7,8 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 using blink::CompositorFloatKeyframe;
 
@@ -26,9 +28,9 @@ CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve()
 {
 }
 
-PassOwnPtr<CompositorFloatAnimationCurve> CompositorFloatAnimationCurve::CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
+std::unique_ptr<CompositorFloatAnimationCurve> CompositorFloatAnimationCurve::CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
 {
-    return adoptPtr(new CompositorFloatAnimationCurve(std::move(curve)));
+    return wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
 }
 
 Vector<CompositorFloatKeyframe> CompositorFloatAnimationCurve::keyframesForTesting() const

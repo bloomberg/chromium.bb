@@ -7,6 +7,7 @@
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,7 +25,7 @@ void InvalidatableInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
+std::unique_ptr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
     ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
@@ -43,7 +44,7 @@ PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConv
     return nullptr;
 }
 
-PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
+std::unique_ptr<TypedInterpolationValue> InvalidatableInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
     if (keyframe.isNeutral() && !underlyingValueOwner)
         return nullptr;
@@ -68,7 +69,7 @@ void InvalidatableInterpolation::addConversionCheckers(const InterpolationType& 
     }
 }
 
-PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+std::unique_ptr<TypedInterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     for (const auto& interpolationType : m_interpolationTypes) {
         InterpolationValue result = interpolationType->maybeConvertUnderlyingValue(environment);
@@ -125,7 +126,7 @@ const TypedInterpolationValue* InvalidatableInterpolation::ensureValidInterpolat
     } else if (m_currentFraction == 1) {
         m_cachedValue = convertSingleKeyframe(*m_endKeyframe, environment, underlyingValueOwner);
     } else {
-        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValueOwner);
+        std::unique_ptr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValueOwner);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
             m_cachedPairConversion = std::move(pairwiseConversion);

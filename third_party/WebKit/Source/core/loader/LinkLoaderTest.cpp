@@ -18,6 +18,7 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <base/macros.h>
+#include <memory>
 
 namespace blink {
 
@@ -135,7 +136,7 @@ TEST(LinkLoaderTest, Preload)
 
     // Test the cases with a single header
     for (const auto& testCase : cases) {
-        OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->frame().settings()->setScriptEnabled(true);
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
         LinkLoader* loader = LinkLoader::create(loaderClient.get());
@@ -191,7 +192,7 @@ TEST(LinkLoaderTest, DNSPrefetch)
 
     // Test the cases with a single header
     for (const auto& testCase : cases) {
-        OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->document().settings()->setDNSPrefetchingEnabled(true);
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.shouldLoad);
         LinkLoader* loader = LinkLoader::create(loaderClient.get());
@@ -227,7 +228,7 @@ TEST(LinkLoaderTest, Preconnect)
 
     // Test the cases with a single header
     for (const auto& testCase : cases) {
-        OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.shouldLoad);
         LinkLoader* loader = LinkLoader::create(loaderClient.get());
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);

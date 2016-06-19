@@ -11,6 +11,8 @@
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -26,9 +28,9 @@ public:
     // For unit testing.
     DocumentWriteEvaluator(const String& pathName, const String& hostName, const String& protocol, const String& userAgent);
 
-    static PassOwnPtr<DocumentWriteEvaluator> create(const Document& document)
+    static std::unique_ptr<DocumentWriteEvaluator> create(const Document& document)
     {
-        return adoptPtr(new DocumentWriteEvaluator(document));
+        return wrapUnique(new DocumentWriteEvaluator(document));
     }
     virtual ~DocumentWriteEvaluator();
 

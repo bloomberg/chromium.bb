@@ -27,8 +27,8 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
+#include <memory>
 
 namespace blink {
 class FetchRequest;
@@ -82,7 +82,7 @@ private:
 
     void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
     void willNotFollowRedirect() override;
-    void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
     void setSerializedCachedMetadata(const char*, size_t) override;
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
     void didDownloadData(int) override;
@@ -112,7 +112,7 @@ public:
     ResourceClientType getResourceClientType() const final { return RawResourceType; }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
-    virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
+    virtual void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) { }
     virtual void setSerializedCachedMetadata(Resource*, const char*, size_t) { }
     virtual void dataReceived(Resource*, const char* /* data */, size_t /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }

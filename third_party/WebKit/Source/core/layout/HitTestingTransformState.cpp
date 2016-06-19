@@ -26,7 +26,6 @@
 #include "core/layout/HitTestingTransformState.h"
 
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

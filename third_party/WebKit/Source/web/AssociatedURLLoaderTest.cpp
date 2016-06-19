@@ -45,8 +45,10 @@
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;
@@ -115,16 +117,16 @@ public:
         Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     }
 
-    PassOwnPtr<WebURLLoader> createAssociatedURLLoader(const WebURLLoaderOptions options = WebURLLoaderOptions())
+    std::unique_ptr<WebURLLoader> createAssociatedURLLoader(const WebURLLoaderOptions options = WebURLLoaderOptions())
     {
-        return adoptPtr(mainFrame()->createAssociatedURLLoader(options));
+        return wrapUnique(mainFrame()->createAssociatedURLLoader(options));
     }
 
     // WebURLLoaderClient implementation.
     void willFollowRedirect(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse) override
     {
         m_willFollowRedirect = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
         EXPECT_EQ(m_expectedNewRequest.url(), newRequest.url());
         // Check that CORS simple headers are transferred to the new request.
         EXPECT_EQ(m_expectedNewRequest.httpHeaderField("accept"), newRequest.httpHeaderField("accept"));
@@ -136,14 +138,14 @@ public:
     void didSendData(WebURLLoader* loader, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override
     {
         m_didSendData = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
     void didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response) override
     {
         m_didReceiveResponse = true;
         m_actualResponse = WebURLResponse(response);
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
         EXPECT_EQ(m_expectedResponse.url(), response.url());
         EXPECT_EQ(m_expectedResponse.httpStatusCode(), response.httpStatusCode());
     }
@@ -151,13 +153,13 @@ public:
     void didDownloadData(WebURLLoader* loader, int dataLength, int encodedDataLength) override
     {
         m_didDownloadData = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
     void didReceiveData(WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength) override
     {
         m_didReceiveData = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
         EXPECT_TRUE(data);
         EXPECT_GT(dataLength, 0);
     }
@@ -165,19 +167,19 @@ public:
     void didReceiveCachedMetadata(WebURLLoader* loader, const char* data, int dataLength) override
     {
         m_didReceiveCachedMetadata = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
     void didFinishLoading(WebURLLoader* loader, double finishTime, int64_t encodedDataLength) override
     {
         m_didFinishLoading = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
     void didFail(WebURLLoader* loader, const WebURLError& error) override
     {
         m_didFail = true;
-        EXPECT_EQ(m_expectedLoader, loader);
+        EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
     void CheckMethodFails(const char* unsafeMethod)
@@ -268,7 +270,7 @@ protected:
     String m_frameFilePath;
     FrameTestHelpers::WebViewHelper m_helper;
 
-    OwnPtr<WebURLLoader> m_expectedLoader;
+    std::unique_ptr<WebURLLoader> m_expectedLoader;
     WebURLResponse m_actualResponse;
     WebURLResponse m_expectedResponse;
     WebURLRequest m_expectedNewRequest;

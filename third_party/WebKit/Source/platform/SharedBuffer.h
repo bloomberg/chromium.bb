@@ -31,7 +31,6 @@
 #include "platform/PurgeableVector.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

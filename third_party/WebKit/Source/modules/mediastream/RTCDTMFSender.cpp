@@ -34,6 +34,8 @@
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,7 +47,7 @@ static const int defaultInterToneGapMs = 50;
 
 RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnectionHandler* peerConnectionHandler, MediaStreamTrack* track, ExceptionState& exceptionState)
 {
-    OwnPtr<WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
+    std::unique_ptr<WebRTCDTMFSenderHandler> handler = wrapUnique(peerConnectionHandler->createDTMFSender(track->component()));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "The MediaStreamTrack provided is not an element of a MediaStream that's currently in the local streams set.");
         return nullptr;
@@ -56,7 +58,7 @@ RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnec
     return dtmfSender;
 }
 
-RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, PassOwnPtr<WebRTCDTMFSenderHandler> handler)
+RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, std::unique_ptr<WebRTCDTMFSenderHandler> handler)
     : ActiveDOMObject(context)
     , m_track(track)
     , m_duration(defaultToneDurationMs)

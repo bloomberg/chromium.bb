@@ -26,9 +26,9 @@
 #include "wtf/HashSet.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefCounted.h"
+#include <memory>
 
 namespace WTF {
 
@@ -90,14 +90,14 @@ TEST(HashSetTest, HashSetOwnPtr)
 {
     bool deleted1 = false, deleted2 = false;
 
-    typedef HashSet<OwnPtr<Dummy>> OwnPtrSet;
+    typedef HashSet<std::unique_ptr<Dummy>> OwnPtrSet;
     OwnPtrSet set;
 
     Dummy* ptr1 = new Dummy(deleted1);
     {
         // AddResult in a separate scope to avoid assertion hit,
         // since we modify the container further.
-        HashSet<OwnPtr<Dummy>>::AddResult res1 = set.add(adoptPtr(ptr1));
+        HashSet<std::unique_ptr<Dummy>>::AddResult res1 = set.add(wrapUnique(ptr1));
         EXPECT_EQ(ptr1, res1.storedValue->get());
     }
 
@@ -105,11 +105,11 @@ TEST(HashSetTest, HashSetOwnPtr)
     EXPECT_EQ(1UL, set.size());
     OwnPtrSet::iterator it1 = set.find(ptr1);
     EXPECT_NE(set.end(), it1);
-    EXPECT_EQ(ptr1, (*it1));
+    EXPECT_EQ(ptr1, (*it1).get());
 
     Dummy* ptr2 = new Dummy(deleted2);
     {
-        HashSet<OwnPtr<Dummy>>::AddResult res2 = set.add(adoptPtr(ptr2));
+        HashSet<std::unique_ptr<Dummy>>::AddResult res2 = set.add(wrapUnique(ptr2));
         EXPECT_EQ(res2.storedValue->get(), ptr2);
     }
 
@@ -117,7 +117,7 @@ TEST(HashSetTest, HashSetOwnPtr)
     EXPECT_EQ(2UL, set.size());
     OwnPtrSet::iterator it2 = set.find(ptr2);
     EXPECT_NE(set.end(), it2);
-    EXPECT_EQ(ptr2, (*it2));
+    EXPECT_EQ(ptr2, (*it2).get());
 
     set.remove(ptr1);
     EXPECT_TRUE(deleted1);
@@ -130,22 +130,22 @@ TEST(HashSetTest, HashSetOwnPtr)
     deleted2 = false;
     {
         OwnPtrSet set;
-        set.add(adoptPtr(new Dummy(deleted1)));
-        set.add(adoptPtr(new Dummy(deleted2)));
+        set.add(wrapUnique(new Dummy(deleted1)));
+        set.add(wrapUnique(new Dummy(deleted2)));
     }
     EXPECT_TRUE(deleted1);
     EXPECT_TRUE(deleted2);
 
     deleted1 = false;
     deleted2 = false;
-    OwnPtr<Dummy> ownPtr1;
-    OwnPtr<Dummy> ownPtr2;
+    std::unique_ptr<Dummy> ownPtr1;
+    std::unique_ptr<Dummy> ownPtr2;
     ptr1 = new Dummy(deleted1);
     ptr2 = new Dummy(deleted2);
     {
         OwnPtrSet set;
-        set.add(adoptPtr(ptr1));
-        set.add(adoptPtr(ptr2));
+        set.add(wrapUnique(ptr1));
+        set.add(wrapUnique(ptr2));
         ownPtr1 = set.take(ptr1);
         EXPECT_EQ(1UL, set.size());
         ownPtr2 = set.takeAny();
@@ -154,8 +154,8 @@ TEST(HashSetTest, HashSetOwnPtr)
     EXPECT_FALSE(deleted1);
     EXPECT_FALSE(deleted2);
 
-    EXPECT_EQ(ptr1, ownPtr1);
-    EXPECT_EQ(ptr2, ownPtr2);
+    EXPECT_EQ(ptr1, ownPtr1.get());
+    EXPECT_EQ(ptr2, ownPtr2.get());
 }
 
 class DummyRefCounted : public RefCounted<DummyRefCounted> {

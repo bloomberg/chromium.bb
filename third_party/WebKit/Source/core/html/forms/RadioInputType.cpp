@@ -31,7 +31,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

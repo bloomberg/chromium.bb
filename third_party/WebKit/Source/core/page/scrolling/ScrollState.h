@@ -12,6 +12,7 @@
 #include "platform/scroll/ScrollStateData.h"
 #include "wtf/Forward.h"
 #include <deque>
+#include <memory>
 
 namespace blink {
 
@@ -22,7 +23,7 @@ class CORE_EXPORT ScrollState final : public GarbageCollectedFinalized<ScrollSta
 
 public:
     static ScrollState* create(ScrollStateInit);
-    static ScrollState* create(PassOwnPtr<ScrollStateData>);
+    static ScrollState* create(std::unique_ptr<ScrollStateData>);
 
     ~ScrollState()
     {
@@ -92,9 +93,9 @@ public:
 
 private:
     ScrollState();
-    explicit ScrollState(PassOwnPtr<ScrollStateData>);
+    explicit ScrollState(std::unique_ptr<ScrollStateData>);
 
-    OwnPtr<ScrollStateData> m_data;
+    std::unique_ptr<ScrollStateData> m_data;
     std::deque<int> m_scrollChain;
 };
 

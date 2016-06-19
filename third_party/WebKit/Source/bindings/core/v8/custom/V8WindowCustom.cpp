@@ -62,7 +62,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

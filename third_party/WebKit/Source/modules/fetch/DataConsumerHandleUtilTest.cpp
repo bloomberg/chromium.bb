@@ -5,6 +5,7 @@
 #include "modules/fetch/DataConsumerHandleUtil.h"
 
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -20,8 +21,8 @@ TEST(DataConsumerHandleUtilTest, CreateWaitingHandle)
     char buffer[20];
     const void* p = nullptr;
     size_t size = 0;
-    OwnPtr<WebDataConsumerHandle> handle = createWaitingDataConsumerHandle();
-    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<WebDataConsumerHandle> handle = createWaitingDataConsumerHandle();
+    std::unique_ptr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
 
     EXPECT_EQ(kShouldWait, reader->read(buffer, sizeof(buffer), kNone, &size));
     EXPECT_EQ(kShouldWait, reader->beginRead(&p, kNone, &size));
@@ -40,8 +41,8 @@ TEST(DataConsumerHandleUtilTest, CreateDoneHandle)
     char buffer[20];
     const void* p = nullptr;
     size_t size = 0;
-    OwnPtr<WebDataConsumerHandle> handle = createDoneDataConsumerHandle();
-    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<WebDataConsumerHandle> handle = createDoneDataConsumerHandle();
+    std::unique_ptr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
 
     EXPECT_EQ(kDone, reader->read(buffer, sizeof(buffer), kNone, &size));
     EXPECT_EQ(kDone, reader->beginRead(&p, kNone, &size));
@@ -67,8 +68,8 @@ TEST(DataConsumerHandleUtilTest, CreateUnexpectedErrorHandle)
     char buffer[20];
     const void* p = nullptr;
     size_t size = 0;
-    OwnPtr<WebDataConsumerHandle> handle = createUnexpectedErrorDataConsumerHandle();
-    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<WebDataConsumerHandle> handle = createUnexpectedErrorDataConsumerHandle();
+    std::unique_ptr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
 
     EXPECT_EQ(kUnexpectedError, reader->read(buffer, sizeof(buffer), kNone, &size));
     EXPECT_EQ(kUnexpectedError, reader->beginRead(&p, kNone, &size));

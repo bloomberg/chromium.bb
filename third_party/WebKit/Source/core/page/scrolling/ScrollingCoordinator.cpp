@@ -63,7 +63,9 @@
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 using blink::WebLayer;
 using blink::WebLayerPositionConstraint;
@@ -273,25 +275,25 @@ void ScrollingCoordinator::willDestroyScrollableArea(ScrollableArea* scrollableA
 void ScrollingCoordinator::removeWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
 {
     ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
-    if (OwnPtr<WebScrollbarLayer> scrollbarLayer = scrollbars.take(scrollableArea))
+    if (std::unique_ptr<WebScrollbarLayer> scrollbarLayer = scrollbars.take(scrollableArea))
         GraphicsLayer::unregisterContentsLayer(scrollbarLayer->layer());
 }
 
-static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar& scrollbar, float deviceScaleFactor)
+static std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(Scrollbar& scrollbar, float deviceScaleFactor)
 {
     ScrollbarTheme& theme = scrollbar.theme();
     WebScrollbarThemePainter painter(theme, scrollbar, deviceScaleFactor);
-    OwnPtr<WebScrollbarThemeGeometry> geometry(WebScrollbarThemeGeometryNative::create(theme));
+    std::unique_ptr<WebScrollbarThemeGeometry> geometry(WebScrollbarThemeGeometryNative::create(theme));
 
-    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(Platform::current()->compositorSupport()->createScrollbarLayer(WebScrollbarImpl::create(&scrollbar), painter, geometry.leakPtr()));
+    std::unique_ptr<WebScrollbarLayer> scrollbarLayer = wrapUnique(Platform::current()->compositorSupport()->createScrollbarLayer(WebScrollbarImpl::create(&scrollbar), painter, geometry.release()));
     GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
     return scrollbarLayer;
 }
 
-PassOwnPtr<WebScrollbarLayer> ScrollingCoordinator::createSolidColorScrollbarLayer(ScrollbarOrientation orientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar)
+std::unique_ptr<WebScrollbarLayer> ScrollingCoordinator::createSolidColorScrollbarLayer(ScrollbarOrientation orientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar)
 {
     WebScrollbar::Orientation webOrientation = (orientation == HorizontalScrollbar) ? WebScrollbar::Horizontal : WebScrollbar::Vertical;
-    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(webOrientation, thumbThickness, trackStart, isLeftSideVerticalScrollbar));
+    std::unique_ptr<WebScrollbarLayer> scrollbarLayer = wrapUnique(Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(webOrientation, thumbThickness, trackStart, isLeftSideVerticalScrollbar));
     GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
     return scrollbarLayer;
 }
@@ -318,7 +320,7 @@ static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScroll
     scrollbarGraphicsLayer->setDrawsContent(false);
 }
 
-WebScrollbarLayer* ScrollingCoordinator::addWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, PassOwnPtr<WebScrollbarLayer> scrollbarLayer)
+WebScrollbarLayer* ScrollingCoordinator::addWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, std::unique_ptr<WebScrollbarLayer> scrollbarLayer)
 {
     ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
     return scrollbars.add(scrollableArea, std::move(scrollbarLayer)).storedValue->value.get();
@@ -348,7 +350,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         if (!scrollbarLayer) {
             Settings* settings = m_page->mainFrame()->settings();
 
-            OwnPtr<WebScrollbarLayer> webScrollbarLayer;
+            std::unique_ptr<WebScrollbarLayer> webScrollbarLayer;
             if (settings->useSolidColorScrollbars()) {
                 ASSERT(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
                 webScrollbarLayer = createSolidColorScrollbarLayer(orientation, scrollbar.theme().thumbThickness(scrollbar), scrollbar.theme().trackPosition(scrollbar), scrollableArea->shouldPlaceVerticalScrollbarOnLeft());

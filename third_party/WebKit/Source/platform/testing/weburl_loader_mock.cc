@@ -9,14 +9,13 @@
 #include "public/platform/WebData.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
                                    WebURLLoader* default_loader)
     : factory_(factory),
-      default_loader_(adoptPtr(default_loader)),
+      default_loader_(wrapUnique(default_loader)),
       weak_factory_(this) {
 }
 
@@ -35,9 +34,9 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 
   // If no delegate is provided then create an empty one. The default behavior
   // will just proxy to the client.
-  OwnPtr<WebURLLoaderTestDelegate> default_delegate;
+  std::unique_ptr<WebURLLoaderTestDelegate> default_delegate;
   if (!delegate) {
-    default_delegate = adoptPtr(new WebURLLoaderTestDelegate());
+    default_delegate = wrapUnique(new WebURLLoaderTestDelegate());
     delegate = default_delegate.get();
   }
 

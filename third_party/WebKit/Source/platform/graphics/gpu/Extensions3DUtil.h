@@ -12,6 +12,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace gpu {
 namespace gles2 {
@@ -26,7 +27,7 @@ class PLATFORM_EXPORT Extensions3DUtil final {
     WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 public:
     // Creates a new Extensions3DUtil. If the passed GLES2Interface has been spontaneously lost, returns null.
-    static PassOwnPtr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
+    static std::unique_ptr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
     ~Extensions3DUtil();
 
     bool isValid() { return m_isValid; }

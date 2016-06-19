@@ -36,11 +36,13 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 DatabaseThread::DatabaseThread()
-    : m_transactionClient(adoptPtr(new SQLTransactionClient()))
+    : m_transactionClient(wrapUnique(new SQLTransactionClient()))
     , m_cleanupSync(nullptr)
     , m_terminationRequested(false)
 {
@@ -160,7 +162,7 @@ bool DatabaseThread::isDatabaseThread() const
     return !isMainThread();
 }
 
-void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
+void DatabaseThread::scheduleTask(std::unique_ptr<DatabaseTask> task)
 {
     ASSERT(m_thread);
 #if ENABLE(ASSERT)

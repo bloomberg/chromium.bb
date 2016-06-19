@@ -37,16 +37,18 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(InProcessWorkerMessagingProxy* messagingProxy)
+std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(InProcessWorkerMessagingProxy* messagingProxy)
 {
     DCHECK(messagingProxy);
-    return adoptPtr(new InProcessWorkerObjectProxy(messagingProxy));
+    return wrapUnique(new InProcessWorkerObjectProxy(messagingProxy));
 }
 
-void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
+void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, std::unique_ptr<MessagePortChannelArray> channels)
 {
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, AllowCrossThreadAccess(m_messagingProxy), message, passed(std::move(channels))));
 }
@@ -66,7 +68,7 @@ void InProcessWorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportPendingActivity, AllowCrossThreadAccess(m_messagingProxy), hasPendingActivity));
 }
 
-void InProcessWorkerObjectProxy::reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
+void InProcessWorkerObjectProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, AllowCrossThreadAccess(m_messagingProxy), errorMessage, passed(std::move(location))));
 }

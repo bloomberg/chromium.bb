@@ -34,9 +34,9 @@
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/Unicode.h"
+#include <memory>
 
 namespace blink {
 
@@ -93,7 +93,7 @@ private:
 
     bool m_filledPrimaryPage;
     GlyphMetricsPage m_primaryPage; // We optimize for the page that contains glyph indices 0-255.
-    OwnPtr<HashMap<int, OwnPtr<GlyphMetricsPage>>> m_pages;
+    std::unique_ptr<HashMap<int, std::unique_ptr<GlyphMetricsPage>>> m_pages;
 };
 
 template<> inline float GlyphMetricsMap<float>::unknownMetrics()
@@ -119,10 +119,10 @@ template<class T> typename GlyphMetricsMap<T>::GlyphMetricsPage* GlyphMetricsMap
             if (page)
                 return page;
         } else {
-            m_pages = adoptPtr(new HashMap<int, OwnPtr<GlyphMetricsPage>>);
+            m_pages = wrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
         }
         page = new GlyphMetricsPage;
-        m_pages->set(pageNumber, adoptPtr(page));
+        m_pages->set(pageNumber, wrapUnique(page));
     }
 
     // Fill in the whole page with the unknown glyph information.

@@ -9,6 +9,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/animation/TimingFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -52,7 +53,7 @@ protected:
         ThreadHeap::collectAllGarbage();
     }
 
-    OwnPtr<DummyPageHolder> pageHolder;
+    std::unique_ptr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
     TrackExceptionState exceptionState;
 };

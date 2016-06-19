@@ -31,17 +31,18 @@
 #ifndef LocaleWin_h
 #define LocaleWin_h
 
-#include <windows.h>
 #include "platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
+#include <windows.h>
 
 namespace blink {
 
 class PLATFORM_EXPORT LocaleWin : public Locale {
 public:
-    static PassOwnPtr<LocaleWin> create(LCID, bool defaultsForLocale);
+    static std::unique_ptr<LocaleWin> create(LCID, bool defaultsForLocale);
     ~LocaleWin();
     const Vector<String>& weekDayShortLabels() override;
     unsigned firstDayOfWeek() override;

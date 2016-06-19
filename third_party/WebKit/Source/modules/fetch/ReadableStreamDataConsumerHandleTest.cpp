@@ -16,6 +16,7 @@
 #include "public/platform/WebDataConsumerHandle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 #include <v8.h>
 
 // TODO(yhirano): Add cross-thread tests once the handle gets thread-safe.
@@ -81,7 +82,7 @@ public:
         return r;
     }
 
-    PassOwnPtr<ReadableStreamDataConsumerHandle> createHandle(ScriptValue stream)
+    std::unique_ptr<ReadableStreamDataConsumerHandle> createHandle(ScriptValue stream)
     {
         NonThrowableExceptionState es;
         ScriptValue reader = ReadableStreamOperations::getReader(getScriptState(), stream, es);
@@ -93,7 +94,7 @@ public:
     void gc() { V8GCController::collectAllGarbageForTesting(isolate()); }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
 };
 
 TEST_F(ReadableStreamDataConsumerHandleTest, Create)
@@ -101,7 +102,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     ScriptState::Scope scope(getScriptState());
     ScriptValue stream(getScriptState(), evalWithPrintingError("new ReadableStream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -111,7 +112,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     EXPECT_CALL(*client, didGetReadable());
     EXPECT_CALL(checkpoint, Call(2));
 
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -124,7 +125,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
     ScriptValue stream(getScriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.close()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -138,7 +139,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
 
     char c;
     size_t readBytes;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -155,7 +156,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
     ScriptValue stream(getScriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.error()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -169,7 +170,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
 
     char c;
     size_t readBytes;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -192,7 +193,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -212,7 +213,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
 
     char buffer[3];
     size_t readBytes;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -260,7 +261,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -280,7 +281,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
 
     const void* buffer;
     size_t available;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -337,7 +338,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -351,7 +352,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
 
     const void* buffer;
     size_t available;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -372,7 +373,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -386,7 +387,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
 
     const void* buffer;
     size_t available;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -407,7 +408,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+    std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
@@ -421,7 +422,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
 
     const void* buffer;
     size_t available;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -434,7 +435,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
 {
-    OwnPtr<FetchDataConsumerHandle::Reader> reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader;
     Checkpoint checkpoint;
     Persistent<MockClient> client = MockClient::create();
     ScriptValue stream;
@@ -452,7 +453,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
         ScriptState::Scope scope(getScriptState());
         stream = ScriptValue(getScriptState(), evalWithPrintingError("new ReadableStream()"));
         ASSERT_FALSE(stream.isEmpty());
-        OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+        std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);
 
         reader = handle->obtainReader(client);
@@ -475,7 +476,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading)
 {
-    OwnPtr<FetchDataConsumerHandle::Reader> reader;
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader;
     Checkpoint checkpoint;
     Persistent<MockClient> client = MockClient::create();
     ScriptValue stream;
@@ -494,7 +495,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading
         ScriptState::Scope scope(getScriptState());
         stream = ScriptValue(getScriptState(), evalWithPrintingError("new ReadableStream()"));
         ASSERT_FALSE(stream.isEmpty());
-        OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+        std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);
 
         reader = handle->obtainReader(client);

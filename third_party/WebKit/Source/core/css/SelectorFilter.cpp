@@ -30,6 +30,7 @@
 
 #include "core/css/CSSSelector.h"
 #include "core/dom/Document.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -86,7 +87,7 @@ void SelectorFilter::pushParent(Element& parent)
     if (m_parentStack.isEmpty()) {
         ASSERT(parent == parent.document().documentElement());
         ASSERT(!m_ancestorIdentifierFilter);
-        m_ancestorIdentifierFilter = adoptPtr(new IdentifierFilter);
+        m_ancestorIdentifierFilter = wrapUnique(new IdentifierFilter);
         pushParentStackFrame(parent);
         return;
     }

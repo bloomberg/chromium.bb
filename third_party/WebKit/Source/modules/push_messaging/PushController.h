@@ -10,7 +10,6 @@
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

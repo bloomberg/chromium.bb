@@ -45,6 +45,8 @@
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "wtf/ASCIICType.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace {
 
@@ -393,14 +395,14 @@ void XSSAuditor::setEncoding(const WTF::TextEncoding& encoding)
         if (m_decodedHTTPBody.find(isRequiredForInjection) == kNotFound)
             m_decodedHTTPBody = String();
             if (m_decodedHTTPBody.length() >= miniumLengthForSuffixTree)
-                m_decodedHTTPBodySuffixTree = adoptPtr(new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
+                m_decodedHTTPBodySuffixTree = wrapUnique(new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
     }
 
     if (m_decodedURL.isEmpty() && m_decodedHTTPBody.isEmpty())
         m_isEnabled = false;
 }
 
-PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
+std::unique_ptr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
 {
     ASSERT(m_state != Uninitialized);
     if (!m_isEnabled || m_xssProtection == AllowReflectedXSS)
@@ -418,7 +420,7 @@ PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
 
     if (didBlockScript) {
         bool didBlockEntirePage = (m_xssProtection == BlockReflectedXSS);
-        OwnPtr<XSSInfo> xssInfo = XSSInfo::create(m_documentURL, didBlockEntirePage, m_didSendValidXSSProtectionHeader, m_didSendValidCSPHeader);
+        std::unique_ptr<XSSInfo> xssInfo = XSSInfo::create(m_documentURL, didBlockEntirePage, m_didSendValidXSSProtectionHeader, m_didSendValidCSPHeader);
         return xssInfo;
     }
     return nullptr;

@@ -42,9 +42,9 @@
 #include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PassOwnPtr.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <memory>
 #include <string>
 
 namespace blink {
@@ -134,7 +134,7 @@ public:
     WebWidgetClient* widgetClient() { return this; }
 
 private:
-    OwnPtr<WebLayerTreeView> m_layerTreeView;
+    std::unique_ptr<WebLayerTreeView> m_layerTreeView;
     bool m_animationScheduled;
 };
 

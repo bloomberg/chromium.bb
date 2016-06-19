@@ -9,6 +9,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -170,7 +171,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<PaintController> paintController = PaintController::create();
+    std::unique_ptr<PaintController> paintController = PaintController::create();
     GraphicsContext context(*paintController);
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
@@ -196,7 +197,7 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnother
     LayoutImage* nonAnimatingImage = toLayoutImage(document().getElementById("myNonAnimatingImage")->layoutObject());
 
     RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-    OwnPtr<PaintController> paintController = PaintController::create();
+    std::unique_ptr<PaintController> paintController = PaintController::create();
     GraphicsContext context(*paintController);
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.

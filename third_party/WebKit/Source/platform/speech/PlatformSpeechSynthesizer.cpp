@@ -31,6 +31,7 @@
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesizer.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -45,7 +46,7 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerCl
     : m_speechSynthesizerClient(client)
 {
     m_webSpeechSynthesizerClient = new WebSpeechSynthesizerClientImpl(this, client);
-    m_webSpeechSynthesizer = adoptPtr(Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient));
+    m_webSpeechSynthesizer = wrapUnique(Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient));
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer()

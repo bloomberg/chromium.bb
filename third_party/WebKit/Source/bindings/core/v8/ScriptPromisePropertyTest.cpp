@@ -18,10 +18,9 @@
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 #include <v8.h>
 
 using namespace blink;
@@ -144,7 +143,7 @@ public:
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
     RefPtr<ScriptState> m_otherScriptState;
 };
 

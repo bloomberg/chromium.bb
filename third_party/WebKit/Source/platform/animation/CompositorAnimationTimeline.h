@@ -9,8 +9,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
-
+#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -22,9 +21,9 @@ class CompositorAnimationPlayerClient;
 class PLATFORM_EXPORT CompositorAnimationTimeline {
     WTF_MAKE_NONCOPYABLE(CompositorAnimationTimeline);
 public:
-    static PassOwnPtr<CompositorAnimationTimeline> create()
+    static std::unique_ptr<CompositorAnimationTimeline> create()
     {
-        return adoptPtr(new CompositorAnimationTimeline());
+        return wrapUnique(new CompositorAnimationTimeline());
     }
 
     ~CompositorAnimationTimeline();

@@ -36,18 +36,17 @@
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include <algorithm>
+#include <memory>
 
 namespace blink {
 
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
     if (!decoder)
         return WebImage();
 
@@ -91,7 +90,7 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data)
     const size_t maxFrameCount = 8;
 
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
     if (!decoder)
         return WebVector<WebImage>();
 

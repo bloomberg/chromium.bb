@@ -10,6 +10,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -71,11 +73,11 @@ private:
 
 class WebToFetchDataConsumerHandleAdapter : public FetchDataConsumerHandle {
 public:
-    WebToFetchDataConsumerHandleAdapter(PassOwnPtr<WebDataConsumerHandle> handle) : m_handle(std::move(handle)) { }
+    WebToFetchDataConsumerHandleAdapter(std::unique_ptr<WebDataConsumerHandle> handle) : m_handle(std::move(handle)) { }
 private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
     public:
-        ReaderImpl(PassOwnPtr<WebDataConsumerHandle::Reader> reader) : m_reader(std::move(reader)) { }
+        ReaderImpl(std::unique_ptr<WebDataConsumerHandle::Reader> reader) : m_reader(std::move(reader)) { }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             return m_reader->read(data, size, flags, readSize);
@@ -90,36 +92,36 @@ private:
             return m_reader->endRead(readSize);
         }
     private:
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
     };
 
     Reader* obtainReaderInternal(Client* client) override { return new ReaderImpl(m_handle->obtainReader(client)); }
 
     const char* debugName() const override { return m_handle->debugName(); }
 
-    OwnPtr<WebDataConsumerHandle> m_handle;
+    std::unique_ptr<WebDataConsumerHandle> m_handle;
 };
 
 } // namespace
 
-PassOwnPtr<WebDataConsumerHandle> createWaitingDataConsumerHandle()
+std::unique_ptr<WebDataConsumerHandle> createWaitingDataConsumerHandle()
 {
-    return adoptPtr(new WaitingHandle);
+    return wrapUnique(new WaitingHandle);
 }
 
-PassOwnPtr<WebDataConsumerHandle> createDoneDataConsumerHandle()
+std::unique_ptr<WebDataConsumerHandle> createDoneDataConsumerHandle()
 {
-    return adoptPtr(new DoneHandle);
+    return wrapUnique(new DoneHandle);
 }
 
-PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle()
+std::unique_ptr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle()
 {
-    return adoptPtr(new UnexpectedErrorHandle);
+    return wrapUnique(new UnexpectedErrorHandle);
 }
 
-PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle> handle)
+std::unique_ptr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    return adoptPtr(new WebToFetchDataConsumerHandleAdapter(std::move(handle)));
+    return wrapUnique(new WebToFetchDataConsumerHandleAdapter(std::move(handle)));
 }
 
 NotifyOnReaderCreationHelper::NotifyOnReaderCreationHelper(WebDataConsumerHandle::Client* client)

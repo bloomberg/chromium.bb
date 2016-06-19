@@ -7,6 +7,7 @@
 
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -19,7 +20,7 @@ public:
     ~AudioOutputDeviceClientImpl() override;
 
     // AudioOutputDeviceClient implementation.
-    void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks>) override;
+    void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, std::unique_ptr<WebSetSinkIdCallbacks>) override;
 
     // GarbageCollectedFinalized implementation.
     DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::trace(visitor); }

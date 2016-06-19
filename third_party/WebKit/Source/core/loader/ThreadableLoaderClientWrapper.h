@@ -35,11 +35,11 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -83,7 +83,7 @@ public:
             m_client->didSendData(bytesSent, totalBytesToBeSent);
     }
 
-    void didReceiveResponse(unsigned long identifier, PassOwnPtr<CrossThreadResourceResponseData> responseData, PassOwnPtr<WebDataConsumerHandle> handle)
+    void didReceiveResponse(unsigned long identifier, std::unique_ptr<CrossThreadResourceResponseData> responseData, std::unique_ptr<WebDataConsumerHandle> handle)
     {
         ResourceResponse response(responseData.get());
 
@@ -91,7 +91,7 @@ public:
             m_client->didReceiveResponse(identifier, response, std::move(handle));
     }
 
-    void didReceiveData(PassOwnPtr<Vector<char>> data)
+    void didReceiveData(std::unique_ptr<Vector<char>> data)
     {
         RELEASE_ASSERT(data->size() <= std::numeric_limits<unsigned>::max());
 
@@ -99,7 +99,7 @@ public:
             m_client->didReceiveData(data->data(), data->size());
     }
 
-    void didReceiveCachedMetadata(PassOwnPtr<Vector<char>> data)
+    void didReceiveCachedMetadata(std::unique_ptr<Vector<char>> data)
     {
         if (m_client)
             m_client->didReceiveCachedMetadata(data->data(), data->size());
@@ -139,9 +139,9 @@ public:
             m_client->didDownloadData(dataLength);
     }
 
-    void didReceiveResourceTiming(PassOwnPtr<CrossThreadResourceTimingInfoData> timingData)
+    void didReceiveResourceTiming(std::unique_ptr<CrossThreadResourceTimingInfoData> timingData)
     {
-        OwnPtr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(std::move(timingData)));
+        std::unique_ptr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(std::move(timingData)));
 
         if (m_resourceTimingClient)
             m_resourceTimingClient->didReceiveResourceTiming(*info);

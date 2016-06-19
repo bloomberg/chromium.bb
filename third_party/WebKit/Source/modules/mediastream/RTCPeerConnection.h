@@ -43,6 +43,7 @@
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include <memory>
 
 namespace blink {
 class ExceptionState;
@@ -204,7 +205,7 @@ private:
     MediaStreamVector m_localStreams;
     MediaStreamVector m_remoteStreams;
 
-    OwnPtr<WebRTCPeerConnectionHandler> m_peerHandler;
+    std::unique_ptr<WebRTCPeerConnectionHandler> m_peerHandler;
 
     Member<AsyncMethodRunner<RTCPeerConnection>> m_dispatchScheduledEventRunner;
     HeapVector<Member<EventWrapper>> m_scheduledEvents;

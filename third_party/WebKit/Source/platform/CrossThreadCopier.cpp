@@ -35,6 +35,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -113,11 +114,11 @@ static_assert((std::is_same<
     >::value),
     "Raw pointer RefCounted test");
 
-// Verify that PassOwnPtr gets passed through.
+// Verify that std::unique_ptr gets passed through.
 static_assert((std::is_same<
-    PassOwnPtr<float>,
-    CrossThreadCopier<PassOwnPtr<float>>::Type
+    std::unique_ptr<float>,
+    CrossThreadCopier<std::unique_ptr<float>>::Type
     >::value),
-    "PassOwnPtr test");
+    "std::unique_ptr test");
 
 } // namespace blink

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -48,7 +48,7 @@ class CORE_EXPORT ThreadableLoaderClient {
 public:
     virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
 
-    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
+    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) { }
     virtual void didReceiveData(const char*, unsigned /*dataLength*/) { }
     virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) { }
     virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) { }

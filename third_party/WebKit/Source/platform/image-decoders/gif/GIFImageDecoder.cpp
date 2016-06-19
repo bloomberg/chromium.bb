@@ -25,10 +25,10 @@
 
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
-#include <limits>
 #include "platform/image-decoders/gif/GIFImageReader.h"
 #include "wtf/NotFound.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <limits>
 
 namespace blink {
 
@@ -331,7 +331,7 @@ void GIFImageDecoder::parse(GIFParseQuery query)
         return;
 
     if (!m_reader) {
-        m_reader = adoptPtr(new GIFImageReader(this));
+        m_reader = wrapUnique(new GIFImageReader(this));
         m_reader->setData(m_data);
     }
 

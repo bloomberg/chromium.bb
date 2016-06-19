@@ -37,6 +37,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/RefCounted.h"
+#include <memory>
 
 namespace blink {
 
@@ -56,13 +57,13 @@ public:
 
     PictureSnapshot(PassRefPtr<const SkPicture>);
 
-    PassOwnPtr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
-    PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
+    std::unique_ptr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
+    std::unique_ptr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
     PassRefPtr<JSONArray> snapshotCommandLog() const;
     bool isEmpty() const;
 
 private:
-    PassOwnPtr<SkBitmap> createBitmap() const;
+    std::unique_ptr<SkBitmap> createBitmap() const;
 
     RefPtr<const SkPicture> m_picture;
 };

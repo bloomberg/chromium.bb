@@ -41,12 +41,10 @@
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CharacterNames.h"
-
 #include <hb.h>
+#include <memory>
 #include <unicode/uscript.h>
 
 namespace blink {
@@ -204,9 +202,9 @@ private:
         bool isLastResort);
     bool collectFallbackHintChars(Vector<UChar32>& hint, bool needsList);
 
-    void insertRunIntoShapeResult(ShapeResult*, PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
+    void insertRunIntoShapeResult(ShapeResult*, std::unique_ptr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
 
-    OwnPtr<UChar[]> m_normalizedBuffer;
+    std::unique_ptr<UChar[]> m_normalizedBuffer;
     unsigned m_normalizedBufferLength;
 
     FeaturesVector m_features;

@@ -44,6 +44,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TablePainter.h"
 #include "core/style/StyleInheritedData.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -91,9 +92,9 @@ void LayoutTable::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
         // According to the CSS2 spec, you only use fixed table layout if an
         // explicit width is specified on the table.  Auto width implies auto table layout.
         if (style()->isFixedTableLayout())
-            m_tableLayout = adoptPtr(new TableLayoutAlgorithmFixed(this));
+            m_tableLayout = wrapUnique(new TableLayoutAlgorithmFixed(this));
         else
-            m_tableLayout = adoptPtr(new TableLayoutAlgorithmAuto(this));
+            m_tableLayout = wrapUnique(new TableLayoutAlgorithmAuto(this));
     }
 
     // If border was changed, invalidate collapsed borders cache.

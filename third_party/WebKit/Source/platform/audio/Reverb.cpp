@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/Reverb.h"
-#include <math.h>
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/Reverb.h"
 #include "platform/audio/VectorMath.h"
 #include "wtf/MathExtras.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <math.h>
+#include <memory>
 
 #if OS(MACOSX)
 using namespace std;
@@ -116,7 +116,7 @@ void Reverb::initialize(AudioBus* impulseResponseBuffer, size_t renderSliceSize,
     for (size_t i = 0; i < numResponseChannels; ++i) {
         AudioChannel* channel = impulseResponseBuffer->channel(i);
 
-        OwnPtr<ReverbConvolver> convolver = adoptPtr(new ReverbConvolver(channel, renderSliceSize, maxFFTSize, convolverRenderPhase, useBackgroundThreads));
+        std::unique_ptr<ReverbConvolver> convolver = wrapUnique(new ReverbConvolver(channel, renderSliceSize, maxFFTSize, convolverRenderPhase, useBackgroundThreads));
         m_convolvers.append(std::move(convolver));
 
         convolverRenderPhase += renderSliceSize;

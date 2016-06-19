@@ -30,6 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -86,7 +87,7 @@ public:
     OrdinalNumber m_column;
 };
 
-WTF_EXPORT PassOwnPtr<Vector<unsigned>> lineEndings(const String&);
+WTF_EXPORT std::unique_ptr<Vector<unsigned>> lineEndings(const String&);
 
 } // namespace WTF
 

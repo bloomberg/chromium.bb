@@ -28,6 +28,7 @@
 
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,7 +46,7 @@ public:
     virtual ~SpeechRecognitionClient() { }
 };
 
-MODULES_EXPORT void provideSpeechRecognitionTo(Page&, PassOwnPtr<SpeechRecognitionClient>);
+MODULES_EXPORT void provideSpeechRecognitionTo(Page&, std::unique_ptr<SpeechRecognitionClient>);
 
 } // namespace blink
 

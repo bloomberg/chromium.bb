@@ -13,6 +13,8 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -164,8 +166,8 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
     if (!object.hasLayer())
         return;
 
-    OwnPtr<ObjectPaintProperties::LocalBorderBoxProperties> borderBoxContext =
-        adoptPtr(new ObjectPaintProperties::LocalBorderBoxProperties);
+    std::unique_ptr<ObjectPaintProperties::LocalBorderBoxProperties> borderBoxContext =
+        wrapUnique(new ObjectPaintProperties::LocalBorderBoxProperties);
     borderBoxContext->paintOffset = context.paintOffset;
     borderBoxContext->transform = context.currentTransform;
     borderBoxContext->clip = context.currentClip;

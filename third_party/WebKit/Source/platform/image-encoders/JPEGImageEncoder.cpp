@@ -34,6 +34,8 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 extern "C" {
 #include <setjmp.h>
@@ -134,12 +136,12 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
         return what_to_return;                                    \
     }
 
-PassOwnPtr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output)
+std::unique_ptr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
         return nullptr;
 
-    OwnPtr<JPEGImageEncoderStateImpl> encoderState = adoptPtr(new JPEGImageEncoderStateImpl());
+    std::unique_ptr<JPEGImageEncoderStateImpl> encoderState = wrapUnique(new JPEGImageEncoderStateImpl());
 
     jpeg_compress_struct* cinfo = encoderState->cinfo();
     jpeg_error_mgr* error = encoderState->error();
@@ -205,7 +207,7 @@ int JPEGImageEncoder::progressiveEncodeRowsJpegHelper(JPEGImageEncoderState* enc
     return currentRowsCompleted;
 }
 
-bool JPEGImageEncoder::encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState> encoderState, const unsigned char* inputPixels, int numRowsCompleted)
+bool JPEGImageEncoder::encodeWithPreInitializedState(std::unique_ptr<JPEGImageEncoderState> encoderState, const unsigned char* inputPixels, int numRowsCompleted)
 {
     JPEGImageEncoderStateImpl* encoderStateImpl = static_cast<JPEGImageEncoderStateImpl*>(encoderState.get());
 
@@ -232,7 +234,7 @@ bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, const double& qu
     if (!imageData.pixels())
         return false;
 
-    OwnPtr<JPEGImageEncoderState> encoderState = JPEGImageEncoderState::create(imageData.size(), quality, output);
+    std::unique_ptr<JPEGImageEncoderState> encoderState = JPEGImageEncoderState::create(imageData.size(), quality, output);
     if (!encoderState)
         return false;
 

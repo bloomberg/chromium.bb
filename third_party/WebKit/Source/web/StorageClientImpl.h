@@ -6,6 +6,7 @@
 #define StorageClientImpl_h
 
 #include "modules/storage/StorageClient.h"
+#include <memory>
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class StorageClientImpl : public StorageClient {
 public:
     explicit StorageClientImpl(WebViewImpl*);
 
-    PassOwnPtr<StorageNamespace> createSessionStorageNamespace() override;
+    std::unique_ptr<StorageNamespace> createSessionStorageNamespace() override;
     bool canAccessStorage(LocalFrame*, StorageType) const override;
 
 private:

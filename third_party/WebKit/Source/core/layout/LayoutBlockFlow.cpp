@@ -49,6 +49,8 @@
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/PaintLayer.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -1124,7 +1126,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
 
         LayoutBoxToFloatInfoMap::iterator end = floatMap.end();
         for (LayoutBoxToFloatInfoMap::iterator it = floatMap.begin(); it != end; ++it) {
-            OwnPtr<FloatingObject>& floatingObject = it->value;
+            std::unique_ptr<FloatingObject>& floatingObject = it->value;
             if (!floatingObject->isDescendant()) {
                 changeLogicalTop = LayoutUnit();
                 changeLogicalBottom = std::max(changeLogicalBottom, logicalBottomForFloat(*floatingObject));
@@ -1762,7 +1764,7 @@ void LayoutBlockFlow::setMustDiscardMarginBefore(bool value)
         return;
 
     if (!m_rareData)
-        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+        m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
 
     m_rareData->m_discardMarginBefore = value;
 }
@@ -1778,7 +1780,7 @@ void LayoutBlockFlow::setMustDiscardMarginAfter(bool value)
         return;
 
     if (!m_rareData)
-        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+        m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
 
     m_rareData->m_discardMarginAfter = value;
 }
@@ -1823,7 +1825,7 @@ void LayoutBlockFlow::setMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg)
     if (!m_rareData) {
         if (pos == LayoutBlockFlowRareData::positiveMarginBeforeDefault(this) && neg == LayoutBlockFlowRareData::negativeMarginBeforeDefault(this))
             return;
-        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+        m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
     }
     m_rareData->m_margins.setPositiveMarginBefore(pos);
     m_rareData->m_margins.setNegativeMarginBefore(neg);
@@ -1834,7 +1836,7 @@ void LayoutBlockFlow::setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg)
     if (!m_rareData) {
         if (pos == LayoutBlockFlowRareData::positiveMarginAfterDefault(this) && neg == LayoutBlockFlowRareData::negativeMarginAfterDefault(this))
             return;
-        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+        m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
     }
     m_rareData->m_margins.setPositiveMarginAfter(pos);
     m_rareData->m_margins.setNegativeMarginAfter(neg);
@@ -2198,7 +2200,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child, LayoutUnit logicalTo
 
 void LayoutBlockFlow::createFloatingObjects()
 {
-    m_floatingObjects = adoptPtr(new FloatingObjects(this, isHorizontalWritingMode()));
+    m_floatingObjects = wrapUnique(new FloatingObjects(this, isHorizontalWritingMode()));
 }
 
 void LayoutBlockFlow::willBeDestroyed()
@@ -3003,7 +3005,7 @@ FloatingObject* LayoutBlockFlow::insertFloatingObject(LayoutBox& floatBox)
 
     // Create the special object entry & append it to the list
 
-    OwnPtr<FloatingObject> newObj = FloatingObject::create(&floatBox);
+    std::unique_ptr<FloatingObject> newObj = FloatingObject::create(&floatBox);
 
     // Our location is irrelevant if we're unsplittable or no pagination is in effect.
     // Just go ahead and lay out the float.
@@ -3461,7 +3463,7 @@ void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut)
     if (!m_rareData) {
         if (!strut)
             return;
-        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+        m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
     }
     m_rareData->m_paginationStrutPropagatedFromChild = strut;
 }
@@ -3603,7 +3605,7 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::ensureRareData()
     if (m_rareData)
         return *m_rareData;
 
-    m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+    m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
     return *m_rareData;
 }
 

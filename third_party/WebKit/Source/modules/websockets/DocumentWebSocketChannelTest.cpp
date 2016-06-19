@@ -21,9 +21,10 @@
 #include "public/platform/modules/websockets/WebSocketHandleClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <stdint.h>
 
 using testing::_;
@@ -52,7 +53,7 @@ public:
 
     MOCK_METHOD2(didConnect, void(const String&, const String&));
     MOCK_METHOD1(didReceiveTextMessage, void(const String&));
-    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
+    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override
     {
         didReceiveBinaryMessageMock(*payload);
     }
@@ -141,7 +142,7 @@ public:
         ::testing::Mock::VerifyAndClearExpectations(this);
     }
 
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
     Persistent<MockWebSocketChannelClient> m_channelClient;
     MockWebSocketHandle* m_handle;
     Persistent<DocumentWebSocketChannel> m_channel;
@@ -240,7 +241,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector)
 
     Vector<char> fooVector;
     fooVector.append("foo", 3);
-    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(fooVector)));
+    channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(fooVector)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -262,22 +263,22 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes)
     {
         Vector<char> v;
         v.append("\0ar", 3);
-        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("b\0z", 3);
-        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("qu\0", 3);
-        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("\0\0\0", 3);
-        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
     }
 
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
@@ -293,7 +294,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8)
 
     Vector<char> v;
     v.append("\xe7\x8b\x90", 3);
-    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -308,7 +309,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8)
 
     Vector<char> v;
     v.append("\x80\xff\xe7", 3);
-    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -329,7 +330,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8Continuation
 
     Vector<char> v;
     v.append("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
-    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(wrapUnique(new Vector<char>(v)));
     checkpoint.Call(1);
 
     handleClient()->didReceiveFlowControl(handle(), 16);

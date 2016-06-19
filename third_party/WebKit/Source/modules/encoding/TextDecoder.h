@@ -39,6 +39,7 @@
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -67,7 +68,7 @@ private:
     String decode(const char* start, size_t length, const TextDecodeOptions&, ExceptionState&);
 
     WTF::TextEncoding m_encoding;
-    OwnPtr<WTF::TextCodec> m_codec;
+    std::unique_ptr<WTF::TextCodec> m_codec;
     bool m_fatal;
     bool m_ignoreBOM;
     bool m_bomSeen;

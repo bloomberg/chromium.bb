@@ -9,10 +9,11 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
+#include <memory>
 
 namespace blink {
 
-CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(CompositorWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
+CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(CompositorWorkerThread* thread, std::unique_ptr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
     // Note: startupData is finalized on return. After the relevant parts has been
     // passed along to the created 'context'.
@@ -22,7 +23,7 @@ CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(CompositorWorke
     return context;
 }
 
-CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
+CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, std::move(starterOriginPrivilegeData), workerClients)
     , m_executingAnimationFrameCallbacks(false)
     , m_callbackCollection(this)
@@ -48,7 +49,7 @@ const AtomicString& CompositorWorkerGlobalScope::interfaceName() const
 void CompositorWorkerGlobalScope::postMessage(ExecutionContext* executionContext, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(executionContext, ports, exceptionState);
+    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(executionContext, ports, exceptionState);
     if (exceptionState.hadException())
         return;
     thread()->workerObjectProxy().postMessageToWorkerObject(message, std::move(channels));

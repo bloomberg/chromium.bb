@@ -23,7 +23,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/modules/permissions/WebPermissionClient.h"
 #include "wtf/NotFound.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -167,8 +169,8 @@ ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dic
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    OwnPtr<Vector<WebPermissionType>> internalPermissions = adoptPtr(new Vector<WebPermissionType>());
-    OwnPtr<Vector<int>> callerIndexToInternalIndex = adoptPtr(new Vector<int>(rawPermissions.size()));
+    std::unique_ptr<Vector<WebPermissionType>> internalPermissions = wrapUnique(new Vector<WebPermissionType>());
+    std::unique_ptr<Vector<int>> callerIndexToInternalIndex = wrapUnique(new Vector<int>(rawPermissions.size()));
     for (size_t i = 0; i < rawPermissions.size(); ++i) {
         const Dictionary& rawPermission = rawPermissions[i];
 

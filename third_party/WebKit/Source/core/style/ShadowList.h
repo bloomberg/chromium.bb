@@ -36,9 +36,9 @@
 #include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/DrawLooperBuilder.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -68,7 +68,7 @@ public:
 
     void adjustRectForShadow(FloatRect&) const;
 
-    PassOwnPtr<DrawLooperBuilder> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode, const Color& currentColor, bool isHorizontal = true) const;
+    std::unique_ptr<DrawLooperBuilder> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode, const Color& currentColor, bool isHorizontal = true) const;
 
 private:
     ShadowList(ShadowDataVector& shadows)

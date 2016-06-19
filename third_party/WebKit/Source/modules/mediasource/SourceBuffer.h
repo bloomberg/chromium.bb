@@ -40,6 +40,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSourceBufferClient.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -65,7 +66,7 @@ class SourceBuffer final
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(SourceBuffer, dispose);
 public:
-    static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    static SourceBuffer* create(std::unique_ptr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     static const AtomicString& segmentsKeyword();
     static const AtomicString& sequenceKeyword();
 
@@ -115,7 +116,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SourceBuffer(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     void dispose();
 
     bool isRemoved() const;
@@ -142,7 +143,7 @@ private:
     void didFinishLoading() override;
     void didFail(FileError::ErrorCode) override;
 
-    OwnPtr<WebSourceBuffer> m_webSourceBuffer;
+    std::unique_ptr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;
     Member<TrackDefaultList> m_trackDefaults;
     Member<GenericEventQueue> m_asyncEventQueue;
@@ -168,7 +169,7 @@ private:
     unsigned long long m_streamMaxSize;
     Member<AsyncMethodRunner<SourceBuffer>> m_appendStreamAsyncPartRunner;
     Member<Stream> m_stream;
-    OwnPtr<FileReaderLoader> m_loader;
+    std::unique_ptr<FileReaderLoader> m_loader;
 };
 
 } // namespace blink

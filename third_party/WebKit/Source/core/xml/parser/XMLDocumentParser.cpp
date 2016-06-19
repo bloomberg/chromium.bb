@@ -67,6 +67,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/Threading.h"
@@ -76,6 +77,7 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
+#include <memory>
 
 namespace blink {
 
@@ -960,7 +962,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
 
     if (m_parserPaused) {
         m_scriptStartPosition = textPosition();
-        m_pendingCallbacks.append(adoptPtr(new PendingStartElementNSCallback(localName, prefix, uri, nbNamespaces, libxmlNamespaces,
+        m_pendingCallbacks.append(wrapUnique(new PendingStartElementNSCallback(localName, prefix, uri, nbNamespaces, libxmlNamespaces,
             nbAttributes, nbDefaulted, libxmlAttributes)));
         return;
     }
@@ -1039,7 +1041,7 @@ void XMLDocumentParser::endElementNs()
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingEndElementNSCallback(m_scriptStartPosition)));
+        m_pendingCallbacks.append(wrapUnique(new PendingEndElementNSCallback(m_scriptStartPosition)));
         return;
     }
 
@@ -1121,7 +1123,7 @@ void XMLDocumentParser::characters(const xmlChar* chars, int length)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingCharactersCallback(chars, length)));
+        m_pendingCallbacks.append(wrapUnique(new PendingCharactersCallback(chars, length)));
         return;
     }
 
@@ -1138,7 +1140,7 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va
     vsnprintf(formattedMessage, sizeof(formattedMessage) - 1, message, args);
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingErrorCallback(type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(), columnNumber())));
+        m_pendingCallbacks.append(wrapUnique(new PendingErrorCallback(type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(), columnNumber())));
         return;
     }
 
@@ -1151,7 +1153,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingProcessingInstructionCallback(target, data)));
+        m_pendingCallbacks.append(wrapUnique(new PendingProcessingInstructionCallback(target, data)));
         return;
     }
 
@@ -1190,7 +1192,7 @@ void XMLDocumentParser::cdataBlock(const String& text)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingCDATABlockCallback(text)));
+        m_pendingCallbacks.append(wrapUnique(new PendingCDATABlockCallback(text)));
         return;
     }
 
@@ -1206,7 +1208,7 @@ void XMLDocumentParser::comment(const String& text)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingCommentCallback(text)));
+        m_pendingCallbacks.append(wrapUnique(new PendingCommentCallback(text)));
         return;
     }
 
@@ -1251,7 +1253,7 @@ void XMLDocumentParser::internalSubset(const String& name, const String& externa
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks.append(adoptPtr(new PendingInternalSubsetCallback(name, externalID, systemID)));
+        m_pendingCallbacks.append(wrapUnique(new PendingInternalSubsetCallback(name, externalID, systemID)));
         return;
     }
 
@@ -1489,7 +1491,7 @@ void XMLDocumentParser::doEnd()
         V8Document::PrivateScript::transformDocumentToTreeViewMethod(document()->frame(), document(), noStyleMessage);
     } else if (m_sawXSLTransform) {
         xmlDocPtr doc = xmlDocPtrForString(document(), m_originalSourceForTransform.toString(), document()->url().getString());
-        document()->setTransformSource(adoptPtr(new TransformSource(doc)));
+        document()->setTransformSource(wrapUnique(new TransformSource(doc)));
         DocumentParser::stopParsing();
     }
 }
@@ -1540,7 +1542,7 @@ void XMLDocumentParser::resumeParsing()
 
     // First, execute any pending callbacks
     while (!m_pendingCallbacks.isEmpty()) {
-        OwnPtr<PendingCallback> callback = m_pendingCallbacks.takeFirst();
+        std::unique_ptr<PendingCallback> callback = m_pendingCallbacks.takeFirst();
         callback->call(this);
 
         // A callback paused the parser

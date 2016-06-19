@@ -63,7 +63,6 @@
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"

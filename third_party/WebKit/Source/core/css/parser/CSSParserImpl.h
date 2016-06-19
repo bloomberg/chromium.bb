@@ -13,6 +13,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -66,7 +67,7 @@ public:
 
     static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
-    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
+    static std::unique_ptr<Vector<double>> parseKeyframeKeyList(const String&);
 
     bool supportsDeclaration(CSSParserTokenRange&);
 
@@ -108,7 +109,7 @@ private:
     void consumeDeclarationValue(CSSParserTokenRange, CSSPropertyID, bool important, StyleRule::RuleType);
     void consumeVariableValue(CSSParserTokenRange, const AtomicString& propertyName, bool important);
 
-    static PassOwnPtr<Vector<double>> consumeKeyframeKeyList(CSSParserTokenRange);
+    static std::unique_ptr<Vector<double>> consumeKeyframeKeyList(CSSParserTokenRange);
 
     // FIXME: Can we build StylePropertySets directly?
     // FIXME: Investigate using a smaller inline buffer

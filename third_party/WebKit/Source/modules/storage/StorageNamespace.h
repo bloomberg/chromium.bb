@@ -28,8 +28,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -40,7 +39,7 @@ class StorageArea;
 class MODULES_EXPORT StorageNamespace {
     USING_FAST_MALLOC(StorageNamespace);
 public:
-    explicit StorageNamespace(PassOwnPtr<WebStorageNamespace>);
+    explicit StorageNamespace(std::unique_ptr<WebStorageNamespace>);
     ~StorageNamespace();
 
     static StorageArea* localStorageArea(SecurityOrigin*);
@@ -49,7 +48,7 @@ public:
     bool isSameNamespace(const WebStorageNamespace& sessionNamespace) const;
 
 private:
-    OwnPtr<WebStorageNamespace> m_webStorageNamespace;
+    std::unique_ptr<WebStorageNamespace> m_webStorageNamespace;
 };
 
 } // namespace blink

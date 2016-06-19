@@ -34,13 +34,14 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
 TEST(AnimationTranslationUtilTest, transformsWork)
 {
     TransformOperations ops;
-    OwnPtr<CompositorTransformOperations> outOps = CompositorTransformOperations::create();
+    std::unique_ptr<CompositorTransformOperations> outOps = CompositorTransformOperations::create();
 
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
@@ -73,7 +74,7 @@ TEST(AnimationTranslationUtilTest, transformsWork)
 TEST(AnimationTranslationUtilTest, filtersWork)
 {
     FilterOperations ops;
-    OwnPtr<CompositorFilterOperations> outOps = CompositorFilterOperations::create();
+    std::unique_ptr<CompositorFilterOperations> outOps = CompositorFilterOperations::create();
 
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));

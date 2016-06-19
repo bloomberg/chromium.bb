@@ -49,6 +49,7 @@
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -84,7 +85,7 @@ public:
 
     ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
-    void setSubresourceFilter(PassOwnPtr<WebDocumentSubresourceFilter>);
+    void setSubresourceFilter(std::unique_ptr<WebDocumentSubresourceFilter>);
     WebDocumentSubresourceFilter* subresourceFilter() const { return m_subresourceFilter.get(); }
 
     const SubstituteData& substituteData() const { return m_substituteData; }
@@ -170,7 +171,7 @@ private:
     void finishedLoading(double finishTime);
     void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) final;
-    void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
+    void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) final;
     void dataReceived(Resource*, const char* data, size_t length) final;
     void processData(const char* data, size_t length);
     void notifyFinished(Resource*) final;
@@ -184,7 +185,7 @@ private:
 
     Member<LocalFrame> m_frame;
     Member<ResourceFetcher> m_fetcher;
-    OwnPtr<WebDocumentSubresourceFilter> m_subresourceFilter;
+    std::unique_ptr<WebDocumentSubresourceFilter> m_subresourceFilter;
 
     Member<RawResource> m_mainResource;
 

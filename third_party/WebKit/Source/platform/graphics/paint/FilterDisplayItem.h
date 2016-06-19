@@ -8,17 +8,17 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
 #endif
+#include <memory>
 
 namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<CompositorFilterOperations> filterOperations = nullptr)
+    BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, std::unique_ptr<CompositorFilterOperations> filterOperations = nullptr)
         : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
         , m_imageFilter(std::move(imageFilter))
         , m_webFilterOperations(std::move(filterOperations))
@@ -43,7 +43,7 @@ private:
 
     // FIXME: m_imageFilter should be replaced with m_webFilterOperations when copying data to the compositor.
     sk_sp<SkImageFilter> m_imageFilter;
-    OwnPtr<CompositorFilterOperations> m_webFilterOperations;
+    std::unique_ptr<CompositorFilterOperations> m_webFilterOperations;
     const FloatRect m_bounds;
 };
 

@@ -4,9 +4,10 @@
 
 #include "wtf/text/TextCodecReplacement.h"
 
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -30,9 +31,9 @@ void TextCodecReplacement::registerEncodingNames(EncodingNameRegistrar registrar
     registrar("iso-2022-kr", "replacement");
 }
 
-static PassOwnPtr<TextCodec> newStreamingTextDecoderReplacement(const TextEncoding&, const void*)
+static std::unique_ptr<TextCodec> newStreamingTextDecoderReplacement(const TextEncoding&, const void*)
 {
-    return adoptPtr(new TextCodecReplacement);
+    return wrapUnique(new TextCodecReplacement);
 }
 
 void TextCodecReplacement::registerCodecs(TextCodecRegistrar registrar)

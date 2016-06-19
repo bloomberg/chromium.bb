@@ -8,6 +8,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -19,7 +20,7 @@ public:
 private:
     void SetUp() override { m_pageHolder = DummyPageHolder::create(); }
 
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
 TEST_F(FocusControllerTest, SetInitialFocus)

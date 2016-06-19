@@ -39,6 +39,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -255,7 +256,7 @@ private:
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
-    const OwnPtr<KillRing> m_killRing;
+    const std::unique_ptr<KillRing> m_killRing;
     VisibleSelection m_mark;
     bool m_areMarkedTextMatchesHighlighted;
     EditorParagraphSeparator m_defaultParagraphSeparator;

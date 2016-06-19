@@ -6,6 +6,8 @@
 
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/style/StyleMotionRotation.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -37,9 +39,9 @@ namespace {
 
 class UnderlyingRotationTypeChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingRotationTypeChecker> create(MotionRotationType underlyingRotationType)
+    static std::unique_ptr<UnderlyingRotationTypeChecker> create(MotionRotationType underlyingRotationType)
     {
-        return adoptPtr(new UnderlyingRotationTypeChecker(underlyingRotationType));
+        return wrapUnique(new UnderlyingRotationTypeChecker(underlyingRotationType));
     }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -57,9 +59,9 @@ private:
 
 class InheritedRotationTypeChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<InheritedRotationTypeChecker> create(MotionRotationType inheritedRotationType)
+    static std::unique_ptr<InheritedRotationTypeChecker> create(MotionRotationType inheritedRotationType)
     {
-        return adoptPtr(new InheritedRotationTypeChecker(inheritedRotationType));
+        return wrapUnique(new InheritedRotationTypeChecker(inheritedRotationType));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final

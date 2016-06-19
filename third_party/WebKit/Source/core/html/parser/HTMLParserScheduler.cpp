@@ -26,12 +26,13 @@
 #include "core/html/parser/HTMLParserScheduler.h"
 
 #include "core/dom/Document.h"
-#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/frame/FrameView.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -67,7 +68,7 @@ void SpeculationsPumpSession::addedElementTokens(size_t count)
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
     : m_parser(parser)
-    , m_loadingTaskRunner(adoptPtr(loadingTaskRunner->clone()))
+    , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
     , m_cancellableContinueParse(CancellableTaskFactory::create(this, &HTMLParserScheduler::continueParsing))
     , m_isSuspendedWithActiveTimer(false)
 {

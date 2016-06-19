@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Threading.h"
+#include <memory>
 
 namespace blink {
 
@@ -93,7 +94,7 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
         DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, fileSizeHistogram, new CustomCountHistogram("Notifications.Icon.FileSize", 1, 10000000 /* ~10mb max */, 50 /* buckets */));
         fileSizeHistogram.count(m_data->size());
 
-        OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*m_data.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+        std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(*m_data.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
         if (decoder) {
             decoder->setData(m_data.get(), true /* allDataReceived */);
             // The |ImageFrame*| is owned by the decoder.

@@ -40,8 +40,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -108,7 +107,7 @@ public:
     void reportException(ErrorEvent*, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) = 0;
+    virtual void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
 
     PublicURLManager& publicURLManager();
 
@@ -117,7 +116,7 @@ public:
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
-    void postSuspendableTask(PassOwnPtr<SuspendableTask>);
+    void postSuspendableTask(std::unique_ptr<SuspendableTask>);
     void notifyContextDestroyed() override;
 
     virtual void suspendScheduledTasks();
@@ -168,7 +167,7 @@ private:
 
     bool m_inDispatchErrorEvent;
     class PendingException;
-    OwnPtr<Vector<OwnPtr<PendingException>>> m_pendingExceptions;
+    std::unique_ptr<Vector<std::unique_ptr<PendingException>>> m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;
@@ -181,7 +180,7 @@ private:
     // increment and decrement the counter.
     int m_windowInteractionTokens;
 
-    Deque<OwnPtr<SuspendableTask>> m_suspendedTasks;
+    Deque<std::unique_ptr<SuspendableTask>> m_suspendedTasks;
     bool m_isRunSuspendableTasksScheduled;
 
     ReferrerPolicy m_referrerPolicy;

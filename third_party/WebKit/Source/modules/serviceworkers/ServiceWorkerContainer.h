@@ -44,6 +44,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -72,7 +73,7 @@ public:
     ScriptPromise ready(ScriptState*);
     WebServiceWorkerProvider* provider() { return m_provider; }
 
-    void registerServiceWorkerImpl(ExecutionContext*, const KURL& scriptURL, const KURL& scope, PassOwnPtr<RegistrationCallbacks>);
+    void registerServiceWorkerImpl(ExecutionContext*, const KURL& scriptURL, const KURL& scope, std::unique_ptr<RegistrationCallbacks>);
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptions&);
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);

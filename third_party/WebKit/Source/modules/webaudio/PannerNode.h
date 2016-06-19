@@ -34,6 +34,7 @@
 #include "platform/audio/Panner.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/HashMap.h"
+#include <memory>
 
 namespace blink {
 
@@ -152,7 +153,7 @@ private:
     // This Persistent doesn't make a reference cycle including the owner
     // PannerNode.
     Persistent<AudioListener> m_listener;
-    OwnPtr<Panner> m_panner;
+    std::unique_ptr<Panner> m_panner;
     unsigned m_panningModel;
     unsigned m_distanceModel;
 

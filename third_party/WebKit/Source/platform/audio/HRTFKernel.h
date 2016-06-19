@@ -32,9 +32,9 @@
 #include "platform/audio/FFTFrame.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -52,18 +52,18 @@ class PLATFORM_EXPORT HRTFKernel {
 public:
     // Note: this is destructive on the passed in AudioChannel.
     // The length of channel must be a power of two.
-    static PassOwnPtr<HRTFKernel> create(AudioChannel* channel, size_t fftSize, float sampleRate)
+    static std::unique_ptr<HRTFKernel> create(AudioChannel* channel, size_t fftSize, float sampleRate)
     {
-        return adoptPtr(new HRTFKernel(channel, fftSize, sampleRate));
+        return wrapUnique(new HRTFKernel(channel, fftSize, sampleRate));
     }
 
-    static PassOwnPtr<HRTFKernel> create(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
+    static std::unique_ptr<HRTFKernel> create(std::unique_ptr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
     {
-        return adoptPtr(new HRTFKernel(std::move(fftFrame), frameDelay, sampleRate));
+        return wrapUnique(new HRTFKernel(std::move(fftFrame), frameDelay, sampleRate));
     }
 
     // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an interpolated HRTFKernel.
-    static PassOwnPtr<HRTFKernel> createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
+    static std::unique_ptr<HRTFKernel> createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
 
     FFTFrame* fftFrame() { return m_fftFrame.get(); }
 
@@ -74,25 +74,25 @@ public:
     double nyquist() const { return 0.5 * sampleRate(); }
 
     // Converts back into impulse-response form.
-    PassOwnPtr<AudioChannel> createImpulseResponse();
+    std::unique_ptr<AudioChannel> createImpulseResponse();
 
 private:
     // Note: this is destructive on the passed in AudioChannel.
     HRTFKernel(AudioChannel*, size_t fftSize, float sampleRate);
 
-    HRTFKernel(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
+    HRTFKernel(std::unique_ptr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
         : m_fftFrame(std::move(fftFrame))
         , m_frameDelay(frameDelay)
         , m_sampleRate(sampleRate)
     {
     }
 
-    OwnPtr<FFTFrame> m_fftFrame;
+    std::unique_ptr<FFTFrame> m_fftFrame;
     float m_frameDelay;
     float m_sampleRate;
 };
 
-typedef Vector<OwnPtr<HRTFKernel>> HRTFKernelList;
+typedef Vector<std::unique_ptr<HRTFKernel>> HRTFKernelList;
 
 } // namespace blink
 

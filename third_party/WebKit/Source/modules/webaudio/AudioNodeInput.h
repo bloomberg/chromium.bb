@@ -30,6 +30,7 @@
 #include "platform/audio/AudioBus.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,7 +43,7 @@ class AudioNodeOutput;
 class AudioNodeInput final : public AudioSummingJunction {
     USING_FAST_MALLOC(AudioNodeInput);
 public:
-    static PassOwnPtr<AudioNodeInput> create(AudioHandler&);
+    static std::unique_ptr<AudioNodeInput> create(AudioHandler&);
 
     // AudioSummingJunction
     void didUpdate() override;

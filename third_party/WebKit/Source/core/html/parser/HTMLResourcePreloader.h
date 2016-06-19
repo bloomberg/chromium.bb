@@ -33,6 +33,7 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +45,7 @@ public:
     DECLARE_TRACE();
 
 protected:
-    void preload(PassOwnPtr<PreloadRequest>, const NetworkHintsInterface&) override;
+    void preload(std::unique_ptr<PreloadRequest>, const NetworkHintsInterface&) override;
 
 private:
     explicit HTMLResourcePreloader(Document&);

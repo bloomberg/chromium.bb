@@ -41,6 +41,7 @@
 #include "modules/filesystem/SyncCallbackHelper.h"
 #include "platform/FileSystemType.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include <memory>
 
 namespace blink {
 
@@ -76,7 +77,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(Work
     }
 
     FileSystemSyncCallbackHelper* helper = FileSystemSyncCallbackHelper::create();
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper->getSuccessCallback(), helper->getErrorCallback(), &worker, fileSystemType);
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper->getSuccessCallback(), helper->getErrorCallback(), &worker, fileSystemType);
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, std::move(callbacks));
@@ -115,7 +116,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(Work
     }
 
     EntrySyncCallbackHelper* resolveURLHelper = EntrySyncCallbackHelper::create();
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = ResolveURICallbacks::create(resolveURLHelper->getSuccessCallback(), resolveURLHelper->getErrorCallback(), &worker);
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = ResolveURICallbacks::create(resolveURLHelper->getSuccessCallback(), resolveURLHelper->getErrorCallback(), &worker);
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, std::move(callbacks));

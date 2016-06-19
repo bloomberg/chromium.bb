@@ -8,9 +8,9 @@
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -26,8 +26,8 @@ public:
     virtual bool isAnimatableValue() const { return false; }
 
     virtual bool equals(const InterpolableValue&) const = 0;
-    virtual PassOwnPtr<InterpolableValue> clone() const = 0;
-    virtual PassOwnPtr<InterpolableValue> cloneAndZero() const = 0;
+    virtual std::unique_ptr<InterpolableValue> clone() const = 0;
+    virtual std::unique_ptr<InterpolableValue> cloneAndZero() const = 0;
     virtual void scale(double scale) = 0;
     virtual void scaleAndAdd(double scale, const InterpolableValue& other) = 0;
 
@@ -49,16 +49,16 @@ private:
 
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableNumber> create(double value)
+    static std::unique_ptr<InterpolableNumber> create(double value)
     {
-        return adoptPtr(new InterpolableNumber(value));
+        return wrapUnique(new InterpolableNumber(value));
     }
 
     bool isNumber() const final { return true; }
     double value() const { return m_value; }
     bool equals(const InterpolableValue& other) const final;
-    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
-    PassOwnPtr<InterpolableValue> cloneAndZero() const final { return create(0); }
+    std::unique_ptr<InterpolableValue> clone() const final { return create(m_value); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final { return create(0); }
     void scale(double scale) final;
     void scaleAndAdd(double scale, const InterpolableValue& other) final;
     void set(double value) { m_value = value; }
@@ -76,16 +76,16 @@ private:
 
 class CORE_EXPORT InterpolableBool final : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableBool> create(bool value)
+    static std::unique_ptr<InterpolableBool> create(bool value)
     {
-        return adoptPtr(new InterpolableBool(value));
+        return wrapUnique(new InterpolableBool(value));
     }
 
     bool isBool() const final { return true; }
     bool value() const { return m_value; }
     bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
-    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
-    PassOwnPtr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
+    std::unique_ptr<InterpolableValue> clone() const final { return create(m_value); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
     void scale(double scale) final { ASSERT_NOT_REACHED(); }
     void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
 
@@ -110,18 +110,18 @@ public:
     // has its own copy constructor. So just delete operator= here.
     InterpolableList& operator=(const InterpolableList&) = delete;
 
-    static PassOwnPtr<InterpolableList> create(const InterpolableList &other)
+    static std::unique_ptr<InterpolableList> create(const InterpolableList &other)
     {
-        return adoptPtr(new InterpolableList(other));
+        return wrapUnique(new InterpolableList(other));
     }
 
-    static PassOwnPtr<InterpolableList> create(size_t size)
+    static std::unique_ptr<InterpolableList> create(size_t size)
     {
-        return adoptPtr(new InterpolableList(size));
+        return wrapUnique(new InterpolableList(size));
     }
 
     bool isList() const final { return true; }
-    void set(size_t position, PassOwnPtr<InterpolableValue> value)
+    void set(size_t position, std::unique_ptr<InterpolableValue> value)
     {
         ASSERT(position < m_size);
         m_values[position] = std::move(value);
@@ -131,15 +131,15 @@ public:
         ASSERT(position < m_size);
         return m_values[position].get();
     }
-    OwnPtr<InterpolableValue>& getMutable(size_t position)
+    std::unique_ptr<InterpolableValue>& getMutable(size_t position)
     {
         ASSERT(position < m_size);
         return m_values[position];
     }
     size_t length() const { return m_size; }
     bool equals(const InterpolableValue& other) const final;
-    PassOwnPtr<InterpolableValue> clone() const final { return create(*this); }
-    PassOwnPtr<InterpolableValue> cloneAndZero() const final;
+    std::unique_ptr<InterpolableValue> clone() const final { return create(*this); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final;
     void scale(double scale) final;
     void scaleAndAdd(double scale, const InterpolableValue& other) final;
 
@@ -160,22 +160,22 @@ private:
     }
 
     size_t m_size;
-    Vector<OwnPtr<InterpolableValue>> m_values;
+    Vector<std::unique_ptr<InterpolableValue>> m_values;
 };
 
 // FIXME: Remove this when we can.
 class InterpolableAnimatableValue : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
+    static std::unique_ptr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
     {
-        return adoptPtr(new InterpolableAnimatableValue(value));
+        return wrapUnique(new InterpolableAnimatableValue(value));
     }
 
     bool isAnimatableValue() const final { return true; }
     AnimatableValue* value() const { return m_value.get(); }
     bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
-    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
-    PassOwnPtr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
+    std::unique_ptr<InterpolableValue> clone() const final { return create(m_value); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
     void scale(double scale) final { ASSERT_NOT_REACHED(); }
     void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
 

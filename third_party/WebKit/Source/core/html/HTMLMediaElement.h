@@ -40,6 +40,7 @@
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMimeRegistry.h"
+#include <memory>
 
 namespace blink {
 
@@ -547,7 +548,7 @@ private:
     DeferredLoadState m_deferredLoadState;
     Timer<HTMLMediaElement> m_deferredLoadTimer;
 
-    OwnPtr<WebMediaPlayer> m_webMediaPlayer;
+    std::unique_ptr<WebMediaPlayer> m_webMediaPlayer;
     WebLayer* m_webLayer;
 
     DisplayMode m_displayMode;
@@ -596,8 +597,8 @@ private:
     Member<CueTimeline> m_cueTimeline;
 
     HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolvers;
-    OwnPtr<CancellableTaskFactory> m_playPromiseResolveTask;
-    OwnPtr<CancellableTaskFactory> m_playPromiseRejectTask;
+    std::unique_ptr<CancellableTaskFactory> m_playPromiseResolveTask;
+    std::unique_ptr<CancellableTaskFactory> m_playPromiseRejectTask;
     HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolveList;
     HeapVector<Member<ScriptPromiseResolver>> m_playPromiseRejectList;
     ExceptionCode m_playPromiseErrorCode;

@@ -36,8 +36,9 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,14 +47,14 @@ namespace blink {
 class PLATFORM_EXPORT GraphicsContextState final {
     USING_FAST_MALLOC(GraphicsContextState);
 public:
-    static PassOwnPtr<GraphicsContextState> create()
+    static std::unique_ptr<GraphicsContextState> create()
     {
-        return adoptPtr(new GraphicsContextState());
+        return wrapUnique(new GraphicsContextState());
     }
 
-    static PassOwnPtr<GraphicsContextState> createAndCopy(const GraphicsContextState& other)
+    static std::unique_ptr<GraphicsContextState> createAndCopy(const GraphicsContextState& other)
     {
-        return adoptPtr(new GraphicsContextState(other));
+        return wrapUnique(new GraphicsContextState(other));
     }
 
     void copy(const GraphicsContextState&);

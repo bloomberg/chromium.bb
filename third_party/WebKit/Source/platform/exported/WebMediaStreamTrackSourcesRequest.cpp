@@ -28,7 +28,6 @@
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSourceInfo.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

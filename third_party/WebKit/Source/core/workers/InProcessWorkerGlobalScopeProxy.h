@@ -35,7 +35,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -51,7 +51,7 @@ public:
 
     virtual void terminateWorkerGlobalScope() = 0;
 
-    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) = 0;
+    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>) = 0;
 
     virtual bool hasPendingActivity() const = 0;
 

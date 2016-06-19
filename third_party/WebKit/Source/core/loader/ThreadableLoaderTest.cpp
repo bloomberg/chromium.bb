@@ -30,9 +30,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -47,13 +47,13 @@ using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 
 class MockThreadableLoaderClient : public ThreadableLoaderClient {
 public:
-    static PassOwnPtr<MockThreadableLoaderClient> create()
+    static std::unique_ptr<MockThreadableLoaderClient> create()
     {
-        return adoptPtr(new ::testing::StrictMock<MockThreadableLoaderClient>);
+        return wrapUnique(new ::testing::StrictMock<MockThreadableLoaderClient>);
     }
     MOCK_METHOD2(didSendData, void(unsigned long long, unsigned long long));
     MOCK_METHOD3(didReceiveResponseMock, void(unsigned long, const ResourceResponse&, WebDataConsumerHandle*));
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
     {
         didReceiveResponseMock(identifier, response, handle.get());
     }
@@ -146,9 +146,9 @@ public:
 private:
     Document& document() { return m_dummyPageHolder->document(); }
 
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
     Checkpoint m_checkpoint;
-    OwnPtr<DocumentThreadableLoader> m_loader;
+    std::unique_ptr<DocumentThreadableLoader> m_loader;
 };
 
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper, public WorkerLoaderProxyProvider {
@@ -160,7 +160,7 @@ public:
 
     void createLoader(ThreadableLoaderClient* client, CrossOriginRequestPolicy crossOriginRequestPolicy) override
     {
-        OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
+        std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerCreateLoader,
             AllowCrossThreadAccess(this),
@@ -172,7 +172,7 @@ public:
 
     void startLoader(const ResourceRequest& request) override
     {
-        OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
+        std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerStartLoader,
             AllowCrossThreadAccess(this),
@@ -206,7 +206,7 @@ public:
     {
         testing::runPendingTasks();
 
-        OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
+        std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
         postTaskToWorkerGlobalScope(createCrossThreadTask(
             &WorkerThreadableLoaderTestHelper::workerCallCheckpoint,
             AllowCrossThreadAccess(this),
@@ -217,9 +217,9 @@ public:
 
     void onSetUp() override
     {
-        m_mockWorkerReportingProxy = adoptPtr(new MockWorkerReportingProxy());
+        m_mockWorkerReportingProxy = wrapUnique(new MockWorkerReportingProxy());
         m_securityOrigin = document().getSecurityOrigin();
-        m_workerThread = adoptPtr(new WorkerThreadForTest(
+        m_workerThread = wrapUnique(new WorkerThreadForTest(
             this,
             *m_mockWorkerReportingProxy));
 
@@ -276,7 +276,7 @@ private:
         event->signal();
     }
 
-    void workerStartLoader(WaitableEvent* event, PassOwnPtr<CrossThreadResourceRequestData> requestData)
+    void workerStartLoader(WaitableEvent* event, std::unique_ptr<CrossThreadResourceRequestData> requestData)
     {
         ASSERT(m_workerThread);
         ASSERT(m_workerThread->isCurrentThread());
@@ -310,13 +310,13 @@ private:
     }
 
     RefPtr<SecurityOrigin> m_securityOrigin;
-    OwnPtr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
-    OwnPtr<WorkerThreadForTest> m_workerThread;
+    std::unique_ptr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
+    std::unique_ptr<WorkerThreadForTest> m_workerThread;
 
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
     Checkpoint m_checkpoint;
     // |m_loader| must be touched only from the worker thread only.
-    OwnPtr<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
 };
 
 class ThreadableLoaderTest : public ::testing::TestWithParam<ThreadableLoaderToTest> {
@@ -325,10 +325,10 @@ public:
     {
         switch (GetParam()) {
         case DocumentThreadableLoaderTest:
-            m_helper = adoptPtr(new DocumentThreadableLoaderTestHelper);
+            m_helper = wrapUnique(new DocumentThreadableLoaderTestHelper);
             break;
         case WorkerThreadableLoaderTest:
-            m_helper = adoptPtr(new WorkerThreadableLoaderTestHelper);
+            m_helper = wrapUnique(new WorkerThreadableLoaderTestHelper);
             break;
         }
     }
@@ -424,8 +424,8 @@ private:
         URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "fox-null-terminated.html", "", response);
     }
 
-    OwnPtr<MockThreadableLoaderClient> m_client;
-    OwnPtr<ThreadableLoaderTestHelper> m_helper;
+    std::unique_ptr<MockThreadableLoaderClient> m_client;
+    std::unique_ptr<ThreadableLoaderTestHelper> m_helper;
 };
 
 INSTANTIATE_TEST_CASE_P(Document,

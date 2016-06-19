@@ -9,6 +9,8 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontDescription.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -16,9 +18,9 @@ namespace {
 
 class IsMonospaceChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<IsMonospaceChecker> create(bool isMonospace)
+    static std::unique_ptr<IsMonospaceChecker> create(bool isMonospace)
     {
-        return adoptPtr(new IsMonospaceChecker(isMonospace));
+        return wrapUnique(new IsMonospaceChecker(isMonospace));
     }
 private:
     IsMonospaceChecker(bool isMonospace)
@@ -35,9 +37,9 @@ private:
 
 class InheritedFontSizeChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<InheritedFontSizeChecker> create(const FontDescription::Size& inheritedFontSize)
+    static std::unique_ptr<InheritedFontSizeChecker> create(const FontDescription::Size& inheritedFontSize)
     {
-        return adoptPtr(new InheritedFontSizeChecker(inheritedFontSize));
+        return wrapUnique(new InheritedFontSizeChecker(inheritedFontSize));
     }
 
 private:
@@ -97,7 +99,7 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(const Style
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    OwnPtr<InterpolableValue> result = CSSLengthInterpolationType::maybeConvertCSSValue(value).interpolableValue;
+    std::unique_ptr<InterpolableValue> result = CSSLengthInterpolationType::maybeConvertCSSValue(value).interpolableValue;
     if (result)
         return InterpolationValue(std::move(result));
 

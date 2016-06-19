@@ -39,6 +39,8 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
@@ -52,9 +54,9 @@ using blink::WebVector;
 namespace blink {
 
 // static
-PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* request)
+std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* request)
 {
-    return adoptPtr(new WebIDBCallbacksImpl(request));
+    return wrapUnique(new WebIDBCallbacksImpl(request));
 }
 
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
@@ -86,13 +88,13 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<WebString>& webStringList)
 void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebIDBValue& value)
 {
     InspectorInstrumentation::AsyncTask asyncTask(m_request->getExecutionContext(), this);
-    m_request->onSuccess(adoptPtr(cursor), key, primaryKey, IDBValue::create(value));
+    m_request->onSuccess(wrapUnique(cursor), key, primaryKey, IDBValue::create(value));
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend, const WebIDBMetadata& metadata)
 {
     InspectorInstrumentation::AsyncTask asyncTask(m_request->getExecutionContext(), this);
-    m_request->onSuccess(adoptPtr(backend), IDBDatabaseMetadata(metadata));
+    m_request->onSuccess(wrapUnique(backend), IDBDatabaseMetadata(metadata));
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key)
@@ -143,7 +145,7 @@ void WebIDBCallbacksImpl::onBlocked(long long oldVersion)
 void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, WebString dataLossMessage)
 {
     InspectorInstrumentation::AsyncTask asyncTask(m_request->getExecutionContext(), this);
-    m_request->onUpgradeNeeded(oldVersion, adoptPtr(database), IDBDatabaseMetadata(metadata), static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
+    m_request->onUpgradeNeeded(oldVersion, wrapUnique(database), IDBDatabaseMetadata(metadata), static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
 }
 
 } // namespace blink

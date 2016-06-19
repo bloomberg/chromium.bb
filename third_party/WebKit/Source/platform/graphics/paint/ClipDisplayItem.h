@@ -10,7 +10,6 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

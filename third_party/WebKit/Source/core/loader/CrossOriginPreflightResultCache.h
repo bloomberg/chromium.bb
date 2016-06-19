@@ -31,8 +31,8 @@
 #include "platform/weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 namespace blink {
 
@@ -70,13 +70,13 @@ class CrossOriginPreflightResultCache {
 public:
     static CrossOriginPreflightResultCache& shared();
 
-    void appendEntry(const String& origin, const KURL&, PassOwnPtr<CrossOriginPreflightResultCacheItem>);
+    void appendEntry(const String& origin, const KURL&, std::unique_ptr<CrossOriginPreflightResultCacheItem>);
     bool canSkipPreflight(const String& origin, const KURL&, StoredCredentials, const String& method, const HTTPHeaderMap& requestHeaders);
 
 private:
     CrossOriginPreflightResultCache() { }
 
-    typedef HashMap<std::pair<String, KURL>, OwnPtr<CrossOriginPreflightResultCacheItem>> CrossOriginPreflightResultHashMap;
+    typedef HashMap<std::pair<String, KURL>, std::unique_ptr<CrossOriginPreflightResultCacheItem>> CrossOriginPreflightResultHashMap;
 
     CrossOriginPreflightResultHashMap m_preflightHashMap;
 };

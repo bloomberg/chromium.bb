@@ -22,8 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/WaveShaperProcessor.h"
 #include "modules/webaudio/WaveShaperDSPKernel.h"
+#include "modules/webaudio/WaveShaperProcessor.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,9 +41,9 @@ WaveShaperProcessor::~WaveShaperProcessor()
         uninitialize();
 }
 
-PassOwnPtr<AudioDSPKernel> WaveShaperProcessor::createKernel()
+std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel()
 {
-    return adoptPtr(new WaveShaperDSPKernel(this));
+    return wrapUnique(new WaveShaperDSPKernel(this));
 }
 
 void WaveShaperProcessor::setCurve(DOMFloat32Array* curve)

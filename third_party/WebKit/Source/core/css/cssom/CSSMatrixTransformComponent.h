@@ -7,6 +7,7 @@
 
 #include "core/css/cssom/TransformComponent.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include <memory>
 
 namespace blink {
 
@@ -91,17 +92,17 @@ private:
         , m_is2D(false)
     { }
 
-    CSSMatrixTransformComponent(PassOwnPtr<const TransformationMatrix> matrix, TransformComponentType fromType)
+    CSSMatrixTransformComponent(std::unique_ptr<const TransformationMatrix> matrix, TransformComponentType fromType)
         : TransformComponent()
         , m_matrix(std::move(matrix))
         , m_is2D(is2DComponentType(fromType))
     { }
 
     // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
-    // supports 16-byte alignment but Oilpan doesn't. So we use an OwnPtr
+    // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
     // to allocate TransformationMatrix on PartitionAlloc.
     // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
-    OwnPtr<const TransformationMatrix> m_matrix;
+    std::unique_ptr<const TransformationMatrix> m_matrix;
     bool m_is2D;
 };
 

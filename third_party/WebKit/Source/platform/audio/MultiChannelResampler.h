@@ -32,7 +32,7 @@
 #include "platform/audio/SincResampler.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -53,7 +53,7 @@ private:
     // https://bugs.webkit.org/show_bug.cgi?id=75118
 
     // Each channel will be resampled using a high-quality SincResampler.
-    Vector<OwnPtr<SincResampler>> m_kernels;
+    Vector<std::unique_ptr<SincResampler>> m_kernels;
 
     unsigned m_numberOfChannels;
 };

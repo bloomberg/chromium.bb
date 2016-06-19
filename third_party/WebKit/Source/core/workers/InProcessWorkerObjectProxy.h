@@ -35,8 +35,8 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,16 +55,16 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
     USING_FAST_MALLOC(InProcessWorkerObjectProxy);
     WTF_MAKE_NONCOPYABLE(InProcessWorkerObjectProxy);
 public:
-    static PassOwnPtr<InProcessWorkerObjectProxy> create(InProcessWorkerMessagingProxy*);
+    static std::unique_ptr<InProcessWorkerObjectProxy> create(InProcessWorkerMessagingProxy*);
     ~InProcessWorkerObjectProxy() override { }
 
-    void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
+    void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>);
     void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
 
     // WorkerReportingProxy overrides.
-    void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
+    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override;

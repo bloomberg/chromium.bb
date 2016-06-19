@@ -60,9 +60,11 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
+#include <memory>
 
 namespace blink {
 
@@ -343,9 +345,9 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     m_selfSource = new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
 }
 
-PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
+std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
 {
-    OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>);
+    std::unique_ptr<Vector<CSPHeaderAndType>> headers = wrapUnique(new Vector<CSPHeaderAndType>);
     for (const auto& policy : m_policies) {
         CSPHeaderAndType headerAndType(policy->header(), policy->headerType());
         headers->append(headerAndType);
@@ -808,7 +810,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     if (!SecurityOrigin::isSecure(document->url()) && document->loader())
         init.setStatusCode(document->loader()->response().httpStatusCode());
 
-    OwnPtr<SourceLocation> location = SourceLocation::capture(document);
+    std::unique_ptr<SourceLocation> location = SourceLocation::capture(document);
     if (location->lineNumber()) {
         KURL source = KURL(ParsedURLString, location->url());
         init.setSourceFile(stripURLForUseInReport(document, source, redirectStatus));

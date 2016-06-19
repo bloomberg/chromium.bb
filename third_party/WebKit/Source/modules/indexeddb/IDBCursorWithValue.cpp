@@ -26,17 +26,18 @@
 #include "modules/indexeddb/IDBCursorWithValue.h"
 
 #include "modules/indexeddb/IDBKey.h"
+#include <memory>
 
 using blink::WebIDBCursor;
 
 namespace blink {
 
-IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursorWithValue* IDBCursorWithValue::create(std::unique_ptr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursorWithValue(std::move(backend), direction, request, source, transaction);
 }
 
-IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursorWithValue::IDBCursorWithValue(std::unique_ptr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : IDBCursor(std::move(backend), direction, request, source, transaction)
 {
 }

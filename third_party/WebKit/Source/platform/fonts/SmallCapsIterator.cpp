@@ -4,12 +4,13 @@
 
 #include "SmallCapsIterator.h"
 
+#include "wtf/PtrUtil.h"
 #include <unicode/utypes.h>
 
 namespace blink {
 
 SmallCapsIterator::SmallCapsIterator(const UChar* buffer, unsigned bufferSize)
-    : m_utf16Iterator(adoptPtr(new UTF16TextIterator(buffer, bufferSize)))
+    : m_utf16Iterator(wrapUnique(new UTF16TextIterator(buffer, bufferSize)))
     , m_bufferSize(bufferSize)
     , m_nextUChar32(0)
     , m_atEnd(bufferSize == 0)

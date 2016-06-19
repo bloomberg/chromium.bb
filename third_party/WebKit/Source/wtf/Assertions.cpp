@@ -34,10 +34,10 @@
 #include "wtf/Assertions.h"
 
 #include "wtf/Compiler.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
+#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,7 +115,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format, va_list arg
         return;
     }
 
-    OwnPtr<char[]> formatWithNewline = adoptArrayPtr(new char[formatLength + 2]);
+    std::unique_ptr<char[]> formatWithNewline = wrapArrayUnique(new char[formatLength + 2]);
     memcpy(formatWithNewline.get(), format, formatLength);
     formatWithNewline[formatLength] = '\n';
     formatWithNewline[formatLength + 1] = 0;

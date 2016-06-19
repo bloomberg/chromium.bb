@@ -40,6 +40,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -267,7 +269,7 @@ bool ScrollAnimator::sendAnimationToCompositor()
     if (m_scrollableArea->shouldScrollOnMainThread())
         return false;
 
-    OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
+    std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
     // Being here means that either there is an animation that needs
     // to be sent to the compositor, or an animation that needs to
     // be updated (a new scroll event before the previous animation

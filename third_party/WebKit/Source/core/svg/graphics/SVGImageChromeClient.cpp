@@ -31,6 +31,7 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -39,7 +40,7 @@ static const double animationFrameDelay = 0.025;
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : m_image(image)
     , m_animationTimer(
-        adoptPtr(new Timer<SVGImageChromeClient>(
+        wrapUnique(new Timer<SVGImageChromeClient>(
             this, &SVGImageChromeClient::animationTimerFired)))
     , m_timelineState(Running)
 {
@@ -113,7 +114,7 @@ void SVGImageChromeClient::scheduleAnimation(Widget*)
 
 void SVGImageChromeClient::setTimer(Timer<SVGImageChromeClient>* timer)
 {
-    m_animationTimer = adoptPtr(timer);
+    m_animationTimer = wrapUnique(timer);
 }
 
 void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)

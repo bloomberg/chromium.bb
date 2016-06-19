@@ -29,9 +29,6 @@
 #include "WebRect.h"
 #include "WebSize.h"
 #include "WebVector.h"
-#if INSIDE_BLINK
-#include "wtf/PassOwnPtr.h"
-#endif
 
 namespace blink {
 

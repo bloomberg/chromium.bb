@@ -78,8 +78,10 @@
 #include "platform/PlatformTouchEvent.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -1089,7 +1091,7 @@ void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode
         m_client->setInspectMode(searchMode, searchMode != NotSearching ? highlightConfigFromInspectorObject(errorString, highlightInspectorObject) : nullptr);
 }
 
-PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject)
+std::unique_ptr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject)
 {
     if (!highlightInspectorObject.isJust()) {
         *errorString = "Internal error: highlight configuration parameter is missing";
@@ -1097,7 +1099,7 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     }
 
     protocol::DOM::HighlightConfig* config = highlightInspectorObject.fromJust();
-    OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
+    std::unique_ptr<InspectorHighlightConfig> highlightConfig = wrapUnique(new InspectorHighlightConfig());
     highlightConfig->showInfo = config->getShowInfo(false);
     highlightConfig->showRulers = config->getShowRulers(false);
     highlightConfig->showExtensionLines = config->getShowExtensionLines(false);
@@ -1138,13 +1140,13 @@ void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& m
 
 void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
-    OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad(FloatRect(x, y, width, height)));
+    std::unique_ptr<FloatQuad> quad = wrapUnique(new FloatQuad(FloatRect(x, y, width, height)));
     innerHighlightQuad(std::move(quad), color, outlineColor);
 }
 
 void InspectorDOMAgent::highlightQuad(ErrorString* errorString, std::unique_ptr<protocol::Array<double>> quadArray, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
-    OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad());
+    std::unique_ptr<FloatQuad> quad = wrapUnique(new FloatQuad());
     if (!parseQuad(std::move(quadArray), quad.get())) {
         *errorString = "Invalid Quad format";
         return;
@@ -1152,9 +1154,9 @@ void InspectorDOMAgent::highlightQuad(ErrorString* errorString, std::unique_ptr<
     innerHighlightQuad(std::move(quad), color, outlineColor);
 }
 
-void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
+void InspectorDOMAgent::innerHighlightQuad(std::unique_ptr<FloatQuad> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
-    OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
+    std::unique_ptr<InspectorHighlightConfig> highlightConfig = wrapUnique(new InspectorHighlightConfig());
     highlightConfig->content = parseColor(color.fromMaybe(nullptr));
     highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));
     if (m_client)
@@ -1194,7 +1196,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, std::unique_ptr<
     if (!node)
         return;
 
-    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, std::move(highlightInspectorObject));
+    std::unique_ptr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, std::move(highlightInspectorObject));
     if (!highlightConfig)
         return;
 
@@ -1211,7 +1213,7 @@ void InspectorDOMAgent::highlightFrame(
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     // FIXME: Inspector doesn't currently work cross process.
     if (frame && frame->deprecatedLocalOwner()) {
-        OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
+        std::unique_ptr<InspectorHighlightConfig> highlightConfig = wrapUnique(new InspectorHighlightConfig());
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color.fromMaybe(nullptr));
         highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));

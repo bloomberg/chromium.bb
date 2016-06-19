@@ -34,7 +34,9 @@
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -56,9 +58,9 @@ struct ViewportDescriptionWrapper {
 struct CORE_EXPORT CachedDocumentParameters {
     USING_FAST_MALLOC(CachedDocumentParameters);
 public:
-    static PassOwnPtr<CachedDocumentParameters> create(Document* document)
+    static std::unique_ptr<CachedDocumentParameters> create(Document* document)
     {
-        return adoptPtr(new CachedDocumentParameters(document));
+        return wrapUnique(new CachedDocumentParameters(document));
     }
 
     bool doHtmlPreloadScanning;
@@ -75,7 +77,7 @@ private:
 class TokenPreloadScanner {
     WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); USING_FAST_MALLOC(TokenPreloadScanner);
 public:
-    TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
+    TokenPreloadScanner(const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
     ~TokenPreloadScanner();
 
     void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
@@ -142,7 +144,7 @@ private:
     bool m_isCSPEnabled;
     PictureData m_pictureData;
     size_t m_templateCount;
-    OwnPtr<CachedDocumentParameters> m_documentParameters;
+    std::unique_ptr<CachedDocumentParameters> m_documentParameters;
     Persistent<MediaValuesCached> m_mediaValues;
     ClientHintsPreferences m_clientHintsPreferences;
 
@@ -154,9 +156,9 @@ private:
 class CORE_EXPORT HTMLPreloadScanner {
     WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); USING_FAST_MALLOC(HTMLPreloadScanner);
 public:
-    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
+    static std::unique_ptr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
     {
-        return adoptPtr(new HTMLPreloadScanner(options, documentURL, std::move(documentParameters), mediaValuesCachedData));
+        return wrapUnique(new HTMLPreloadScanner(options, documentURL, std::move(documentParameters), mediaValuesCachedData));
     }
 
 
@@ -166,12 +168,12 @@ public:
     void scanAndPreload(ResourcePreloader*, const KURL& documentBaseElementURL, ViewportDescriptionWrapper*);
 
 private:
-    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
+    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
 
     TokenPreloadScanner m_scanner;
     SegmentedString m_source;
     HTMLToken m_token;
-    OwnPtr<HTMLTokenizer> m_tokenizer;
+    std::unique_ptr<HTMLTokenizer> m_tokenizer;
 };
 
 } // namespace blink

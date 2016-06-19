@@ -9,6 +9,8 @@
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/testing/CompositorTest.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -17,12 +19,12 @@ class CompositorAnimationTimelineTest : public CompositorTest {
 
 TEST_F(CompositorAnimationTimelineTest, CompositorTimelineDeletionDetachesFromAnimationHost)
 {
-    OwnPtr<CompositorAnimationTimeline> timeline = CompositorAnimationTimeline::create();
+    std::unique_ptr<CompositorAnimationTimeline> timeline = CompositorAnimationTimeline::create();
 
     scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();
     EXPECT_FALSE(ccTimeline->animation_host());
 
-    OwnPtr<WebLayerTreeView> layerTreeHost = adoptPtr(new WebLayerTreeViewImplForTesting);
+    std::unique_ptr<WebLayerTreeView> layerTreeHost = wrapUnique(new WebLayerTreeViewImplForTesting);
     DCHECK(layerTreeHost);
 
     layerTreeHost->attachCompositorAnimationTimeline(timeline->animationTimeline());

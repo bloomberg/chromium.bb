@@ -17,6 +17,8 @@
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 namespace {
@@ -37,7 +39,7 @@ protected:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
 
         // Delay constructing the compositor until after the feature is set.
-        m_paintArtifactCompositor = adoptPtr(new PaintArtifactCompositor);
+        m_paintArtifactCompositor = wrapUnique(new PaintArtifactCompositor);
     }
 
     void TearDown() override
@@ -51,7 +53,7 @@ protected:
 
 private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
-    OwnPtr<PaintArtifactCompositor> m_paintArtifactCompositor;
+    std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
 };
 
 TEST_F(PaintArtifactCompositorTest, EmptyPaintArtifact)
@@ -385,7 +387,7 @@ protected:
         cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();
         settings.single_thread_proxy_scheduler = false;
         settings.use_layer_lists = true;
-        m_webLayerTreeView = adoptPtr(new WebLayerTreeViewWithOutputSurface(settings));
+        m_webLayerTreeView = wrapUnique(new WebLayerTreeViewWithOutputSurface(settings));
         m_webLayerTreeView->setRootLayer(*getPaintArtifactCompositor().getWebLayer());
     }
 
@@ -403,7 +405,7 @@ protected:
 private:
     scoped_refptr<base::TestSimpleTaskRunner> m_taskRunner;
     base::ThreadTaskRunnerHandle m_taskRunnerHandle;
-    OwnPtr<WebLayerTreeViewWithOutputSurface> m_webLayerTreeView;
+    std::unique_ptr<WebLayerTreeViewWithOutputSurface> m_webLayerTreeView;
 };
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EmptyPaintArtifact)

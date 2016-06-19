@@ -6,6 +6,7 @@
 
 #include "core/style/StylePath.h"
 #include "core/svg/SVGPathUtilities.h"
+#include <memory>
 
 namespace blink {
 
@@ -14,7 +15,7 @@ CSSPathValue* CSSPathValue::create(PassRefPtr<StylePath> stylePath)
     return new CSSPathValue(stylePath);
 }
 
-CSSPathValue* CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+CSSPathValue* CSSPathValue::create(std::unique_ptr<SVGPathByteStream> pathByteStream)
 {
     return CSSPathValue::create(StylePath::create(std::move(pathByteStream)));
 }
@@ -30,7 +31,7 @@ namespace {
 
 CSSPathValue* createPathValue()
 {
-    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
+    std::unique_ptr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     // Need to be registered as LSan ignored, as it will be reachable and
     // separately referred to by emptyPathValue() callers.
     LEAK_SANITIZER_IGNORE_OBJECT(pathByteStream.get());

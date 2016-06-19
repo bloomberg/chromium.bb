@@ -30,7 +30,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

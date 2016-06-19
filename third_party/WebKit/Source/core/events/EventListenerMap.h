@@ -38,7 +38,6 @@
 #include "core/events/EventListenerOptions.h"
 #include "core/events/RegisteredEventListener.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
