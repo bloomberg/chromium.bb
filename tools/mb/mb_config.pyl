@@ -71,9 +71,9 @@
       'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gn',
       'ChromiumOS daisy Compile': 'cros_chrome_sdk_gn',
       'ChromiumOS x86-generic Compile': 'cros_chrome_sdk_gn',
-      'Linux ChromiumOS Builder': 'swarming_chromeos_gyp_release_bot',
-      'Linux ChromiumOS Builder (dbg)': 'swarming_chromeos_gyp_debug_bot',
-      'Linux ChromiumOS Full': 'swarming_chromeos_gyp_release_bot',
+      'Linux ChromiumOS Builder': 'swarming_chromeos_gn_release_bot',
+      'Linux ChromiumOS Builder (dbg)': 'swarming_chromeos_gn_debug_bot',
+      'Linux ChromiumOS Full': 'swarming_chromeos_gn_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
       'Linux ChromiumOS GN': 'chromeos_ozone_gn_release_bot',
       'Linux ChromiumOS Ozone Builder':
@@ -733,16 +733,16 @@
         'swarming_asan_lsan_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_asan_variable': 'findit',
       'linux_chromium_chromeos_compile_dbg_ng':
-        'swarming_chromeos_gyp_debug_trybot',
+        'swarming_chromeos_gn_debug_trybot',
       'linux_chromium_chromeos_compile_rel_ng':
         'swarming_chromeos_gn_release_trybot',
       'linux_chromium_chromeos_dbg_ng':
-        'swarming_chromeos_gyp_debug_trybot',
+        'swarming_chromeos_gn_debug_trybot',
       'linux_chromium_chromeos_msan_rel_ng':
         'swarming_chromeos_msan_gyp_release_trybot',
       'linux_chromium_chromeos_ozone_rel_ng':
         'swarming_chromeos_gyp_ozone_release_trybot',
-      'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
+      'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gn_release_trybot',
       'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
@@ -1510,28 +1510,24 @@
       'swarming', 'asan', 'lsan', 'gn', 'release_trybot',
     ],
 
-    'swarming_chromeos_gn_release_trybot': [
-      'swarming', 'chromeos_with_codecs', 'gn', 'release_trybot',
+    'swarming_chromeos_gn_debug_bot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'debug_bot',
     ],
 
-    'swarming_chromeos_gyp_debug_bot': [
-      'swarming', 'chromeos_with_codecs', 'gyp', 'debug_bot',
-    ],
-
-    'swarming_chromeos_gyp_debug_trybot': [
-      'swarming', 'chromeos_with_codecs', 'gyp', 'debug_trybot',
+    'swarming_chromeos_gn_debug_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'debug_trybot',
     ],
 
     'swarming_chromeos_gyp_ozone_release_trybot': [
       'swarming', 'chromeos_with_codecs', 'gyp', 'ozone', 'release_trybot',
     ],
 
-    'swarming_chromeos_gyp_release_bot': [
-      'swarming', 'chromeos_with_codecs', 'gyp', 'release_bot',
+    'swarming_chromeos_gn_release_bot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'release_bot',
     ],
 
-    'swarming_chromeos_gyp_release_trybot': [
-      'swarming', 'chromeos_with_codecs', 'gyp', 'release_trybot',
+    'swarming_chromeos_gn_release_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'release_trybot',
     ],
 
     'swarming_chromeos_msan_gyp_release_trybot': [
@@ -1539,7 +1535,7 @@
     ],
 
     'swarming_chromeos_ozone_gyp_release_bot': [
-      'chromeos_with_codecs', 'goma', 'gyp', 'ozone', 'static', 'swarming',
+      'swarming', 'chromeos_with_codecs', 'ozone', 'gyp', 'release_bot',
     ],
 
     'swarming_clang_tot_lld_release_shared': [

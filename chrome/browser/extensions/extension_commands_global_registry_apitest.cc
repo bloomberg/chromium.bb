@@ -126,7 +126,7 @@ void SendNativeCommandShift(int key_code) {
 #else
 #define MAYBE_GlobalCommand GlobalCommand
 #endif
-IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, GlobalCommand) {
+IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // Load the extension in the non-incognito browser.
   ResultCatcher catcher;
   ASSERT_TRUE(RunExtensionTest("keybinding/global")) << message_;
