@@ -30,11 +30,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
 
     # Passing tests, waiting to be turned on when sharding is implemented.
+    self.Skip('deqp/functional/gles3/draw/*', bug=1)
     self.Skip('deqp/functional/gles3/shadermatrix/*', bug=1)
 
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/draw.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbocolorbuffer/*.html', bug=618408)
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
@@ -70,7 +70,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'basic_copyteximage2d.html',
         ['win'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/transformfeedback.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['win'], bug=483282)
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['win'], bug=483282)
@@ -337,7 +337,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=598930)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
@@ -361,7 +361,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderderivate.html',
         ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
@@ -446,7 +446,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['linux', 'nvidia', 'opengl'], bug=618408)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['linux', 'nvidia', 'opengl'], bug=618408)
@@ -510,7 +510,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/negativebufferapi.html',
         ['linux', 'amd'], bug=483282)
