@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/renderer.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,6 +20,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class DemuxerStreamProvider;
+class MojoDemuxerStreamImpl;
 class VideoOverlayFactory;
 class VideoRendererSink;
 
@@ -73,6 +75,9 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   // Callback for connection error on |remote_renderer_|.
   void OnConnectionError();
 
+  // Callback for connection error on |audio_stream_| and |video_stream_|.
+  void OnDemuxerStreamConnectionError(DemuxerStream::Type type);
+
   // Callbacks for |remote_renderer_| methods.
   void OnInitialized(media::RendererClient* client, bool success);
   void OnFlushed();
@@ -98,6 +103,15 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
 
   // Client of |this| renderer passed in Initialize.
   media::RendererClient* client_ = nullptr;
+
+  // Mojo demuxer streams.
+  // Owned by MojoRendererImpl instead of remote mojom::Renderer
+  // becuase these demuxer streams need to be destroyed as soon as |this| is
+  // destroyed. The local demuxer streams returned by DemuxerStreamProvider
+  // cannot be used after |this| is destroyed.
+  // TODO(alokp): Add tests for MojoDemuxerStreamImpl.
+  std::unique_ptr<MojoDemuxerStreamImpl> audio_stream_;
+  std::unique_ptr<MojoDemuxerStreamImpl> video_stream_;
 
   // This class is constructed on one thread and used exclusively on another
   // thread. This member is used to safely pass the RendererPtr from one thread

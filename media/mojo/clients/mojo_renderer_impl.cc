@@ -63,12 +63,28 @@ void MojoRendererImpl::Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 
   mojom::DemuxerStreamPtr audio_stream;
-  if (audio)
-    new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream));
+  if (audio) {
+    audio_stream_.reset(
+        new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream)));
+    // Using base::Unretained(this) is safe because |this| owns
+    // |audio_stream_|, and the error handler can't be invoked once
+    // |audio_stream_| is destroyed.
+    audio_stream_->set_connection_error_handler(
+        base::Bind(&MojoRendererImpl::OnDemuxerStreamConnectionError,
+                   base::Unretained(this), DemuxerStream::AUDIO));
+  }
 
   mojom::DemuxerStreamPtr video_stream;
-  if (video)
-    new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
+  if (video) {
+    video_stream_.reset(
+        new MojoDemuxerStreamImpl(video, GetProxy(&video_stream)));
+    // Using base::Unretained(this) is safe because |this| owns
+    // |video_stream_|, and the error handler can't be invoked once
+    // |video_stream_| is destroyed.
+    video_stream_->set_connection_error_handler(
+        base::Bind(&MojoRendererImpl::OnDemuxerStreamConnectionError,
+                   base::Unretained(this), DemuxerStream::VIDEO));
+  }
 
   BindRemoteRendererIfNeeded();
 
@@ -233,6 +249,20 @@ void MojoRendererImpl::OnConnectionError() {
 
   if (client_)
     client_->OnError(PIPELINE_ERROR_DECODE);
+}
+
+void MojoRendererImpl::OnDemuxerStreamConnectionError(
+    DemuxerStream::Type type) {
+  DVLOG(1) << __FUNCTION__ << ": " << type;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (type == DemuxerStream::AUDIO) {
+    audio_stream_.reset();
+  } else if (type == DemuxerStream::VIDEO) {
+    video_stream_.reset();
+  } else {
+    NOTREACHED() << "Unexpected demuxer stream type: " << type;
+  }
 }
 
 void MojoRendererImpl::BindRemoteRendererIfNeeded() {

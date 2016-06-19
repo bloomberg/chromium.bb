@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 class DemuxerStream;
@@ -31,12 +31,18 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
   void Read(const ReadCallback& callback) override;
   void EnableBitstreamConverter() override;
 
+  // Sets an error handler that will be called if a connection error occurs on
+  // the bound message pipe.
+  void set_connection_error_handler(const mojo::Closure& error_handler) {
+    binding_.set_connection_error_handler(error_handler);
+  }
+
  private:
   void OnBufferReady(const ReadCallback& callback,
                      media::DemuxerStream::Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
 
-  mojo::StrongBinding<mojom::DemuxerStream> binding_;
+  mojo::Binding<mojom::DemuxerStream> binding_;
 
   // See constructor.  We do not own |stream_|.
   media::DemuxerStream* stream_;
