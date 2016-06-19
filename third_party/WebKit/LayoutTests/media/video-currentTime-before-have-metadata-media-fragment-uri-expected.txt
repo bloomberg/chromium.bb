@@ -1,6 +1,0 @@
-EXPECTED (video.currentTime == '0') OK
-EVENT(loadedmetadata)
-EXPECTED (video.currentTime == '1') OK
-EVENT(seeked)
-END OF TEST
-
