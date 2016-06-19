@@ -31,7 +31,7 @@ class DirectoryImpl : public mojom::Directory {
                 scoped_refptr<LockTable> lock_table);
   ~DirectoryImpl() override;
 
-  void set_connection_error_handler(const mojo::Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     binding_.set_connection_error_handler(error_handler);
   }
 

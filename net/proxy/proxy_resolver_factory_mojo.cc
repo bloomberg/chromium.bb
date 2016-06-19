@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -353,8 +354,8 @@ class ProxyResolverFactoryMojo::Job
 
  private:
   void ReportResult(int32_t error) override {
-    resolver_ptr_.set_connection_error_handler(mojo::Closure());
-    binding_.set_connection_error_handler(mojo::Closure());
+    resolver_ptr_.set_connection_error_handler(base::Closure());
+    binding_.set_connection_error_handler(base::Closure());
     if (error == OK) {
       resolver_->reset(new ProxyResolverMojo(
           std::move(resolver_ptr_), factory_->host_resolver_,

@@ -389,18 +389,18 @@ void ArcBluetoothBridge::CancelDiscovery() {
 }
 
 void ArcBluetoothBridge::OnPoweredOn(
-    const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
+    const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
   callback.Run(mojom::BluetoothAdapterState::ON);
   SendCachedPairedDevices();
 }
 
 void ArcBluetoothBridge::OnPoweredOff(
-    const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
+    const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
   callback.Run(mojom::BluetoothAdapterState::OFF);
 }
 
 void ArcBluetoothBridge::OnPoweredError(
-    const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
+    const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const {
   LOG(WARNING) << "failed to change power state";
 
   callback.Run(bluetooth_adapter_->IsPowered()

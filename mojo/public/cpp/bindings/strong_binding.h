@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
@@ -99,7 +99,7 @@ class StrongBinding {
   //
   // This method may only be called after this StrongBinding has been bound to a
   // message pipe.
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(binding_.is_bound());
     connection_error_handler_ = error_handler;
   }
@@ -115,7 +115,7 @@ class StrongBinding {
   }
 
  private:
-  Closure connection_error_handler_;
+  base::Closure connection_error_handler_;
   Binding<Interface> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(StrongBinding);

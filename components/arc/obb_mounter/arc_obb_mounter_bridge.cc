@@ -14,8 +14,8 @@ namespace arc {
 namespace {
 
 // Used to convert mojo Callback to VoidDBusMethodCallback.
-void RunMojoCallback(const mojo::Callback<void(bool)>& callback,
-                     chromeos::DBusMethodCallStatus result) {
+void RunObbCallback(const base::Callback<void(bool)>& callback,
+                    chromeos::DBusMethodCallStatus result) {
   callback.Run(result == chromeos::DBUS_METHOD_CALL_SUCCESS);
 }
 
@@ -43,13 +43,13 @@ void ArcObbMounterBridge::MountObb(const mojo::String& obb_file,
                                    const MountObbCallback& callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->MountObb(
       obb_file.get(), target_path.get(), owner_gid,
-      base::Bind(&RunMojoCallback, callback));
+      base::Bind(&RunObbCallback, callback));
 }
 
 void ArcObbMounterBridge::UnmountObb(const mojo::String& target_path,
                                      const UnmountObbCallback& callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->UnmountObb(
-      target_path.get(), base::Bind(&RunMojoCallback, callback));
+      target_path.get(), base::Bind(&RunObbCallback, callback));
 }
 
 }  // namespace arc

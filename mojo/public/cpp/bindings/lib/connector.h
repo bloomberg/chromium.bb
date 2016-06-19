@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/core.h"
@@ -67,7 +67,7 @@ class Connector : public MessageReceiver {
 
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
     connection_error_handler_ = error_handler;
   }
@@ -173,7 +173,7 @@ class Connector : public MessageReceiver {
 
   void EnsureSyncWatcherExists();
 
-  Closure connection_error_handler_;
+  base::Closure connection_error_handler_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;

@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/server_window_surface.h"
 
+#include "base/callback.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
@@ -17,7 +18,7 @@ namespace mus {
 namespace ws {
 namespace {
 
-void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
+void CallCallback(const base::Closure& callback, cc::SurfaceDrawStatus status) {
   callback.Run();
 }
 

@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -64,7 +65,7 @@ class ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
   using SyncCallback =
-      mojo::Callback<void(blink::mojom::ServiceWorkerEventStatus)>;
+      base::Callback<void(blink::mojom::ServiceWorkerEventStatus)>;
 
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.

@@ -7,11 +7,11 @@
 
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -212,7 +212,7 @@ class Binding {
   // This method may only be called after this Binding has been bound to a
   // message pipe. The error handler will be reset when this Binding is unbound
   // or closed.
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
     internal_state_.set_connection_error_handler(error_handler);
   }

@@ -10,13 +10,13 @@
 
 #include <unordered_map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
@@ -33,7 +33,7 @@ class MojoDecryptorService : public mojom::Decryptor {
   // |error_handler| will be called if a connection error occurs.
   MojoDecryptorService(const scoped_refptr<MediaKeys>& cdm,
                        mojo::InterfaceRequest<mojom::Decryptor> request,
-                       const mojo::Closure& error_handler);
+                       const base::Closure& error_handler);
 
   ~MojoDecryptorService() final;
 

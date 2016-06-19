@@ -280,7 +280,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
   }
 
-  void ExpectNewSessionMojoCallbackSuccess(
+  void ExpectNewSessionCallbackSuccess(
       blink::mojom::PresentationSessionInfoPtr info,
       blink::mojom::PresentationErrorPtr error) {
     EXPECT_FALSE(info.is_null());
@@ -289,7 +289,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       run_loop_quit_closure_.Run();
   }
 
-  void ExpectNewSessionMojoCallbackError(
+  void ExpectNewSessionCallbackError(
       blink::mojom::PresentationSessionInfoPtr info,
       blink::mojom::PresentationErrorPtr error) {
     EXPECT_TRUE(info.is_null());
@@ -308,7 +308,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     }
   }
 
-  void ExpectSendMessageMojoCallback(bool success) {
+  void ExpectSendSessionMessageCallback(bool success) {
     EXPECT_TRUE(success);
     EXPECT_FALSE(service_impl_->send_message_callback_);
     if (!run_loop_quit_closure_.is_null())
@@ -545,7 +545,7 @@ TEST_F(PresentationServiceImplTest, StartSessionSuccess) {
   service_ptr_->StartSession(
       kPresentationUrl,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackSuccess,
+          &PresentationServiceImplTest::ExpectNewSessionCallbackSuccess,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationSessionInfo&)> success_cb;
@@ -565,7 +565,7 @@ TEST_F(PresentationServiceImplTest, StartSessionError) {
   service_ptr_->StartSession(
       kPresentationUrl,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+          &PresentationServiceImplTest::ExpectNewSessionCallbackError,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationError&)> error_cb;
@@ -583,7 +583,7 @@ TEST_F(PresentationServiceImplTest, JoinSessionSuccess) {
       kPresentationUrl,
       kPresentationId,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackSuccess,
+          &PresentationServiceImplTest::ExpectNewSessionCallbackSuccess,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationSessionInfo&)> success_cb;
@@ -605,7 +605,7 @@ TEST_F(PresentationServiceImplTest, JoinSessionError) {
       kPresentationUrl,
       kPresentationId,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+          &PresentationServiceImplTest::ExpectNewSessionCallbackError,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationError&)> error_cb;
@@ -666,7 +666,7 @@ TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
   service_ptr_->StartSession(
       presentation_url2,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+          &PresentationServiceImplTest::ExpectNewSessionCallbackError,
           base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
 }
@@ -684,7 +684,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
   message_request->message = message;
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
-      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+      base::Bind(&PresentationServiceImplTest::ExpectSendSessionMessageCallback,
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
@@ -722,7 +722,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
-      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+      base::Bind(&PresentationServiceImplTest::ExpectSendSessionMessageCallback,
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
@@ -766,7 +766,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
-      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+      base::Bind(&PresentationServiceImplTest::ExpectSendSessionMessageCallback,
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
@@ -797,7 +797,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
-      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+      base::Bind(&PresentationServiceImplTest::ExpectSendSessionMessageCallback,
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
@@ -841,7 +841,7 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
         base::StringPrintf(presentation_url, i),
         base::StringPrintf(presentation_id, i),
         base::Bind(
-            &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+            &PresentationServiceImplTest::ExpectNewSessionCallbackError,
             base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
 }

@@ -89,7 +89,7 @@ void ReportValidationError(ValidationContext* context,
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(
-    const Callback<void()>& callback)
+    const base::Closure& callback)
     : last_error_(VALIDATION_ERROR_NONE), callback_(callback) {
   DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;

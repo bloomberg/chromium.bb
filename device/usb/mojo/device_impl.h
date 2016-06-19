@@ -16,7 +16,6 @@
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

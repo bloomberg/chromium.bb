@@ -10,6 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,15 +26,13 @@ namespace {
 class MessageAccumulator : public MessageReceiver {
  public:
   MessageAccumulator() {}
-  explicit MessageAccumulator(const Closure& closure) : closure_(closure) {}
+  explicit MessageAccumulator(const base::Closure& closure)
+      : closure_(closure) {}
 
   bool Accept(Message* message) override {
     queue_.Push(message);
-    if (!closure_.is_null()) {
-      Closure closure = closure_;
-      closure_.Reset();
-      closure.Run();
-    }
+    if (!closure_.is_null())
+      base::ResetAndReturn(&closure_).Run();
     return true;
   }
 
@@ -40,13 +40,13 @@ class MessageAccumulator : public MessageReceiver {
 
   void Pop(Message* message) { queue_.Pop(message); }
 
-  void set_closure(const Closure& closure) { closure_ = closure; }
+  void set_closure(const base::Closure& closure) { closure_ = closure; }
 
   size_t size() const { return queue_.size(); }
 
  private:
   MessageQueue queue_;
-  Closure closure_;
+  base::Closure closure_;
 };
 
 class ConnectorDeletingMessageAccumulator : public MessageAccumulator {

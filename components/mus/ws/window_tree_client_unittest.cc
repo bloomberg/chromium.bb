@@ -19,7 +19,6 @@
 #include "services/shell/public/cpp/shell_test.h"
 
 using mojo::Array;
-using mojo::Callback;
 using shell::Connection;
 using mojo::InterfaceRequest;
 using shell::ShellClient;

@@ -24,7 +24,7 @@ namespace media {
 MojoDecryptorService::MojoDecryptorService(
     const scoped_refptr<MediaKeys>& cdm,
     mojo::InterfaceRequest<mojom::Decryptor> request,
-    const mojo::Closure& error_handler)
+    const base::Closure& error_handler)
     : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
   decryptor_ = cdm->GetCdmContext()->GetDecryptor();

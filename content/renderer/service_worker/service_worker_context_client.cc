@@ -172,7 +172,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
   using SkipWaitingCallbacksMap =
       IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
   using SyncEventCallbacksMap =
-      IDMap<const mojo::Callback<void(blink::mojom::ServiceWorkerEventStatus)>,
+      IDMap<const base::Callback<void(blink::mojom::ServiceWorkerEventStatus)>,
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)

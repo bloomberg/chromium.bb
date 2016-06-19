@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/bluetooth.mojom.h"
@@ -190,11 +191,11 @@ class ArcBluetoothBridge
 
   // Chrome observer callbacks
   void OnPoweredOn(
-      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
+      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnPoweredOff(
-      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
+      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnPoweredError(
-      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
+      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryStopped();
@@ -228,14 +229,14 @@ class ArcBluetoothBridge
       const StopLEListenCallback& callback,
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  using GattReadCallback = mojo::Callback<void(mojom::BluetoothGattValuePtr)>;
+  using GattReadCallback = base::Callback<void(mojom::BluetoothGattValuePtr)>;
   void OnGattReadDone(const GattReadCallback& callback,
                       const std::vector<uint8_t>& result) const;
   void OnGattReadError(
       const GattReadCallback& callback,
       device::BluetoothGattService::GattErrorCode error_code) const;
 
-  using GattWriteCallback = mojo::Callback<void(mojom::BluetoothGattStatus)>;
+  using GattWriteCallback = base::Callback<void(mojom::BluetoothGattStatus)>;
   void OnGattWriteDone(const GattWriteCallback& callback) const;
   void OnGattWriteError(
       const GattWriteCallback& callback,

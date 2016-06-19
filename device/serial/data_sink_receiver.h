@@ -52,10 +52,10 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
 
   ~DataSinkReceiver() override;
 
-  // mojo::InterfaceImpl<serial::DataSink> overrides.
+  // serial::DataSink overrides.
   void Cancel(int32_t error) override;
   void OnData(mojo::Array<uint8_t> data,
-              const mojo::Callback<void(uint32_t, int32_t)>& callback) override;
+              const OnDataCallback& callback) override;
   void ClearError() override;
 
   void OnConnectionError();

@@ -5,6 +5,7 @@
 #ifndef SERVICES_USER_USER_SHELL_CLIENT_H_
 #define SERVICES_USER_USER_SHELL_CLIENT_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"

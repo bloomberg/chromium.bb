@@ -170,8 +170,7 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
     workers_to_go_ = 0;
   }
 
-  void GetUsageData(const mojo::Callback<void(mojom::ResourceUsageDataPtr)>&
-                        callback) override {
+  void GetUsageData(const GetUsageDataCallback& callback) override {
     DCHECK(callback_.is_null());
     weak_factory_.InvalidateWeakPtrs();
     usage_data_ = mojom::ResourceUsageData::New();
@@ -215,7 +214,7 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   }
 
   mojom::ResourceUsageDataPtr usage_data_;
-  mojo::Callback<void(mojom::ResourceUsageDataPtr)> callback_;
+  GetUsageDataCallback callback_;
   int workers_to_go_;
   mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
   base::WeakPtr<ChromeRenderThreadObserver> observer_;

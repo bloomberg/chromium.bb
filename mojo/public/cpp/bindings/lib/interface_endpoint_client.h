@@ -10,13 +10,13 @@
 #include <map>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -46,7 +46,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   // Sets the error handler to receive notifications when an error is
   // encountered.
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
     error_handler_ = error_handler;
   }
@@ -139,7 +139,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   uint64_t next_request_id_;
 
-  Closure error_handler_;
+  base::Closure error_handler_;
   bool encountered_error_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

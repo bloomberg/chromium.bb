@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -95,7 +95,7 @@ class BindingState<Interface, false> {
     return std::move(request);
   }
 
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
@@ -118,7 +118,7 @@ class BindingState<Interface, false> {
 
  private:
   void DestroyRouter() {
-    router_->set_connection_error_handler(Closure());
+    router_->set_connection_error_handler(base::Closure());
     delete router_;
     router_ = nullptr;
     connection_error_handler_.Reset();
@@ -132,7 +132,7 @@ class BindingState<Interface, false> {
   internal::Router* router_ = nullptr;
   typename Interface::Stub_ stub_;
   Interface* impl_;
-  Closure connection_error_handler_;
+  base::Closure connection_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingState);
 };
@@ -204,7 +204,7 @@ class BindingState<Interface, true> {
     return request;
   }
 
-  void set_connection_error_handler(const Closure& error_handler) {
+  void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
@@ -238,7 +238,7 @@ class BindingState<Interface, true> {
 
   typename Interface::Stub_ stub_;
   Interface* impl_;
-  Closure connection_error_handler_;
+  base::Closure connection_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingState);
 };

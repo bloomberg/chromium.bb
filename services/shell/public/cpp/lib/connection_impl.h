@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/capabilities.h"
 #include "services/shell/public/cpp/connection.h"
@@ -49,7 +50,7 @@ class ConnectionImpl : public Connection {
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
   uint32_t GetRemoteInstanceID() const override;
-  void AddConnectionCompletedClosure(const mojo::Closure& callback) override;
+  void AddConnectionCompletedClosure(const base::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
   mojom::InterfaceProvider* GetRemoteInterfaceProvider() override;
   InterfaceRegistry* GetInterfaceRegistry() override;
@@ -66,7 +67,7 @@ class ConnectionImpl : public Connection {
 
   State state_;
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
-  std::vector<mojo::Closure> connection_completed_callbacks_;
+  std::vector<base::Closure> connection_completed_callbacks_;
 
   InterfaceRegistry interfaces_;
   RemoteInterfaceRegistry remote_interfaces_;

@@ -41,11 +41,9 @@ class GeolocationServiceImpl : public blink::mojom::GeolocationService {
   void ClearOverride();
 
  private:
-  typedef mojo::Callback<void(blink::mojom::GeopositionPtr)> PositionCallback;
-
   // blink::mojom::GeolocationService:
   void SetHighAccuracy(bool high_accuracy) override;
-  void QueryNextPosition(const PositionCallback& callback) override;
+  void QueryNextPosition(const QueryNextPositionCallback& callback) override;
 
   void OnConnectionError();
 
@@ -64,7 +62,7 @@ class GeolocationServiceImpl : public blink::mojom::GeolocationService {
   base::Closure update_callback_;
 
   // The callback passed to QueryNextPosition.
-  PositionCallback position_callback_;
+  QueryNextPositionCallback position_callback_;
 
   // Valid iff SetOverride() has been called and ClearOverride() has not
   // subsequently been called.

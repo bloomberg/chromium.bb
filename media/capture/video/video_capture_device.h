@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -30,7 +31,6 @@
 #include "media/base/video_frame.h"
 #include "media/capture/video/scoped_result_callback.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace tracked_objects {
@@ -315,7 +315,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // and/or interrupting the capture flow. Runs |callback| on the thread
   // where TakePhoto() is called, if the photo was successfully taken.
   using TakePhotoCallback =
-      mojo::Callback<void(mojo::String, mojo::Array<uint8_t>)>;
+      base::Callback<void(mojo::String, mojo::Array<uint8_t>)>;
   virtual void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback);
 
   // Gets the power line frequency, either from the params if specified by the
