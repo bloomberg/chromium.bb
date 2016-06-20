@@ -80,7 +80,10 @@ void BitmapUploader::Upload() {
   frame->resources.resize(0u);
 
   pass->quads.resize(0u);
-  pass->shared_quad_states.push_back(mojo::CreateDefaultSQS(bounds.size()));
+  // The SharedQuadState is owned by the SharedQuadStateList shared_quad_states.
+  cc::SharedQuadState* sqs =
+      pass->shared_quad_states.AllocateAndConstruct<cc::SharedQuadState>();
+  mojo::ConfigureSharedQuadState(bounds.size(), sqs);
 
   if (bitmap_.get()) {
     gpu::gles2::GLES2Interface* gl = gles2_context_->interface();

@@ -151,5 +151,5 @@ struct RenderPass {
   gfx.mojom.Transform transform_to_root_target;
   bool has_transparent_background;
   array<DrawQuad> quads;
-  array<cc.mojom.SharedQuadState> shared_quad_states;
+  cc.mojom.SharedQuadStateList shared_quad_states;
 };

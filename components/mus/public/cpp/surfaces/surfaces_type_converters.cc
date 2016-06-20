@@ -307,8 +307,6 @@ RenderPassPtr TypeConverter<RenderPassPtr, cc::RenderPass>::Convert(
   pass->transform_to_root_target = input.transform_to_root_target;
   pass->has_transparent_background = input.has_transparent_background;
   Array<DrawQuadPtr> quads(input.quad_list.size());
-  Array<cc::SharedQuadState> shared_quad_state(
-      input.shared_quad_state_list.size());
   const cc::SharedQuadState* last_sqs = nullptr;
   cc::SharedQuadStateList::ConstIterator next_sqs_iter =
       input.shared_quad_state_list.begin();
@@ -317,7 +315,7 @@ RenderPassPtr TypeConverter<RenderPassPtr, cc::RenderPass>::Convert(
     const cc::DrawQuad& quad = **iter;
     quads[iter.index()] = DrawQuad::From(quad);
     if (quad.shared_quad_state != last_sqs) {
-      shared_quad_state[next_sqs_iter.index()] = **next_sqs_iter;
+      pass->shared_quad_states.AllocateAndCopyFrom(*next_sqs_iter);
       last_sqs = *next_sqs_iter;
       ++next_sqs_iter;
     }
@@ -326,9 +324,8 @@ RenderPassPtr TypeConverter<RenderPassPtr, cc::RenderPass>::Convert(
         static_cast<uint32_t>(next_sqs_iter.index() - 1);
   }
   // We should copy all shared quad states.
-  DCHECK_EQ(next_sqs_iter.index(), shared_quad_state.size());
+  DCHECK_EQ(next_sqs_iter.index(), pass->shared_quad_states.size());
   pass->quads = std::move(quads);
-  pass->shared_quad_states = std::move(shared_quad_state);
   return pass;
 }
 
@@ -341,10 +338,7 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
   pass->SetAll(input->id, input->output_rect, input->damage_rect,
                input->transform_to_root_target,
                input->has_transparent_background);
-  for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
-    cc::SharedQuadState* state = pass->CreateAndAppendSharedQuadState();
-    *state = input->shared_quad_states[i];
-  }
+  pass->shared_quad_state_list = std::move(input->shared_quad_states);
   cc::SharedQuadStateList::Iterator sqs_iter =
       pass->shared_quad_state_list.begin();
   for (size_t i = 0; i < input->quads.size(); ++i) {

@@ -13,16 +13,14 @@ using cc::mojom::RenderPassPtr;
 
 namespace mojo {
 
-cc::SharedQuadState CreateDefaultSQS(const gfx::Size& size) {
-  cc::SharedQuadState sqs;
-  sqs.quad_layer_bounds = size;
-  sqs.visible_quad_layer_rect = gfx::Rect(size);
-  sqs.clip_rect = gfx::Rect(size);
-  sqs.is_clipped = false;
-  sqs.opacity = 1.f;
-  sqs.blend_mode = SkXfermode::kSrc_Mode;
-  sqs.sorting_context_id = 0;
-  return sqs;
+void ConfigureSharedQuadState(const gfx::Size& size, cc::SharedQuadState* out) {
+  out->quad_layer_bounds = size;
+  out->visible_quad_layer_rect = gfx::Rect(size);
+  out->clip_rect = gfx::Rect(size);
+  out->is_clipped = false;
+  out->opacity = 1.f;
+  out->blend_mode = SkXfermode::kSrc_Mode;
+  out->sorting_context_id = 0;
 }
 
 RenderPassPtr CreateDefaultPass(int id, const gfx::Rect& rect) {

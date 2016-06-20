@@ -152,7 +152,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   mus_pass->id.layer_id = 1;
   mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
-  mus_pass->shared_quad_states.push_back(cc::SharedQuadState());
+  mus_pass->shared_quad_states.AllocateAndConstruct<cc::SharedQuadState>();
 
   std::unique_ptr<cc::RenderPass> pass =
       mus_pass.To<std::unique_ptr<cc::RenderPass>>();

@@ -19,8 +19,9 @@ class Size;
 
 namespace mojo {
 
-MOJO_SURFACES_EXPORT cc::SharedQuadState CreateDefaultSQS(
-    const gfx::Size& size);
+// Initializes the SharedQuadState |out| to a visible quad rect of |size|.
+MOJO_SURFACES_EXPORT void ConfigureSharedQuadState(const gfx::Size& size,
+                                                   cc::SharedQuadState* out);
 
 // Constructs a pass with the given id, output_rect and damage_rect set to rect,
 // transform_to_root_target set to identity and has_transparent_background set
