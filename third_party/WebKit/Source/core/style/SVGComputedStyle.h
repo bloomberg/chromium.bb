@@ -84,7 +84,6 @@ public:
     static Color initialFloodColor() { return Color(0, 0, 0); }
     static Color initialLightingColor() { return Color(255, 255, 255); }
     static const AtomicString& initialClipperResource() { return nullAtom; }
-    static const AtomicString& initialFilterResource() { return nullAtom; }
     static const AtomicString& initialMaskerResource() { return nullAtom; }
     static const AtomicString& initialMarkerStartResource() { return nullAtom; }
     static const AtomicString& initialMarkerMidResource() { return nullAtom; }
@@ -276,12 +275,6 @@ public:
             resources.access()->clipper = obj;
     }
 
-    void setFilterResource(const AtomicString& obj)
-    {
-        if (!(resources->filter == obj))
-            resources.access()->filter = obj;
-    }
-
     void setMaskerResource(const AtomicString& obj)
     {
         if (!(resources->masker == obj))
@@ -349,7 +342,6 @@ public:
     const Length& rx() const { return geometry->rx; }
     const Length& ry() const { return geometry->ry; }
     const AtomicString& clipperResource() const { return resources->clipper; }
-    const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }
     const AtomicString& markerStartResource() const { return inheritedResources->markerStart; }
     const AtomicString& markerMidResource() const { return inheritedResources->markerMid; }
@@ -384,7 +376,6 @@ public:
     // convenience
     bool hasClipper() const { return !clipperResource().isEmpty(); }
     bool hasMasker() const { return !maskerResource().isEmpty(); }
-    bool hasFilter() const { return !filterResource().isEmpty(); }
     bool hasMarkers() const { return !markerStartResource().isEmpty() || !markerMidResource().isEmpty() || !markerEndResource().isEmpty(); }
     bool hasStroke() const { return strokePaintType() != SVG_PAINTTYPE_NONE; }
     bool hasVisibleStroke() const { return hasStroke() && !strokeWidth().isZero(); }

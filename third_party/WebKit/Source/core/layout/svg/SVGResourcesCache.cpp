@@ -41,10 +41,8 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
     ASSERT(object);
     ASSERT(!m_cache.contains(object));
 
-    const SVGComputedStyle& svgStyle = style.svgStyle();
-
     // Build a list of all resources associated with the passed LayoutObject.
-    std::unique_ptr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
+    std::unique_ptr<SVGResources> newResources = SVGResources::buildResources(object, style);
     if (!newResources)
         return;
 

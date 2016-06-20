@@ -78,7 +78,14 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         return true;
     }
 
-    applyCompositingIfNecessary();
+    bool isSVGRoot = m_object.isSVGRoot();
+
+    // Layer takes care of root opacity and blend mode.
+    if (isSVGRoot) {
+        DCHECK(!(m_object.isTransparent() || m_object.styleRef().hasBlendMode()) || m_object.hasLayer());
+    } else {
+        applyCompositingIfNecessary();
+    }
 
     if (!applyClipIfNecessary(resources))
         return false;
@@ -86,8 +93,11 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
     if (!applyMaskIfNecessary(resources))
         return false;
 
-    if (!applyFilterIfNecessary(resources))
+    if (isSVGRoot) {
+        DCHECK(!m_object.styleRef().hasFilter() || m_object.hasLayer());
+    } else if (!applyFilterIfNecessary(resources)) {
         return false;
+    }
 
     if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(&m_object))
         m_compositingRecorder = wrapUnique(new CompositingRecorder(paintInfo().context, m_object, SkXfermode::kSrcOver_Mode, 1));
@@ -98,10 +108,6 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
 void SVGPaintContext::applyCompositingIfNecessary()
 {
     ASSERT(!paintInfo().isRenderingClipPathAsMaskImage());
-
-    // Layer takes care of root opacity and blend mode.
-    if (m_object.isSVGRoot())
-        return;
 
     const ComputedStyle& style = m_object.styleRef();
     float opacity = style.opacity();
@@ -148,7 +154,7 @@ bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources)
 bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
 {
     if (!resources) {
-        if (m_object.style()->svgStyle().hasFilter())
+        if (m_object.style()->hasFilter())
             return false;
     } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
         m_filterRecordingContext = wrapUnique(new SVGFilterRecordingContext(paintInfo().context));

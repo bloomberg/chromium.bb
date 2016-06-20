@@ -502,7 +502,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         if (style.hasAutoColumnWidth())
             return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.columnWidth());
-    case CSSPropertyWebkitFilter:
+    case CSSPropertyFilter:
         return AnimatableFilterOperations::create(style.filter());
     case CSSPropertyBackdropFilter:
         return AnimatableFilterOperations::create(style.backdropFilter());

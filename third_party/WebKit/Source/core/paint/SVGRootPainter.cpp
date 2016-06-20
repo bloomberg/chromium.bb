@@ -39,10 +39,6 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (svg->hasEmptyViewBox())
         return;
 
-    // Don't paint if we don't have kids, except if we have filters we should paint those.
-    if (!m_layoutSVGRoot.firstChild() && !SVGLayoutSupport::hasFilterResource(m_layoutSVGRoot))
-        return;
-
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 
     Optional<ScopedPaintChunkProperties> propertyScope;

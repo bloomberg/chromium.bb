@@ -242,7 +242,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
             applicableTypes->append(wrapUnique(new CSSRotateInterpolationType(cssProperty)));
             break;
         case CSSPropertyBackdropFilter:
-        case CSSPropertyWebkitFilter:
+        case CSSPropertyFilter:
             applicableTypes->append(wrapUnique(new CSSFilterListInterpolationType(cssProperty)));
             break;
         case CSSPropertyTransform:

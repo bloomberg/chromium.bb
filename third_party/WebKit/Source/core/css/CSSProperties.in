@@ -198,7 +198,7 @@ empty-cells inherited, type_name=EEmptyCells
 fill interpolable, inherited, svg, setter=setFillPaint, custom_all
 fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
-filter svg, name_for_methods=FilterResource, converter=convertFragmentIdentifier
+filter interpolable, converter=convertFilterOperations
 flex-basis interpolable, converter=convertLengthOrAuto
 flex-direction
 flex-grow interpolable, type_name=float
@@ -362,7 +362,6 @@ column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 column-rule-width interpolable, converter=convertLineWidth<unsigned short>
 column-span type_name=ColumnSpan
 column-width interpolable, converter=convertComputedLength<float>, custom_all
--webkit-filter interpolable, converter=convertFilterOperations
 -webkit-highlight inherited, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-break inherited, type_name=LineBreak
@@ -560,6 +559,7 @@ columns longhands=column-width;column-count
 -webkit-column-span alias_for=column-span
 -webkit-column-width alias_for=column-width
 -webkit-columns alias_for=columns
+-webkit-filter alias_for=filter
 -webkit-flex alias_for=flex
 -webkit-flex-basis alias_for=flex-basis
 -webkit-flex-direction alias_for=flex-direction

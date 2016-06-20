@@ -114,7 +114,7 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
 {
     const bool affectsOpacity = effectToAdd.affects(PropertyHandle(CSSPropertyOpacity));
     const bool affectsTransform = effectToAdd.isTransformRelatedEffect();
-    const bool affectsFilter = effectToAdd.affects(PropertyHandle(CSSPropertyWebkitFilter));
+    const bool affectsFilter = effectToAdd.affects(PropertyHandle(CSSPropertyFilter));
     const bool affectsBackdropFilter = effectToAdd.affects(PropertyHandle(CSSPropertyBackdropFilter));
 
     if (!targetElement.hasAnimations())
@@ -130,7 +130,7 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
 
         if ((affectsOpacity && attachedAnimation->affects(targetElement, CSSPropertyOpacity))
             || (affectsTransform && isTransformRelatedAnimation(targetElement, attachedAnimation))
-            || (affectsFilter && attachedAnimation->affects(targetElement, CSSPropertyWebkitFilter))
+            || (affectsFilter && attachedAnimation->affects(targetElement, CSSPropertyFilter))
             || (affectsBackdropFilter && attachedAnimation->affects(targetElement, CSSPropertyBackdropFilter)))
             return true;
     }
@@ -155,7 +155,7 @@ const CSSPropertyID CompositorAnimations::compositableProperties[7] = {
     CSSPropertyScale,
     CSSPropertyTransform,
     CSSPropertyTranslate,
-    CSSPropertyWebkitFilter,
+    CSSPropertyFilter,
     CSSPropertyBackdropFilter
 };
 
@@ -264,7 +264,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
                 if (toAnimatableTransform(keyframe->getAnimatableValue().get())->transformOperations().dependsOnBoxSize())
                     return false;
                 break;
-            case CSSPropertyWebkitFilter:
+            case CSSPropertyFilter:
             case CSSPropertyBackdropFilter: {
                 const FilterOperations& operations = toAnimatableFilterOperations(keyframe->getAnimatableValue().get())->operations();
                 if (operations.hasFilterThatMovesPixels())
@@ -296,7 +296,7 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
 {
     const bool affectsOpacity = effectToAdd.affects(PropertyHandle(CSSPropertyOpacity));
     const bool affectsTransform = effectToAdd.isTransformRelatedEffect();
-    const bool affectsFilter = effectToAdd.affects(PropertyHandle(CSSPropertyWebkitFilter));
+    const bool affectsFilter = effectToAdd.affects(PropertyHandle(CSSPropertyFilter));
     const bool affectsBackdropFilter = effectToAdd.affects(PropertyHandle(CSSPropertyBackdropFilter));
 
     if (!targetElement.hasAnimations())
@@ -312,7 +312,7 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
 
         if ((affectsOpacity && attachedAnimation->affects(targetElement, CSSPropertyOpacity))
             || (affectsTransform && isTransformRelatedAnimation(targetElement, attachedAnimation))
-            || (affectsFilter && attachedAnimation->affects(targetElement, CSSPropertyWebkitFilter))
+            || (affectsFilter && attachedAnimation->affects(targetElement, CSSPropertyFilter))
             || (affectsBackdropFilter && attachedAnimation->affects(targetElement, CSSPropertyBackdropFilter)))
             attachedAnimation->cancelAnimationOnCompositor();
     }
@@ -587,7 +587,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             curve = std::move(floatCurve);
             break;
         }
-        case CSSPropertyWebkitFilter:
+        case CSSPropertyFilter:
         case CSSPropertyBackdropFilter: {
             targetProperty = CompositorTargetProperty::FILTER;
             std::unique_ptr<CompositorFilterAnimationCurve> filterCurve = CompositorFilterAnimationCurve::create();

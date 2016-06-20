@@ -329,7 +329,6 @@ webkitClipPath
 webkitColumnBreakAfter
 webkitColumnBreakBefore
 webkitColumnBreakInside
-webkitFilter
 webkitFontSizeDelta
 webkitFontSmoothing
 webkitHighlight

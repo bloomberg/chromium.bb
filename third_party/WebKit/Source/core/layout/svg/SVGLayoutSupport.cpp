@@ -438,7 +438,7 @@ bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const ComputedStyl
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
     return style.hasIsolation() || style.opacity() < 1 || style.hasBlendMode()
-        || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
+        || style.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
 }
 
 bool SVGLayoutSupport::willIsolateBlendingDescendantsForObject(const LayoutObject* object)

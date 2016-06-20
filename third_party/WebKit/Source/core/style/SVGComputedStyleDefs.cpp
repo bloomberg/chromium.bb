@@ -158,7 +158,6 @@ bool StyleMiscData::operator==(const StyleMiscData& other) const
 
 StyleResourceData::StyleResourceData()
     : clipper(SVGComputedStyle::initialClipperResource())
-    , filter(SVGComputedStyle::initialFilterResource())
     , masker(SVGComputedStyle::initialMaskerResource())
 {
 }
@@ -166,7 +165,6 @@ StyleResourceData::StyleResourceData()
 StyleResourceData::StyleResourceData(const StyleResourceData& other)
     : RefCounted<StyleResourceData>()
     , clipper(other.clipper)
-    , filter(other.filter)
     , masker(other.masker)
 {
 }
@@ -174,7 +172,6 @@ StyleResourceData::StyleResourceData(const StyleResourceData& other)
 bool StyleResourceData::operator==(const StyleResourceData& other) const
 {
     return clipper == other.clipper
-        && filter == other.filter
         && masker == other.masker;
 }
 

@@ -2643,7 +2643,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         return CSSPrimitiveValue::create(style.shapeImageThreshold(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyShapeOutside:
         return valueForShape(style, style.shapeOutside());
-    case CSSPropertyWebkitFilter:
+    case CSSPropertyFilter:
         return valueForFilter(style, style.filter());
     case CSSPropertyBackdropFilter:
         return valueForFilter(style, style.backdropFilter());
@@ -2833,10 +2833,6 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyMask:
         if (!svgStyle.maskerResource().isEmpty())
             return CSSURIValue::create(serializeAsFragmentIdentifier(svgStyle.maskerResource()));
-        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-    case CSSPropertyFilter:
-        if (!svgStyle.filterResource().isEmpty())
-            return CSSURIValue::create(serializeAsFragmentIdentifier(svgStyle.filterResource()));
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
     case CSSPropertyFloodColor:
         return currentColorOrValidColor(style, svgStyle.floodColor());

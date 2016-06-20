@@ -561,7 +561,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyColumnRuleWidth:
         style->setColumnRuleWidth(animatableLineWidthClamp<unsigned short>(value));
         return;
-    case CSSPropertyWebkitFilter:
+    case CSSPropertyFilter:
         style->setFilter(toAnimatableFilterOperations(value)->operations());
         return;
     case CSSPropertyBackdropFilter:

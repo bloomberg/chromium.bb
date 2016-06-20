@@ -1,0 +1,23 @@
+<!doctype html>
+
+<style>
+  @keyframes blur-animation {
+    from  {
+      filter: blur(10px);
+    } to {
+      filter: blur(10px);
+    }
+  }
+
+  #root, #child {
+    animation: blur-animation 1s infinite;
+  }
+</style>
+
+<svg id="root">
+  <rect fill="blue" x="0" y="0" height="100" width="100" />
+</svg>
+
+<svg>
+  <rect id="child" fill="blue" x="0" y="0" height="100" width="100" />
+</svg>

@@ -219,7 +219,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyColumnRuleWidth,
     CSSPropertyColumnSpan,
     CSSPropertyColumnWidth,
-    CSSPropertyWebkitFilter,
     CSSPropertyBackdropFilter,
     CSSPropertyAlignContent,
     CSSPropertyAlignItems,

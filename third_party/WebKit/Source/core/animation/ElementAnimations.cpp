@@ -57,7 +57,7 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
                 || effect.affects(PropertyHandle(CSSPropertyScale))
                 || effect.affects(PropertyHandle(CSSPropertyTranslate)))
                 style.setHasCurrentTransformAnimation(true);
-            if (effect.affects(PropertyHandle(CSSPropertyWebkitFilter)))
+            if (effect.affects(PropertyHandle(CSSPropertyFilter)))
                 style.setHasCurrentFilterAnimation(true);
             if (effect.affects(PropertyHandle(CSSPropertyBackdropFilter)))
                 style.setHasCurrentBackdropFilterAnimation(true);
@@ -69,7 +69,7 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
     if (style.hasCurrentTransformAnimation())
         style.setIsRunningTransformAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
     if (style.hasCurrentFilterAnimation())
-        style.setIsRunningFilterAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
+        style.setIsRunningFilterAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyFilter));
     if (style.hasCurrentBackdropFilterAnimation())
         style.setIsRunningBackdropFilterAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyBackdropFilter));
 }

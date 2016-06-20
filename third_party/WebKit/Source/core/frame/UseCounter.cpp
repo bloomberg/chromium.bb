@@ -441,7 +441,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // CSSPropertyWebkitDashboardRegion was 410.
     // CSSPropertyWebkitOverflowScrolling was 411.
     case CSSPropertyWebkitAppRegion: return 412;
-    case CSSPropertyWebkitFilter: return 413;
+    case CSSPropertyAliasWebkitFilter: return 413;
     case CSSPropertyWebkitBoxDecorationBreak: return 414;
     case CSSPropertyWebkitTapHighlightColor: return 415;
     case CSSPropertyBufferedRendering: return 416;

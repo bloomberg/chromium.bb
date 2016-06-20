@@ -249,7 +249,6 @@ public:
     }
 
     AtomicString clipper;
-    AtomicString filter;
     AtomicString masker;
 
 private:

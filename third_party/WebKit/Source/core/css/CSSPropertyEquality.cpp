@@ -261,7 +261,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.columnRuleWidth() == b.columnRuleWidth();
     case CSSPropertyColumnWidth:
         return a.columnWidth() == b.columnWidth();
-    case CSSPropertyWebkitFilter:
+    case CSSPropertyFilter:
         return a.filter() == b.filter();
     case CSSPropertyBackdropFilter:
         return a.backdropFilter() == b.backdropFilter();

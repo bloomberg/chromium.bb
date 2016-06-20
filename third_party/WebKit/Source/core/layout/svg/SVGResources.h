@@ -28,6 +28,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutObject;
 class LayoutSVGResourceClipper;
 class LayoutSVGResourceContainer;
@@ -36,7 +37,6 @@ class LayoutSVGResourceMarker;
 class LayoutSVGResourceMasker;
 class LayoutSVGResourcePaintServer;
 class SVGElement;
-class SVGComputedStyle;
 
 // Holds a set of resources associated with a LayoutObject
 class SVGResources {
@@ -44,7 +44,7 @@ class SVGResources {
 public:
     SVGResources();
 
-    static std::unique_ptr<SVGResources> buildResources(const LayoutObject*, const SVGComputedStyle&);
+    static std::unique_ptr<SVGResources> buildResources(const LayoutObject*, const ComputedStyle&);
     void layoutIfNeeded();
 
     static bool supportsMarkers(const SVGElement&);

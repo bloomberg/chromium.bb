@@ -46,6 +46,7 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/RadialGradientAttributes.h"
@@ -659,14 +660,22 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             ts << " " << clipper->resourceBoundingBox(&layoutObject) << "\n";
         }
     }
-    if (!svgStyle.filterResource().isEmpty()) {
-        if (LayoutSVGResourceFilter* filter = getLayoutSVGResourceById<LayoutSVGResourceFilter>(object.document(), svgStyle.filterResource())) {
-            writeIndent(ts, indent);
-            ts << " ";
-            writeNameAndQuotedValue(ts, "filter", svgStyle.filterResource());
-            ts << " ";
-            writeStandardPrefix(ts, *filter, 0);
-            ts << " " << filter->resourceBoundingBox(&layoutObject) << "\n";
+    if (style.hasFilter()) {
+        const FilterOperations& filterOperations = style.filter();
+        if (filterOperations.size() == 1) {
+            const FilterOperation& filterOperation = *filterOperations.at(0);
+            if (filterOperation.type() == FilterOperation::REFERENCE) {
+                const auto& referenceFilterOperation = toReferenceFilterOperation(filterOperation);
+                AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(referenceFilterOperation.url(), object.document());
+                if (LayoutSVGResourceFilter* filter = getLayoutSVGResourceById<LayoutSVGResourceFilter>(object.document(), id)) {
+                    writeIndent(ts, indent);
+                    ts << " ";
+                    writeNameAndQuotedValue(ts, "filter", id);
+                    ts << " ";
+                    writeStandardPrefix(ts, *filter, 0);
+                    ts << " " << filter->resourceBoundingBox(&layoutObject) << "\n";
+                }
+            }
         }
     }
 }

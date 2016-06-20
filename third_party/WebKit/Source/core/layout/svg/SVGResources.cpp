@@ -25,7 +25,7 @@
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/style/SVGComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
@@ -205,7 +205,7 @@ static inline SVGResources& ensureResources(std::unique_ptr<SVGResources>& resou
     return *resources.get();
 }
 
-std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGComputedStyle& style)
+std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const ComputedStyle& computedStyle)
 {
     ASSERT(object);
 
@@ -222,6 +222,8 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* o
     TreeScope& treeScope = element->treeScope();
     SVGDocumentExtensions& extensions = element->document().accessSVGExtensions();
 
+    const SVGComputedStyle& style = computedStyle.svgStyle();
+
     std::unique_ptr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style.hasClipper()) {
@@ -230,10 +232,17 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* o
                 registerPendingResource(extensions, id, element);
         }
 
-        if (style.hasFilter()) {
-            AtomicString id = style.filterResource();
-            if (!ensureResources(resources).setFilter(getLayoutSVGResourceById<LayoutSVGResourceFilter>(treeScope, id)))
-                registerPendingResource(extensions, id, element);
+        if (computedStyle.hasFilter() && !object->isSVGRoot())  {
+            const FilterOperations& filterOperations = computedStyle.filter();
+            if (filterOperations.size() == 1) {
+                const FilterOperation& filterOperation = *filterOperations.at(0);
+                if (filterOperation.type() == FilterOperation::REFERENCE) {
+                    const auto& referenceFilterOperation = toReferenceFilterOperation(filterOperation);
+                    AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(referenceFilterOperation.url(), treeScope);
+                    if (!ensureResources(resources).setFilter(getLayoutSVGResourceById<LayoutSVGResourceFilter>(treeScope, id)))
+                        registerPendingResource(extensions, id, element);
+                }
+            }
         }
 
         if (style.hasMasker()) {

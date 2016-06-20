@@ -3756,7 +3756,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
     case CSSPropertyBoxShadow:
         return consumeShadow(m_range, m_context.mode(), property == CSSPropertyBoxShadow);
-    case CSSPropertyWebkitFilter:
+    case CSSPropertyFilter:
     case CSSPropertyBackdropFilter:
         return consumeFilter(m_range, m_context);
     case CSSPropertyTextDecoration:
@@ -3799,7 +3799,6 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
     case CSSPropertyClipPath:
-    case CSSPropertyFilter:
     case CSSPropertyMask:
         return consumeNoneOrURI(m_range);
     case CSSPropertyFlexBasis:
