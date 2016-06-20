@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,56 +32,26 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [112, 108, 100, 100],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This span should disappear.\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This span should disappear.\n'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutInline SPAN id='target'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,32 +17,30 @@
           "object": "LayoutImage IMG",
           "rect": [8, 60, 214, 232],
           "reason": "location change"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "reason": "none"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "none"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutListItem (positioned) LI",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutListMarker (anonymous)",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "none"
     }
   ]
 }

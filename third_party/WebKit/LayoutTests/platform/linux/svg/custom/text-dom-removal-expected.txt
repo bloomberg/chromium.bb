@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,16 +27,26 @@
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 20, 20],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='objectsToRemove'",
+      "reason": "became invisible"
     }
   ]
 }

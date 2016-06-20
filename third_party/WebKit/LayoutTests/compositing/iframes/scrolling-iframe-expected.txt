@@ -1,35 +1,44 @@
 
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutIFrame IFRAME id='parent-iframe'",
           "position": [8, 8],
           "bounds": [370, 220],
           "drawsContent": true,
           "children": [
             {
+              "name": "Frame Overflow Controls Host Layer",
               "position": [35, 35],
               "bounds": [300, 150],
               "children": [
                 {
+                  "name": "Frame Clipping Layer",
                   "bounds": [285, 135],
                   "children": [
                     {
+                      "name": "Frame Scrolling Layer",
                       "children": [
                         {
+                          "name": "Content Root Layer",
                           "bounds": [508, 608],
                           "children": [
                             {
+                              "name": "LayoutView #document",
                               "bounds": [508, 608],
                               "drawsContent": true,
                               "backgroundColor": "#C0C0C0",
                               "children": [
                                 {
+                                  "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
                                   "position": [108, 100],
                                   "bounds": [200, 200],
                                   "contentsOpaque": true,
@@ -45,14 +54,17 @@
                   ]
                 },
                 {
+                  "name": "Frame Horizontal Scrollbar Layer",
                   "position": [0, 135],
                   "bounds": [285, 15]
                 },
                 {
+                  "name": "Frame Vertical Scrollbar Layer",
                   "position": [285, 0],
                   "bounds": [15, 135]
                 },
                 {
+                  "name": "Frame Scroll Corner Layer",
                   "position": [285, 135],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -62,6 +74,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='overlay'",
           "position": [5, 5],
           "bounds": [50, 50],
           "drawsContent": true,

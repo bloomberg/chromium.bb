@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -50,20 +52,50 @@
           "object": "LayoutSVGViewportContainer svg id='symbol'",
           "rect": [53, 53, 10, 10],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGEllipse svg:circle id='circle'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='symbol'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow body",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow body",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutSVGRoot svg:svg id='svg'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGEllipse svg:circle id='circle'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGContainer svg:use id='use'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='symbol'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse svg:circle id='circle'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

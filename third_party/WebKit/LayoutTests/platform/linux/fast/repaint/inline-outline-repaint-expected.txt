@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,424 +27,50 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [43, 174, 3, 22],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "outline"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "outline"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor sit amet'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor sit'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor sit'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor\u00A0'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutInline SPAN id='test'",
+      "reason": "outline"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "outline"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "outline"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Lorem ipsum'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'dolor\u00A0'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,20 +22,26 @@
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='div'",
+      "reason": "bounds change"
     }
   ]
 }

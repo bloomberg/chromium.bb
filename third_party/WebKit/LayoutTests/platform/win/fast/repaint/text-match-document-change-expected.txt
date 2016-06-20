@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -34,34 +36,6 @@
         {
           "object": "LayoutView #document",
           "rect": [295, 102, 15, 400],
-          "reason": "scroll"
-        },
-        {
-          "object": "InlineTextBox 'After change'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Find-in-page 'findme', then click here)'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'To be changed: findme (Manual testing:'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "VerticalScrollbar",
           "reason": "scroll"
         }
       ]

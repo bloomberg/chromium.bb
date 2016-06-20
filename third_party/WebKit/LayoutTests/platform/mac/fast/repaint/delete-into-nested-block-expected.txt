@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -55,92 +57,74 @@
           "object": "LayoutBlockFlow DIV id='one'",
           "rect": [7, 118, 3, 21],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'one'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'three'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'three'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'three'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'three'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'two'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='two'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutInline SPAN",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "outline"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='one'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'three'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='one'",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

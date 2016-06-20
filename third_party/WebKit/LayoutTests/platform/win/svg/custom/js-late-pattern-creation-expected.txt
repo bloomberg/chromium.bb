@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,24 +22,30 @@
           "object": "LayoutSVGRect rect",
           "rect": [8, 12, 17, 26],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Pattern on fill'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
     }
   ]
 }

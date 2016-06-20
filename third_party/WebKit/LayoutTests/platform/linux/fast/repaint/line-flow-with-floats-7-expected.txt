@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,42 +22,6 @@
           "object": "LayoutText #text",
           "rect": [303, 420, 67, 19],
           "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehogs; and in\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the Queen'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'turns,\n'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutInline SPAN id='theQueen'",
-          "reason": "style change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
     }

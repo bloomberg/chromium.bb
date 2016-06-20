@@ -3,9 +3,11 @@ Box should switch between perspective and flat
 
 First dump layer tree:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true
@@ -15,19 +17,23 @@ First dump layer tree:
 
 Second dump layer tree:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (relative positioned) DIV id='parent' class='parent'",
           "position": [8, 8],
           "bounds": [242, 192],
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV id='child' class='child'",
               "position": [121, 39],
               "bounds": [250, 100],
               "contentsOpaque": true,
@@ -49,10 +55,12 @@ Second dump layer tree:
 
 Third dump layer tree:
 {
-  "bounds": [785, 916],
+  "name": "Content Root Layer",
+  "bounds": [785, 1006],
   "children": [
     {
-      "bounds": [785, 916],
+      "name": "LayoutView #document",
+      "bounds": [785, 1006],
       "contentsOpaque": true,
       "drawsContent": true
     }

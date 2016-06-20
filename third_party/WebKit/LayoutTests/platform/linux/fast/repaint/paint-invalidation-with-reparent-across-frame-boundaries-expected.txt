@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,24 +32,26 @@
           "object": "LayoutText #text",
           "rect": [8, 187, 22, 19],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'abc'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'abc'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='inner-target'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'abc'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

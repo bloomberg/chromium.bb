@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [808, 620],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [808, 620],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -35,24 +37,30 @@
           "object": "LayoutSVGText text id='ttt'",
           "rect": [18, 194, 170, 17],
           "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Passes, if text is at 200x20'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Passes, if text is at 200x20'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg:svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text id='ttt'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'Passes, if text is at 200x20'",
+      "reason": "bounds change"
     }
   ]
 }

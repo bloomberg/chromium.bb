@@ -1,0 +1,19 @@
+{
+  "bounds": [785, 2513],
+  "children": [
+    {
+      "bounds": [785, 2513],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [0, 200],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

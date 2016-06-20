@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,48 +22,26 @@
           "object": "LayoutSVGText text id='text'",
           "rect": [10, 63, 306, 254],
           "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'FAIL'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan id='remove'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='text'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     }
   ]
 }

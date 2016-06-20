@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -270,152 +272,194 @@
           "object": "LayoutText #text",
           "rect": [0, 0, 1, 1],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS '",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS '",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS '",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot (positioned) svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g id='text1g'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS '",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGForeignObject foreignObject",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g id='text2g'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGContainer g id='text3g'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS '",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGForeignObject foreignObject",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "bounds change"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -70,32 +72,26 @@
           "object": "LayoutView #document",
           "rect": [93, 193, 15, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "reason": "scroll"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "reason": "scroll"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "reason": "scroll"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutIFrame IFRAME id='iframe'",
+      "reason": "incremental"
     }
   ]
 }

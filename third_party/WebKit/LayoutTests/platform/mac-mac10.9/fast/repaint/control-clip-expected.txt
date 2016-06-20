@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,32 +27,34 @@
           "object": "LayoutText (anonymous)",
           "rect": [9, 84, 47, 14],
           "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText (anonymous)",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'SUCCESS'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'SUCCESS'",
+      "reason": "full"
     }
   ]
 }

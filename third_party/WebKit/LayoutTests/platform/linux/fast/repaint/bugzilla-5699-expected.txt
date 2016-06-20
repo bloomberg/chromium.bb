@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -40,52 +42,62 @@
           "object": "LayoutText #text",
           "rect": [8, 136, 4, 19],
           "reason": "style change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Hello'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutInline SPAN id='d'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'Hello'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
     }
   ]
 }

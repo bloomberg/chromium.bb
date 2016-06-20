@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,24 +17,18 @@
           "object": "LayoutText #text",
           "rect": [8, 108, 100, 36],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineTextBox 'This div should'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'disappear.'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
+      "reason": "layoutObject removal"
     }
   ]
 }

@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='composited flipped'",
           "position": [18, 10],
           "bounds": [250, 200],
           "contentsOpaque": true,
@@ -14,6 +17,7 @@
           "backgroundColor": "#C0C0C0",
           "children": [
             {
+              "name": "LayoutBlockFlow DIV class='composited box'",
               "position": [35, 10],
               "transformOrigin": [145, 50],
               "bounds": [195, 100],

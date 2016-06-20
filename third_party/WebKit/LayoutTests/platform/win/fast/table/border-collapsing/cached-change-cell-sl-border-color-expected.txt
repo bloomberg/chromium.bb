@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,24 +17,26 @@
           "object": "LayoutText #text",
           "rect": [90, 30, 12, 17],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineTextBox 'A'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD id='foo'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='foo'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD id='foo'",
+      "reason": "style change"
     }
   ]
 }

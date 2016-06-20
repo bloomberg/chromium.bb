@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -35,24 +37,30 @@
           "object": "LayoutSVGRoot svg",
           "rect": [78, 39, 130, 86],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "reason": "outline"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "outline"
+    },
+    {
+      "object": "InlineTextBox 'Foo'",
+      "reason": "outline"
     }
   ]
 }

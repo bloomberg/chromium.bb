@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -40,56 +42,58 @@
           "object": "LayoutTextFragment (anonymous)",
           "rect": [8, 26, 8, 18],
           "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quote 2'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '{'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '}'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline \u003Cpseudo:after\u003E",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline \u003Cpseudo:before\u003E",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline Q id='q2' class='q-changed'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutQuote (anonymous)",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutQuote (anonymous)",
-          "reason": "style change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutInline Q id='q2' class='q-changed'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutInline \u003Cpseudo:before\u003E",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutQuote (anonymous)",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox '{'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'quote 2'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutInline \u003Cpseudo:after\u003E",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutQuote (anonymous)",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox '}'",
+      "reason": "style change"
     }
   ]
 }

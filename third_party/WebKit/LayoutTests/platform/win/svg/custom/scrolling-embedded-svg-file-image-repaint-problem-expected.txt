@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [1026, 1036],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [1026, 1036],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,36 +17,22 @@
           "object": "LayoutInline A",
           "rect": [384, 1010, 47, 22],
           "reason": "style change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'index'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\u2192 script-handle-01-b'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutInline A",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -90,112 +92,122 @@
           "object": "LayoutTable TABLE",
           "rect": [83, 268, 26, 76],
           "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'Lorem'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'dolor'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'ipsum dolor'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'ipsum dolor'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'ipsum dolor'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'sit amet'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'sit amet'",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='d'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='d2'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE id='t'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD id='d3'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'ipsum dolor'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     }
   ]
 }

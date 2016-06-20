@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,20 +17,22 @@
           "object": "LayoutBlockFlow DIV id='badge'",
           "rect": [712, 8, 80, 20],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='badge'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV class='state'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
     }
   ]
 }

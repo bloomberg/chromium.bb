@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,184 +32,70 @@
           "object": "LayoutText #text",
           "rect": [200, 0, 100, 200],
           "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A AA AA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A A A'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA A A A'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA A'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AAA AAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AAA AAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAA AA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAA AAA AA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAAA AAAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAA AAAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA AAAAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA AAAAAAA'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAAA'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'A A A A A AA AA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AA AA AAA AAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAA AAAA AAAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAAAA AAAAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAAAAA AAAAAAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAAAAA AAAAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAAAA AAAA AAAA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AAA AAA AAA AA'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'AA AA AA A A A'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'A A'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     }
   ]
 }

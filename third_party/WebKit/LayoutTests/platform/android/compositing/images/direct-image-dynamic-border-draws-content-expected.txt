@@ -1,0 +1,41 @@
+
+layer tree before image style change
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [256, 256]
+        }
+      ]
+    }
+  ]
+}
+
+layer tree after image style change
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [260, 260],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+
+

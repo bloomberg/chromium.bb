@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -75,20 +77,46 @@
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [34, 169, 50, 200],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGContainer use id='targetUse'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g id='targetUse'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "bounds change"
     }
   ]
 }

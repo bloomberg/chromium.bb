@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -70,24 +72,50 @@
           "object": "LayoutSVGRect rect",
           "rect": [80, 60, 20, 20],
           "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'right-aligned text'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'right-aligned text'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='inner'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'right-aligned text'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGPath polygon id='triangle'",
+      "reason": "bounds change"
     }
   ]
 }

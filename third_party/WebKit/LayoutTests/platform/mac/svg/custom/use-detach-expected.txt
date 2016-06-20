@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -170,68 +172,178 @@
           "object": "LayoutSVGEllipse circle id='use_circle'",
           "rect": [218, 94, 28, 28],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'use'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'use'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'use'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='use'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='use'",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='use'",
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='use'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='use'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='use'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text id='use_text'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'use'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle id='use_circle'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

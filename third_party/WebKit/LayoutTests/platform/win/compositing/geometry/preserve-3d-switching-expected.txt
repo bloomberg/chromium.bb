@@ -2,19 +2,23 @@ The green box appear angled out from the yellow box and embedded in it.
 
 transform: translateZ(-100px) rotateY(45deg);
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
           "position": [108, 72],
           "bounds": [304, 304],
           "drawsContent": true,
           "children": [
             {
+              "name": "Child Transform Layer",
               "bounds": [304, 304],
               "shouldFlattenTransform": false,
               "transform": [
@@ -25,6 +29,7 @@ transform: translateZ(-100px) rotateY(45deg);
               ],
               "children": [
                 {
+                  "name": "LayoutBlockFlow DIV id='parent'",
                   "position": [12, 12],
                   "bounds": [280, 280],
                   "opacity": 0.800000011920929,
@@ -41,6 +46,7 @@ transform: translateZ(-100px) rotateY(45deg);
                   ],
                   "children": [
                     {
+                      "name": "LayoutBlockFlow (positioned) DIV",
                       "position": [40, 40],
                       "bounds": [200, 200],
                       "opacity": 0.699999988079071,

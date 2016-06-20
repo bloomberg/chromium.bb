@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [1600, 585],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [1600, 585],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='composited box'",
           "position": [818, 145],
           "bounds": [100, 100],
           "contentsOpaque": true,

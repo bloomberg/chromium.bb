@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,36 +22,26 @@
           "object": "LayoutBlockFlow P",
           "rect": [0, 36, 800, 19],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'Home'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutInline A id='link'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

@@ -1,14 +1,17 @@
 Test CSS clip with composited layers. Left and right sides should look the same.
 
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
           "position": [25, 35],
           "transformOrigin": [45, 35],
           "bounds": [90, 80],
@@ -23,11 +26,13 @@ Test CSS clip with composited layers. Left and right sides should look the same.
           ]
         },
         {
+          "name": "Ancestor Clipping Layer",
           "position": [225, 35],
           "bounds": [90, 80],
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
               "position": [-15, -25],
               "bounds": [120, 120],
               "drawsContent": true,
