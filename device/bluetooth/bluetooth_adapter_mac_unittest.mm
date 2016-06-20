@@ -11,6 +11,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
@@ -165,8 +166,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
   EXPECT_EQ(0, NumDiscoverySessions());
 
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
-      new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -183,8 +183,7 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
   if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
-      new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -207,8 +206,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
 
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
-      new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -233,8 +231,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
   EXPECT_EQ(0, NumDiscoverySessions());
 
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
-      new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   RemoveDiscoverySession(discovery_filter.get());
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_);

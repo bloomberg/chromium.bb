@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
@@ -251,8 +252,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
   mock_discovery_session_ = new NiceMock<MockBluetoothDiscoverySession>();
 
-  BluetoothDiscoveryFilter discovery_filter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
   discovery_filter.SetPathloss(50);
   discovery_filter.AddUUID(BluetoothUUID("cafe"));
   discovery_filter.AddUUID(

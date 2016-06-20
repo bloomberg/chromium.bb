@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 
 using device::BluetoothUUID;
@@ -132,7 +133,7 @@ std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
     }
   }
   auto discovery_filter = base::MakeUnique<device::BluetoothDiscoveryFilter>(
-      device::BluetoothDiscoveryFilter::TRANSPORT_DUAL);
+      device::BLUETOOTH_TRANSPORT_DUAL);
   for (const BluetoothUUID& service : services) {
     discovery_filter->AddUUID(service);
   }

@@ -25,6 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_central_manager_delegate.h"
@@ -320,12 +321,11 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
   }
 
   // Default to dual discovery if |discovery_filter| is NULL.
-  BluetoothDiscoveryFilter::TransportMask transport =
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL;
+  BluetoothTransport transport = BLUETOOTH_TRANSPORT_DUAL;
   if (discovery_filter)
     transport = discovery_filter->GetTransport();
 
-  if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC) {
+  if (transport & BLUETOOTH_TRANSPORT_CLASSIC) {
     if (!classic_discovery_manager_->StopDiscovery()) {
       DVLOG(1) << "Failed to stop classic discovery";
       // TODO: Provide a more precise error here.
@@ -333,7 +333,7 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
       return;
     }
   }
-  if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_LE) {
+  if (transport & BLUETOOTH_TRANSPORT_LE) {
     if (IsLowEnergyAvailable())
       low_energy_discovery_manager_->StopDiscovery();
   }
@@ -355,12 +355,11 @@ bool BluetoothAdapterMac::StartDiscovery(
     BluetoothDiscoveryFilter* discovery_filter) {
   // Default to dual discovery if |discovery_filter| is NULL.  IOBluetooth seems
   // allow starting low energy and classic discovery at once.
-  BluetoothDiscoveryFilter::TransportMask transport =
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL;
+  BluetoothTransport transport = BLUETOOTH_TRANSPORT_DUAL;
   if (discovery_filter)
     transport = discovery_filter->GetTransport();
 
-  if ((transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC) &&
+  if ((transport & BLUETOOTH_TRANSPORT_CLASSIC) &&
       !classic_discovery_manager_->IsDiscovering()) {
     // TODO(krstnmnlsn): If a classic discovery session is already running then
     // we should update its filter. crbug.com/498056
@@ -369,7 +368,7 @@ bool BluetoothAdapterMac::StartDiscovery(
       return false;
     }
   }
-  if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_LE) {
+  if (transport & BLUETOOTH_TRANSPORT_LE) {
     // Begin a low energy discovery session or update it if one is already
     // running.
     if (IsLowEnergyAvailable())

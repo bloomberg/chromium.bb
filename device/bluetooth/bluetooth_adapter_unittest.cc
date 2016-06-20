@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -266,13 +267,13 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   uint16_t resulting_pathloss;
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
-  BluetoothDiscoveryFilter* df = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df->SetRSSI(-30);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
 
-  BluetoothDiscoveryFilter* df2 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df2 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df2->SetRSSI(-65);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
@@ -306,8 +307,8 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   resulting_filter->GetRSSI(&resulting_rssi);
   EXPECT_EQ(-30, resulting_rssi);
 
-  BluetoothDiscoveryFilter* df3 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df3 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df3->SetPathloss(60);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
@@ -325,42 +326,37 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterTransport) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
-  BluetoothDiscoveryFilter* df = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC);
+  BluetoothDiscoveryFilter* df =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_CLASSIC);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
 
-  BluetoothDiscoveryFilter* df2 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df2 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
   adapter->InjectFilteredSession(std::move(discovery_filter));
 
   // Just one filter, make sure transport was properly rewritten
   resulting_filter = adapter->GetMergedDiscoveryFilter();
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, resulting_filter->GetTransport());
 
   adapter->InjectFilteredSession(std::move(discovery_filter2));
 
   // Two filters, should have OR of both transport's
   resulting_filter = adapter->GetMergedDiscoveryFilter();
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
 
   // When 1st filter is masked, 2nd filter transport should be returned.
   resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df);
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_LE,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_LE, resulting_filter->GetTransport());
 
   // When 2nd filter is masked, 1st filter transport should be returned.
   resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df2);
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, resulting_filter->GetTransport());
 
-  BluetoothDiscoveryFilter* df3 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
-  df3->CopyFrom(BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
+  BluetoothDiscoveryFilter* df3 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
+  df3->CopyFrom(BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_DUAL));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
   // Merging empty filter in should result in empty filter
@@ -376,24 +372,24 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
   int16_t resulting_rssi;
   std::set<device::BluetoothUUID> resulting_uuids;
 
-  BluetoothDiscoveryFilter* df = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df->SetRSSI(-60);
   df->AddUUID(device::BluetoothUUID("1000"));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
 
-  BluetoothDiscoveryFilter* df2 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df2 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df2->SetRSSI(-85);
-  df2->SetTransport(BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  df2->SetTransport(BLUETOOTH_TRANSPORT_LE);
   df2->AddUUID(device::BluetoothUUID("1020"));
   df2->AddUUID(device::BluetoothUUID("1001"));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
-  BluetoothDiscoveryFilter* df3 = new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  BluetoothDiscoveryFilter* df3 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   df3->SetRSSI(-65);
-  df3->SetTransport(BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC);
+  df3->SetTransport(BLUETOOTH_TRANSPORT_CLASSIC);
   df3->AddUUID(device::BluetoothUUID("1020"));
   df3->AddUUID(device::BluetoothUUID("1003"));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
@@ -408,8 +404,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
   resulting_filter->GetRSSI(&resulting_rssi);
   resulting_filter->GetUUIDs(resulting_uuids);
   EXPECT_TRUE(resulting_filter->GetTransport());
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
   EXPECT_EQ(-85, resulting_rssi);
   EXPECT_EQ(4UL, resulting_uuids.size());
   EXPECT_TRUE(resulting_uuids.find(device::BluetoothUUID("1000")) !=
@@ -422,8 +417,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
               resulting_uuids.end());
 
   resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df);
-  EXPECT_EQ(BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL,
-            resulting_filter->GetTransport());
+  EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
 
   adapter->CleanupSessions();
 }

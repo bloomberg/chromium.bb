@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -1280,8 +1281,8 @@ void BluetoothAdapterBlueZ::AddDiscoverySession(
   if (discovery_filter) {
     discovery_request_pending_ = true;
 
-    std::unique_ptr<BluetoothDiscoveryFilter> df(new BluetoothDiscoveryFilter(
-        BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
+    std::unique_ptr<BluetoothDiscoveryFilter> df(
+        new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_DUAL));
     df->CopyFrom(*discovery_filter);
     SetDiscoveryFilter(
         std::move(df),
@@ -1398,13 +1399,11 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
       dbus_discovery_filter.rssi.reset(new int16_t(rssi));
 
     transport = current_filter_->GetTransport();
-    if (transport == BluetoothDiscoveryFilter::Transport::TRANSPORT_LE) {
+    if (transport == device::BLUETOOTH_TRANSPORT_LE) {
       dbus_discovery_filter.transport.reset(new std::string("le"));
-    } else if (transport ==
-               BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC) {
+    } else if (transport == device::BLUETOOTH_TRANSPORT_CLASSIC) {
       dbus_discovery_filter.transport.reset(new std::string("bredr"));
-    } else if (transport ==
-               BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL) {
+    } else if (transport == device::BLUETOOTH_TRANSPORT_DUAL) {
       dbus_discovery_filter.transport.reset(new std::string("auto"));
     }
 

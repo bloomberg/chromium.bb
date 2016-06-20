@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_common.h"
 
 namespace device {
 
@@ -35,8 +36,7 @@ BluetoothTestBase::~BluetoothTestBase() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
+      base::WrapUnique(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE)),
       GetDiscoverySessionCallback(Call::EXPECTED),
       GetErrorCallback(Call::NOT_EXPECTED));
   base::RunLoop().RunUntilIdle();
@@ -44,8 +44,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySessionExpectedToFail() {
   adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
+      base::WrapUnique(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE)),
       GetDiscoverySessionCallback(Call::NOT_EXPECTED),
       GetErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();

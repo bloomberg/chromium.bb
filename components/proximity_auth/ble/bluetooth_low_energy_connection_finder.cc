@@ -19,6 +19,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -227,8 +228,8 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
   }
 
   // Discover only low energy (LE) devices with strong enough signal.
-  std::unique_ptr<BluetoothDiscoveryFilter> filter(new BluetoothDiscoveryFilter(
-      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+  std::unique_ptr<BluetoothDiscoveryFilter> filter(
+      new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE));
   filter->SetRSSI(kMinDiscoveryRSSI);
 
   adapter_->StartDiscoverySessionWithFilter(

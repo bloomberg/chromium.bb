@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
@@ -352,8 +353,7 @@ BluetoothAdapter::GetMergedDiscoveryFilterHelper(
     if (first_merge) {
       first_merge = false;
       if (curr_filter) {
-        result.reset(new BluetoothDiscoveryFilter(
-            BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
+        result.reset(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_DUAL));
         result->CopyFrom(*curr_filter);
       }
       continue;

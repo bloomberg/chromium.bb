@@ -20,6 +20,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
@@ -518,8 +519,8 @@ void ArcBluetoothBridge::StartLEScan() {
     return;
   }
   bluetooth_adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(new BluetoothDiscoveryFilter(
-          BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
+      base::WrapUnique(
+          new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE)),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
