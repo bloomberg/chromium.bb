@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/background/request_queue_store.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/background/request_queue_store.h"
+#include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
