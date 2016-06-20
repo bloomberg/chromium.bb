@@ -32,8 +32,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="26dp"
-        android:layout_marginBottom="27dp"
-        android:src="@drawable/google_logo" />
+        android:layout_marginBottom="27dp" />
 
     <!-- Search box -->
     <LinearLayout
