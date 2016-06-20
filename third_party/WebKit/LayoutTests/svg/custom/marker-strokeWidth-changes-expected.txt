@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -22,6 +24,20 @@
           "reason": "bounds change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGPath path id='path'",
+      "reason": "style change"
     }
   ]
 }

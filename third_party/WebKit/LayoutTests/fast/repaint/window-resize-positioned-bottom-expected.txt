@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [600, 250],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [600, 250],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,19 +22,31 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 210, 20, 20],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "forced by layout"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "bounds change"
     }
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [400, 250],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [400, 250],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -46,19 +60,31 @@
           "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "forced by layout"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [400, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [400, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -82,19 +108,35 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 210, 20, 20],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "forced by layout"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "bounds change"
     }
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -108,12 +150,22 @@
           "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "forced by layout"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }

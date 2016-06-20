@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -45,86 +47,6 @@
           "object": "LayoutBR BR",
           "rect": [18, 208, 10, 10],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Bar'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Bazz'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
         }
       ]
     }

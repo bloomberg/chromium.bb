@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,72 +27,90 @@
           "object": "LayoutText #text",
           "rect": [304, 377, 128, 156],
           "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'text in the'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'reflection should be'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'text in the'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'reflection should be'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'text in the'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'reflection should be'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'text in the'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'reflection should be'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'green'",
+      "reason": "style change"
     }
   ]
 }

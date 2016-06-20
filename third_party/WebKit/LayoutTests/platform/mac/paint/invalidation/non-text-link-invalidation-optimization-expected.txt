@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -35,32 +37,58 @@
           "object": "LayoutText #text",
           "rect": [326, 8, 25, 18],
           "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' images.'",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' no '",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' passes if '",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' text is invalidated and '",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'This test '",
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'only'",
-          "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'This test '",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox ' passes if '",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'only'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox ' text is invalidated and '",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox ' no '",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox ' images.'",
+      "reason": "style change"
     }
   ]
 }

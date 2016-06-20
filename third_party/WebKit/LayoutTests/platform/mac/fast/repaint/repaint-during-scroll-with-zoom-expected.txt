@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -61,24 +63,14 @@
           "object": "LayoutView #document",
           "rect": [237, 300, 15, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "reason": "scroll"
-        },
-        {
-          "object": "InlineTextBox 'scroll me'",
-          "reason": "subtree"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "reason": "scroll"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutIFrame (positioned) IFRAME",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

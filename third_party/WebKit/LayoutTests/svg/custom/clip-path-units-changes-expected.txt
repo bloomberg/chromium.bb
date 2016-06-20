@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,12 +22,22 @@
           "object": "LayoutSVGRoot svg",
           "rect": [100, 0, 100, 200],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGResourceClipper clipPath id='myclip'",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='myclip'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "full"
     }
   ]
 }

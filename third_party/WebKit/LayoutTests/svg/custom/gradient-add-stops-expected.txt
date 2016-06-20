@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -10,16 +12,22 @@
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 100, 100],
           "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGResourceLinearGradient linearGradient id='test'",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='test'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
     }
   ]
 }

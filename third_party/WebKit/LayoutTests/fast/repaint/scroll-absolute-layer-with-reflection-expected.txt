@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -32,6 +34,28 @@
           "reason": "subtree"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutReplica (anonymous)",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+      "reason": "subtree"
     }
   ]
 }

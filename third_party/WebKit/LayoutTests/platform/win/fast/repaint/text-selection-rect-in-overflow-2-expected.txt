@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -9,22 +11,6 @@
         {
           "object": "LayoutText #text",
           "rect": [18, 27, 237, 18],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Should have blue, not gray, highlight'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
           "reason": "selection"
         }
       ]

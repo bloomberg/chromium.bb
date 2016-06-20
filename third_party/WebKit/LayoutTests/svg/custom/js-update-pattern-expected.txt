@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,12 +27,26 @@
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [0, 10, 10, 10],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGResourcePattern pattern id='Pattern'",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourcePattern pattern id='Pattern'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
     }
   ]
 }

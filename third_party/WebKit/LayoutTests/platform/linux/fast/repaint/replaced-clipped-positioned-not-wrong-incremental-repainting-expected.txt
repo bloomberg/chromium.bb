@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,16 +17,26 @@
           "object": "LayoutImage IMG",
           "rect": [8, 8, 194, 232],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "none"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
+      "reason": "location change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "none"
     }
   ]
 }

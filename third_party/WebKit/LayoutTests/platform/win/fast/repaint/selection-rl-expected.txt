@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -10,20 +12,26 @@
           "object": "LayoutText #text",
           "rect": [775, 39, 17, 78],
           "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Testing both hit testing'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'Testing both hit testing'",
+      "reason": "selection"
     }
   ]
 }

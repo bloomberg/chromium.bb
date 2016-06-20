@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,22 @@
           "object": "LayoutSVGEllipse circle",
           "rect": [0, 0, 4, 4],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
-          "reason": "layoutObject insertion"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "style change"
     }
   ]
 }

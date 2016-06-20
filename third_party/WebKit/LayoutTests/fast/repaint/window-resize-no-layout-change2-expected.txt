@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2008],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true
@@ -9,9 +11,11 @@
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2008],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -23,12 +27,20 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
+    }
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2008],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true
@@ -36,9 +48,11 @@
   ]
 }
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2008],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -49,6 +63,12 @@
           "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "full"
     }
   ]
 }

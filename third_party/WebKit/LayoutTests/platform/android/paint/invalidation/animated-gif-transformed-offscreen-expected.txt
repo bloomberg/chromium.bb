@@ -1,0 +1,24 @@
+{
+  "bounds": [2008, 2016],
+  "children": [
+    {
+      "bounds": [2008, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [2000, 2000],
+          "drawsContent": true,
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, -1000, 0, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
+

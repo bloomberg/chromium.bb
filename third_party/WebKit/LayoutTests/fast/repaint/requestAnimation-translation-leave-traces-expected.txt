@@ -2,9 +2,11 @@ This test checks that changing the transform on an element triggers a correct in
 The paint invalidations below should match the transformed element's coordinates.
 Tested locations: 1200,1500
 {
+  "name": "Content Root Layer",
   "bounds": [1600, 585],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [1600, 585],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -40,6 +42,24 @@ Tested locations: 1200,1500
           "reason": "subtree"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='box'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='box'",
+      "reason": "subtree"
     }
   ]
 }

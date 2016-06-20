@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,22 @@
           "object": "LayoutTableCell TD",
           "rect": [10, 10, 102, 100],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR id='target' class='green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
     }
   ]
 }

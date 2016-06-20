@@ -1,7 +1,9 @@
 CONSOLE MESSAGE: line 29: FAIL! An unexpected number of repaints occurred; expected 3 to 4 with rects of [8, 8, 300, 150]. Actual layer tree: {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -22,6 +24,20 @@ CONSOLE MESSAGE: line 29: FAIL! An unexpected number of repaints occurred; expec
           "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutVideo VIDEO",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutVideo VIDEO",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutVideo VIDEO",
+      "reason": "full"
     }
   ]
 }

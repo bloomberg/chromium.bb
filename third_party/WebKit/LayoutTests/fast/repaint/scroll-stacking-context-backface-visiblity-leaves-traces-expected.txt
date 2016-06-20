@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [785, 5054],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 5054],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (relative positioned) HEADER",
           "position": [8, 26],
           "bounds": [769, 1974],
           "drawsContent": true,
@@ -35,6 +38,16 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='recentlink'",
+      "reason": "subtree"
     }
   ]
 }

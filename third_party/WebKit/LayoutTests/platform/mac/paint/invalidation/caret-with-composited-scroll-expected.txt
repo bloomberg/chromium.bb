@@ -1,22 +1,27 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='scroller'",
           "position": [8, 44],
           "bounds": [100, 100],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [100, 100],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [205, 1019],
                   "drawsContent": true,
                   "paintInvalidations": [
@@ -40,29 +45,40 @@
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [100, 100],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 100],
                   "bounds": [100, 0],
                   "drawsContent": true
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [100, 0],
                   "bounds": [0, 100],
-                  "drawsContent": true,
-                  "paintInvalidations": [
-                    {
-                      "object": "Vertical Scrollbar Layer",
-                      "reason": "full"
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             }
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl INPUT id='text'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

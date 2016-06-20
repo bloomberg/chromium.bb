@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,40 +22,54 @@
           "object": "LayoutText #text",
           "rect": [8, 8, 16, 16],
           "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "became visible"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'a'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'b'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='container'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'a'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "became visible"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'b'",
+      "reason": "selection"
     }
   ]
 }

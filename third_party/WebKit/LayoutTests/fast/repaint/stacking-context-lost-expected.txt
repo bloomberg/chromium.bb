@@ -1,18 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
-          "reason": "layoutObject removal"
-        }
-      ],
       "children": [
         {
+          "name": "LayoutBlockFlow (relative positioned) DIV id='outer'",
           "position": [278, 278],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -38,6 +35,24 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+      "reason": "became visible"
     }
   ]
 }

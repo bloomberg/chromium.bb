@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [1000, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [1000, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,18 @@
           "object": "LayoutBlockFlow DIV id='child'",
           "rect": [101, 51, 85, 185],
           "reason": "incremental"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "reason": "scroll"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='child'",
+      "reason": "incremental"
     }
   ]
 }

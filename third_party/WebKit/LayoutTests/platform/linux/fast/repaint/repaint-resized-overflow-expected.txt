@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -22,6 +24,16 @@
           "reason": "incremental"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='s'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='t'",
+      "reason": "incremental"
     }
   ]
 }

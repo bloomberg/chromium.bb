@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -367,6 +369,152 @@
           "reason": "bounds change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
+      "reason": "bounds change"
     }
   ]
 }

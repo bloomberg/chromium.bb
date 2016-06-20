@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,36 +17,46 @@
           "object": "LayoutText #text",
           "rect": [40, 8, 16, 33],
           "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'xx'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'xx'",
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'y'",
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'y'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='container'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'xx'",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'y'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'xx'",
+      "reason": "incremental"
+    },
+    {
+      "object": "InlineTextBox 'y'",
+      "reason": "incremental"
     }
   ]
 }

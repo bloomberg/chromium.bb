@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,12 +27,26 @@
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
           "rect": [314, 564, 435, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "reason": "scroll"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+      "reason": "subtree"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "subtree"
     }
   ]
 }
