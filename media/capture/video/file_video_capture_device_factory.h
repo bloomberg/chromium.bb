@@ -12,7 +12,7 @@ namespace media {
 // Extension of VideoCaptureDeviceFactory to create and manipulate file-backed
 // fake devices. These devices play back video-only files as video capture
 // input.
-class MEDIA_EXPORT FileVideoCaptureDeviceFactory
+class CAPTURE_EXPORT FileVideoCaptureDeviceFactory
     : public VideoCaptureDeviceFactory {
  public:
   FileVideoCaptureDeviceFactory() {}

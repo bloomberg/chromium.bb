@@ -2009,7 +2009,7 @@
     ['use_udev == 1', {
       'dependencies': [
         '../device/udev_linux/udev.gyp:udev_linux',
-        '../media/media.gyp:media',
+        '../media/capture/capture.gyp:capture',
       ],
     }, {
       'sources!': [

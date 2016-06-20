@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/media_export.h"
+#include "media/capture/capture_export.h"
 #include "media/capture/content/thread_safe_capture_oracle.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -26,7 +26,7 @@ struct VideoCaptureParams;
 class ThreadSafeCaptureOracle;
 
 // Keeps track of the video capture source frames and executes copying.
-class MEDIA_EXPORT VideoCaptureMachine {
+class CAPTURE_EXPORT VideoCaptureMachine {
  public:
   VideoCaptureMachine();
   virtual ~VideoCaptureMachine();
@@ -72,7 +72,7 @@ class MEDIA_EXPORT VideoCaptureMachine {
 // (see notes at top of this file).  It times the start of successive captures
 // and facilitates the processing of each through the stages of the
 // pipeline.
-class MEDIA_EXPORT ScreenCaptureDeviceCore
+class CAPTURE_EXPORT ScreenCaptureDeviceCore
     : public base::SupportsWeakPtr<ScreenCaptureDeviceCore> {
  public:
   ScreenCaptureDeviceCore(std::unique_ptr<VideoCaptureMachine> capture_machine);

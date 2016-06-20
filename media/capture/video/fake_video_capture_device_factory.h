@@ -14,7 +14,7 @@ namespace media {
 
 // Extension of VideoCaptureDeviceFactory to create and manipulate fake devices,
 // not including file-based ones.
-class MEDIA_EXPORT FakeVideoCaptureDeviceFactory
+class CAPTURE_EXPORT FakeVideoCaptureDeviceFactory
     : public VideoCaptureDeviceFactory {
  public:
   FakeVideoCaptureDeviceFactory();

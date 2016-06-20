@@ -17,7 +17,7 @@ namespace media {
 
 // VideoCaptureDeviceFactory on Android. This class implements the static
 // VideoCapture methods and the factory of VideoCaptureAndroid.
-class MEDIA_EXPORT VideoCaptureDeviceFactoryAndroid
+class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
     : public VideoCaptureDeviceFactory {
  public:
   static bool RegisterVideoCaptureDeviceFactory(JNIEnv* env);

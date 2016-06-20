@@ -4,19 +4,32 @@
 
 assert(is_win)
 
-source_set("win") {
+component("win") {
+  defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
   set_sources_assignment_filter([])
   sources = [
     "mf_initializer.cc",
     "mf_initializer.h",
+    "mf_initializer_export.h",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
   configs += [
+    # TODO(jschuh): https://crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//media:media_config",
-    "//media:media_implementation",
   ]
   deps = [
     "//base",
     "//media:shared_memory_support",
+  ]
+  libs = [
+    "mf.lib",
+    "mfplat.lib",
+    "mfreadwrite.lib",
+  ]
+  ldflags = [
+    "/DELAYLOAD:mf.dll",
+    "/DELAYLOAD:mfplat.dll",
+    "/DELAYLOAD:mfreadwrite.dll",
   ]
 }

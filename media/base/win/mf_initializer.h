@@ -5,13 +5,13 @@
 #ifndef MEDIA_BASE_WIN_MF_INITIALIZER_H_
 #define MEDIA_BASE_WIN_MF_INITIALIZER_H_
 
-#include "media/base/media_export.h"
+#include "media/base/win/mf_initializer_export.h"
 
 namespace media {
 
 // Makes sure MFStartup() is called exactly once, and that this call is paired
 // by a call to MFShutdown().
-MEDIA_EXPORT void InitializeMediaFoundation();
+MF_INITIALIZER_EXPORT void InitializeMediaFoundation();
 
 }  // namespace media
 
