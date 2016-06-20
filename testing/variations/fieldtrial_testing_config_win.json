@@ -61,7 +61,7 @@
     ],
     "DefaultBrowserInfobar": [
         {
-            "group_name": "SettingsText"
+            "group_name": "SettingsTextNotNow"
         }
     ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
