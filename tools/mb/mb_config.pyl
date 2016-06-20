@@ -210,6 +210,7 @@
       'Libfuzzer Upload Linux ASan Debug': 'gn_debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
+      'Libfuzzer Upload Mac ASan': 'gn_release_libfuzzer_asan',
       'Linux ARM': 'swarming_gn_release_bot_arm',
       'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
       'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
