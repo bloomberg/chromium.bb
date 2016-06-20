@@ -84,9 +84,6 @@
 # Google Play Services warnings are about its resources.
 -dontwarn com.google.android.gms.R**
 
-# TODO(yfriedman): Remove when crbug.com/488192 is fixed.
--dontwarn org.apache.http.**
-
 # The support library contains references to newer platform versions.
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
@@ -100,8 +97,6 @@
 }
 
 # Everything below this is kept because they are referenced by the test APK.
--dontwarn javax.annotation.Nullable
-
 -keep class android.support.v7.mediarouter.R* {
   *;
 }
@@ -152,25 +147,15 @@
   public void flingViewport(long, int, int);
 }
 
-# TODO(aurimas): remove this when Google Play Services no longer uses setLatestEventInfo call
-# that was deprecated in Android M. It is save to suppress this according to b/18510449.
--dontwarn android.app.Notification
-
-# IntentUtils uses reflection to access a method that is hidden until API level 18.
--dontnote org.chromium.chrome.browser.util.IntentUtils
-
 # Needed to compile ChromeTest.apk
 -keep class android.support.customtabs.** {
   *;
 }
 
+# TODO(yfriedman): Remove when crbug.com/488192 is fixed.
+-dontwarn org.apache.http.conn.scheme.LayeredSocketFactory
+
 # Needed to run ChromeTest.apk
 -keepnames class com.google.android.gms.common.GoogleApiAvailability {
   *;
 }
-
-#-keep public class android.net.http.SslCertificate
-#-keep public class android.webkit.WebVie
-
-#-dontwarn android.webkit.WebView
--dontwarn android.net.http.SslCertificate
