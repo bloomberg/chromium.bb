@@ -249,6 +249,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   // The x position (in pixels) of the line we're on, relative to content
   // bounds.
   int x = 0;
+  int total_height = 0;
   // The width that was actually used. Guaranteed to be no larger than |width|.
   int used_width = 0;
 
@@ -349,16 +350,16 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     gfx::Insets focus_border_insets(label->GetInsets());
     focus_border_insets += -label->View::GetInsets();
     const gfx::Size view_size = label->GetPreferredSize();
-    if (!dry_run) {
-      label->SetBoundsRect(gfx::Rect(
-          gfx::Point(GetInsets().left() + x - focus_border_insets.left(),
-                     GetInsets().top() + line * line_height -
-                         focus_border_insets.top()),
-          view_size));
-      AddChildView(label.release());
-    }
+    label->SetBoundsRect(gfx::Rect(
+        gfx::Point(
+            GetInsets().left() + x - focus_border_insets.left(),
+            GetInsets().top() + line * line_height - focus_border_insets.top()),
+        view_size));
     x += view_size.width() - focus_border_insets.width();
     used_width = std::max(used_width, x);
+    total_height = std::max(total_height, label->bounds().bottom());
+    if (!dry_run)
+      AddChildView(label.release());
 
     // If |gfx::ElideRectangleText| returned more than one substring, that
     // means the whole text did not fit into remaining line width, with text
@@ -374,10 +375,6 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   }
 
   DCHECK_LE(used_width, width);
-  // The user-specified line height only applies to interline spacing, so the
-  // final line's height is unaffected.
-  int total_height = line * line_height +
-      CalculateLineHeight(font_list_) + GetInsets().height();
   calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
   return calculated_size_;
 }

@@ -7,14 +7,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/view.h"
 
 class BubbleSyncPromoDelegate;
 
 // Bookmark sync promo displayed at the bottom of the bookmark bubble.
-class BubbleSyncPromoView : public views::StyledLabelListener,
-                            public views::View {
+class BubbleSyncPromoView : public views::StyledLabel,
+                            public views::StyledLabelListener {
  public:
   // |delegate| is not owned by BubbleSyncPromoView.
   BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
@@ -23,13 +23,13 @@ class BubbleSyncPromoView : public views::StyledLabelListener,
   ~BubbleSyncPromoView() override;
 
  private:
+  // views::StyledLabel:
+  const char* GetClassName() const override;
+
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
-
-  // views::View:
-  const char* GetClassName() const override;
 
   // Delegate, to handle clicks on the sign in link.
   BubbleSyncPromoDelegate* delegate_;

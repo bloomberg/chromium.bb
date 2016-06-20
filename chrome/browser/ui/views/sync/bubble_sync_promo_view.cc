@@ -25,41 +25,36 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 BubbleSyncPromoView::BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
                                          int link_text_resource_id,
                                          int message_text_resource_id)
-    : delegate_(delegate) {
+    : StyledLabel(base::string16(), this), delegate_(delegate) {
   size_t offset = 0;
   base::string16 link_text = l10n_util::GetStringUTF16(link_text_resource_id);
   base::string16 promo_text =
       l10n_util::GetStringFUTF16(message_text_resource_id, link_text, &offset);
-
-  views::StyledLabel* promo_label = new views::StyledLabel(promo_text, this);
+  SetText(promo_text);
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
-  promo_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
-                             link_style);
+  AddStyleRange(gfx::Range(offset, offset + link_text.length()), link_style);
 
   views::StyledLabel::RangeStyleInfo promo_style;
   promo_style.color = kTextColor;
   gfx::Range before_link_range(0, offset);
   if (!before_link_range.is_empty())
-    promo_label->AddStyleRange(before_link_range, promo_style);
+    AddStyleRange(before_link_range, promo_style);
   gfx::Range after_link_range(offset + link_text.length(), promo_text.length());
   if (!after_link_range.is_empty())
-    promo_label->AddStyleRange(after_link_range, promo_style);
-
-  SetLayoutManager(new views::FillLayout());
-  AddChildView(promo_label);
+    AddStyleRange(after_link_range, promo_style);
 }
 
 BubbleSyncPromoView::~BubbleSyncPromoView() {}
+
+const char* BubbleSyncPromoView::GetClassName() const {
+  return "BubbleSyncPromoView";
+}
 
 void BubbleSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
   delegate_->OnSignInLinkClicked();
-}
-
-const char* BubbleSyncPromoView::GetClassName() const {
-  return "BubbleSyncPromoView";
 }
