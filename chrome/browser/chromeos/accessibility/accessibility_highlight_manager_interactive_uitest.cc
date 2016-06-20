@@ -144,8 +144,9 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightManagerTest);
 };
 
+// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       TestCaretRingDrawsBluePixels) {
+                       DISABLED_TestCaretRingDrawsBluePixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Rect caret_bounds(230, 330, 1, 25);
 
@@ -169,8 +170,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
   EXPECT_NEAR(255, SkColorGetB(average_diff_color()), 5);
 }
 
+// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       TestCursorRingDrawsRedPixels) {
+                       DISABLED_TestCursorRingDrawsRedPixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Point cursor_point(250, 350);
 
@@ -193,8 +195,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
   EXPECT_NEAR(176, SkColorGetB(average_diff_color()), 5);
 }
 
+// Flaky. http://crbug.com/621306
 IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
-                       TestFocusRingDrawsOrangePixels) {
+                       DISABLED_TestFocusRingDrawsOrangePixels) {
   gfx::Rect capture_bounds(200, 300, 100, 100);
   gfx::Rect focus_bounds(230, 330, 40, 40);
 
