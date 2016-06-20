@@ -1838,17 +1838,12 @@ void V4L2SliceVideoDecodeAccelerator::FlushTask() {
   DVLOGF(3);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!decoder_input_queue_.empty()) {
-    // We are not done with pending inputs, so queue an empty buffer,
-    // which - when reached - will trigger flush sequence.
-    decoder_input_queue_.push(
-        linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-            decode_client_, decode_task_runner_, nullptr, kFlushBufferId)));
-    return;
-  }
+  // Queue an empty buffer which - when reached - will trigger flush sequence.
+  decoder_input_queue_.push(
+      linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
+          decode_client_, decode_task_runner_, nullptr, kFlushBufferId)));
 
-  // No more inputs pending, so just finish flushing here.
-  InitiateFlush();
+  ScheduleDecodeBufferTaskIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::InitiateFlush() {
