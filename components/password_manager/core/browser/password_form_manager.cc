@@ -122,6 +122,16 @@ bool ShouldShowInitialPasswordAccountSuggestions() {
       password_manager::features::kFillOnAccountSelect);
 }
 
+// Update |credential| to reflect usage. This is broken out from UpdateLogin()
+// so that PSL matches can also be properly updated.
+void UpdateMetadataForUsage(PasswordForm* credential) {
+  ++credential->times_used;
+
+  // Remove alternate usernames. At this point we assume that we have found
+  // the right username.
+  credential->other_possible_usernames.clear();
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -712,7 +722,7 @@ void PasswordFormManager::UpdateLogin() {
     return;
   }
 
-  UpdateMetadataForUsage(pending_credentials_);
+  UpdateMetadataForUsage(&pending_credentials_);
 
   client_->GetStoreResultFilter()->ReportFormUsed(pending_credentials_);
 
@@ -777,15 +787,6 @@ void PasswordFormManager::UpdateLogin() {
       }
     }
   }
-}
-
-void PasswordFormManager::UpdateMetadataForUsage(
-    const PasswordForm& credential) {
-  ++pending_credentials_.times_used;
-
-  // Remove alternate usernames. At this point we assume that we have found
-  // the right username.
-  pending_credentials_.other_possible_usernames.clear();
 }
 
 bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
@@ -1082,7 +1083,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       // TODO(gcasto): It would be nice if other state were shared such that if
       // say a password was updated on one match it would update on all related
       // passwords. This is a much larger change.
-      UpdateMetadataForUsage(pending_credentials_);
+      UpdateMetadataForUsage(&pending_credentials_);
 
       // Update |pending_credentials_| in order to be able correctly save it.
       pending_credentials_.origin = provisionally_saved_form_->origin;
