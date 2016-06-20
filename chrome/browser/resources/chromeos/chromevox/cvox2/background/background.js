@@ -51,6 +51,14 @@ Background = function() {
   this.whitelist_ = ['chromevox_next_test'];
 
   /**
+   * A list of site substring patterns to blacklist ChromeVox Classic,
+   * putting ChromeVox into Compat mode.
+   * @type {!Set<string>}
+   * @private
+   */
+  this.classicBlacklist_ = new Set();
+
+  /**
    * Regular expression for blacklisting classic.
    * @type {RegExp}
    * @private
@@ -230,20 +238,25 @@ Background.prototype = {
     // async. Save it to ensure we're looking at the currentRange at this moment
     // in time.
     var cur = this.currentRange_;
-    chrome.tabs.query({active: true}, function(tabs) {
+    chrome.tabs.query({active: true,
+                       lastFocusedWindow: true}, function(tabs) {
       if (mode === ChromeVoxMode.CLASSIC) {
         // Generally, we don't want to inject classic content scripts as it is
         // done by the extension system at document load. The exception is when
         // we toggle classic on manually as part of a user command.
         if (opt_injectClassic)
           cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
+      } else if (mode === ChromeVoxMode.FORCE_NEXT) {
+        // Disable ChromeVox everywhere.
+        this.disableClassicChromeVox_();
       } else {
-        // When in compat mode, if the focus is within the desktop tree proper,
-        // then do not disable content scripts.
+        // If we're focused in the desktop tree, do nothing.
         if (cur && !cur.isWebRange())
           return;
 
-        this.disableClassicChromeVox_();
+        // If we're entering compat mode or next mode for just one tab,
+        // disable Classic for that tab only.
+        this.disableClassicChromeVox_(tabs);
       }
     }.bind(this));
 
@@ -1002,7 +1015,10 @@ Background.prototype = {
    * @private
    */
   isBlacklistedForClassic_: function(url) {
-    return this.classicBlacklistRegExp_.test(url);
+    if (this.classicBlacklistRegExp_.test(url))
+      return true;
+    url = url.substring(0, url.indexOf('#')) || url;
+    return this.classicBlacklist_.has(url);
   },
 
   /**
@@ -1018,12 +1034,22 @@ Background.prototype = {
 
   /**
    * Disables classic ChromeVox in current web content.
+   * @param {Array<Tab>=} opt_tabs The tabs where ChromeVox scripts should
+   *     be disabled. If null, will disable ChromeVox everywhere.
    */
-  disableClassicChromeVox_: function() {
-    cvox.ExtensionBridge.send({
-        message: 'SYSTEM_COMMAND',
-        command: 'killChromeVox'
-    });
+  disableClassicChromeVox_: function(opt_tabs) {
+    var disableChromeVoxCommand = {
+      message: 'SYSTEM_COMMAND',
+      command: 'killChromeVox'
+    };
+
+    if (opt_tabs) {
+      for (var i = 0, tab; tab = opt_tabs[i]; i++)
+        chrome.tabs.sendMessage(tab.id, disableChromeVoxCommand);
+    } else {
+      // Send to all ChromeVox clients.
+      cvox.ExtensionBridge.send(disableChromeVoxCommand);
+    }
   },
 
   /**
@@ -1075,6 +1101,11 @@ Background.prototype = {
             target: 'next',
             isClassicEnabled: isClassicEnabled
           });
+        } else if (action == 'enableCompatForUrl') {
+          var url = msg['url'];
+          this.classicBlacklist_.add(url);
+          if (this.currentRange_ && this.currentRange_.start.node)
+            this.refreshMode(this.currentRange_.start.node);
         } else if (action == 'onCommand') {
           this.onGotCommand(msg['command']);
         } else if (action == 'flushNextUtterance') {
