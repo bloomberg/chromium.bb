@@ -145,7 +145,8 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
   {{alloc_params(method.response_param_struct, "params", "message",
                  "&serialization_context_",
                  "{{class_name}}_{{method.name}} response")}}
-  callback_.Run({{pass_params(method.response_parameters)}});
+  if (!callback_.is_null())
+    callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
 {%-   endif %}
