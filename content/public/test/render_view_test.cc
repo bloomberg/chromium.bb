@@ -38,7 +38,6 @@
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
-#include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -67,7 +66,6 @@ using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebScriptSource;
 using blink::WebString;
-using blink::WebURLLoader;
 using blink::WebURLRequest;
 
 namespace {
@@ -108,65 +106,9 @@ bool GetWindowsKeyCode(char ascii_character, int* key_code) {
   }
 }
 
-WebURLRequest createDataRequest(const std::string& html) {
-  std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(html);
-  GURL url(url_str);
-  WebURLRequest request(url);
-  request.setCheckForBrowserSideNavigation(false);
-  return request;
-}
-
 }  // namespace
 
 namespace content {
-
-const char kWrappedHTMLDataHeader[] = "X-WrappedHTMLData";
-
-// This loader checks all requests for the presence of the X-WrappedHTMLData
-// header and, if it's found, substitutes a data: url with the header's value
-// instead of loading the original request. It is used to implement
-// LoadHTMLWithURLOverride.
-class WebURLLoaderWrapper : public WebURLLoader {
-public:
-  WebURLLoaderWrapper(WebURLLoader* wrapped_loader)
-    : wrapped_loader_(wrapped_loader) { }
-
-  void loadSynchronously(const WebURLRequest& request,
-                         blink::WebURLResponse& response,
-                         blink::WebURLError& error,
-                         blink::WebData& data) override {
-    std::string html = request.httpHeaderField(kWrappedHTMLDataHeader).utf8();
-    wrapped_loader_->loadSynchronously(
-        html.empty() ? request : createDataRequest(html),
-        response,
-        error,
-        data);
-  }
-
-  void loadAsynchronously(const WebURLRequest& request,
-                          blink::WebURLLoaderClient* client) override {
-    std::string html = request.httpHeaderField(kWrappedHTMLDataHeader).utf8();
-    wrapped_loader_->loadAsynchronously(
-        html.empty() ? request : createDataRequest(html),
-        client);
-  }
-
-  void cancel() override {
-    wrapped_loader_->cancel();
-  }
-
-  void setDefersLoading(bool defer) override {
-    wrapped_loader_->setDefersLoading(defer);
-  }
-
-  void setLoadingTaskRunner(blink::WebTaskRunner* runner) override {
-    wrapped_loader_->setLoadingTaskRunner(runner);
-  }
-
-private:
-  std::unique_ptr<WebURLLoader> wrapped_loader_;
-};
 
 class RendererBlinkPlatformImplTestOverrideImpl
     : public RendererBlinkPlatformImpl {
@@ -179,13 +121,6 @@ class RendererBlinkPlatformImplTestOverrideImpl
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
   blink::WebSandboxSupport* sandboxSupport() override { return NULL; }
-
-  // Inject a WebURLLoader which rewrites requests that have the
-  // X-WrappedHTMLData header.
-  WebURLLoader* createURLLoader() override {
-    return new WebURLLoaderWrapper(
-        RendererBlinkPlatformImpl::createURLLoader());
-  }
 };
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
@@ -247,7 +182,12 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
 }
 
 void RenderViewTest::LoadHTML(const char* html) {
-  GetMainFrame()->loadRequest(createDataRequest(html));
+  std::string url_string = "data:text/html;charset=utf-8,";
+  url_string.append(html);
+  GURL url(url_string);
+  WebURLRequest request(url);
+  request.setCheckForBrowserSideNavigation(false);
+  GetMainFrame()->loadRequest(request);
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
@@ -256,12 +196,8 @@ void RenderViewTest::LoadHTML(const char* html) {
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
                                              const char* url_override) {
-  GURL url(url_override);
-  WebURLRequest request(url);
-  request.setCheckForBrowserSideNavigation(false);
-  request.addHTTPHeaderField(kWrappedHTMLDataHeader, WebString::fromUTF8(html));
-
-  GetMainFrame()->loadRequest(request);
+  GetMainFrame()->loadHTMLString(std::string(html),
+                                 blink::WebURL(GURL(url_override)));
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
