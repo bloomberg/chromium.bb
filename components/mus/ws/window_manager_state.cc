@@ -122,8 +122,11 @@ bool WindowManagerState::SetCapture(ServerWindow* window,
   // TODO(sky): capture should be a singleton. Need to route to WindowServer
   // so that all other EventDispatchers are updated.
   DCHECK(IsActive());
-  if (capture_window() == window)
+  if (capture_window() == window &&
+      in_nonclient_area ==
+          event_dispatcher_.is_capture_window_in_nonclient_area()) {
     return true;
+  }
   DCHECK(!window || root_->Contains(window));
   return event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
 }

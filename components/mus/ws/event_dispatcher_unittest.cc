@@ -1578,6 +1578,20 @@ TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
             EventDispatcherTestApi(event_dispatcher()).capture_window());
 }
 
+TEST_F(EventDispatcherTest, ChangeCaptureFromClientToNonclient) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher()->SetCaptureWindow(child.get(), true);
+  EXPECT_TRUE(event_dispatcher()->is_capture_window_in_nonclient_area());
+  EXPECT_EQ(nullptr, test_event_dispatcher_delegate()->lost_capture_window());
+  event_dispatcher()->SetCaptureWindow(child.get(), false);
+  // Changing capture from client to non-client should notify the delegate.
+  // The delegate can decide if it really wants to forward the event or not.
+  EXPECT_EQ(child.get(),
+            test_event_dispatcher_delegate()->lost_capture_window());
+  EXPECT_EQ(child.get(), event_dispatcher()->capture_window());
+  EXPECT_FALSE(event_dispatcher()->is_capture_window_in_nonclient_area());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace mus

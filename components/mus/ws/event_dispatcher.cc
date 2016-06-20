@@ -67,7 +67,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),
       root_(nullptr),
       capture_window_(nullptr),
-      capture_window_in_nonclient_area_(false),
+      is_capture_window_in_nonclient_area_(false),
       modal_window_controller_(this),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
@@ -120,7 +120,8 @@ bool EventDispatcher::GetCurrentMouseCursor(int32_t* cursor_out) {
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
                                        bool in_nonclient_area) {
-  if (window == capture_window_)
+  if (window == capture_window_ &&
+      in_nonclient_area == is_capture_window_in_nonclient_area_)
     return true;
 
   // A window that is blocked by a modal window cannot gain capture.
@@ -162,7 +163,7 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   // from native platform might try to set the capture again.
   bool had_capture_window = capture_window_ != nullptr;
   capture_window_ = window;
-  capture_window_in_nonclient_area_ = in_nonclient_area;
+  is_capture_window_in_nonclient_area_ = in_nonclient_area;
 
   // Begin tracking the capture window if it is not yet being observed.
   if (window) {
@@ -316,7 +317,7 @@ void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
     mouse_cursor_source_window_ = capture_window_;
     PointerTarget pointer_target;
     pointer_target.window = capture_window_;
-    pointer_target.in_nonclient_area = capture_window_in_nonclient_area_;
+    pointer_target.in_nonclient_area = is_capture_window_in_nonclient_area_;
     DispatchToPointerTarget(pointer_target, event);
     return;
   }

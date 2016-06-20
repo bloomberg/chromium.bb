@@ -165,9 +165,10 @@ class WindowTreeTest : public testing::Test {
     return tree;
   }
 
- private:
+ protected:
   WindowEventTargetingHelper window_event_targeting_helper_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTest);
 };
 
@@ -621,8 +622,7 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   EXPECT_TRUE(embed_window->visible());
 }
 
-// Tests that setting capture only works while an input event is being
-// processed, and the only the capture window can release capture.
+// Tests that only the capture window can release capture.
 TEST_F(WindowTreeTest, ExplicitSetCapture) {
   TestWindowTreeClient* embed_client = nullptr;
   WindowTree* tree = nullptr;
@@ -633,25 +633,12 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_TRUE(tree->GetDisplay(window));
 
-  // Setting capture should fail when there are no active events
+  // Set capture.
   mojom::WindowTree* mojom_window_tree = static_cast<mojom::WindowTree*>(tree);
   uint32_t change_id = 42;
   mojom_window_tree->SetCapture(change_id, WindowIdToTransportId(window->id()));
   Display* display = tree->GetDisplay(window);
-  EXPECT_NE(window, GetCaptureWindow(display));
-
-  // Setting capture after the event is acknowledged should fail
-  DispatchEventAndAckImmediately(CreatePointerDownEvent(10, 10));
-  mojom_window_tree->SetCapture(++change_id,
-                                WindowIdToTransportId(window->id()));
-  EXPECT_NE(window, GetCaptureWindow(display));
-
-  // Settings while the event is being process should pass
-  DispatchEventWithoutAck(CreatePointerDownEvent(10, 10));
-  mojom_window_tree->SetCapture(++change_id,
-                                WindowIdToTransportId(window->id()));
   EXPECT_EQ(window, GetCaptureWindow(display));
-  AckPreviousEvent();
 
   // Only the capture window should be able to release capture
   mojom_window_tree->ReleaseCapture(++change_id,
@@ -997,6 +984,28 @@ TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
   EXPECT_FALSE(tree->SetWindowOpacity(
       ClientWindowId(WindowIdToTransportId(window_id)), new_opacity));
   EXPECT_NE(new_opacity, unknown_window.opacity());
+}
+
+TEST_F(WindowTreeTest, SetCaptureTargetsRightConnection) {
+  ServerWindow* window = window_event_targeting_helper_.CreatePrimaryTree(
+      gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
+  WindowTree* owning_tree =
+      window_server()->GetTreeWithId(window->id().client_id);
+  WindowTree* embed_tree = window_server()->GetTreeWithRoot(window);
+  ASSERT_NE(owning_tree, embed_tree);
+  ASSERT_TRUE(
+      owning_tree->SetCapture(ClientWindowIdForWindow(owning_tree, window)));
+  DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
+  WindowManagerStateTestApi wm_state_test_api(
+      display()->GetActiveWindowManagerState());
+  EXPECT_EQ(owning_tree, wm_state_test_api.tree_awaiting_input_ack());
+  AckPreviousEvent();
+
+  // Set capture from the embedded client and make sure it gets the event.
+  ASSERT_TRUE(
+      embed_tree->SetCapture(ClientWindowIdForWindow(embed_tree, window)));
+  DispatchEventWithoutAck(CreateMouseMoveEvent(22, 23));
+  EXPECT_EQ(embed_tree, wm_state_test_api.tree_awaiting_input_ack());
 }
 
 }  // namespace test

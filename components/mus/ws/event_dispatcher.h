@@ -63,6 +63,11 @@ class EventDispatcher : public ServerWindowObserver {
   // (indicated by returning |false|).
   bool SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
 
+  // Returns true if capture is in the non-client area of the window.
+  bool is_capture_window_in_nonclient_area() const {
+    return is_capture_window_in_nonclient_area_;
+  }
+
   // Adds a system modal window. The window remains modal to system until it is
   // destroyed. There can exist multiple system modal windows, in which case the
   // one that is visible and added most recently or shown most recently would be
@@ -192,7 +197,7 @@ class EventDispatcher : public ServerWindowObserver {
   ServerWindow* root_;
 
   ServerWindow* capture_window_;
-  bool capture_window_in_nonclient_area_;
+  bool is_capture_window_in_nonclient_area_;
 
   ModalWindowController modal_window_controller_;
 
