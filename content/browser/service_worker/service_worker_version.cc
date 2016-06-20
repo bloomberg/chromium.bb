@@ -547,11 +547,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
   custom_requests_.Remove(request_id);
-  if (is_redundant()) {
-    // The stop should be already scheduled, but try to stop immediately, in
-    // order to release worker resources soon.
-    StopWorkerIfIdle();
-  }
   return true;
 }
 
@@ -603,8 +598,6 @@ void ServiceWorkerVersion::AddStreamingURLRequestJob(
 void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
     const ServiceWorkerURLRequestJob* request_job) {
   streaming_url_request_jobs_.erase(request_job);
-  if (is_redundant())
-    StopWorkerIfIdle();
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
