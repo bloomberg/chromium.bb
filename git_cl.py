@@ -3212,7 +3212,8 @@ def CMDarchive(parser, args):
     return 1
 
   if not options.force:
-    if ask_for_data('\nProceed with deletion (Y/N)? ').lower() != 'y':
+    answer = ask_for_data('\nProceed with deletion (Y/n)? ').lower()
+    if answer not in ('y', ''):
       print('Aborted.')
       return 1
 
