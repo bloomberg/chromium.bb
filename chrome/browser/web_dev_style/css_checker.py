@@ -37,7 +37,7 @@ class CSSChecker(object):
       return s
 
     def _extract_inline_style(s):
-      return '\n'.join(re.findall(r'<style>([^<]*)<\/style>', s))
+      return '\n'.join(re.findall(r'<style\b[^>]*>([^<]*)<\/style>', s))
 
     def _remove_ats(s):
       at_reg = re.compile(r"""
@@ -394,7 +394,7 @@ class CSSChecker(object):
     for f in files:
       file_errors = []
       for check in added_or_modified_files_checks:
-        # If the check is multiline, it receieves the whole file and gives us
+        # If the check is multiline, it receives the whole file and gives us
         # back a list of things wrong. If the check isn't multiline, we pass it
         # each line and the check returns something truthy if there's an issue.
         if ('multiline' in check and check['multiline']):

@@ -453,6 +453,20 @@ body.alternate-logo #logo {
     flex-direction:column;
 """, filename='test.html')
 
+  def testHtmlIncludeStyle(self):
+    self.VerifyContentsProducesOutput("""<!doctype html>
+<html>
+  <style include="fake-shared-css">
+    body {
+      flex-direction:column;
+    }
+  </style>
+</head>
+</html>""", """
+- Colons (:) should have a space after them.
+    flex-direction:column;
+""", filename='test.html')
+
 
 if __name__ == '__main__':
   unittest.main()
