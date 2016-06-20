@@ -44,6 +44,7 @@ class AudioInputDevice::AudioThreadCallback
   void Process(uint32_t pending_data) override;
 
  private:
+  const double bytes_per_ms_;
   int current_segment_id_;
   uint32_t last_buffer_id_;
   ScopedVector<media::AudioBus> audio_buses_;
@@ -94,7 +95,7 @@ void AudioInputDevice::Stop() {
 
   {
     base::AutoLock auto_lock(audio_thread_lock_);
-    audio_thread_.Stop(base::MessageLoop::current());
+    audio_thread_.reset();
     stopping_hack_ = true;
   }
 
@@ -143,11 +144,12 @@ void AudioInputDevice::OnStreamCreated(
   if (stopping_hack_)
     return;
 
-  DCHECK(audio_thread_.IsStopped());
+  DCHECK(!audio_callback_);
+  DCHECK(!audio_thread_);
   audio_callback_.reset(new AudioInputDevice::AudioThreadCallback(
       audio_parameters_, handle, length, total_segments, callback_));
-  audio_thread_.Start(
-      audio_callback_.get(), socket_handle, "AudioInputDevice", true);
+  audio_thread_.reset(new AudioDeviceThread(audio_callback_.get(),
+                                            socket_handle, "AudioInputDevice"));
 
   state_ = RECORDING;
   ipc_->RecordStream();
@@ -182,9 +184,13 @@ void AudioInputDevice::OnStateChanged(
       // TODO(tommi): Add an explicit contract for clearing the callback
       // object.  Possibly require calling Initialize again or provide
       // a callback object via Start() and clear it in Stop().
-      if (!audio_thread_.IsStopped())
-        callback_->OnCaptureError(
-            "AudioInputDevice::OnStateChanged - audio thread still running");
+      {
+        base::AutoLock auto_lock_(audio_thread_lock_);
+        if (audio_thread_) {
+          callback_->OnCaptureError(
+              "AudioInputDevice::OnStateChanged - audio thread still running");
+        }
+      }
       break;
     default:
       NOTREACHED();
@@ -198,11 +204,7 @@ void AudioInputDevice::OnIPCClosed() {
   ipc_.reset();
 }
 
-AudioInputDevice::~AudioInputDevice() {
-  // TODO(henrika): The current design requires that the user calls
-  // Stop before deleting this class.
-  DCHECK(audio_thread_.IsStopped());
-}
+AudioInputDevice::~AudioInputDevice() {}
 
 void AudioInputDevice::StartUpOnIOThread() {
   DCHECK(task_runner()->BelongsToCurrentThread());
@@ -241,7 +243,7 @@ void AudioInputDevice::ShutDownOnIOThread() {
   // and can't not rely on the main thread existing either.
   base::AutoLock auto_lock_(audio_thread_lock_);
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  audio_thread_.Stop(NULL);
+  audio_thread_.reset();
   audio_callback_.reset();
   stopping_hack_ = false;
 }
@@ -277,12 +279,15 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     int memory_length,
     int total_segments,
     CaptureCallback* capture_callback)
-    : AudioDeviceThread::Callback(audio_parameters, memory, memory_length,
+    : AudioDeviceThread::Callback(audio_parameters,
+                                  memory,
+                                  memory_length,
                                   total_segments),
+      bytes_per_ms_(static_cast<double>(audio_parameters.GetBytesPerSecond()) /
+                    base::Time::kMillisecondsPerSecond),
       current_segment_id_(0),
       last_buffer_id_(UINT32_MAX),
-      capture_callback_(capture_callback) {
-}
+      capture_callback_(capture_callback) {}
 
 AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }

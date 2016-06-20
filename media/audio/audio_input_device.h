@@ -156,8 +156,8 @@ class MEDIA_EXPORT AudioInputDevice
   // In order to avoid a race between OnStreamCreated and Stop(), we use this
   // guard to control stopping and starting the audio thread.
   base::Lock audio_thread_lock_;
-  AudioDeviceThread audio_thread_;
   std::unique_ptr<AudioInputDevice::AudioThreadCallback> audio_callback_;
+  std::unique_ptr<AudioDeviceThread> audio_thread_;
 
   // Temporary hack to ignore OnStreamCreated() due to the user calling Stop()
   // so we don't start the audio thread pointing to a potentially freed

@@ -46,6 +46,7 @@ class AudioOutputDevice::AudioThreadCallback
   bool CurrentThreadIsAudioDeviceThread();
 
  private:
+  const int bytes_per_frame_;
   AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<AudioBus> output_bus_;
   uint64_t callback_num_;
@@ -95,11 +96,7 @@ void AudioOutputDevice::Initialize(const AudioParameters& params,
   callback_ = callback;
 }
 
-AudioOutputDevice::~AudioOutputDevice() {
-  // The current design requires that the user calls Stop() before deleting
-  // this class.
-  DCHECK(audio_thread_.IsStopped());
-}
+AudioOutputDevice::~AudioOutputDevice() {}
 
 void AudioOutputDevice::RequestDeviceAuthorization() {
   task_runner()->PostTask(
@@ -118,7 +115,7 @@ void AudioOutputDevice::Start() {
 void AudioOutputDevice::Stop() {
   {
     base::AutoLock auto_lock(audio_thread_lock_);
-    audio_thread_.Stop(base::MessageLoop::current());
+    audio_thread_.reset();
     stopping_hack_ = true;
   }
 
@@ -267,7 +264,7 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   // and can't rely on the main thread existing either.
   base::AutoLock auto_lock_(audio_thread_lock_);
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  audio_thread_.Stop(NULL);
+  audio_thread_.reset();
   audio_callback_.reset();
   stopping_hack_ = false;
 }
@@ -299,8 +296,11 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
       // TODO(tommi): Add an explicit contract for clearing the callback
       // object.  Possibly require calling Initialize again or provide
       // a callback object via Start() and clear it in Stop().
-      if (!audio_thread_.IsStopped())
-        callback_->OnRenderError();
+      {
+        base::AutoLock auto_lock_(audio_thread_lock_);
+        if (audio_thread_)
+          callback_->OnRenderError();
+      }
       break;
     default:
       NOTREACHED();
@@ -400,11 +400,13 @@ void AudioOutputDevice::OnStreamCreated(
     if (stopping_hack_)
       return;
 
-    DCHECK(audio_thread_.IsStopped());
+    DCHECK(!audio_thread_);
+    DCHECK(!audio_callback_);
+
     audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
         audio_parameters_, handle, length, callback_));
-    audio_thread_.Start(audio_callback_.get(), socket_handle,
-                        "AudioOutputDevice", true);
+    audio_thread_.reset(new AudioDeviceThread(
+        audio_callback_.get(), socket_handle, "AudioOutputDevice"));
     state_ = PAUSED;
 
     // We handle the case where Play() and/or Pause() may have been called
@@ -436,6 +438,7 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     int memory_length,
     AudioRendererSink::RenderCallback* render_callback)
     : AudioDeviceThread::Callback(audio_parameters, memory, memory_length, 1),
+      bytes_per_frame_(audio_parameters.GetBytesPerFrame()),
       render_callback_(render_callback),
       callback_num_(0) {}
 
