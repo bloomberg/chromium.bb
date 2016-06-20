@@ -53,7 +53,7 @@
 
 namespace settings {
 
-MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
+MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -88,6 +88,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   // Host must be derived from the visible URL, since this might be serving
   // either chrome://settings or chrome://md-settings.
+  GURL url = web_ui->GetWebContents()->GetVisibleURL();
+
+  if (url.SchemeIs(content::kViewSourceScheme))
+    url = GURL(url.GetContent());
+
   CHECK(url.GetOrigin() == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
         url.GetOrigin() == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin());
 
