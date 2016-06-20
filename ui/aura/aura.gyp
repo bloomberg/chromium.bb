@@ -80,6 +80,8 @@
         'client/window_tree_client.h',
         'env.cc',
         'env.h',
+        'env_input_state_controller.cc',
+        'env_input_state_controller.h',
         'env_observer.h',
         'input_state_lookup.cc',
         'input_state_lookup.h',

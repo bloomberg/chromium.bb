@@ -17,6 +17,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_targeter.h"
@@ -48,19 +49,6 @@ Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
   return consumer ? static_cast<Window*>(consumer) : NULL;
 }
 
-void SetLastMouseLocation(const Window* root_window,
-                          const gfx::Point& location_in_root) {
-  client::ScreenPositionClient* client =
-      client::GetScreenPositionClient(root_window);
-  if (client) {
-    gfx::Point location_in_screen = location_in_root;
-    client->ConvertPointToScreen(root_window, &location_in_screen);
-    Env::GetInstance()->set_last_mouse_location(location_in_screen);
-  } else {
-    Env::GetInstance()->set_last_mouse_location(location_in_root);
-  }
-}
-
 bool IsEventCandidateForHold(const ui::Event& event) {
   if (event.type() == ui::ET_TOUCH_MOVED)
     return true;
@@ -78,7 +66,6 @@ bool IsEventCandidateForHold(const ui::Event& event) {
 
 WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
     : host_(host),
-      touch_ids_down_(0),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       event_dispatch_target_(NULL),
@@ -88,6 +75,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       dispatching_held_event_(nullptr),
       observer_manager_(this),
       transform_events_(true),
+      env_controller_(new EnvInputStateController),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -219,7 +207,7 @@ void WindowEventDispatcher::OnHostLostMouseGrab() {
 
 void WindowEventDispatcher::OnCursorMovedToRootLocation(
     const gfx::Point& root_location) {
-  SetLastMouseLocation(window(), root_location);
+  env_controller_->SetLastMouseLocation(window(), root_location);
 
   // Synthesize a mouse move in case the cursor's location in root coordinates
   // changed but its position in WindowTreeHost coordinates did not.
@@ -266,11 +254,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
     Window* target,
     const ui::MouseEvent& event,
     ui::EventType type) {
-  if (event.type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
-      !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
-    SetLastMouseLocation(window(), event.root_location());
-  }
-
+  env_controller_->UpdateStateForMouseEvent(window(), event);
   if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate() ||
       !window()->Contains(mouse_moved_handler_))
     return DispatchDetails();
@@ -751,8 +735,6 @@ DispatchDetails WindowEventDispatcher::PreDispatchLocatedEvent(
   if (!is_dispatched_held_event(*event) &&
       (event->IsMouseEvent() || event->IsScrollEvent()) &&
       !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
-      SetLastMouseLocation(window(), event->root_location());
     synthesize_mouse_move_ = false;
   }
 
@@ -774,12 +756,10 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
     return DispatchDetails();
   }
 
+  env_controller_->UpdateStateForMouseEvent(window(), *event);
+
   if (IsEventCandidateForHold(*event) && !dispatching_held_event_) {
     if (move_hold_count_) {
-      if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
-          event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
-        SetLastMouseLocation(window(), event->root_location());
-      }
       held_move_event_.reset(new ui::MouseEvent(*event, target, window()));
       event->SetHandled();
       return DispatchDetails();
@@ -851,12 +831,9 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
       // sent to the wrong target.
       if (!(event->flags() & ui::EF_IS_NON_CLIENT) && !mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
-      Env::GetInstance()->set_mouse_button_flags(event->button_flags());
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
-      Env::GetInstance()->set_mouse_button_flags(
-          event->button_flags() & ~event->changed_button_flags());
       break;
     default:
       break;
@@ -868,35 +845,14 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
 DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
     Window* target,
     ui::TouchEvent* event) {
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      touch_ids_down_ |= (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-      // Handle ET_TOUCH_CANCELLED only if it has a native event.
-    case ui::ET_TOUCH_CANCELLED:
-      if (!event->HasNativeEvent())
-        break;
-      // fallthrough
-    case ui::ET_TOUCH_RELEASED:
-      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
-            (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-    case ui::ET_TOUCH_MOVED:
-      if (move_hold_count_ && !dispatching_held_event_) {
-        held_move_event_.reset(new ui::TouchEvent(*event, target, window()));
-        event->SetHandled();
-        return DispatchDetails();
-      }
-      break;
-
-    default:
-      NOTREACHED();
-      break;
+  if (event->type() == ui::ET_TOUCH_MOVED && move_hold_count_ &&
+      !dispatching_held_event_) {
+    held_move_event_.reset(new ui::TouchEvent(*event, target, window()));
+    event->SetHandled();
+    return DispatchDetails();
   }
+
+  env_controller_->UpdateStateForTouchEvent(*event);
 
   ui::TouchEvent orig_event(*event, target, window());
   if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(&orig_event,
