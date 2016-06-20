@@ -38,6 +38,8 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/chromoting_jni_instance.h",
     "//remoting/client/jni/chromoting_jni_runtime.cc",
     "//remoting/client/jni/chromoting_jni_runtime.h",
+    "//remoting/client/jni/egl_thread_context.cc",
+    "//remoting/client/jni/egl_thread_context.h",
     "//remoting/client/jni/jni_client.cc",
     "//remoting/client/jni/jni_client.h",
     "//remoting/client/jni/jni_display_handler.cc",
@@ -52,7 +54,10 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/remoting_jni_registrar.cc",
     "//remoting/client/jni/remoting_jni_registrar.h",
   ]
-  libs = [ "OpenSLES" ]
+  libs = [
+    "OpenSLES",
+    "EGL",
+  ]
   configs += [ "//remoting:enable_webrtc_remoting_client" ]
 }
 
