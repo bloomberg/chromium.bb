@@ -3,8 +3,8 @@ Test OscillatorNode with Negative Frequency.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Sum of positive and negative frequency sine oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 4.1724e-7.
-PASS Sum of positive and negative frequency square oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.0000043959.
+PASS Sum of positive and negative frequency sine oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 4.7684e-7.
+PASS Sum of positive and negative frequency square oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.0000044108.
 PASS Sum of positive and negative frequency sawtooth oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.0000043735.
 PASS Sum of positive and negative frequency triangle oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 3.5763e-7.
 PASS Sum of positive and negative frequency-ramped sawtooth oscillators equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.0000041202.
