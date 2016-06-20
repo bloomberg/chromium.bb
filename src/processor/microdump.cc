@@ -110,6 +110,9 @@ void MicrodumpModules::Add(const CodeModule* module) {
   }
 }
 
+void MicrodumpModules::SetEnableModuleShrink(bool is_enabled) {
+  map_.SetEnableShrinkDown(is_enabled);
+}
 
 //
 // MicrodumpContext
@@ -262,6 +265,7 @@ Microdump::Microdump(const string& contents)
       } else if (os_id == "A") {
         system_info_->os = "Android";
         system_info_->os_short = "android";
+        modules_->SetEnableModuleShrink(true);
       }
 
       // OS line also contains release and version for future use.

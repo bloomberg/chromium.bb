@@ -169,6 +169,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   info.start_addr = kMemoryAddress;
   info.size = memory_size;
   info.offset = 0;
+  info.exec = false;
   strcpy(info.name, kMemoryName);
 
   MappingList mappings;
@@ -323,6 +324,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   info.start_addr = kMemoryAddress - memory_size;
   info.size = memory_size * 3;
   info.offset = 0;
+  info.exec = false;
   strcpy(info.name, kMemoryName);
 
   MappingList mappings;

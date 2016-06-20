@@ -2109,8 +2109,18 @@ string MinidumpModule::version() const {
 }
 
 
-const CodeModule* MinidumpModule::Copy() const {
+CodeModule* MinidumpModule::Copy() const {
   return new BasicCodeModule(this);
+}
+
+
+uint64_t MinidumpModule::shrink_down_delta() const {
+  return 0;
+}
+
+void MinidumpModule::SetShrinkDownDelta(uint64_t shrink_down_delta) {
+  // Not implemented
+  assert(false);
 }
 
 
@@ -2497,6 +2507,7 @@ MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
       range_map_(new RangeMap<uint64_t, unsigned int>()),
       modules_(NULL),
       module_count_(0) {
+  range_map_->SetEnableShrinkDown(minidump_->IsAndroid());
 }
 
 
@@ -2709,7 +2720,7 @@ const MinidumpModule* MinidumpModuleList::GetModuleAtSequence(
   }
 
   unsigned int module_index;
-  if (!range_map_->RetrieveRangeAtIndex(sequence, &module_index, 
+  if (!range_map_->RetrieveRangeAtIndex(sequence, &module_index,
                                         NULL /* base */, NULL /* delta */,
                                         NULL /* size */)) {
     BPLOG(ERROR) << "MinidumpModuleList has no module at sequence " << sequence;
@@ -2741,6 +2752,14 @@ const CodeModules* MinidumpModuleList::Copy() const {
   return new BasicCodeModules(this);
 }
 
+vector<linked_ptr<const CodeModule> >
+MinidumpModuleList::GetShrunkRangeModules() const {
+  return vector<linked_ptr<const CodeModule> >();
+}
+
+bool MinidumpModuleList::IsModuleShrinkEnabled() const {
+  return range_map_->IsShrinkDownEnabled();
+}
 
 void MinidumpModuleList::Print() {
   if (!valid_) {
@@ -4532,6 +4551,24 @@ MinidumpLinuxMapsList *Minidump::GetLinuxMapsList() {
   return GetStream(&linux_maps_list);
 }
 
+bool Minidump::IsAndroid() {
+  // Save the current stream position
+  off_t saved_position = Tell();
+  if (saved_position == -1) {
+    return false;
+  }
+  const MDRawSystemInfo* system_info =
+    GetSystemInfo() ? GetSystemInfo()->system_info() : NULL;
+
+  // Restore position and return
+  if (!SeekSet(saved_position)) {
+    BPLOG(ERROR) << "Couldn't seek back to saved position";
+    return false;
+  }
+
+  return system_info && system_info->platform_id == MD_OS_ANDROID;
+}
+
 static const char* get_stream_name(uint32_t stream_type) {
   switch (stream_type) {
   case MD_UNUSED_STREAM:
@@ -4645,7 +4682,7 @@ void Minidump::Print() {
        iterator != stream_map_->end();
        ++iterator) {
     uint32_t stream_type = iterator->first;
-    MinidumpStreamInfo info = iterator->second;
+    const MinidumpStreamInfo& info = iterator->second;
     printf("  stream type 0x%x (%s) at index %d\n", stream_type,
            get_stream_name(stream_type),
            info.stream_index);
@@ -4802,7 +4839,7 @@ bool Minidump::SeekToStreamType(uint32_t  stream_type,
     return false;
   }
 
-  MinidumpStreamInfo info = iterator->second;
+  const MinidumpStreamInfo& info = iterator->second;
   if (info.stream_index >= header_.stream_count) {
     BPLOG(ERROR) << "SeekToStreamType: type " << stream_type <<
                     " out of range: " <<

@@ -126,8 +126,20 @@ ProcessResult MinidumpProcessor::Process(
   // Put a copy of the module list into ProcessState object.  This is not
   // necessarily a MinidumpModuleList, but it adheres to the CodeModules
   // interface, which is all that ProcessState needs to expose.
-  if (module_list)
+  if (module_list) {
     process_state->modules_ = module_list->Copy();
+    process_state->shrunk_range_modules_ =
+        process_state->modules_->GetShrunkRangeModules();
+    for (unsigned int i = 0;
+         i < process_state->shrunk_range_modules_.size();
+         i++) {
+      linked_ptr<const CodeModule> module =
+          process_state->shrunk_range_modules_[i];
+      BPLOG(INFO) << "The range for module " << module->code_file()
+                  << " was shrunk down by " << HexString(
+                      module->shrink_down_delta()) << " bytes. ";
+    }
+  }
 
   MinidumpMemoryList *memory_list = dump->GetMemoryList();
   if (memory_list) {

@@ -201,7 +201,7 @@ TEST_F(MicrodumpProcessorTest, TestProcessX86) {
   AnalyzeDump("microdump-x86.dmp", false /* omit_symbols */,
               4 /* expected_cpu_count */, &state);
 
-  ASSERT_EQ(105U, state.modules()->module_count());
+  ASSERT_EQ(124U, state.modules()->module_count());
   ASSERT_EQ("x86", state.system_info()->cpu);
   ASSERT_EQ("asus/WW_Z00A/Z00A:5.0/LRX21V/2.19.40.22_20150627_5104_user:user/"
       "release-keys", state.system_info()->os_version);
@@ -216,11 +216,11 @@ TEST_F(MicrodumpProcessorTest, TestProcessMultiple) {
   ProcessState state;
   AnalyzeDump("microdump-multiple.dmp", false /* omit_symbols */,
               6 /* expected_cpu_count */, &state);
-  ASSERT_EQ(133U, state.modules()->module_count());
+  ASSERT_EQ(156U, state.modules()->module_count());
   ASSERT_EQ("arm", state.system_info()->cpu);
   ASSERT_EQ("lge/p1_tmo_us/p1:6.0/MRA58K/1603210524c8d:user/release-keys",
             state.system_info()->os_version);
-  ASSERT_EQ(2U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(5U, state.threads()->at(0)->frames()->size());
 }
 
 TEST_F(MicrodumpProcessorTest, TestProcessMips) {
@@ -249,7 +249,7 @@ TEST_F(MicrodumpProcessorTest, TestProcessMips64) {
   AnalyzeDump("microdump-mips64.dmp", false /* omit_symbols */,
               1 /* expected_cpu_count */, &state);
 
-  ASSERT_EQ(7U, state.modules()->module_count());
+  ASSERT_EQ(8U, state.modules()->module_count());
   ASSERT_EQ("mips64", state.system_info()->cpu);
   ASSERT_EQ("3.10.0-gf185e20 #112 PREEMPT Mon Oct 5 11:12:49 PDT 2015",
         state.system_info()->os_version);
