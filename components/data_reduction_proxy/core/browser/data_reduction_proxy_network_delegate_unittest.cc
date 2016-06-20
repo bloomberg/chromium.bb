@@ -698,27 +698,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   }
 }
 
-// Notify network delegate with a NULL request.
-TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
-  net::HttpRequestHeaders headers;
-  net::ProxyInfo data_reduction_proxy_info;
-  net::ProxyRetryInfoMap proxy_retry_info;
-  std::string data_reduction_proxy;
-  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UsePacString(
-      "PROXY " +
-      net::ProxyServer::FromURI(params()->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP)
-          .host_port_pair()
-          .ToString() +
-      "; DIRECT");
-  EXPECT_FALSE(data_reduction_proxy_info.is_empty());
-
-  network_delegate()->NotifyBeforeSendHeaders(
-      nullptr, data_reduction_proxy_info, proxy_retry_info, &headers);
-  EXPECT_FALSE(headers.HasHeader(chrome_proxy_header()));
-}
-
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
   // Enable Lo-Fi.
   const struct {

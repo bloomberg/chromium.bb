@@ -174,10 +174,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
-  // TODO(ryansturm): Remove this nullptr check, as request should never be
-  // null. crbug.com/619712
-  if (!request)
-    return;
+  DCHECK(request);
   if (params::IsIncludedInHoldbackFieldTrial()) {
     if (!WasEligibleWithoutHoldback(*request, proxy_info, proxy_retry_info))
       return;
