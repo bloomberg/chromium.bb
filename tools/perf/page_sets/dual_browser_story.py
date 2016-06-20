@@ -195,6 +195,14 @@ class MultiBrowserSharedState(story_module.SharedState):
         logging.exception('Error while closing browser: %s', browser_type)
     self._browsers = None  # Not usable after tearing down.
 
+  def DumpStateUponFailure(self, unused_story, unused_results):
+    if self._browsers:
+      for browser_type, browser in self._browsers.iteritems():
+        logging.info('vvvvv BROWSER STATE BELOW FOR \'%s\' vvvvv', browser_type)
+        browser.DumpStateUponFailure()
+    else:
+      logging.warning('Cannot dump browser states: No browsers.')
+
 
 class SinglePage(story_module.Story):
   def __init__(self, name, url, browser_type, phase):
