@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -46,15 +45,6 @@ class URLFetcher;
 }
 
 namespace {
-
-// Enums for UMAs.
-enum SyncBackendInitState {
-    SETUP_COMPLETED_FOUND_RESTORED_TYPES = 0,
-    SETUP_COMPLETED_NO_RESTORED_TYPES,
-    FIRST_SETUP_NO_RESTORED_TYPES,
-    FIRST_SETUP_RESTORED_TYPES,
-    SYNC_BACKEND_INIT_STATE_COUNT
-};
 
 void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -187,22 +177,6 @@ void SyncBackendHostCore::OnInitializationComplete(
   // the UI thread yet.
   js_backend_ = js_backend;
   debug_info_listener_ = debug_info_listener;
-
-  // Track whether or not sync DB and preferences were in sync.
-  SyncBackendInitState backend_init_state;
-  if (has_sync_setup_completed_ && !restored_types.Empty()) {
-    backend_init_state = SETUP_COMPLETED_FOUND_RESTORED_TYPES;
-  } else if (has_sync_setup_completed_ && restored_types.Empty()) {
-    backend_init_state = SETUP_COMPLETED_NO_RESTORED_TYPES;
-  } else if (!has_sync_setup_completed_ && restored_types.Empty()) {
-    backend_init_state = FIRST_SETUP_NO_RESTORED_TYPES;
-  } else {  // (!has_sync_setup_completed_ && !restored_types.Empty())
-    backend_init_state = FIRST_SETUP_RESTORED_TYPES;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Sync.BackendInitializeRestoreState",
-                            backend_init_state,
-                            SYNC_BACKEND_INIT_STATE_COUNT);
 
   // Before proceeding any further, we need to download the control types and
   // purge any partial data (ie. data downloaded for a type that was on its way

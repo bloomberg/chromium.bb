@@ -54929,6 +54929,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.AppAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during app association (M18 and earlier were mispelled with this
@@ -55035,6 +55038,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.AuthInvalidationRejectedTokenAgeLong" units="days">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Age of all auth tokens rejected by the invalidation server. Measured from
@@ -55043,6 +55049,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.AuthInvalidationRejectedTokenAgeShort" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Age of auth tokens younger than one hour that were rejected by the
@@ -55051,11 +55060,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.AuthorizationTimeInNetwork" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time taken during initial authorization.</summary>
 </histogram>
 
 <histogram name="Sync.AuthServerRejectedTokenAgeLong" units="days">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Age of all auth tokens rejected by the sync server. Measured from the time
@@ -55064,6 +55079,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.AuthServerRejectedTokenAgeShort" units="ms">
+  <obsolete>
+    No longer relevant since transition to OAuth.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Age of auth tokens younger than one hour that were rejected by the sync
@@ -55179,6 +55197,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Sync.BackendInitializeRestoreState"
     enum="SyncBackendInitializeRestoreState">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Compares sync's has_setup_completed pref against the set of types actually
@@ -55203,6 +55224,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.BadRequestCountOnSignInNeedsUpdateInfoBar">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Number of bad requests since application startup, when the Sync error
@@ -55413,6 +55437,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.CredentialsLost" enum="BooleanCredentialsLost">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Whether or not we detected missing credentials during startup.  This may be
@@ -55467,6 +55494,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.DatatypePrefRecovery">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Number of clients that have fixed themselves up from a datatype preference
@@ -55505,6 +55535,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.DeviceIdMismatchDetails" enum="DeviceIdMismatch">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>pavely@chromium.org</owner>
   <summary>
     When signin_scoped_device_id from pref doesn't match the one in
@@ -55591,6 +55624,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.ExtensionAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during extension association (M18 and earlier were mispelled with
@@ -55676,6 +55712,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FaviconCount">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Number of synced favicons at initialization time.</summary>
 </histogram>
@@ -55703,6 +55742,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FaviconsAvailableAtMerge" enum="SyncFaviconsAvailable">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Number of client that have filled their sync favicon cache and must evict
@@ -55734,6 +55776,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FaviconVisitPeriod" units="hours">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time between updates to a synced favicon's visit time.</summary>
 </histogram>
@@ -55865,6 +55910,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FreqSyncedNotifications" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for synced notifications. Used as estimate of datatype
@@ -55890,6 +55938,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FreqWifiCredentials" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for WiFi credentials. Used as estimate of datatype
@@ -56121,6 +56172,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PasswordAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during password association (M18 and earlier were mispelled with
@@ -56169,6 +56223,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PreferenceAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during preference association (M18 and earlier were mispelled
@@ -56217,6 +56274,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.ReauthorizationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time taken from startup for the user to reauthorize.</summary>
 </histogram>
@@ -56291,6 +56351,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.SearchEngineAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during search engine association (M18 and earlier were mispelled
@@ -56355,6 +56418,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.SessionAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during session association (M18 and earlier were mispelled with
@@ -56429,6 +56495,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.Shutdown.StopRegistrarTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Amount of time the UI thread waits (at shutdown) to stop the
@@ -56437,6 +56506,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.Shutdown.StopSyncThreadTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Amount of time the UI thread waits (at shutdown) to stop the sync thread.
@@ -56484,6 +56556,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.SyncAuthError" enum="SyncAuthError">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Counts the number of times sync clients have encountered an auth error and
@@ -56492,12 +56567,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.SyncedNotificationsAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time taken during synced notifications association.</summary>
 </histogram>
 
 <histogram name="Sync.SyncedNotificationsConfigureFailure"
     enum="SyncConfigureResult">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of synced notifications configuration failures.
@@ -56505,6 +56586,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.SyncedNotificationsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <obsolete>
     Replaced by SyncedNotificationsConfigureFailure. See crbug.com/478226.
   </obsolete>
@@ -56595,6 +56679,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.TypedUrlAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Time taken during typed url association (M18 and earlier were mispelled with
@@ -56603,6 +56690,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.TypedUrlChangeProcessorErrors" units="%">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     The percentage of history DB operations initiated by the typed URL change
@@ -56621,6 +56711,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.TypedUrlModelAssociationErrors" units="%">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     The percentage of history DB operations during model association that return
@@ -56702,11 +56795,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.UserPerceivedAuthorizationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time the user spends looking at the authorization dialog.</summary>
 </histogram>
 
 <histogram name="Sync.UserPerceivedBookmarkAssociation">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time taken during bookmark association.</summary>
 </histogram>
@@ -56717,12 +56816,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.WifiCredentialsAssociationTime" units="ms">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Time taken during WiFi credentials association.</summary>
 </histogram>
 
 <histogram name="Sync.WifiCredentialsConfigureFailure"
     enum="SyncConfigureResult">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of WiFi credentials configuration failures.
@@ -56746,6 +56851,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SyncedNotifications.Actions"
     enum="SyncedNotificationActionType">
+  <obsolete>
+    Deprecated in M53.
+  </obsolete>
   <owner>petewil@chromium.org</owner>
   <owner>zea@chromium.org</owner>
   <summary>

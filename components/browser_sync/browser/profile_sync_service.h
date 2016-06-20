@@ -679,11 +679,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 
-  // Detects and attempts to recover from a previous improper datatype
-  // configuration where Keep Everything Synced and the preferred types were
-  // not correctly set.
-  void TrySyncDatatypePrefRecovery();
-
   // Puts the backend's sync scheduler into NORMAL mode.
   // Called when configuration is complete.
   void StartSyncingWithServer();

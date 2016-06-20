@@ -360,8 +360,6 @@ void ProfileSyncService::Initialize() {
     StopImpl(CLEAR_DATA);
   }
 
-  TrySyncDatatypePrefRecovery();
-
 #if defined(OS_CHROMEOS)
   std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
   if (bootstrap_token.empty()) {
@@ -381,37 +379,6 @@ void ProfileSyncService::Initialize() {
       &ProfileSyncService::OnMemoryPressure, weak_factory_.GetWeakPtr())));
   startup_controller_->Reset(GetRegisteredDataTypes());
   startup_controller_->TryStart();
-}
-
-void ProfileSyncService::TrySyncDatatypePrefRecovery() {
-  DCHECK(!IsBackendInitialized());
-  if (!IsFirstSetupComplete())
-    return;
-
-  // There was a bug where OnUserChoseDatatypes was not properly called on
-  // configuration (see crbug.com/154940). We detect this by checking whether
-  // kSyncKeepEverythingSynced has a default value. If so, and sync setup has
-  // completed, it means sync was not properly configured, so we manually
-  // set kSyncKeepEverythingSynced.
-  PrefService* const pref_service = sync_client_->GetPrefService();
-  if (!pref_service)
-    return;
-  if (GetPreferredDataTypes().Size() > 1)
-    return;
-
-  const PrefService::Preference* keep_everything_synced =
-      pref_service->FindPreference(
-          sync_driver::prefs::kSyncKeepEverythingSynced);
-  // This will be false if the preference was properly set or if it's controlled
-  // by policy.
-  if (!keep_everything_synced->IsDefaultValue())
-    return;
-
-  // kSyncKeepEverythingSynced was not properly set. Set it and the preferred
-  // types now, before we configure.
-  UMA_HISTOGRAM_COUNTS("Sync.DatatypePrefRecovery", 1);
-  sync_prefs_.SetKeepEverythingSynced(true);
-  syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -651,9 +618,6 @@ void ProfileSyncService::OnGetTokenSuccess(
 
   if (sync_prefs_.SyncHasAuthError()) {
     sync_prefs_.SetSyncAuthError(false);
-    UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError",
-                              AUTH_ERROR_FIXED,
-                              AUTH_ERROR_LIMIT);
   }
 
   if (HasSyncingBackend())
