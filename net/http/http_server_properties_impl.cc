@@ -219,10 +219,6 @@ void HttpServerPropertiesImpl::GetSpdyServerList(
   }
 }
 
-base::WeakPtr<HttpServerProperties> HttpServerPropertiesImpl::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 void HttpServerPropertiesImpl::Clear() {
   DCHECK(CalledOnValidThread());
   spdy_servers_map_.Clear();

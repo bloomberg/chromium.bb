@@ -76,7 +76,7 @@ class NET_EXPORT HttpNetworkSession
     ProxyService* proxy_service;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
-    base::WeakPtr<HttpServerProperties> http_server_properties;
+    HttpServerProperties* http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
@@ -227,7 +227,7 @@ class NET_EXPORT HttpNetworkSession
   HttpAuthHandlerFactory* http_auth_handler_factory() {
     return http_auth_handler_factory_;
   }
-  base::WeakPtr<HttpServerProperties> http_server_properties() {
+  HttpServerProperties* http_server_properties() {
     return http_server_properties_;
   }
   HttpStreamFactory* http_stream_factory() {
@@ -276,7 +276,7 @@ class NET_EXPORT HttpNetworkSession
   ClientSocketPoolManager* GetSocketPoolManager(SocketPoolType pool_type);
 
   NetLog* const net_log_;
-  const base::WeakPtr<HttpServerProperties> http_server_properties_;
+  HttpServerProperties* const http_server_properties_;
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 

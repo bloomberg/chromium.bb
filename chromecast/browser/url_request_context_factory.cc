@@ -290,7 +290,7 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   params->ssl_config_service = ssl_config_service_.get();
   params->transport_security_state = transport_security_state_.get();
   params->http_auth_handler_factory = http_auth_handler_factory_.get();
-  params->http_server_properties = http_server_properties_->GetWeakPtr();
+  params->http_server_properties = http_server_properties_.get();
   params->ignore_certificate_errors = ignore_certificate_errors;
   params->proxy_service = proxy_service_.get();
 }
@@ -316,8 +316,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
       transport_security_state_.get());
   system_context->set_http_auth_handler_factory(
       http_auth_handler_factory_.get());
-  system_context->set_http_server_properties(
-      http_server_properties_->GetWeakPtr());
+  system_context->set_http_server_properties(http_server_properties_.get());
   system_context->set_http_transaction_factory(
       system_transaction_factory_.get());
   system_context->set_http_user_agent_settings(
@@ -383,8 +382,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   main_context->set_transport_security_state(transport_security_state_.get());
   main_context->set_http_auth_handler_factory(
       http_auth_handler_factory_.get());
-  main_context->set_http_server_properties(
-      http_server_properties_->GetWeakPtr());
+  main_context->set_http_server_properties(http_server_properties_.get());
   main_context->set_cookie_store(main_cookie_store_.get());
   main_context->set_http_user_agent_settings(
       http_user_agent_settings_.get());

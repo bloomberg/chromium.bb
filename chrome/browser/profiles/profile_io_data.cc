@@ -916,9 +916,8 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
   data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
-base::WeakPtr<net::HttpServerProperties>
-ProfileIOData::http_server_properties() const {
-  return http_server_properties_->GetWeakPtr();
+net::HttpServerProperties* ProfileIOData::http_server_properties() const {
+  return http_server_properties_.get();
 }
 
 void ProfileIOData::set_http_server_properties(

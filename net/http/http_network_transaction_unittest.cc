@@ -9093,7 +9093,7 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
     SpdySessionDependencies* session_deps_) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(next_proto), "", 443);
@@ -9984,10 +9984,10 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   url::SchemeHostPort test_server("http", "www.example.org", 80);
-  HttpServerProperties& http_server_properties =
-      *session->http_server_properties();
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -10004,7 +10004,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
             alternative_service_vector[0].protocol);
@@ -10043,10 +10043,10 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   url::SchemeHostPort test_server(request.url);
-  HttpServerProperties& http_server_properties =
-      *session->http_server_properties();
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -10065,7 +10065,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
@@ -10096,7 +10096,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), "different.example.org",
@@ -10140,7 +10140,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), "", 444);
@@ -10162,15 +10162,15 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
 
   // Set an alternative service for origin.
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpServerProperties& http_server_properties =
-      *session->http_server_properties();
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
   url::SchemeHostPort test_server("http", "www.example.org", 80);
   AlternativeService alternative_service(QUIC, "", 80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties.SetAlternativeService(test_server, alternative_service,
-                                               expiration);
+  http_server_properties->SetAlternativeService(
+      test_server, alternative_service, expiration);
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_EQ(1u, alternative_service_vector.size());
 
   // Send a clear header.
@@ -10209,7 +10209,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
@@ -10246,10 +10246,10 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   url::SchemeHostPort test_server("http", "www.example.org", 80);
-  HttpServerProperties& http_server_properties =
-      *session->http_server_properties();
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -10266,7 +10266,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(test_server);
+      http_server_properties->GetAlternativeServices(test_server);
   ASSERT_EQ(2u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
             alternative_service_vector[0].protocol);
@@ -10303,7 +10303,7 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
 
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), "different.example.org",
@@ -10358,7 +10358,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   // Set up a QUIC alternative service for server.
   session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(QUIC, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -10418,7 +10418,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
   session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
 
   // Set up two QUIC alternative services for server.
@@ -10483,7 +10483,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const url::SchemeHostPort server(request.url);
   // Port must be < 1024, or the header will be ignored (since initial port was
@@ -10549,7 +10549,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
   AlternativeService alternative_service(
@@ -10601,7 +10601,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
   AlternativeService alternative_service(
@@ -10652,7 +10652,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
   AlternativeService alternative_service(
@@ -10704,7 +10704,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
   AlternativeService alternative_service(
@@ -10755,7 +10755,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1025;
   AlternativeService alternative_service(
@@ -10801,7 +10801,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnsafePort = 7;
   AlternativeService alternative_service(
@@ -13541,7 +13541,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 
     session_deps_.enable_alternative_service_with_different_host = true;
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-    base::WeakPtr<HttpServerProperties> http_server_properties =
+    HttpServerProperties* http_server_properties =
         session->http_server_properties();
     AlternativeService alternative_service(
         AlternateProtocolFromNextProto(GetProtocol()), alternative);
@@ -13646,7 +13646,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   // Set up alternative service for server.
   session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);
@@ -13717,7 +13717,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   // Set up alternative service for server.
   session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);
@@ -13826,7 +13826,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   // Set up alternative service for server.
   session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);

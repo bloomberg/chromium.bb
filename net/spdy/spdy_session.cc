@@ -670,20 +670,19 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   return true;
 }
 
-SpdySession::SpdySession(
-    const SpdySessionKey& spdy_session_key,
-    const base::WeakPtr<HttpServerProperties>& http_server_properties,
-    TransportSecurityState* transport_security_state,
-    bool verify_domain_authentication,
-    bool enable_sending_initial_data,
-    bool enable_ping_based_connection_checking,
-    bool enable_priority_dependencies,
-    NextProto default_protocol,
-    size_t session_max_recv_window_size,
-    size_t stream_max_recv_window_size,
-    TimeFunc time_func,
-    ProxyDelegate* proxy_delegate,
-    NetLog* net_log)
+SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
+                         HttpServerProperties* http_server_properties,
+                         TransportSecurityState* transport_security_state,
+                         bool verify_domain_authentication,
+                         bool enable_sending_initial_data,
+                         bool enable_ping_based_connection_checking,
+                         bool enable_priority_dependencies,
+                         NextProto default_protocol,
+                         size_t session_max_recv_window_size,
+                         size_t stream_max_recv_window_size,
+                         TimeFunc time_func,
+                         ProxyDelegate* proxy_delegate,
+                         NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
       pool_(NULL),

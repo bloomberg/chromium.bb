@@ -312,7 +312,7 @@ class QuicStreamFactoryTestBase {
     DCHECK(!factory_);
     factory_.reset(new QuicStreamFactory(
         net_log_.net_log(), &host_resolver_, &socket_factory_,
-        http_server_properties_.GetWeakPtr(), cert_verifier_.get(), nullptr,
+        &http_server_properties_, cert_verifier_.get(), nullptr,
         channel_id_service_.get(), &transport_security_state_,
         cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
@@ -3728,8 +3728,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   QuicServerId quic_server_id(kDefaultServerHostName, 80,
                               PRIVACY_MODE_DISABLED);
   QuicServerInfoFactory* quic_server_info_factory =
-      new PropertiesBasedQuicServerInfoFactory(
-          http_server_properties_.GetWeakPtr());
+      new PropertiesBasedQuicServerInfoFactory(&http_server_properties_);
   factory_->set_quic_server_info_factory(quic_server_info_factory);
 
   std::unique_ptr<QuicServerInfo> quic_server_info(

@@ -83,6 +83,7 @@ class SSLClientSocketPoolTest
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        http_server_properties_(new HttpServerPropertiesImpl),
         session_(CreateNetworkSession()),
         direct_transport_socket_params_(new TransportSocketParams(
             HostPortPair("host", 443),
@@ -166,8 +167,7 @@ class SSLClientSocketPoolTest
     params.client_socket_factory = &socket_factory_;
     params.ssl_config_service = ssl_config_service_.get();
     params.http_auth_handler_factory = http_auth_handler_factory_.get();
-    params.http_server_properties =
-        http_server_properties_.GetWeakPtr();
+    params.http_server_properties = http_server_properties_.get();
     params.spdy_default_protocol = GetParam();
     return new HttpNetworkSession(params);
   }
@@ -181,7 +181,7 @@ class SSLClientSocketPoolTest
   const std::unique_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  const std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
   const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;

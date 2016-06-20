@@ -88,8 +88,8 @@ void URLRequestContextStorage::set_proxy_delegate(
 
 void URLRequestContextStorage::set_http_server_properties(
     std::unique_ptr<HttpServerProperties> http_server_properties) {
+  context_->set_http_server_properties(http_server_properties.get());
   http_server_properties_ = std::move(http_server_properties);
-  context_->set_http_server_properties(http_server_properties_->GetWeakPtr());
 }
 
 void URLRequestContextStorage::set_cookie_store(

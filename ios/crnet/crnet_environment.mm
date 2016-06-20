@@ -386,8 +386,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   main_context_->set_transport_security_state(
       new net::TransportSecurityState());
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
-  main_context_->set_http_server_properties(
-      http_server_properties_->GetWeakPtr());
+  main_context_->set_http_server_properties(http_server_properties_.get());
   // TODO(rdsmith): Note that the ".release()" calls below are leaking
   // the objects in question; this should be fixed by having an object
   // corresponding to URLRequestContextStorage that actually owns those

@@ -130,12 +130,6 @@ void HttpServerPropertiesManager::SetVersion(
     http_server_properties_dict->SetInteger(kVersionKey, version_number);
 }
 
-// This is required for conformance with the HttpServerProperties interface.
-base::WeakPtr<HttpServerProperties> HttpServerPropertiesManager::GetWeakPtr() {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return network_weak_ptr_factory_->GetWeakPtr();
-}
-
 void HttpServerPropertiesManager::Clear() {
   Clear(base::Closure());
 }

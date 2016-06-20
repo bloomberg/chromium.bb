@@ -241,7 +241,7 @@ class HttpResponseBodyDrainerTest : public testing::Test {
     HttpNetworkSession::Params params;
     params.proxy_service = proxy_service_.get();
     params.ssl_config_service = ssl_config_service_.get();
-    params.http_server_properties = http_server_properties_->GetWeakPtr();
+    params.http_server_properties = http_server_properties_.get();
     params.transport_security_state = transport_security_state_.get();
     return new HttpNetworkSession(params);
   }

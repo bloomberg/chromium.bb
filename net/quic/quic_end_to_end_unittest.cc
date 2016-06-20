@@ -121,7 +121,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
-    params_.http_server_properties = http_server_properties.GetWeakPtr();
+    params_.http_server_properties = &http_server_properties_;
     channel_id_service_.reset(
         new ChannelIDService(new DefaultChannelIDStore(nullptr),
                              base::ThreadTaskRunnerHandle::Get()));
@@ -254,7 +254,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyService> proxy_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties;
+  HttpServerPropertiesImpl http_server_properties_;
   HttpNetworkSession::Params params_;
   std::unique_ptr<TestTransactionFactory> transaction_factory_;
   HttpRequestInfo request_;

@@ -318,9 +318,9 @@ bool ChromeBrowserStateIOData::GetMetricsEnabledStateOnIOThread() const {
   return enable_metrics_.GetValue();
 }
 
-base::WeakPtr<net::HttpServerProperties>
-ChromeBrowserStateIOData::http_server_properties() const {
-  return http_server_properties_->GetWeakPtr();
+net::HttpServerProperties* ChromeBrowserStateIOData::http_server_properties()
+    const {
+  return http_server_properties_.get();
 }
 
 void ChromeBrowserStateIOData::set_http_server_properties(

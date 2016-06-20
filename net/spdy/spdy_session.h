@@ -292,7 +292,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |session| is the HttpNetworkSession.  |net_log| is the NetLog that we log
   // network events to.
   SpdySession(const SpdySessionKey& spdy_session_key,
-              const base::WeakPtr<HttpServerProperties>& http_server_properties,
+              HttpServerProperties* http_server_properties,
               TransportSecurityState* transport_security_state,
               bool verify_domain_authentication,
               bool enable_sending_initial_data,
@@ -1026,7 +1026,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // |pool_| owns us, therefore its lifetime must exceed ours.
   SpdySessionPool* pool_;
-  const base::WeakPtr<HttpServerProperties> http_server_properties_;
+  HttpServerProperties* http_server_properties_;
 
   TransportSecurityState* transport_security_state_;
 

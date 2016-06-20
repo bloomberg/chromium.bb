@@ -288,6 +288,7 @@ class QuicNetworkTransactionTest
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::RunLoop().RunUntilIdle();
+    session_.reset();
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientConnectionClosePacket(
@@ -515,7 +516,7 @@ class QuicNetworkTransactionTest
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
-    params_.http_server_properties = http_server_properties_.GetWeakPtr();
+    params_.http_server_properties = &http_server_properties_;
     params_.quic_supported_versions = SupportedVersions(GetParam());
     for (const char* host :
          {kDefaultServerHostName, "www.example.org", "news.example.org",
@@ -1017,7 +1018,7 @@ TEST_P(QuicNetworkTransactionTest, SetAlternativeServiceWithScheme) {
   // header advertises alternative service for mail.example.org.
   request_.url = GURL("http://mail.example.org:443");
   SendRequestAndExpectHttpResponse("hello world");
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   url::SchemeHostPort http_server("http", "mail.example.org", 443);
   url::SchemeHostPort https_server("https", "mail.example.org", 443);
@@ -1049,7 +1050,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotGetAltSvcForDifferentOrigin) {
   // Send https request and set alternative services if response header
   // advertises alternative service for mail.example.org.
   SendRequestAndExpectHttpResponse("hello world");
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session_->http_server_properties();
 
   const url::SchemeHostPort https_server(request_.url);
@@ -2190,7 +2191,7 @@ class QuicNetworkTransactionWithDestinationTest
     params.ssl_config_service = ssl_config_service_.get();
     params.proxy_service = proxy_service_.get();
     params.http_auth_handler_factory = auth_handler_factory_.get();
-    params.http_server_properties = http_server_properties_.GetWeakPtr();
+    params.http_server_properties = &http_server_properties_;
     params.quic_supported_versions = SupportedVersions(version_);
     params.quic_host_whitelist.insert("news.example.org");
     params.quic_host_whitelist.insert("mail.example.org");
@@ -2209,6 +2210,7 @@ class QuicNetworkTransactionWithDestinationTest
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::RunLoop().RunUntilIdle();
+    session_.reset();
   }
 
   void SetAlternativeService(const std::string& origin) {

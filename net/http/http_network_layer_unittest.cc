@@ -44,8 +44,7 @@ class HttpNetworkLayerTest : public PlatformTest {
     session_params.transport_security_state = transport_security_state_.get();
     session_params.proxy_service = proxy_service_.get();
     session_params.ssl_config_service = ssl_config_service_.get();
-    session_params.http_server_properties =
-        http_server_properties_.GetWeakPtr();
+    session_params.http_server_properties = &http_server_properties_;
     network_session_.reset(new HttpNetworkSession(session_params));
     factory_.reset(new HttpNetworkLayer(network_session_.get()));
   }

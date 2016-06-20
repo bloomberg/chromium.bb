@@ -997,8 +997,7 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       globals->network_quality_estimator.get());
   context->set_backoff_manager(globals->url_request_backoff_manager.get());
 
-  context->set_http_server_properties(
-      globals->http_server_properties->GetWeakPtr());
+  context->set_http_server_properties(globals->http_server_properties.get());
 
   context->set_enable_brotli(globals->enable_brotli);
 
@@ -1048,8 +1047,7 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());
-  context->set_http_server_properties(
-      globals->http_server_properties->GetWeakPtr());
+  context->set_http_server_properties(globals->http_server_properties.get());
 
   context->set_enable_brotli(globals->enable_brotli);
 

@@ -550,8 +550,7 @@ net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
       globals->network_quality_estimator.get());
   context->set_backoff_manager(globals->url_request_backoff_manager.get());
 
-  context->set_http_server_properties(
-      globals->http_server_properties->GetWeakPtr());
+  context->set_http_server_properties(globals->http_server_properties.get());
 
   net::HttpNetworkSession::Params system_params(params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(

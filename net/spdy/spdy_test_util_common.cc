@@ -340,6 +340,7 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       socket_factory(new MockClientSocketFactory),
       http_auth_handler_factory(
           HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
+      http_server_properties(new HttpServerPropertiesImpl),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -379,6 +380,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       socket_factory(new MockClientSocketFactory),
       http_auth_handler_factory(
           HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
+      http_server_properties(new HttpServerPropertiesImpl),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -428,8 +430,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.ssl_config_service = session_deps->ssl_config_service.get();
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
-  params.http_server_properties =
-      session_deps->http_server_properties.GetWeakPtr();
+  params.http_server_properties = session_deps->http_server_properties.get();
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;

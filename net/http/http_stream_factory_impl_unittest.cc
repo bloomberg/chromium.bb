@@ -695,7 +695,7 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     params.transport_security_state = &transport_security_state;
     params.proxy_service = proxy_service.get();
     params.ssl_config_service = ssl_config_service.get();
-    params.http_server_properties = http_server_properties.GetWeakPtr();
+    params.http_server_properties = &http_server_properties;
 
     std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
     session->quic_stream_factory()->set_require_confirmation(false);
@@ -819,7 +819,7 @@ TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
   params.transport_security_state = &transport_security_state;
   params.proxy_service = proxy_service.get();
   params.ssl_config_service = ssl_config_service.get();
-  params.http_server_properties = http_server_properties.GetWeakPtr();
+  params.http_server_properties = &http_server_properties;
   params.quic_max_number_of_lossy_connections = 2;
 
   std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
@@ -884,7 +884,7 @@ TEST_P(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
         SpdySessionDependencies::CreateSessionParams(&session_deps);
     params.enable_quic = true;
     params.quic_disable_preconnect_if_0rtt = true;
-    params.http_server_properties = http_server_properties.GetWeakPtr();
+    params.http_server_properties = &http_server_properties;
 
     std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
     HttpNetworkSessionPeer peer(session.get());
@@ -929,7 +929,7 @@ TEST_P(HttpStreamFactoryTest, QuicDisablePreConnectIfZeroRtt) {
         SpdySessionDependencies::CreateSessionParams(&session_deps);
     params.enable_quic = true;
     params.quic_disable_preconnect_if_0rtt = true;
-    params.http_server_properties = http_server_properties.GetWeakPtr();
+    params.http_server_properties = &http_server_properties;
 
     std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
 
@@ -1493,6 +1493,8 @@ class HttpStreamFactoryBidirectionalQuicTest
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
+  void TearDown() override { session_.reset(); }
+
   // Disable bidirectional stream over QUIC. This should be invoked before
   // Initialize().
   void DisableQuicBidirectionalStream() {
@@ -1501,7 +1503,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.http_server_properties = http_server_properties_.GetWeakPtr();
+    params_.http_server_properties = &http_server_properties_;
     params_.quic_host_whitelist.insert("www.example.org");
     params_.quic_random = &random_generator_;
     params_.quic_clock = clock_;

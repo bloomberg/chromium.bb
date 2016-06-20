@@ -256,7 +256,7 @@ void HttpStreamFactoryImpl::Job::Start(
 
 int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   DCHECK_GT(num_streams, 0);
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   if (http_server_properties &&
       http_server_properties->SupportsRequestPriority(
@@ -1016,7 +1016,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
   const bool expect_spdy = IsSpdyAlternative();
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   if (http_server_properties) {
     http_server_properties->MaybeForceHTTP11(destination_, &server_ssl_config_);
@@ -1367,7 +1367,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
                                        host_port_pair.host(),
                                        host_port_pair.port());
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   if (http_server_properties)
     http_server_properties->SetSupportsSpdy(scheme_host_port, true);

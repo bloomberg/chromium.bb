@@ -24,6 +24,7 @@ URLRequestContext::URLRequestContext()
       http_auth_handler_factory_(nullptr),
       proxy_service_(nullptr),
       network_delegate_(nullptr),
+      http_server_properties_(nullptr),
       http_user_agent_settings_(nullptr),
       cookie_store_(nullptr),
       transport_security_state_(nullptr),

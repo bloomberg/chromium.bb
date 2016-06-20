@@ -203,7 +203,7 @@ class ChromeBrowserStateIOData {
 
   net::ProxyService* proxy_service() const { return proxy_service_.get(); }
 
-  base::WeakPtr<net::HttpServerProperties> http_server_properties() const;
+  net::HttpServerProperties* http_server_properties() const;
 
   void set_http_server_properties(
       std::unique_ptr<net::HttpServerProperties> http_server_properties) const;

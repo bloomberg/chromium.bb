@@ -131,7 +131,7 @@ class ResourceSchedulerTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_),
         field_trial_list_(new base::MockEntropyProvider()) {
     InitializeScheduler();
-    context_.set_http_server_properties(http_server_properties_.GetWeakPtr());
+    context_.set_http_server_properties(&http_server_properties_);
   }
 
   ~ResourceSchedulerTest() override {

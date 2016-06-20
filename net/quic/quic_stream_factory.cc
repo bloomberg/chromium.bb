@@ -597,7 +597,7 @@ QuicStreamFactory::QuicStreamFactory(
     NetLog* net_log,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
-    base::WeakPtr<HttpServerProperties> http_server_properties,
+    HttpServerProperties* http_server_properties,
     CertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     ChannelIDService* channel_id_service,

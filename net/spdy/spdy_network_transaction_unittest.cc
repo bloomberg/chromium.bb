@@ -111,7 +111,7 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
   session_deps->enable_alternative_service_with_different_host = true;
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    session_deps->http_server_properties.SetAlternativeService(
+    session_deps->http_server_properties->SetAlternativeService(
         url::SchemeHostPort("http", "www.example.org", 80),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
                            "www.example.org", 443),
@@ -4588,7 +4588,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider1->SetNextProto(kProtoHTTP11);
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       helper.session()->spdy_session_pool()->http_server_properties();
   const HostPortPair host_port_pair = HostPortPair::FromURL(GURL(url));
   EXPECT_FALSE(http_server_properties->RequiresHTTP11(host_port_pair));
@@ -4693,7 +4693,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   helper.session_deps()->socket_factory->AddSSLSocketDataProvider(
       ssl_provider2.get());
 
-  base::WeakPtr<HttpServerProperties> http_server_properties =
+  HttpServerProperties* http_server_properties =
       helper.session()->spdy_session_pool()->http_server_properties();
   const HostPortPair proxy_host_port_pair = HostPortPair("myproxy", 70);
   EXPECT_FALSE(http_server_properties->RequiresHTTP11(proxy_host_port_pair));
