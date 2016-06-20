@@ -315,7 +315,7 @@ bool HTMLSlotElement::hasAssignedNodesSlow() const
     DCHECK(root);
     DCHECK(root->isV1());
     SlotAssignment& assignment = root->ensureSlotAssignment();
-    if (assignment.findSlot(*this) != this)
+    if (assignment.findSlotByName(name()) != this)
         return false;
     return assignment.findHostChildBySlotName(name());
 }
