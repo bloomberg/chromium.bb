@@ -23,16 +23,16 @@ cr.define('extension_sidebar_tests', function() {
     loadUnpacked: function() {},
 
     /** @override */
-    packExtension: function() {},
-
-    /** @override */
     updateAllExtensions: function() {},
 
     /** @override */
     showType: function() {},
 
     /** @override */
-    showKeyboardShortcuts: function() {}
+    showKeyboardShortcuts: function() {},
+
+    /** @override */
+    showPackDialog: function() {},
   };
 
   /** @enum {string} */
@@ -90,7 +90,7 @@ cr.define('extension_sidebar_tests', function() {
         mockDelegate.testClickingCalls(
             sidebar.$$('#load-unpacked'), 'loadUnpacked', []);
         mockDelegate.testClickingCalls(
-            sidebar.$$('#pack-extensions'), 'packExtension', []);
+            sidebar.$$('#pack-extensions'), 'showPackDialog', []);
         mockDelegate.testClickingCalls(
             sidebar.$$('#update-now'), 'updateAllExtensions', []);
         mockDelegate.testClickingCalls(

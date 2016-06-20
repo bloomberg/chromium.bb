@@ -4462,6 +4462,24 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_VERSION" desc="The label above an extension's version.">
           Version
         </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_TITLE" desc="The title of the dialog to pack an extension.">
+          Pack extension
+        </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_BROWSE_BUTTON" desc="The label of the button to browse the file system to select an extension directory or file.">
+          Browse
+        </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_EXTENSION_ROOT_LABEL" desc="The label of the input field for specifying the root directory to pack an extension from.">
+          Extension root directory
+        </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_KEY_FILE_LABEL" desc="The label of the input field for specifying the private key file for an extension being packed.">
+          Private key file (optional)
+        </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON" desc="The label of the button to confirm the action to pack an extension.">
+          Pack extension
+        </message>
+        <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_CANCEL_BUTTON" desc="The label of the button to cancel the pack extension dialog.">
+          Cancel
+        </message>
         <message name="IDS_MD_EXTENSIONS_TOOLBAR_TITLE" desc="The text displayed in the toolbar of the chrome://extensions page.">
           Extensions &amp; Apps
         </message>

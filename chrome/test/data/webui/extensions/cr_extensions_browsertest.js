@@ -40,10 +40,12 @@ CrExtensionsBrowserTest.prototype = {
     'extension_item_test.js',
     'extension_item_list_test.js',
     'extension_keyboard_shortcuts_test.js',
+    'extension_pack_dialog_test.js',
     'extension_service_test.js',
     'extension_sidebar_test.js',
     'extension_manager_test.js',
     '../mock_controller.js',
+    '../../../../../ui/webui/resources/js/promise_resolver.js',
     '../../../../../ui/webui/resources/js/webui_resource_test.js',
   ]),
 
@@ -218,4 +220,13 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionKeyboardShortcutsLayoutTest',
        function() {
   extension_keyboard_shortcut_tests.registerTests();
   mocha.grep(assert(extension_keyboard_shortcut_tests.TestNames.Layout)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Pack Dialog Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionPackDialogInteractionTest',
+       function() {
+  extension_pack_dialog_tests.registerTests();
+  mocha.grep(assert(extension_pack_dialog_tests.TestNames.Interaction)).run();
 });

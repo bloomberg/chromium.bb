@@ -279,9 +279,15 @@ cr.define('extensions', function() {
       this.manager_.changePage(Page.ITEM_LIST);
     },
 
+    /** @override */
     showKeyboardShortcuts: function() {
       this.manager_.changePage(Page.KEYBOARD_SHORTCUTS);
     },
+
+    /** @override */
+    showPackDialog: function() {
+      this.manager_.$['pack-dialog'].show();
+    }
   };
 
   return {Manager: Manager};

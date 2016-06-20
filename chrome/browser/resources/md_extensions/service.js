@@ -9,6 +9,7 @@ cr.define('extensions', function() {
    * @constructor
    * @implements {extensions.ItemDelegate}
    * @implements {extensions.SidebarDelegate}
+   * @implements {extensions.PackDialogDelegate}
    */
   function Service() {}
 
@@ -22,6 +23,7 @@ cr.define('extensions', function() {
       this.manager_ = manager;
       this.manager_.sidebar.setDelegate(this);
       this.manager_.set('itemDelegate', this);
+      this.manager_.$['pack-dialog'].set('delegate', this);
       chrome.developerPrivate.onProfileStateChanged.addListener(
           this.onProfileStateChanged_.bind(this));
       chrome.developerPrivate.onItemStateChanged.addListener(
@@ -86,6 +88,27 @@ cr.define('extensions', function() {
         default:
           assertNotReached();
       }
+    },
+
+    /**
+     * Opens a file browser dialog for the user to select a file (or directory).
+     * @param {chrome.developerPrivate.SelectType} selectType
+     * @param {chrome.developerPrivate.FileType} fileType
+     * @return {Promise<string>} The promise to be resolved with the selected
+     *     path.
+     */
+    chooseFilePath_: function(selectType, fileType) {
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.choosePath(
+            selectType, fileType, function(path) {
+          if (chrome.runtime.lastError &&
+              chrome.runtime.lastError != 'File selection was canceled.') {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(path || '');
+          }
+        });
+      });
     },
 
     /** @override */
@@ -166,7 +189,22 @@ cr.define('extensions', function() {
     },
 
     /** @override */
-    packExtension: function() {
+    choosePackRootDirectory: function() {
+      return this.chooseFilePath_(
+          chrome.developerPrivate.SelectType.FOLDER,
+          chrome.developerPrivate.FileType.LOAD);
+    },
+
+    /** @override */
+    choosePrivateKeyPath: function() {
+      return this.chooseFilePath_(
+          chrome.developerPrivate.SelectType.FILE,
+          chrome.developerPrivate.FileType.PEM);
+    },
+
+    /** @override */
+    packExtension: function(rootPath, keyPath) {
+      chrome.developerPrivate.packDirectory(rootPath, keyPath);
     },
 
     /** @override */

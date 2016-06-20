@@ -88,6 +88,14 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'pack_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'service',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
@@ -96,6 +104,7 @@
         '<(EXTERNS_GYP):management',
         'item',
         'manager',
+        'pack_dialog',
         'sidebar',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

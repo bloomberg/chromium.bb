@@ -99,6 +99,21 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddLocalizedString("packDialogTitle",
+                             IDS_MD_EXTENSIONS_PACK_DIALOG_TITLE);
+  source->AddLocalizedString("packDialogBrowse",
+                             IDS_MD_EXTENSIONS_PACK_DIALOG_BROWSE_BUTTON);
+  source->AddLocalizedString(
+      "packDialogExtensionRoot",
+      IDS_MD_EXTENSIONS_PACK_DIALOG_EXTENSION_ROOT_LABEL);
+  source->AddLocalizedString("packDialogKeyFile",
+                             IDS_MD_EXTENSIONS_PACK_DIALOG_KEY_FILE_LABEL);
+  source->AddLocalizedString("packDialogContent",
+                             IDS_EXTENSION_PACK_DIALOG_HEADING);
+  source->AddLocalizedString("packDialogCancel",
+                             IDS_MD_EXTENSIONS_PACK_DIALOG_CANCEL_BUTTON);
+  source->AddLocalizedString("packDialogConfirm",
+                             IDS_MD_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON);
   source->AddLocalizedString("shortcutNotSet",
                              IDS_MD_EXTENSIONS_SHORTCUT_NOT_SET);
   source->AddLocalizedString("shortcutScopeGlobal",
@@ -144,6 +159,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item_list.css", IDR_MD_EXTENSIONS_ITEM_LIST_CSS);
   source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
   source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
+  source->AddResourcePath("pack_dialog.html",
+                          IDR_MD_EXTENSIONS_PACK_DIALOG_HTML);
+  source->AddResourcePath("pack_dialog.js", IDR_MD_EXTENSIONS_PACK_DIALOG_JS);
   source->AddResourcePath("service.html", IDR_MD_EXTENSIONS_SERVICE_HTML);
   source->AddResourcePath("service.js", IDR_MD_EXTENSIONS_SERVICE_JS);
   source->AddResourcePath("sidebar.css", IDR_MD_EXTENSIONS_SIDEBAR_CSS);
