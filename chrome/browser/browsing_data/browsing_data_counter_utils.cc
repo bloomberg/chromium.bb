@@ -16,6 +16,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#endif
+
 bool AreCountersEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearBrowsingDataCounters)) {
@@ -158,6 +165,43 @@ base::string16 GetCounterTextFromResult(
       default:
         NOTREACHED();
     }
+
+#if defined(ENABLE_EXTENSIONS)
+  } else if (pref_name == prefs::kDeleteHostedAppsData) {
+    // Hosted apps counter.
+    const HostedAppsCounter::HostedAppsResult* hosted_apps_result =
+        static_cast<const HostedAppsCounter::HostedAppsResult*>(result);
+    int hosted_apps_count = hosted_apps_result->Value();
+
+    DCHECK_GE(hosted_apps_result->Value(),
+              base::checked_cast<BrowsingDataCounter::ResultInt>(
+                  hosted_apps_result->examples().size()));
+
+    std::vector<base::string16> replacements;
+    if (hosted_apps_count > 0) {
+      replacements.push_back(                                     // App1,
+          base::UTF8ToUTF16(hosted_apps_result->examples()[0]));
+    }
+    if (hosted_apps_count > 1) {
+      replacements.push_back(
+          base::UTF8ToUTF16(hosted_apps_result->examples()[1]));  // App2,
+    }
+    if (hosted_apps_count > 2) {
+      replacements.push_back(l10n_util::GetPluralStringFUTF16(  // and X-2 more.
+          IDS_DEL_HOSTED_APPS_COUNTER_AND_X_MORE,
+          hosted_apps_count - 2));
+    }
+
+    // The output string has both the number placeholder (#) and substitution
+    // placeholders ($1, $2, $3). First fetch the correct plural string first,
+    // then substitute the $ placeholders.
+    text = base::ReplaceStringPlaceholders(
+        l10n_util::GetPluralStringFUTF16(
+            IDS_DEL_HOSTED_APPS_COUNTER, hosted_apps_count),
+        replacements,
+        nullptr);
+#endif
+
   }
 
   return text;
