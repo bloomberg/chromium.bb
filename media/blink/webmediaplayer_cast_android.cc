@@ -67,7 +67,8 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   paint.setAntiAlias(true);
   paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorWHITE);
-  paint.setTypeface(SkTypeface::CreateFromName("sans", SkTypeface::kBold));
+  paint.setTypeface(SkTypeface::MakeFromName(
+      "sans", SkFontStyle::FromOldStyle(SkTypeface::kBold)));
   paint.setTextSize(kTextSize);
 
   // Calculate the vertical margin from the top

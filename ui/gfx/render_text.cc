@@ -240,8 +240,8 @@ void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
   ApplyRenderParams(params, subpixel_rendering_suppressed, &paint_);
 }
 
-void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
-  paint_.setTypeface(typeface);
+void SkiaTextRenderer::SetTypeface(sk_sp<SkTypeface> typeface) {
+  paint_.setTypeface(std::move(typeface));
 }
 
 void SkiaTextRenderer::SetTextSize(SkScalar size) {

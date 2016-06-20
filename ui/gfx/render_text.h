@@ -21,6 +21,7 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
@@ -59,7 +60,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetDrawLooper(sk_sp<SkDrawLooper> draw_looper);
   void SetFontRenderParams(const FontRenderParams& params,
                            bool subpixel_rendering_suppressed);
-  void SetTypeface(SkTypeface* typeface);
+  void SetTypeface(sk_sp<SkTypeface> typeface);
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
   void SetShader(sk_sp<SkShader> shader);

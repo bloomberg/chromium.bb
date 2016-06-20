@@ -422,7 +422,7 @@ class HarfBuzzLineBreaker {
     line->segments.push_back(segment);
 
     SkPaint paint;
-    paint.setTypeface(run.skia_face.get());
+    paint.setTypeface(run.skia_face);
     paint.setTextSize(SkIntToScalar(run.font_size));
     paint.setAntiAlias(run.render_params.antialiasing);
     SkPaint::FontMetrics metrics;
@@ -1144,7 +1144,7 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
       const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
-      renderer->SetTypeface(run.skia_face.get());
+      renderer->SetTypeface(run.skia_face);
       renderer->SetTextSize(SkIntToScalar(run.font_size));
       renderer->SetFontRenderParams(run.render_params,
                                     subpixel_rendering_suppressed());
@@ -1481,7 +1481,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   run->render_params = params;
 
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(
-      run->skia_face.get(), SkIntToScalar(run->font_size), run->render_params,
+      run->skia_face, SkIntToScalar(run->font_size), run->render_params,
       subpixel_rendering_suppressed());
 
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz

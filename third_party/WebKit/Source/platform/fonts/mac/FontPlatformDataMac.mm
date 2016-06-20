@@ -26,6 +26,7 @@
 #import "platform/LayoutTestSupport.h"
 #import "platform/fonts/Font.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
+#import "platform/graphics/skia/SkiaUtils.h"
 #import "public/platform/Platform.h"
 #import "public/platform/mac/WebSandboxSupport.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -132,7 +133,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font* font) const
     paint->setEmbeddedBitmapText(false);
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(ts));
-    paint->setTypeface(typeface());
+    paint->setTypeface(toSkSp(m_typeface));
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
     paint->setLCDRenderText(shouldSmoothFonts);

@@ -82,13 +82,12 @@ SkPaint* GetBadgeTextPaintSingleton() {
       // that don't have Arial.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-      typeface = sk_sp<SkTypeface>(SkTypeface::MakeFromName(
-          base_font.GetFontName().c_str(), SkFontStyle()));
+      typeface = SkTypeface::MakeFromName(base_font.GetFontName().c_str(),
+                                          SkFontStyle());
       DCHECK(typeface);
     }
 
-    text_paint->setTypeface(typeface.get());
-    // |text_paint| adds its own ref. Release the ref from CreateFontName.
+    text_paint->setTypeface(std::move(typeface));
   }
   return text_paint;
 }

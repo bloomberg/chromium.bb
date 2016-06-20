@@ -35,6 +35,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include <windows.h>
 
 namespace blink {
@@ -47,7 +48,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const
 {
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(m_textSize));
-    paint->setTypeface(typeface());
+    paint->setTypeface(toSkSp(m_typeface));
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
 

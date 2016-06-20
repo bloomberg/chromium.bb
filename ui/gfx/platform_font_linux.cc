@@ -286,7 +286,7 @@ void PlatformFontLinux::ComputeMetricsIfNecessary() {
     paint.setAntiAlias(false);
     paint.setSubpixelText(false);
     paint.setTextSize(font_size_pixels_);
-    paint.setTypeface(typeface_.get());
+    paint.setTypeface(typeface_);
     paint.setFakeBoldText(weight_ >= Font::Weight::BOLD &&
                           !typeface_->isBold());
     paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic() ?

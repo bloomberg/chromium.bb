@@ -221,7 +221,7 @@ void RenderTextMac::DrawVisualText(internal::SkiaTextRenderer* renderer) {
 
     // The painter adds its own ref. So don't |release()| it from the ref ptr in
     // TextRun.
-    renderer->SetTypeface(run.typeface.get());
+    renderer->SetTypeface(run.typeface);
 
     renderer->DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
                           run.glyphs.size());

@@ -18,11 +18,10 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
 }
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
-    : typeface_(
-          SkTypeface::CreateFromName("times new roman", SkTypeface::kNormal)) {
+    : typeface_(SkTypeface::MakeFromName("times new roman", SkFontStyle())) {
   if (!typeface_) {
-    typeface_ = sk_sp<SkTypeface>(
-        SkTypeface::CreateFromName("monospace", SkTypeface::kBold));
+    typeface_ = SkTypeface::MakeFromName(
+        "monospace", SkFontStyle::FromOldStyle(SkTypeface::kBold));
   }
   DCHECK(typeface_.get());
   SetIsDrawable(true);

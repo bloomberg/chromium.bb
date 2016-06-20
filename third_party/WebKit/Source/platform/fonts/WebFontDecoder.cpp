@@ -34,6 +34,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/ots/include/ots-memory-stream.h"
@@ -191,7 +192,7 @@ PassRefPtr<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
 #if OS(WIN)
     RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream));
 #else
-    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream));
+    RefPtr<SkTypeface> typeface = fromSkSp(SkTypeface::MakeFromStream(stream));
 #endif
     if (!typeface) {
         setErrorString("Not a valid font data");

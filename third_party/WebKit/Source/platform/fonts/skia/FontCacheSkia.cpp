@@ -163,7 +163,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
         if (Platform::current()->sandboxSupport())
             return typefaceForFontconfigInterfaceIdAndTtcIndex(creationParams.fontconfigInterfaceId(), creationParams.ttcIndex());
-        return adoptRef(SkTypeface::CreateFromFile(creationParams.filename().data(), creationParams.ttcIndex()));
+        return fromSkSp(SkTypeface::MakeFromFile(creationParams.filename().data(), creationParams.ttcIndex()));
     }
 #endif
 

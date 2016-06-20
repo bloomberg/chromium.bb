@@ -260,7 +260,7 @@ class HarfBuzzFace {
 }  // namespace
 
 // Creates a HarfBuzz font from the given Skia face and text size.
-hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
+hb_font_t* CreateHarfBuzzFont(sk_sp<SkTypeface> skia_face,
                               SkScalar text_size,
                               const FontRenderParams& params,
                               bool subpixel_rendering_suppressed) {
@@ -269,13 +269,13 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
 
   FaceCache* face_cache = &face_caches[skia_face->uniqueID()];
   if (face_cache->first.get() == NULL)
-    face_cache->first.Init(skia_face);
+    face_cache->first.Init(skia_face.get());
 
   hb_font_t* harfbuzz_font = hb_font_create(face_cache->first.get());
   const int scale = SkiaScalarToHarfBuzzUnits(text_size);
   hb_font_set_scale(harfbuzz_font, scale, scale);
   FontData* hb_font_data = new FontData(&face_cache->second);
-  hb_font_data->paint_.setTypeface(skia_face);
+  hb_font_data->paint_.setTypeface(std::move(skia_face));
   hb_font_data->paint_.setTextSize(text_size);
   // TODO(ckocagil): Do we need to update these params later?
   internal::ApplyRenderParams(params, subpixel_rendering_suppressed,
