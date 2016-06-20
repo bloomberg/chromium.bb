@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <bitset>
-#include <limits>
 #include <string>
 #include <utility>
 
@@ -240,8 +239,7 @@ TEST_F(GenericHuffmanTableTest, ValidateInternalsWithSmallCode) {
   EXPECT_EQ(expect, buffer_in);
 
   string buffer_out;
-  HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                buffer_in);
+  HpackInputStream input_stream(buffer_in);
   EXPECT_TRUE(
       table_.GenericDecodeString(&input_stream, input.size(), &buffer_out));
   EXPECT_EQ(buffer_out, input);
@@ -307,7 +305,7 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("00010001"), bits8("00110100")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
+    HpackInputStream input_stream(input);
     EXPECT_TRUE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02\x06");
   }
@@ -317,7 +315,7 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("00010001"), bits8("01000111")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
+    HpackInputStream input_stream(input);
     EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02");
   }
@@ -326,7 +324,7 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     std::vector<char> input_storage(1 + capacity / 4, '\0');
     StringPiece input(&input_storage[0], input_storage.size());
 
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
+    HpackInputStream input_stream(input);
     EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
 
     std::vector<char> expected(capacity, '\x02');
@@ -339,7 +337,7 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("10011010"), bits8("01110000")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
+    HpackInputStream input_stream(input);
     EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x06");
   }
@@ -360,18 +358,15 @@ class HpackHuffmanTableTest : public GenericHuffmanTableTest {
                          string* out) {
     // First decode with HpackHuffmanTable.
     {
-      HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                    encoded);
+      HpackInputStream input_stream(encoded);
       EXPECT_TRUE(table_.GenericDecodeString(&input_stream, out_capacity, out));
     }
     // And decode again with the fixed decoder, confirming that the result is
     // the same.
     {
-      HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                    encoded);
+      HpackInputStream input_stream(encoded);
       string buf;
-      EXPECT_TRUE(
-          HpackHuffmanDecoder::DecodeString(&input_stream, out_capacity, &buf));
+      EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, &buf));
       EXPECT_EQ(*out, buf);
     }
   }

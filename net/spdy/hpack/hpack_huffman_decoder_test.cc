@@ -179,40 +179,11 @@ TEST_F(HpackHuffmanDecoderTest, SpecRequestExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const std::string& encodedFixture(test_table[i]);
     const std::string& decodedFixture(test_table[i + 1]);
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                  encodedFixture);
-    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(
-        &input_stream, decodedFixture.size(), &buffer));
+    HpackInputStream input_stream(encodedFixture);
+    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, &buffer));
     EXPECT_EQ(decodedFixture, buffer);
     buffer = EncodeString(decodedFixture);
     EXPECT_EQ(encodedFixture, buffer);
-  }
-}
-
-TEST_F(HpackHuffmanDecoderTest, TooLong) {
-  std::string buffer;
-  std::string test_table[] = {
-      a2b_hex("f1e3c2e5f23a6ba0ab90f4ff"),
-      "www.example.com",
-      a2b_hex("a8eb10649cbf"),
-      "no-cache",
-      a2b_hex("25a849e95ba97d7f"),
-      "custom-key",
-      a2b_hex("25a849e95bb8e8b4bf"),
-      "custom-value",
-  };
-  // Round-trip each test example, but with too small an output buffer.
-  for (size_t i = 0; i != arraysize(test_table); i += 2) {
-    const std::string& encodedFixture(test_table[i]);
-    const std::string& decodedFixture(test_table[i + 1]);
-    uint32_t limit = base::RandInt(0, decodedFixture.size() - 1);
-    HpackInputStream strm(std::numeric_limits<uint32_t>::max(), encodedFixture);
-    EXPECT_FALSE(HpackHuffmanDecoder::DecodeString(&strm, limit, &buffer));
-
-    // This is NOT a required test as it really tests an implementation detail,
-    // i.e. the fact that it writes the first |limit| values into |buffer|,
-    // then returns false leaving those chars in the buffer.
-    EXPECT_EQ(decodedFixture.substr(0, limit), buffer);
   }
 }
 
@@ -240,10 +211,8 @@ TEST_F(HpackHuffmanDecoderTest, SpecResponseExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const std::string& encodedFixture(test_table[i]);
     const std::string& decodedFixture(test_table[i + 1]);
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                  encodedFixture);
-    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(
-        &input_stream, decodedFixture.size(), &buffer));
+    HpackInputStream input_stream(encodedFixture);
+    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, &buffer));
     EXPECT_EQ(decodedFixture, buffer);
     buffer = EncodeString(decodedFixture);
     EXPECT_EQ(encodedFixture, buffer);
@@ -257,10 +226,8 @@ TEST_F(HpackHuffmanDecoderTest, RoundTripIndividualSymbols) {
     StringPiece input(storage, arraysize(storage));
     std::string buffer_in = EncodeString(input);
     std::string buffer_out;
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                  buffer_in);
-    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, input.size(),
-                                                  &buffer_out));
+    HpackInputStream input_stream(buffer_in);
+    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, &buffer_out));
     EXPECT_EQ(input, buffer_out);
   }
 }
@@ -280,10 +247,8 @@ TEST_F(HpackHuffmanDecoderTest, RoundTripSymbolSequences) {
       input.push_back(ic);
     }
     EncodeString(input, &encoded);
-    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
-                                  encoded);
-    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, input.size(),
-                                                  &decoded));
+    HpackInputStream input_stream(encoded);
+    EXPECT_TRUE(HpackHuffmanDecoder::DecodeString(&input_stream, &decoded));
     EXPECT_EQ(input, decoded);
   }
 }

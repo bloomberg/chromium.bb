@@ -22,8 +22,7 @@ const char kCookieKey[] = "cookie";
 }  // namespace
 
 HpackDecoder::HpackDecoder()
-    : max_string_literal_size_(kDefaultMaxStringLiteralSize),
-      handler_(nullptr),
+    : handler_(nullptr),
       total_header_bytes_(0),
       regular_header_seen_(false),
       header_block_started_(false),
@@ -49,8 +48,7 @@ bool HpackDecoder::HandleControlFrameHeadersData(const char* headers_data,
 
   // Parse as many data in buffer as possible. And remove the parsed data
   // from buffer.
-  HpackInputStream input_stream(max_string_literal_size_,
-                                headers_block_buffer_);
+  HpackInputStream input_stream(headers_block_buffer_);
 
   // If this is the start of the header block, process table size updates.
   if (!header_block_started_) {

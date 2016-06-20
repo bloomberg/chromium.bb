@@ -62,8 +62,6 @@ using test::a2b_hex;
 using testing::ElementsAre;
 using testing::Pair;
 
-const size_t kLiteralBound = 1024;
-
 class HpackDecoderTest : public ::testing::TestWithParam<bool> {
  protected:
   HpackDecoderTest() : decoder_(), decoder_peer_(&decoder_) {}
@@ -223,7 +221,7 @@ TEST_P(HpackDecoderTest, HandleHeaderRepresentation) {
 
 // Decoding an encoded name with a valid string literal should work.
 TEST_P(HpackDecoderTest, DecodeNextNameLiteral) {
-  HpackInputStream input_stream(kLiteralBound, StringPiece("\x00\x04name", 6));
+  HpackInputStream input_stream(StringPiece("\x00\x04name", 6));
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -236,8 +234,7 @@ TEST_P(HpackDecoderTest, DecodeNextNameLiteral) {
 
 // Decoding an encoded name with an incomplete string literal.
 TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithIncompleteHeader) {
-  HpackInputStream input_stream(kLiteralBound,
-                                StringPiece("\x00\x04name\x00\x02g", 9));
+  HpackInputStream input_stream(StringPiece("\x00\x04name\x00\x02g", 9));
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -253,7 +250,7 @@ TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithIncompleteHeader) {
 
 TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
   string input = a2b_hex("008825a849e95ba97d7f");
-  HpackInputStream input_stream(kLiteralBound, input);
+  HpackInputStream input_stream(input);
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -271,7 +268,7 @@ TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithIncompleteHuffmanEncoding) {
   // Put two copies of the same huffman encoding into input.
   string input = a2b_hex("008825a849e95ba97d7f008825a849e95ba97d7f");
   input.resize(input.size() - 1);  // Remove the last byte.
-  HpackInputStream input_stream(kLiteralBound, input);
+  HpackInputStream input_stream(input);
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -287,7 +284,7 @@ TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithIncompleteHuffmanEncoding) {
 
 // Decoding an encoded name with a valid index should work.
 TEST_P(HpackDecoderTest, DecodeNextNameIndexed) {
-  HpackInputStream input_stream(kLiteralBound, "\x01");
+  HpackInputStream input_stream("\x01");
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -301,7 +298,7 @@ TEST_P(HpackDecoderTest, DecodeNextNameIndexed) {
 // Decoding an encoded name with an invalid index should fail.
 TEST_P(HpackDecoderTest, DecodeNextNameInvalidIndex) {
   // One more than the number of static table entries.
-  HpackInputStream input_stream(kLiteralBound, "\x3e");
+  HpackInputStream input_stream("\x3e");
 
   StringPiece string_piece;
   EXPECT_FALSE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -549,7 +546,7 @@ TEST_P(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
 // Decode with incomplete string literal.
 TEST_P(HpackDecoderTest, StringLiteralIncomplete) {
   const char input[] = "\x0c/sample/path\x06:path2\x0e/sample/path/";
-  HpackInputStream input_stream(kLiteralBound, input);
+  HpackInputStream input_stream(input);
   StringPiece str;
   EXPECT_TRUE(
       decoder_peer_.DecodeNextStringLiteral(&input_stream, false, &str));

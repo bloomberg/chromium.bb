@@ -99,7 +99,6 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   bool HandleHeaderRepresentation(base::StringPiece name,
                                   base::StringPiece value);
 
-  const uint32_t max_string_literal_size_;
   HpackHeaderTable header_table_;
 
   // TODO(jgraettinger): Buffer for headers data, and storage for the last-
