@@ -277,7 +277,8 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsOffTheRecord());
 
   // Configure the form about to be saved for blacklist status.
-  blacklisted_matches_.push_back(new autofill::PasswordForm(observed_form_));
+  blacklisted_matches_.push_back(
+      base::WrapUnique(new autofill::PasswordForm(observed_form_)));
   blacklisted_matches_.back()->preferred = false;
   blacklisted_matches_.back()->blacklisted_by_user = true;
   blacklisted_matches_.back()->other_possible_usernames.clear();
@@ -461,7 +462,7 @@ void PasswordFormManager::OnRequestDone(
       [](PasswordForm* form) { return !form->blacklisted_by_user; });
   for (auto it = begin_blacklisted; it != logins_result.end(); ++it) {
     if (IsBlacklistMatch(**it)) {
-      blacklisted_matches_.push_back(*it);
+      blacklisted_matches_.push_back(base::WrapUnique(*it));
       *it = nullptr;
     }
   }

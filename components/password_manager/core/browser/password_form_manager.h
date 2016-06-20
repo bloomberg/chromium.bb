@@ -219,7 +219,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return preferred_match_;
   }
 
-  const ScopedVector<autofill::PasswordForm>& blacklisted_matches() const {
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  blacklisted_matches() const {
     return blacklisted_matches_;
   }
 
@@ -481,7 +482,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form.
-  ScopedVector<autofill::PasswordForm> blacklisted_matches_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_matches_;
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
