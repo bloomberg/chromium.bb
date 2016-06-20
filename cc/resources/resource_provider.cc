@@ -912,9 +912,7 @@ ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   return &it->second;
 }
 
-const ResourceProvider::Resource* ResourceProvider::LockForRead(
-    ResourceId id,
-    bool create_gpu_memory_buffer) {
+const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write) << "locked for write: "
                                       << resource->locked_for_write;
@@ -955,20 +953,6 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(
     if (current_read_lock_fence_.get())
       current_read_lock_fence_->Set();
     resource->read_lock_fence = current_read_lock_fence_;
-  }
-
-  if (create_gpu_memory_buffer && !resource->gpu_memory_buffer &&
-      resource->child_id) {
-    ChildMap::iterator child_it = children_.find(resource->child_id);
-    DCHECK(child_it != children_.end());
-    Child& child_info = child_it->second;
-    if (child_info.gpu_memory_buffer_client_id != -1 &&
-        resource->gpu_memory_buffer_id.id != -1) {
-      resource->gpu_memory_buffer =
-          gpu_memory_buffer_manager_->CreateGpuMemoryBufferFromClientId(
-              child_info.gpu_memory_buffer_client_id,
-              resource->gpu_memory_buffer_id);
-    }
   }
 
   return resource;
@@ -1035,7 +1019,7 @@ ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id, false);
+  const Resource* resource = resource_provider->LockForRead(resource_id);
   texture_id_ = resource->gl_id;
   target_ = resource->target;
   size_ = resource->size;
@@ -1172,7 +1156,7 @@ ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id, false);
+  const Resource* resource = resource_provider->LockForRead(resource_id);
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 
@@ -1242,21 +1226,6 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
   }
   return gpu_memory_buffer_.get();
-}
-
-ResourceProvider::ScopedReadLockGpuMemoryBuffer::ScopedReadLockGpuMemoryBuffer(
-    ResourceProvider* resource_provider,
-    ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id, true);
-  gpu_memory_buffer_ = resource->gpu_memory_buffer.get();
-  texture_id_ = resource->gl_id;
-}
-
-ResourceProvider::ScopedReadLockGpuMemoryBuffer::
-    ~ScopedReadLockGpuMemoryBuffer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  resource_provider_->UnlockForRead(resource_id_);
 }
 
 ResourceProvider::SynchronousFence::SynchronousFence(

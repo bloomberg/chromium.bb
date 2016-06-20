@@ -3685,7 +3685,7 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     unsigned texture_id = 0;
     if (ca_layer_overlay.contents_resource_id) {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
+          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
               resource_provider_, ca_layer_overlay.contents_resource_id)));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
@@ -3728,7 +3728,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
+          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
               resource_provider_, overlay.resource_id)));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }

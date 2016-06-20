@@ -383,33 +383,6 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
 
-  class CC_EXPORT ScopedReadLockGpuMemoryBuffer {
-   public:
-    ScopedReadLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                  ResourceId resource_id);
-    ~ScopedReadLockGpuMemoryBuffer();
-
-    ResourceId resource_id() const { return resource_id_; }
-
-    // This may return nullptr.
-    gfx::GpuMemoryBuffer* gpu_memory_buffer() const {
-      return gpu_memory_buffer_;
-    }
-
-    // This returns the GL texture that is backed by a GL image bound to the
-    // resource's GpuMemoryBuffer.
-    unsigned texture_id() const { return texture_id_; }
-
-   private:
-    ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
-    gfx::GpuMemoryBuffer* gpu_memory_buffer_;
-    unsigned texture_id_;
-    base::ThreadChecker thread_checker_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGpuMemoryBuffer);
-  };
-
   class Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
@@ -634,7 +607,7 @@ class CC_EXPORT ResourceProvider
   ResourceId CreateBitmap(const gfx::Size& size);
   Resource* InsertResource(ResourceId id, Resource resource);
   Resource* GetResource(ResourceId id);
-  const Resource* LockForRead(ResourceId id, bool create_gpu_memory_buffer);
+  const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
   Resource* LockForWrite(ResourceId id);
   void UnlockForWrite(Resource* resource);
