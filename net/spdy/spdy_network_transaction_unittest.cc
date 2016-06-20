@@ -280,7 +280,7 @@ class SpdyNetworkTransactionTest
         session_->spdy_session_pool()->CloseCurrentSessions(ERR_ABORTED);
     }
 
-    void WaitForHeaders() { output_.rv = callback_.WaitForResult(); }
+    void WaitForCallbackToComplete() { output_.rv = callback_.WaitForResult(); }
 
     // Most tests will want to call this function. In particular, the MockReads
     // should end with an empty read, and that read needs to be processed to
@@ -2051,8 +2051,7 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
 
   ASSERT_TRUE(helper.StartDefaultTest());
 
-  helper.WaitForHeaders();
-  EXPECT_EQ(OK, helper.output().rv);
+  base::RunLoop().RunUntilIdle();
 
   // Process the request headers, SYN_REPLY, and response body.
   // The request body is still in flight.
@@ -2061,6 +2060,8 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
 
   // Finish sending the request body.
   upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
+  helper.WaitForCallbackToComplete();
+  EXPECT_EQ(OK, helper.output().rv);
 
   std::string response_body;
   EXPECT_EQ(OK, ReadTransaction(helper.trans(), &response_body));

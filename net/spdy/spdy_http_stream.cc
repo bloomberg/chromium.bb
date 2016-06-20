@@ -302,13 +302,12 @@ void SpdyHttpStream::Cancel() {
 }
 
 void SpdyHttpStream::OnRequestHeadersSent() {
-  if (!request_callback_.is_null())
-    DoRequestCallback(OK);
-
-  // TODO(akalin): Do this immediately after sending the request
-  // headers.
-  if (HasUploadData())
+  if (HasUploadData()) {
     ReadAndSendRequestBodyData();
+  } else {
+    if (!request_callback_.is_null())
+      DoRequestCallback(OK);
+  }
 }
 
 SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
@@ -436,9 +435,16 @@ void SpdyHttpStream::OnStreamCreated(
 void SpdyHttpStream::ReadAndSendRequestBodyData() {
   CHECK(HasUploadData());
   CHECK_EQ(request_body_buf_size_, 0);
-
-  if (request_info_->upload_data_stream->IsEOF())
+  if (request_info_->upload_data_stream->IsEOF()) {
+    // This callback does not happen to be called, because it is called
+    // in OnRequestBodyReadCompleted() function when eof happens, and then it
+    // is cleared. But better to be paranoid and handle this just in case.
+    // Generally, this eof check just makes sure it is really the eof and then
+    // doloop exists.
+    if (!request_callback_.is_null())
+      DoRequestCallback(OK);
     return;
+  }
 
   // Read the data from the request body stream.
   const int rv = request_info_->upload_data_stream
@@ -458,9 +464,12 @@ void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   CHECK_GE(status, 0);
   request_body_buf_size_ = status;
   const bool eof = request_info_->upload_data_stream->IsEOF();
-  // Only the final fame may have a length of 0.
+  // Only the final frame may have a length of 0.
   if (eof) {
     CHECK_GE(request_body_buf_size_, 0);
+    // Call the cb only after all data is sent.
+    if (!request_callback_.is_null())
+      DoRequestCallback(OK);
   } else {
     CHECK_GT(request_body_buf_size_, 0);
   }
@@ -533,7 +542,6 @@ void SpdyHttpStream::DoBufferedReadCallback() {
 void SpdyHttpStream::DoRequestCallback(int rv) {
   CHECK_NE(rv, ERR_IO_PENDING);
   CHECK(!request_callback_.is_null());
-
   // Since Run may result in being called back, reset request_callback_ in
   // advance.
   base::ResetAndReturn(&request_callback_).Run(rv);
