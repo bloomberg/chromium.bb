@@ -28,8 +28,6 @@ namespace net {
   std::unique_ptr<ConstrainedWindowMac> constrainedWindow_;
   base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
-  // A copy of the sheet's frame used to restore on show.
-  NSRect oldSheetFrame_;
   // A copy of the overlay window's size used to restore on show.
   NSSize oldOverlaySize_;
   // A copy of the sheet's |autoresizesSubviews| flag to restore on show.

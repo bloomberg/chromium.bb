@@ -600,6 +600,12 @@
       'test/ppapi/ppapi_browsertest.cc',
       'test/ppapi/ppapi_filechooser_browsertest.cc',
     ],
+    # Tests for Mac only (Cocoa and mac_views_browser=1).
+    'chrome_browser_tests_mac_sources': [
+      'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm',
+      'browser/spellchecker/spellcheck_message_filter_platform_mac_browsertest.cc',
+      'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
+    ],
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
     # Built on Mac, except when mac_views_browser==1.
     'chrome_browser_tests_cocoa_sources': [
@@ -610,7 +616,6 @@
       'browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm',
       'browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm',
       'browser/ui/cocoa/browser_window_controller_browsertest.mm',
-      'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
       'browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm',
       'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm',
@@ -2554,10 +2559,7 @@
             '../components/components.gyp:breakpad_stubs',
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
-          'sources': [
-            'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm',
-            'browser/spellchecker/spellcheck_message_filter_platform_mac_browsertest.cc',
-          ],
+          'sources': [ '<@(chrome_browser_tests_mac_sources)' ],
           'sources!': [
             # TODO(groby): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.

@@ -20,21 +20,38 @@
 
 using web_modal::WebContentsModalDialogManager;
 
-typedef InProcessBrowserTest SSLCertificateViewerCocoaTest;
+typedef InProcessBrowserTest SSLCertificateViewerMacTest;
 
 namespace {
+
 scoped_refptr<net::X509Certificate> GetSampleCertificate() {
   return net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                  "mit.davidben.der");
 }
+
+void CheckCertificateViewerVisibility(NSWindow* overlay_window,
+                                      NSWindow* dialog_sheet,
+                                      bool visible) {
+  CGFloat alpha = visible ? 1.0 : 0.0;
+  BOOL ignore_events = visible ? NO : YES;
+
+  SCOPED_TRACE(testing::Message() << "visible=" << visible);
+  // The overlay window underneath the certificate viewer should block mouse
+  // events only if the certificate viewer is visible.
+  EXPECT_EQ(ignore_events, [overlay_window ignoresMouseEvents]);
+  // Check certificate viewer sheet visibility and if it accepts mouse events.
+  EXPECT_EQ(alpha, [dialog_sheet alphaValue]);
+  EXPECT_EQ(ignore_events, [dialog_sheet ignoresMouseEvents]);
+}
+
 } // namespace
 
-IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, Basic) {
+IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, Basic) {
   scoped_refptr<net::X509Certificate> cert = GetSampleCertificate();
   ASSERT_TRUE(cert.get());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
+  NSWindow* window = web_contents->GetTopLevelNativeWindow();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -52,29 +69,41 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, Basic) {
 }
 
 // Test that switching to another tab correctly hides the sheet.
-IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, HideShow) {
+IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, HideShow) {
   scoped_refptr<net::X509Certificate> cert = GetSampleCertificate();
   ASSERT_TRUE(cert.get());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  SSLCertificateViewerCocoa* viewer =
-      [[SSLCertificateViewerCocoa alloc] initWithCertificate:cert.get()];
-  [viewer displayForWebContents:web_contents];
+  NSWindow* window = web_contents->GetTopLevelNativeWindow();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
 
+  // Account for any child windows that might be present before the certificate
+  // viewer is open.
+  NSUInteger num_child_windows = [[window childWindows] count];
+  ShowCertificateViewer(web_contents, window, cert.get());
   content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  NSWindow* sheetWindow = [[viewer overlayWindow] attachedSheet];
-  NSRect sheetFrame = [sheetWindow frame];
-  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
+  EXPECT_EQ(num_child_windows + 1, [[window childWindows] count]);
+  // Assume the last child is the overlay window that was added.
+  NSWindow* overlay_window = [[window childWindows] lastObject];
+  NSWindow* dialog_sheet = [overlay_window attachedSheet];
+  EXPECT_TRUE(dialog_sheet);
+  NSRect sheet_frame = [dialog_sheet frame];
 
-  // Switch to another tab and verify that the sheet is hidden.
+  // Verify the certificate viewer is showing and accepts mouse events.
+  CheckCertificateViewerVisibility(overlay_window, dialog_sheet, true);
+
+  // Switch to another tab and verify that |overlay_window| and |dialog_sheet|
+  // are not blocking mouse events, and |dialog_sheet| is hidden.
   AddBlankTabAndShow(browser());
-  EXPECT_EQ(0.0, [sheetWindow alphaValue]);
-  EXPECT_NSEQ(ui::kWindowSizeDeterminedLater, [sheetWindow frame]);
+  CheckCertificateViewerVisibility(overlay_window, dialog_sheet, false);
+  EXPECT_NSEQ(sheet_frame, [dialog_sheet frame]);
 
   // Switch back and verify that the sheet is shown.
   chrome::SelectNumberedTab(browser(), 0);
-  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
-  EXPECT_NSEQ(sheetFrame, [sheetWindow frame]);
+  content::RunAllPendingInMessageLoop();
+  CheckCertificateViewerVisibility(overlay_window, dialog_sheet, true);
 }
