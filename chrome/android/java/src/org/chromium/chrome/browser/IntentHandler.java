@@ -710,7 +710,7 @@ public class IntentHandler {
             return true;
         }
         if (ExternalAuthUtils.getInstance().isGoogleSigned(
-                    context.getPackageManager(), ApiCompatibilityUtils.getCreatorPackage(token))) {
+                    context, ApiCompatibilityUtils.getCreatorPackage(token))) {
             return true;
         }
         return false;

@@ -67,9 +67,6 @@ from play_services import utils
 from pylib.utils import argparse_utils
 
 
-M2_PKG_PATH = os.path.join('com', 'google', 'android', 'gms')
-
-
 def main():
   parser = argparse.ArgumentParser(description=(
       "Prepares the Google Play services split client libraries before usage "
@@ -168,11 +165,16 @@ def _MakeWritable(dir_path):
       os.chmod(os.path.join(root, path), st.st_mode | stat.S_IWUSR)
 
 
+# E.g. turn "base_1p" into "base"
+def _RemovePartySuffix(client):
+  return client[:-3] if client[-3:] == '_1p' else client
+
+
 def _ImportFromAars(config, tmp_paths, repo):
   for client in config.clients:
-    aar_name = '%s-%s.aar' % (client, config.sdk_version)
-    aar_path = os.path.join(repo, M2_PKG_PATH, client,
-                            config.sdk_version, aar_name)
+    client_name = _RemovePartySuffix(client)
+    aar_name = 'client_' + client + '.aar'
+    aar_path = os.path.join(repo, client_name, aar_name)
     aar_out_path = os.path.join(tmp_paths['imported_clients'], client)
     _ExtractAll(aar_path, aar_out_path)
 
@@ -203,18 +205,34 @@ def _ProcessResources(config, tmp_paths, repo):
   LOCALIZED_VALUES_BASE_NAME = 'values-'
   locale_whitelist = set(config.locale_whitelist)
 
-  glob_pattern = os.path.join(tmp_paths['imported_clients'], '*', 'res', '*')
-  for res_dir in glob.glob(glob_pattern):
-    dir_name = os.path.basename(res_dir)
+  # The directory structure here is:
+  # <imported_clients temp dir>/<client name>_1p/res/<res type>/<res file>.xml
+  for client_dir in os.listdir(tmp_paths['imported_clients']):
+    client_prefix = _RemovePartySuffix(client_dir) + '_'
 
-    if dir_name.startswith('drawable'):
-      shutil.rmtree(res_dir)
+    res_path = os.path.join(tmp_paths['imported_clients'], client_dir, 'res')
+    if not os.path.isdir(res_path):
       continue
+    for res_type in os.listdir(res_path):
+      res_type_path = os.path.join(res_path, res_type)
 
-    if dir_name.startswith(LOCALIZED_VALUES_BASE_NAME):
-      dir_locale = dir_name[len(LOCALIZED_VALUES_BASE_NAME):]
-      if dir_locale not in locale_whitelist:
-        shutil.rmtree(res_dir)
+      if res_type.startswith('drawable'):
+        shutil.rmtree(res_type_path)
+        continue
+
+      if res_type.startswith(LOCALIZED_VALUES_BASE_NAME):
+        dir_locale = res_type[len(LOCALIZED_VALUES_BASE_NAME):]
+        if dir_locale not in locale_whitelist:
+          shutil.rmtree(res_type_path)
+          continue
+
+      if res_type.startswith('values'):
+        # Beginning with v3, resource file names are not necessarily unique, and
+        # would overwrite each other when merged at build time. Prefix each
+        # "values" resource file with its client name.
+        for res_file in os.listdir(res_type_path):
+          os.rename(os.path.join(res_type_path, res_file),
+                    os.path.join(res_type_path, client_prefix + res_file))
 
   # Reimport files from the whitelist.
   for res_path in config.resource_whitelist:
