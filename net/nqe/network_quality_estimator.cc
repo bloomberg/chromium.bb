@@ -1074,8 +1074,9 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
   }
 }
 
+// static
 const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
-    EffectiveConnectionType type) const {
+    EffectiveConnectionType type) {
   switch (type) {
     case EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
       return "Unknown";
@@ -1096,6 +1097,28 @@ const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
       break;
   }
   return "";
+}
+
+// static
+NetworkQualityEstimator::EffectiveConnectionType
+NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
+    const std::string& connection_type_name) {
+  if (connection_type_name == "Unknown")
+    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  if (connection_type_name == "Offline")
+    return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+  if (connection_type_name == "Slow2G")
+    return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  if (connection_type_name == "2G")
+    return EFFECTIVE_CONNECTION_TYPE_2G;
+  if (connection_type_name == "3G")
+    return EFFECTIVE_CONNECTION_TYPE_3G;
+  if (connection_type_name == "4G")
+    return EFFECTIVE_CONNECTION_TYPE_4G;
+  if (connection_type_name == "Broadband")
+    return EFFECTIVE_CONNECTION_TYPE_BROADBAND;
+  NOTREACHED();
+  return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
 void NetworkQualityEstimator::SetTickClockForTesting(

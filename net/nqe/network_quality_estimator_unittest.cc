@@ -1678,4 +1678,22 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
   }
 }
 
+// Tests that the effective connection type is converted correctly to a
+// descriptive string name, and vice-versa.
+TEST(NetworkQualityEstimatorTest, NameConnectionTypeConversion) {
+  for (size_t i = 0;
+       i < NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    const NetworkQualityEstimator::EffectiveConnectionType
+        effective_connection_type =
+            static_cast<NetworkQualityEstimator::EffectiveConnectionType>(i);
+    std::string connection_type_name =
+        std::string(NetworkQualityEstimator::GetNameForEffectiveConnectionType(
+            effective_connection_type));
+    EXPECT_FALSE(connection_type_name.empty());
+    EXPECT_EQ(effective_connection_type,
+              NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
+                  connection_type_name));
+  }
+}
+
 }  // namespace net

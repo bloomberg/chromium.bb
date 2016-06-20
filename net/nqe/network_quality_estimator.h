@@ -256,6 +256,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   SocketPerformanceWatcherFactory* GetSocketPerformanceWatcherFactory();
 
+  // Returns a string equivalent to |type|.
+  static const char* GetNameForEffectiveConnectionType(
+      EffectiveConnectionType type);
+
+  // Returns an EffectiveConnectionType equivalent to |connection_type_name|.
+  static EffectiveConnectionType GetEffectiveConnectionTypeForName(
+      const std::string& connection_type_name);
+
  protected:
   // NetworkID is used to uniquely identify a network.
   // For the purpose of network quality estimation and caching, a network is
@@ -305,10 +313,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
                                   int32_t downstream_throughput_kbps,
                                   int32_t upstream_throughput_kbps) override;
-
-  // Return a string equivalent to |type|.
-  const char* GetNameForEffectiveConnectionType(
-      EffectiveConnectionType type) const;
 
   // Returns the list of intervals at which the accuracy of network quality
   // prediction should be recorded. Virtualized for testing.
