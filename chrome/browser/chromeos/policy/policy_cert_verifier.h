@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
-#include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/cert_verifier.h"
 
 namespace net {
@@ -27,8 +26,7 @@ namespace policy {
 
 // Wraps a MultiThreadedCertVerifier to make it use the additional trust anchors
 // configured by the ONC user policy.
-class PolicyCertVerifier : public net::CertVerifier,
-                           public net::CertTrustAnchorProvider {
+class PolicyCertVerifier : public net::CertVerifier {
  public:
   // Except for tests, PolicyCertVerifier should only be created by
   // PolicyCertService, which is the counterpart of this class on the UI thread.
@@ -55,9 +53,6 @@ class PolicyCertVerifier : public net::CertVerifier,
              const net::BoundNetLog& net_log) override;
 
   bool SupportsOCSPStapling() override;
-
-  // CertTrustAnchorProvider:
-  const net::CertificateList& GetAdditionalTrustAnchors() override;
 
  private:
   net::CertificateList trust_anchors_;

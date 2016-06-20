@@ -15,8 +15,6 @@
 
 namespace net {
 
-class CertTrustAnchorProvider;
-
 // CertVerifier that caches the results of certificate verifications.
 //
 // In general, certificate verification results will vary on only three
@@ -58,13 +56,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
 
   ~CachingCertVerifier() override;
 
-  // Configures a source of additional certificates that should be treated as
-  // trust anchors during verification, provided that the underlying
-  // CertVerifyProc supports additional trust beyond the default implementation.
-  // It must outlive the CachingCertVerifier.
-  void SetCertTrustAnchorProvider(
-      CertTrustAnchorProvider* trust_anchor_provider);
-
   // CertVerifier implementation:
   int Verify(const RequestParams& params,
              CRLSet* crl_set,
@@ -98,7 +89,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, Visitor);
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, AddsEntries);
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, DifferentCACerts);
-  FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, CertTrustAnchorProvider);
 
   // CachedResult contains the result of a certificate verification.
   struct NET_EXPORT_PRIVATE CachedResult {
@@ -163,8 +153,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
   uint64_t requests() const { return requests_; }
 
   std::unique_ptr<CertVerifier> verifier_;
-
-  CertTrustAnchorProvider* trust_anchor_provider_;
 
   CertVerificationCache cache_;
 

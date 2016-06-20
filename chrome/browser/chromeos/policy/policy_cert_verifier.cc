@@ -58,11 +58,8 @@ void PolicyCertVerifier::InitializeOnIOThread(
     LOG(WARNING)
         << "Additional trust anchors not supported on the current platform!";
   }
-  std::unique_ptr<net::CachingCertVerifier> verifier =
-      base::MakeUnique<net::CachingCertVerifier>(
-          base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
-  verifier->SetCertTrustAnchorProvider(this);
-  delegate_ = std::move(verifier);
+  delegate_ = base::MakeUnique<net::CachingCertVerifier>(
+      base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
 }
 
 void PolicyCertVerifier::SetTrustAnchors(
@@ -85,7 +82,14 @@ int PolicyCertVerifier::Verify(
                  anchor_used_callback_,
                  completion_callback,
                  verify_result);
-  int error = delegate_->Verify(params, crl_set, verify_result,
+
+  net::CertificateList merged_trust_anchors(params.additional_trust_anchors());
+  merged_trust_anchors.insert(merged_trust_anchors.begin(),
+                              trust_anchors_.begin(), trust_anchors_.end());
+  net::CertVerifier::RequestParams new_params(
+      params.certificate(), params.hostname(), params.flags(),
+      params.ocsp_response(), merged_trust_anchors);
+  int error = delegate_->Verify(new_params, crl_set, verify_result,
                                 wrapped_callback, out_req, net_log);
   MaybeSignalAnchorUse(error, anchor_used_callback_, *verify_result);
   return error;
@@ -94,11 +98,6 @@ int PolicyCertVerifier::Verify(
 bool PolicyCertVerifier::SupportsOCSPStapling() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return delegate_->SupportsOCSPStapling();
-}
-
-const net::CertificateList& PolicyCertVerifier::GetAdditionalTrustAnchors() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return trust_anchors_;
 }
 
 }  // namespace policy

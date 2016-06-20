@@ -376,7 +376,6 @@
       'cert/cert_database_nss.cc',
       'cert/cert_database_win.cc',
       'cert/cert_net_fetcher.h',
-      'cert/cert_trust_anchor_provider.h',
       'cert/cert_verify_proc.cc',
       'cert/cert_verify_proc.h',
       'cert/cert_verify_proc_android.cc',
