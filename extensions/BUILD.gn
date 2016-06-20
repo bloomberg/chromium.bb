@@ -215,7 +215,6 @@ test("extensions_browsertests") {
 
   data = [
     "test/data/",
-    "//net/data/",
     "//net/tools/testserver/",
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
@@ -242,6 +241,7 @@ test("extensions_browsertests") {
     "//device/usb:test_support",
     "//mojo/edk/js",
     "//mojo/public/cpp/bindings",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

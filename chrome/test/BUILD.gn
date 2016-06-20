@@ -371,7 +371,6 @@ if (!is_android) {
     data = [
       "data/",
       "//content/test/data/",
-      "//net/data/ssl/certificates/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
       "//ppapi/tests/test_case.html.mock-http-headers",
@@ -893,7 +892,6 @@ if (!is_android) {
       "//content/test/data/",
       "//google_apis/test/",
       "//media/test/data/",
-      "//net/data/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
       "//ppapi/tests/test_case.html.mock-http-headers",
@@ -1744,7 +1742,6 @@ test("unit_tests") {
     "//components/test/data/",
     "//extensions/test/data/",
     "//google_apis/test/data/",
-    "//net/data/",
     "//net/tools/testserver/",
     "//third_party/accessibility-audit/axs_testing.js",
     "//third_party/chaijs/chai.js",

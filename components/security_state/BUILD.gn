@@ -43,8 +43,4 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gtest",
   ]
-
-  data = [
-    "//net/data/",
-  ]
 }

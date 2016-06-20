@@ -123,6 +123,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

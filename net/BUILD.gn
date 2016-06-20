@@ -632,6 +632,10 @@ source_set("test_support") {
     ":test_support_bundle_data",
   ]
 
+  data = [
+    "data/",
+  ]
+
   if (!is_ios) {
     public_deps += [ "//third_party/protobuf:py_proto" ]
   }
@@ -1429,9 +1433,7 @@ test("net_unittests") {
     "//url:url_features",
   ]
 
-  data = [
-    "data/",
-  ]
+  data = []
   data_deps = [
     "third_party/nist-pkits/",
   ]

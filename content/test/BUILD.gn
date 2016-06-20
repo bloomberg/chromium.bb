@@ -403,7 +403,6 @@ test("content_browsertests") {
     data = [
       "$root_out_dir/content_shell.pak",
       "data/",
-      "//net/data/",
       "//media/test/data/",
     ]
 
@@ -625,7 +624,6 @@ test("content_unittests") {
     data = [
       "$root_out_dir/content_shell.pak",
       "data/",
-      "//net/data/ssl/certificates/",
       "//media/test/data/",
     ]
   }

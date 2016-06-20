@@ -179,7 +179,6 @@ test("chromeos_unittests") {
 
   data = [
     "test/data/",
-    "//net/data/",
   ]
 }
 

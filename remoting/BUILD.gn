@@ -155,12 +155,6 @@ test("remoting_unittests") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  data = [
-    "//net/data/ssl/certificates/ok_cert.pem",
-    "//net/data/ssl/certificates/unittest.key.bin",
-    "//net/data/ssl/certificates/unittest.selfsigned.der",
-  ]
-
   deps = [
     ":test_support",
     "//base",
