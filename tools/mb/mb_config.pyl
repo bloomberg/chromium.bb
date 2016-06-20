@@ -64,7 +64,7 @@
       'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
       'Google Chrome Linux x64': 'gn_official_goma',
       'Google Chrome Mac': 'gyp_official_goma',
-      'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
+      'Google Chrome Win': 'gn_official_goma_minimal_symbols_x86',
     },
 
     'chromium.chromiumos': {
@@ -1325,10 +1325,6 @@
 
     'gyp_official_goma_chromeos': [
       'gyp', 'official', 'goma', 'chromeos',
-    ],
-
-    'gyp_official_goma_minimal_symbols_x86': [
-      'gyp', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
     'gyp_official_syzyasan': [

@@ -95,6 +95,29 @@ group("chromium_builder_tests") {
   deps = []
 }
 
+# TODO(GYP_GONE): Figure out if we really need this target or if there's
+# some better way to specify things.
+if (is_win) {
+  group("chrome_official_builder_no_unittests") {
+    deps = [
+      "//chrome/installer/gcapi",
+      "//chrome/installer/mini_installer",
+      "//courgette",
+
+      # TODO(GYP): crbug.com/621575 do we need to port this?
+      # "//chrome:pack_policy_templates",
+
+      "//remoting/webapp",
+    ]
+    if (target_cpu == "x86") {
+      deps += [ "//courgette(//build/toolchain/win:x64)" ]
+    }
+    if (is_chrome_branded) {
+      deps += [ "//remoting/host:remoting_host_installation" ]
+    }
+  }
+}
+
 if (is_chromeos) {
   group("chromiumos_preflight") {
     testonly = true
