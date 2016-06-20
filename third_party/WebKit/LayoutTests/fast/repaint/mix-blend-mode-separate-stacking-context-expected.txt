@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -37,6 +39,32 @@
           "reason": "subtree"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='second'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='first'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='second'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='third'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV",
+      "reason": "subtree"
     }
   ]
 }

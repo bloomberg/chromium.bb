@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -14,6 +16,7 @@
       ],
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='box' class='green box blurry'",
           "position": [8, 8],
           "bounds": [200, 200],
           "contentsOpaque": true,
@@ -28,6 +31,16 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
+      "reason": "subtree"
     }
   ]
 }

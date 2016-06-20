@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,16 +32,30 @@
           "object": "LayoutText #text",
           "rect": [8, 136, 69, 19],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='allcontent'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) P",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'SUCCESS'",
+      "reason": "bounds change"
     }
   ]
 }

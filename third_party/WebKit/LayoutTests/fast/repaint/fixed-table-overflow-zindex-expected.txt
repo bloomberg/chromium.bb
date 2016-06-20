@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -32,6 +34,28 @@
           "reason": "layoutObject removal"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD id='moveMe' class='fixed'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTable (positioned) TABLE",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell (anonymous)",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

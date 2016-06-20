@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [808, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [808, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -17,6 +19,16 @@
           "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "style change"
     }
   ]
 }

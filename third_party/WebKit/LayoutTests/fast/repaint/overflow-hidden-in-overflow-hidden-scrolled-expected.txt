@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -22,6 +24,20 @@
           "reason": "subtree"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV class='innerWrapper'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='red'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='ucp' class='green'",
+      "reason": "subtree"
     }
   ]
 }

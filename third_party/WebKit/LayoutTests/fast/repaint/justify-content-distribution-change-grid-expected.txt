@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,20 +27,38 @@
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 52, 100, 200],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "reason": "bounds change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutGrid DIV id='container'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
     }
   ]
 }

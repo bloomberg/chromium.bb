@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,22 @@
           "object": "LayoutBlockFlow DIV class='hitregion'",
           "rect": [8, 8, 100, 100],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTextFragment (anonymous)",
-          "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV class='hitregion'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) \u003Cpseudo:after\u003E",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "style change"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,12 +27,26 @@
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [762, 8, 15, 300],
           "reason": "scroll"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "reason": "scroll"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='innerDiv'",
+      "reason": "subtree"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "subtree"
     }
   ]
 }

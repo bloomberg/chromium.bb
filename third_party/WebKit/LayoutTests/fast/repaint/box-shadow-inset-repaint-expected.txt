@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -17,6 +19,16 @@
           "reason": "layoutObject insertion"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='container'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject insertion"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -17,6 +19,16 @@
           "reason": "layoutObject insertion"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

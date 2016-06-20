@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -37,6 +39,28 @@
           "reason": "bounds change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='container' class='relative'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
+      "reason": "bounds change"
     }
   ]
 }

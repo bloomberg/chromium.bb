@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,20 +32,42 @@
           "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
           "rect": [8, 8, 100, 100],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
-          "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "subtree"
     }
   ]
 }

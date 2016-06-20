@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,24 +27,18 @@
           "object": "LayoutListMarker (anonymous)",
           "rect": [71, -158, 7, 17],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutListItem LI",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ],
       "children": [
         {
+          "name": "LayoutListItem (floating) LI id='watches'",
           "position": [31, 42],
           "transformOrigin": [17, 9],
           "bounds": [24, 17],
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
               "position": [17, 0],
               "bounds": [0, 17],
               "backfaceVisibility": "hidden"
@@ -50,11 +46,30 @@
           ]
         },
         {
+          "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
           "position": [31, 42],
           "bounds": [17, 17],
           "drawsContent": true
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) UL id='submenu'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutListItem LI",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutListMarker (anonymous)",
+      "reason": "bounds change"
     }
   ]
 }

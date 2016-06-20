@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [2000, 2000],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2000, 2000],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -10,12 +12,18 @@
           "object": "LayoutText #text",
           "rect": [0, 288, 415, 18],
           "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
-          "reason": "style change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
+      "reason": "style change"
     }
   ]
 }

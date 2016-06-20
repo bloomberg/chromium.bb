@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -22,6 +24,20 @@
           "reason": "background obscuration change"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) DIV class='green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV class='red'",
+      "reason": "background obscuration change"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV class='green'",
+      "reason": "subtree"
     }
   ]
 }

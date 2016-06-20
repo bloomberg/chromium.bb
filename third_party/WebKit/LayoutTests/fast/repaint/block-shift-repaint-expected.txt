@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -107,6 +109,56 @@
           "reason": "became visible"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='top' class='blue half'",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='div2' class='zero'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='innerDiv'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='half'",
+      "reason": "bounds change"
     }
   ]
 }

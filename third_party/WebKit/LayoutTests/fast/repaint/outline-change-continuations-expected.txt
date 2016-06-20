@@ -1,32 +1,34 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutInline SPAN id='outer'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline SPAN id='outer'",
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "outline"
-        }
-      ]
+      "drawsContent": true
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='outer'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "outline"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='outer'",
+      "reason": "style change"
     }
   ]
 }

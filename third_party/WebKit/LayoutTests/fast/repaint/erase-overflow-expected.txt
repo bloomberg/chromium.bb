@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,12 +17,22 @@
           "object": "LayoutBlockFlow DIV id='target' class='square'",
           "rect": [8, 8, 100, 100],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='square'",
-          "reason": "none"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target' class='square'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='square'",
+      "reason": "none"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='square'",
+      "reason": "bounds change"
     }
   ]
 }

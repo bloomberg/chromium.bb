@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -32,6 +34,28 @@
           "reason": "layoutObject insertion"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "layoutObject insertion"
     }
   ]
 }

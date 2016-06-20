@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,24 +27,42 @@
           "object": "LayoutText #text",
           "rect": [153, 35, 296, 18],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) SPAN",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) SPAN",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+      "reason": "layoutObject insertion"
     }
   ]
 }

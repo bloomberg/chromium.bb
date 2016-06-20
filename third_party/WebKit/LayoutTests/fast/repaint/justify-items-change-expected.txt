@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -37,6 +39,32 @@
           "reason": "layoutObject insertion"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutGrid DIV id='container'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutGrid DIV id='container'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject insertion"
     }
   ]
 }

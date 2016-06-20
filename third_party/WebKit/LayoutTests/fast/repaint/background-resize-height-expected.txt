@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -14,6 +16,7 @@
       ],
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image'",
           "position": [8, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -27,6 +30,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
           "position": [58, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -40,6 +44,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
           "position": [108, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -53,6 +58,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
           "position": [158, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -66,6 +72,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
           "position": [208, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -79,6 +86,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image top'",
           "position": [258, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -92,6 +100,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
           "position": [308, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -105,6 +114,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image center'",
           "position": [358, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -118,6 +128,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
           "position": [408, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -131,6 +142,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
           "position": [458, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -144,6 +156,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
           "position": [508, 8],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -157,6 +170,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated'",
           "position": [8, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -170,6 +184,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
           "position": [8, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -183,6 +198,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
           "position": [8, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -196,6 +212,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated fixed-height'",
           "position": [158, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -209,6 +226,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
           "position": [208, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -222,6 +240,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated top'",
           "position": [258, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -235,6 +254,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
           "position": [308, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -248,6 +268,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated center'",
           "position": [358, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -261,6 +282,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
           "position": [408, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -274,6 +296,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
           "position": [458, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -287,6 +310,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
           "position": [508, 108],
           "bounds": [60, 44],
           "drawsContent": true,
@@ -300,6 +324,100 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image top'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated fixed-height'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+      "reason": "border box change"
     }
   ]
 }

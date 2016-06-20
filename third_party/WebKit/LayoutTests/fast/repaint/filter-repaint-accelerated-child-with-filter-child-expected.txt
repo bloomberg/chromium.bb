@@ -1,17 +1,21 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='blur'",
           "position": [8, 8],
           "bounds": [200, 200],
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutBlockFlow DIV class='accelerated'",
               "position": [-12, -12],
               "transformOrigin": [112, 112],
               "bounds": [212, 257],
@@ -27,6 +31,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
+      "reason": "border box change"
     }
   ]
 }

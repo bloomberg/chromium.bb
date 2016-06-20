@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [1250, 585],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [1250, 585],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -75,36 +77,70 @@
           "object": "LayoutText #text",
           "rect": [450, 218, 4, 17],
           "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
     }
   ]
 }

@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [785, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='fixed-container'",
           "position": [0, 400],
           "bounds": [785, 600],
           "contentsOpaque": true,
@@ -22,6 +25,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "reason": "layoutObject removal"
     }
   ]
 }

@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -47,6 +49,32 @@
           "reason": "incremental"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target1' class='narrow'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target2' class='short'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target3'",
+      "reason": "layoutObject insertion"
     }
   ]
 }
