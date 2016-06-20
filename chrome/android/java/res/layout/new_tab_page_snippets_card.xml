@@ -49,7 +49,8 @@
         android:maxLines="1"
         android:ellipsize="end"
         android:textSize="12sp"
-        android:textColor="@color/snippets_publisher_name_color" />
+        android:textColor="@color/snippets_publisher_name_color"
+        android:textDirection="locale" />
 
     <ImageView
         android:id="@+id/article_thumbnail"

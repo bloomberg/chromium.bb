@@ -127,10 +127,13 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
         mHeadlineTextView.setText(mArticle.mTitle);
 
-        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING, mArticle.mPublisher,
+        // We format the publisher here so that having a publisher name in an RTL language doesn't
+        // mess up the formatting on an LTR device and vice versa.
+        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING,
+                BidiFormatter.getInstance().unicodeWrap(mArticle.mPublisher),
                 DateUtils.getRelativeTimeSpanString(mArticle.mPublishTimestampMilliseconds,
                         System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS));
-        mPublisherTextView.setText(BidiFormatter.getInstance().unicodeWrap(publisherAttribution));
+        mPublisherTextView.setText(publisherAttribution);
 
         // The favicon of the publisher should match the textview height.
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
