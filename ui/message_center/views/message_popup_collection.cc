@@ -48,17 +48,16 @@ const int kToastMarginY = kMarginBetweenItems;
 }  // namespace.
 
 MessagePopupCollection::MessagePopupCollection(
-    gfx::NativeView parent,
     MessageCenter* message_center,
     MessageCenterTray* tray,
     PopupAlignmentDelegate* alignment_delegate)
-    : parent_(parent),
-      message_center_(message_center),
+    : message_center_(message_center),
       tray_(tray),
       alignment_delegate_(alignment_delegate),
       defer_counter_(0),
       latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false),
+      target_top_edge_(0),
       context_menu_controller_(new MessageViewContextMenuController(this)),
       weak_factory_(this) {
   DCHECK(message_center_);
@@ -182,8 +181,8 @@ void MessagePopupCollection::UpdateWidgets() {
       break;
     }
 
-    ToastContentsView* toast =
-        new ToastContentsView((*iter)->id(), weak_factory_.GetWeakPtr());
+    ToastContentsView* toast = new ToastContentsView(
+        (*iter)->id(), alignment_delegate_, weak_factory_.GetWeakPtr());
     // There will be no contents already since this is a new ToastContentsView.
     toast->SetContents(view, /*a11y_feedback_for_updates=*/false);
     toasts_.push_back(toast);

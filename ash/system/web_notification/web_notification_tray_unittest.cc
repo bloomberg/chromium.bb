@@ -15,7 +15,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -449,7 +448,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   EXPECT_EQ(bottom_auto_hidden, bottom_fullscreen_hidden);
 
   // Move the mouse cursor at the bottom, which shows the shelf.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   gfx::Point bottom_right =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
@@ -490,7 +489,7 @@ TEST_F(WebNotificationTrayTest, TouchFeedback) {
   WebNotificationTray* tray = GetTray();
   EXPECT_TRUE(tray->visible());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   const int touch_id = 0;
   gfx::Point center_point = tray->GetBoundsInScreen().CenterPoint();
 
@@ -518,7 +517,7 @@ TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
   WebNotificationTray* tray = GetTray();
   EXPECT_TRUE(tray->visible());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   const int touch_id = 0;
   gfx::Rect bounds = tray->GetBoundsInScreen();
   gfx::Point center_point = bounds.CenterPoint();

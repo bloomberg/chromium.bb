@@ -7,6 +7,8 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/i18n/rtl.h"
@@ -102,6 +104,16 @@ bool AshPopupAlignmentDelegate::IsFromLeft() const {
 void AshPopupAlignmentDelegate::RecomputeAlignment(
     const display::Display& display) {
   // Nothing needs to be done.
+}
+
+void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
+    views::Widget* widget,
+    views::Widget::InitParams* init_params) {
+  // On ash, popups go in the status container.
+  shelf_->GetWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          widget, kShellWindowId_StatusContainer, init_params);
 }
 
 ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {

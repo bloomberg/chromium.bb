@@ -10,13 +10,12 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -221,12 +220,7 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
                        ->GetRootWindowController()
                        ->GetShelf();
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));
-  // TODO(jamescook): Either MessagePopupCollection needs to become aware of
-  // mus or we need some sort of parent/container provider.
   popup_collection_.reset(new message_center::MessagePopupCollection(
-      ash::Shell::GetContainer(
-          status_area_widget->GetNativeView()->GetRootWindow(),
-          kShellWindowId_StatusContainer),
       message_center(),
       message_center_tray_.get(),
       popup_alignment_delegate_.get()));
@@ -427,12 +421,7 @@ bool WebNotificationTray::ShowNotifierSettings() {
 }
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
-  LoginStatus login_status = status_area_widget()->login_status();
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
-
-  return login_status != LoginStatus::NOT_LOGGED_IN && !userAddingRunning;
+  return IsLoggedIn();
 }
 
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
@@ -495,13 +484,8 @@ void WebNotificationTray::UpdateTrayContent() {
     button_->SetState(views::CustomButton::STATE_PRESSED);
   else
     button_->SetState(views::CustomButton::STATE_NORMAL);
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
 
-  SetVisible(
-      (status_area_widget()->login_status() != LoginStatus::NOT_LOGGED_IN) &&
-      !userAddingRunning);
+  SetVisible(IsLoggedIn());
   Layout();
   SchedulePaint();
 }
@@ -516,6 +500,11 @@ void WebNotificationTray::ClickedOutsideBubble() {
 
 message_center::MessageCenter* WebNotificationTray::message_center() const {
   return message_center_tray_->message_center();
+}
+
+bool WebNotificationTray::IsLoggedIn() const {
+  return status_area_widget()->login_status() != LoginStatus::NOT_LOGGED_IN &&
+         !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 }
 
 // Methods for testing

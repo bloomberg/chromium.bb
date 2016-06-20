@@ -38,6 +38,9 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
   bool IsTopDown() const override;
   bool IsFromLeft() const override;
   void RecomputeAlignment(const display::Display& display) override;
+  void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) override;
 
  private:
   friend class test::MessagePopupCollectionTest;

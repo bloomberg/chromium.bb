@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/message_center_controller.h"
@@ -53,11 +52,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageCenterController,
       public MessageCenterObserver {
  public:
-  // |parent| specifies the parent widget of the toast windows. The default
-  // parent will be used for NULL. Usually each icon is spacing against its
-  // predecessor.
-  MessagePopupCollection(gfx::NativeView parent,
-                         MessageCenter* message_center,
+  MessagePopupCollection(MessageCenter* message_center,
                          MessageCenterTray* tray,
                          PopupAlignmentDelegate* alignment_delegate);
   ~MessagePopupCollection() override;
@@ -99,9 +94,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Called when the display bounds has been changed. Used in Windows only.
   void OnDisplayMetricsChanged(const display::Display& display);
-
-  // Used by ToastContentsView to locate itself.
-  gfx::NativeView parent() const { return parent_; }
 
  private:
   friend class test::MessagePopupCollectionTest;
@@ -149,7 +141,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void WaitForTest();
   gfx::Rect GetToastRectAt(size_t index) const;
 
-  gfx::NativeView parent_;
   MessageCenter* message_center_;
   MessageCenterTray* tray_;
   Toasts toasts_;

@@ -157,6 +157,10 @@ class ASH_EXPORT WebNotificationTray
     return message_center_bubble_.get();
   }
 
+  // Returns true if any user is logged in and the system is not at the screen
+  // for adding a secondary user.
+  bool IsLoggedIn() const;
+
   // Testing accessors.
   bool IsPopupVisible() const;
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();

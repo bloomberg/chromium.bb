@@ -83,6 +83,12 @@ void DesktopPopupAlignmentDelegate::RecomputeAlignment(
       : POPUP_ALIGNMENT_RIGHT;
 }
 
+void DesktopPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
+    views::Widget* widget,
+    views::Widget::InitParams* init_params) {
+  // Do nothing, which will use the default container.
+}
+
 void DesktopPopupAlignmentDelegate::OnDisplayAdded(
     const display::Display& new_display) {}
 

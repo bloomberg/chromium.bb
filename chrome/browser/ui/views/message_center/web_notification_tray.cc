@@ -22,8 +22,7 @@ WebNotificationTray::WebNotificationTray() {
       new MessageCenterTray(this, g_browser_process->message_center()));
   alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
   popup_collection_.reset(new message_center::MessagePopupCollection(
-      NULL, message_center(), message_center_tray_.get(),
-      alignment_delegate_.get()));
+      message_center(), message_center_tray_.get(), alignment_delegate_.get()));
 }
 
 WebNotificationTray::~WebNotificationTray() {

@@ -20,6 +20,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/popup_alignment_delegate.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -50,11 +51,13 @@ gfx::Size ToastContentsView::GetToastSizeForView(const views::View* view) {
 
 ToastContentsView::ToastContentsView(
     const std::string& notification_id,
+    PopupAlignmentDelegate* alignment_delegate,
     base::WeakPtr<MessagePopupCollection> collection)
     : collection_(collection),
       id_(notification_id),
       is_closing_(false),
       closing_animation_(NULL) {
+  DCHECK(alignment_delegate);
   set_notify_enter_exit_on_child(true);
   // Sets the transparent background. Then, when the message view is slid out,
   // the whole toast seems to slide although the actual bound of the widget
@@ -64,7 +67,7 @@ ToastContentsView::ToastContentsView(
   fade_animation_.reset(new gfx::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kFadeInOutDuration);
 
-  CreateWidget(collection->parent());
+  CreateWidget(alignment_delegate);
 }
 
 // This is destroyed when the toast window closes.
@@ -358,14 +361,14 @@ void ToastContentsView::ClickOnNotificationButton(
     collection_->ClickOnNotificationButton(notification_id, button_index);
 }
 
-void ToastContentsView::CreateWidget(gfx::NativeView parent) {
+void ToastContentsView::CreateWidget(
+    PopupAlignmentDelegate* alignment_delegate) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.keep_on_top = true;
-  if (parent)
-    params.parent = parent;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.delegate = this;
   views::Widget* widget = new views::Widget();
+  alignment_delegate->ConfigureWidgetInitParamsForContainer(widget, &params);
   widget->set_focus_on_creation(false);
 
 #if defined(OS_WIN)

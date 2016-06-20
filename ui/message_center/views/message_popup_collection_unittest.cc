@@ -46,6 +46,27 @@ std::unique_ptr<message_center::Notification> CreateTestNotification(
       new message_center::NotificationDelegate()));
 }
 
+// Provides an aura window context for widget creation.
+class TestPopupAlignmentDelegate
+    : public message_center::DesktopPopupAlignmentDelegate {
+ public:
+  explicit TestPopupAlignmentDelegate(gfx::NativeWindow context)
+      : context_(context) {}
+  ~TestPopupAlignmentDelegate() override {}
+
+  // PopupAlignmentDelegate:
+  void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) override {
+    init_params->context = context_;
+  }
+
+ private:
+  gfx::NativeWindow context_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPopupAlignmentDelegate);
+};
+
 }  // namespace
 
 namespace message_center {
@@ -57,9 +78,9 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     MessageCenter::Initialize();
     MessageCenter::Get()->DisableTimersForTest();
-    alignment_delegate_.reset(new DesktopPopupAlignmentDelegate);
-    collection_.reset(new MessagePopupCollection(
-        GetContext(), MessageCenter::Get(), NULL, alignment_delegate_.get()));
+    alignment_delegate_.reset(new TestPopupAlignmentDelegate(GetContext()));
+    collection_.reset(new MessagePopupCollection(MessageCenter::Get(), NULL,
+                                                 alignment_delegate_.get()));
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume
     // and verify normal layout of the toast stack.

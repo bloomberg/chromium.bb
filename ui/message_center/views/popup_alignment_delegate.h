@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_POPUP_ALIGNMENT_DELEGATE_H_
 
 #include "ui/message_center/message_center_export.h"
+#include "ui/views/widget/widget.h"
 
 namespace gfx {
 class Point;
@@ -49,6 +50,12 @@ class MESSAGE_CENTER_EXPORT PopupAlignmentDelegate {
   // The subclass may override this method to check the current desktop status
   // so that the toasts are arranged at the correct place.
   virtual void RecomputeAlignment(const display::Display& display) = 0;
+
+  // Sets the parent container for popups. If it does not set a parent a
+  // default parent will be used (e.g. the native desktop on Windows).
+  virtual void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) = 0;
 
  protected:
   virtual ~PopupAlignmentDelegate();

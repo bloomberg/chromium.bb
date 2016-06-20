@@ -55,6 +55,9 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   bool IsTopDown() const override;
   bool IsFromLeft() const override;
   void RecomputeAlignment(const display::Display& display) override;
+  void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      views::Widget::InitParams* init_params) override;
 
  private:
   friend class AshPopupAlignmentDelegateTest;
