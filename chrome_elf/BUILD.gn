@@ -26,6 +26,9 @@ windows_manifest("chrome_elf_manifest") {
 # in the world.
 shared_library("chrome_elf") {
   sources = [
+    "//chrome/app/chrome_crash_reporter_client_win.cc",
+    "//chrome/app/chrome_crash_reporter_client_win.h",
+    "//chrome/common/chrome_result_codes.h",
     "chrome_elf.def",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
@@ -36,8 +39,12 @@ shared_library("chrome_elf") {
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
     ":common",
+    "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
+    "//components/crash/content/app",
+    "//components/crash/core/common",
+    "//content/public/common:result_codes",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]

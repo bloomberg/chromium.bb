@@ -37,6 +37,8 @@
         'chrome_elf.def',
         'chrome_elf_main.cc',
         'chrome_elf_main.h',
+        '../chrome/app/chrome_crash_reporter_client_win.cc',
+        '../chrome/app/chrome_crash_reporter_client_win.h',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_elf/chrome_elf_version.rc',
       ],
       'dependencies': [
@@ -44,6 +46,8 @@
         'chrome_elf_breakpad',
         'chrome_elf_resources',
         '../chrome/chrome.gyp:install_static_util',
+        '../components/components.gyp:crash_component',
+        '../components/components.gyp:crash_core_common',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

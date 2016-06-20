@@ -62,7 +62,7 @@ class ELFImportsTest : public testing::Test {
 //
 // If you break this test, you may have changed base or the Windows sandbox
 // such that more system imports are required to link.
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(COMPONENT_BUILD)
 TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   base::FilePath dll;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dll));
