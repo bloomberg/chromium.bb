@@ -56,6 +56,7 @@ struct ModifierToLabel {
   {chromeos::input_method::kVoidKey, "disabled"},
   {chromeos::input_method::kCapsLockKey, "caps lock"},
   {chromeos::input_method::kEscapeKey, "esc"},
+  {chromeos::input_method::kBackspaceKey, "backspace"},
 };
 
 struct I18nContentToMessage {

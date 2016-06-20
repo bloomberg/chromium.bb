@@ -41,6 +41,7 @@ var LABEL_TO_IDENTIFIER = {
   'alt': '38',
   'caps lock': '3A',
   'esc': '01',
+  'backspace': '0E',
   'disabled': 'DISABLED'
 };
 
