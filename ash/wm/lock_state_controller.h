@@ -41,12 +41,6 @@ class ASH_EXPORT LockStateControllerDelegate {
   LockStateControllerDelegate() {}
   virtual ~LockStateControllerDelegate() {}
 
-  // Returns true if the lock screen webpage instance is loading.
-  // TODO(jdufault): Remove this method once crbug.com/452599 is resolved. We
-  // proxy the IsLoading method call into this delegate because ash forbids all
-  // icnludes from content/.
-  virtual bool IsLoading() const = 0;
-
   virtual void RequestLockScreen() = 0;
   virtual void RequestShutdown() = 0;
 
@@ -320,8 +314,6 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.
   base::OneShotTimer lock_fail_timer_;
-  // TODO(jdufault): Remove after resolving crbug.com/452599.
-  bool lock_fail_timer_is_stopped_;
 
   // Started when the screen is locked while the power button is held.  Adds a
   // delay between the appearance of the lock screen and the beginning of the

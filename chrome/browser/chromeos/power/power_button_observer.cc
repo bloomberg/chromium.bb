@@ -34,9 +34,6 @@ ash::LoginStatus GetCurrentLoginStatus() {
 }  // namespace
 
 PowerButtonObserver::PowerButtonObserver() {
-  // TODO: Remove after resolving crbug.com/452599.
-  VLOG(0) << "Creating PowerButtonObserver " << this;
-
   ash::Shell::GetInstance()->lock_state_controller()->SetDelegate(
       std::unique_ptr<ash::LockStateControllerDelegate>(
           new SessionStateControllerDelegateChromeos));
@@ -66,9 +63,6 @@ PowerButtonObserver::PowerButtonObserver() {
 }
 
 PowerButtonObserver::~PowerButtonObserver() {
-  // TODO: Remove after resolving crbug.com/452599.
-  VLOG(0) << "Destroying PowerButtonObserver " << this;
-
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
@@ -85,9 +79,6 @@ void PowerButtonObserver::Observe(int type,
       ash::Shell::GetInstance()->OnAppTerminating();
       break;
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
-      // TODO(jdufault): Remove after resolving crbug.com/452599.
-      VLOG(0) << "PowerButtonObserver " << this
-              << "calling ash::Shell OnLockStateChanged";
       bool locked = *content::Details<bool>(details).ptr();
       ash::Shell::GetInstance()->OnLockStateChanged(locked);
       break;

@@ -48,9 +48,6 @@ cr.define('cr.ui.Oobe', function() {
      * be invoked to do final setup.
      */
     initialize: function() {
-      // TODO(jdufault): Remove this after resolving crbug.com/452599.
-      console.log('Start initializing LOCK OOBE');
-
       cr.ui.login.DisplayManager.initialize();
       login.AccountPickerScreen.register();
 
