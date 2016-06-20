@@ -313,7 +313,10 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
 
     const FormFieldDataPredictions& field = form.fields[i];
     std::vector<base::string16> replacements;
-    replacements.push_back(base::UTF8ToUTF16(field.overall_type));
+
+    base::string16 overall_type = base::UTF8ToUTF16(field.overall_type);
+
+    replacements.push_back(overall_type);
     replacements.push_back(base::UTF8ToUTF16(field.server_type));
     replacements.push_back(base::UTF8ToUTF16(field.heuristic_type));
     replacements.push_back(truncated_label);
@@ -323,6 +326,8 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
     const base::string16 title = l10n_util::GetStringFUTF16(
         IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE, replacements, nullptr);
     element.setAttribute("title", WebString(title));
+
+    element.setAttribute("autofill-prediction", WebString(overall_type));
   }
 
   return true;
