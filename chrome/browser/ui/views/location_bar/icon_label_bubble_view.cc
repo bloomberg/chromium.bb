@@ -118,7 +118,7 @@ bool IconLabelBubbleView::IsShrinking() const {
   return false;
 }
 
-bool IconLabelBubbleView::OnActivate() {
+bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
   return false;
 }
 
@@ -129,13 +129,13 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() const {
 
 bool IconLabelBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_RETURN)
-    return OnActivate();
+    return OnActivate(event);
   return false;
 }
 
 bool IconLabelBubbleView::OnKeyReleased(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE)
-    return OnActivate();
+    return OnActivate(event);
   return false;
 }
 

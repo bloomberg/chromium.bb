@@ -41,8 +41,10 @@ const int InkDropHostView::kInkDropSmallCornerRadius = 2;
 // TODO(bruthig): Consider getting rid of this class.
 class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
  public:
-  InkDropGestureHandler(View* view, InkDrop* ink_drop)
-      : ink_drop_(ink_drop), target_handler_(view, this) {}
+  InkDropGestureHandler(InkDropHostView* host_view, InkDrop* ink_drop)
+      : target_handler_(new ui::ScopedTargetHandler(host_view, this)),
+        host_view_(host_view),
+        ink_drop_(ink_drop) {}
 
   ~InkDropGestureHandler() override {}
 
@@ -85,15 +87,18 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
       // case would prematurely pre-empt these animations.
       return;
     }
-    ink_drop_->AnimateToState(ink_drop_state);
+    host_view_->AnimateInkDrop(ink_drop_state, event);
   }
 
  private:
+  // Allows |this| to handle all GestureEvents on |host_view_|.
+  std::unique_ptr<ui::ScopedTargetHandler> target_handler_;
+
+  // The host view to cache ui::Events to when animating the ink drop.
+  InkDropHostView* host_view_;
+
   // Animation controller for the ink drop ripple effect.
   InkDrop* ink_drop_;
-
-  // An instance of ScopedTargetHandler allowing |this| to handle events.
-  ui::ScopedTargetHandler target_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropGestureHandler);
 };
@@ -129,20 +134,44 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
-  std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
-      CalculateLargeInkDropSize(ink_drop_size_), kInkDropLargeCornerRadius,
-      ink_drop_size_, kInkDropSmallCornerRadius, GetInkDropCenter(),
-      GetInkDropBaseColor()));
-  return ripple;
+  return CreateDefaultInkDropRipple(GetLocalBounds().CenterPoint());
 }
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
+  return CreateDefaultInkDropHighlight(GetLocalBounds().CenterPoint());
+}
+
+std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
+    const gfx::Point& center_point) const {
+  std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
+      CalculateLargeInkDropSize(ink_drop_size_), kInkDropLargeCornerRadius,
+      ink_drop_size_, kInkDropSmallCornerRadius, center_point,
+      GetInkDropBaseColor()));
+  return ripple;
+}
+
+std::unique_ptr<InkDropHighlight>
+InkDropHostView::CreateDefaultInkDropHighlight(
+    const gfx::Point& center_point) const {
   std::unique_ptr<InkDropHighlight> highlight(
       new InkDropHighlight(ink_drop_size_, kInkDropSmallCornerRadius,
-                           GetInkDropCenter(), GetInkDropBaseColor()));
+                           center_point, GetInkDropBaseColor()));
   highlight->set_explode_size(CalculateLargeInkDropSize(ink_drop_size_));
   return highlight;
+}
+
+gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
+  return last_ripple_triggering_event_
+             ? last_ripple_triggering_event_->location()
+             : GetLocalBounds().CenterPoint();
+}
+
+void InkDropHostView::AnimateInkDrop(InkDropState state,
+                                     const ui::LocatedEvent* event) {
+  last_ripple_triggering_event_.reset(
+      event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
+  ink_drop_->AnimateToState(state);
 }
 
 void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
@@ -179,10 +208,6 @@ void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
   View::OnMouseEvent(event);
 }
 
-gfx::Point InkDropHostView::GetInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
 SkColor InkDropHostView::GetInkDropBaseColor() const {
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -200,10 +225,6 @@ void InkDropHostView::SetHasInkDrop(bool has_an_ink_drop) {
     gesture_handler_.reset();
     ink_drop_.reset(new InkDropStub());
   }
-}
-
-void InkDropHostView::AnimateInkDrop(InkDropState ink_drop_state) {
-  ink_drop_->AnimateToState(ink_drop_state);
 }
 
 }  // namespace views

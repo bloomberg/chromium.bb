@@ -75,7 +75,7 @@ bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = IsBubbleShowing();
   if (!suppress_mouse_released_action_ && event.IsOnlyLeftMouseButton())
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING);
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
@@ -95,8 +95,9 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
 
   const bool activated = HitTestPoint(event.location());
-  AnimateInkDrop(activated ? views::InkDropState::ACTIVATED
-                           : views::InkDropState::HIDDEN);
+  AnimateInkDrop(
+      activated ? views::InkDropState::ACTIVATED : views::InkDropState::HIDDEN,
+      &event);
   if (activated)
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
   OnPressed(activated);
@@ -106,7 +107,7 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
     return false;
 
-  AnimateInkDrop(views::InkDropState::ACTIVATED);
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* &event */);
   // As with CustomButton, return activates on key down and space activates on
   // key up.
   if (event.key_code() == ui::VKEY_RETURN)
@@ -161,7 +162,7 @@ bool BubbleIconView::ShouldShowInkDropForFocus() const {
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    AnimateInkDrop(views::InkDropState::ACTIVATED);
+    AnimateInkDrop(views::InkDropState::ACTIVATED, event);
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
     event->SetHandled();
   }
@@ -175,7 +176,7 @@ void BubbleIconView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                bool visible) {
   // |widget| is a bubble that has just got shown / hidden.
   if (!visible)
-    AnimateInkDrop(views::InkDropState::DEACTIVATED);
+    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr /* event */);
 }
 
 void BubbleIconView::ExecuteCommand(ExecuteSource source) {

@@ -21,6 +21,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -439,27 +440,25 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
-  return GetText().empty() ? CustomButton::CreateInkDropRipple()
-                           : base::WrapUnique(new views::FloodFillInkDropRipple(
-                                 GetLocalBounds(), GetInkDropCenter(),
-                                 GetInkDropBaseColor()));
+  return GetText().empty()
+             ? CreateDefaultInkDropRipple(
+                   image()->GetMirroredBounds().CenterPoint())
+             : std::unique_ptr<views::InkDropRipple>(
+                   new views::FloodFillInkDropRipple(
+                       GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+                       GetInkDropBaseColor()));
 }
 
 std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     const {
   if (!ShouldShowInkDropHighlight())
     return nullptr;
-  return GetText().empty() ? CustomButton::CreateInkDropHighlight()
-                           : base::WrapUnique(new views::InkDropHighlight(
-                                 size(), kInkDropSmallCornerRadius,
-                                 GetInkDropCenter(), GetInkDropBaseColor()));
-}
-
-gfx::Point LabelButton::GetInkDropCenter() const {
-  // TODO(bruthig): Make the flood fill ink drops centered on the LocatedEvent
-  // that triggered them.
-  return GetText().empty() ? image()->GetMirroredBounds().CenterPoint()
-                           : CustomButton::GetInkDropCenter();
+  return GetText().empty()
+             ? CreateDefaultInkDropHighlight(
+                   image()->GetMirroredBounds().CenterPoint())
+             : base::WrapUnique(new views::InkDropHighlight(
+                   size(), kInkDropSmallCornerRadius,
+                   GetLocalBounds().CenterPoint(), GetInkDropBaseColor()));
 }
 
 void LabelButton::StateChanged() {

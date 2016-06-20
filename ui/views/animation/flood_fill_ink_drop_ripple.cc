@@ -316,12 +316,23 @@ gfx::Transform FloodFillInkDropRipple::CalculateTransform(
 }
 
 gfx::Transform FloodFillInkDropRipple::GetMaxSizeTargetTransform() const {
-  // TODO(estade): get rid of this 2, but make the fade out start before the
-  // active/action transform is done.
-  return CalculateTransform(gfx::Vector2dF(root_layer_.bounds().width(),
-                                           root_layer_.bounds().height())
-                                .Length() /
-                            2);
+  return CalculateTransform(MaxDistanceToCorners(center_point_));
+}
+
+float FloodFillInkDropRipple::MaxDistanceToCorners(
+    const gfx::Point& point) const {
+  const gfx::Rect bounds = root_layer_.bounds();
+  const float distance_to_top_left = (bounds.origin() - point).Length();
+  const float distance_to_top_right = (bounds.top_right() - point).Length();
+  const float distance_to_bottom_left = (bounds.bottom_left() - point).Length();
+  const float distance_to_bottom_right =
+      (bounds.bottom_right() - point).Length();
+
+  float largest_distance =
+      std::max(distance_to_top_left, distance_to_top_right);
+  largest_distance = std::max(largest_distance, distance_to_bottom_left);
+  largest_distance = std::max(largest_distance, distance_to_bottom_right);
+  return largest_distance;
 }
 
 }  // namespace views

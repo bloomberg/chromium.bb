@@ -239,7 +239,7 @@ class BookmarkButtonBase : public views::LabelButton {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::WrapUnique(new views::FloodFillInkDropRipple(
-        CalculateInkDropBounds(size()), GetInkDropCenter(),
+        CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor()));
   }
 
@@ -336,7 +336,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::WrapUnique(new views::FloodFillInkDropRipple(
-        CalculateInkDropBounds(size()), GetInkDropCenter(),
+        CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor()));
   }
 
@@ -392,7 +392,7 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
       // TODO(bruthig): The ACTION_PENDING triggering logic should be in
       // MenuButton::OnPressed() however there is a bug with the pressed state
       // logic in MenuButton. See http://crbug.com/567252.
-      AnimateInkDrop(views::InkDropState::ACTION_PENDING);
+      AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
     }
     return MenuButton::OnMousePressed(event);
   }

@@ -24,6 +24,12 @@ class InkDropHostViewTestApi {
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop);
   InkDrop* ink_drop() { return host_view_->ink_drop(); }
 
+  // Wrapper for InkDropHostView::GetInkDropCenterBasedOnLastEvent().
+  gfx::Point GetInkDropCenterBasedOnLastEvent() const;
+
+  // Wrapper for InkDropHostView::AnimateInkDrop().
+  void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
+
  private:
   // The InkDropHostView to provide internal access to.
   InkDropHostView* host_view_;

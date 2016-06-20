@@ -78,7 +78,7 @@ class IconLabelBubbleView : public views::InkDropHostView {
 
   // The view has been activated by a user gesture such as spacebar. Returns
   // true if some handling was performed.
-  virtual bool OnActivate();
+  virtual bool OnActivate(const ui::Event& event);
 
   // views::View:
   gfx::Size GetPreferredSize() const override;

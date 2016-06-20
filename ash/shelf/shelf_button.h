@@ -56,7 +56,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   gfx::Rect GetIconBounds() const;
 
   // Called when user started dragging the shelf button.
-  void OnDragStarted();
+  void OnDragStarted(const ui::LocatedEvent* event);
 
   // Overrides to views::CustomButton:
   void ShowContextMenu(const gfx::Point& p,

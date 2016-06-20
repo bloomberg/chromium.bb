@@ -32,6 +32,11 @@ gfx::Point FloodFillInkDropRippleTestApi::GetDrawnCenterPoint() const {
       ink_drop_ripple()->circle_layer_delegate_.GetCenterPoint());
 }
 
+float FloodFillInkDropRippleTestApi::MaxDistanceToCorners(
+    const gfx::Point& point) const {
+  return ink_drop_ripple()->MaxDistanceToCorners(point);
+}
+
 float FloodFillInkDropRippleTestApi::GetCurrentOpacity() const {
   return ink_drop_ripple()->root_layer_.opacity();
 }

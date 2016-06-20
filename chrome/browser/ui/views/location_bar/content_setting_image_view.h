@@ -72,7 +72,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   bool ShouldShowBackground() const override;
   double WidthMultiplier() const override;
   bool IsShrinking() const override;
-  bool OnActivate() override;
+  bool OnActivate(const ui::Event& event) override;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

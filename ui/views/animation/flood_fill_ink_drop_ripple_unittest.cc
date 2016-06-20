@@ -31,5 +31,35 @@ TEST(FloodFillInkDropRippleTest, TransformedCenterPointForIrregularClipBounds) {
   EXPECT_EQ(expected_center_point, actual_center);
 }
 
+TEST(FloodFillInkDropRippleTest, MaxDistanceToCorners) {
+  const float kAbsError = 0.01f;
+  // Rect with the following corners in clockwise order starting at the origin:
+  // (10, 30), (60, 30), (10, 100), (60, 100)
+  const gfx::Rect clip_bounds(10, 30, 50, 70);
+
+  FloodFillInkDropRipple ripple(clip_bounds, gfx::Point(), SK_ColorWHITE);
+  FloodFillInkDropRippleTestApi test_api(&ripple);
+
+  // Interior points
+  EXPECT_NEAR(78.10f, test_api.MaxDistanceToCorners(gfx::Point(10, 40)),
+              kAbsError);
+  EXPECT_NEAR(71.06f, test_api.MaxDistanceToCorners(gfx::Point(55, 45)),
+              kAbsError);
+  EXPECT_NEAR(64.03f, test_api.MaxDistanceToCorners(gfx::Point(50, 80)),
+              kAbsError);
+  EXPECT_NEAR(68.01f, test_api.MaxDistanceToCorners(gfx::Point(20, 85)),
+              kAbsError);
+
+  // Exterior points
+  EXPECT_NEAR(110.79f, test_api.MaxDistanceToCorners(gfx::Point(3, 5)),
+              kAbsError);
+  EXPECT_NEAR(108.17f, test_api.MaxDistanceToCorners(gfx::Point(70, 10)),
+              kAbsError);
+  EXPECT_NEAR(103.08f, test_api.MaxDistanceToCorners(gfx::Point(75, 110)),
+              kAbsError);
+  EXPECT_NEAR(101.24f, test_api.MaxDistanceToCorners(gfx::Point(5, 115)),
+              kAbsError);
+}
+
 }  // namespace test
 }  // namespace views

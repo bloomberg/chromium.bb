@@ -13,6 +13,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_constants.h"
@@ -147,8 +148,10 @@ bool MenuButton::Activate(const ui::Event* event) {
 
     menu_closed_time_ = TimeTicks::Now();
 
-    if (!increment_pressed_lock_called && pressed_lock_count_ == 0)
-      AnimateInkDrop(InkDropState::ACTION_TRIGGERED);
+    if (!increment_pressed_lock_called && pressed_lock_count_ == 0) {
+      AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
+                     ui::LocatedEvent::FromIfValid(event));
+    }
 
     // We must return false here so that the RootView does not get stuck
     // sending all mouse pressed events to us instead of the appropriate
@@ -156,7 +159,7 @@ bool MenuButton::Activate(const ui::Event* event) {
     return false;
   }
 
-  AnimateInkDrop(InkDropState::HIDDEN);
+  AnimateInkDrop(InkDropState::HIDDEN, ui::LocatedEvent::FromIfValid(event));
   return true;
 }
 
@@ -222,7 +225,7 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
       HitTestPoint(event.location()) && !InDrag()) {
     Activate(&event);
   } else {
-    AnimateInkDrop(InkDropState::HIDDEN);
+    AnimateInkDrop(InkDropState::HIDDEN, &event);
     LabelButton::OnMouseReleased(event);
   }
 }
@@ -376,7 +379,7 @@ void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated) {
     if (snap_ink_drop_to_activated)
       ink_drop()->SnapToActivated();
     else
-      AnimateInkDrop(InkDropState::ACTIVATED);
+      AnimateInkDrop(InkDropState::ACTIVATED, nullptr /* event */);
   }
   SetState(STATE_PRESSED);
 }
@@ -398,7 +401,7 @@ void MenuButton::DecrementPressedLocked() {
     // The widget may be null during shutdown. If so, it doesn't make sense to
     // try to add an ink drop effect.
     if (GetWidget() && state() != STATE_PRESSED)
-      AnimateInkDrop(InkDropState::DEACTIVATED);
+      AnimateInkDrop(InkDropState::DEACTIVATED, nullptr /* event */);
   }
 }
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host.h"
@@ -25,6 +26,9 @@ class InkDropHighlight;
 // A view that provides InkDropHost functionality.
 class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
  public:
+  InkDropHostView();
+  ~InkDropHostView() override;
+
   // Overridden from InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -34,10 +38,28 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 
  protected:
-  InkDropHostView();
-  ~InkDropHostView() override;
-
   static const int kInkDropSmallCornerRadius;
+
+  // Returns the default InkDropRipple centered on |center_point|.
+  std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
+      const gfx::Point& center_point) const;
+
+  // Returns the default InkDropHighlight centered on |center_point|.
+  std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
+      const gfx::Point& center_point) const;
+
+  // Returns the point of the |last_ripple_triggering_event_| if it was a
+  // LocatedEvent, otherwise the center point of the local bounds is returned.
+  gfx::Point GetInkDropCenterBasedOnLastEvent() const;
+
+  // Animates |ink_drop_| to the desired |ink_drop_state|. Caches |event| as the
+  // last_ripple_triggering_event().
+  //
+  // *** NOTE ***: |event| has been plumbed through on a best effort basis for
+  // the purposes of centering ink drop ripples on located Events.  Thus nullptr
+  // has been used by clients who do not have an Event instance available to
+  // them.
+  void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
   // View:
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -47,7 +69,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
-  virtual gfx::Point GetInkDropCenter() const;
   virtual SkColor GetInkDropBaseColor() const;
 
   // Should return true if the ink drop is also used to depict focus.
@@ -60,16 +81,13 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // of the InkDrop.
   void SetHasInkDrop(bool has_an_ink_drop);
 
-  // Animates |ink_drop_| to the desired |ink_drop_state|.
-  //
-  // TODO(bruthig): Enhance to accept a ui::Event parameter so InkDrops can be
-  // centered (see https://crbug.com/597273) and disabled for touch events on
-  // Windows (see https://crbug.com/595315).
-  void AnimateInkDrop(InkDropState ink_drop_state);
-
  private:
   class InkDropGestureHandler;
+  friend class InkDropGestureHandler;
   friend class test::InkDropHostViewTestApi;
+
+  // The last user Event to trigger an ink drop ripple animation.
+  std::unique_ptr<ui::LocatedEvent> last_ripple_triggering_event_;
 
   std::unique_ptr<InkDrop> ink_drop_;
 

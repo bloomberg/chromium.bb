@@ -35,7 +35,7 @@ class LocationIconView : public IconLabelBubbleView {
                       base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
-  bool OnActivate() override;
+  bool OnActivate(const ui::Event& event) override;
 
   // Whether we should show the tooltip for this icon or not.
   void set_show_tooltip(bool show_tooltip) { show_tooltip_ = show_tooltip; }

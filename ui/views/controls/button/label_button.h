@@ -106,7 +106,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
-  gfx::Point GetInkDropCenter() const override;
 
  protected:
   ImageView* image() const { return image_; }

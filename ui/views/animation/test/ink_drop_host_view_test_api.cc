@@ -17,5 +17,14 @@ void InkDropHostViewTestApi::SetInkDrop(std::unique_ptr<InkDrop> ink_drop) {
   host_view_->ink_drop_ = std::move(ink_drop);
 }
 
+gfx::Point InkDropHostViewTestApi::GetInkDropCenterBasedOnLastEvent() const {
+  return host_view_->GetInkDropCenterBasedOnLastEvent();
+}
+
+void InkDropHostViewTestApi::AnimateInkDrop(InkDropState state,
+                                            const ui::LocatedEvent* event) {
+  host_view_->AnimateInkDrop(state, event);
+}
+
 }  // namespace test
 }  // namespace views

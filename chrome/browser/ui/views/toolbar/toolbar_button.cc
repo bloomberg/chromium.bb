@@ -221,7 +221,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   menu_showing_ = true;
 
-  AnimateInkDrop(views::InkDropState::ACTIVATED);
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* event */);
 
   // Exit if the model is null.
   if (!model_.get())
@@ -241,7 +241,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 }
 
 void ToolbarButton::OnMenuClosed() {
-  AnimateInkDrop(views::InkDropState::DEACTIVATED);
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr /* event */);
 
   menu_showing_ = false;
 

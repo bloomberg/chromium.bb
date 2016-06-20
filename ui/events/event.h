@@ -318,6 +318,12 @@ class EVENTS_EXPORT CancelModeEvent : public Event {
 
 class EVENTS_EXPORT LocatedEvent : public Event {
  public:
+  // Convenience function that casts |event| to a LocatedEvent if it is one,
+  // otherwise returns null.
+  static const ui::LocatedEvent* FromIfValid(const ui::Event* event) {
+    return event && event->IsLocatedEvent() ? event->AsLocatedEvent() : nullptr;
+  }
+
   ~LocatedEvent() override;
 
   float x() const { return location_.x(); }

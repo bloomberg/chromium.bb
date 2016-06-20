@@ -578,6 +578,7 @@
       'animation/bounds_animator_unittest.cc',
       'animation/flood_fill_ink_drop_ripple_unittest.cc',
       'animation/ink_drop_highlight_unittest.cc',
+      'animation/ink_drop_host_view_unittest.cc',
       'animation/ink_drop_impl_unittest.cc',
       'animation/ink_drop_ripple_unittest.cc',
       'animation/ink_drop_unittest.cc',

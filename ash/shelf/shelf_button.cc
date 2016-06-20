@@ -345,8 +345,8 @@ gfx::Rect ShelfButton::GetIconBounds() const {
   return icon_view_->bounds();
 }
 
-void ShelfButton::OnDragStarted() {
-  AnimateInkDrop(views::InkDropState::HIDDEN);
+void ShelfButton::OnDragStarted(const ui::LocatedEvent* event) {
+  AnimateInkDrop(views::InkDropState::HIDDEN, event);
 }
 
 void ShelfButton::ShowContextMenu(const gfx::Point& p,
@@ -503,7 +503,8 @@ std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       kInkDropLargeCornerRadius,
       gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
+      kInkDropSmallCornerRadius, GetLocalBounds().CenterPoint(),
+      GetInkDropBaseColor()));
 }
 
 bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {

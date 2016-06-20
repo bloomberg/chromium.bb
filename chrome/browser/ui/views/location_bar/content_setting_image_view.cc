@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
@@ -93,7 +94,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
   if (string_id && !label()->visible()) {
-    AnimateInkDrop(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
     SetLabel(l10n_util::GetStringUTF16(string_id));
     label()->SetVisible(true);
     slide_animator_.Show();
@@ -116,7 +117,7 @@ bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = bubble_view_ != nullptr;
   if (!suppress_mouse_released_action_ && !label()->visible())
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING);
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
@@ -133,14 +134,14 @@ void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
   }
   const bool activated = HitTestPoint(event.location());
   if (!label()->visible() && !activated)
-    AnimateInkDrop(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN, &event);
   if (activated)
-    OnActivate();
+    OnActivate(event);
 }
 
 void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
-    OnActivate();
+    OnActivate(*event);
   if ((event->type() == ui::ET_GESTURE_TAP) ||
       (event->type() == ui::ET_GESTURE_TAP_DOWN))
     event->SetHandled();
@@ -192,7 +193,7 @@ bool ContentSettingImageView::IsShrinking() const {
           slide_animator_.GetCurrentValue() > (1.0 - kOpenFraction));
 }
 
-bool ContentSettingImageView::OnActivate() {
+bool ContentSettingImageView::OnActivate(const ui::Event& event) {
   if (slide_animator_.is_animating()) {
     // If the user clicks while we're animating, the bubble arrow will be
     // pointing to the image, and if we allow the animation to keep running, the
@@ -227,7 +228,8 @@ bool ContentSettingImageView::OnActivate() {
     // the animation simply pauses and no other visible state change occurs, so
     // show the arrow in this case.
     if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_) {
-      AnimateInkDrop(views::InkDropState::ACTIVATED);
+      AnimateInkDrop(views::InkDropState::ACTIVATED,
+                     ui::LocatedEvent::FromIfValid(&event));
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     }
     bubble_widget->Show();
@@ -275,7 +277,7 @@ void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                         bool visible) {
   // |widget| is a bubble that has just got shown / hidden.
   if (!visible && !label()->visible())
-    AnimateInkDrop(views::InkDropState::DEACTIVATED);
+    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr /* event */);
 }
 
 void ContentSettingImageView::UpdateImage() {

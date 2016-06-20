@@ -109,7 +109,7 @@ void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
 
 void LocationIconView::ProcessLocatedEvent(const ui::LocatedEvent& event) {
   if (HitTestPoint(event.location()))
-    OnActivate();
+    OnActivate(event);
 }
 
 gfx::Size LocationIconView::GetMinimumSize() const {
@@ -131,7 +131,7 @@ SkColor LocationIconView::GetBorderColor() const {
   return GetTextColor();
 }
 
-bool LocationIconView::OnActivate() {
+bool LocationIconView::OnActivate(const ui::Event& event) {
   WebContents* contents = location_bar_->GetWebContents();
   if (!contents)
     return false;

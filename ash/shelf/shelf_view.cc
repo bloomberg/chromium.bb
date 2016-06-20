@@ -1073,7 +1073,7 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   ReorderChildView(drag_view_, -1);
   bounds_animator_->StopAnimatingView(drag_view_);
 
-  drag_view_->OnDragStarted();
+  drag_view_->OnDragStarted(&event);
 }
 
 void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {

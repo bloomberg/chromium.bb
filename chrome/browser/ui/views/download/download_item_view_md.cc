@@ -161,7 +161,8 @@ class DownloadItemViewMd::DropDownButton : public BarControlButton {
 
   // Promoted visibility to public.
   void AnimateInkDrop(views::InkDropState state) {
-    BarControlButton::AnimateInkDrop(state);
+    // TODO(bruthig): Plumb in the proper Event.
+    BarControlButton::AnimateInkDrop(state, nullptr /* event */);
   }
 
  private:
@@ -409,7 +410,7 @@ bool DownloadItemViewMd::OnMouseDragged(const ui::MouseEvent& event) {
   if (!starting_drag_) {
     starting_drag_ = true;
     drag_start_point_ = event.location();
-    AnimateInkDrop(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN, &event);
   }
   if (dragging_) {
     if (download()->GetState() == DownloadItem::COMPLETE) {
@@ -449,6 +450,7 @@ bool DownloadItemViewMd::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
+    AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, nullptr /* &event */);
     // OpenDownload may delete this, so don't add any code after this line.
     OpenDownload();
     return true;
@@ -492,7 +494,7 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
     const {
   return base::WrapUnique(new views::FloodFillInkDropRipple(
-      GetLocalBounds(), GetLocalBounds().CenterPoint(),
+      GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
@@ -755,7 +757,6 @@ void DownloadItemViewMd::OpenDownload() {
                            base::Time::Now() - creation_time_);
 
   UpdateAccessibleName();
-  AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED);
 
   // Calling download()->OpenDownload may delete this, so this must be
   // the last thing we do.
@@ -855,7 +856,7 @@ void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
   if (!active_event)
     return;
 
-  AnimateInkDrop(views::InkDropState::ACTION_PENDING);
+  AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
 }
 
 void DownloadItemViewMd::HandleClickEvent(const ui::LocatedEvent& event,
@@ -866,6 +867,8 @@ void DownloadItemViewMd::HandleClickEvent(const ui::LocatedEvent& event,
 
   if (!active_event || IsShowingWarningDialog())
     return;
+
+  AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, &event);
 
   // OpenDownload may delete this, so don't add any code after this line.
   OpenDownload();

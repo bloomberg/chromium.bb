@@ -34,6 +34,9 @@ class FloodFillInkDropRippleTestApi : public InkDropRippleTestApi {
   // coordinate space.
   gfx::Point GetDrawnCenterPoint() const;
 
+  // Wrapper for FloodFillInkDropRipple::MaxDistanceToCorners().
+  float MaxDistanceToCorners(const gfx::Point& point) const;
+
   // InkDropRippleTestApi:
   float GetCurrentOpacity() const override;
 

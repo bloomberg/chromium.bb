@@ -19,7 +19,6 @@
 namespace ui {
 class Layer;
 }
-
 namespace views {
 
 // Pure virtual base class that manages the lifetime and state of an ink drop
