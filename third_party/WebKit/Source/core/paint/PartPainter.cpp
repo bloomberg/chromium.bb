@@ -63,7 +63,10 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 
-    {
+    if (m_layoutPart.widget()) {
+        // TODO(schenney) crbug.com/93805 Speculative release assert to verify that the crashes
+        // we see in widget painting are due to a destroyed LayoutPart object.
+        RELEASE_ASSERT(m_layoutPart.node());
         Optional<RoundedInnerRectClipper> clipper;
         if (m_layoutPart.style()->hasBorderRadius()) {
             if (borderRect.isEmpty())
@@ -79,8 +82,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
             clipper.emplace(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayList);
         }
 
-        if (m_layoutPart.widget())
-            m_layoutPart.paintContents(paintInfo, paintOffset);
+        m_layoutPart.paintContents(paintInfo, paintOffset);
     }
 
     // Paint a partially transparent wash over selected widgets.
