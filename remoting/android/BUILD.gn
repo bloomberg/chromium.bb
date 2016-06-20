@@ -128,7 +128,6 @@ remoting_apk_tmpl("remoting_apk") {
     ":remoting_android_client_java",
     "//base:base_java",
     "//net/android:net_java",
-    google_play_services_resources,
   ]
 }
 
@@ -209,6 +208,5 @@ android_apk("remoting_host_apk") {
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     google_play_services_library,
-    google_play_services_resources,
   ]
 }

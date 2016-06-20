@@ -142,11 +142,9 @@ android_library("chrome_java") {
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
     "//third_party/android_tools:android_gcm_java",
     "//third_party/android_tools:android_support_design_java",
-    "//third_party/android_tools:android_support_design_resources",
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
-    "//third_party/android_tools:android_support_v7_mediarouter_resources",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
@@ -155,7 +153,6 @@ android_library("chrome_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/leakcanary:leakcanary_java",
     "//ui/android:ui_java",
-    "//ui/android:ui_java_resources",
     google_play_services_library,
   ]
 
@@ -326,7 +323,6 @@ android_library("chrome_test_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
-    "//chrome/android:chrome_java_resources",
     "//chrome/android/webapk/libs/common",
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
@@ -491,7 +487,6 @@ template("chrome_public_apk_tmpl_shared") {
       ":chrome_public_apk_assets",
       ":chrome_public_apk_resources",
       "//base:base_java",
-      google_play_services_resources,
     ]
   }
 }
@@ -577,7 +572,6 @@ android_library("chrome_sync_shell_test_apk_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
-    "//chrome/android:chrome_java_resources",
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/policy/android:policy_java",

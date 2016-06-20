@@ -23,7 +23,7 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 def _OnStaleMd5(lint_path, config_path, processed_config_path,
                 manifest_path, result_path, product_dir, sources, jar_path,
-                cache_dir, android_sdk_version, resource_dir=None,
+                cache_dir, android_sdk_version, resource_sources,
                 classpath=None, can_fail_build=False, silent=False):
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -89,8 +89,29 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
       cmd.extend(['--classpath', _RelativizePath(jar_path)])
     if processed_config_path:
       cmd.extend(['--config', _RelativizePath(processed_config_path)])
-    if resource_dir:
+
+    def _NewTempSubdir(prefix, all_subdirs):
+      # Helper function to create a new sub directory based on the number of
+      # subdirs created earlier. Path of the directory is appended to the
+      # all_subdirs list.
+      new_dir = os.path.join(temp_dir, prefix + str(len(all_subdirs)))
+      os.mkdir(new_dir)
+      all_subdirs.append(new_dir)
+      return new_dir
+
+    resource_dirs = []
+    for resource_source in resource_sources:
+      if os.path.isdir(resource_source):
+        resource_dirs.append(resource_source)
+      else:
+        # This is a zip file with generated resources (e. g. strings from GRD).
+        # Extract it to temporary folder.
+        resource_dir = _NewTempSubdir('r', resource_dirs)
+        build_utils.ExtractAll(resource_source, path=resource_dir)
+
+    for resource_dir in resource_dirs:
       cmd.extend(['--resources', _RelativizePath(resource_dir)])
+
     if classpath:
       # --libraries is the classpath (excluding active target).
       cp = ':'.join(_RelativizePath(p) for p in classpath)
@@ -102,12 +123,6 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     # into temporary directories (creating a new one whenever there is a name
     # conflict).
     src_dirs = []
-    def NewSourceDir():
-      new_dir = os.path.join(temp_dir, str(len(src_dirs)))
-      os.mkdir(new_dir)
-      src_dirs.append(new_dir)
-      return new_dir
-
     def PathInDir(d, src):
       return os.path.join(d, os.path.basename(src))
 
@@ -118,11 +133,11 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
           src_dir = d
           break
       if not src_dir:
-        src_dir = NewSourceDir()
+        src_dir = _NewTempSubdir('s', src_dirs)
         cmd.extend(['--sources', _RelativizePath(src_dir)])
       os.symlink(os.path.abspath(src), PathInDir(src_dir, src))
 
-    project_dir = NewSourceDir()
+    project_dir = _NewTempSubdir('p', [])
     if android_sdk_version:
       # Create dummy project.properies file in a temporary "project" directory.
       # It is the only way to add Android SDK to the Lint's classpath. Proper
@@ -248,6 +263,10 @@ def main():
                       help='Path to processed lint suppressions file.')
   parser.add_argument('--resource-dir',
                       help='Path to resource dir.')
+  parser.add_argument('--resource-sources', default=[], action='append',
+                      help='GYP-list of resource sources (directories with '
+                      'resources or archives created by resource-generating '
+                      'tasks.')
   parser.add_argument('--silent', action='store_true',
                       help='If set, script will not log anything.')
   parser.add_argument('--src-dirs',
@@ -280,14 +299,26 @@ def main():
       input_paths.append(args.jar_path)
     if args.manifest_path:
       input_paths.append(args.manifest_path)
-    if args.resource_dir:
-      input_paths.extend(build_utils.FindInDirectory(args.resource_dir, '*'))
     if sources:
       input_paths.extend(sources)
     classpath = []
     for gyp_list in args.classpath:
       classpath.extend(build_utils.ParseGypList(gyp_list))
     input_paths.extend(classpath)
+
+    resource_sources = []
+    if args.resource_dir:
+      # Backward compatibility with GYP
+      resource_sources += [ args.resource_dir ]
+
+    for gyp_list in args.resource_sources:
+      resource_sources += build_utils.ParseGypList(gyp_list)
+
+    for resource_source in resource_sources:
+      if os.path.isdir(resource_source):
+        input_paths.extend(build_utils.FindInDirectory(resource_source, '*'))
+      else:
+        input_paths.append(resource_source)
 
     input_strings = []
     if args.android_sdk_version:
@@ -306,7 +337,7 @@ def main():
                             args.jar_path,
                             args.cache_dir,
                             args.android_sdk_version,
-                            resource_dir=args.resource_dir,
+                            resource_sources,
                             classpath=classpath,
                             can_fail_build=args.can_fail_build,
                             silent=args.silent),

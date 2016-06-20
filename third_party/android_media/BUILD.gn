@@ -23,6 +23,5 @@ android_library("android_media_java") {
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
-    "//third_party/android_tools:android_support_v7_mediarouter_resources",
   ]
 }

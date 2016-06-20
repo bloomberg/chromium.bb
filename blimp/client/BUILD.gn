@@ -452,7 +452,6 @@ if (is_android) {
 
     deps = [
       ":blimp_java",
-      ":blimp_java_resources",
       "//base:base_java",
       "//base:base_java_test_support",
       google_play_services_library,
@@ -513,11 +512,9 @@ if (is_android) {
       ":blimp_apk_manifest",
       ":blimp_client_android",
       ":blimp_java",
-      ":blimp_java_resources",
       "//base:base_java",
       "//components/safe_json/android:safe_json_java",
       "//net/android:net_java",
-      google_play_services_resources,
     ]
     apk_name = "Blimp"
     android_manifest = blimp_apk_manifest
@@ -531,7 +528,6 @@ if (is_android) {
     deps = [
       ":blimp_test_apk_manifest",
       ":blimp_test_java",
-      google_play_services_resources,
     ]
   }
 }

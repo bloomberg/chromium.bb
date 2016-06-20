@@ -309,7 +309,6 @@ android_library("content_javatests") {
     "//content/public/test/android:content_java_test_support",
     "//content/shell/android:content_shell_apk_java",
     "//content/shell/android:content_shell_java",
-    "//content/shell/android:content_shell_java_resources",
     "//content/shell/android:content_shell_test_java",
     "//device/vibration:mojo_bindings_java",
     "//device/vibration/android:vibration_manager_android",

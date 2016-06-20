@@ -203,6 +203,8 @@ def main(argv):
   parser.add_option('--android-manifest', help='Path to android manifest.')
   parser.add_option('--is-locale-resource', action='store_true',
                     help='Whether it is locale resource.')
+  parser.add_option('--resource-dirs', action='append', default=[],
+                    help='GYP-list of resource dirs')
 
   # android_assets options
   parser.add_option('--asset-sources', help='List of asset sources.')
@@ -374,7 +376,7 @@ def main(argv):
     # resources, and (like Android's default build system) we allow a library to
     # refer to the resources in any of its dependents.
     config['javac']['srcjars'] = [
-        c['srcjar'] for c in direct_resources_deps if 'srcjar' in c]
+        c['srcjar'] for c in all_resources_deps if 'srcjar' in c]
 
     # Used to strip out R.class for android_prebuilt()s.
     if options.type == 'java_library':
@@ -415,6 +417,40 @@ def main(argv):
       deps_info['r_text'] = options.r_text
     if options.is_locale_resource:
       deps_info['is_locale_resource'] = True
+    # Record resources_dirs of this target so dependendent libraries can pick up
+    # them and pass to Lint.
+    lint_info = deps_info['lint'] = {}
+    resource_dirs = []
+    lint_info['resources_zips'] = []
+    for gyp_list in options.resource_dirs:
+      resource_dirs += build_utils.ParseGypList(gyp_list)
+    if resource_dirs:
+      lint_info['resources_dirs'] = resource_dirs
+    # There things become ugly. Resource targets may have resource dependencies
+    # as well. Some of these dependencies are resources from other libraries
+    # so we should not lint them here (they should be linted within their
+    # libraries). But others are just generated resources that also contribute
+    # to this library and we should check them. These generated resources has no
+    # package_name so we skip all direct deps that has package names.
+    for c in direct_resources_deps:
+      if 'package_name' not in c:
+        lint_info['resources_zips'].append(c['resources_zip'])
+
+  if options.supports_android and options.type in ('android_apk',
+                                                   'java_library'):
+    # GN's project model doesn't exactly match traditional Android project
+    # model: GN splits resources into separate targets, while in Android
+    # resources are part of the library/APK. Android Lint expects an Android
+    # project - with java sources and resources combined. So we assume that
+    # direct resource dependencies of the library/APK are the resources of this
+    # library in Android project sense.
+    lint_info = config['lint'] = {}
+    lint_info['resources_dirs'] = []
+    lint_info['resources_zips'] = []
+    for c in direct_resources_deps:
+      lint_info['resources_dirs'] += c['lint'].get('resources_dirs', [])
+      lint_info['resources_zips'] += c['lint'].get('resources_zips', [])
+
 
   if options.type in ('android_resources','android_apk', 'resource_rewriter'):
     config['resources'] = {}

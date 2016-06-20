@@ -185,6 +185,11 @@ template("write_build_config") {
       }
     }
 
+    if (is_android_resources && defined(invoker.resource_dirs)) {
+      resource_dirs = rebase_path(invoker.resource_dirs, root_build_dir)
+      args += [ "--resource-dirs=$resource_dirs" ]
+    }
+
     if (is_apk) {
       if (defined(invoker.native_libs)) {
         inputs += invoker.native_libs
@@ -523,6 +528,8 @@ if (enable_java_templates) {
           rebase_path(invoker.jar_path, root_build_dir),
           "--java-files=$_rebased_java_files",
           "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
+          "--resource-sources=@FileArg($_rebased_build_config:lint:resources_dirs)",
+          "--resource-sources=@FileArg($_rebased_build_config:lint:resources_zips)",
         ]
       }
     }

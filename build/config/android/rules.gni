@@ -751,6 +751,7 @@ if (enable_java_templates) {
                                "android_manifest",
                                "custom_package",
                                "deps",
+                               "resource_dirs",
                              ])
 
       # No package means resources override their deps.
