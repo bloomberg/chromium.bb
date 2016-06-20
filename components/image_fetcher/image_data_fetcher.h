@@ -12,22 +12,24 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
 
 namespace image_fetcher {
 
-class ImageDataFetcher {
+class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
   using ImageDataFetcherCallback =
       base::Callback<void(const std::string& image_data)>;
 
   explicit ImageDataFetcher(
       net::URLRequestContextGetter* url_request_context_getter);
-  ~ImageDataFetcher();
+  ~ImageDataFetcher() override;
 
   // Fetches the raw image bytes from the given |image_url| and calls the given
   // |callback|. The callback is run even if fetching the URL fails. In case
@@ -36,14 +38,13 @@ class ImageDataFetcher {
                       const ImageDataFetcherCallback& callback);
 
  private:
-  class ImageDataFetcherRequest;
+  struct ImageDataFetcherRequest;
 
-  // Removes the ImageDataFetcherRequest for the given |image_url| from the
-  // internal request queue.
-  void RemoveImageDataFetcherRequest(const GURL& image_url);
+  // Method inherited from URLFetcherDelegate
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // All active image url requests.
-  std::map<const GURL, std::unique_ptr<ImageDataFetcherRequest>>
+  std::map<const net::URLFetcher*, std::unique_ptr<ImageDataFetcherRequest>>
       pending_requests_;
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
