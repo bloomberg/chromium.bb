@@ -2434,27 +2434,15 @@ BackTexture::~BackTexture() {
 }
 
 void BackTexture::Create() {
+  DCHECK_EQ(id_, 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Create",
                                      state_->GetErrorState());
-  Destroy();
   glGenTextures(1, &id_);
   ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // TODO(apatrick): Attempt to diagnose crbug.com/97775. If SwapBuffers is
-  // never called on an offscreen context, no data will ever be uploaded to the
-  // saved offscreen color texture (it is deferred until to when SwapBuffers
-  // is called). My idea is that some nvidia drivers might have a bug where
-  // deleting a texture that has never been populated might cause a
-  // crash.
-  glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-  bytes_allocated_ = 16u * 16u * 4u;
-  memory_tracker_.TrackMemAlloc(bytes_allocated_);
 }
 
 bool BackTexture::AllocateStorage(
