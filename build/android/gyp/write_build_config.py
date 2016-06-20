@@ -355,8 +355,6 @@ def main(argv):
           str(deps_not_support_android))
 
   if options.type in ('java_binary', 'java_library', 'android_apk'):
-    javac_classpath = [c['jar_path'] for c in direct_library_deps]
-    java_full_classpath = [c['jar_path'] for c in all_library_deps]
     deps_info['resources_deps'] = [c['path'] for c in all_resources_deps]
     deps_info['jar_path'] = options.jar_path
     if options.type == 'android_apk' or options.supports_android:
@@ -468,35 +466,42 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
-  proguard_enabled = options.proguard_enabled
-  if options.type == 'android_apk':
-    deps_info['proguard_enabled'] = proguard_enabled
-
-  if proguard_enabled:
-    deps_info['proguard_info'] = options.proguard_info
-    config['proguard'] = {}
-    proguard_config = config['proguard']
-    proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
+  if options.type in ('java_binary', 'java_library', 'android_apk'):
+    javac_classpath = [c['jar_path'] for c in direct_library_deps]
+    java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
   # An instrumentation test apk should exclude the dex files that are in the apk
   # under test.
   if options.type == 'android_apk' and options.tested_apk_config:
-    tested_apk_library_deps = tested_apk_deps.All('java_library')
-    tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
-    # Include in the classpath classes that are added directly to the apk under
-    # test (those that are not a part of a java_library).
     tested_apk_config = GetDepConfig(options.tested_apk_config)
-    javac_classpath.append(tested_apk_config['jar_path'])
-    # Exclude dex files from the test apk that exist within the apk under test.
-    deps_dex_files = [
-        p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
 
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentation(
         expected_tested_package)
     if tested_apk_config['proguard_enabled']:
-      assert proguard_enabled, ('proguard must be enabled for instrumentation'
-          ' apks if it\'s enabled for the tested apk')
+      assert options.proguard_enabled, ('proguard must be enabled for '
+          'instrumentation apks if it\'s enabled for the tested apk.')
+
+    # Include in the classpath classes that are added directly to the apk under
+    # test (those that are not a part of a java_library).
+    javac_classpath.append(tested_apk_config['jar_path'])
+    java_full_classpath.append(tested_apk_config['jar_path'])
+
+    # Exclude dex files from the test apk that exist within the apk under test.
+    # TODO(agrieve): When proguard is enabled, this filtering logic happens
+    #     within proguard_util.py. Move the logic for the proguard case into
+    #     here as well.
+    tested_apk_library_deps = tested_apk_deps.All('java_library')
+    tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
+    deps_dex_files = [
+        p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
+
+  if options.type == 'android_apk':
+    deps_info['proguard_enabled'] = options.proguard_enabled
+    deps_info['proguard_info'] = options.proguard_info
+    config['proguard'] = {}
+    proguard_config = config['proguard']
+    proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:
