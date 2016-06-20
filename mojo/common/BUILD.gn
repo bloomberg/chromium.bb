@@ -43,10 +43,6 @@ component("common_base") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
   ]
-
-  deps = [
-    "//base/third_party/dynamic_annotations",
-  ]
 }
 
 # GYP version: mojo/mojo_base.gyp:mojo_url_type_converters
@@ -62,7 +58,6 @@ source_set("url_type_converters") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//url",
   ]
 }

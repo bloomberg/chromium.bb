@@ -18,8 +18,6 @@
       },
       'dependencies': [
         '../base/base.gyp:base',
-        # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../mojo/mojo_public.gyp:mojo_cpp_system',
       ],
@@ -180,9 +178,6 @@
           },
           'dependencies': [
             '../base/base.gyp:base_win64',
-            # TODO(viettrungluu): Needed for base/lazy_instance.h, which is
-            # suspect.
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings_win64',
             '../mojo/mojo_public.gyp:mojo_cpp_system_win64',

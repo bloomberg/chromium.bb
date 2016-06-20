@@ -32,7 +32,6 @@ component("mojo") {
   deps = [
     ":mojom",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//ipc",
     "//mojo/public/c/system",
     "//mojo/public/cpp/bindings",
@@ -51,7 +50,6 @@ test("ipc_mojo_unittests") {
     ":mojom",
     "//base",
     "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
     "//ipc",
     "//ipc:test_support",
     "//mojo/edk/system",
@@ -72,7 +70,6 @@ test("ipc_mojo_perftests") {
     ":mojom",
     "//base",
     "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
     "//ipc",
     "//ipc:test_support",
     "//mojo/edk/system",

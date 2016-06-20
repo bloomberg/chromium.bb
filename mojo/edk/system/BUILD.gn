@@ -88,7 +88,6 @@ component("system") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
   ]
 
   if (!is_nacl) {

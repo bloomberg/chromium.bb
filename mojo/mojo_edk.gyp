@@ -26,7 +26,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
@@ -39,7 +38,6 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
         'mojo_public.gyp:mojo_public_system',
         'mojo_system_ports',
@@ -187,7 +185,6 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base_win64',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
           ],
           'sources': [
@@ -205,7 +202,6 @@
           'type': '<(component)',
           'dependencies': [
             '../base/base.gyp:base_win64',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../crypto/crypto.gyp:crypto_nacl_win64',
             'mojo_public.gyp:mojo_public_system_win64',
             'mojo_system_ports_win64',

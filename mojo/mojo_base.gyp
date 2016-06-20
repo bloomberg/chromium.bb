@@ -44,11 +44,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../mojo/mojo_public.gyp:mojo_public_system',
-      ],
-      'export_dependent_settings': [
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'sources': [
         'common/common_type_converters.cc',
@@ -81,12 +77,8 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../url/url.gyp:url_lib',
         '../mojo/mojo_public.gyp:mojo_public_system',
-      ],
-      'export_dependent_settings': [
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'sources': [
         'common/url_type_converters.cc',
@@ -160,7 +152,6 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             'mojo_common_lib',
             'mojo_edk.gyp:mojo_system_impl',
             'mojo_jni_headers',

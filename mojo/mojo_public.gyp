@@ -74,11 +74,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'mojo_cpp_system',
-      ],
-      'export_dependent_settings': [
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'sources': [
         'message_pump/handle_watcher.cc',

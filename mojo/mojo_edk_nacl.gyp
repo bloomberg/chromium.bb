@@ -31,7 +31,6 @@
       'dependencies': [
         '../base/base_nacl.gyp:base_nacl',
         '../base/base_nacl.gyp:base_nacl_nonsfi',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'mojo_public.gyp:mojo_public_system',
       ],
       'defines': [

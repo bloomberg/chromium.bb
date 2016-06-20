@@ -21,7 +21,6 @@
       'dependencies': [
         '../ipc.gyp:ipc',
         '../../base/base.gyp:base',
-        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],

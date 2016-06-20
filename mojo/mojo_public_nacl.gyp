@@ -52,7 +52,6 @@
       'dependencies': [
         '../base/base_nacl.gyp:base_nacl',
         '../base/base_nacl.gyp:base_nacl_nonsfi',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../mojo/mojo_public.gyp:mojo_interface_bindings_cpp_sources',
         'mojo_cpp_system_nacl',
       ],
