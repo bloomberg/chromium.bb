@@ -428,10 +428,10 @@ def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
       continue
     for lnum, line in f.ChangedContents():
       if input_api.re.search(pattern, line):
-          errors.append(output_api.PresubmitError(
-            ('%s:%d: Use of DCHECK_IS_ON() must be written as "#if ' +
-             'DCHECK_IS_ON()", not forgetting the braces.')
-            % (f.LocalPath(), lnum)))
+        errors.append(output_api.PresubmitError(
+          ('%s:%d: Use of DCHECK_IS_ON() must be written as "#if ' +
+           'DCHECK_IS_ON()", not forgetting the braces.')
+          % (f.LocalPath(), lnum)))
   return errors
 
 
@@ -590,11 +590,11 @@ def _CheckNoBannedFunctions(input_api, output_api):
       if input_api.re.search(regex, line):
         matched = True
     elif func_name in line:
-        matched = True
+      matched = True
     if matched:
-      problems = warnings;
+      problems = warnings
       if error:
-        problems = errors;
+        problems = errors
       problems.append('    %s:%d:' % (affected_file.LocalPath(), line_num))
       for message_line in message:
         problems.append('      %s' % message_line)
@@ -1399,6 +1399,108 @@ def _CheckJavaStyle(input_api, output_api):
       black_list=_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
 
 
+def _CheckIpcOwners(input_api, output_api):
+  """Checks that affected files involving IPC have an IPC OWNERS rule.
+
+  Whether or not a file affects IPC is determined by a simple whitelist of
+  filename patterns."""
+  file_patterns = [
+      '*_messages.cc',
+      '*_messages*.h',
+      '*_param_traits*.*',
+      '*.mojom',
+      '*_struct_traits*.*',
+      '*_type_converter*.*',
+      # Blink uses a different file naming convention
+      '*StructTraits*.*',
+      '*TypeConverter*.*',
+  ]
+
+  # Dictionary mapping an OWNERS file path to Patterns.
+  # Patterns is a dictionary mapping glob patterns (suitable for use in per-file
+  # rules ) to a PatternEntry.
+  # PatternEntry is a dictionary with two keys:
+  # - 'files': the files that are matched by this pattern
+  # - 'rules': the per-file rules needed for this pattern
+  # For example, if we expect OWNERS file to contain rules for *.mojom and
+  # *_struct_traits*.*, Patterns might look like this:
+  # {
+  #   '*.mojom': {
+  #     'files': ...,
+  #     'rules': [
+  #       'per-file *.mojom=set noparent',
+  #       'per-file *.mojom=file://ipc/SECURITY_OWNERS',
+  #     ],
+  #   },
+  #   '*_struct_traits*.*': {
+  #     'files': ...,
+  #     'rules': [
+  #       'per-file *_struct_traits*.*=set noparent',
+  #       'per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS',
+  #     ],
+  #   },
+  # }
+  to_check = {}
+
+  # Iterate through the affected files to see what we actually need to check
+  # for. We should only nag patch authors about per-file rules if a file in that
+  # directory would match that pattern. If a directory only contains *.mojom
+  # files and no *_messages*.h files, we should only nag about rules for
+  # *.mojom files.
+  for f in input_api.change.AffectedFiles():
+    for pattern in file_patterns:
+      if input_api.fnmatch.fnmatch(
+          input_api.os_path.basename(f.LocalPath()), pattern):
+        owners_file = input_api.os_path.join(
+            input_api.os_path.dirname(f.LocalPath()), 'OWNERS')
+        if owners_file not in to_check:
+          to_check[owners_file] = {}
+        if pattern not in to_check[owners_file]:
+          to_check[owners_file][pattern] = {
+              'files': [],
+              'rules': [
+                  'per-file %s=set noparent' % pattern,
+                  'per-file %s=file://ipc/SECURITY_OWNERS' % pattern,
+              ]
+          }
+        to_check[owners_file][pattern]['files'].append(f)
+        break
+
+  # Now go through the OWNERS files we collected, filtering out rules that are
+  # already present in that OWNERS file.
+  for owners_file, patterns in to_check.iteritems():
+    try:
+      with file(owners_file) as f:
+        lines = set(f.read().splitlines())
+        for entry in patterns.itervalues():
+          entry['rules'] = [rule for rule in entry['rules'] if rule not in lines
+                           ]
+    except IOError:
+      # No OWNERS file, so all the rules are definitely missing.
+      continue
+
+  # All the remaining lines weren't found in OWNERS files, so emit an error.
+  errors = []
+  for owners_file, patterns in to_check.iteritems():
+    missing_lines = []
+    files = []
+    for pattern, entry in patterns.iteritems():
+      missing_lines.extend(entry['rules'])
+      files.extend(['  %s' % f.LocalPath() for f in entry['files']])
+    if missing_lines:
+      errors.append(
+          '%s is missing the following lines:\n\n%s\n\nfor changed files:\n%s' %
+          (owners_file, '\n'.join(missing_lines), '\n'.join(files)))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+        'Found changes to IPC files without a security OWNER!',
+        long_text='\n\n'.join(errors)))
+
+  return results
+
+
 def _CheckAndroidToastUsage(input_api, output_api):
   """Checks that code uses org.chromium.ui.widget.Toast instead of
      android.widget.Toast (Chromium Toast doesn't force hardware
@@ -1862,6 +1964,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api))
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
+  results.extend(_CheckIpcOwners(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1875,9 +1978,6 @@ def _CheckAuthorizedAuthor(input_api, output_api):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
-  # TODO(maruel): Add it to input_api?
-  import fnmatch
-
   author = input_api.change.author_email
   if not author:
     input_api.logging.info('No author, skipping AUTHOR check')
@@ -1888,7 +1988,8 @@ def _CheckAuthorizedAuthor(input_api, output_api):
       input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
       for line in open(authors_path))
   valid_authors = [item.group(1).lower() for item in valid_authors if item]
-  if not any(fnmatch.fnmatch(author.lower(), valid) for valid in valid_authors):
+  if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
+             for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
     return [output_api.PresubmitPromptWarning(
         ('%s is not in AUTHORS file. If you are a new contributor, please visit'

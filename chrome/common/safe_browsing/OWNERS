@@ -2,30 +2,9 @@ mattm@chromium.org
 nparker@chromium.org
 shess@chromium.org
 
-# For security review of IPC message files.
 per-file *_messages*.h=set noparent
-per-file *_messages*.h=dcheng@chromium.org
-per-file *_messages*.h=inferno@chromium.org
-per-file *_messages*.h=jln@chromium.org
-per-file *_messages*.h=jorgelo@chromium.org
-per-file *_messages*.h=jschuh@chromium.org
-per-file *_messages*.h=kenrb@chromium.org
-per-file *_messages*.h=mkwst@chromium.org
-per-file *_messages*.h=nasko@chromium.org
-per-file *_messages*.h=palmer@chromium.org
-per-file *_messages*.h=tsepez@chromium.org
-per-file *_messages*.h=wfh@chromium.org
+per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 
 # For security review of IPC-to-protobuf bridge.
 per-file *protobuf_message*.h=set noparent
-per-file *protobuf_message*.h=dcheng@chromium.org
-per-file *protobuf_message*.h=inferno@chromium.org
-per-file *protobuf_message*.h=jln@chromium.org
-per-file *protobuf_message*.h=jorgelo@chromium.org
-per-file *protobuf_message*.h=jschuh@chromium.org
-per-file *protobuf_message*.h=kenrb@chromium.org
-per-file *protobuf_message*.h=mkwst@chromium.org
-per-file *protobuf_message*.h=nasko@chromium.org
-per-file *protobuf_message*.h=palmer@chromium.org
-per-file *protobuf_message*.h=tsepez@chromium.org
-per-file *protobuf_message*.h=wfh@chromium.org
+per-file *protobuf_message*.h=file://ipc/SECURITY_OWNERS

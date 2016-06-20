@@ -6,12 +6,4 @@ tsepez@chromium.org
 # New IPC message files require a security review to avoid introducing
 # new sandbox escapes.
 per-file ipc_message_start.h=set noparent
-per-file ipc_message_start.h=dcheng@chromium.org
-per-file ipc_message_start.h=jln@chromium.org
-per-file ipc_message_start.h=jschuh@chromium.org
-per-file ipc_message_start.h=palmer@chromium.org
-per-file ipc_message_start.h=tsepez@chromium.org
-per-file ipc_message_start.h=kenrb@chromium.org
-per-file ipc_message_start.h=mkwst@chromium.org
-per-file ipc_message_start.h=nasko@chromium.org
-per-file ipc_message_start.h=wfh@chromium.org
+per-file ipc_message_start.h=file://ipc/SECURITY_OWNERS

@@ -1,36 +1,8 @@
 per-file *param_traits*.*=set noparent
-per-file *param_traits*.*=dcheng@chromium.org
-per-file *param_traits*.*=inferno@chromium.org
-per-file *param_traits*.*=jln@chromium.org
-per-file *param_traits*.*=jschuh@chromium.org
-per-file *param_traits*.*=kenrb@chromium.org
-per-file *param_traits*.*=nasko@chromium.org
-per-file *param_traits*.*=tsepez@chromium.org
+per-file *param_traits*.*=file://ipc/SECURITY_OWNERS
 
-# Changes to IPC serialization require a security review to avoid introducing
-# new sandbox escapes.
 per-file *struct_traits*.*=set noparent
-per-file *struct_traits*.*=dcheng@chromium.org
-per-file *struct_traits*.*=inferno@chromium.org
-per-file *struct_traits*.*=jln@chromium.org
-per-file *struct_traits*.*=jschuh@chromium.org
-per-file *struct_traits*.*=kenrb@chromium.org
-per-file *struct_traits*.*=mkwst@chromium.org
-per-file *struct_traits*.*=nasko@chromium.org
-per-file *struct_traits*.*=palmer@chromium.org
-per-file *struct_traits*.*=tsepez@chromium.org
-per-file *struct_traits*.*=wfh@chromium.org
+per-file *struct_traits*.*=file://ipc/SECURITY_OWNERS
 
-# Changes to Mojo interfaces require a security review to avoid
-# introducing new sandbox escapes.
 per-file *.mojom=set noparent
-per-file *.mojom=dcheng@chromium.org
-per-file *.mojom=inferno@chromium.org
-per-file *.mojom=jln@chromium.org
-per-file *.mojom=jschuh@chromium.org
-per-file *.mojom=kenrb@chromium.org
-per-file *.mojom=mkwst@chromium.org
-per-file *.mojom=nasko@chromium.org
-per-file *.mojom=palmer@chromium.org
-per-file *.mojom=tsepez@chromium.org
-per-file *.mojom=wfh@chromium.org
+per-file *.mojom=file://ipc/SECURITY_OWNERS

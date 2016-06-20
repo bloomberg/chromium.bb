@@ -3,22 +3,8 @@ falken@chromium.org
 horo@chromium.org
 nhiroki@chromium.org
 
-# Changes to IPC messages require a security review to avoid introducing
-# new sandbox escapes.
 per-file *_messages*.h=set noparent
-per-file *_messages*.h=dcheng@chromium.org
-per-file *_messages*.h=inferno@chromium.org
-per-file *_messages*.h=jln@chromium.org
-per-file *_messages*.h=jschuh@chromium.org
-per-file *_messages*.h=kenrb@chromium.org
-per-file *_messages*.h=mkwst@chromium.org
-per-file *_messages*.h=nasko@chromium.org
-per-file *_messages*.h=palmer@chromium.org
-per-file *_messages*.h=tsepez@chromium.org
-per-file *_messages*.h=wfh@chromium.org
+per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 
-# Changes to Mojo interfaces require a security review to avoid
-# introducing new sandbox escapes.
 per-file *.mojom=set noparent
-per-file *.mojom=palmer@chromium.org
-per-file *.mojom=tsepez@chromium.org
+per-file *.mojom=file://ipc/SECURITY_OWNERS

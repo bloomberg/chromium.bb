@@ -1,5 +1,4 @@
 rouslan@chromium.org
 
 per-file *.mojom=set noparent
-per-file *.mojom=palmer@chromium.org
-per-file *.mojom=tsepez@chromium.org
+per-file *.mojom=file://ipc/SECURITY_OWNERS
