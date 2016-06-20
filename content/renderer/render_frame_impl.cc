@@ -1066,7 +1066,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       in_frame_tree_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
-      is_detaching_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
@@ -1431,11 +1430,6 @@ MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
 }
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
-  if (is_detaching_) {
-    delete message;
-    return false;
-  }
-
   return RenderThread::Get()->Send(message);
 }
 
@@ -2831,7 +2825,6 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // NOTE: This function is called on the frame that is being detached and not
   // the parent frame.  This is different from createChildFrame() which is
   // called on the parent frame.
-  CHECK(!is_detaching_);
   DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
@@ -2842,10 +2835,6 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // removal and it was initiated from the renderer process.
   if (!in_browser_initiated_detach_ && type == DetachType::Remove)
     Send(new FrameHostMsg_Detach(routing_id_));
-
-  // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
-  // sent before setting |is_detaching_| to true.
-  is_detaching_ = true;
 
   // Clean up the associated RenderWidget for the frame, if there is one.
   if (render_widget_) {
