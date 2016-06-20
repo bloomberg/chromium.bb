@@ -136,9 +136,6 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 
-  histogram_tester_.ExpectTotalCount(
-      internal::kHistogramDocWriteBlockReloadCount, 1);
-
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title2.html"));
 

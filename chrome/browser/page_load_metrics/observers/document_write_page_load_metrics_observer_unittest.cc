@@ -21,15 +21,30 @@ class DocumentWritePageLoadMetricsObserverTest
         internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
   }
 
+  void AssertNoPreloadImmediateHistogramsLogged() {
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramDocWriteParseStartToFirstContentfulPaintImmediate,
+        0);
+  }
+
   void AssertNoBlockHistogramsLogged() {
     histogram_tester().ExpectTotalCount(
         internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+  }
+
+  void AssertNoBlockImmediateHistogramsLogged() {
+    histogram_tester().ExpectTotalCount(
+        internal::
+            kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
+        0);
   }
 };
 
 TEST_F(DocumentWritePageLoadMetricsObserverTest, NoMetrics) {
   AssertNoPreloadHistogramsLogged();
+  AssertNoPreloadImmediateHistogramsLogged();
   AssertNoBlockHistogramsLogged();
+  AssertNoBlockImmediateHistogramsLogged();
 }
 
 TEST_F(DocumentWritePageLoadMetricsObserverTest, PossiblePreload) {
@@ -45,6 +60,15 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossiblePreload) {
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
+
+  // Verify that the immediate metrics get logged.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDocWriteParseStartToFirstContentfulPaintImmediate, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramDocWriteParseStartToFirstContentfulPaintImmediate,
+      contentful_paint.InMilliseconds(), 1);
 
   NavigateAndCommit(GURL("https://www.example.com"));
 
@@ -65,6 +89,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossiblePreload) {
   page_load_metrics::PageLoadMetadata metadata;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
+  AssertNoPreloadImmediateHistogramsLogged();
 
   NavigateAndCommit(GURL("https://www.example.com"));
   AssertNoPreloadHistogramsLogged();
@@ -84,10 +109,26 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
+  // Verify that the immediate metrics get logged.
+  histogram_tester().ExpectTotalCount(
+      internal::
+          kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
+      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+  histogram_tester().ExpectBucketCount(
+      internal::
+          kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
+      contentful_paint.InMilliseconds(), 1);
+
   NavigateAndCommit(GURL("https://www.example.com"));
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::
+          kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
+      1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint,
       contentful_paint.InMilliseconds(), 1);
@@ -107,16 +148,20 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
-  NavigateAndCommit(GURL("https://www.example.com"));
-
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockReloadCount, 1);
 
   // Another reload.
-  NavigateAndCommit(GURL("https://www.google.com"));
-  SimulateTimingAndMetadataUpdate(timing, metadata);
   NavigateAndCommit(GURL("https://www.example.com"));
+  SimulateTimingAndMetadataUpdate(timing, metadata);
 
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDocWriteBlockReloadCount, 2);
+
+  // Another metadata update should not increase reload count.
+  metadata.behavior_flags |=
+      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorServiceWorkerControlled;
+  SimulateTimingAndMetadataUpdate(timing, metadata);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockReloadCount, 2);
 }
@@ -131,6 +176,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossibleBlock) {
   page_load_metrics::PageLoadMetadata metadata;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
+  AssertNoBlockImmediateHistogramsLogged();
 
   NavigateAndCommit(GURL("https://www.example.com"));
   AssertNoBlockHistogramsLogged();

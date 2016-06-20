@@ -179,6 +179,11 @@ class PageLoadMetricsObserver {
                             const PageLoadExtraInfo& extra_info) {}
   virtual void OnParseStop(const PageLoadTiming& timing,
                            const PageLoadExtraInfo& extra_info) {}
+
+  // Observer method to be invoked when there is a change in PageLoadMetadata's
+  // behavior_flags.
+  virtual void OnLoadingBehaviorObserved(
+      const page_load_metrics::PageLoadExtraInfo& extra_info) {}
 };
 
 }  // namespace page_load_metrics

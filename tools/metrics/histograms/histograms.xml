@@ -96738,6 +96738,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PageLoadBackgrounded2" separator=".">
   <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseDuration"/>
+  <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
@@ -96747,6 +96753,15 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.PaintTiming.NavigationToFirstContentfulPaint"/>
+  ;
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseDuration"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.NavigationToFirstContentfulPaint"/>
   <affected-histogram
@@ -96873,6 +96888,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
   <suffix name="Clients.FromGWS"
       label="PageLoadMetrics that are a result of a navigation from a Google
