@@ -74,10 +74,12 @@
 #define gzread MOZ_Z_gzread
 #define gzwrite MOZ_Z_gzwrite
 #define gzprintf MOZ_Z_gzprintf
+#define gzvprintf MOZ_Z_gzvprintf
 #define gzputs MOZ_Z_gzputs
 #define gzgets MOZ_Z_gzgets
 #define gzputc MOZ_Z_gzputc
 #define gzgetc MOZ_Z_gzgetc
+#define gzgetc_ MOZ_Z_gzgetc_
 #define gzungetc MOZ_Z_gzungetc
 #define gzflush MOZ_Z_gzflush
 #define gzseek MOZ_Z_gzseek
