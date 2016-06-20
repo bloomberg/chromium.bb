@@ -276,7 +276,7 @@ void ExtensionAlarmsTestCreateDupeGetAllAlarmsCallback(
     const AlarmManager::AlarmList* alarms) {
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_DOUBLE_EQ(430000, (*alarms)[0].js_alarm->scheduled_time);
+  EXPECT_DOUBLE_EQ(430000, (*alarms)[0]->js_alarm->scheduled_time);
 }
 
 TEST_F(ExtensionAlarmsTest, CreateDupe) {
@@ -392,7 +392,7 @@ void ExtensionAlarmsTestClearGetAllAlarms2Callback(
   // Ensure the 0.001-minute alarm is still there, since it's repeating.
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
+  EXPECT_THAT((*alarms)[0]->js_alarm->period_in_minutes,
               testing::Pointee(0.001));
 }
 
@@ -401,7 +401,7 @@ void ExtensionAlarmsTestClearGetAllAlarms1Callback(
     const AlarmManager::AlarmList* alarms) {
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
+  EXPECT_THAT((*alarms)[0]->js_alarm->period_in_minutes,
               testing::Pointee(0.001));
 
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
@@ -537,21 +537,21 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
   {
     test_clock_->SetNow(base::Time::FromDoubleT(10));
     CreateAlarm("[\"a\", {\"periodInMinutes\": 10}]");
-    Alarm alarm;
-    alarm.js_alarm->name = "bb";
-    alarm.js_alarm->scheduled_time = 30 * 60000;
-    alarm.js_alarm->period_in_minutes.reset(new double(30));
-    alarm_manager_->AddAlarmImpl(extension()->id(), alarm);
+    std::unique_ptr<Alarm> alarm(new Alarm);
+    alarm->js_alarm->name = "bb";
+    alarm->js_alarm->scheduled_time = 30 * 60000;
+    alarm->js_alarm->period_in_minutes.reset(new double(30));
+    alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     VerifyScheduledTime("a");
     RemoveAllAlarms();
   }
   {
     test_clock_->SetNow(base::Time::FromDoubleT(3 * 60 + 1));
-    Alarm alarm;
-    alarm.js_alarm->name = "bb";
-    alarm.js_alarm->scheduled_time = 3 * 60000;
-    alarm.js_alarm->period_in_minutes.reset(new double(3));
-    alarm_manager_->AddAlarmImpl(extension()->id(), alarm);
+    std::unique_ptr<Alarm> alarm(new Alarm);
+    alarm->js_alarm->name = "bb";
+    alarm->js_alarm->scheduled_time = 3 * 60000;
+    alarm->js_alarm->period_in_minutes.reset(new double(3));
+    alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     base::MessageLoop::current()->Run();
     EXPECT_EQ(
         base::Time::FromJsTime(3 * 60000) + base::TimeDelta::FromMinutes(3),
@@ -562,16 +562,16 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     test_clock_->SetNow(base::Time::FromDoubleT(4 * 60 + 1));
     CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
     RemoveAlarm("a");
-    Alarm alarm2;
-    alarm2.js_alarm->name = "bb";
-    alarm2.js_alarm->scheduled_time = 4 * 60000;
-    alarm2.js_alarm->period_in_minutes.reset(new double(4));
-    alarm_manager_->AddAlarmImpl(extension()->id(), alarm2);
-    Alarm alarm3;
-    alarm3.js_alarm->name = "ccc";
-    alarm3.js_alarm->scheduled_time = 25 * 60000;
-    alarm3.js_alarm->period_in_minutes.reset(new double(25));
-    alarm_manager_->AddAlarmImpl(extension()->id(), alarm3);
+    std::unique_ptr<Alarm> alarm2(new Alarm);
+    alarm2->js_alarm->name = "bb";
+    alarm2->js_alarm->scheduled_time = 4 * 60000;
+    alarm2->js_alarm->period_in_minutes.reset(new double(4));
+    alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm2));
+    std::unique_ptr<Alarm> alarm3(new Alarm);
+    alarm3->js_alarm->name = "ccc";
+    alarm3->js_alarm->scheduled_time = 25 * 60000;
+    alarm3->js_alarm->period_in_minutes.reset(new double(25));
+    alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm3));
     base::MessageLoop::current()->Run();
     EXPECT_EQ(
         base::Time::FromJsTime(4 * 60000) + base::TimeDelta::FromMinutes(4),

@@ -115,9 +115,10 @@ bool AlarmsCreateFunction::RunAsync() {
                : alarms_api_constants::kReleaseDelayMinimum)) *
       kSecondsPerMinute;
 
-  Alarm alarm(alarm_name, params->alarm_info, granularity, clock_->Now());
+  std::unique_ptr<Alarm> alarm(
+      new Alarm(alarm_name, params->alarm_info, granularity, clock_->Now()));
   AlarmManager::Get(browser_context())
-      ->AddAlarm(extension_id(), alarm,
+      ->AddAlarm(extension_id(), std::move(alarm),
                  base::Bind(&AlarmsCreateFunction::Callback, this));
 
   return true;
@@ -158,8 +159,8 @@ bool AlarmsGetAllFunction::RunAsync() {
 void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
   std::unique_ptr<base::ListValue> alarms_value(new base::ListValue());
   if (alarms) {
-    for (const Alarm& alarm : *alarms)
-      alarms_value->Append(alarm.js_alarm->ToValue());
+    for (const std::unique_ptr<Alarm>& alarm : *alarms)
+      alarms_value->Append(alarm->js_alarm->ToValue());
   }
   SetResult(std::move(alarms_value));
   SendResponse(true);

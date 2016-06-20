@@ -38,10 +38,9 @@ struct Alarm {
         const api::alarms::AlarmCreateInfo& create_info,
         base::TimeDelta min_granularity,
         base::Time now);
-  Alarm(const Alarm& other);
   ~Alarm();
 
-  linked_ptr<api::alarms::Alarm> js_alarm;
+  std::unique_ptr<api::alarms::Alarm> js_alarm;
   // The granularity isn't exposed to the extension's javascript, but we poll at
   // least as often as the shortest alarm's granularity.  It's initialized as
   // the relative delay requested in creation, even if creation uses an absolute
@@ -51,6 +50,9 @@ struct Alarm {
   // The minimum granularity is the minimum allowed polling rate. This stops
   // alarms from polling too often.
   base::TimeDelta minimum_granularity;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Alarm);
 };
 
 // Manages the currently pending alarms for every extension in a profile.
@@ -59,7 +61,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
                      public ExtensionRegistryObserver,
                      public base::SupportsWeakPtr<AlarmManager> {
  public:
-  typedef std::vector<Alarm> AlarmList;
+  using AlarmList = std::vector<std::unique_ptr<Alarm>>;
 
   class Delegate {
    public:
@@ -79,7 +81,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // Adds |alarm| for the given extension, and starts the timer. Invokes
   // |callback| when done.
   void AddAlarm(const std::string& extension_id,
-                const Alarm& alarm,
+                std::unique_ptr<Alarm> alarm,
                 const AddAlarmCallback& callback);
 
   typedef base::Callback<void(Alarm*)> GetAlarmCallback;
@@ -145,7 +147,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   typedef std::pair<AlarmMap::iterator, AlarmList::iterator> AlarmIterator;
 
   // Part of AddAlarm that is executed after alarms are loaded.
-  void AddAlarmWhenReady(const Alarm& alarm,
+  void AddAlarmWhenReady(std::unique_ptr<Alarm> alarm,
                          const AddAlarmCallback& callback,
                          const std::string& extension_id);
 
@@ -181,7 +183,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
   void OnAlarm(AlarmIterator iter);
 
   // Internal helper to add an alarm and start the timer with the given delay.
-  void AddAlarmImpl(const std::string& extension_id, const Alarm& alarm);
+  void AddAlarmImpl(const std::string& extension_id,
+                    std::unique_ptr<Alarm> alarm);
 
   // Syncs our alarm data for the given extension to/from the state storage.
   void WriteToStorage(const std::string& extension_id);
