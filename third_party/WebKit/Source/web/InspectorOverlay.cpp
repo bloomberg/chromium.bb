@@ -386,8 +386,12 @@ void InspectorOverlay::rebuildOverlayPage()
 
     IntRect visibleRectInDocument = view->getScrollableArea()->visibleContentRect();
     IntSize viewportSize = m_webViewImpl->page()->frameHost().visualViewport().size();
-    toLocalFrame(overlayPage()->mainFrame())->view()->resize(viewportSize);
+    LocalFrame* frame = toLocalFrame(overlayPage()->mainFrame());
+    frame->view()->resize(viewportSize);
     overlayPage()->frameHost().visualViewport().setSize(viewportSize);
+    float windowToViewportScale = m_webViewImpl->chromeClient().windowToViewportScalar(1.0f);
+    frame->setPageZoomFactor(windowToViewportScale);
+
     reset(viewportSize, visibleRectInDocument.location());
 
     drawNodeHighlight();
@@ -533,8 +537,16 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
     std::unique_ptr<protocol::DictionaryValue> resetData = protocol::DictionaryValue::create();
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
     resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->pageScaleFactor());
-    resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
-    resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
+
+    IntRect viewportInScreen = m_webViewImpl->chromeClient().viewportToScreen(
+        IntRect(IntPoint(), viewportSize), m_webViewImpl->mainFrameImpl()->frame()->view());
+    resetData->setObject("viewportSize", buildObjectForSize(viewportInScreen.size()));
+
+    // The zoom factor in the overlay frame already has been multiplied by the window to viewport scale
+    // (aka device scale factor), so cancel it.
+    float windowToViewportScale = m_webViewImpl->chromeClient().windowToViewportScalar(1.0f);
+    resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor() / windowToViewportScale);
+
     resetData->setNumber("scrollX", documentScrollOffset.x());
     resetData->setNumber("scrollY", documentScrollOffset.y());
     evaluateInOverlay("reset", std::move(resetData));
