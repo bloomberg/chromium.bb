@@ -39,7 +39,7 @@ class ArcImeBridge {
       const ui::CompositionText& composition) = 0;
   virtual void SendConfirmCompositionText() = 0;
   virtual void SendInsertText(const base::string16& text) = 0;
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) = 0;
+  virtual void SendOnKeyboardBoundsChanging(const gfx::Rect& new_bounds) = 0;
 
  protected:
   ArcImeBridge() {}

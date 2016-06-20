@@ -188,7 +188,7 @@ void ArcImeService::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // Multiply by the scale factor. To convert from DPI to physical pixels.
   gfx::Rect bounds_in_px = gfx::ScaleToEnclosingRect(
       new_bounds, window->layer()->device_scale_factor());
-  ime_bridge_->OnKeyboardBoundsChanging(bounds_in_px);
+  ime_bridge_->SendOnKeyboardBoundsChanging(bounds_in_px);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

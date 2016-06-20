@@ -14,6 +14,8 @@
 namespace arc {
 namespace {
 
+constexpr int kMinVersionForOnKeyboardsBoundsChanging = 3;
+
 ui::TextInputType ConvertTextInputType(arc::mojom::TextInputType ipc_type) {
   // The two enum types are similar, but intentionally made not identical.
   // We cannot force them to be in sync. If we do, updates in ui::TextInputType
@@ -117,12 +119,19 @@ void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   ime_instance->InsertText(base::UTF16ToUTF8(text));
 }
 
-void ArcImeBridgeImpl::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
+    const gfx::Rect& new_bounds) {
   mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
   }
+  if (bridge_service_->ime_version() <
+      kMinVersionForOnKeyboardsBoundsChanging) {
+    LOG(ERROR) << "ArcImeInstance is too old for OnKeyboardsBoundsChanging.";
+    return;
+  }
+
   ime_instance->OnKeyboardBoundsChanging(new_bounds);
 }
 
