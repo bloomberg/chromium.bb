@@ -381,6 +381,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/freetype-android': [ # http://crbug.com/177319
         'UNKNOWN',
     ],
+    'third_party/grpc': [ # https://github.com/grpc/grpc/issues/6951
+        'UNKNOWN',
+    ],
     'third_party/hunspell': [  # http://crbug.com/98134
         'UNKNOWN',
     ],

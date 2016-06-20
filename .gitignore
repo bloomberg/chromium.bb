@@ -340,6 +340,7 @@ vs-chromium-project.txt
 /third_party/google_toolbox_for_mac/src
 /third_party/googlemac
 /third_party/gperf
+/third_party/grpc
 /third_party/httpcomponents-client
 /third_party/httpcomponents-core
 /third_party/hunspell_dictionaries

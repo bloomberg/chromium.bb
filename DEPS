@@ -416,6 +416,10 @@ deps_os = {
     # Wireless Display Software. Used on Chrome OS.
     'src/third_party/wds/src':
      Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',
+
+    # gRPC, an RPC framework. For Blimp use only.
+    'src/third_party/grpc':
+     Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + 'c1f618fb61b5258c1718e7ae60a6a7dbf6f912fb',
   },
   'android': {
     'src/third_party/android_protobuf/src':
