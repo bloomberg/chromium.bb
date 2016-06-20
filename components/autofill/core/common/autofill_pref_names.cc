@@ -18,6 +18,10 @@ const char kAutofillProfileUseDatesFixed[] = "autofill.profile_use_dates_fixed";
 // user.
 const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
 
+// Integer that is set to the last version where the profile deduping routine
+// was run. This routine will be run once per version.
+const char kAutofillLastVersionDeduped[] = "autofill.last_version_deduped";
+
 // Boolean that allows the "Don't ask again for this card" checkbox to be
 // sticky.
 const char kAutofillWalletImportStorageCheckboxState[] =

@@ -178,6 +178,7 @@ source_set("browser") {
     "//components/strings",
     "//components/sync_driver",
     "//components/variations/net",
+    "//components/version_info",
     "//components/webdata/common",
     "//google_apis",
     "//net",
