@@ -71,17 +71,15 @@ TEST_F(BufferTest, IsLost) {
                                GL_INNOCENT_CONTEXT_RESET_ARB);
   }
 
-  // Release buffer.
-  bool is_lost = true;
-  buffer_release_callback->Run(gpu::SyncToken(), is_lost);
-
   // Producing a new texture mailbox for the contents of the buffer.
-  buffer_release_callback =
+  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback2 =
       buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
   ASSERT_TRUE(buffer_release_callback);
 
   // Release buffer.
-  buffer_release_callback->Run(gpu::SyncToken(), false);
+  bool is_lost = true;
+  buffer_release_callback->Run(gpu::SyncToken(), is_lost);
+  buffer_release_callback2->Run(gpu::SyncToken(), false);
 }
 
 }  // namespace
