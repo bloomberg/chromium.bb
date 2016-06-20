@@ -96,7 +96,6 @@ class MediaInternals;
 class RenderWidgetHelper;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
-struct Referrer;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
@@ -125,14 +124,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
  protected:
   ~RenderMessageFilter() override;
 
-  // This method will be overridden by TestSaveImageFromDataURL class for test.
-  virtual void DownloadUrl(int render_view_id,
-                           int render_frame_id,
-                           const GURL& url,
-                           const Referrer& referrer,
-                           const base::string16& suggested_name,
-                           const bool use_prompt) const;
-
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<RenderMessageFilter>;
@@ -155,14 +146,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
   void OnGenerateRoutingID(int* route_id);
-  void OnDownloadUrl(int render_view_id,
-                     int render_frame_id,
-                     const GURL& url,
-                     const Referrer& referrer,
-                     const base::string16& suggested_name);
-  void OnSaveImageFromDataURL(int render_view_id,
-                              int render_frame_id,
-                              const std::string& url_str);
 
   void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
                                 media::AudioParameters* output_params);

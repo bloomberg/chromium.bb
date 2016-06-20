@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/render_message_filter.h"
+#include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/frame_messages.h"
@@ -244,18 +244,16 @@ TEST_F(RenderViewHostTest, RoutingIdSane) {
   EXPECT_NE(test_rvh()->GetRoutingID(), root_rfh->routing_id());
 }
 
-class TestSaveImageFromDataURL : public RenderMessageFilter {
+class TestSaveImageFromDataURL : public RenderFrameMessageFilter {
  public:
   TestSaveImageFromDataURL(BrowserContext* context)
-      : RenderMessageFilter(0,
-                            context,
-                            BrowserContext::GetDefaultStoragePartition(context)
-                                ->GetURLRequestContext(),
-                            nullptr,
-                            nullptr,
-                            nullptr,
-                            nullptr,
-                            nullptr) {
+      : RenderFrameMessageFilter(
+            0,
+            nullptr,
+            context,
+            BrowserContext::GetDefaultStoragePartition(context)
+                ->GetURLRequestContext(),
+            nullptr) {
     Reset();
   }
 
@@ -273,7 +271,7 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
   }
 
   void Test(const std::string& url) {
-    OnMessageReceived(ViewHostMsg_SaveImageFromDataURL(0, 0, url));
+    OnMessageReceived(FrameHostMsg_SaveImageFromDataURL(0, 0, url));
   }
 
  protected:

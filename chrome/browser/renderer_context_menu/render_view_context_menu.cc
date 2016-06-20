@@ -2169,8 +2169,9 @@ void RenderViewContextMenu::ExecSaveAs() {
   if (params_.media_type == WebContextMenuData::MediaTypeCanvas ||
       (params_.media_type == WebContextMenuData::MediaTypeImage &&
           is_large_data_url)) {
-    source_web_contents_->GetRenderViewHost()->SaveImageAt(
-      params_.x, params_.y);
+    RenderFrameHost* frame_host = GetRenderFrameHost();
+    if (frame_host)
+      frame_host->SaveImageAt(params_.x, params_.y);
   } else {
     RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
     const GURL& url = params_.src_url;
@@ -2196,7 +2197,9 @@ void RenderViewContextMenu::ExecCopyLinkText() {
 }
 
 void RenderViewContextMenu::ExecCopyImageAt() {
-  source_web_contents_->GetRenderViewHost()->CopyImageAt(params_.x, params_.y);
+  RenderFrameHost* frame_host = GetRenderFrameHost();
+  if (frame_host)
+    frame_host->CopyImageAt(params_.x, params_.y);
 }
 
 void RenderViewContextMenu::ExecSearchWebForImage() {

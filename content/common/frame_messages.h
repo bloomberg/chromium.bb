@@ -946,6 +946,18 @@ IPC_MESSAGE_ROUTED0(FrameMsg_ClearActiveFindMatch)
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(FrameMsg_StopFinding, content::StopFindAction /* action */)
 
+// Copies the image at location x, y to the clipboard (if there indeed is an
+// image at that location).
+IPC_MESSAGE_ROUTED2(FrameMsg_CopyImageAt,
+                    int /* x */,
+                    int /* y */)
+
+// Saves the image at location x, y to the disk (if there indeed is an
+// image at that location).
+IPC_MESSAGE_ROUTED2(FrameMsg_SaveImageAt,
+                    int /* x */,
+                    int /* y */)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -1069,6 +1081,22 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 // Notifies the browser that a frame finished loading.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
+
+// Initiates a download based on user actions like 'ALT+click'.
+IPC_MESSAGE_CONTROL5(FrameHostMsg_DownloadUrl,
+                     int /* render_view_id */,
+                     int /* render_frame_id */,
+                     GURL /* url */,
+                     content::Referrer /* referrer */,
+                     base::string16 /* suggested_name */)
+
+// Asks the browser to save a image (for <canvas> or <img>) from a data URL.
+// Note: |data_url| is the contents of a data:URL, and that it's represented as
+// a string only to work around size limitations for GURLs in IPC messages.
+IPC_MESSAGE_CONTROL3(FrameHostMsg_SaveImageFromDataURL,
+                     int /* render_view_id */,
+                     int /* render_frame_id */,
+                     std::string /* data_url */)
 
 // Sent when after the onload handler has been invoked for the document
 // in this frame. Sent for top-level frames. |report_type| and |ui_timestamp|

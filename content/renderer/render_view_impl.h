@@ -338,7 +338,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion) override;
-  void saveImageFromDataURL(const blink::WebString& data_url) override;
   void didCancelCompositionOnSelectionChange() override;
   bool handleCurrentKeyboardEvent() override;
   void SetValidationMessageDirection(base::string16* main_text,
@@ -608,8 +607,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void OnShowContextMenu(ui::MenuSourceType source_type,
                          const gfx::Point& location);
-  void OnCopyImageAt(int x, int y);
-  void OnSaveImageAt(int x, int y);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);

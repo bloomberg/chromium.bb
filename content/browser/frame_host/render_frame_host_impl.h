@@ -151,6 +151,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::string16& javascript) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   void InsertVisualStateCallback(const VisualStateCallback& callback) override;
+  void CopyImageAt(int x, int y) override;
+  void SaveImageAt(int x, int y) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
   blink::WebPageVisibilityState GetVisibilityState() override;

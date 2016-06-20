@@ -459,6 +459,14 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
       routing_id_, javascript, key, request_reply, world_id));
 }
 
+void RenderFrameHostImpl::CopyImageAt(int x, int y) {
+  Send(new FrameMsg_CopyImageAt(routing_id_, x, y));
+}
+
+void RenderFrameHostImpl::SaveImageAt(int x, int y) {
+  Send(new FrameMsg_SaveImageAt(routing_id_, x, y));
+}
+
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }

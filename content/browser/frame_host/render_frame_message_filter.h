@@ -31,6 +31,7 @@ class URLRequestContextGetter;
 namespace content {
 class BrowserContext;
 class PluginServiceImpl;
+struct Referrer;
 class RenderWidgetHelper;
 class ResourceContext;
 struct WebPluginInfo;
@@ -41,7 +42,7 @@ struct WebPluginInfo;
 // with the routing id for a newly created RenderFrame.
 //
 // This object is created on the UI thread and used on the IO thread.
-class RenderFrameMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
  public:
   RenderFrameMessageFilter(int render_process_id,
                            PluginServiceImpl* plugin_service,
@@ -51,6 +52,17 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
+
+ protected:
+  friend class TestSaveImageFromDataURL;
+
+  // This method will be overridden by TestSaveImageFromDataURL class for test.
+  virtual void DownloadUrl(int render_view_id,
+                           int render_frame_id,
+                           const GURL& url,
+                           const Referrer& referrer,
+                           const base::string16& suggested_name,
+                           const bool use_prompt) const;
 
  private:
   class OpenChannelToPpapiPluginCallback;
@@ -84,6 +96,15 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
   // Callback functions for getting cookies from cookie store.
   void SendGetCookiesResponse(IPC::Message* reply_msg,
                               const std::string& cookies);
+
+  void OnDownloadUrl(int render_view_id,
+                     int render_frame_id,
+                     const GURL& url,
+                     const Referrer& referrer,
+                     const base::string16& suggested_name);
+  void OnSaveImageFromDataURL(int render_view_id,
+                              int render_frame_id,
+                              const std::string& url_str);
 
   void OnAre3DAPIsBlocked(int render_frame_id,
                           const GURL& top_origin_url,

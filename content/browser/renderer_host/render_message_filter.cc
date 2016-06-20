@@ -49,8 +49,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
@@ -71,7 +69,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
@@ -127,21 +124,6 @@ void ResizeHelperPostMsgToUIThread(int render_process_id,
 }
 #endif
 
-void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(parameters->render_process_host_id());
-  if (!render_process_host)
-    return;
-
-  BrowserContext* browser_context = render_process_host->GetBrowserContext();
-  DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(browser_context);
-  RecordDownloadSource(INITIATED_BY_RENDERER);
-  download_manager->DownloadUrl(std::move(parameters));
-}
-
 void NoOpCacheStorageErrorCallback(CacheStorageError error) {}
 
 }  // namespace
@@ -194,9 +176,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
-                        OnSaveImageFromDataURL)
 #if defined(OS_MACOSX)
     // On Mac, the IPCs ViewHostMsg_SwapCompositorFrame, ViewHostMsg_UpdateRect,
     // and GpuCommandBufferMsg_SwapBuffersCompleted need to be handled in a
@@ -418,61 +397,6 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 }
 
 #endif  // OS_*
-
-void RenderMessageFilter::DownloadUrl(int render_view_id,
-                                      int render_frame_id,
-                                      const GURL& url,
-                                      const Referrer& referrer,
-                                      const base::string16& suggested_name,
-                                      const bool use_prompt) const {
-  if (!resource_context_)
-    return;
-
-  std::unique_ptr<DownloadUrlParameters> parameters(
-      new DownloadUrlParameters(url, render_process_id_, render_view_id,
-                                render_frame_id, request_context_.get()));
-  parameters->set_content_initiated(true);
-  parameters->set_suggested_name(suggested_name);
-  parameters->set_prompt(use_prompt);
-  parameters->set_referrer(referrer);
-
-  if (url.SchemeIsBlob()) {
-    ChromeBlobStorageContext* blob_context =
-        GetChromeBlobStorageContextForResourceContext(resource_context_);
-    parameters->set_blob_data_handle(
-        blob_context->context()->GetBlobDataFromPublicURL(url));
-    // Don't care if the above fails. We are going to let the download go
-    // through and allow it to be interrupted so that the embedder can deal.
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadUrlOnUIThread, base::Passed(&parameters)));
-}
-
-void RenderMessageFilter::OnDownloadUrl(int render_view_id,
-                                        int render_frame_id,
-                                        const GURL& url,
-                                        const Referrer& referrer,
-                                        const base::string16& suggested_name) {
-  DownloadUrl(render_view_id, render_frame_id, url, referrer, suggested_name,
-              false);
-}
-
-void RenderMessageFilter::OnSaveImageFromDataURL(int render_view_id,
-                                                 int render_frame_id,
-                                                 const std::string& url_str) {
-  // Please refer to RenderViewImpl::saveImageFromDataURL().
-  if (url_str.length() >= kMaxLengthOfDataURLString)
-    return;
-
-  GURL data_url(url_str);
-  if (!data_url.SchemeIs(url::kDataScheme))
-    return;
-
-  DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
-              base::string16(), true);
-}
 
 void RenderMessageFilter::AllocateSharedMemoryOnFileThread(
     uint32_t buffer_size,

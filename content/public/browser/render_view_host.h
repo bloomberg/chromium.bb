@@ -101,14 +101,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // Returns true if the current focused element is editable.
   virtual bool IsFocusedElementEditable() = 0;
 
-  // Copies the image at location x, y to the clipboard (if there indeed is an
-  // image at that location).
-  virtual void CopyImageAt(int x, int y) = 0;
-
-  // Saves the image at location x, y to the disk (if there indeed is an
-  // image at that location).
-  virtual void SaveImageAt(int x, int y) = 0;
-
   // Notifies the listener that a directory enumeration is complete.
   virtual void DirectoryEnumerationFinished(
       int request_id,

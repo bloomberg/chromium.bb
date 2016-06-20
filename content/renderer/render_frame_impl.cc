@@ -50,6 +50,7 @@
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/clipboard_messages.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
@@ -160,6 +161,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
+#include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -277,6 +279,7 @@ using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginDocument;
 using blink::WebPluginParams;
+using blink::WebPoint;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
@@ -1499,6 +1502,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnMoveRangeSelectionExtent)
     IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
+    IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
+    IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(InputMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
     IPC_MESSAGE_HANDLER(InputMsg_SetCompositionFromExistingText,
@@ -1896,6 +1901,14 @@ void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
     return;
 
   frame_->replaceMisspelledRange(text);
+}
+
+void RenderFrameImpl::OnCopyImageAt(int x, int y) {
+  frame_->copyImageAt(WebPoint(x, y));
+}
+
+void RenderFrameImpl::OnSaveImageAt(int x, int y) {
+  frame_->saveImageAt(WebPoint(x, y));
 }
 
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
@@ -2996,10 +3009,9 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
                                         bool should_replace_current_entry) {
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame_, request));
   if (policy == blink::WebNavigationPolicyDownload) {
-    render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
-                                                   GetRoutingID(),
-                                                   request.url(), referrer,
-                                                   suggested_name));
+    Send(new FrameHostMsg_DownloadUrl(render_view_->GetRoutingID(),
+                                      GetRoutingID(), request.url(), referrer,
+                                      suggested_name));
   } else {
     OpenURL(request.url(), IsHttpPost(request),
             GetRequestBodyForWebURLRequest(request), referrer, policy,
@@ -3884,6 +3896,15 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
 #endif
 
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
+}
+
+void RenderFrameImpl::saveImageFromDataURL(const blink::WebString& data_url) {
+  // Note: We should basically send GURL but we use size-limited string instead
+  // in order to send a larger data url to save a image for <canvas> or <img>.
+  if (data_url.length() < kMaxLengthOfDataURLString) {
+    Send(new FrameHostMsg_SaveImageFromDataURL(
+         render_view_->GetRoutingID(), routing_id_, data_url.utf8()));
+  }
 }
 
 void RenderFrameImpl::willSendRequest(

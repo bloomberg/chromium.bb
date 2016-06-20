@@ -231,8 +231,6 @@ public:
         const WebPoint&) override;
     WebHitTestResult hitTestResultAt(const WebPoint&) override;
     WebHitTestResult hitTestResultForTap(const WebPoint&, const WebSize&) override;
-    void copyImageAt(const WebPoint&) override;
-    void saveImageAt(const WebPoint&) override;
     void dragSourceEndedAt(
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,

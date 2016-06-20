@@ -90,7 +90,9 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebClipboard.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebMockClipboard.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
@@ -8644,6 +8646,158 @@ TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled)
     v8::Local<v8::Value> result = mainFrame->executeScriptAndReturnValue(WebScriptSource("hello"));
     ASSERT_TRUE(result->IsString());
     EXPECT_EQ("world", toCoreString(result->ToString(mainFrame->mainWorldScriptContext()).ToLocalChecked()));
+}
+
+class SaveImageFromDataURLWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    // WebFrameClient methods
+    void saveImageFromDataURL(const WebString& dataURL) override { m_dataURL = dataURL; }
+
+    // Local methods
+    const WebString& result() const { return m_dataURL; }
+    void reset() { m_dataURL = WebString(); }
+
+private:
+    WebString m_dataURL;
+};
+
+TEST_F(WebFrameTest, SaveImageAt)
+{
+    std::string url = m_baseURL + "image-with-data-url.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-with-data-url.html");
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://test"), "white-1x1.png");
+
+    FrameTestHelpers::WebViewHelper helper;
+    SaveImageFromDataURLWebFrameClient client;
+    WebViewImpl* webView = helper.initializeAndLoad(url, true, &client);
+    webView->resize(WebSize(400, 400));
+    webView->updateAllLifecyclePhases();
+
+    WebLocalFrame* localFrame = webView->mainFrame()->toWebLocalFrame();
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(1, 1));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(1, 2));
+    EXPECT_EQ(WebString(), client.result());
+
+    webView->setPageScaleFactor(4);
+    webView->setVisualViewportOffset(WebFloatPoint(1, 1));
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(3, 3));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    helper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
+TEST_F(WebFrameTest, SaveImageWithImageMap)
+{
+    std::string url = m_baseURL + "image-map.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+
+    FrameTestHelpers::WebViewHelper helper;
+    SaveImageFromDataURLWebFrameClient client;
+    WebView* webView = helper.initializeAndLoad(url, true, &client);
+    webView->resize(WebSize(400, 400));
+
+    WebLocalFrame* localFrame = webView->mainFrame()->toWebLocalFrame();
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(25, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(75, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(125, 25));
+    EXPECT_EQ(WebString(), client.result());
+
+    helper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
+TEST_F(WebFrameTest, CopyImageAt)
+{
+    std::string url = m_baseURL + "canvas-copy-image.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+
+    FrameTestHelpers::WebViewHelper helper;
+    WebView* webView = helper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(400, 400));
+
+    uint64_t sequence = Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard);
+
+    WebLocalFrame* localFrame = webView->mainFrame()->toWebLocalFrame();
+    localFrame->copyImageAt(WebPoint(50, 50));
+
+    EXPECT_NE(sequence, Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard));
+
+    WebImage image = static_cast<WebMockClipboard*>(Platform::current()->clipboard())->readRawImage(WebClipboard::Buffer());
+
+    SkAutoLockPixels autoLock(image.getSkBitmap());
+    EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
+};
+
+TEST_F(WebFrameTest, CopyImageAtWithPinchZoom)
+{
+    std::string url = m_baseURL + "canvas-copy-image.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+
+    FrameTestHelpers::WebViewHelper helper;
+    WebViewImpl* webView = helper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(400, 400));
+    webView->updateAllLifecyclePhases();
+    webView->setPageScaleFactor(2);
+    webView->setVisualViewportOffset(WebFloatPoint(200, 200));
+
+    uint64_t sequence = Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard);
+
+    WebLocalFrame* localFrame = webView->mainFrame()->toWebLocalFrame();
+    localFrame->copyImageAt(WebPoint(0, 0));
+
+    EXPECT_NE(sequence, Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard));
+
+    WebImage image = static_cast<WebMockClipboard*>(Platform::current()->clipboard())->readRawImage(WebClipboard::Buffer());
+
+    SkAutoLockPixels autoLock(image.getSkBitmap());
+    EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
+};
+
+TEST_F(WebFrameTest, CopyImageWithImageMap)
+{
+    SaveImageFromDataURLWebFrameClient client;
+
+    std::string url = m_baseURL + "image-map.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+
+    FrameTestHelpers::WebViewHelper helper;
+    WebView* webView = helper.initializeAndLoad(url, true, &client);
+    webView->resize(WebSize(400, 400));
+
+    client.reset();
+    WebLocalFrame* localFrame = webView->mainFrame()->toWebLocalFrame();
+    localFrame->saveImageAt(WebPoint(25, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(75, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    localFrame->saveImageAt(WebPoint(125, 25));
+    EXPECT_EQ(WebString(), client.result());
+
+    helper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
 static void setSecurityOrigin(WebFrame* frame, PassRefPtr<SecurityOrigin> securityOrigin)

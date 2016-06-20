@@ -335,6 +335,14 @@ public:
     // nullptr otherwise.
     virtual WebWidget* frameWidget() const = 0;
 
+    // Copy to the clipboard the image located at a particular point in visual
+    // viewport coordinates.
+    virtual void copyImageAt(const WebPoint&) = 0;
+
+    // Save as the image located at a particular point in visual viewport
+    // coordinates.
+    virtual void saveImageAt(const WebPoint&) = 0;
+
 protected:
     explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }
 

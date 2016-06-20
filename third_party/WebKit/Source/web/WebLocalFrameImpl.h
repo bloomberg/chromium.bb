@@ -243,6 +243,8 @@ public:
     float distanceToNearestFindMatch(const WebFloatPoint&) override;
     void setTickmarks(const WebVector<WebRect>&) override;
     WebFrameWidget* frameWidget() const override;
+    void copyImageAt(const WebPoint&) override;
+    void saveImageAt(const WebPoint&) override;
     void clearActiveFindMatch() override;
 
     // WebFrameImplBase methods:
@@ -349,6 +351,8 @@ private:
     void setCoreFrame(LocalFrame*);
 
     void loadJavaScriptURL(const KURL&);
+
+    HitTestResult hitTestResultForVisualViewportPos(const IntPoint&);
 
     WebPlugin* focusedPluginIfInputMethodSupported();
     ScrollableArea* layoutViewportScrollableArea() const;

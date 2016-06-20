@@ -120,6 +120,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
@@ -1760,6 +1761,15 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument);
 }
 
+HitTestResult WebLocalFrameImpl::hitTestResultForVisualViewportPos(const IntPoint& posInViewport)
+{
+    IntPoint rootFramePoint(frame()->host()->visualViewport().viewportToRootFrame(posInViewport));
+    IntPoint docPoint(frame()->view()->rootFrameToContents(rootFramePoint));
+    HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    result.setToShadowHostIfInUserAgentShadowRoot();
+    return result;
+}
+
 static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
 {
     // Internally, Blink uses CommittedMultipleRealLoads to track whether the
@@ -2103,6 +2113,36 @@ void WebLocalFrameImpl::setFrameWidget(WebFrameWidget* frameWidget)
 WebFrameWidget* WebLocalFrameImpl::frameWidget() const
 {
     return m_frameWidget;
+}
+
+void WebLocalFrameImpl::copyImageAt(const WebPoint& posInViewport)
+{
+    HitTestResult result = hitTestResultForVisualViewportPos(posInViewport);
+    if (!isHTMLCanvasElement(result.innerNodeOrImageMapImage()) && result.absoluteImageURL().isEmpty()) {
+        // There isn't actually an image at these coordinates.  Might be because
+        // the window scrolled while the context menu was open or because the page
+        // changed itself between when we thought there was an image here and when
+        // we actually tried to retreive the image.
+        //
+        // FIXME: implement a cache of the most recent HitTestResult to avoid having
+        //        to do two hit tests.
+        return;
+    }
+
+    frame()->editor().copyImage(result);
+}
+
+void WebLocalFrameImpl::saveImageAt(const WebPoint& posInViewport)
+{
+    Node* node = hitTestResultForVisualViewportPos(posInViewport).innerNodeOrImageMapImage();
+    if (!node || !(isHTMLCanvasElement(*node) || isHTMLImageElement(*node)))
+        return;
+
+    String url = toElement(*node).imageSourceURL();
+    if (!KURL(KURL(), url).protocolIsData())
+        return;
+
+    m_client->saveImageFromDataURL(url);
 }
 
 WebSandboxFlags WebLocalFrameImpl::effectiveSandboxFlags() const

@@ -19,10 +19,13 @@
 #include "content/test/fake_compositor_dependencies.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+
+using blink::WebString;
 
 namespace {
 const int32_t kSubframeRouteId = 20;
@@ -292,6 +295,52 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     // It happens to be left around in this test because this does not simulate
     // the frame detach.
   }
+}
+
+TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
+  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_SaveImageFromDataURL::ID);
+  EXPECT_FALSE(msg1);
+  render_thread_->sink().ClearMessages();
+
+  const std::string image_data_url =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+
+  frame()->saveImageFromDataURL(WebString::fromUTF8(image_data_url));
+  ProcessPendingMessages();
+  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_SaveImageFromDataURL::ID);
+  EXPECT_TRUE(msg2);
+
+  FrameHostMsg_SaveImageFromDataURL::Param param1;
+  FrameHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
+  EXPECT_EQ(std::get<2>(param1), image_data_url);
+
+  ProcessPendingMessages();
+  render_thread_->sink().ClearMessages();
+
+  const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
+
+  frame()->saveImageFromDataURL(WebString::fromUTF8(large_data_url));
+  ProcessPendingMessages();
+  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_SaveImageFromDataURL::ID);
+  EXPECT_TRUE(msg3);
+
+  FrameHostMsg_SaveImageFromDataURL::Param param2;
+  FrameHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
+  EXPECT_EQ(std::get<2>(param2), large_data_url);
+
+  ProcessPendingMessages();
+  render_thread_->sink().ClearMessages();
+
+  const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
+
+  frame()->saveImageFromDataURL(WebString::fromUTF8(exceeded_data_url));
+  ProcessPendingMessages();
+  const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_SaveImageFromDataURL::ID);
+  EXPECT_FALSE(msg4);
 }
 
 }  // namespace

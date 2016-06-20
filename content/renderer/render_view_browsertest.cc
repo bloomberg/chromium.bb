@@ -547,54 +547,6 @@ TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
   new_view->Release();
 }
 
-TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_FALSE(msg1);
-  render_thread_->sink().ClearMessages();
-
-  const std::string image_data_url =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
-
-  view()->saveImageFromDataURL(WebString::fromUTF8(image_data_url));
-  ProcessPendingMessages();
-  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_TRUE(msg2);
-
-  ViewHostMsg_SaveImageFromDataURL::Param param1;
-  ViewHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(std::get<2>(param1).length(), image_data_url.length());
-  EXPECT_EQ(std::get<2>(param1), image_data_url);
-
-  ProcessPendingMessages();
-  render_thread_->sink().ClearMessages();
-
-  const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
-
-  view()->saveImageFromDataURL(WebString::fromUTF8(large_data_url));
-  ProcessPendingMessages();
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_TRUE(msg3);
-
-  ViewHostMsg_SaveImageFromDataURL::Param param2;
-  ViewHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(std::get<2>(param2).length(), large_data_url.length());
-  EXPECT_EQ(std::get<2>(param2), large_data_url);
-
-  ProcessPendingMessages();
-  render_thread_->sink().ClearMessages();
-
-  const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
-
-  view()->saveImageFromDataURL(WebString::fromUTF8(exceeded_data_url));
-  ProcessPendingMessages();
-  const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_FALSE(msg4);
-}
-
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewImplTest, OnNavStateChanged) {
   view()->set_send_content_state_immediately(true);

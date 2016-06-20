@@ -554,6 +554,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebFileChooserParams& params,
       blink::WebFileChooserCompletion* chooser_completion) override;
   void showContextMenu(const blink::WebContextMenuData& data) override;
+  void saveImageFromDataURL(const blink::WebString& data_url) override;
   void willSendRequest(blink::WebLocalFrame* frame,
                        unsigned identifier,
                        blink::WebURLRequest& request,
@@ -778,6 +779,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnMoveRangeSelectionExtent(const gfx::Point& point);
   void OnReplace(const base::string16& text);
   void OnReplaceMisspelling(const base::string16& text);
+  void OnCopyImageAt(int x, int y);
+  void OnSaveImageAt(int x, int y);
   void OnCSSInsertRequest(const std::string& css);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
                              const std::string& message);

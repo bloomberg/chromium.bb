@@ -454,6 +454,10 @@ public:
     // the given frame. Additional context data is supplied.
     virtual void showContextMenu(const WebContextMenuData&) { }
 
+    // This method is called in response to WebView's saveImageAt(x, y).
+    // A data url from <canvas> or <img> is passed to the method's argument.
+    virtual void saveImageFromDataURL(const WebString&) { }
+
     // Low-level resource notifications ------------------------------------
 
     // A request is about to be sent out, and the client may modify it.  Request

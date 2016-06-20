@@ -98,8 +98,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void AllowBindings(int binding_flags) override;
   void ClearFocusedElement() override;
   bool IsFocusedElementEditable() override;
-  void CopyImageAt(int x, int y) override;
-  void SaveImageAt(int x, int y) override;
   void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) override;

@@ -165,6 +165,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void InsertVisualStateCallback(
       const VisualStateCallback& callback) = 0;
 
+  // Copies the image at the location in viewport coordinates (not frame
+  // coordinates) to the clipboard. If there is no image at that location, does
+  // nothing.
+  virtual void CopyImageAt(int x, int y) = 0;
+
+  // Requests to save the image at the location in viewport coordinates (not
+  // frame coordinates). If there is an image at the location, the renderer
+  // will post back the appropriate download message to trigger the save UI.
+  // If there is no image at that location, does nothing.
+  virtual void SaveImageAt(int x, int y) = 0;
+
   // RenderViewHost for this frame.
   virtual RenderViewHost* GetRenderViewHost() = 0;
 

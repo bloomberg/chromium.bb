@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebMockClipboard.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -185,7 +186,9 @@ void CopyImageAtAndCapturePixels(
   uint64_t sequence_number =
       blink::Platform::current()->clipboard()->sequenceNumber(
           blink::WebClipboard::Buffer());
-  web_view->copyImageAt(blink::WebPoint(x, y));
+  // TODO(lukasza): Support image capture in OOPIFs for
+  // https://crbug.com/477150.
+  web_view->mainFrame()->toWebLocalFrame()->copyImageAt(blink::WebPoint(x, y));
   if (sequence_number ==
       blink::Platform::current()->clipboard()->sequenceNumber(
           blink::WebClipboard::Buffer())) {
