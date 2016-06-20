@@ -5,7 +5,6 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -41,7 +40,7 @@ class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
       gfx::BufferFormat format,
       int client_id) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id) override;
+                              int client_id) override {}
   ImageFactory* AsImageFactory() override;
 
   // Overridden from ImageFactory:
@@ -53,12 +52,6 @@ class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
       int client_id) override;
 
  private:
-  using NativePixmapMapKey = std::pair<int, int>;
-  using NativePixmapMap =
-      base::hash_map<NativePixmapMapKey, scoped_refptr<ui::NativePixmap>>;
-  NativePixmapMap native_pixmaps_;
-  base::Lock native_pixmaps_lock_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryOzoneNativePixmap);
 };
 

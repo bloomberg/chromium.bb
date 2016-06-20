@@ -143,11 +143,41 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
   DCHECK_EQ(fds.size(), strides.size());
-  // TODO(reveman): Use gbm_bo_import after making buffers survive
-  // GPU process crashes. crbug.com/597932
-  return make_scoped_refptr(
-      new GbmBuffer(gbm, nullptr, format, gfx::BufferUsage::GPU_READ,
-                    std::move(fds), size, strides, offsets));
+  DCHECK_EQ(fds.size(), 1u);
+  DCHECK_EQ(offsets[0], 0);
+
+  struct gbm_import_fd_data fd_data;
+  fd_data.fd = fds[0].get();
+  fd_data.width = size.width();
+  fd_data.height = size.height();
+  fd_data.stride = strides[0];
+  fd_data.format = GetFourCCFormatFromBufferFormat(format);
+
+  // Use scanout if supported.
+  const std::vector<uint32_t>& scanout_formats =
+      gbm->plane_manager()->GetSupportedFormats();
+  bool use_scanout = std::find(scanout_formats.begin(), scanout_formats.end(),
+                               fd_data.format) != scanout_formats.end();
+  unsigned flags = 0;
+  if (use_scanout)
+    flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+
+  // The fd passed to gbm_bo_import is not ref-counted and need to be
+  // kept open for the lifetime of the buffer.
+  gbm_bo* bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data, flags);
+  if (!bo)
+    return nullptr;
+
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
+      gbm, bo, format,
+      use_scanout ? gfx::BufferUsage::SCANOUT : gfx::BufferUsage::GPU_READ,
+      std::move(fds), size, strides, offsets));
+  // If scanout support for buffer is expected then make sure we managed to
+  // create a framebuffer for it as otherwise using it for scanout will fail.
+  if (use_scanout && !buffer->GetFramebufferId())
+    return nullptr;
+
+  return buffer;
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,

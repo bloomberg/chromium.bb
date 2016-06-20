@@ -29,9 +29,13 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback,
-    std::unique_ptr<ui::ClientNativePixmap> pixmap)
+    std::unique_ptr<ui::ClientNativePixmap> pixmap,
+    const std::vector<std::pair<int, int>>& strides_and_offsets,
+    base::ScopedFD fd)
     : GpuMemoryBufferImpl(id, size, format, callback),
       pixmap_(std::move(pixmap)),
+      strides_and_offsets_(strides_and_offsets),
+      fd_(std::move(fd)),
       data_(nullptr) {}
 
 GpuMemoryBufferImplOzoneNativePixmap::~GpuMemoryBufferImplOzoneNativePixmap() {}
@@ -44,12 +48,32 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
+  DCHECK_EQ(handle.native_pixmap_handle.fds.size(), 1u);
+
+  // GpuMemoryBufferImpl needs the FD to implement GetHandle() but
+  // ui::ClientNativePixmapFactory::ImportFromHandle is expected to take
+  // ownership of the FD passed in the handle so we have to dup it here in
+  // order to pass a valid FD to the GpuMemoryBufferImpl ctor.
+  base::ScopedFD scoped_fd(
+      HANDLE_EINTR(dup(handle.native_pixmap_handle.fds[0].fd)));
+  if (!scoped_fd.is_valid()) {
+    PLOG(ERROR) << "dup";
+    return nullptr;
+  }
+
+  gfx::NativePixmapHandle native_pixmap_handle;
+  native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
+                                        true /* auto_close */);
+  native_pixmap_handle.strides_and_offsets =
+      handle.native_pixmap_handle.strides_and_offsets;
   std::unique_ptr<ui::ClientNativePixmap> native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
-          handle.native_pixmap_handle, size, usage);
+          native_pixmap_handle, size, usage);
   DCHECK(native_pixmap);
+
   return base::WrapUnique(new GpuMemoryBufferImplOzoneNativePixmap(
-      handle.id, size, format, callback, std::move(native_pixmap)));
+      handle.id, size, format, callback, std::move(native_pixmap),
+      handle.native_pixmap_handle.strides_and_offsets, std::move(scoped_fd)));
 }
 
 // static
@@ -112,6 +136,9 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
   handle.id = id_;
+  handle.native_pixmap_handle.fds.emplace_back(fd_.get(),
+                                               false /* auto_close */);
+  handle.native_pixmap_handle.strides_and_offsets = strides_and_offsets_;
   return handle;
 }
 
