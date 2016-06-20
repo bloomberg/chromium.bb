@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -62,49 +64,6 @@ const char kPersonalizationBothString[] = "both";  // the default value
 const char kHostRestrictionOnString[] = "on";  // the default value
 const char kHostRestrictionOffString[] = "off";
 
-const char kRequestFormat[] =
-    "{"
-    "  \"response_detail_level\": \"STANDARD\","
-    "%s"  // If authenticated - an obfuscated Gaia ID will be inserted here.
-    "  \"advanced_options\": {"
-    "    \"local_scoring_params\": {"
-    "      \"content_params\": {"
-    "        \"only_return_personalized_results\": %s"
-    "%s"  // If authenticated - user segment (lang code) will be inserted here.
-    "      },"
-    "      \"content_restricts\": ["
-    "        {"
-    "          \"type\": \"METADATA\","
-    "          \"value\": \"TITLE\""
-    "        },"
-    "        {"
-    "          \"type\": \"METADATA\","
-    "          \"value\": \"SNIPPET\""
-    "        },"
-    "        {"
-    "          \"type\": \"METADATA\","
-    "          \"value\": \"THUMBNAIL\""
-    "        }"
-    "      ],"
-    "      \"content_selectors\": [%s]"
-    "    },"
-    "    \"global_scoring_params\": {"
-    "      \"num_to_return\": %i,"
-    "      \"sort_type\": 1"
-    "    }"
-    "  }"
-    "}";
-
-const char kGaiaIdFormat[] = "  \"obfuscated_gaia_id\": \"%s\",";
-const char kUserSegmentFormat[] = "        ,\"user_segment\": \"%s\"";
-const char kHostRestrictFormat[] =
-    "      {"
-    "        \"type\": \"HOST_RESTRICT\","
-    "        \"value\": \"%s\""
-    "      }";
-const char kTrueString[] = "true";
-const char kFalseString[] = "false";
-
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
     case NTPSnippetsFetcher::FetchResult::SUCCESS:
@@ -126,17 +85,6 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   }
   NOTREACHED();
   return "Unknown error";
-}
-
-std::string BuildRequest(const std::string& obfuscated_gaia_id,
-                         bool only_return_personalized_results,
-                         const std::string& user_segment,
-                         const std::string& host_restricts,
-                         int count_to_fetch) {
-  return base::StringPrintf(
-      kRequestFormat, obfuscated_gaia_id.c_str(),
-      only_return_personalized_results ? kTrueString : kFalseString,
-      user_segment.c_str(), host_restricts.c_str(), count_to_fetch);
 }
 
 }  // namespace
@@ -237,6 +185,63 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   }
 }
 
+// static
+std::string NTPSnippetsFetcher::BuildRequest(
+    const std::string& obfuscated_gaia_id,
+    bool only_return_personalized_results,
+    const std::string& user_segment,
+    const std::set<std::string>& host_restricts,
+    int count_to_fetch) {
+  auto content_params = base::MakeUnique<base::DictionaryValue>();
+  content_params->SetBoolean("only_return_personalized_results",
+                             only_return_personalized_results);
+  if (!user_segment.empty()) {
+    content_params->SetString("user_segment", user_segment);
+  }
+
+  auto content_restricts = base::MakeUnique<base::ListValue>();
+  for (const auto& metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
+    auto entry = base::MakeUnique<base::DictionaryValue>();
+    entry->SetString("type", "METADATA");
+    entry->SetString("value", metadata);
+    content_restricts->Append(std::move(entry));
+  }
+
+  auto content_selectors = base::MakeUnique<base::ListValue>();
+  for (const auto& host : host_restricts) {
+    auto entry = base::MakeUnique<base::DictionaryValue>();
+    entry->SetString("type", "HOST_RESTRICT");
+    entry->SetString("value", host);
+    content_selectors->Append(std::move(entry));
+  }
+
+  auto local_scoring_params = base::MakeUnique<base::DictionaryValue>();
+  local_scoring_params->Set("content_params", std::move(content_params));
+  local_scoring_params->Set("content_restricts", std::move(content_restricts));
+  local_scoring_params->Set("content_selectors", std::move(content_selectors));
+
+  auto global_scoring_params = base::MakeUnique<base::DictionaryValue>();
+  global_scoring_params->SetInteger("num_to_return", count_to_fetch);
+  global_scoring_params->SetInteger("sort_type", 1);
+
+  auto advanced = base::MakeUnique<base::DictionaryValue>();
+  advanced->Set("local_scoring_params", std::move(local_scoring_params));
+  advanced->Set("global_scoring_params", std::move(global_scoring_params));
+
+  auto request = base::MakeUnique<base::DictionaryValue>();
+  request->SetString("response_detail_level", "STANDARD");
+  request->Set("advanced_options", std::move(advanced));
+  if (!obfuscated_gaia_id.empty()) {
+    request->SetString("obfuscated_gaia_id", obfuscated_gaia_id);
+  }
+
+  std::string request_json;
+  bool success = base::JSONWriter::WriteWithOptions(
+      *request, base::JSONWriter::OPTIONS_PRETTY_PRINT, &request_json);
+  DCHECK(success);
+  return request_json;
+}
+
 void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
                                            const std::string& auth_header,
                                            const std::string& request) {
@@ -262,18 +267,6 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
   url_fetcher_->Start();
 }
 
-std::string NTPSnippetsFetcher::GetHostRestricts() const {
-  std::string host_restricts;
-  if (UsesHostRestrictions()) {
-    for (const std::string& host : hosts_) {
-      if (!host_restricts.empty())
-        host_restricts.push_back(',');
-      host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
-    }
-  }
-  return host_restricts;
-}
-
 bool NTPSnippetsFetcher::UsesHostRestrictions() const {
   return use_host_restriction_ &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -293,26 +286,26 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
                               kSnippetsServer, key.c_str()));
 
-  FetchSnippetsImpl(url, std::string(),
-                    BuildRequest(/*obfuscated_gaia_id=*/std::string(),
-                                 /*only_return_personalized_results=*/false,
-                                 /*user_segment=*/std::string(),
-                                 GetHostRestricts(), count_to_fetch_));
+  FetchSnippetsImpl(
+      url, std::string(),
+      BuildRequest(/*obfuscated_gaia_id=*/std::string(),
+                   /*only_return_personalized_results=*/false,
+                   /*user_segment=*/std::string(),
+                   UsesHostRestrictions() ? hosts_ : std::set<std::string>(),
+                   count_to_fetch_));
 }
 
 void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
     const std::string& account_id,
     const std::string& oauth_access_token) {
-  std::string gaia_id = base::StringPrintf(kGaiaIdFormat, account_id.c_str());
-  std::string user_segment =
-      base::StringPrintf(kUserSegmentFormat, locale_.c_str());
-
   FetchSnippetsImpl(
       GURL(kSnippetsServer),
       base::StringPrintf(kAuthorizationRequestHeaderFormat,
                          oauth_access_token.c_str()),
-      BuildRequest(gaia_id, personalization_ == Personalization::kPersonal,
-                   user_segment, GetHostRestricts(), count_to_fetch_));
+      BuildRequest(account_id, personalization_ == Personalization::kPersonal,
+                   locale_,
+                   UsesHostRestrictions() ? hosts_ : std::set<std::string>(),
+                   count_to_fetch_));
 }
 
 void NTPSnippetsFetcher::StartTokenRequest() {

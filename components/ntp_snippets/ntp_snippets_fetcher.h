@@ -116,10 +116,18 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
+
+  static std::string BuildRequest(const std::string& obfuscated_gaia_id,
+                                  bool only_return_personalized_results,
+                                  const std::string& user_segment,
+                                  const std::set<std::string>& host_restricts,
+                                  int count_to_fetch);
+
   void FetchSnippetsImpl(const GURL& url,
                          const std::string& auth_header,
                          const std::string& request);
-  std::string GetHostRestricts() const;
   void FetchSnippetsNonAuthenticated();
   void FetchSnippetsAuthenticated(const std::string& account_id,
                                   const std::string& oauth_access_token);

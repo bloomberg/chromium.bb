@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ntp_snippets {
+
 namespace {
 
 using testing::ElementsAre;
@@ -49,6 +50,25 @@ MATCHER_P(PointeeSizeIs,
           size,
           std::string("contains a value with size ") + PrintToString(size)) {
   return arg && static_cast<int>(arg->size()) == size;
+}
+
+MATCHER_P(EqualsJSON, json, "equals JSON") {
+  std::unique_ptr<base::Value> expected = base::JSONReader::Read(json);
+  if (!expected) {
+    *result_listener << "INTERNAL ERROR: couldn't parse expected JSON";
+    return false;
+  }
+
+  std::string err_msg;
+  int err_line, err_col;
+  std::unique_ptr<base::Value> actual = base::JSONReader::ReadAndReturnError(
+      arg, base::JSON_PARSE_RFC, nullptr, &err_msg, &err_line, &err_col);
+  if (!actual) {
+    *result_listener << "input:" << err_line << ":" << err_col << ": "
+                     << "parse error: " << err_msg;
+    return false;
+  }
+  return base::Value::Equals(actual.get(), expected.get());
 }
 
 class MockSnippetsAvailableCallback {
@@ -93,6 +113,8 @@ void ParseJsonDelayed(
       FROM_HERE, base::Bind(&ParseJson, json, success_callback, error_callback),
       base::TimeDelta::FromMilliseconds(kTestJsonParsingLatencyMs));
 }
+
+}  // namespace
 
 class NTPSnippetsFetcherTest : public testing::Test {
  public:
@@ -170,6 +192,81 @@ class NTPSnippetsFetcherTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcherTest);
 };
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
+  EXPECT_THAT(NTPSnippetsFetcher::BuildRequest("0BFUSGAIA", true, "en",
+                                               {"chromium.org"}, 25),
+              EqualsJSON("{"
+                         "  \"response_detail_level\": \"STANDARD\","
+                         "  \"obfuscated_gaia_id\": \"0BFUSGAIA\","
+                         "  \"advanced_options\": {"
+                         "    \"local_scoring_params\": {"
+                         "      \"content_params\": {"
+                         "        \"only_return_personalized_results\": true,"
+                         "        \"user_segment\": \"en\""
+                         "      },"
+                         "      \"content_restricts\": ["
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"TITLE\""
+                         "        },"
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"SNIPPET\""
+                         "        },"
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"THUMBNAIL\""
+                         "        }"
+                         "      ],"
+                         "      \"content_selectors\": ["
+                         "        {"
+                         "          \"type\": \"HOST_RESTRICT\","
+                         "          \"value\": \"chromium.org\""
+                         "        }"
+                         "      ]"
+                         "    },"
+                         "    \"global_scoring_params\": {"
+                         "      \"num_to_return\": 25,"
+                         "      \"sort_type\": 1"
+                         "    }"
+                         "  }"
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
+  EXPECT_THAT(NTPSnippetsFetcher::BuildRequest("", false, "",
+                                               std::set<std::string>(), 10),
+              EqualsJSON("{"
+                         "  \"response_detail_level\": \"STANDARD\","
+                         "  \"advanced_options\": {"
+                         "    \"local_scoring_params\": {"
+                         "      \"content_params\": {"
+                         "        \"only_return_personalized_results\": false"
+                         "      },"
+                         "      \"content_restricts\": ["
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"TITLE\""
+                         "        },"
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"SNIPPET\""
+                         "        },"
+                         "        {"
+                         "          \"type\": \"METADATA\","
+                         "          \"value\": \"THUMBNAIL\""
+                         "        }"
+                         "      ],"
+                         "      \"content_selectors\": []"
+                         "    },"
+                         "    \"global_scoring_params\": {"
+                         "      \"num_to_return\": 10,"
+                         "      \"sort_type\": 1"
+                         "    }"
+                         "  }"
+                         "}"));
+}
 
 TEST_F(NTPSnippetsFetcherTest, ShouldNotFetchOnCreation) {
   // The lack of registered baked in responses would cause any fetch to fail.
@@ -407,5 +504,4 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
                                        /*count=*/1)));
 }
 
-}  // namespace
 }  // namespace ntp_snippets
