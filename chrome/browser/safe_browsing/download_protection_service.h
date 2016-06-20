@@ -183,6 +183,8 @@ class DownloadProtectionService {
     REASON_DOWNLOAD_POTENTIALLY_UNWANTED,
     REASON_UNSUPPORTED_URL_SCHEME,
     REASON_MANUAL_BLACKLIST,
+    REASON_LOCAL_FILE,
+    REASON_REMOTE_FILE,
     REASON_MAX  // Always add new values before this one.
   };
 

@@ -87325,6 +87325,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="20" label="DOWNLOAD_DANGEROUS_HOST"/>
   <int value="21" label="DOWNLOAD_POTENTIALLY_UNWANTED"/>
   <int value="22" label="UNSUPPORTED_URL_SCHEME"/>
+  <int value="23" label="REASON_MANUAL_BLACKLIST"/>
+  <int value="24" label="REASON_LOCAL_FILE"/>
+  <int value="25" label="REASON_REMOTE_FILE"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult" type="int">

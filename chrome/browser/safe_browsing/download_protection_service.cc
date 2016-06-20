@@ -332,6 +332,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         case REASON_EMPTY_URL_CHAIN:
         case REASON_INVALID_URL:
         case REASON_UNSUPPORTED_URL_SCHEME:
+        case REASON_LOCAL_FILE:
+        case REASON_REMOTE_FILE:
           PostFinishTask(UNKNOWN, reason);
           return;
 
@@ -532,10 +534,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
-    if ((!final_url.IsStandard() && !final_url.SchemeIsBlob() &&
-         !final_url.SchemeIs(url::kDataScheme)) ||
-        final_url.SchemeIsFile()) {
+    if (!final_url.IsStandard() && !final_url.SchemeIsBlob() &&
+        !final_url.SchemeIs(url::kDataScheme)) {
       *reason = REASON_UNSUPPORTED_URL_SCHEME;
+      return false;
+    }
+    if (final_url.SchemeIsFile()) {
+      *reason = final_url.has_host() ? REASON_REMOTE_FILE : REASON_LOCAL_FILE;
       return false;
     }
     *type = download_protection_util::GetDownloadType(target_path);
