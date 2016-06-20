@@ -527,6 +527,14 @@ TEST_F(MultibufferDataSourceTest, Range_NotSupported) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, Range_NotSatisfiable) {
+  Initialize(kHttpUrl, true);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  Respond(response_generator_->GenerateResponse(416));
+  EXPECT_FALSE(loading());
+  Stop();
+}
+
 // Special carve-out for Apache versions that choose to return a 200 for
 // Range:0- ("because it's more efficient" than a 206)
 TEST_F(MultibufferDataSourceTest, Range_SupportedButReturned200) {
@@ -1373,6 +1381,20 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
 
   FinishLoading();
   EXPECT_FALSE(loading());
+  Stop();
+}
+
+TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
+  Initialize(kHttpUrl, true);
+
+  // Server responds with a redirect.
+  blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
+  blink::WebURLResponse response((GURL(kHttpUrl)));
+  response.setHTTPStatusCode(307);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  Respond(response_generator_->GenerateResponse(416));
   Stop();
 }
 

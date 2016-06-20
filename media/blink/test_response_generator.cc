@@ -88,10 +88,14 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
   return response;
 }
 
-WebURLResponse TestResponseGenerator::Generate404() {
+WebURLResponse TestResponseGenerator::GenerateResponse(int code) {
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(404);
+  response.setHTTPStatusCode(code);
   return response;
+}
+
+WebURLResponse TestResponseGenerator::Generate404() {
+  return GenerateResponse(404);
 }
 
 WebURLResponse TestResponseGenerator::GenerateFileResponse(

@@ -59,6 +59,9 @@ class TestResponseGenerator {
   // Generates a regular HTTP 404 response.
   blink::WebURLResponse Generate404();
 
+  // Generate a HTTP response with specified code.
+  blink::WebURLResponse GenerateResponse(int code);
+
   // Generates a file:// response starting from |first_byte_offset| until the
   // end of the resource.
   //

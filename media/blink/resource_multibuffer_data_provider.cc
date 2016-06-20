@@ -258,6 +258,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.
   int64_t content_length = response.expectedContentLength();
+  bool end_of_file = false;
 
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
@@ -285,12 +286,12 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
       // to return.
       destination_url_data->set_length(content_length);
     } else if (response.httpStatusCode() == kHttpRangeNotSatisfiable) {
+      // Unsatisfiable range
       // Really, we should never request a range that doesn't exist, but
       // if we do, let's handle it in a sane way.
-      // Unsatisfiable range
-      fifo_.push_back(DataBuffer::CreateEOSBuffer());
-      destination_url_data->multibuffer()->OnDataProviderEvent(this);
-      return;
+      // Note, we can't just call OnDataProviderEvent() here, because
+      // url_data_ hasn't been updated to the final destination yet.
+      end_of_file = true;
     } else {
       active_loader_ = nullptr;
       destination_url_data->Fail();
@@ -336,6 +337,11 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
     active_loader_ = nullptr;
     url_data_->Fail();
     return;  // "this" may be deleted now.
+  }
+
+  if (end_of_file) {
+    fifo_.push_back(DataBuffer::CreateEOSBuffer());
+    url_data_->multibuffer()->OnDataProviderEvent(this);
   }
 }
 
