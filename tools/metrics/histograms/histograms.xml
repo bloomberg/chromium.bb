@@ -29038,6 +29038,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicHttpStream::DoStreamRequest.IsNullSession"
+    enum="Boolean">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of times QuicHttpStream's session_ is a nullptr before
+    StartRequest() is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicInchoateClientHelloReason"
     enum="QuicServerConfigState">
   <owner>rtenneti@chromium.org</owner>
