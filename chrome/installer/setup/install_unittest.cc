@@ -312,8 +312,9 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
       "      ShowNameOnSquare150x150Logo='on'\r\n"
       "      Square150x150Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
       "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+      "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
       "      ForegroundText='light'\r\n"
-      "      BackgroundColor='#323232'/>\r\n"
+      "      BackgroundColor='#212121'/>\r\n"
       "</Application>\r\n";
 
   ASSERT_STREQ(kExpectedManifest, read_manifest.c_str());

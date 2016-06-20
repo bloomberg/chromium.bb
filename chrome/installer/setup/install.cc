@@ -392,8 +392,9 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         "      ShowNameOnSquare150x150Logo='on'\r\n"
         "      Square150x150Logo='%ls\\Logo.png'\r\n"
         "      Square70x70Logo='%ls\\SmallLogo.png'\r\n"
+        "      Square44x44Logo='%ls\\SmallLogo.png'\r\n"
         "      ForegroundText='light'\r\n"
-        "      BackgroundColor='#323232'/>\r\n"
+        "      BackgroundColor='#212121'/>\r\n"
         "</Application>\r\n";
 
     const base::string16 manifest_template(
@@ -407,8 +408,9 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
     EscapeXmlAttributeValueInSingleQuotes(&display_name);
 
     // Fill the manifest with the desired values.
-    base::string16 manifest16(base::StringPrintf(
-        manifest_template.c_str(), elements_dir.c_str(), elements_dir.c_str()));
+    base::string16 manifest16(
+        base::StringPrintf(manifest_template.c_str(), elements_dir.c_str(),
+                           elements_dir.c_str(), elements_dir.c_str()));
 
     // Write the manifest to |src_path|.
     const std::string manifest(base::UTF16ToUTF8(manifest16));
