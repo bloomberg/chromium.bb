@@ -17,6 +17,7 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {
@@ -39,6 +40,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
                  const gfx::Rect& device_clip_rect,
                  bool disable_picture_quad_image_filtering) override;
   virtual void SwapBuffersComplete() {}
+  virtual void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) {}
 
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)

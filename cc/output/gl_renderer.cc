@@ -2785,7 +2785,7 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
 
   // We always hold onto resources until an extra frame has swapped, to make
   // sure we don't update the buffer while it's being scanned out.
-  if (!settings_->release_overlay_resources_on_swap_complete &&
+  if (!settings_->release_overlay_resources_after_gpu_query &&
       swapping_overlay_resources_.size() > 2) {
     swapping_overlay_resources_.pop_front();
   }
@@ -2796,33 +2796,38 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
 }
 
 void GLRenderer::SwapBuffersComplete() {
-  // On OS X, the logic in this block moves resources into
-  // |swapped_and_acked_overlay_resources_|, and then erases resources from
-  // |swapped_and_acked_overlay_resources_| that are no longer in use by the
-  // Window Server. On other platforms, since resources are never in use by the
-  // Window Server, this is equivalent to just erasing all resources from the
-  // first element of |swapping_overlay_resources_|.
-  if (settings_->release_overlay_resources_on_swap_complete) {
-    // Move resources known to be acked into
-    // |swapped_and_acked_overlay_resources_|.
+  // Once a resouce has been swap-ACKed, send a query to the GPU process to ask
+  // if the resource is no longer being consumed by the system compositor. The
+  // response will come with the next swap-ACK.
+  if (settings_->release_overlay_resources_after_gpu_query) {
     if (!swapping_overlay_resources_.empty()) {
       for (OverlayResourceLock& lock : swapping_overlay_resources_.front()) {
-        swapped_and_acked_overlay_resources_[lock->resource_id()] =
-            std::move(lock);
+        unsigned texture = lock->texture_id();
+        if (swapped_and_acked_overlay_resources_.find(texture) ==
+            swapped_and_acked_overlay_resources_.end()) {
+          swapped_and_acked_overlay_resources_[texture] = std::move(lock);
+        }
       }
       swapping_overlay_resources_.pop_front();
     }
 
-    // Release resources that are no longer in use by the Window Server.
-    auto it = swapped_and_acked_overlay_resources_.begin();
-    while (it != swapped_and_acked_overlay_resources_.end()) {
-      if (it->second->gpu_memory_buffer() &&
-          it->second->gpu_memory_buffer()->IsInUseByMacOSWindowServer()) {
-        ++it;
-        continue;
+    if (!swapped_and_acked_overlay_resources_.empty()) {
+      std::vector<unsigned> textures;
+      textures.reserve(swapped_and_acked_overlay_resources_.size());
+      for (auto& pair : swapped_and_acked_overlay_resources_) {
+        textures.push_back(pair.first);
       }
+      gl_->ScheduleCALayerInUseQueryCHROMIUM(textures.size(), textures.data());
+    }
+  }
+}
 
-      it = swapped_and_acked_overlay_resources_.erase(it);
+void GLRenderer::DidReceiveTextureInUseResponses(
+    const gpu::TextureInUseResponses& responses) {
+  DCHECK(settings_->release_overlay_resources_after_gpu_query);
+  for (const gpu::TextureInUseResponse& response : responses) {
+    if (!response.in_use) {
+      swapped_and_acked_overlay_resources_.erase(response.texture);
     }
   }
 }

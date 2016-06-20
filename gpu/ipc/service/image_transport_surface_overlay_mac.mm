@@ -159,15 +159,13 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
   params.latency_info = std::move(latency_info);
   params.result = gfx::SwapResult::SWAP_ACK;
 
-  // TODO(erikchen): Re-enable this logic alongside the client code that
-  // consumes this response. https://crbug.com/608026.
-  // for (auto& query : io_surface_in_use_queries_) {
-  //   SwapBuffersCompletedIOSurfaceInUseQuery response;
-  //   response.texture = query.texture;
-  //   response.in_use =
-  //       query.io_surface.get() && IOSurfaceIsInUse(query.io_surface.get());
-  //   params.in_use_queries.push_back(std::move(response));
-  // }
+  for (auto& query : io_surface_in_use_queries_) {
+    gpu::TextureInUseResponse response;
+    response.texture = query.texture;
+    response.in_use =
+        query.io_surface.get() && IOSurfaceIsInUse(query.io_surface.get());
+    params.in_use_responses.push_back(std::move(response));
+  }
   io_surface_in_use_queries_.clear();
 
   stub_->SendSwapBuffersCompleted(params);

@@ -248,6 +248,11 @@ void OutputSurface::OnSwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
 }
 
+void OutputSurface::DidReceiveTextureInUseResponses(
+    const gpu::TextureInUseResponses& responses) {
+  client_->DidReceiveTextureInUseResponses(responses);
+}
+
 void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   TRACE_EVENT1("cc", "OutputSurface::SetMemoryPolicy",
                "bytes_limit_when_visible", policy.bytes_limit_when_visible);

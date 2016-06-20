@@ -66,6 +66,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void SwapBuffers(const CompositorFrameMetadata& metadata) override;
   void SwapBuffersComplete() override;
 
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) override;
+
   virtual bool IsContextLost();
 
  protected:
@@ -271,9 +274,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Resources that should be shortly swapped by the GPU process.
   std::deque<OverlayResourceLockList> swapping_overlay_resources_;
 
-  // Resources that the GPU process has finished swapping.
-  std::map<ResourceId, OverlayResourceLock>
-      swapped_and_acked_overlay_resources_;
+  // Resources that the GPU process has finished swapping. The key is the
+  // texture id of the resource.
+  std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
 
   RendererCapabilitiesImpl capabilities_;
 

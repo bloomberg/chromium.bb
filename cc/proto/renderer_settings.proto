@@ -16,7 +16,7 @@ message RendererSettings {
   optional bool finish_rendering_on_resize = 5;
   optional bool should_clear_root_render_pass = 6;
   optional bool disable_display_vsync = 7;
-  optional bool release_overlay_resources_on_swap_complete = 8;
+  optional bool release_overlay_resources_after_gpu_query = 8;
   optional double refresh_rate = 9;
   optional uint32 highp_threshold_min = 10;
   optional uint32 texture_id_allocation_chunk_size = 11;

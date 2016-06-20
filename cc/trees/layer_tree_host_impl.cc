@@ -1489,6 +1489,11 @@ void LayerTreeHostImpl::DidSwapBuffersComplete() {
   client_->DidSwapBuffersCompleteOnImplThread();
 }
 
+void LayerTreeHostImpl::DidReceiveTextureInUseResponses(
+    const gpu::TextureInUseResponses& responses) {
+  NOTREACHED();
+}
+
 void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.

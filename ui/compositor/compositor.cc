@@ -125,7 +125,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 #if defined(OS_WIN)
   settings.renderer_settings.finish_rendering_on_resize = true;
 #elif defined(OS_MACOSX)
-  settings.renderer_settings.release_overlay_resources_on_swap_complete = true;
+  settings.renderer_settings.release_overlay_resources_after_gpu_query = true;
 #endif
 
   // These flags should be mirrored by renderer versions in content/renderer/.

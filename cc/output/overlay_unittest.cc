@@ -1226,6 +1226,15 @@ class GLRendererWithOverlaysTest : public testing::Test {
     output_surface_->OnSwapBuffersComplete();
     renderer_->SwapBuffersComplete();
   }
+  void ReturnResourceInUseQuery(ResourceId id) {
+    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(), id);
+    gpu::TextureInUseResponse response;
+    response.texture = lock.texture_id();
+    response.in_use = false;
+    gpu::TextureInUseResponses responses;
+    responses.push_back(response);
+    renderer_->DidReceiveTextureInUseResponses(responses);
+  }
 
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
@@ -1533,9 +1542,9 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAtSwapComplete) {
+TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   bool use_validator = true;
-  settings_.release_overlay_resources_on_swap_complete = true;
+  settings_.release_overlay_resources_after_gpu_query = true;
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
@@ -1610,18 +1619,26 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAtSwapComplete) {
 
   // This completion corresponds to the first frame.
   SwapBuffersComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+
+  // This completion corresponds to the second frame. The first resource is no
+  // longer in use.
+  ReturnResourceInUseQuery(resource1);
+  SwapBuffersComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
 
-  // This completion corresponds to the second frame.
-  SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-
   // This completion corresponds to the third frame.
   SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+
+  ReturnResourceInUseQuery(resource2);
+  ReturnResourceInUseQuery(resource3);
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));

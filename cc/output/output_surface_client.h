@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -35,6 +36,8 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
   virtual void DidSwapBuffers() = 0;
   virtual void DidSwapBuffersComplete() = 0;
+  virtual void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) = 0;
   virtual void ReclaimResources(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;
   virtual void SetExternalTilePriorityConstraints(

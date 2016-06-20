@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
@@ -86,6 +87,7 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
   IPC_STRUCT_MEMBER(gfx::ScopedRefCountedIOSurfaceMachPort, io_surface)
   IPC_STRUCT_MEMBER(gfx::Size, pixel_size)
   IPC_STRUCT_MEMBER(float, scale_factor)
+  IPC_STRUCT_MEMBER(gpu::TextureInUseResponses, in_use_responses)
 #endif
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
   IPC_STRUCT_MEMBER(gfx::SwapResult, result)

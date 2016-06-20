@@ -340,6 +340,12 @@ void Display::CommitVSyncParameters(base::TimeTicks timebase,
   NOTREACHED();
 }
 
+void Display::DidReceiveTextureInUseResponses(
+    const gpu::TextureInUseResponses& responses) {
+  if (renderer_)
+    renderer_->DidReceiveTextureInUseResponses(responses);
+}
+
 void Display::SetBeginFrameSource(BeginFrameSource* source) {
   // The BeginFrameSource is set from the constructor, it doesn't come
   // from the OutputSurface for the Display.

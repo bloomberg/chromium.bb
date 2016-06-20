@@ -5,6 +5,7 @@
 #include <IOSurface/IOSurface.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/gpu_export.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,6 +23,7 @@ struct GPU_EXPORT GpuProcessHostedCALayerTreeParamsMac {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   gfx::Size pixel_size;
   float scale_factor = 1;
+  TextureInUseResponses responses;
 };
 
 }  // namespace gpu

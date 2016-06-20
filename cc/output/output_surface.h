@@ -17,6 +17,7 @@
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/vulkan_context_provider.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -139,6 +140,12 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // DidSwapBuffersComplete().
   virtual void SwapBuffers(CompositorFrame* frame) = 0;
   virtual void OnSwapBuffersComplete();
+
+  // Called by subclasses after receiving a response from the gpu process to a
+  // query about whether a given set of textures is still in use by the OS
+  // compositor.
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses);
 
   bool HasClient() { return !!client_; }
 

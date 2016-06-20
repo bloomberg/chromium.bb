@@ -369,6 +369,8 @@ class CC_EXPORT LayerTreeHostImpl
   void DidLoseOutputSurface() override;
   void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) override;
   void ReclaimResources(const CompositorFrameAck* ack) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override;

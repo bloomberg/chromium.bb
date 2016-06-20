@@ -779,6 +779,7 @@ void CommandBufferProxyImpl::OnSwapBuffersCompleted(
   params_mac.io_surface.reset(IOSurfaceLookupFromMachPort(params.io_surface));
   params_mac.pixel_size = params.pixel_size;
   params_mac.scale_factor = params.scale_factor;
+  params_mac.responses = std::move(params.in_use_responses);
   gpu::GpuProcessHostedCALayerTreeParamsMac* mac_frame_ptr = &params_mac;
 #else
   gpu::GpuProcessHostedCALayerTreeParamsMac* mac_frame_ptr = nullptr;

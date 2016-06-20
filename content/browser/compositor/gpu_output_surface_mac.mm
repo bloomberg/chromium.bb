@@ -102,6 +102,7 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
       }
     }
   }
+  DidReceiveTextureInUseResponses(params_mac->responses);
   GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       latency_info, result, params_mac);
 }

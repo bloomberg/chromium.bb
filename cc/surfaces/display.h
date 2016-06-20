@@ -18,6 +18,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/events/latency_info.h"
 
 namespace gpu {
@@ -86,6 +87,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) override;
   void ReclaimResources(const CompositorFrameAck* ack) override;
   void DidLoseOutputSurface() override;
   void SetExternalTilePriorityConstraints(

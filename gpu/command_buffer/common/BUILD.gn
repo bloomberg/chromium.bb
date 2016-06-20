@@ -51,6 +51,7 @@ source_set("common_sources") {
     "mailbox_holder.h",
     "sync_token.cc",
     "sync_token.h",
+    "texture_in_use_response.h",
     "thread_local.h",
     "time.h",
   ]

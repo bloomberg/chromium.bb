@@ -20,7 +20,7 @@ RendererSettings::RendererSettings()
       finish_rendering_on_resize(false),
       should_clear_root_render_pass(true),
       disable_display_vsync(false),
-      release_overlay_resources_on_swap_complete(false),
+      release_overlay_resources_after_gpu_query(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       texture_id_allocation_chunk_size(64),
@@ -40,8 +40,8 @@ void RendererSettings::ToProtobuf(proto::RendererSettings* proto) const {
   proto->set_finish_rendering_on_resize(finish_rendering_on_resize);
   proto->set_should_clear_root_render_pass(should_clear_root_render_pass);
   proto->set_disable_display_vsync(disable_display_vsync);
-  proto->set_release_overlay_resources_on_swap_complete(
-      release_overlay_resources_on_swap_complete);
+  proto->set_release_overlay_resources_after_gpu_query(
+      release_overlay_resources_after_gpu_query);
   proto->set_refresh_rate(refresh_rate);
   proto->set_highp_threshold_min(highp_threshold_min);
   proto->set_texture_id_allocation_chunk_size(texture_id_allocation_chunk_size);
@@ -57,8 +57,8 @@ void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
   finish_rendering_on_resize = proto.finish_rendering_on_resize();
   should_clear_root_render_pass = proto.should_clear_root_render_pass();
   disable_display_vsync = proto.disable_display_vsync();
-  release_overlay_resources_on_swap_complete =
-      proto.release_overlay_resources_on_swap_complete();
+  release_overlay_resources_after_gpu_query =
+      proto.release_overlay_resources_after_gpu_query();
   refresh_rate = proto.refresh_rate();
   highp_threshold_min = proto.highp_threshold_min();
   texture_id_allocation_chunk_size = proto.texture_id_allocation_chunk_size();
@@ -78,8 +78,8 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
          finish_rendering_on_resize == other.finish_rendering_on_resize &&
          should_clear_root_render_pass == other.should_clear_root_render_pass &&
          disable_display_vsync == other.disable_display_vsync &&
-         release_overlay_resources_on_swap_complete ==
-             other.release_overlay_resources_on_swap_complete &&
+         release_overlay_resources_after_gpu_query ==
+             other.release_overlay_resources_after_gpu_query &&
          refresh_rate == other.refresh_rate &&
          highp_threshold_min == other.highp_threshold_min &&
          texture_id_allocation_chunk_size ==
