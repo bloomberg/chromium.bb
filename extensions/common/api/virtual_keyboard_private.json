@@ -160,6 +160,10 @@
                     "minLength": 1,
                     "description": "Virtual keyboard layout string."
                   },
+                  "hotrodmode": {
+                    "type": "boolean",
+                    "description": "Virtual keyboard is in hotrod mode."
+                  },
                   "a11ymode": {
                     "type": "boolean",
                     "description": "True if accessibility virtual keyboard is enabled."
