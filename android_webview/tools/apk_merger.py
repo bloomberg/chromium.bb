@@ -192,6 +192,8 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
                     'natives_blob_32.bin': ['-0'],
                     args.shared_library: []}
 
+  if args.debug:
+    expected_files['gdbserver'] = []
   if args.uncompress_shared_libraries:
     expected_files[args.shared_library] += ['-0']
 
@@ -233,6 +235,7 @@ def main():
   parser.add_argument('--shared_library', required=True)
   parser.add_argument('--page-align-shared-libraries', action='store_true')
   parser.add_argument('--uncompress-shared-libraries', action='store_true')
+  parser.add_argument('--debug', action='store_true')
   args = parser.parse_args()
 
   tmp_dir = tempfile.mkdtemp()
