@@ -63,6 +63,10 @@ InlineBox::~InlineBox()
 
 void InlineBox::destroy()
 {
+    // We do not need to issue invalidations if the page is being destroyed
+    // since these objects will never be repainted.
+    if (!m_lineLayoutItem.documentBeingDestroyed())
+        m_lineLayoutItem.invalidateDisplayItemClient(*this, PaintInvalidationFull);
     delete this;
 }
 
