@@ -16,8 +16,10 @@ PerfTestRunner.measureRunsPerSecond({
     description: 'Measures performance of removing option elements from a single-selection select element.',
 
     run: () => {
-        for (var i = 0; i < childCount; ++i)
+        for (var i = 0; i < childCount; ++i) {
+            nodes[i].selected = false;
             container.appendChild(nodes[i]);
+        }
         container.offsetLeft;
         for (var i = 0; i < childCount; ++i)
             container.removeChild(nodes[i]);
