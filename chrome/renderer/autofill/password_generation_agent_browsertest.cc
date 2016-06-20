@@ -72,6 +72,19 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     render_thread_->sink().ClearMessages();
   }
 
+  void ExpectFormClassifierVoteReceived(
+      const base::string16& expected_generation_element) {
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_SaveGenerationFieldDetectedByClassifier::ID);
+    ASSERT_TRUE(message);
+    std::tuple<autofill::PasswordForm, base::string16> actual_parameters;
+    AutofillHostMsg_SaveGenerationFieldDetectedByClassifier::Read(
+        message, &actual_parameters);
+    EXPECT_EQ(expected_generation_element, std::get<1>(actual_parameters));
+    render_thread_->sink().ClearMessages();
+  }
+
   void ShowGenerationPopUpManually(const char* element_id) {
     FocusField(element_id);
     AutofillMsg_UserTriggeredGeneratePassword msg(0);
@@ -645,6 +658,16 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
         AutofillHostMsg_PasswordNoLongerGenerated::ID));
     render_thread_->sink().ClearMessages();
   }
+}
+
+TEST_F(PasswordGenerationAgentTest, FormClassifierVotesSignupForm) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  ExpectFormClassifierVoteReceived(base::ASCIIToUTF16("first_password"));
+}
+
+TEST_F(PasswordGenerationAgentTest, FormClassifierVotesSigninForm) {
+  LoadHTMLWithUserGesture(kSigninFormHTML);
+  ExpectFormClassifierVoteReceived(base::string16());
 }
 
 }  // namespace autofill

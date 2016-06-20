@@ -333,6 +333,12 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PresaveGeneratedPassword,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordNoLongerGenerated,
                     autofill::PasswordForm)
 
+// Sends the outcome of HTML parsing based form classifier that detects the
+// forms where password generation should be available.
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_SaveGenerationFieldDetectedByClassifier,
+                    autofill::PasswordForm,
+                    base::string16 /* generation field */)
+
 // Instruct the browser to show a popup with suggestions filled from data
 // associated with |key|. The popup will use |text_direction| for displaying
 // text.

@@ -92,6 +92,15 @@ class AutofillField : public FormFieldData {
     return generation_type_;
   }
 
+  void set_form_classifier_outcome(
+      AutofillUploadContents::Field::FormClassifierOutcome outcome) {
+    form_classifier_outcome_ = outcome;
+  }
+  AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome()
+      const {
+    return form_classifier_outcome_;
+  }
+
   // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
   // and |app_locale| as hints when filling exceptional cases like phone number
   // values and <select> fields. Returns |true| if the field has been filled,
@@ -162,6 +171,9 @@ class AutofillField : public FormFieldData {
 
   // The type of password generation event, if it happened.
   AutofillUploadContents::Field::PasswordGenerationType generation_type_;
+
+  // The outcome of HTML parsing based form classifier.
+  AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };

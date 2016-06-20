@@ -231,6 +231,16 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   manager->FetchDataFromPasswordStore();
 }
 
+void PasswordManager::SaveGenerationFieldDetectedByClassifier(
+    const autofill::PasswordForm& form,
+    const base::string16& generation_field) {
+  if (!client_->IsSavingAndFillingEnabledForCurrentPage())
+    return;
+  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
+  if (form_manager)
+    form_manager->SaveGenerationFieldDetectedByClassifier(generation_field);
+}
+
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   bool is_saving_and_filling_enabled =
       client_->IsSavingAndFillingEnabledForCurrentPage();

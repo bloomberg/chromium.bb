@@ -158,6 +158,7 @@ PasswordFormManager::PasswordFormManager(
       has_generated_password_(false),
       is_manual_generation_(false),
       generation_popup_was_shown_(false),
+      form_classifier_outcome_(kNoOutcome),
       password_overridden_(false),
       retry_password_form_password_update_(false),
       generation_available_(false),
@@ -911,6 +912,8 @@ bool PasswordFormManager::UploadPasswordForm(
 
   if (generation_popup_was_shown_)
     AddGeneratedVote(&form_structure);
+  if (form_classifier_outcome_ != kNoOutcome)
+    AddFormClassifierVote(&form_structure);
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them.
@@ -991,6 +994,8 @@ bool PasswordFormManager::UploadChangePasswordForm(
 
   if (generation_popup_was_shown_)
     AddGeneratedVote(&form_structure);
+  if (form_classifier_outcome_ != kNoOutcome)
+    AddFormClassifierVote(&form_structure);
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them. It also makes testing easier if these requests
@@ -1035,6 +1040,24 @@ void PasswordFormManager::AddGeneratedVote(
     if (field->name == generation_element_) {
       field->set_generation_type(type);
       break;
+    }
+  }
+}
+
+void PasswordFormManager::AddFormClassifierVote(
+    autofill::FormStructure* form_structure) {
+  DCHECK(form_structure);
+  DCHECK(form_classifier_outcome_ != kNoOutcome);
+
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    autofill::AutofillField* field = form_structure->field(i);
+    if (form_classifier_outcome_ == kFoundGenerationElement &&
+        field->name == generation_element_detected_by_classifier_) {
+      field->set_form_classifier_outcome(
+          autofill::AutofillUploadContents::Field::GENERATION_ELEMENT);
+    } else {
+      field->set_form_classifier_outcome(
+          autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
     }
   }
 }
@@ -1461,6 +1484,13 @@ void PasswordFormManager::ReplacePresavedPasswordWithPendingCredentials(
 
   store->UpdateLoginWithPrimaryKey(pending_credentials_, *presaved_form_);
   presaved_form_.reset();
+}
+
+void PasswordFormManager::SaveGenerationFieldDetectedByClassifier(
+    const base::string16& generation_field) {
+  form_classifier_outcome_ =
+      generation_field.empty() ? kNoGenerationElement : kFoundGenerationElement;
+  generation_element_detected_by_classifier_ = generation_field;
 }
 
 }  // namespace password_manager

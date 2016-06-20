@@ -107,6 +107,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // generation popup at this field.
   void OnUserTriggeredGeneratePassword();
 
+  // Runs HTML parsing based classifier and saves its outcome to proto.
+  void RunFormClassifierAndSaveVote(const blink::WebFormElement& web_form,
+                                    const PasswordForm& form);
+
   // Creates a password form to presave a generated password. It copies behavior
   // of CreatePasswordFormFromWebForm/FromUnownedInputElements, but takes
   // |password_value| from |generation_element_| and empties |username_value|.

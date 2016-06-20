@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/content/renderer/form_classifier.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -194,6 +195,15 @@ void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
 }
 
+void PasswordGenerationAgent::RunFormClassifierAndSaveVote(
+    const blink::WebFormElement& web_form,
+    const PasswordForm& form) {
+  base::string16 generation_field;
+  ClassifyFormAndFindGenerationField(web_form, &generation_field);
+  Send(new AutofillHostMsg_SaveGenerationFieldDetectedByClassifier(
+      routing_id(), form, generation_field));
+}
+
 void PasswordGenerationAgent::FindPossibleGenerationForm() {
   if (!enabled_ || !render_frame())
     return;
@@ -232,6 +242,7 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
     if (GetAccountCreationPasswordFields(
             form_util::ExtractAutofillableElementsInForm(forms[i]),
             &passwords)) {
+      RunFormClassifierAndSaveVote(forms[i], *password_form);
       AccountCreationFormData ac_form_data(
           make_linked_ptr(password_form.release()), passwords);
       possible_account_creation_forms_.push_back(ac_form_data);

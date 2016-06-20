@@ -272,6 +272,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Called after successful login on the form with a generated password.
   void ReplacePresavedPasswordWithPendingCredentials(PasswordStore* store);
 
+  // Saves the outcome of HTML parsing based form classifier to upload proto.
+  void SaveGenerationFieldDetectedByClassifier(
+      const base::string16& generation_field);
+
  private:
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
@@ -324,6 +328,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
     kFormTypeLoginAndSignup,
     kFormTypeUnspecified,
     kFormTypeMax
+  };
+
+  // The outcome of the form classifier.
+  enum FormClassifierOutcome {
+    kNoOutcome,
+    kNoGenerationElement,
+    kFoundGenerationElement
   };
 
   // The maximum number of combinations of the three preceding enums.
@@ -432,6 +443,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Adds a vote on password generation usage to |form_structure|.
   void AddGeneratedVote(autofill::FormStructure* form_structure);
 
+  // Adds a vote from HTML parsing based form classifier to |form_structure|.
+  void AddFormClassifierVote(autofill::FormStructure* form_structure);
+
   // Create pending credentials from provisionally saved form and forms received
   // from password store.
   void CreatePendingCredentials();
@@ -526,6 +540,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Whether generation popup was shown at least once.
   bool generation_popup_was_shown_;
+
+  // The outcome of HTML parsing based form classifier.
+  FormClassifierOutcome form_classifier_outcome_;
+
+  // If |form_classifier_outcome_| == kFoundGenerationElement, the field
+  // contains the name of the detected generation element.
+  base::string16 generation_element_detected_by_classifier_;
 
   // Whether the saved password was overridden.
   bool password_overridden_;

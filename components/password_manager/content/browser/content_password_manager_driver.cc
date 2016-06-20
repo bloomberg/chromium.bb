@@ -162,6 +162,8 @@ bool ContentPasswordManagerDriver::HandleMessage(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(AutofillHostMsg_InPageNavigation, OnInPageNavigation)
   IPC_MESSAGE_HANDLER(AutofillHostMsg_PresaveGeneratedPassword,
                       OnPresaveGeneratedPassword)
+  IPC_MESSAGE_HANDLER(AutofillHostMsg_SaveGenerationFieldDetectedByClassifier,
+                      OnSaveGenerationFieldDetectedByClassifier)
   IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordNoLongerGenerated,
                       OnPasswordNoLongerGenerated)
   IPC_MESSAGE_HANDLER(AutofillHostMsg_FocusedPasswordFormFound,
@@ -259,6 +261,18 @@ void ContentPasswordManagerDriver::OnPasswordNoLongerGenerated(
     return;
   GetPasswordManager()->SetHasGeneratedPasswordForForm(this, password_form,
                                                        false);
+}
+
+void ContentPasswordManagerDriver::OnSaveGenerationFieldDetectedByClassifier(
+    const autofill::PasswordForm& password_form,
+    const base::string16& generation_field) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::
+              CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER))
+    return;
+  GetPasswordManager()->SaveGenerationFieldDetectedByClassifier(
+      password_form, generation_field);
 }
 
 bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(

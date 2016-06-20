@@ -144,6 +144,23 @@ MATCHER_P2(CheckUploadedGenerationTypesAndSignature,
   return true;
 }
 
+MATCHER_P2(CheckUploadedFormClassifierVote,
+           found_generation_element,
+           generation_element,
+           "Wrong form classifier votes") {
+  for (const autofill::AutofillField* field : arg) {
+    if (found_generation_element && field->name == generation_element) {
+      EXPECT_EQ(field->form_classifier_outcome(),
+                autofill::AutofillUploadContents::Field::GENERATION_ELEMENT);
+    } else {
+      EXPECT_EQ(
+          field->form_classifier_outcome(),
+          autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+    }
+  }
+  return true;
+}
+
 void ClearVector(ScopedVector<PasswordForm>* results) {
   results->clear();
 }
@@ -2955,6 +2972,46 @@ TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
   GeneratedVoteUploadTest(true, true, true);
   // Generation popup was shown, but the user entered its own password.
   GeneratedVoteUploadTest(true, true, false);
+}
+
+TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
+  const bool kFalseTrue[] = {false, true};
+  for (bool found_generation_element : kFalseTrue) {
+    SCOPED_TRACE(testing::Message() << "found_generation_element="
+                                    << found_generation_element);
+    PasswordForm form(*observed_form());
+    form.form_data = saved_match()->form_data;
+
+    // Create submitted form.
+    PasswordForm submitted_form(form);
+    submitted_form.preferred = true;
+    submitted_form.username_value = saved_match()->username_value;
+    submitted_form.password_value = saved_match()->password_value;
+
+    PasswordFormManager form_manager(password_manager(), client(),
+                                     client()->driver(), form, false);
+    base::string16 generation_element = form.password_element;
+    if (found_generation_element)
+      form_manager.SaveGenerationFieldDetectedByClassifier(generation_element);
+    else
+      form_manager.SaveGenerationFieldDetectedByClassifier(base::string16());
+
+    ScopedVector<PasswordForm> result;
+    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+    form_manager.OnGetPasswordStoreResults(std::move(result));
+
+    autofill::FormStructure form_structure(submitted_form.form_data);
+
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(CheckUploadedFormClassifierVote(
+                               found_generation_element, generation_element),
+                           false, _, _, true));
+
+    form_manager.ProvisionallySave(
+        submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.Save();
+  }
 }
 
 TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
