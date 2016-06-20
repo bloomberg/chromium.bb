@@ -74,6 +74,7 @@ public:
     virtual void trace(InlinedGlobalMarkingVisitor);
     virtual void adjustAndMarkWrapper(const WrapperVisitor*) const = 0;
     virtual bool isHeapObjectAlive() const = 0;
+    virtual HeapObjectHeader* adjustAndGetHeapObjectHeader() const = 0;
 };
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)           \
@@ -97,9 +98,13 @@ public:
     {                                                                   \
         typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
         static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins"); \
-        if (visitor->markWrapperHeader(static_cast<const TYPE*>(this))) { \
-            visitor->dispatchTraceWrappers(static_cast<const TYPE*>(this)); \
-        }                                                               \
+        TraceTrait<TYPE>::markWrapper(visitor, static_cast<const TYPE*>(this));  \
+    }                                                                   \
+    HeapObjectHeader* adjustAndGetHeapObjectHeader() const override     \
+    {                                                                   \
+        typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
+        static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins"); \
+        return TraceTrait<TYPE>::heapObjectHeader(static_cast<const TYPE*>(this)); \
     }                                                                   \
     private:
 

@@ -30,14 +30,14 @@ public:
     }
     CORE_EXPORT static TestInterfaceConstructor2* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
-    {
-        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestInterfaceConstructor2>());
-    }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
         visitor->trace(scriptWrappable->toImpl<TestInterfaceConstructor2>());
+    }
+    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    {
+        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceConstructor2>());
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

@@ -40,14 +40,14 @@ public:
     }
     CORE_EXPORT static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
-    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
-    {
-        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestInterfaceImplementation>());
-    }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
         visitor->trace(scriptWrappable->toImpl<TestInterfaceImplementation>());
+    }
+    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    {
+        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceImplementation>());
     }
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
     static ActiveScriptWrappable* toActiveScriptWrappable(v8::Local<v8::Object>);

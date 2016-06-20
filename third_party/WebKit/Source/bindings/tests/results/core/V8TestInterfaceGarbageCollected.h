@@ -31,14 +31,14 @@ public:
     }
     CORE_EXPORT static TestInterfaceGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
-    {
-        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestInterfaceGarbageCollected>());
-    }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
         visitor->trace(scriptWrappable->toImpl<TestInterfaceGarbageCollected>());
+    }
+    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    {
+        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceGarbageCollected>());
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;

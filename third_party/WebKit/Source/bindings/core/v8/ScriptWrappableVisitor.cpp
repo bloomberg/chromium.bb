@@ -24,6 +24,8 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor()
 
 void ScriptWrappableVisitor::TracePrologue()
 {
+    DCHECK(m_headersToUnmark.isEmpty());
+    DCHECK(m_markingDeque.isEmpty());
     m_tracingInProgress = true;
 }
 
@@ -34,6 +36,7 @@ void ScriptWrappableVisitor::EnterFinalPause()
 
 void ScriptWrappableVisitor::TraceEpilogue()
 {
+    DCHECK(m_markingDeque.isEmpty());
     performCleanup();
 }
 
@@ -49,6 +52,7 @@ void ScriptWrappableVisitor::performCleanup()
     }
 
     m_headersToUnmark.clear();
+    m_markingDeque.clear();
     m_tracingInProgress = false;
 }
 
@@ -66,11 +70,8 @@ void ScriptWrappableVisitor::RegisterV8Reference(const std::pair<void*, void*>& 
         || wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
 
     ScriptWrappable* scriptWrappable = reinterpret_cast<ScriptWrappable*>(internalFields.second);
-    if (wrapperTypeInfo->getHeapObjectHeader(scriptWrappable)->isWrapperHeaderMarked()) {
-        return;
-    }
 
-    m_markingDeque.append(scriptWrappable);
+    wrapperTypeInfo->traceWrappers(this, scriptWrappable);
 }
 
 void ScriptWrappableVisitor::RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers)
@@ -91,12 +92,7 @@ bool ScriptWrappableVisitor::AdvanceTracing(double deadlineInMs, v8::EmbedderHea
             return false;
         }
 
-        const ScriptWrappable* scriptWrappable = m_markingDeque.takeFirst();
-        // there might be nullptrs in the deque after oilpan gcs
-        if (scriptWrappable) {
-            markWrapperHeader(scriptWrappable);
-            scriptWrappable->traceWrappers(this);
-        }
+        m_markingDeque.takeFirst().traceWrappers(this);
     }
     return true;
 }
@@ -111,26 +107,9 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const
     return true;
 }
 
-bool ScriptWrappableVisitor::markWrapperHeader(const void* garbageCollected) const
+void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable) const
 {
-    HeapObjectHeader* header = HeapObjectHeader::fromPayload(garbageCollected);
-    return markWrapperHeader(header);
-}
-
-bool ScriptWrappableVisitor::markWrapperHeader(const ScriptWrappable* scriptWrappable) const
-{
-    if (!markWrapperHeader(scriptWrappable->wrapperTypeInfo()->
-        getHeapObjectHeader(const_cast<ScriptWrappable*>(scriptWrappable)))) {
-        return false;
-    }
-
-    markWrappersInAllWorlds(scriptWrappable, m_isolate);
-    return true;
-}
-
-void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
-{
-    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), isolate);
+    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), m_isolate);
 }
 
 void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Value>* scopedPersistent) const
@@ -157,10 +136,14 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(DEFINE_DISPATCH_TRACE_WRAPPERS);
 void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque()
 {
     for (auto it = m_markingDeque.begin(); it != m_markingDeque.end(); ++it) {
-        const ScriptWrappable* scriptWrappable = *it;
-        if (!scriptWrappable->wrapperTypeInfo()->
-            getHeapObjectHeader(const_cast<ScriptWrappable*>(scriptWrappable))->
-            isMarked()) {
+        auto& markingData = *it;
+        if (markingData.shouldBeInvalidated()) {
+            markingData.invalidate();
+        }
+    }
+    for (auto it = m_headersToUnmark.begin(); it != m_headersToUnmark.end(); ++it) {
+        auto header = *it;
+        if (header && !header->isMarked()) {
             *it = nullptr;
         }
     }

@@ -20,9 +20,54 @@ namespace blink {
 class HeapObjectHeader;
 template<typename T> class Member;
 
+class WrapperMarkingData {
+public:
+    friend class ScriptWrappableVisitor;
+    WrapperMarkingData(
+        void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
+        HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
+        const void* object)
+        : m_traceWrappersCallback(traceWrappersCallback)
+        , m_heapObjectHeaderCallback(heapObjectHeaderCallback)
+        , m_object(object)
+    {
+        DCHECK(m_traceWrappersCallback);
+        DCHECK(m_heapObjectHeaderCallback);
+        DCHECK(m_object);
+    }
+
+    inline void traceWrappers(WrapperVisitor* visitor)
+    {
+        if (m_object) {
+            m_traceWrappersCallback(visitor, m_object);
+        }
+    }
+
+private:
+    inline bool shouldBeInvalidated()
+    {
+        return m_object && !heapObjectHeader()->isMarked();
+    }
+
+    inline void invalidate()
+    {
+        m_object = nullptr;
+    }
+
+    inline const HeapObjectHeader* heapObjectHeader()
+    {
+        DCHECK(m_object);
+        return m_heapObjectHeaderCallback(m_object);
+    }
+
+    void (*m_traceWrappersCallback)(const WrapperVisitor*, const void*);
+    HeapObjectHeader* (*m_heapObjectHeaderCallback)(const void*);
+    const void* m_object;
+};
+
 /**
- * ScriptWrappableVisitor is able to trace through the script wrappable
- * references. It is used during V8 garbage collection.  When this visitor is
+ * ScriptWrappableVisitor is able to trace through the objects to get all
+ * wrappers. It is used during V8 garbage collection.  When this visitor is
  * set to the v8::Isolate as its embedder heap tracer, V8 will call it during
  * its garbage collection. At the beginning, it will call TracePrologue, then
  * repeatedly it will call AdvanceTracing, and at the end it will call
@@ -38,11 +83,6 @@ public:
      * gc.
      */
     static void invalidateDeadObjectsInMarkingDeque(v8::Isolate*);
-    /**
-     * Mark wrappers in all worlds for the given script wrappable as alive in
-     * V8.
-     */
-    static void markWrappersInAllWorlds(const ScriptWrappable*, v8::Isolate*);
     /**
      * Mark given wrapper as alive in V8.
      */
@@ -73,36 +113,47 @@ public:
     WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
-    virtual void dispatchTraceWrappers(const void*) const {}
+    void dispatchTraceWrappers(const void*) const override {}
 
     void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
 
     void invalidateDeadObjectsInMarkingDeque();
 
-private:
+    void pushToMarkingDeque(
+        void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
+        HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
+        const void* object) const override
+    {
+        m_markingDeque.append(WrapperMarkingData(
+            traceWrappersCallback,
+            heapObjectHeaderCallback,
+            object));
+    }
+
     bool markWrapperHeader(HeapObjectHeader*) const;
-    bool markWrapperHeader(const ScriptWrappable*) const override;
-    bool markWrapperHeader(const void* garbageCollected) const override;
+    /**
+     * Mark wrappers in all worlds for the given script wrappable as alive in
+     * V8.
+     */
+    void markWrappersInAllWorlds(const ScriptWrappable*) const override;
+    void markWrappersInAllWorlds(const void*) const override {}
+private:
     bool m_tracingInProgress = false;
     void performCleanup();
     /**
-     * Collection of ScriptWrappables we need to trace from. We assume it is
-     * safe to hold on to the raw pointers because:
+     * Collection of objects we need to trace from. We assume it is safe to hold
+     * on to the raw pointers because:
      *     * oilpan object cannot move
-     *     * for the oilpan gc, this deque is part of the root set, so objects
-     *       in the deque will not die
+     *     * oilpan gc will call invalidateDeadObjectsInMarkingDeque to delete
+     *       all obsolete objects
      */
-    mutable WTF::Deque<const ScriptWrappable*> m_markingDeque;
+    mutable WTF::Deque<WrapperMarkingData> m_markingDeque;
     /**
      * Collection of headers we need to unmark after the tracing finished. We
      * assume it is safe to hold on to the headers because:
      *     * oilpan objects cannot move
-     *     * objects this headers belong to are considered alive by the oilpan
-     *       gc (so they cannot be reclaimed). For the oilpan gc, wrappers are
-     *       part of the root set and wrapper will keep its ScriptWrappable
-     *       alive. Wrapper reachability is a subgraph of oilpan reachability,
-     *       therefore anything we find during tracing wrappers will be found by
-     *       oilpan gc too.
+     *     * objects this headers belong to are invalidated by the oilpan
+     *       gc in invalidateDeadObjectsInMarkingDeque.
      */
     mutable WTF::Vector<HeapObjectHeader*> m_headersToUnmark;
     v8::Isolate* m_isolate;

@@ -39,9 +39,14 @@ class AdjustAndMarkTrait<T, false> {
 public:
     static void markWrapper(const WrapperVisitor* visitor, const T* t)
     {
-        if (visitor->markWrapperHeader(t)) {
+        if (visitor->markWrapperHeader(heapObjectHeader(t))) {
+            visitor->markWrappersInAllWorlds(t);
             visitor->dispatchTraceWrappers(t);
         }
+    }
+    static HeapObjectHeader* heapObjectHeader(const T* t)
+    {
+        return HeapObjectHeader::fromPayload(t);
     }
 
     template<typename VisitorDispatcher>
@@ -84,6 +89,10 @@ public:
     static void markWrapper(const WrapperVisitor* visitor, const T* t)
     {
         t->adjustAndMarkWrapper(visitor);
+    }
+    static HeapObjectHeader* heapObjectHeader(const T* t)
+    {
+        return t->adjustAndGetHeapObjectHeader();
     }
 
     template<typename VisitorDispatcher>
@@ -170,9 +179,13 @@ public:
     static void trace(Visitor*, void* self);
     static void trace(InlinedGlobalMarkingVisitor, void* self);
 
-    static void markWrapper(const WrapperVisitor* visitor, const T* t)
+    static void markWrapper(const WrapperVisitor* visitor, const void* t)
     {
-        AdjustAndMarkTrait<T>::markWrapper(visitor, t);
+        AdjustAndMarkTrait<T>::markWrapper(visitor, reinterpret_cast<const T*>(t));
+    }
+    static HeapObjectHeader* heapObjectHeader(const void* t)
+    {
+        return AdjustAndMarkTrait<T>::heapObjectHeader(reinterpret_cast<const T*>(t));
     }
 
     template<typename VisitorDispatcher>

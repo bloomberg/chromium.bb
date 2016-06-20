@@ -97,7 +97,13 @@ public:
         if (!traceable)
             return;
 
-        TraceTrait<T>::markWrapper(this, traceable);
+        if (TraceTrait<T>::heapObjectHeader(traceable)->isWrapperHeaderMarked())
+            return;
+
+        pushToMarkingDeque(
+            TraceTrait<T>::markWrapper,
+            TraceTrait<T>::heapObjectHeader,
+            traceable);
     }
 
     template<typename T>
@@ -117,8 +123,13 @@ public:
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
     virtual void dispatchTraceWrappers(const void*) const = 0;
 
-    virtual bool markWrapperHeader(const ScriptWrappable*) const = 0;
-    virtual bool markWrapperHeader(const void*) const = 0;
+    virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
+    virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
+    virtual void markWrappersInAllWorlds(const void*) const = 0;
+    virtual void pushToMarkingDeque(
+        void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
+        HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
+        const void*) const = 0;
 };
 
 } // namespace blink
