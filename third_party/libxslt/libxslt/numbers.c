@@ -1099,7 +1099,8 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
     }
 
     /* We have finished the integer part, now work on fraction */
-    if (xsltUTF8Charcmp(the_format, self->decimalPoint) == 0) {
+    if ( (*the_format != 0) &&
+         (xsltUTF8Charcmp(the_format, self->decimalPoint) == 0) ) {
         format_info.add_decimal = TRUE;
 	the_format += xsltUTF8Size(the_format);	/* Skip over the decimal */
     }
