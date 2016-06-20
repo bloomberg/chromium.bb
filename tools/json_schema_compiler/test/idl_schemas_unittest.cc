@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/idl_basics.h"
@@ -129,7 +130,7 @@ TEST(IdlCompiler, ArrayTypes) {
   // use an empty array.
   base::ListValue list;
   list.AppendInteger(33);
-  list.Append(new base::ListValue);
+  list.Append(base::MakeUnique<base::ListValue>());
   std::unique_ptr<Function10::Params> f10_params =
       Function10::Params::Create(list);
   ASSERT_TRUE(f10_params != NULL);

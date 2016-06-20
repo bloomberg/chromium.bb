@@ -41,7 +41,7 @@ TEST(JsonSchemaCompilerFunctionsOnTypesTest, StorageAreaGetParamsCreate) {
     keys_object_value->SetInteger("integer", 5);
     keys_object_value->SetString("string", "string");
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(keys_object_value->DeepCopy());
+    params_value->Append(keys_object_value->CreateDeepCopy());
     std::unique_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
     ASSERT_TRUE(params);

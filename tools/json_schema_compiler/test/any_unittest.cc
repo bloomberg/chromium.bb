@@ -39,7 +39,7 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
   {
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
     std::unique_ptr<base::Value> param(new base::StringValue("asdf"));
-    params_value->Append(param->DeepCopy());
+    params_value->Append(param->CreateDeepCopy());
     std::unique_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     ASSERT_TRUE(params);
@@ -49,7 +49,7 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
   {
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
     std::unique_ptr<base::Value> param(new base::FundamentalValue(true));
-    params_value->Append(param->DeepCopy());
+    params_value->Append(param->CreateDeepCopy());
     std::unique_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     ASSERT_TRUE(params);

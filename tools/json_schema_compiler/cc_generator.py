@@ -631,15 +631,15 @@ class _Generator(object):
       maybe_namespace = ''
       if type_.property_type == PropertyType.REF:
         maybe_namespace = '%s::' % underlying_type.namespace.unix_name
-      return 'base::WrapUnique(new base::StringValue(%sToString(%s)))' % (
+      return 'base::MakeUnique<base::StringValue>(%sToString(%s))' % (
           maybe_namespace, var)
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'
       else:
         vardot = var + '.'
-      return ('base::BinaryValue::CreateWithCopiedBuffer(%sdata(),'
-              ' %ssize())' % (vardot, vardot))
+      return ('base::BinaryValue::CreateWithCopiedBuffer('
+              '%sdata(), %ssize())' % (vardot, vardot))
     elif underlying_type.property_type == PropertyType.ARRAY:
       return '%s' % self._util_cc_helper.CreateValueFromArray(
           var,
@@ -648,9 +648,9 @@ class _Generator(object):
       if is_ptr:
         var = '*%s' % var
       if underlying_type.property_type == PropertyType.STRING:
-        return 'base::WrapUnique(new base::StringValue(%s))' % var
+        return 'base::MakeUnique<base::StringValue>(%s)' % var
       else:
-        return 'base::WrapUnique(new base::FundamentalValue(%s))' % var
+        return 'base::MakeUnique<base::FundamentalValue>(%s)' % var
     else:
       raise NotImplementedError('Conversion of %s to base::Value not '
                                 'implemented' % repr(type_.type_))

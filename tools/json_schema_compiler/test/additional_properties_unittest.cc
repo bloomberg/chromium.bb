@@ -44,7 +44,7 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
   param_object_value->SetString("str", "a");
   param_object_value->SetInteger("num", 1);
   std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-  params_value->Append(param_object_value->DeepCopy());
+  params_value->Append(param_object_value->CreateDeepCopy());
   std::unique_ptr<AdditionalProperties::Params> params(
       AdditionalProperties::Params::Create(*params_value));
   EXPECT_TRUE(params.get());

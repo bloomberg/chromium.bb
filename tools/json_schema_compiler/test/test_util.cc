@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace json_schema_compiler {
 namespace test_util {
@@ -24,19 +25,19 @@ std::unique_ptr<base::Value> ReadJson(const base::StringPiece& json) {
 
 std::unique_ptr<base::ListValue> List(base::Value* a) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  list->Append(a);
+  list->Append(base::WrapUnique(a));
   return list;
 }
 std::unique_ptr<base::ListValue> List(base::Value* a, base::Value* b) {
   std::unique_ptr<base::ListValue> list = List(a);
-  list->Append(b);
+  list->Append(base::WrapUnique(b));
   return list;
 }
 std::unique_ptr<base::ListValue> List(base::Value* a,
                                       base::Value* b,
                                       base::Value* c) {
   std::unique_ptr<base::ListValue> list = List(a, b);
-  list->Append(c);
+  list->Append(base::WrapUnique(c));
   return list;
 }
 

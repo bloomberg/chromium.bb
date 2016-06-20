@@ -34,6 +34,8 @@ std::vector<T> Vector(const T& a, const T& b, const T& c) {
   return arr;
 }
 
+// TODO(dcheng): These various helpers should all take std::unique_ptr
+// arguments. See https://crbug.com/581865.
 std::unique_ptr<base::ListValue> List(base::Value* a);
 std::unique_ptr<base::ListValue> List(base::Value* a, base::Value* b);
 std::unique_ptr<base::ListValue> List(base::Value* a,
