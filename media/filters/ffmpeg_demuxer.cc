@@ -786,7 +786,11 @@ FFmpegDemuxer::FFmpegDemuxer(
   DCHECK(!media_tracks_updated_cb_.is_null());
 }
 
-FFmpegDemuxer::~FFmpegDemuxer() {}
+FFmpegDemuxer::~FFmpegDemuxer() {
+  // NOTE: This class is not destroyed on |task_runner|, so we must ensure that
+  // there are no outstanding WeakPtrs by the time we reach here.
+  DCHECK(!weak_factory_.HasWeakPtrs());
+}
 
 std::string FFmpegDemuxer::GetDisplayName() const {
   return "FFmpegDemuxer";
@@ -848,6 +852,10 @@ void FFmpegDemuxer::Stop() {
   }
 
   data_source_ = NULL;
+
+  // Invalidate WeakPtrs on |task_runner_|, destruction may happen on another
+  // thread.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void FFmpegDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
