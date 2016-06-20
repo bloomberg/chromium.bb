@@ -35,10 +35,7 @@
     ],
     "ChromotingQUIC": [
         {
-            "group_name": "Enabled",
-            "params": {
-                "delay_tcp_race": "true"
-            }
+            "group_name": "Enabled"
         }
     ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
@@ -143,7 +140,10 @@
     ],
     "QUIC": [
         {
-            "group_name": "Enabled"
+            "group_name": "Enabled",
+            "params": {
+                "delay_tcp_race": "true"
+            }
         }
     ],
     "ReportCertificateErrors": [

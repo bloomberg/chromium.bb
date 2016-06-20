@@ -17,10 +17,7 @@
     ],
     "ChromotingQUIC": [
         {
-            "group_name": "Enabled",
-            "params": {
-                "delay_tcp_race": "true"
-            }
+            "group_name": "Enabled"
         }
     ],
     "DataCompressionProxyDevRollout": [
@@ -56,7 +53,10 @@
     ],
     "QUIC": [
         {
-            "group_name": "Enabled"
+            "group_name": "Enabled",
+            "params": {
+                "delay_tcp_race": "true"
+            }
         }
     ],
     "SdchPersistence": [
