@@ -48,19 +48,19 @@ char * EXPORT_CALL lou_getProgramPath (void);
   typedef enum
   {
 	plain_text = 0x0000,
-	italic = 0x0001,
-	underline = 0x0002,
-	bold = 0x0004,
+	italic = 0x0001,       // emph_1
+	underline = 0x0002,    // emph_2
+	bold = 0x0004,         // emph_3
 	computer_braille = 0x0008,
-	passage_break = 0x0010,
+	no_translate = 0x0010,
 	word_reset = 0x0020,
-	script = 0x0040,
-	trans_note = 0x0080,
-	trans_note_1 = 0x0100,
-	trans_note_2 = 0x0200,
-	trans_note_3 = 0x0400,
-	trans_note_4 = 0x0800,
-	trans_note_5 = 0x1000,
+	script = 0x0040,       // emph_4
+	trans_note = 0x0080,   // emph_5
+	trans_note_1 = 0x0100, // emph_6
+	trans_note_2 = 0x0200, // emph_7
+	trans_note_3 = 0x0400, // emph_8
+	trans_note_4 = 0x0800, // emph_9
+	trans_note_5 = 0x1000, // emph_10
 	no_contract = 0x2000,
 	//  used by syllable   0x4000,
 	//  used by syllable   0x8000,
