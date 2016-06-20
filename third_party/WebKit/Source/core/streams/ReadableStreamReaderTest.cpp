@@ -16,6 +16,7 @@
 #include "core/streams/UnderlyingSource.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -150,7 +151,7 @@ public:
         return ReadResultCapturingFunction::createFunction(getScriptState(), value);
     }
 
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
     Persistent<StringStream> m_stream;
 };
 

@@ -35,7 +35,7 @@
 #include "core/fileapi/Blob.h"
 #include "platform/FileMetadata.h"
 #include "platform/blob/BlobData.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,7 +46,7 @@ WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, lo
 
 WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
-    OwnPtr<BlobData> blobData = BlobData::create();
+    std::unique_ptr<BlobData> blobData = BlobData::create();
     blobData->appendFile(path, 0, size, invalidFileTime());
     return Blob::create(BlobDataHandle::create(std::move(blobData), size));
 }

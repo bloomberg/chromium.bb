@@ -22,7 +22,8 @@
 #include "core/inspector/ScriptArguments.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -66,7 +67,7 @@ void ThreadDebugger::idleFinished(v8::Isolate* isolate)
 
 void ThreadDebugger::beginUserGesture()
 {
-    m_userGestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+    m_userGestureIndicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
 }
 
 void ThreadDebugger::endUserGesture()
@@ -322,7 +323,7 @@ void ThreadDebugger::startRepeatingTimer(double interval, V8DebuggerClient::Time
     m_timerData.append(data);
     m_timerCallbacks.append(callback);
 
-    OwnPtr<Timer<ThreadDebugger>> timer = adoptPtr(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
+    std::unique_ptr<Timer<ThreadDebugger>> timer = wrapUnique(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
     Timer<ThreadDebugger>* timerPtr = timer.get();
     m_timers.append(std::move(timer));
     timerPtr->startRepeating(interval, BLINK_FROM_HERE);
@@ -344,7 +345,7 @@ void ThreadDebugger::cancelTimer(void* data)
 void ThreadDebugger::onTimer(Timer<ThreadDebugger>* timer)
 {
     for (size_t index = 0; index < m_timers.size(); ++index) {
-        if (m_timers[index] == timer) {
+        if (m_timers[index].get() == timer) {
             m_timerCallbacks[index](m_timerData[index]);
             return;
         }

@@ -12,8 +12,8 @@
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -73,7 +73,7 @@ private:
 
     void contextDestroyed() override;
 
-    OwnPtr<MIDIAccessor> m_accessor;
+    std::unique_ptr<MIDIAccessor> m_accessor;
     Vector<PortDescriptor> m_portDescriptors;
     MIDIOptions m_options;
     bool m_hasBeenDisposed;

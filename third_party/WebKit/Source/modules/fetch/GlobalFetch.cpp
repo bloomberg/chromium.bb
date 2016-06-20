@@ -12,7 +12,6 @@
 #include "modules/fetch/Request.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

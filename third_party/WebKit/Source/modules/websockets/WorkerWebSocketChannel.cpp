@@ -45,8 +45,10 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -58,7 +60,7 @@ typedef WorkerWebSocketChannel::Peer Peer;
 // thread. signalWorkerThread() must be called before any getters are called.
 class WebSocketChannelSyncHelper : public GarbageCollectedFinalized<WebSocketChannelSyncHelper> {
 public:
-    static WebSocketChannelSyncHelper* create(PassOwnPtr<WaitableEvent> event)
+    static WebSocketChannelSyncHelper* create(std::unique_ptr<WaitableEvent> event)
     {
         return new WebSocketChannelSyncHelper(std::move(event));
     }
@@ -93,17 +95,17 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 private:
-    explicit WebSocketChannelSyncHelper(PassOwnPtr<WaitableEvent> event)
+    explicit WebSocketChannelSyncHelper(std::unique_ptr<WaitableEvent> event)
         : m_event(std::move(event))
         , m_connectRequestResult(false)
     {
     }
 
-    OwnPtr<WaitableEvent> m_event;
+    std::unique_ptr<WaitableEvent> m_event;
     bool m_connectRequestResult;
 };
 
-WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, PassOwnPtr<SourceLocation> location)
+WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, std::unique_ptr<SourceLocation> location)
     : m_bridge(new Bridge(client, workerGlobalScope))
     , m_locationAtConnection(std::move(location))
 {
@@ -145,12 +147,12 @@ void WorkerWebSocketChannel::close(int code, const String& reason)
     m_bridge->close(code, reason);
 }
 
-void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
+void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
     if (!m_bridge)
         return;
 
-    OwnPtr<SourceLocation> capturedLocation = SourceLocation::capture();
+    std::unique_ptr<SourceLocation> capturedLocation = SourceLocation::capture();
     if (!capturedLocation->isUnknown()) {
         // If we are in JavaScript context, use the current location instead
         // of passed one - it's more precise.
@@ -192,7 +194,7 @@ Peer::~Peer()
     DCHECK(isMainThread());
 }
 
-bool Peer::initialize(PassOwnPtr<SourceLocation> location, ExecutionContext* context)
+bool Peer::initialize(std::unique_ptr<SourceLocation> location, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     if (wasContextDestroyedBeforeObserverCreation())
@@ -215,14 +217,14 @@ void Peer::connect(const KURL& url, const String& protocol)
     m_syncHelper->signalWorkerThread();
 }
 
-void Peer::sendTextAsCharVector(PassOwnPtr<Vector<char>> data)
+void Peer::sendTextAsCharVector(std::unique_ptr<Vector<char>> data)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
         m_mainWebSocketChannel->sendTextAsCharVector(std::move(data));
 }
 
-void Peer::sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data)
+void Peer::sendBinaryAsCharVector(std::unique_ptr<Vector<char>> data)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
@@ -245,7 +247,7 @@ void Peer::close(int code, const String& reason)
     m_mainWebSocketChannel->close(code, reason);
 }
 
-void Peer::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
+void Peer::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
     ASSERT(isMainThread());
     ASSERT(m_syncHelper);
@@ -291,14 +293,14 @@ void Peer::didReceiveTextMessage(const String& payload)
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, PassOwnPtr<Vector<char>> payload, ExecutionContext* context)
+static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, std::unique_ptr<Vector<char>> payload, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
         bridge->client()->didReceiveBinaryMessage(std::move(payload));
 }
 
-void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
+void Peer::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload)
 {
     ASSERT(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, passed(std::move(payload))));
@@ -382,7 +384,7 @@ Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalSc
     : m_client(client)
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
-    , m_syncHelper(WebSocketChannelSyncHelper::create(adoptPtr(new WaitableEvent())))
+    , m_syncHelper(WebSocketChannelSyncHelper::create(wrapUnique(new WaitableEvent())))
 {
 }
 
@@ -391,7 +393,7 @@ Bridge::~Bridge()
     ASSERT(!m_peer);
 }
 
-void Bridge::createPeerOnMainThread(PassOwnPtr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, ExecutionContext* context)
+void Bridge::createPeerOnMainThread(std::unique_ptr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, ExecutionContext* context)
 {
     DCHECK(isMainThread());
     DCHECK(!m_peer);
@@ -401,7 +403,7 @@ void Bridge::createPeerOnMainThread(PassOwnPtr<SourceLocation> location, WorkerT
     m_syncHelper->signalWorkerThread();
 }
 
-void Bridge::initialize(PassOwnPtr<SourceLocation> location)
+void Bridge::initialize(std::unique_ptr<SourceLocation> location)
 {
     // Wait for completion of the task on the main thread because the connection
     // must synchronously be established (see Bridge::connect).
@@ -427,7 +429,7 @@ bool Bridge::connect(const KURL& url, const String& protocol)
 void Bridge::send(const CString& message)
 {
     ASSERT(m_peer);
-    OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>(message.length()));
+    std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>(message.length()));
     if (message.length())
         memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
 
@@ -438,7 +440,7 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
 {
     ASSERT(m_peer);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
-    OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>(byteLength));
+    std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>(byteLength));
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
@@ -457,7 +459,7 @@ void Bridge::close(int code, const String& reason)
     m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::close, wrapCrossThreadPersistent(m_peer.get()), code, reason));
 }
 
-void Bridge::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
+void Bridge::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
     ASSERT(m_peer);
     m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(std::move(location))));

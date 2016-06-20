@@ -23,9 +23,8 @@
 #define WTF_ListHashSet_h
 
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/allocator/PartitionAllocator.h"
+#include <memory>
 
 namespace WTF {
 
@@ -268,7 +267,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
         }
 
     private:
-        // Not using OwnPtr as this pointer should be deleted at
+        // Not using std::unique_ptr as this pointer should be deleted at
         // releaseAllocator() method rather than at destructor.
         ListHashSetAllocator* m_allocator;
     };

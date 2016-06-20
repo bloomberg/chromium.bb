@@ -6,6 +6,7 @@
 #define BasicShapeInterpolationFunctions_h
 
 #include "core/animation/InterpolationValue.h"
+#include <memory>
 
 namespace blink {
 
@@ -17,7 +18,7 @@ namespace BasicShapeInterpolationFunctions {
 
 InterpolationValue maybeConvertCSSValue(const CSSValue&);
 InterpolationValue maybeConvertBasicShape(const BasicShape*, double zoom);
-PassOwnPtr<InterpolableValue> createNeutralValue(const NonInterpolableValue&);
+std::unique_ptr<InterpolableValue> createNeutralValue(const NonInterpolableValue&);
 bool shapesAreCompatible(const NonInterpolableValue&, const NonInterpolableValue&);
 PassRefPtr<BasicShape> createBasicShape(const InterpolableValue&, const NonInterpolableValue&, const CSSToLengthConversionData&);
 

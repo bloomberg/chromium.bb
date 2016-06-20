@@ -12,6 +12,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -88,7 +89,7 @@ private:
     FetchResponseData(Type, unsigned short, AtomicString);
 
     Type m_type;
-    OwnPtr<TerminationReason> m_terminationReason;
+    std::unique_ptr<TerminationReason> m_terminationReason;
     KURL m_url;
     unsigned short m_status;
     AtomicString m_statusMessage;

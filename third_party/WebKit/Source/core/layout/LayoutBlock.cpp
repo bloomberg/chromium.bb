@@ -54,7 +54,9 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 namespace blink {
 
@@ -103,7 +105,7 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
 void LayoutBlock::removeFromGlobalMaps()
 {
     if (hasPositionedObjects()) {
-        OwnPtr<TrackedLayoutBoxListHashSet> descendants = gPositionedDescendantsMap->take(this);
+        std::unique_ptr<TrackedLayoutBoxListHashSet> descendants = gPositionedDescendantsMap->take(this);
         ASSERT(!descendants->isEmpty());
         for (LayoutBox* descendant : *descendants) {
             ASSERT(gPositionedContainerMap->get(descendant) == this);
@@ -111,7 +113,7 @@ void LayoutBlock::removeFromGlobalMaps()
         }
     }
     if (hasPercentHeightDescendants()) {
-        OwnPtr<TrackedLayoutBoxListHashSet> descendants = gPercentHeightDescendantsMap->take(this);
+        std::unique_ptr<TrackedLayoutBoxListHashSet> descendants = gPercentHeightDescendantsMap->take(this);
         ASSERT(!descendants->isEmpty());
         for (LayoutBox* descendant : *descendants) {
             ASSERT(descendant->percentHeightContainer() == this);
@@ -874,7 +876,7 @@ void LayoutBlock::insertPositionedObject(LayoutBox* o)
     TrackedLayoutBoxListHashSet* descendantSet = gPositionedDescendantsMap->get(this);
     if (!descendantSet) {
         descendantSet = new TrackedLayoutBoxListHashSet;
-        gPositionedDescendantsMap->set(this, adoptPtr(descendantSet));
+        gPositionedDescendantsMap->set(this, wrapUnique(descendantSet));
     }
     descendantSet->add(o);
 
@@ -962,7 +964,7 @@ void LayoutBlock::addPercentHeightDescendant(LayoutBox* descendant)
     TrackedLayoutBoxListHashSet* descendantSet = gPercentHeightDescendantsMap->get(this);
     if (!descendantSet) {
         descendantSet = new TrackedLayoutBoxListHashSet;
-        gPercentHeightDescendantsMap->set(this, adoptPtr(descendantSet));
+        gPercentHeightDescendantsMap->set(this, wrapUnique(descendantSet));
     }
     descendantSet->add(descendant);
 

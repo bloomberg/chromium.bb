@@ -34,7 +34,6 @@
 #include "core/html/LinkResource.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

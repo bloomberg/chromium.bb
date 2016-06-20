@@ -35,11 +35,11 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
+#include <memory>
 
 class SkRefCnt;
 
@@ -134,16 +134,6 @@ struct CrossThreadCopier<IntSize> : public CrossThreadCopierPassThrough<IntSize>
     STATIC_ONLY(CrossThreadCopier);
 };
 
-template <typename T>
-struct CrossThreadCopier<PassOwnPtr<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-    typedef PassOwnPtr<T> Type;
-    static Type copy(Type ownPtr)
-    {
-        return ownPtr;
-    }
-};
-
 template <typename T, typename Deleter>
 struct CrossThreadCopier<std::unique_ptr<T, Deleter>> {
     STATIC_ONLY(CrossThreadCopier);
@@ -205,14 +195,14 @@ struct CrossThreadCopier<ResourceError> {
 template <>
 struct CrossThreadCopier<ResourceRequest> {
     STATIC_ONLY(CrossThreadCopier);
-    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceRequestData>> Type;
+    typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceRequestData>> Type;
     PLATFORM_EXPORT static Type copy(const ResourceRequest&);
 };
 
 template <>
 struct CrossThreadCopier<ResourceResponse> {
     STATIC_ONLY(CrossThreadCopier);
-    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceResponseData>> Type;
+    typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceResponseData>> Type;
     PLATFORM_EXPORT static Type copy(const ResourceResponse&);
 };
 

@@ -8,6 +8,7 @@
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/UnderlyingLengthChecker.h"
 #include "core/svg/SVGPointList.h"
+#include <memory>
 
 namespace blink {
 
@@ -19,7 +20,7 @@ InterpolationValue SVGPointListInterpolationType::maybeConvertNeutral(const Inte
     if (underlyingLength == 0)
         return nullptr;
 
-    OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, InterpolableNumber::create(0));
     return InterpolationValue(std::move(result));
@@ -31,7 +32,7 @@ InterpolationValue SVGPointListInterpolationType::maybeConvertSVGValue(const SVG
         return nullptr;
 
     const SVGPointList& pointList = toSVGPointList(svgValue);
-    OwnPtr<InterpolableList> result = InterpolableList::create(pointList.length() * 2);
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(pointList.length() * 2);
     for (size_t i = 0; i < pointList.length(); i++) {
         const SVGPoint& point = *pointList.at(i);
         result->set(2 * i, InterpolableNumber::create(point.x()));

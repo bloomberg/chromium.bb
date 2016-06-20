@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
+#include <memory>
 
 typedef unsigned AXID;
 
@@ -154,7 +155,7 @@ class CORE_EXPORT ScopedAXObjectCache {
     USING_FAST_MALLOC(ScopedAXObjectCache);
     WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
 public:
-    static PassOwnPtr<ScopedAXObjectCache> create(Document&);
+    static std::unique_ptr<ScopedAXObjectCache> create(Document&);
     ~ScopedAXObjectCache();
 
     AXObjectCache* get();

@@ -10,11 +10,11 @@
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Locker.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
+#include <memory>
 
 namespace blink {
 
@@ -33,10 +33,10 @@ public:
     // Must be called on the thread where |obj| is created
     // (== the thread of |executionContext|).
     // The current thread must be attached to Oilpan.
-    static PassOwnPtr<CrossThreadHolder<T>> create(ExecutionContext* executionContext, PassOwnPtr<T> obj)
+    static std::unique_ptr<CrossThreadHolder<T>> create(ExecutionContext* executionContext, std::unique_ptr<T> obj)
     {
         ASSERT(executionContext->isContextThread());
-        return adoptPtr(new CrossThreadHolder(executionContext, std::move(obj)));
+        return wrapUnique(new CrossThreadHolder(executionContext, std::move(obj)));
     }
 
     // Can be called from any thread.
@@ -65,7 +65,7 @@ public:
 private:
     // Object graph:
     //                 +------+                          +-----------------+
-    //     T <-OwnPtr- |Bridge| ---------*-------------> |CrossThreadHolder|
+    //     T <-std::unique_ptr- |Bridge| ---------*-------------> |CrossThreadHolder|
     //                 |      | <-CrossThreadPersistent- |                 |
     //                 +------+                          +-----------------+
     //                    |                                    |
@@ -93,7 +93,7 @@ private:
         , public ActiveDOMObject {
         USING_GARBAGE_COLLECTED_MIXIN(Bridge);
     public:
-        Bridge(ExecutionContext* executionContext, PassOwnPtr<T> obj, PassRefPtr<MutexWrapper> mutex, CrossThreadHolder* holder)
+        Bridge(ExecutionContext* executionContext, std::unique_ptr<T> obj, PassRefPtr<MutexWrapper> mutex, CrossThreadHolder* holder)
             : ActiveDOMObject(executionContext)
             , m_obj(std::move(obj))
             , m_mutex(mutex)
@@ -145,7 +145,7 @@ private:
         }
 
 
-        OwnPtr<T> m_obj;
+        std::unique_ptr<T> m_obj;
         // All accesses to |m_holder| must be protected by |m_mutex|.
         RefPtr<MutexWrapper> m_mutex;
         CrossThreadHolder* m_holder;
@@ -159,7 +159,7 @@ private:
         m_bridge.clear();
     }
 
-    CrossThreadHolder(ExecutionContext* executionContext, PassOwnPtr<T> obj)
+    CrossThreadHolder(ExecutionContext* executionContext, std::unique_ptr<T> obj)
         : m_mutex(MutexWrapper::create())
         , m_bridge(new Bridge(executionContext, std::move(obj), m_mutex, this))
     {

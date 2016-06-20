@@ -30,7 +30,6 @@
 
 #include "platform/text/LocaleWin.h"
 
-#include <limits>
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
@@ -38,11 +37,12 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
+#include <limits>
+#include <memory>
 
 namespace blink {
 
@@ -76,7 +76,7 @@ static LCID LCIDFromLocale(const String& locale, bool defaultsForLocale)
     return lcid;
 }
 
-PassOwnPtr<Locale> Locale::create(const String& locale)
+std::unique_ptr<Locale> Locale::create(const String& locale)
 {
     // Whether the default settings for the locale should be used, ignoring user overrides.
     bool defaultsForLocale = LayoutTestSupport::isRunningLayoutTest();
@@ -95,9 +95,9 @@ inline LocaleWin::LocaleWin(LCID lcid, bool defaultsForLocale)
     m_firstDayOfWeek = (value + 1) % 7;
 }
 
-PassOwnPtr<LocaleWin> LocaleWin::create(LCID lcid, bool defaultsForLocale)
+std::unique_ptr<LocaleWin> LocaleWin::create(LCID lcid, bool defaultsForLocale)
 {
-    return adoptPtr(new LocaleWin(lcid, defaultsForLocale));
+    return wrapUnique(new LocaleWin(lcid, defaultsForLocale));
 }
 
 LocaleWin::~LocaleWin()

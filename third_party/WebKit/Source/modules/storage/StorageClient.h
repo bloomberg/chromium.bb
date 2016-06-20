@@ -6,7 +6,7 @@
 #define StorageClient_h
 
 #include "modules/storage/StorageArea.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -16,7 +16,7 @@ class StorageClient {
 public:
     virtual ~StorageClient() { }
 
-    virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() = 0;
+    virtual std::unique_ptr<StorageNamespace> createSessionStorageNamespace() = 0;
     virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
 };
 

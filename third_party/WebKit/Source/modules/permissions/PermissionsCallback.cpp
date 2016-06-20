@@ -6,10 +6,12 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/permissions/PermissionStatus.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PermissionsCallback::PermissionsCallback(ScriptPromiseResolver* resolver, PassOwnPtr<Vector<WebPermissionType>> internalPermissions, PassOwnPtr<Vector<int>> callerIndexToInternalIndex)
+PermissionsCallback::PermissionsCallback(ScriptPromiseResolver* resolver, std::unique_ptr<Vector<WebPermissionType>> internalPermissions, std::unique_ptr<Vector<int>> callerIndexToInternalIndex)
     : m_resolver(resolver)
     , m_internalPermissions(std::move(internalPermissions))
     , m_callerIndexToInternalIndex(std::move(callerIndexToInternalIndex))
@@ -22,7 +24,7 @@ void PermissionsCallback::onSuccess(std::unique_ptr<WebVector<WebPermissionStatu
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
-    OwnPtr<WebVector<WebPermissionStatus>> statusPtr = adoptPtr(permissionStatus.release());
+    std::unique_ptr<WebVector<WebPermissionStatus>> statusPtr = wrapUnique(permissionStatus.release());
     HeapVector<Member<PermissionStatus>> result(m_callerIndexToInternalIndex->size());
 
     // Create the response vector by finding the status for each index by

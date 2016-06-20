@@ -26,7 +26,9 @@
 #include "platform/FileChooser.h"
 #include "wtf/Deque.h"
 #include "wtf/HashTableDeletedValueType.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -176,8 +178,8 @@ class SavedFormState {
     USING_FAST_MALLOC(SavedFormState);
 
 public:
-    static PassOwnPtr<SavedFormState> create();
-    static PassOwnPtr<SavedFormState> deserialize(const Vector<String>&, size_t& index);
+    static std::unique_ptr<SavedFormState> create();
+    static std::unique_ptr<SavedFormState> deserialize(const Vector<String>&, size_t& index);
     void serializeTo(Vector<String>&) const;
     bool isEmpty() const { return m_stateForNewFormElements.isEmpty(); }
     void appendControlState(const AtomicString& name, const AtomicString& type, const FormControlState&);
@@ -193,9 +195,9 @@ private:
     size_t m_controlStateCount;
 };
 
-PassOwnPtr<SavedFormState> SavedFormState::create()
+std::unique_ptr<SavedFormState> SavedFormState::create()
 {
-    return adoptPtr(new SavedFormState);
+    return wrapUnique(new SavedFormState);
 }
 
 static bool isNotFormControlTypeCharacter(UChar ch)
@@ -203,7 +205,7 @@ static bool isNotFormControlTypeCharacter(UChar ch)
     return ch != '-' && (ch > 'z' || ch < 'a');
 }
 
-PassOwnPtr<SavedFormState> SavedFormState::deserialize(const Vector<String>& stateVector, size_t& index)
+std::unique_ptr<SavedFormState> SavedFormState::deserialize(const Vector<String>& stateVector, size_t& index)
 {
     if (index >= stateVector.size())
         return nullptr;
@@ -211,7 +213,7 @@ PassOwnPtr<SavedFormState> SavedFormState::deserialize(const Vector<String>& sta
     size_t itemCount = stateVector[index++].toUInt();
     if (!itemCount)
         return nullptr;
-    OwnPtr<SavedFormState> savedFormState = adoptPtr(new SavedFormState);
+    std::unique_ptr<SavedFormState> savedFormState = wrapUnique(new SavedFormState);
     while (itemCount--) {
         if (index + 1 >= stateVector.size())
             return nullptr;
@@ -411,7 +413,7 @@ static String formStateSignature()
 Vector<String> DocumentState::toStateVector()
 {
     FormKeyGenerator* keyGenerator = FormKeyGenerator::create();
-    OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
+    std::unique_ptr<SavedFormStateMap> stateMap = wrapUnique(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();
         ASSERT(control->inShadowIncludingDocument());
@@ -488,7 +490,7 @@ void FormController::formStatesFromStateVector(const Vector<String>& stateVector
 
     while (i + 1 < stateVector.size()) {
         AtomicString formKey = AtomicString(stateVector[i++]);
-        OwnPtr<SavedFormState> state = SavedFormState::deserialize(stateVector, i);
+        std::unique_ptr<SavedFormState> state = SavedFormState::deserialize(stateVector, i);
         if (!state) {
             i = 0;
             break;

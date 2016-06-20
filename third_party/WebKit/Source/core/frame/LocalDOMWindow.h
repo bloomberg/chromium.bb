@@ -36,9 +36,9 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -170,7 +170,7 @@ public:
 
     void postMessageTimerFired(PostMessageTimer*);
     void removePostMessageTimer(PostMessageTimer*);
-    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event*, PassOwnPtr<SourceLocation>);
+    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event*, std::unique_ptr<SourceLocation>);
 
     // Events
     // EventTarget API

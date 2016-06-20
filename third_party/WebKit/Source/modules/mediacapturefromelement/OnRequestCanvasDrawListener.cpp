@@ -4,9 +4,11 @@
 
 #include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 
+#include <memory>
+
 namespace blink {
 
-OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler> handler)
+OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler> handler)
     : CanvasDrawListener(std::move(handler))
 {
 }
@@ -14,7 +16,7 @@ OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(PassOwnPtr<WebCanvasCap
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() {}
 
 // static
-OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::create(PassOwnPtr<WebCanvasCaptureHandler> handler)
+OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::create(std::unique_ptr<WebCanvasCaptureHandler> handler)
 {
     return new OnRequestCanvasDrawListener(std::move(handler));
 }

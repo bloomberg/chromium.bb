@@ -31,6 +31,7 @@
 #define DedicatedWorkerThread_h
 
 #include "core/workers/WorkerThread.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,20 +40,20 @@ class WorkerThreadStartupData;
 
 class DedicatedWorkerThread final : public WorkerThread {
 public:
-    static PassOwnPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
+    static std::unique_ptr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
     ~DedicatedWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 protected:
-    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
     void postInitialize() override;
 
 private:
     DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
 
-    OwnPtr<WorkerBackingThread> m_workerBackingThread;
+    std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
     InProcessWorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
 };

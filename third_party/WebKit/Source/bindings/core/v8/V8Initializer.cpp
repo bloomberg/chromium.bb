@@ -58,9 +58,11 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/AddressSanitizer.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
+#include <memory>
 #include <v8-debug.h>
 #include <v8-profiler.h>
 
@@ -123,7 +125,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         return;
 
     ExecutionContext* context = scriptState->getExecutionContext();
-    OwnPtr<SourceLocation> location = SourceLocation::fromMessage(isolate, message, context);
+    std::unique_ptr<SourceLocation> location = SourceLocation::fromMessage(isolate, message, context);
 
     AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
     if (message->IsOpaque())
@@ -202,7 +204,7 @@ static void promiseRejectHandler(v8::PromiseRejectMessage data, RejectedPromises
 
     String errorMessage;
     AccessControlStatus corsStatus = NotSharableCrossOrigin;
-    OwnPtr<SourceLocation> location;
+    std::unique_ptr<SourceLocation> location;
 
     v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
     if (!message.IsEmpty()) {
@@ -362,7 +364,7 @@ void V8Initializer::initializeMainThread()
 
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
         WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
-        V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(scheduler)));
+        V8PerIsolateData::enableIdleTasks(isolate, wrapUnique(new V8IdleTaskRunner(scheduler)));
     }
 
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
@@ -371,7 +373,7 @@ void V8Initializer::initializeMainThread()
         profiler->SetWrapperClassInfoProvider(WrapperTypeInfo::NodeClassId, &RetainedDOMInfo::createRetainedDOMInfo);
 
     ASSERT(ThreadState::mainThreadState());
-    ThreadState::mainThreadState()->addInterruptor(adoptPtr(new V8IsolateInterruptor(isolate)));
+    ThreadState::mainThreadState()->addInterruptor(wrapUnique(new V8IsolateInterruptor(isolate)));
     if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
         ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate,
             V8GCController::traceDOMWrappers,
@@ -382,7 +384,7 @@ void V8Initializer::initializeMainThread()
             nullptr);
     }
 
-    V8PerIsolateData::from(isolate)->setThreadDebugger(adoptPtr(new MainThreadDebugger(isolate)));
+    V8PerIsolateData::from(isolate)->setThreadDebugger(wrapUnique(new MainThreadDebugger(isolate)));
 }
 
 void V8Initializer::shutdownMainThread()
@@ -417,7 +419,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
     perIsolateData->setReportingException(true);
 
     ExecutionContext* context = scriptState->getExecutionContext();
-    OwnPtr<SourceLocation> location = SourceLocation::fromMessage(isolate, message, context);
+    std::unique_ptr<SourceLocation> location = SourceLocation::fromMessage(isolate, message, context);
     ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), std::move(location), &scriptState->world());
 
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;

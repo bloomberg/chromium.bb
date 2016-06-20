@@ -7,6 +7,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/MathExtras.h"
 #include <cmath>
+#include <memory>
 
 namespace blink {
 
@@ -32,7 +33,7 @@ CSSFunctionValue* CSSMatrixTransformComponent::toCSSValue() const
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::perspective(double length)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     if (length != 0)
         matrix->setM34(-1 / length);
     return new CSSMatrixTransformComponent(std::move(matrix), PerspectiveType);
@@ -40,21 +41,21 @@ CSSMatrixTransformComponent* CSSMatrixTransformComponent::perspective(double len
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::rotate(double angle)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate(angle);
     return new CSSMatrixTransformComponent(std::move(matrix), RotationType);
 }
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::rotate3d(double angle, double x, double y, double z)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate3d(x, y, z, angle);
     return new CSSMatrixTransformComponent(std::move(matrix), Rotation3DType);
 }
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::scale(double x, double y)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM11(x);
     matrix->setM22(y);
     return new CSSMatrixTransformComponent(std::move(matrix), ScaleType);
@@ -62,7 +63,7 @@ CSSMatrixTransformComponent* CSSMatrixTransformComponent::scale(double x, double
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::scale3d(double x, double y, double z)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM11(x);
     matrix->setM22(y);
     matrix->setM33(z);
@@ -74,7 +75,7 @@ CSSMatrixTransformComponent* CSSMatrixTransformComponent::skew(double ax, double
     double tanAx = std::tan(deg2rad(ax));
     double tanAy = std::tan(deg2rad(ay));
 
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM12(tanAy);
     matrix->setM21(tanAx);
     return new CSSMatrixTransformComponent(std::move(matrix), SkewType);
@@ -82,7 +83,7 @@ CSSMatrixTransformComponent* CSSMatrixTransformComponent::skew(double ax, double
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::translate(double x, double y)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
     return new CSSMatrixTransformComponent(std::move(matrix), TranslationType);
@@ -90,7 +91,7 @@ CSSMatrixTransformComponent* CSSMatrixTransformComponent::translate(double x, do
 
 CSSMatrixTransformComponent* CSSMatrixTransformComponent::translate3d(double x, double y, double z)
 {
-    OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
+    std::unique_ptr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
     matrix->setM43(z);

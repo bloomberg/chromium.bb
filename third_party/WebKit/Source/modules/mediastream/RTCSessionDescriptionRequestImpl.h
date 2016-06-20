@@ -34,7 +34,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

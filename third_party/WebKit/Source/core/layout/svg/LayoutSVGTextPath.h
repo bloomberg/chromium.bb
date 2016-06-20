@@ -22,6 +22,8 @@
 #define LayoutSVGTextPath_h
 
 #include "core/layout/svg/LayoutSVGInline.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -31,9 +33,9 @@ namespace blink {
 class PathPositionMapper {
     USING_FAST_MALLOC(PathPositionMapper);
 public:
-    static PassOwnPtr<PathPositionMapper> create(const Path& path)
+    static std::unique_ptr<PathPositionMapper> create(const Path& path)
     {
-        return adoptPtr(new PathPositionMapper(path));
+        return wrapUnique(new PathPositionMapper(path));
     }
 
     enum PositionType {
@@ -55,7 +57,7 @@ class LayoutSVGTextPath final : public LayoutSVGInline {
 public:
     explicit LayoutSVGTextPath(Element*);
 
-    PassOwnPtr<PathPositionMapper> layoutPath() const;
+    std::unique_ptr<PathPositionMapper> layoutPath() const;
     float calculateStartOffset(float) const;
 
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;

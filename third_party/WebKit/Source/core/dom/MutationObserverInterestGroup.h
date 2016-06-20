@@ -37,7 +37,6 @@
 #include "core/dom/QualifiedName.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

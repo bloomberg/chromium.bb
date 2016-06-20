@@ -9,12 +9,13 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
 TEST(StyleElementTest, CreateSheetUsesCache)
 {
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     Document& document = dummyPageHolder->document();
 
     document.documentElement()->setInnerHTML("<style id=style>a { top: 0; }</style>", ASSERT_NO_EXCEPTION);

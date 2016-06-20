@@ -43,7 +43,6 @@
 #include "core/layout/LayoutObject.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PassOwnPtr.h"
 #include <limits>
 
 namespace blink {

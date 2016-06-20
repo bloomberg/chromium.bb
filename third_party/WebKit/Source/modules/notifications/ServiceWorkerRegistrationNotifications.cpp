@@ -21,7 +21,9 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 namespace {
@@ -76,7 +78,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    OwnPtr<WebNotificationShowCallbacks> callbacks = adoptPtr(new CallbackPromiseAdapter<void, void>(resolver));
+    std::unique_ptr<WebNotificationShowCallbacks> callbacks = wrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
     ServiceWorkerRegistrationNotifications::from(executionContext, registration).prepareShow(data, std::move(callbacks));
 
     return promise;
@@ -125,22 +127,22 @@ ServiceWorkerRegistrationNotifications& ServiceWorkerRegistrationNotifications::
     return *supplement;
 }
 
-void ServiceWorkerRegistrationNotifications::prepareShow(const WebNotificationData& data, PassOwnPtr<WebNotificationShowCallbacks> callbacks)
+void ServiceWorkerRegistrationNotifications::prepareShow(const WebNotificationData& data, std::unique_ptr<WebNotificationShowCallbacks> callbacks)
 {
     RefPtr<SecurityOrigin> origin = getExecutionContext()->getSecurityOrigin();
-    NotificationResourcesLoader* loader = new NotificationResourcesLoader(bind<NotificationResourcesLoader*>(&ServiceWorkerRegistrationNotifications::didLoadResources, WeakPersistentThisPointer<ServiceWorkerRegistrationNotifications>(this), origin.release(), data, passed(std::move(callbacks))));
+    NotificationResourcesLoader* loader = new NotificationResourcesLoader(WTF::bind<NotificationResourcesLoader*>(&ServiceWorkerRegistrationNotifications::didLoadResources, WeakPersistentThisPointer<ServiceWorkerRegistrationNotifications>(this), origin.release(), data, passed(std::move(callbacks))));
     m_loaders.add(loader);
     loader->start(getExecutionContext(), data);
 }
 
-void ServiceWorkerRegistrationNotifications::didLoadResources(PassRefPtr<SecurityOrigin> origin, const WebNotificationData& data, PassOwnPtr<WebNotificationShowCallbacks> callbacks, NotificationResourcesLoader* loader)
+void ServiceWorkerRegistrationNotifications::didLoadResources(PassRefPtr<SecurityOrigin> origin, const WebNotificationData& data, std::unique_ptr<WebNotificationShowCallbacks> callbacks, NotificationResourcesLoader* loader)
 {
     DCHECK(m_loaders.contains(loader));
 
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
     DCHECK(notificationManager);
 
-    notificationManager->showPersistent(WebSecurityOrigin(origin.get()), data, loader->getResources(), m_registration->webRegistration(), callbacks.leakPtr());
+    notificationManager->showPersistent(WebSecurityOrigin(origin.get()), data, loader->getResources(), m_registration->webRegistration(), callbacks.release());
     m_loaders.remove(loader);
 }
 

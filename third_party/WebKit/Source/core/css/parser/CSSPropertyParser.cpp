@@ -47,6 +47,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -1514,7 +1515,7 @@ static CSSValue* consumePath(CSSParserTokenRange& range)
         return nullptr;
     String pathString = functionArgs.consumeIncludingWhitespace().value().toString();
 
-    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     if (buildByteStreamFromString(pathString, *byteStream) != SVGParseStatus::NoError
         || !functionArgs.atEnd())
         return nullptr;

@@ -9,8 +9,9 @@
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -29,9 +30,9 @@ class ScriptState;
 class MODULES_EXPORT ReadableStreamDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(ReadableStreamDataConsumerHandle);
 public:
-    static PassOwnPtr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue streamReader)
+    static std::unique_ptr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue streamReader)
     {
-        return adoptPtr(new ReadableStreamDataConsumerHandle(scriptState, streamReader));
+        return wrapUnique(new ReadableStreamDataConsumerHandle(scriptState, streamReader));
     }
     ~ReadableStreamDataConsumerHandle() override;
 

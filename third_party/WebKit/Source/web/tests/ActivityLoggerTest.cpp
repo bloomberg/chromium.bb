@@ -11,6 +11,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/Base64.h"
 #include <v8.h>
 
@@ -69,7 +70,7 @@ protected:
     ActivityLoggerTest()
     {
         m_activityLogger = new TestActivityLogger();
-        V8DOMActivityLogger::setActivityLogger(isolatedWorldId, String(), adoptPtr(m_activityLogger));
+        V8DOMActivityLogger::setActivityLogger(isolatedWorldId, String(), wrapUnique(m_activityLogger));
         m_webViewHelper.initialize(true);
         m_scriptController = &m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->script();
         FrameTestHelpers::loadFrame(m_webViewHelper.webViewImpl()->mainFrame(), "about:blank");

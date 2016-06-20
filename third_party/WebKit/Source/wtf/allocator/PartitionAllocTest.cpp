@@ -33,9 +33,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/BitwiseOperations.h"
 #include "wtf/CPU.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 #include <stdlib.h>
 #include <string.h>
 
@@ -447,7 +447,7 @@ TEST(PartitionAllocTest, FreePageListPageTransitions)
     // The +1 is because we need to account for the fact that the current page
     // never gets thrown on the freelist.
     ++numToFillFreeListPage;
-    OwnPtr<PartitionPage*[]> pages = adoptArrayPtr(new PartitionPage*[numToFillFreeListPage]);
+    std::unique_ptr<PartitionPage*[]> pages = wrapArrayUnique(new PartitionPage*[numToFillFreeListPage]);
 
     size_t i;
     for (i = 0; i < numToFillFreeListPage; ++i) {
@@ -493,8 +493,8 @@ TEST(PartitionAllocTest, MultiPageAllocs)
     --numPagesNeeded;
 
     EXPECT_GT(numPagesNeeded, 1u);
-    OwnPtr<PartitionPage*[]> pages;
-    pages = adoptArrayPtr(new PartitionPage*[numPagesNeeded]);
+    std::unique_ptr<PartitionPage*[]> pages;
+    pages = wrapArrayUnique(new PartitionPage*[numPagesNeeded]);
     uintptr_t firstSuperPageBase = 0;
     size_t i;
     for (i = 0; i < numPagesNeeded; ++i) {
@@ -1026,8 +1026,8 @@ TEST(PartitionAllocTest, MappingCollision)
     // The -2 is because the first and last partition pages in a super page are
     // guard pages.
     size_t numPartitionPagesNeeded = kNumPartitionPagesPerSuperPage - 2;
-    OwnPtr<PartitionPage*[]> firstSuperPagePages = adoptArrayPtr(new PartitionPage*[numPartitionPagesNeeded]);
-    OwnPtr<PartitionPage*[]> secondSuperPagePages = adoptArrayPtr(new PartitionPage*[numPartitionPagesNeeded]);
+    std::unique_ptr<PartitionPage*[]> firstSuperPagePages = wrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
+    std::unique_ptr<PartitionPage*[]> secondSuperPagePages = wrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
 
     size_t i;
     for (i = 0; i < numPartitionPagesNeeded; ++i)

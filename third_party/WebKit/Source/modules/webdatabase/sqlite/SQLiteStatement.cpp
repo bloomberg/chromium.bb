@@ -30,7 +30,9 @@
 #include "platform/heap/SafePoint.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
+#include <memory>
 
 // SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the statement
 // once if the database scheme has changed. We rely on this behavior.
@@ -100,8 +102,8 @@ int SQLiteStatement::prepare()
 
     // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
     // with Oilpan stack scanning.
-    OwnPtr<const char*> tail = adoptPtr(new const char*);
-    OwnPtr<sqlite3_stmt*> statement = adoptPtr(new sqlite3_stmt*);
+    std::unique_ptr<const char*> tail = wrapUnique(new const char*);
+    std::unique_ptr<sqlite3_stmt*> statement = wrapUnique(new sqlite3_stmt*);
     *tail = nullptr;
     *statement = nullptr;
     int error;

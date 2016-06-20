@@ -8,11 +8,12 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 namespace blink {
 
-typedef HashMap<String, OwnPtr<V8DOMActivityLogger>> DOMActivityLoggerMapForMainWorld;
-typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int>> DOMActivityLoggerMapForIsolatedWorld;
+typedef HashMap<String, std::unique_ptr<V8DOMActivityLogger>> DOMActivityLoggerMapForMainWorld;
+typedef HashMap<int, std::unique_ptr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int>> DOMActivityLoggerMapForIsolatedWorld;
 
 static DOMActivityLoggerMapForMainWorld& domActivityLoggersForMainWorld()
 {
@@ -28,7 +29,7 @@ static DOMActivityLoggerMapForIsolatedWorld& domActivityLoggersForIsolatedWorld(
     return map;
 }
 
-void V8DOMActivityLogger::setActivityLogger(int worldId, const String& extensionId, PassOwnPtr<V8DOMActivityLogger> logger)
+void V8DOMActivityLogger::setActivityLogger(int worldId, const String& extensionId, std::unique_ptr<V8DOMActivityLogger> logger)
 {
     if (worldId)
         domActivityLoggersForIsolatedWorld().set(worldId, std::move(logger));

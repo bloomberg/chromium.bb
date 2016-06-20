@@ -20,6 +20,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
+#include <memory>
 
 namespace blink {
 
@@ -97,7 +98,7 @@ private:
     Member<FetchDataLoader::Client> m_client;
 };
 
-BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, PassOwnPtr<FetchDataConsumerHandle> handle)
+BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, std::unique_ptr<FetchDataConsumerHandle> handle)
     : UnderlyingSourceBase(scriptState)
     , m_scriptState(scriptState)
     , m_handle(std::move(handle))
@@ -214,7 +215,7 @@ void BodyStreamBuffer::startLoading(FetchDataLoader* loader, FetchDataLoader::Cl
 {
     ASSERT(!m_loader);
     ASSERT(m_scriptState->contextIsValid());
-    OwnPtr<FetchDataConsumerHandle> handle = releaseHandle();
+    std::unique_ptr<FetchDataConsumerHandle> handle = releaseHandle();
     m_loader = loader;
     loader->start(handle.get(), new LoaderClient(m_scriptState->getExecutionContext(), this, client));
 }
@@ -234,8 +235,8 @@ void BodyStreamBuffer::tee(BodyStreamBuffer** branch1, BodyStreamBuffer** branch
         *branch2 = new BodyStreamBuffer(m_scriptState.get(), stream2);
         return;
     }
-    OwnPtr<FetchDataConsumerHandle> handle = releaseHandle();
-    OwnPtr<FetchDataConsumerHandle> handle1, handle2;
+    std::unique_ptr<FetchDataConsumerHandle> handle = releaseHandle();
+    std::unique_ptr<FetchDataConsumerHandle> handle1, handle2;
     DataConsumerTee::create(m_scriptState->getExecutionContext(), std::move(handle), &handle1, &handle2);
     *branch1 = new BodyStreamBuffer(m_scriptState.get(), std::move(handle1));
     *branch2 = new BodyStreamBuffer(m_scriptState.get(), std::move(handle2));
@@ -449,7 +450,7 @@ void BodyStreamBuffer::stopLoading()
     m_loader = nullptr;
 }
 
-PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
+std::unique_ptr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
 {
     DCHECK(!isStreamLocked());
     DCHECK(!isStreamDisturbed());
@@ -469,7 +470,7 @@ PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
     // We need to call these before calling closeAndLockAndDisturb.
     const bool isClosed = isStreamClosed();
     const bool isErrored = isStreamErrored();
-    OwnPtr<FetchDataConsumerHandle> handle = std::move(m_handle);
+    std::unique_ptr<FetchDataConsumerHandle> handle = std::move(m_handle);
 
     closeAndLockAndDisturb();
 

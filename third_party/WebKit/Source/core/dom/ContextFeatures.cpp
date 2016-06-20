@@ -29,13 +29,15 @@
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<ContextFeaturesClient> ContextFeaturesClient::empty()
+std::unique_ptr<ContextFeaturesClient> ContextFeaturesClient::empty()
 {
-    return adoptPtr(new ContextFeaturesClient());
+    return wrapUnique(new ContextFeaturesClient());
 }
 
 const char* ContextFeatures::supplementName()
@@ -64,7 +66,7 @@ bool ContextFeatures::mutationEventsEnabled(Document* document)
     return document->contextFeatures().isEnabled(document, MutationEvents, true);
 }
 
-void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
+void provideContextFeaturesTo(Page& page, std::unique_ptr<ContextFeaturesClient> client)
 {
     Supplement<Page>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(std::move(client)));
 }

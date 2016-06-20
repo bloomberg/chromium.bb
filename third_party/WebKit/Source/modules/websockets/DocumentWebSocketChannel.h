@@ -43,13 +43,12 @@
 #include "public/platform/modules/websockets/WebSocketHandle.h"
 #include "public/platform/modules/websockets/WebSocketHandleClient.h"
 #include "wtf/Deque.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -69,7 +68,7 @@ public:
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static DocumentWebSocketChannel* create(Document* document, WebSocketChannelClient* client, PassOwnPtr<SourceLocation> location, WebSocketHandle *handle = 0)
+    static DocumentWebSocketChannel* create(Document* document, WebSocketChannelClient* client, std::unique_ptr<SourceLocation> location, WebSocketHandle *handle = 0)
     {
         return new DocumentWebSocketChannel(document, client, std::move(location), handle);
     }
@@ -80,12 +79,12 @@ public:
     void send(const CString& message) override;
     void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     void send(PassRefPtr<BlobDataHandle>) override;
-    void sendTextAsCharVector(PassOwnPtr<Vector<char>> data) override;
-    void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data) override;
+    void sendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
+    void sendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     void close(int code, const String& reason) override;
-    void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) override;
+    void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>) override;
     void disconnect() override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -108,7 +107,7 @@ private:
         Vector<char> data;
     };
 
-    DocumentWebSocketChannel(Document*, WebSocketChannelClient*, PassOwnPtr<SourceLocation>, WebSocketHandle*);
+    DocumentWebSocketChannel(Document*, WebSocketChannelClient*, std::unique_ptr<SourceLocation>, WebSocketHandle*);
     void sendInternal(WebSocketHandle::MessageType, const char* data, size_t totalSize, uint64_t* consumedBufferedAmount);
     void processSendQueue();
     void flowControlIfNecessary();
@@ -133,7 +132,7 @@ private:
 
     // m_handle is a handle of the connection.
     // m_handle == 0 means this channel is closed.
-    OwnPtr<WebSocketHandle> m_handle;
+    std::unique_ptr<WebSocketHandle> m_handle;
 
     // m_client can be deleted while this channel is alive, but this class
     // expects that disconnect() is called before the deletion.
@@ -150,7 +149,7 @@ private:
     uint64_t m_receivedDataSizeForFlowControl;
     size_t m_sentSizeOfTopMessage;
 
-    OwnPtr<SourceLocation> m_locationAtConstruction;
+    std::unique_ptr<SourceLocation> m_locationAtConstruction;
     RefPtr<WebSocketHandshakeRequest> m_handshakeRequest;
 
     static const uint64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;

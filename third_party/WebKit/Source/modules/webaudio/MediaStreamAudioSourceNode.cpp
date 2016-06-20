@@ -29,10 +29,11 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
 #include "wtf/Locker.h"
+#include <memory>
 
 namespace blink {
 
-MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
     : AudioHandler(NodeTypeMediaStreamAudioSource, node, node.context()->sampleRate())
     , m_mediaStream(mediaStream)
     , m_audioTrack(audioTrack)
@@ -46,7 +47,7 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, Me
     initialize();
 }
 
-PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
 {
     return adoptRef(new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
@@ -110,7 +111,7 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
     setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, std::move(audioSourceProvider)));
@@ -135,7 +136,7 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioCont
 
     // Use the first audio track in the media stream.
     MediaStreamTrack* audioTrack = audioTracks[0];
-    OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
+    std::unique_ptr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
 
     MediaStreamAudioSourceNode* node = new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, std::move(provider));
 

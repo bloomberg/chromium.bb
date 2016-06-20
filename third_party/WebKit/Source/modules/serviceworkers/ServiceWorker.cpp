@@ -41,6 +41,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerState.h"
+#include <memory>
 
 namespace blink {
 
@@ -58,7 +59,7 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
     }
 
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
     if (m_handle->serviceWorker()->state() == WebServiceWorkerStateRedundant) {
@@ -70,8 +71,8 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorker cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/511119"));
 
     WebString messageString = message->toWireString();
-    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
-    m_handle->serviceWorker()->postMessage(client->provider(), messageString, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), webChannels.leakPtr());
+    std::unique_ptr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
+    m_handle->serviceWorker()->postMessage(client->provider(), messageString, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), webChannels.release());
 }
 
 void ServiceWorker::internalsTerminate()
@@ -112,7 +113,7 @@ String ServiceWorker::state() const
     }
 }
 
-ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
+ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     return getOrCreate(executionContext, std::move(handle));
 }
@@ -129,7 +130,7 @@ void ServiceWorker::stop()
     m_wasStopped = true;
 }
 
-ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
+ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!handle)
         return nullptr;
@@ -145,7 +146,7 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
     return newWorker;
 }
 
-ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
+ServiceWorker::ServiceWorker(ExecutionContext* executionContext, std::unique_ptr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext)
     , ActiveScriptWrappable(this)
     , m_handle(std::move(handle))

@@ -33,12 +33,13 @@
 #include "platform/UUID.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/text/LineEnding.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 
 namespace blink {
 
@@ -78,9 +79,9 @@ void BlobDataItem::detachFromCurrentThread()
     fileSystemURL = fileSystemURL.copy();
 }
 
-PassOwnPtr<BlobData> BlobData::create()
+std::unique_ptr<BlobData> BlobData::create()
 {
-    return adoptPtr(new BlobData());
+    return wrapUnique(new BlobData());
 }
 
 void BlobData::detachFromCurrentThread()
@@ -203,7 +204,7 @@ BlobDataHandle::BlobDataHandle()
     BlobRegistry::registerBlobData(m_uuid, BlobData::create());
 }
 
-BlobDataHandle::BlobDataHandle(PassOwnPtr<BlobData> data, long long size)
+BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
     : m_uuid(createCanonicalUUIDString())
     , m_type(data->contentType().isolatedCopy())
     , m_size(size)

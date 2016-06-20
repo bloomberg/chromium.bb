@@ -31,8 +31,8 @@
 #include "platform/text/SuffixTree.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 
 namespace blink {
 
@@ -63,7 +63,7 @@ public:
     void init(Document*, XSSAuditorDelegate*);
     void initForFragment();
 
-    PassOwnPtr<XSSInfo> filterToken(const FilterTokenRequest&);
+    std::unique_ptr<XSSInfo> filterToken(const FilterTokenRequest&);
     bool isSafeToSendToAnotherThread() const;
 
     void setEncoding(const WTF::TextEncoding&);
@@ -129,7 +129,7 @@ private:
     String m_decodedURL;
     String m_decodedHTTPBody;
     String m_httpBodyAsString;
-    OwnPtr<SuffixTree<ASCIICodebook>> m_decodedHTTPBodySuffixTree;
+    std::unique_ptr<SuffixTree<ASCIICodebook>> m_decodedHTTPBodySuffixTree;
 
     State m_state;
     bool m_scriptTagFoundInRequest;

@@ -34,7 +34,7 @@
 #include "platform/audio/ZeroPole.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -98,8 +98,8 @@ protected:
     float m_lastAnchor;
     float m_lastFilterStageGain;
 
-    OwnPtr<const float*[]> m_sourceChannels;
-    OwnPtr<float*[]> m_destinationChannels;
+    std::unique_ptr<const float*[]> m_sourceChannels;
+    std::unique_ptr<float*[]> m_destinationChannels;
 
     // The core compressor.
     DynamicsCompressorKernel m_compressor;

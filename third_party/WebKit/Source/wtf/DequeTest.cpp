@@ -27,8 +27,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace WTF {
@@ -178,11 +177,11 @@ void ownPtrTest()
 {
     int destructNumber = 0;
     OwnPtrDeque deque;
-    deque.append(adoptPtr(new DestructCounter(0, &destructNumber)));
-    deque.append(adoptPtr(new DestructCounter(1, &destructNumber)));
+    deque.append(wrapUnique(new DestructCounter(0, &destructNumber)));
+    deque.append(wrapUnique(new DestructCounter(1, &destructNumber)));
     EXPECT_EQ(2u, deque.size());
 
-    OwnPtr<DestructCounter>& counter0 = deque.first();
+    std::unique_ptr<DestructCounter>& counter0 = deque.first();
     EXPECT_EQ(0, counter0->get());
     int counter1 = deque.last()->get();
     EXPECT_EQ(1, counter1);
@@ -190,7 +189,7 @@ void ownPtrTest()
 
     size_t index = 0;
     for (auto iter = deque.begin(); iter != deque.end(); ++iter) {
-        OwnPtr<DestructCounter>& refCounter = *iter;
+        std::unique_ptr<DestructCounter>& refCounter = *iter;
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
         EXPECT_EQ(index, static_cast<size_t>((*refCounter).get()));
         index++;
@@ -199,7 +198,7 @@ void ownPtrTest()
 
     auto it = deque.begin();
     for (index = 0; index < deque.size(); ++index) {
-        OwnPtr<DestructCounter>& refCounter = *it;
+        std::unique_ptr<DestructCounter>& refCounter = *it;
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
         index++;
         ++it;
@@ -212,7 +211,7 @@ void ownPtrTest()
     EXPECT_EQ(1u, deque.size());
     EXPECT_EQ(1, destructNumber);
 
-    OwnPtr<DestructCounter> ownCounter1 = std::move(deque.first());
+    std::unique_ptr<DestructCounter> ownCounter1 = std::move(deque.first());
     deque.removeFirst();
     EXPECT_EQ(counter1, ownCounter1->get());
     EXPECT_EQ(0u, deque.size());
@@ -224,9 +223,9 @@ void ownPtrTest()
     size_t count = 1025;
     destructNumber = 0;
     for (size_t i = 0; i < count; ++i)
-        deque.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
+        deque.prepend(wrapUnique(new DestructCounter(i, &destructNumber)));
 
-    // Deque relocation must not destruct OwnPtr element.
+    // Deque relocation must not destruct std::unique_ptr element.
     EXPECT_EQ(0, destructNumber);
     EXPECT_EQ(count, deque.size());
 
@@ -242,8 +241,8 @@ void ownPtrTest()
 
 TEST(DequeTest, OwnPtr)
 {
-    ownPtrTest<Deque<OwnPtr<DestructCounter>>>();
-    ownPtrTest<Deque<OwnPtr<DestructCounter>, 2>>();
+    ownPtrTest<Deque<std::unique_ptr<DestructCounter>>>();
+    ownPtrTest<Deque<std::unique_ptr<DestructCounter>, 2>>();
 }
 
 class MoveOnly {

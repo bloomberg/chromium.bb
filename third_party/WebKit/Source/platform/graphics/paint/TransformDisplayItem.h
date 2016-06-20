@@ -7,7 +7,6 @@
 
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

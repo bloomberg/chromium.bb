@@ -32,9 +32,9 @@
 
 #include "platform/image-decoders/ImageFrame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -73,7 +73,7 @@ private:
 
 TEST(ImageDecoderTest, sizeCalculationMayOverflow)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     EXPECT_FALSE(decoder->setSize(1 << 29, 1));
     EXPECT_FALSE(decoder->setSize(1, 1 << 29));
     EXPECT_FALSE(decoder->setSize(1 << 15, 1 << 15));
@@ -84,7 +84,7 @@ TEST(ImageDecoderTest, sizeCalculationMayOverflow)
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndex)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(6);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -109,7 +109,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndex)
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(3);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -126,7 +126,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor)
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexForFrame1)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(2);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -155,7 +155,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexForFrame1)
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(3);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -180,7 +180,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor)
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(3);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -204,7 +204,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque)
 
 TEST(ImageDecoderTest, clearCacheExceptFrameDoNothing)
 {
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->clearCacheExceptFrame(0);
 
     // This should not crash.
@@ -215,7 +215,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameDoNothing)
 TEST(ImageDecoderTest, clearCacheExceptFrameAll)
 {
     const size_t numFrames = 10;
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(numFrames);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
     for (size_t i = 0; i < numFrames; ++i)
@@ -232,7 +232,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll)
 TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame)
 {
     const size_t numFrames = 10;
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
     decoder->initFrames(numFrames);
     Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
     for (size_t i = 0; i < numFrames; ++i)

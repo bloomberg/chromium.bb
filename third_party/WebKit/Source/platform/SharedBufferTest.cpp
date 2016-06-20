@@ -31,12 +31,12 @@
 #include "platform/SharedBuffer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include <algorithm>
 #include <cstdlib>
+#include <memory>
 
 namespace blink {
 
@@ -51,7 +51,7 @@ TEST(SharedBufferTest, getAsBytes)
     sharedBuffer->append(testData2, strlen(testData2));
 
     const size_t size = sharedBuffer->size();
-    OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
+    std::unique_ptr<char[]> data = wrapArrayUnique(new char[size]);
     ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
     char expectedConcatenation[] = "HelloWorldGoodbye";
@@ -76,7 +76,7 @@ TEST(SharedBufferTest, getAsBytesLargeSegments)
     sharedBuffer->append(vector2);
 
     const size_t size = sharedBuffer->size();
-    OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
+    std::unique_ptr<char[]> data = wrapArrayUnique(new char[size]);
     ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
     ASSERT_EQ(0x4000U + 0x4000U + 0x4000U, size);

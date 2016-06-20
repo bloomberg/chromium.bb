@@ -16,6 +16,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/PlatformMouseEvent.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -29,7 +30,7 @@ protected:
     void setHtmlInnerHTML(const char* htmlContent);
 
 private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 class TapEventBuilder : public PlatformGestureEvent {

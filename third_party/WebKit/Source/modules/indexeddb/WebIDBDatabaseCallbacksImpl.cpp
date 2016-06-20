@@ -26,13 +26,15 @@
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
 #include "core/dom/DOMException.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 // static
-PassOwnPtr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(IDBDatabaseCallbacks* callbacks)
+std::unique_ptr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(IDBDatabaseCallbacks* callbacks)
 {
-    return adoptPtr(new WebIDBDatabaseCallbacksImpl(callbacks));
+    return wrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks* callbacks)

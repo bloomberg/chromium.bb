@@ -145,10 +145,11 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/InstanceCounter.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 #include <deque>
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -1473,7 +1474,7 @@ AtomicString Internals::htmlNamespace()
 Vector<AtomicString> Internals::htmlTags()
 {
     Vector<AtomicString> tags(HTMLNames::HTMLTagsCount);
-    OwnPtr<const HTMLQualifiedName*[]> qualifiedNames = HTMLNames::getHTMLTags();
+    std::unique_ptr<const HTMLQualifiedName*[]> qualifiedNames = HTMLNames::getHTMLTags();
     for (size_t i = 0; i < HTMLNames::HTMLTagsCount; ++i)
         tags[i] = qualifiedNames[i]->localName();
     return tags;
@@ -1487,7 +1488,7 @@ AtomicString Internals::svgNamespace()
 Vector<AtomicString> Internals::svgTags()
 {
     Vector<AtomicString> tags(SVGNames::SVGTagsCount);
-    OwnPtr<const SVGQualifiedName*[]> qualifiedNames = SVGNames::getSVGTags();
+    std::unique_ptr<const SVGQualifiedName*[]> qualifiedNames = SVGNames::getSVGTags();
     for (size_t i = 0; i < SVGNames::SVGTagsCount; ++i)
         tags[i] = qualifiedNames[i]->localName();
     return tags;
@@ -2219,7 +2220,7 @@ void Internals::resetTypeAheadSession(HTMLSelectElement* select)
 
 bool Internals::loseSharedGraphicsContext3D()
 {
-    OwnPtr<WebGraphicsContext3DProvider> sharedProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    std::unique_ptr<WebGraphicsContext3DProvider> sharedProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!sharedProvider)
         return false;
     gpu::gles2::GLES2Interface* sharedGL = sharedProvider->contextGL();

@@ -27,7 +27,8 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -79,7 +80,7 @@ inline bool matchesBMPSignature(const char* contents)
     return !memcmp(contents, "BM", 2);
 }
 
-PassOwnPtr<ImageDecoder> ImageDecoder::create(const char* contents, size_t length, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+std::unique_ptr<ImageDecoder> ImageDecoder::create(const char* contents, size_t length, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
     const size_t longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
@@ -90,34 +91,34 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const char* contents, size_t lengt
     size_t maxDecodedBytes = Platform::current() ? Platform::current()->maxDecodedImageBytes() : noDecodedImageByteLimit;
 
     if (matchesJPEGSignature(contents))
-        return adoptPtr(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesPNGSignature(contents))
-        return adoptPtr(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesGIFSignature(contents))
-        return adoptPtr(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesWebPSignature(contents))
-        return adoptPtr(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return adoptPtr(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesBMPSignature(contents))
-        return adoptPtr(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        return wrapUnique(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     return nullptr;
 }
 
-PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+std::unique_ptr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
     const char* contents;
     const size_t length = data.getSomeData<size_t>(contents);
     return create(contents, length, alphaOption, colorOptions);
 }
 
-PassOwnPtr<ImageDecoder> ImageDecoder::create(const SegmentReader& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+std::unique_ptr<ImageDecoder> ImageDecoder::create(const SegmentReader& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
     const char* contents;
     const size_t length = data.getSomeData(contents, 0);

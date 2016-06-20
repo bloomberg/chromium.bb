@@ -10,8 +10,7 @@
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -53,7 +52,7 @@ private:
     void notifyPositionChanged(const DoublePoint&);
 
     Member<ScrollableArea> m_scrollableArea;
-    OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
+    std::unique_ptr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     FloatPoint m_targetOffset;
     double m_startTime;
 };

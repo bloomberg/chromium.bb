@@ -24,6 +24,7 @@
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
@@ -167,7 +168,7 @@ void MediaKeySystemAccessInitializer::requestSucceeded(WebContentDecryptionModul
 {
     checkEmptyCodecs(access->getConfiguration());
 
-    m_resolver->resolve(new MediaKeySystemAccess(m_keySystem, adoptPtr(access)));
+    m_resolver->resolve(new MediaKeySystemAccess(m_keySystem, wrapUnique(access)));
     m_resolver.clear();
 }
 

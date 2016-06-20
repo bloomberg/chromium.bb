@@ -30,8 +30,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/StdLibExtras.h"

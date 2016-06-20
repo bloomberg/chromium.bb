@@ -12,7 +12,7 @@
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -67,10 +67,10 @@ private:
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-    Vector<OwnPtr<Timer<ThreadDebugger>>> m_timers;
+    Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
-    OwnPtr<UserGestureIndicator> m_userGestureIndicator;
+    std::unique_ptr<UserGestureIndicator> m_userGestureIndicator;
     v8::Global<v8::Function> m_eventLogFunction;
 };
 

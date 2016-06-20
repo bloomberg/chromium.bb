@@ -30,6 +30,8 @@
 #include "platform/geometry/FloatPolygon.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -38,16 +40,16 @@ public:
     FloatPolygonTestValue(const float* coordinates, unsigned coordinatesLength, WindRule fillRule)
     {
         ASSERT(!(coordinatesLength % 2));
-        OwnPtr<Vector<FloatPoint>> vertices = adoptPtr(new Vector<FloatPoint>(coordinatesLength / 2));
+        std::unique_ptr<Vector<FloatPoint>> vertices = wrapUnique(new Vector<FloatPoint>(coordinatesLength / 2));
         for (unsigned i = 0; i < coordinatesLength; i += 2)
             (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-        m_polygon = adoptPtr(new FloatPolygon(std::move(vertices), fillRule));
+        m_polygon = wrapUnique(new FloatPolygon(std::move(vertices), fillRule));
     }
 
     const FloatPolygon& polygon() const { return *m_polygon; }
 
 private:
-    OwnPtr<FloatPolygon> m_polygon;
+    std::unique_ptr<FloatPolygon> m_polygon;
 };
 
 namespace {

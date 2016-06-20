@@ -9,6 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 class SkImage;
 
@@ -22,10 +23,10 @@ public:
     void requestFrame();
 
 protected:
-    explicit CanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler>);
+    explicit CanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 
     bool m_frameCaptureRequested;
-    OwnPtr<WebCanvasCaptureHandler> m_handler;
+    std::unique_ptr<WebCanvasCaptureHandler> m_handler;
 };
 
 } // namespace blink

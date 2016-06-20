@@ -44,6 +44,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -78,7 +79,7 @@ public:
     DECLARE_TRACE();
 
     EventListenerMap eventListenerMap;
-    OwnPtr<FiringEventIteratorVector> firingEventIterators;
+    std::unique_ptr<FiringEventIteratorVector> firingEventIterators;
 };
 
 // This is the base class for all DOM event targets. To make your class an

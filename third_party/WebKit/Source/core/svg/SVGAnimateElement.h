@@ -28,7 +28,6 @@
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 #include <base/gtest_prod_util.h>
 
 namespace blink {

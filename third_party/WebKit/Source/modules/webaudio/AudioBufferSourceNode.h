@@ -30,10 +30,10 @@
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
+#include <memory>
 
 namespace blink {
 
@@ -103,8 +103,8 @@ private:
     Persistent<AudioBuffer> m_buffer;
 
     // Pointers for the buffer and destination.
-    OwnPtr<const float*[]> m_sourceChannels;
-    OwnPtr<float*[]> m_destinationChannels;
+    std::unique_ptr<const float*[]> m_sourceChannels;
+    std::unique_ptr<float*[]> m_destinationChannels;
 
     RefPtr<AudioParamHandler> m_playbackRate;
     RefPtr<AudioParamHandler> m_detune;

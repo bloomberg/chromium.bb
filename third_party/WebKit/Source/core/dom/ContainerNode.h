@@ -28,7 +28,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/html/CollectionType.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

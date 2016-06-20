@@ -25,11 +25,12 @@
 
 #include "wtf/text/TextCodecUTF16.h"
 
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 using namespace std;
 
@@ -50,14 +51,14 @@ void TextCodecUTF16::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("unicodeFFFE", "UTF-16BE");
 }
 
-static PassOwnPtr<TextCodec> newStreamingTextDecoderUTF16LE(const TextEncoding&, const void*)
+static std::unique_ptr<TextCodec> newStreamingTextDecoderUTF16LE(const TextEncoding&, const void*)
 {
-    return adoptPtr(new TextCodecUTF16(true));
+    return wrapUnique(new TextCodecUTF16(true));
 }
 
-static PassOwnPtr<TextCodec> newStreamingTextDecoderUTF16BE(const TextEncoding&, const void*)
+static std::unique_ptr<TextCodec> newStreamingTextDecoderUTF16BE(const TextEncoding&, const void*)
 {
-    return adoptPtr(new TextCodecUTF16(false));
+    return wrapUnique(new TextCodecUTF16(false));
 }
 
 void TextCodecUTF16::registerCodecs(TextCodecRegistrar registrar)

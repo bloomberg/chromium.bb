@@ -5,10 +5,10 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,9 +24,9 @@ void splitStringHelper(const String& str, HashSet<String>& set)
 
 } // anonymous namespace
 
-PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(gpu::gles2::GLES2Interface* gl)
+std::unique_ptr<Extensions3DUtil> Extensions3DUtil::create(gpu::gles2::GLES2Interface* gl)
 {
-    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(gl));
+    std::unique_ptr<Extensions3DUtil> out = wrapUnique(new Extensions3DUtil(gl));
     out->initializeExtensions();
     return out;
 }

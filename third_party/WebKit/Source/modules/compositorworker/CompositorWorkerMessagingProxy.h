@@ -7,6 +7,7 @@
 
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "wtf/Allocator.h"
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +19,7 @@ public:
 protected:
     ~CompositorWorkerMessagingProxy() override;
 
-    PassOwnPtr<WorkerThread> createWorkerThread(double originTime) override;
+    std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
 } // namespace blink

@@ -39,7 +39,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -86,7 +86,7 @@ void DocumentWriter::addData(const char* bytes, size_t length)
 {
     ASSERT(m_parser);
     if (m_parser->needsDecoder() && 0 < length) {
-        OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        std::unique_ptr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
         m_parser->setDecoder(std::move(decoder));
     }
     // appendBytes() can result replacing DocumentLoader::m_writer.
@@ -101,7 +101,7 @@ void DocumentWriter::end()
         return;
 
     if (m_parser->needsDecoder()) {
-        OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        std::unique_ptr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
         m_parser->setDecoder(std::move(decoder));
     }
 

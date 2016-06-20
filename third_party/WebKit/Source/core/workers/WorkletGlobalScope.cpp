@@ -8,6 +8,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include <memory>
 
 namespace blink {
 
@@ -68,7 +69,7 @@ void WorkletGlobalScope::reportBlockedScriptExecutionToInspector(const String& d
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkletGlobalScope::logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation> location)
+void WorkletGlobalScope::logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
     ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
     addConsoleMessage(consoleMessage);

@@ -38,9 +38,8 @@
 #include "modules/ModulesExport.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -50,7 +49,7 @@ class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public ActiveS
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 public:
-    static ServiceWorker* from(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
+    static ServiceWorker* from(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
 
     ~ServiceWorker() override;
     DECLARE_VIRTUAL_TRACE();
@@ -72,8 +71,8 @@ public:
 
     void internalsTerminate();
 private:
-    static ServiceWorker* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
-    ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
+    static ServiceWorker* getOrCreate(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
+    ServiceWorker(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
 
     // ActiveScriptWrappable overrides.
     bool hasPendingActivity() const final;
@@ -82,7 +81,7 @@ private:
     void stop() override;
 
     // A handle to the service worker representation in the embedder.
-    OwnPtr<WebServiceWorker::Handle> m_handle;
+    std::unique_ptr<WebServiceWorker::Handle> m_handle;
     bool m_wasStopped;
 };
 

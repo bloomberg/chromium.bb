@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/EventTracer.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace base {
 namespace trace_event {
@@ -25,7 +25,7 @@ class PLATFORM_EXPORT TracedValue final {
 public:
     ~TracedValue();
 
-    static PassOwnPtr<TracedValue> create();
+    static std::unique_ptr<TracedValue> create();
 
     void endDictionary();
     void endArray();

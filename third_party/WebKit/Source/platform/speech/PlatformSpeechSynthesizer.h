@@ -30,6 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -94,7 +95,7 @@ protected:
 private:
     Member<PlatformSpeechSynthesizerClient> m_speechSynthesizerClient;
 
-    OwnPtr<WebSpeechSynthesizer> m_webSpeechSynthesizer;
+    std::unique_ptr<WebSpeechSynthesizer> m_webSpeechSynthesizer;
     Member<WebSpeechSynthesizerClientImpl> m_webSpeechSynthesizerClient;
 };
 

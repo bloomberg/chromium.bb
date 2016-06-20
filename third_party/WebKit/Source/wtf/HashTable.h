@@ -25,7 +25,9 @@
 #include "wtf/Assertions.h"
 #include "wtf/ConditionalDestructor.h"
 #include "wtf/HashTraits.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/allocator/PartitionAllocator.h"
+#include <memory>
 
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
@@ -579,7 +581,7 @@ private:
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 public:
-    mutable OwnPtr<Stats> m_stats;
+    mutable std::unique_ptr<Stats> m_stats;
 #endif
 
     template <WeakHandlingFlag x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z> friend struct WeakProcessingHashTableHelper;
@@ -598,7 +600,7 @@ inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     , m_modifications(0)
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-    , m_stats(adoptPtr(new Stats))
+    , m_stats(wrapUnique(new Stats))
 #endif
 {
     static_assert(Allocator::isGarbageCollected || (!IsPointerToGarbageCollectedType<Key>::value && !IsPointerToGarbageCollectedType<Value>::value), "Cannot put raw pointers to garbage-collected classes into an off-heap collection.");
@@ -1235,7 +1237,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::H
     , m_modifications(0)
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-    , m_stats(adoptPtr(new Stats(*other.m_stats)))
+    , m_stats(wrapUnique(new Stats(*other.m_stats)))
 #endif
 {
     // Copy the hash table the dumb way, by adding each element to the new
@@ -1258,7 +1260,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::H
     , m_modifications(0)
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-    , m_stats(adoptPtr(new Stats(*other.m_stats)))
+    , m_stats(wrapUnique(new Stats(*other.m_stats)))
 #endif
 {
     swap(other);

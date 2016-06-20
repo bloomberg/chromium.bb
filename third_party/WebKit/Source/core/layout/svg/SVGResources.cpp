@@ -30,6 +30,8 @@
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGURIReference.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -195,15 +197,15 @@ bool SVGResources::hasResourceData() const
         || m_linkedResource;
 }
 
-static inline SVGResources& ensureResources(OwnPtr<SVGResources>& resources)
+static inline SVGResources& ensureResources(std::unique_ptr<SVGResources>& resources)
 {
     if (!resources)
-        resources = adoptPtr(new SVGResources);
+        resources = wrapUnique(new SVGResources);
 
     return *resources.get();
 }
 
-PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGComputedStyle& style)
+std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGComputedStyle& style)
 {
     ASSERT(object);
 
@@ -220,7 +222,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
     TreeScope& treeScope = element->treeScope();
     SVGDocumentExtensions& extensions = element->document().accessSVGExtensions();
 
-    OwnPtr<SVGResources> resources;
+    std::unique_ptr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style.hasClipper()) {
             AtomicString id = style.clipperResource();

@@ -11,6 +11,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,7 +25,7 @@ protected:
     bool isDocumentStyleSheetCollectionClean() { return !styleEngine().shouldUpdateDocumentStyleSheetCollection(AnalyzedStyleUpdate); }
 
 private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void StyleEngineTest::SetUp()

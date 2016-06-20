@@ -44,6 +44,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashTraits.h"
 #include "wtf/LinkedHashSet.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -465,9 +467,9 @@ class ThreadedTesterBase {
 protected:
     static void test(ThreadedTesterBase* tester)
     {
-        Vector<OwnPtr<WebThread>, numberOfThreads> m_threads;
+        Vector<std::unique_ptr<WebThread>, numberOfThreads> m_threads;
         for (int i = 0; i < numberOfThreads; i++) {
-            m_threads.append(adoptPtr(Platform::current()->createThread("blink gc testing thread")));
+            m_threads.append(wrapUnique(Platform::current()->createThread("blink gc testing thread")));
             m_threads.last()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(threadFunc, AllowCrossThreadAccess(tester)));
         }
         while (tester->m_threadsToFinish) {
@@ -529,11 +531,11 @@ protected:
     using GlobalIntWrapperPersistent = CrossThreadPersistent<IntWrapper>;
 
     Mutex m_mutex;
-    Vector<OwnPtr<GlobalIntWrapperPersistent>> m_crossPersistents;
+    Vector<std::unique_ptr<GlobalIntWrapperPersistent>> m_crossPersistents;
 
-    PassOwnPtr<GlobalIntWrapperPersistent> createGlobalPersistent(int value)
+    std::unique_ptr<GlobalIntWrapperPersistent> createGlobalPersistent(int value)
     {
-        return adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(value)));
+        return wrapUnique(new GlobalIntWrapperPersistent(IntWrapper::create(value)));
     }
 
     void addGlobalPersistent()
@@ -557,7 +559,7 @@ protected:
             {
                 Persistent<IntWrapper> wrapper;
 
-                OwnPtr<GlobalIntWrapperPersistent> globalPersistent = createGlobalPersistent(0x0ed0cabb);
+                std::unique_ptr<GlobalIntWrapperPersistent> globalPersistent = createGlobalPersistent(0x0ed0cabb);
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     wrapper = IntWrapper::create(0x0bbac0de);
@@ -1388,7 +1390,7 @@ private:
 
 class FinalizationObserverWithHashMap {
 public:
-    typedef HeapHashMap<WeakMember<Observable>, OwnPtr<FinalizationObserverWithHashMap>> ObserverMap;
+    typedef HeapHashMap<WeakMember<Observable>, std::unique_ptr<FinalizationObserverWithHashMap>> ObserverMap;
 
     explicit FinalizationObserverWithHashMap(Observable& target) : m_target(target) { }
     ~FinalizationObserverWithHashMap()
@@ -1402,7 +1404,7 @@ public:
         ObserverMap& map = observers();
         ObserverMap::AddResult result = map.add(&target, nullptr);
         if (result.isNewEntry)
-            result.storedValue->value = adoptPtr(new FinalizationObserverWithHashMap(target));
+            result.storedValue->value = wrapUnique(new FinalizationObserverWithHashMap(target));
         else
             ASSERT(result.storedValue->value);
         return map;
@@ -4794,9 +4796,9 @@ void destructorsCalledOnClear(bool addLots)
 
 TEST(HeapTest, DestructorsCalled)
 {
-    HeapHashMap<Member<IntWrapper>, OwnPtr<SimpleClassWithDestructor>> map;
+    HeapHashMap<Member<IntWrapper>, std::unique_ptr<SimpleClassWithDestructor>> map;
     SimpleClassWithDestructor* hasDestructor = new SimpleClassWithDestructor();
-    map.add(IntWrapper::create(1), adoptPtr(hasDestructor));
+    map.add(IntWrapper::create(1), wrapUnique(hasDestructor));
     SimpleClassWithDestructor::s_wasDestructed = false;
     map.clear();
     EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
@@ -4941,7 +4943,7 @@ class GCParkingThreadTester {
 public:
     static void test()
     {
-        OwnPtr<WebThread> sleepingThread = adoptPtr(Platform::current()->createThread("SleepingThread"));
+        std::unique_ptr<WebThread> sleepingThread = wrapUnique(Platform::current()->createThread("SleepingThread"));
         sleepingThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(sleeperMainFunc));
 
         // Wait for the sleeper to run.
@@ -5606,7 +5608,7 @@ public:
         IntWrapper::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        std::unique_ptr<WebThread> workerThread = wrapUnique(Platform::current()->createThread("Test Worker Thread"));
         workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMain));
 
         // Wait for the worker thread to have done its initialization,
@@ -5709,7 +5711,7 @@ public:
         IntWrapper::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        std::unique_ptr<WebThread> workerThread = wrapUnique(Platform::current()->createThread("Test Worker Thread"));
         workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMain));
 
         // Wait for the worker thread initialization. The worker
@@ -5912,7 +5914,7 @@ public:
         DestructorLockingObject::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        std::unique_ptr<WebThread> workerThread = wrapUnique(Platform::current()->createThread("Test Worker Thread"));
         workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMain));
 
         // Park the main thread until the worker thread has initialized.
@@ -6617,7 +6619,7 @@ private:
 TEST(HeapTest, WeakPersistent)
 {
     Persistent<IntWrapper> object = new IntWrapper(20);
-    OwnPtr<WeakPersistentHolder> holder = adoptPtr(new WeakPersistentHolder(object));
+    std::unique_ptr<WeakPersistentHolder> holder = wrapUnique(new WeakPersistentHolder(object));
     preciselyCollectGarbage();
     EXPECT_TRUE(holder->object());
     object = nullptr;
@@ -6658,7 +6660,7 @@ TEST(HeapTest, CrossThreadWeakPersistent)
 
     // Step 1: Initiate a worker thread, and wait for |object| to get allocated on the worker thread.
     MutexLocker mainThreadMutexLocker(mainThreadMutex());
-    OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> workerThread = wrapUnique(Platform::current()->createThread("Test Worker Thread"));
     DestructorLockingObject* object = nullptr;
     workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccess(&object)));
     parkMainThread();

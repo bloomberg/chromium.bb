@@ -32,8 +32,10 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +46,7 @@ class CORE_EXPORT MainThreadTaskRunner final {
     USING_FAST_MALLOC(MainThreadTaskRunner);
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
 public:
-    static PassOwnPtr<MainThreadTaskRunner> create(ExecutionContext*);
+    static std::unique_ptr<MainThreadTaskRunner> create(ExecutionContext*);
 
     ~MainThreadTaskRunner();
 
@@ -73,9 +75,9 @@ private:
     WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
 };
 
-inline PassOwnPtr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)
+inline std::unique_ptr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)
 {
-    return adoptPtr(new MainThreadTaskRunner(context));
+    return wrapUnique(new MainThreadTaskRunner(context));
 }
 
 } // namespace blink

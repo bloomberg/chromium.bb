@@ -10,6 +10,8 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/DataEquivalency.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -17,9 +19,9 @@ namespace {
 
 class UnderlyingCompatibilityChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingCompatibilityChecker> create(PassRefPtr<NonInterpolableValue> underlyingNonInterpolableValue)
+    static std::unique_ptr<UnderlyingCompatibilityChecker> create(PassRefPtr<NonInterpolableValue> underlyingNonInterpolableValue)
     {
-        return adoptPtr(new UnderlyingCompatibilityChecker(underlyingNonInterpolableValue));
+        return wrapUnique(new UnderlyingCompatibilityChecker(underlyingNonInterpolableValue));
     }
 
 private:
@@ -37,9 +39,9 @@ private:
 
 class InheritedShapeChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<InheritedShapeChecker> create(CSSPropertyID property, PassRefPtr<BasicShape> inheritedShape)
+    static std::unique_ptr<InheritedShapeChecker> create(CSSPropertyID property, PassRefPtr<BasicShape> inheritedShape)
     {
-        return adoptPtr(new InheritedShapeChecker(property, inheritedShape));
+        return wrapUnique(new InheritedShapeChecker(property, inheritedShape));
     }
 
 private:

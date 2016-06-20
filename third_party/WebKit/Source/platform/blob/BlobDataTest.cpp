@@ -6,8 +6,8 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -28,7 +28,7 @@ TEST(BlobDataTest, Consolidation)
     EXPECT_EQ(0, memcmp(data.m_items[0].data->data(), "abcdefps1ps2", 12));
 
 
-    OwnPtr<char[]> large_data = adoptArrayPtr(new char[kMaxConsolidatedItemSizeInBytes]);
+    std::unique_ptr<char[]> large_data = wrapArrayUnique(new char[kMaxConsolidatedItemSizeInBytes]);
     data.appendBytes(large_data.get(), kMaxConsolidatedItemSizeInBytes);
 
     EXPECT_EQ(2u, data.m_items.size());

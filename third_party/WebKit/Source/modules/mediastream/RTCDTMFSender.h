@@ -30,6 +30,7 @@
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
+#include <memory>
 
 namespace blink {
 
@@ -71,7 +72,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);
+    RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, std::unique_ptr<WebRTCDTMFSenderHandler>);
     void dispose();
 
     void scheduleDispatchEvent(Event*);
@@ -84,7 +85,7 @@ private:
     int m_duration;
     int m_interToneGap;
 
-    OwnPtr<WebRTCDTMFSenderHandler> m_handler;
+    std::unique_ptr<WebRTCDTMFSenderHandler> m_handler;
 
     bool m_stopped;
 

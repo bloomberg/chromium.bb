@@ -6,6 +6,7 @@
 #define TracedLayoutObject_h
 
 #include "platform/TracedValue.h"
+#include <memory>
 
 namespace blink {
 
@@ -13,7 +14,7 @@ class LayoutView;
 
 class TracedLayoutObject {
 public:
-    static PassOwnPtr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
+    static std::unique_ptr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
 };
 
 } // namespace blink

@@ -10,8 +10,8 @@
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/scroll/ScrollTypes.h"
-
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace blink {
 
@@ -82,7 +82,7 @@ protected:
         return coordinator().snapOffsets(node, orientation);
     }
 
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
 INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, ::testing::Values(

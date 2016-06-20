@@ -8,7 +8,6 @@
 #include "core/html/LinkResource.h"
 #include "modules/ModulesExport.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

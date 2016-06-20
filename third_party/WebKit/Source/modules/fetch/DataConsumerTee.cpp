@@ -16,9 +16,11 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Deque.h"
 #include "wtf/Functional.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -148,7 +150,7 @@ public:
         {
             MutexLocker locker(m_mutex);
             needsNotification = m_queue.isEmpty();
-            OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>);
+            std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>);
             data->append(buffer, size);
             m_queue.append(std::move(data));
         }
@@ -209,7 +211,7 @@ public:
         m_readerThread = nullptr;
         m_client = nullptr;
     }
-    const OwnPtr<Vector<char>>& top() const { return m_queue.first(); }
+    const std::unique_ptr<Vector<char>>& top() const { return m_queue.first(); }
     bool isEmpty() const { return m_queue.isEmpty(); }
     size_t offset() const { return m_offset; }
     void consume(size_t size)
@@ -245,7 +247,7 @@ private:
     }
 
     Result m_result;
-    Deque<OwnPtr<Vector<char>>> m_queue;
+    Deque<std::unique_ptr<Vector<char>>> m_queue;
     // Note: Holding a WebThread raw pointer is not generally safe, but we can
     // do that in this case because:
     //  1. Destructing a ReaderImpl when the bound thread ends is a user's
@@ -287,7 +289,7 @@ public:
         if (context()->isEmpty())
             return context()->getResult();
 
-        const OwnPtr<Vector<char>>& chunk = context()->top();
+        const std::unique_ptr<Vector<char>>& chunk = context()->top();
         *available = chunk->size() - context()->offset();
         *buffer = chunk->data() + context()->offset();
         return WebDataConsumerHandle::Ok;
@@ -310,9 +312,9 @@ private:
 
 class DestinationHandle final : public WebDataConsumerHandle {
 public:
-    static PassOwnPtr<WebDataConsumerHandle> create(PassRefPtr<DestinationContext::Proxy> contextProxy)
+    static std::unique_ptr<WebDataConsumerHandle> create(PassRefPtr<DestinationContext::Proxy> contextProxy)
     {
-        return adoptPtr(new DestinationHandle(contextProxy));
+        return wrapUnique(new DestinationHandle(contextProxy));
     }
 
 private:
@@ -329,7 +331,7 @@ class SourceContext final : public GarbageCollectedFinalized<SourceContext>, pub
 public:
     SourceContext(
         PassRefPtr<TeeRootObject> root,
-        PassOwnPtr<WebDataConsumerHandle> src,
+        std::unique_ptr<WebDataConsumerHandle> src,
         PassRefPtr<DestinationContext> dest1,
         PassRefPtr<DestinationContext> dest2,
         ExecutionContext* executionContext)
@@ -394,14 +396,14 @@ private:
     }
 
     RefPtr<TeeRootObject> m_root;
-    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+    std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
     RefPtr<DestinationContext> m_dest1;
     RefPtr<DestinationContext> m_dest2;
 };
 
 } // namespace
 
-void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2)
+void DataConsumerTee::create(ExecutionContext* executionContext, std::unique_ptr<WebDataConsumerHandle> src, std::unique_ptr<WebDataConsumerHandle>* dest1, std::unique_ptr<WebDataConsumerHandle>* dest2)
 {
     RefPtr<TeeRootObject> root = TeeRootObject::create();
     RefPtr<DestinationTracker> tracker = DestinationTracker::create(root);
@@ -414,7 +416,7 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<WebD
     *dest2 = DestinationHandle::create(DestinationContext::Proxy::create(context2, tracker));
 }
 
-void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<FetchDataConsumerHandle> src, OwnPtr<FetchDataConsumerHandle>* dest1, OwnPtr<FetchDataConsumerHandle>* dest2)
+void DataConsumerTee::create(ExecutionContext* executionContext, std::unique_ptr<FetchDataConsumerHandle> src, std::unique_ptr<FetchDataConsumerHandle>* dest1, std::unique_ptr<FetchDataConsumerHandle>* dest2)
 {
     RefPtr<BlobDataHandle> blobDataHandle = src->obtainReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
     if (blobDataHandle) {
@@ -423,8 +425,8 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<Fetc
         return;
     }
 
-    OwnPtr<WebDataConsumerHandle> webDest1, webDest2;
-    DataConsumerTee::create(executionContext, static_cast<PassOwnPtr<WebDataConsumerHandle>>(std::move(src)), &webDest1, &webDest2);
+    std::unique_ptr<WebDataConsumerHandle> webDest1, webDest2;
+    DataConsumerTee::create(executionContext, static_cast<std::unique_ptr<WebDataConsumerHandle>>(std::move(src)), &webDest1, &webDest2);
     *dest1 = createFetchDataConsumerHandleFromWebHandle(std::move(webDest1));
     *dest2 = createFetchDataConsumerHandleFromWebHandle(std::move(webDest2));
     return;

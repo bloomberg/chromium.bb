@@ -36,6 +36,7 @@
 #include "platform/FileSystemType.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -83,7 +84,7 @@ protected:
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
     void didSucceed() override;
 
 private:
@@ -95,7 +96,7 @@ private:
 
 class EntriesCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
     void didReadDirectoryEntry(const String& name, bool isDirectory) override;
     void didReadDirectoryEntries(bool hasMore) override;
 
@@ -109,7 +110,7 @@ private:
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
     void didOpenFileSystem(const String& name, const KURL& rootURL) override;
 
 private:
@@ -120,7 +121,7 @@ private:
 
 class ResolveURICallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*);
     void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry) override;
 
 private:
@@ -130,7 +131,7 @@ private:
 
 class MetadataCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
     void didReadMetadata(const FileMetadata&) override;
 
 private:
@@ -140,8 +141,8 @@ private:
 
 class FileWriterBaseCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
-    void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) override;
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
+    void didCreateFileWriter(std::unique_ptr<WebFileWriter>, long long length) override;
 
 private:
     FileWriterBaseCallbacks(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
@@ -151,7 +152,7 @@ private:
 
 class SnapshotFileCallback final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, BlobCallback*, ErrorCallback*, ExecutionContext*);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, BlobCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didCreateSnapshotFile(const FileMetadata&, PassRefPtr<BlobDataHandle> snapshot);
 
 private:
@@ -163,7 +164,7 @@ private:
 
 class VoidCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
+    static std::unique_ptr<AsyncFileSystemCallbacks> create(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
     void didSucceed() override;
 
 private:

@@ -6,12 +6,13 @@
 
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-
+#include <memory>
 #include <utility>
 
 namespace blink {
@@ -35,7 +36,7 @@ class FetchFormDataConsumerHandle::Context : public ThreadSafeRefCounted<Context
     WTF_MAKE_NONCOPYABLE(Context);
 public:
     virtual ~Context() {}
-    virtual PassOwnPtr<FetchDataConsumerHandle::Reader> obtainReader(Client*) = 0;
+    virtual std::unique_ptr<FetchDataConsumerHandle::Reader> obtainReader(Client*) = 0;
 
 protected:
     explicit Context() {}
@@ -48,7 +49,7 @@ public:
     static PassRefPtr<SimpleContext> create(const void* data, size_t size) { return adoptRef(new SimpleContext(data, size)); }
     static PassRefPtr<SimpleContext> create(PassRefPtr<EncodedFormData> body) { return adoptRef(new SimpleContext(body)); }
 
-    PassOwnPtr<Reader> obtainReader(Client* client) override
+    std::unique_ptr<Reader> obtainReader(Client* client) override
     {
         // For memory barrier.
         Mutex m;
@@ -61,7 +62,7 @@ public:
         if (!m_formData)
             return nullptr;
         flatten();
-        OwnPtr<BlobData> blobData = BlobData::create();
+        std::unique_ptr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(m_flattenFormData.data(), m_flattenFormData.size());
         m_flattenFormData.clear();
         auto length = blobData->length();
@@ -121,7 +122,7 @@ private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
         WTF_MAKE_NONCOPYABLE(ReaderImpl);
     public:
-        static PassOwnPtr<ReaderImpl> create(PassRefPtr<SimpleContext> context, Client* client) { return adoptPtr(new ReaderImpl(context, client)); }
+        static std::unique_ptr<ReaderImpl> create(PassRefPtr<SimpleContext> context, Client* client) { return wrapUnique(new ReaderImpl(context, client)); }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             return m_context->read(data, size, flags, readSize);
@@ -184,7 +185,7 @@ public:
         return adoptRef(new ComplexContext(executionContext, formData, factory));
     }
 
-    PassOwnPtr<FetchFormDataConsumerHandle::Reader> obtainReader(Client* client) override
+    std::unique_ptr<FetchFormDataConsumerHandle::Reader> obtainReader(Client* client) override
     {
         // For memory barrier.
         Mutex m;
@@ -196,7 +197,7 @@ private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
         WTF_MAKE_NONCOPYABLE(ReaderImpl);
     public:
-        static PassOwnPtr<ReaderImpl> create(PassRefPtr<ComplexContext> context, Client* client) { return adoptPtr(new ReaderImpl(context, client)); }
+        static std::unique_ptr<ReaderImpl> create(PassRefPtr<ComplexContext> context, Client* client) { return wrapUnique(new ReaderImpl(context, client)); }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             Result r = m_reader->read(data, size, flags, readSize);
@@ -239,12 +240,12 @@ private:
         ReaderImpl(PassRefPtr<ComplexContext> context, Client* client) : m_context(context), m_reader(m_context->m_handle->obtainReader(client)) {}
 
         RefPtr<ComplexContext> m_context;
-        OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     };
 
     ComplexContext(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* factory)
     {
-        OwnPtr<BlobData> blobData = BlobData::create();
+        std::unique_ptr<BlobData> blobData = BlobData::create();
         for (const auto& element : body->elements()) {
             switch (element.m_type) {
             case FormDataElement::data:
@@ -284,35 +285,35 @@ private:
     }
 
     RefPtr<EncodedFormData> m_formData;
-    OwnPtr<FetchDataConsumerHandle> m_handle;
+    std::unique_ptr<FetchDataConsumerHandle> m_handle;
 };
 
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(const String& body)
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(const String& body)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(body));
+    return wrapUnique(new FetchFormDataConsumerHandle(body));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(DOMArrayBuffer* body)
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(DOMArrayBuffer* body)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(body->data(), body->byteLength()));
+    return wrapUnique(new FetchFormDataConsumerHandle(body->data(), body->byteLength()));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(DOMArrayBufferView* body)
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(DOMArrayBufferView* body)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(body->baseAddress(), body->byteLength()));
+    return wrapUnique(new FetchFormDataConsumerHandle(body->baseAddress(), body->byteLength()));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(const void* data, size_t size)
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(const void* data, size_t size)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(data, size));
+    return wrapUnique(new FetchFormDataConsumerHandle(data, size));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body)
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(executionContext, body));
+    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, body));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::createForTest(
+std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::createForTest(
     ExecutionContext* executionContext,
     PassRefPtr<EncodedFormData> body,
     FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
 {
-    return adoptPtr(new FetchFormDataConsumerHandle(executionContext, body, loaderFactory));
+    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, body, loaderFactory));
 }
 
 FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(const String& body) : m_context(SimpleContext::create(body)) {}
@@ -331,7 +332,7 @@ FetchFormDataConsumerHandle::~FetchFormDataConsumerHandle() {}
 
 FetchDataConsumerHandle::Reader* FetchFormDataConsumerHandle::obtainReaderInternal(Client* client)
 {
-    return m_context->obtainReader(client).leakPtr();
+    return m_context->obtainReader(client).release();
 }
 
 } // namespace blink

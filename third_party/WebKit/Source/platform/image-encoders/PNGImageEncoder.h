@@ -36,8 +36,8 @@ extern "C" {
 #include "png.h"
 }
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class PLATFORM_EXPORT PNGImageEncoderState final {
     USING_FAST_MALLOC(PNGImageEncoderState);
     WTF_MAKE_NONCOPYABLE(PNGImageEncoderState);
 public:
-    static PassOwnPtr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
+    static std::unique_ptr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
     ~PNGImageEncoderState();
     png_struct* png() { ASSERT(m_png); return m_png; }
     png_info* info() { ASSERT(m_info); return m_info; }

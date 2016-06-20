@@ -37,6 +37,7 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -74,8 +75,8 @@ public:
     void onNavigationStarted() override { }
 
 private:
-    WTF::Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
-    OwnPtr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
+    WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
+    std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
 };
 
 class TestingPlatformSupport : public Platform {
@@ -112,7 +113,7 @@ public:
     TestingPlatformMockScheduler* mockWebScheduler();
 
 protected:
-    OwnPtr<TestingPlatformMockWebThread> m_mockWebThread;
+    std::unique_ptr<TestingPlatformMockWebThread> m_mockWebThread;
 };
 
 } // namespace blink

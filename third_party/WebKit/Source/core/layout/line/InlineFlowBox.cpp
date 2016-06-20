@@ -36,6 +36,7 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
+#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <math.h>
 
@@ -952,7 +953,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new SimpleOverflowModel(frameBox, frameBox));
+        m_overflow = wrapUnique(new SimpleOverflowModel(frameBox, frameBox));
 
     m_overflow->setLayoutOverflow(rect);
 }
@@ -964,7 +965,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new SimpleOverflowModel(frameBox, frameBox));
+        m_overflow = wrapUnique(new SimpleOverflowModel(frameBox, frameBox));
 
     m_overflow->setVisualOverflow(rect);
 }

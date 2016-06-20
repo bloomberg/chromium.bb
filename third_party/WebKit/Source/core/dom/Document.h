@@ -55,9 +55,8 @@
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -672,7 +671,7 @@ public:
     void setWindowAttributeEventListener(const AtomicString& eventType, EventListener*);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
-    static void registerEventFactory(PassOwnPtr<EventFactoryBase>);
+    static void registerEventFactory(std::unique_ptr<EventFactoryBase>);
     static Event* createEvent(ExecutionContext*, const String& eventType, ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
@@ -813,7 +812,7 @@ public:
     void pushCurrentScript(Element*);
     void popCurrentScript();
 
-    void setTransformSource(PassOwnPtr<TransformSource>);
+    void setTransformSource(std::unique_ptr<TransformSource>);
     TransformSource* transformSource() const { return m_transformSource.get(); }
 
     void incDOMTreeVersion() { DCHECK(m_lifecycle.stateAllowsTreeMutations()); m_domTreeVersion = ++s_globalTreeVersion; }
@@ -950,7 +949,7 @@ public:
     void cancelIdleCallback(int id);
 
     EventTarget* errorEventTarget() final;
-    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) final;
+    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
 
     void initDNSPrefetch();
 
@@ -1178,7 +1177,7 @@ private:
 
     void setHoverNode(Node*);
 
-    using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
+    using EventFactorySet = HashSet<std::unique_ptr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();
 
     void setNthIndexCache(NthIndexCache* nthIndexCache) { DCHECK(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
@@ -1211,7 +1210,7 @@ private:
     KURL m_baseURLOverride; // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
-    OwnPtr<OriginAccessEntry> m_accessEntryFromURL;
+    std::unique_ptr<OriginAccessEntry> m_accessEntryFromURL;
 
     AtomicString m_baseTarget;
 
@@ -1230,7 +1229,7 @@ private:
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
-    OwnPtr<CancellableTaskFactory> m_executeScriptsWaitingForResourcesTask;
+    std::unique_ptr<CancellableTaskFactory> m_executeScriptsWaitingForResourcesTask;
 
     bool m_hasAutofocused;
     Timer<Document> m_clearFocusedElementTimer;
@@ -1297,7 +1296,7 @@ private:
 
     HeapVector<Member<Element>> m_currentScriptStack;
 
-    OwnPtr<TransformSource> m_transformSource;
+    std::unique_ptr<TransformSource> m_transformSource;
 
     String m_xmlEncoding;
     String m_xmlVersion;
@@ -1323,7 +1322,7 @@ private:
     bool m_hasAnnotatedRegions;
     bool m_annotatedRegionsDirty;
 
-    OwnPtr<SelectorQueryCache> m_selectorQueryCache;
+    std::unique_ptr<SelectorQueryCache> m_selectorQueryCache;
 
     // It is safe to keep a raw, untraced pointer to this stack-allocated
     // cache object: it is set upon the cache object being allocated on
@@ -1367,7 +1366,7 @@ private:
 
     Member<ScriptedAnimationController> m_scriptedAnimationController;
     Member<ScriptedIdleTaskController> m_scriptedIdleTaskController;
-    OwnPtr<MainThreadTaskRunner> m_taskRunner;
+    std::unique_ptr<MainThreadTaskRunner> m_taskRunner;
     Member<TextAutosizer> m_textAutosizer;
 
     Member<V0CustomElementRegistrationContext> m_registrationContext;
@@ -1378,7 +1377,7 @@ private:
 
     Member<ElementDataCache> m_elementDataCache;
 
-    using LocaleIdentifierToLocaleMap = HashMap<AtomicString, OwnPtr<Locale>>;
+    using LocaleIdentifierToLocaleMap = HashMap<AtomicString, std::unique_ptr<Locale>>;
     LocaleIdentifierToLocaleMap m_localeCache;
 
     Member<AnimationTimeline> m_timeline;

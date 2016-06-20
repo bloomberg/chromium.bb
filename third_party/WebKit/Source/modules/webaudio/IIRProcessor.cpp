@@ -5,6 +5,8 @@
 #include "modules/webaudio/IIRProcessor.h"
 
 #include "modules/webaudio/IIRDSPKernel.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,7 +48,7 @@ IIRProcessor::IIRProcessor(float sampleRate, size_t numberOfChannels, const Vect
         m_feedback[0] = 1;
     }
 
-    m_responseKernel = adoptPtr(new IIRDSPKernel(this));
+    m_responseKernel = wrapUnique(new IIRDSPKernel(this));
 }
 
 IIRProcessor::~IIRProcessor()
@@ -55,9 +57,9 @@ IIRProcessor::~IIRProcessor()
         uninitialize();
 }
 
-PassOwnPtr<AudioDSPKernel> IIRProcessor::createKernel()
+std::unique_ptr<AudioDSPKernel> IIRProcessor::createKernel()
 {
-    return adoptPtr(new IIRDSPKernel(this));
+    return wrapUnique(new IIRDSPKernel(this));
 }
 
 void IIRProcessor::process(const AudioBus* source, AudioBus* destination, size_t framesToProcess)

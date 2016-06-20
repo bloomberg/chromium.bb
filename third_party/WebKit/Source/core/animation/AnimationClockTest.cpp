@@ -31,7 +31,6 @@
 #include "core/animation/AnimationClock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

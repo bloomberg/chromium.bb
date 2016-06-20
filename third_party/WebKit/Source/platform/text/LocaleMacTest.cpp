@@ -31,8 +31,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,7 +80,7 @@ protected:
 
     String formatWeek(const String& localeString, const String& isoString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         DateComponents date;
         unsigned end;
         date.parseWeek(isoString, 0, end);
@@ -89,7 +89,7 @@ protected:
 
     String formatMonth(const String& localeString, const String& isoString, bool useShortFormat)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         DateComponents date;
         unsigned end;
         date.parseMonth(isoString, 0, end);
@@ -98,85 +98,85 @@ protected:
 
     String formatDate(const String& localeString, int year, int month, int day)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->formatDateTime(getDateComponents(year, month, day));
     }
 
     String formatTime(const String& localeString, int hour, int minute, int second, int millisecond, bool useShortFormat)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->formatDateTime(getTimeComponents(hour, minute, second, millisecond), (useShortFormat ? Locale::FormatTypeShort : Locale::FormatTypeMedium));
     }
 
     unsigned firstDayOfWeek(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->firstDayOfWeek();
     }
 
     String monthLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->monthLabels()[index];
     }
 
     String weekDayShortLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->weekDayShortLabels()[index];
     }
 
     bool isRTL(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->isRTL();
     }
 
     String monthFormat(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->monthFormat();
     }
 
     String timeFormat(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->timeFormat();
     }
 
     String shortTimeFormat(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->shortTimeFormat();
     }
 
     String shortMonthLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->shortMonthLabels()[index];
     }
 
     String standAloneMonthLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->standAloneMonthLabels()[index];
     }
 
     String shortStandAloneMonthLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->shortStandAloneMonthLabels()[index];
     }
 
     String timeAMPMLabel(const String& localeString, unsigned index)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->timeAMPMLabels()[index];
     }
 
     String decimalSeparator(const String& localeString)
     {
-        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->localizedDecimalSeparator();
     }
 };
@@ -361,7 +361,7 @@ TEST_F(LocaleMacTest, invalidLocale)
 
 static void testNumberIsReversible(const AtomicString& localeString, const char* original, const char* shouldHave = 0)
 {
-    OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+    std::unique_ptr<LocaleMac> locale = LocaleMac::create(localeString);
     String localized = locale->convertToLocalizedNumber(original);
     if (shouldHave)
         EXPECT_TRUE(localized.contains(shouldHave));

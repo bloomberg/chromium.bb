@@ -59,13 +59,15 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<LinkHighlightImpl> LinkHighlightImpl::create(Node* node, WebViewImpl* owningWebViewImpl)
+std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::create(Node* node, WebViewImpl* owningWebViewImpl)
 {
-    return adoptPtr(new LinkHighlightImpl(node, owningWebViewImpl));
+    return wrapUnique(new LinkHighlightImpl(node, owningWebViewImpl));
 }
 
 LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
@@ -81,8 +83,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     DCHECK(owningWebViewImpl);
     WebCompositorSupport* compositorSupport = Platform::current()->compositorSupport();
     DCHECK(compositorSupport);
-    m_contentLayer = adoptPtr(compositorSupport->createContentLayer(this));
-    m_clipLayer = adoptPtr(compositorSupport->createLayer());
+    m_contentLayer = wrapUnique(compositorSupport->createContentLayer(this));
+    m_clipLayer = wrapUnique(compositorSupport->createLayer());
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
 
@@ -302,7 +304,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
 
     m_contentLayer->layer()->setOpacity(startOpacity);
 
-    OwnPtr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
+    std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
 
     const auto easeType = CubicBezierTimingFunction::EaseType::EASE;
 
@@ -314,10 +316,10 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
     // For layout tests we don't fade out.
     curve->addCubicBezierKeyframe(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0), easeType);
 
-    OwnPtr<CompositorAnimation> animation = CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0);
+    std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0);
 
     m_contentLayer->layer()->setDrawsContent(true);
-    m_compositorPlayer->addAnimation(animation.leakPtr());
+    m_compositorPlayer->addAnimation(animation.release());
 
     invalidate();
     m_owningWebViewImpl->scheduleAnimation();

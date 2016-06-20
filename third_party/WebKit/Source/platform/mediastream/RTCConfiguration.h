@@ -35,8 +35,10 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -97,7 +99,7 @@ public:
     void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
     RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
 
-    void appendCertificate(std::unique_ptr<WebRTCCertificate> certificate) { m_certificates.append(adoptPtr(certificate.release())); }
+    void appendCertificate(std::unique_ptr<WebRTCCertificate> certificate) { m_certificates.append(wrapUnique(certificate.release())); }
     size_t numberOfCertificates() const { return m_certificates.size(); }
     WebRTCCertificate* certificate(size_t index) const { return m_certificates[index].get(); }
 
@@ -113,7 +115,7 @@ private:
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
     RTCRtcpMuxPolicy m_rtcpMuxPolicy;
-    Vector<OwnPtr<WebRTCCertificate>> m_certificates;
+    Vector<std::unique_ptr<WebRTCCertificate>> m_certificates;
 };
 
 } // namespace blink

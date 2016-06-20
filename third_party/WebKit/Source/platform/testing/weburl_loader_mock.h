@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "public/platform/WebURLLoader.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/WeakPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -61,7 +61,7 @@ class WebURLLoaderMock : public WebURLLoader {
  private:
   WebURLLoaderMockFactoryImpl* factory_ = nullptr;
   WebURLLoaderClient* client_ = nullptr;
-  OwnPtr<WebURLLoader> default_loader_;
+  std::unique_ptr<WebURLLoader> default_loader_;
   bool using_default_loader_ = false;
   bool is_deferred_ = false;
 

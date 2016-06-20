@@ -31,10 +31,12 @@
 #include "core/workers/WorkerThreadStartupData.h"
 
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
@@ -45,7 +47,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const St
     , m_addressSpace(addressSpace)
     , m_v8CacheOptions(v8CacheOptions)
 {
-    m_contentSecurityPolicyHeaders = adoptPtr(new Vector<CSPHeaderAndType>());
+    m_contentSecurityPolicyHeaders = wrapUnique(new Vector<CSPHeaderAndType>());
     if (contentSecurityPolicyHeaders) {
         for (const auto& header : *contentSecurityPolicyHeaders) {
             CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);

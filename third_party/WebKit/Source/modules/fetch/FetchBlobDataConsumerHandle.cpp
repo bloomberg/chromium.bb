@@ -13,7 +13,8 @@
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/network/ResourceRequest.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -102,7 +103,7 @@ public:
     }
 
 private:
-    PassOwnPtr<ThreadableLoader> createLoader(ExecutionContext* executionContext, ThreadableLoaderClient* client) const
+    std::unique_ptr<ThreadableLoader> createLoader(ExecutionContext* executionContext, ThreadableLoaderClient* client) const
     {
         ThreadableLoaderOptions options;
         options.preflightPolicy = ConsiderPreflight;
@@ -117,7 +118,7 @@ private:
     }
 
     // ThreadableLoaderClient
-    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle> handle) override
+    void didReceiveResponse(unsigned long, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle> handle) override
     {
         ASSERT(!m_receivedResponse);
         m_receivedResponse = true;
@@ -153,14 +154,14 @@ private:
 
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Persistent<FetchBlobDataConsumerHandle::LoaderFactory> m_loaderFactory;
-    OwnPtr<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
 
     bool m_receivedResponse;
 };
 
 class DefaultLoaderFactory final : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    PassOwnPtr<ThreadableLoader> create(
+    std::unique_ptr<ThreadableLoader> create(
         ExecutionContext& executionContext,
         ThreadableLoaderClient* client,
         const ThreadableLoaderOptions& options,
@@ -180,7 +181,7 @@ class FetchBlobDataConsumerHandle::ReaderContext final : public ThreadSafeRefCou
 public:
     class ReaderImpl : public FetchDataConsumerHandle::Reader {
     public:
-        ReaderImpl(Client* client, PassRefPtr<ReaderContext> readerContext, PassOwnPtr<WebDataConsumerHandle::Reader> reader)
+        ReaderImpl(Client* client, PassRefPtr<ReaderContext> readerContext, std::unique_ptr<WebDataConsumerHandle::Reader> reader)
             : m_readerContext(readerContext)
             , m_reader(std::move(reader))
             , m_notifier(client) { }
@@ -238,7 +239,7 @@ public:
 
     private:
         RefPtr<ReaderContext> m_readerContext;
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
         NotifyOnReaderCreationHelper m_notifier;
     };
 
@@ -249,12 +250,12 @@ public:
     {
         CompositeDataConsumerHandle::Updater* updater = nullptr;
         m_handle = CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater);
-        m_loaderContextHolder = CrossThreadHolder<LoaderContext>::create(executionContext, adoptPtr(new BlobLoaderContext(updater, m_blobDataHandleForDrain, loaderFactory)));
+        m_loaderContextHolder = CrossThreadHolder<LoaderContext>::create(executionContext, wrapUnique(new BlobLoaderContext(updater, m_blobDataHandleForDrain, loaderFactory)));
     }
 
-    PassOwnPtr<FetchDataConsumerHandle::Reader> obtainReader(WebDataConsumerHandle::Client* client)
+    std::unique_ptr<FetchDataConsumerHandle::Reader> obtainReader(WebDataConsumerHandle::Client* client)
     {
-        return adoptPtr(new ReaderImpl(client, this, m_handle->obtainReader(client)));
+        return wrapUnique(new ReaderImpl(client, this, m_handle->obtainReader(client)));
     }
 
 private:
@@ -274,9 +275,9 @@ private:
     bool drained() const { return m_drained; }
     void setDrained() { m_drained = true; }
 
-    OwnPtr<WebDataConsumerHandle> m_handle;
+    std::unique_ptr<WebDataConsumerHandle> m_handle;
     RefPtr<BlobDataHandle> m_blobDataHandleForDrain;
-    OwnPtr<CrossThreadHolder<LoaderContext>> m_loaderContextHolder;
+    std::unique_ptr<CrossThreadHolder<LoaderContext>> m_loaderContextHolder;
 
     bool m_loaderStarted;
     bool m_drained;
@@ -291,25 +292,25 @@ FetchBlobDataConsumerHandle::~FetchBlobDataConsumerHandle()
 {
 }
 
-PassOwnPtr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle, LoaderFactory* loaderFactory)
+std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle, LoaderFactory* loaderFactory)
 {
     if (!blobDataHandle)
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
 
-    return adoptPtr(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, loaderFactory));
+    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, loaderFactory));
 }
 
-PassOwnPtr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle)
+std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle)
 {
     if (!blobDataHandle)
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
 
-    return adoptPtr(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, new DefaultLoaderFactory));
+    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, new DefaultLoaderFactory));
 }
 
 FetchDataConsumerHandle::Reader* FetchBlobDataConsumerHandle::obtainReaderInternal(Client* client)
 {
-    return m_readerContext->obtainReader(client).leakPtr();
+    return m_readerContext->obtainReader(client).release();
 }
 
 } // namespace blink

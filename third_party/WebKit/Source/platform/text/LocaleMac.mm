@@ -35,9 +35,10 @@
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/DateMath.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RetainPtr.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,7 +65,7 @@ static RetainPtr<NSLocale> determineLocale(const String& locale)
     return RetainPtr<NSLocale>(AdoptNS, [[NSLocale alloc] initWithLocaleIdentifier:locale]);
 }
 
-PassOwnPtr<Locale> Locale::create(const String& locale)
+std::unique_ptr<Locale> Locale::create(const String& locale)
 {
     return LocaleMac::create(determineLocale(locale).get());
 }
@@ -97,15 +98,15 @@ LocaleMac::~LocaleMac()
 {
 }
 
-PassOwnPtr<LocaleMac> LocaleMac::create(const String& localeIdentifier)
+std::unique_ptr<LocaleMac> LocaleMac::create(const String& localeIdentifier)
 {
     RetainPtr<NSLocale> locale = [[NSLocale alloc] initWithLocaleIdentifier:localeIdentifier];
-    return adoptPtr(new LocaleMac(locale.get()));
+    return wrapUnique(new LocaleMac(locale.get()));
 }
 
-PassOwnPtr<LocaleMac> LocaleMac::create(NSLocale* locale)
+std::unique_ptr<LocaleMac> LocaleMac::create(NSLocale* locale)
 {
-    return adoptPtr(new LocaleMac(locale));
+    return wrapUnique(new LocaleMac(locale));
 }
 
 RetainPtr<NSDateFormatter> LocaleMac::shortDateFormatter()

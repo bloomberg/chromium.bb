@@ -34,6 +34,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include <memory>
 
 namespace blink {
 
@@ -128,7 +129,7 @@ TextResourceDecoderBuilder::~TextResourceDecoderBuilder()
 }
 
 
-inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
+inline std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
 {
     const WTF::TextEncoding encodingFromDomain = getEncodingFromDomain(document->url());
     if (LocalFrame* frame = document->frame()) {
@@ -167,9 +168,9 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
     }
 }
 
-PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* document)
+std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* document)
 {
-    OwnPtr<TextResourceDecoder> decoder = createDecoderInstance(document);
+    std::unique_ptr<TextResourceDecoder> decoder = createDecoderInstance(document);
     setupEncoding(decoder.get(), document);
     return decoder;
 }

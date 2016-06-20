@@ -7,14 +7,16 @@
 
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/InterpolationType.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingLengthChecker> create(size_t underlyingLength)
+    static std::unique_ptr<UnderlyingLengthChecker> create(size_t underlyingLength)
     {
-        return adoptPtr(new UnderlyingLengthChecker(underlyingLength));
+        return wrapUnique(new UnderlyingLengthChecker(underlyingLength));
     }
 
     static size_t getUnderlyingLength(const InterpolationValue& underlying)

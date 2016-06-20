@@ -35,9 +35,8 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicString.h"
+#include <memory>
 
 namespace blink {
 
@@ -140,7 +139,7 @@ private:
 
     const Member<Page> m_page;
     const Member<TopControls> m_topControls;
-    const OwnPtr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
+    const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
     const Member<VisualViewport> m_visualViewport;
     const Member<OverscrollController> m_overscrollController;
     const Member<EventHandlerRegistry> m_eventHandlerRegistry;

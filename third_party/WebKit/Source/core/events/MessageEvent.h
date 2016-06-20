@@ -37,6 +37,7 @@
 #include "core/events/MessageEventInit.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/DOMWindow.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,7 +56,7 @@ public:
     {
         return new MessageEvent(data, origin, lastEventId, source, ports, suborigin);
     }
-    static MessageEvent* create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
+    static MessageEvent* create(std::unique_ptr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
         return new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin);
     }
@@ -118,7 +119,7 @@ private:
     MessageEvent(const AtomicString&, const MessageEventInit&);
     MessageEvent(const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
     MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, std::unique_ptr<MessagePortChannelArray>, const String& suborigin);
 
     MessageEvent(const String& data, const String& origin, const String& suborigin);
     MessageEvent(Blob* data, const String& origin, const String& suborigin);
@@ -137,7 +138,7 @@ private:
     // the MessageChannels in a disentangled state. Only one of them can be
     // non-empty at a time. entangleMessagePorts() moves between the states.
     Member<MessagePortArray> m_ports;
-    OwnPtr<MessagePortChannelArray> m_channels;
+    std::unique_ptr<MessagePortChannelArray> m_channels;
     String m_suborigin;
 };
 

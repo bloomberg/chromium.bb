@@ -7,7 +7,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

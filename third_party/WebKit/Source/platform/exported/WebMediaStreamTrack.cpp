@@ -30,6 +30,8 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -37,7 +39,7 @@ namespace {
 
     class TrackDataContainer : public MediaStreamComponent::TrackData {
     public:
-        explicit TrackDataContainer(PassOwnPtr<WebMediaStreamTrack::TrackData> extraData)
+        explicit TrackDataContainer(std::unique_ptr<WebMediaStreamTrack::TrackData> extraData)
             : m_extraData(std::move(extraData))
         {
         }
@@ -49,7 +51,7 @@ namespace {
         }
 
     private:
-        OwnPtr<WebMediaStreamTrack::TrackData> m_extraData;
+        std::unique_ptr<WebMediaStreamTrack::TrackData> m_extraData;
 };
 
 } // namespace
@@ -121,7 +123,7 @@ void WebMediaStreamTrack::setTrackData(TrackData* extraData)
 {
     ASSERT(!m_private.isNull());
 
-    m_private->setTrackData(adoptPtr(new TrackDataContainer(adoptPtr(extraData))));
+    m_private->setTrackData(wrapUnique(new TrackDataContainer(wrapUnique(extraData))));
 }
 
 void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)

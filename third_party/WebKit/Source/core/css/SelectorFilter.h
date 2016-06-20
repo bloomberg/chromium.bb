@@ -32,6 +32,7 @@
 #include "core/dom/Element.h"
 #include "wtf/BloomFilter.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -74,7 +75,7 @@ private:
 
     // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
     using IdentifierFilter = BloomFilter<12>;
-    OwnPtr<IdentifierFilter> m_ancestorIdentifierFilter;
+    std::unique_ptr<IdentifierFilter> m_ancestorIdentifierFilter;
 };
 
 template <unsigned maximumIdentifierCount>

@@ -43,8 +43,10 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/CheckedNumeric.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 #include <algorithm>
+#include <memory>
 
 namespace blink {
 
@@ -79,7 +81,7 @@ static bool shouldFailDrawingBufferCreationForTesting = false;
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, bool premultipliedAlpha, bool wantAlphaChannel, bool wantDepthBuffer, bool wantStencilBuffer, bool wantAntialiasing, PreserveDrawingBuffer preserve)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, bool premultipliedAlpha, bool wantAlphaChannel, bool wantDepthBuffer, bool wantStencilBuffer, bool wantAntialiasing, PreserveDrawingBuffer preserve)
 {
     ASSERT(contextProvider);
 
@@ -88,7 +90,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
         return nullptr;
     }
 
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
+    std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
     if (!extensionsUtil->isValid()) {
         // This might be the first time we notice that the GL context is lost.
         return nullptr;
@@ -124,8 +126,8 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
 }
 
 DrawingBuffer::DrawingBuffer(
-    PassOwnPtr<WebGraphicsContext3DProvider> contextProvider,
-    PassOwnPtr<Extensions3DUtil> extensionsUtil,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    std::unique_ptr<Extensions3DUtil> extensionsUtil,
     bool discardFramebufferSupported,
     bool wantAlphaChannel,
     bool premultipliedAlpha,
@@ -558,7 +560,7 @@ GLuint DrawingBuffer::framebuffer() const
 WebLayer* DrawingBuffer::platformLayer()
 {
     if (!m_layer) {
-        m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+        m_layer = wrapUnique(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
         m_layer->setOpaque(!m_wantAlphaChannel);
         m_layer->setBlendBackgroundColor(m_wantAlphaChannel);

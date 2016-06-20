@@ -35,6 +35,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -184,7 +186,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     // LocalFrame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
-    OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
+    std::unique_ptr<WebThread> thread = wrapUnique(Platform::current()->createThread("DecodeThread"));
     thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadMain, m_generator, m_segmentReader));
     thread.reset();
     EXPECT_EQ(2, m_decodeRequestCount);

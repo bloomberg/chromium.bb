@@ -31,14 +31,14 @@
 #ifndef LocaleICU_h
 #define LocaleICU_h
 
-#include <unicode/udat.h>
-#include <unicode/unum.h>
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
+#include <unicode/udat.h>
+#include <unicode/unum.h>
 
 namespace blink {
 
@@ -46,7 +46,7 @@ namespace blink {
 // and LocalizedNumberICUTest.cpp.
 class PLATFORM_EXPORT LocaleICU : public Locale {
 public:
-    static PassOwnPtr<LocaleICU> create(const char* localeString);
+    static std::unique_ptr<LocaleICU> create(const char* localeString);
     ~LocaleICU() override;
 
     const Vector<String>& weekDayShortLabels() override;
@@ -80,7 +80,7 @@ private:
 
     void initializeCalendar();
 
-    PassOwnPtr<Vector<String>> createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
+    std::unique_ptr<Vector<String>> createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
     void initializeDateTimeFormat();
 
     CString m_locale;
@@ -89,9 +89,9 @@ private:
     bool m_didCreateDecimalFormat;
     bool m_didCreateShortDateFormat;
 
-    OwnPtr<Vector<String>> m_weekDayShortLabels;
+    std::unique_ptr<Vector<String>> m_weekDayShortLabels;
     unsigned m_firstDayOfWeek;
-    OwnPtr<Vector<String>> m_monthLabels;
+    std::unique_ptr<Vector<String>> m_monthLabels;
     String m_dateFormat;
     String m_monthFormat;
     String m_shortMonthFormat;

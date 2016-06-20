@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,7 +43,7 @@ protected:
         m_dummyPageHolder->document().updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
     Persistent<HTMLSelectElement> m_ownerElement;
 };
 

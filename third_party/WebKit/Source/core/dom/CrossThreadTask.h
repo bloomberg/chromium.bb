@@ -34,7 +34,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "wtf/PassOwnPtr.h"
 #include <type_traits>
 
 namespace blink {

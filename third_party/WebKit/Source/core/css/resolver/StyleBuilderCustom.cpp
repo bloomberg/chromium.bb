@@ -66,18 +66,20 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/style/ContentData.h"
-#include "core/style/CounterContent.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style/ContentData.h"
+#include "core/style/CounterContent.h"
 #include "core/style/QuotesData.h"
 #include "core/style/SVGComputedStyle.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleVariableData.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -707,7 +709,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             CSSValueID listStyleIdent = counterValue->listStyle();
             if (listStyleIdent != CSSValueNone)
                 listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
-            OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
+            std::unique_ptr<CounterContent> counter = wrapUnique(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
             nextContent = ContentData::create(std::move(counter));
         } else if (item->isPrimitiveValue()) {
             QuoteType quoteType;

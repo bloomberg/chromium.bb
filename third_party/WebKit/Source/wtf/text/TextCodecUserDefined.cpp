@@ -25,11 +25,12 @@
 
 #include "wtf/text/TextCodecUserDefined.h"
 
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -38,9 +39,9 @@ void TextCodecUserDefined::registerEncodingNames(EncodingNameRegistrar registrar
     registrar("x-user-defined", "x-user-defined");
 }
 
-static PassOwnPtr<TextCodec> newStreamingTextDecoderUserDefined(const TextEncoding&, const void*)
+static std::unique_ptr<TextCodec> newStreamingTextDecoderUserDefined(const TextEncoding&, const void*)
 {
-    return adoptPtr(new TextCodecUserDefined);
+    return wrapUnique(new TextCodecUserDefined);
 }
 
 void TextCodecUserDefined::registerCodecs(TextCodecRegistrar registrar)

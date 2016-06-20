@@ -6,6 +6,8 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -56,9 +58,9 @@ class UnderlyingVisibilityChecker : public InterpolationType::ConversionChecker 
 public:
     ~UnderlyingVisibilityChecker() final {}
 
-    static PassOwnPtr<UnderlyingVisibilityChecker> create(EVisibility visibility)
+    static std::unique_ptr<UnderlyingVisibilityChecker> create(EVisibility visibility)
     {
-        return adoptPtr(new UnderlyingVisibilityChecker(visibility));
+        return wrapUnique(new UnderlyingVisibilityChecker(visibility));
     }
 
 private:
@@ -78,9 +80,9 @@ private:
 
 class ParentVisibilityChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentVisibilityChecker> create(EVisibility visibility)
+    static std::unique_ptr<ParentVisibilityChecker> create(EVisibility visibility)
     {
-        return adoptPtr(new ParentVisibilityChecker(visibility));
+        return wrapUnique(new ParentVisibilityChecker(visibility));
     }
 
 private:

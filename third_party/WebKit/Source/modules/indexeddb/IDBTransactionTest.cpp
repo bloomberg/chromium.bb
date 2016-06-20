@@ -39,6 +39,7 @@
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -63,7 +64,7 @@ private:
 TEST(IDBTransactionTest, EnsureLifetime)
 {
     V8TestingScope scope;
-    OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
     EXPECT_CALL(*backend, close())
         .Times(1);
     Persistent<IDBDatabase> db = IDBDatabase::create(scope.getExecutionContext(), std::move(backend), FakeIDBDatabaseCallbacks::create());
@@ -98,7 +99,7 @@ TEST(IDBTransactionTest, TransactionFinish)
     V8TestingScope scope;
     const int64_t transactionId = 1234;
 
-    OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
     EXPECT_CALL(*backend, commit(transactionId))
         .Times(1);
     EXPECT_CALL(*backend, close())

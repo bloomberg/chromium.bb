@@ -22,9 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AsyncAudioDecoder.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -32,12 +32,12 @@
 #include "platform/audio/AudioFileReader.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
 AsyncAudioDecoder::AsyncAudioDecoder()
-    : m_thread(adoptPtr(Platform::current()->createThread("Audio Decoder")))
+    : m_thread(wrapUnique(Platform::current()->createThread("Audio Decoder")))
 {
 }
 

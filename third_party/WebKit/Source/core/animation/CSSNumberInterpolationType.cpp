@@ -7,14 +7,16 @@
 #include "core/animation/NumberPropertyFunctions.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 class ParentNumberChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentNumberChecker> create(CSSPropertyID property, double number)
+    static std::unique_ptr<ParentNumberChecker> create(CSSPropertyID property, double number)
     {
-        return adoptPtr(new ParentNumberChecker(property, number));
+        return wrapUnique(new ParentNumberChecker(property, number));
     }
 
 private:

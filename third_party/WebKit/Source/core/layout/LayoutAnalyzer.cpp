@@ -9,6 +9,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/TracedValue.h"
+#include <memory>
 
 namespace blink {
 
@@ -104,9 +105,9 @@ void LayoutAnalyzer::pop(const LayoutObject& o)
     --m_depth;
 }
 
-PassOwnPtr<TracedValue> LayoutAnalyzer::toTracedValue()
+std::unique_ptr<TracedValue> LayoutAnalyzer::toTracedValue()
 {
-    OwnPtr<TracedValue> tracedValue(TracedValue::create());
+    std::unique_ptr<TracedValue> tracedValue(TracedValue::create());
     for (size_t i = 0; i < NumCounters; ++i) {
         if (m_counters[i] > 0)
             tracedValue->setInteger(nameForCounter(static_cast<Counter>(i)), m_counters[i]);

@@ -7,9 +7,9 @@
 #include "core/fileapi/BlobCallback.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -66,10 +66,10 @@ private:
 
     void dispose();
 
-    OwnPtr<PNGImageEncoderState> m_pngEncoderState;
-    OwnPtr<JPEGImageEncoderState> m_jpegEncoderState;
+    std::unique_ptr<PNGImageEncoderState> m_pngEncoderState;
+    std::unique_ptr<JPEGImageEncoderState> m_jpegEncoderState;
     Member<DOMUint8ClampedArray> m_data;
-    OwnPtr<Vector<unsigned char>> m_encodedImage;
+    std::unique_ptr<Vector<unsigned char>> m_encodedImage;
     int m_numRowsCompleted;
 
     const IntSize m_size;

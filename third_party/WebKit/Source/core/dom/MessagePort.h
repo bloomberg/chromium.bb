@@ -35,8 +35,6 @@
 #include "core/events/EventTarget.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -73,16 +71,16 @@ public:
     WebMessagePortChannelUniquePtr disentangle();
 
     // Returns nullptr if the passed-in array is nullptr/empty.
-    static PassOwnPtr<WebMessagePortChannelArray> toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray>);
+    static std::unique_ptr<WebMessagePortChannelArray> toWebMessagePortChannelArray(std::unique_ptr<MessagePortChannelArray>);
 
     // Returns an empty array if the passed array is empty.
     static MessagePortArray* toMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&);
 
     // Returns nullptr if there is an exception, or if the passed-in array is nullptr/empty.
-    static PassOwnPtr<MessagePortChannelArray> disentanglePorts(ExecutionContext*, const MessagePortArray&, ExceptionState&);
+    static std::unique_ptr<MessagePortChannelArray> disentanglePorts(ExecutionContext*, const MessagePortArray&, ExceptionState&);
 
     // Returns an empty array if the passed array is nullptr/empty.
-    static MessagePortArray* entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
+    static MessagePortArray* entanglePorts(ExecutionContext&, std::unique_ptr<MessagePortChannelArray>);
 
     bool started() const { return m_started; }
 
@@ -113,7 +111,7 @@ public:
 
 protected:
     explicit MessagePort(ExecutionContext&);
-    bool tryGetMessage(RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels);
+    bool tryGetMessage(RefPtr<SerializedScriptValue>& message, std::unique_ptr<MessagePortChannelArray>& channels);
 
 private:
     // WebMessagePortChannelClient implementation.

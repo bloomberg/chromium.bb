@@ -14,7 +14,7 @@
 #include "platform/fonts/UTF16TextIterator.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-
+#include <memory>
 #include <unicode/uscript.h>
 
 namespace blink {
@@ -49,9 +49,9 @@ private:
 
     unsigned m_bufferSize;
     RunSegmenterRange m_candidateRange;
-    OwnPtr<ScriptRunIterator> m_scriptRunIterator;
-    OwnPtr<OrientationIterator> m_orientationIterator;
-    OwnPtr<SymbolsIterator> m_symbolsIterator;
+    std::unique_ptr<ScriptRunIterator> m_scriptRunIterator;
+    std::unique_ptr<OrientationIterator> m_orientationIterator;
+    std::unique_ptr<SymbolsIterator> m_symbolsIterator;
     unsigned m_lastSplit;
     unsigned m_scriptRunIteratorPosition;
     unsigned m_orientationIteratorPosition;

@@ -24,7 +24,9 @@
 #define TextResourceDecoder_h
 
 #include "core/CoreExport.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,15 +47,15 @@ public:
         EncodingFromParentFrame
     };
 
-    static PassOwnPtr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
+    static std::unique_ptr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
     {
-        return adoptPtr(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector ? UseAllAutoDetection : UseContentAndBOMBasedDetection));
+        return wrapUnique(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector ? UseAllAutoDetection : UseContentAndBOMBasedDetection));
     }
     // Corresponds to utf-8 decode in Encoding spec:
     // https://encoding.spec.whatwg.org/#utf-8-decode.
-    static PassOwnPtr<TextResourceDecoder> createAlwaysUseUTF8ForText()
+    static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText()
     {
-        return adoptPtr(new TextResourceDecoder("plain/text", UTF8Encoding(), AlwaysUseUTF8ForText));
+        return wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(), AlwaysUseUTF8ForText));
     }
     ~TextResourceDecoder();
 
@@ -112,7 +114,7 @@ private:
 
     ContentType m_contentType;
     WTF::TextEncoding m_encoding;
-    OwnPtr<TextCodec> m_codec;
+    std::unique_ptr<TextCodec> m_codec;
     EncodingSource m_source;
     const char* m_hintEncoding;
     Vector<char> m_buffer;
@@ -124,7 +126,7 @@ private:
     bool m_sawError;
     EncodingDetectionOption m_encodingDetectionOption;
 
-    OwnPtr<HTMLMetaCharsetParser> m_charsetParser;
+    std::unique_ptr<HTMLMetaCharsetParser> m_charsetParser;
 };
 
 } // namespace blink

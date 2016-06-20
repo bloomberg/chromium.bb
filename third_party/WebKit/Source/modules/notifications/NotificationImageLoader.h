@@ -10,9 +10,8 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 class SkBitmap;
 
@@ -56,7 +55,7 @@ private:
     double m_startTime;
     RefPtr<SharedBuffer> m_data;
     std::unique_ptr<ImageCallback> m_imageCallback;
-    OwnPtr<ThreadableLoader> m_threadableLoader;
+    std::unique_ptr<ThreadableLoader> m_threadableLoader;
 };
 
 } // namespace blink

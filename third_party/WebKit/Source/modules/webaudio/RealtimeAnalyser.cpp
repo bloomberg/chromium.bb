@@ -27,6 +27,7 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <complex>
 #include <limits.h>
@@ -54,7 +55,7 @@ RealtimeAnalyser::RealtimeAnalyser()
     , m_maxDecibels(DefaultMaxDecibels)
     , m_lastAnalysisTime(-1)
 {
-    m_analysisFrame = adoptPtr(new FFTFrame(DefaultFFTSize));
+    m_analysisFrame = wrapUnique(new FFTFrame(DefaultFFTSize));
 }
 
 bool RealtimeAnalyser::setFftSize(size_t size)
@@ -69,7 +70,7 @@ bool RealtimeAnalyser::setFftSize(size_t size)
         return false;
 
     if (m_fftSize != size) {
-        m_analysisFrame = adoptPtr(new FFTFrame(size));
+        m_analysisFrame = wrapUnique(new FFTFrame(size));
         // m_magnitudeBuffer has size = fftSize / 2 because it contains floats reduced from complex values in m_analysisFrame.
         m_magnitudeBuffer.allocate(size / 2);
         m_fftSize = size;

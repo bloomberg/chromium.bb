@@ -39,8 +39,8 @@
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -279,7 +279,7 @@ public:
     // that this is comprehensive.
     virtual void didObserveNonGetFetchFromScript() const {}
 
-    virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
+    virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
 
     // Returns the time of the beginning of the last beginFrame, in seconds, if any, and 0.0 otherwise.
     virtual double lastFrameTimeMonotonic() const { return 0.0; }

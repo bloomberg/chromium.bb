@@ -33,10 +33,10 @@
 
 #include "platform/audio/AudioSourceProvider.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/build_config.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,17 +45,17 @@ class WebAudioSourceProvider;
 class MediaStreamWebAudioSource : public AudioSourceProvider {
     WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
 public:
-    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(std::move(provider))); }
+    static std::unique_ptr<MediaStreamWebAudioSource> create(std::unique_ptr<WebAudioSourceProvider> provider) { return wrapUnique(new MediaStreamWebAudioSource(std::move(provider))); }
 
     ~MediaStreamWebAudioSource() override;
 
 private:
-    explicit MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider>);
+    explicit MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider>);
 
     // blink::AudioSourceProvider implementation.
     void provideInput(AudioBus*, size_t framesToProcess) override;
 
-    OwnPtr<WebAudioSourceProvider> m_webAudioSourceProvider;
+    std::unique_ptr<WebAudioSourceProvider> m_webAudioSourceProvider;
 };
 
 } // namespace blink

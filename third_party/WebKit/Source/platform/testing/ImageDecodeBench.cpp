@@ -21,8 +21,9 @@
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "public/platform/Platform.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 #if defined(_WIN32)
 #include <mmsystem.h>
@@ -246,7 +247,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     if (s.st_size <= 0)
         return SharedBuffer::create();
 
-    OwnPtr<unsigned char[]> buffer = adoptArrayPtr(new unsigned char[fileSize]);
+    std::unique_ptr<unsigned char[]> buffer = wrapArrayUnique(new unsigned char[fileSize]);
     if (fileSize != fread(buffer.get(), 1, fileSize, fp)) {
         fprintf(stderr, "Error reading file %s\n", fileName);
         exit(2);
@@ -258,7 +259,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 bool decodeImageData(SharedBuffer* data, bool colorCorrection, size_t packetSize)
 {
-    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data,
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(*data,
         ImageDecoder::AlphaPremultiplied, colorCorrection ?
             ImageDecoder::GammaAndColorProfileApplied : ImageDecoder::GammaAndColorProfileIgnored);
 

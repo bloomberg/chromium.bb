@@ -15,6 +15,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
 #include "platform/inspector_protocol/Values.h"
+#include <memory>
 
 namespace blink {
 
@@ -381,7 +382,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         return;
 
     Document& document = node->document();
-    OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document);
+    std::unique_ptr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document);
     AXObjectCacheImpl* cacheImpl = toAXObjectCacheImpl(cache->get());
     AXObject* axObject = cacheImpl->getOrCreate(node);
     if (!axObject || axObject->accessibilityIsIgnored()) {

@@ -28,6 +28,7 @@
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/style/ComputedStyle.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,7 +42,7 @@ ContentData* ContentData::create(const String& text)
     return new TextContentData(text);
 }
 
-ContentData* ContentData::create(PassOwnPtr<CounterContent> counter)
+ContentData* ContentData::create(std::unique_ptr<CounterContent> counter)
 {
     return new CounterContentData(std::move(counter));
 }

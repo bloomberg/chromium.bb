@@ -30,8 +30,8 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -63,7 +63,7 @@ public:
 
 private:
     double m_rate;
-    Vector<OwnPtr<AudioResamplerKernel>> m_kernels;
+    Vector<std::unique_ptr<AudioResamplerKernel>> m_kernels;
     RefPtr<AudioBus> m_sourceBus;
 };
 

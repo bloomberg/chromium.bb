@@ -31,6 +31,8 @@
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
 #include "wtf/Allocator.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -151,7 +153,7 @@ public:
             break;
         case HTMLToken::DOCTYPE:
             m_name = AtomicString(token.data());
-            m_doctypeData = adoptPtr(new DoctypeData());
+            m_doctypeData = wrapUnique(new DoctypeData());
             m_doctypeData->m_hasPublicIdentifier = true;
             append(m_doctypeData->m_publicIdentifier, token.publicIdentifier());
             m_doctypeData->m_hasSystemIdentifier = true;
@@ -212,7 +214,7 @@ private:
     String m_data;
 
     // For DOCTYPE
-    OwnPtr<DoctypeData> m_doctypeData;
+    std::unique_ptr<DoctypeData> m_doctypeData;
 
     // For StartTag and EndTag
     bool m_selfClosing;

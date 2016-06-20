@@ -29,8 +29,8 @@
 #include "modules/speech/SpeechRecognitionClient.h"
 #include "public/web/WebSpeechRecognizerClient.h"
 #include "wtf/Compiler.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +44,7 @@ public:
 
     // Constructing a proxy object with a 0 WebSpeechRecognizer is safe in
     // itself, but attempting to call start/stop/abort on it will crash.
-    static PassOwnPtr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
+    static std::unique_ptr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
 
     // SpeechRecognitionClient:
     void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) override;

@@ -58,6 +58,7 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -320,7 +321,7 @@ void InspectorOverlay::highlightNode(Node* node, Node* eventTarget, const Inspec
     scheduleUpdate();
 }
 
-void InspectorOverlay::setInspectMode(InspectorDOMAgent::SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig> highlightConfig)
+void InspectorOverlay::setInspectMode(InspectorDOMAgent::SearchMode searchMode, std::unique_ptr<InspectorHighlightConfig> highlightConfig)
 {
     if (m_layoutEditor)
         overlayClearSelection(true);
@@ -348,7 +349,7 @@ void InspectorOverlay::setInspectedNode(Node* node)
     initializeLayoutEditorIfNeeded(node);
 }
 
-void InspectorOverlay::highlightQuad(PassOwnPtr<FloatQuad> quad, const InspectorHighlightConfig& highlightConfig)
+void InspectorOverlay::highlightQuad(std::unique_ptr<FloatQuad> quad, const InspectorHighlightConfig& highlightConfig)
 {
     m_quadHighlightConfig = highlightConfig;
     m_highlightQuad = std::move(quad);

@@ -10,8 +10,8 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebVector.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,8 +39,8 @@ private:
     IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
     const RefPtr<SharedBuffer> m_data;
-    const OwnPtr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
-    const OwnPtr<Vector<WebBlobInfo>> m_blobInfo;
+    const std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
+    const std::unique_ptr<Vector<WebBlobInfo>> m_blobInfo;
     const Persistent<IDBKey> m_primaryKey;
     const IDBKeyPath m_keyPath;
 };

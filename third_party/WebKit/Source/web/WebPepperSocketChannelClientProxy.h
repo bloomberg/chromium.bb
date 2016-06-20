@@ -8,9 +8,9 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "web/WebPepperSocketImpl.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -36,7 +36,7 @@ public:
     {
         m_impl->didReceiveTextMessage(payload);
     }
-    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
+    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override
     {
         m_impl->didReceiveBinaryMessage(std::move(payload));
     }

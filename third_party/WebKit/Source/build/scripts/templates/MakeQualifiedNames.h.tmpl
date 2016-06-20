@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 {% endif %}
 #include "core/dom/QualifiedName.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -32,12 +32,12 @@ namespace {{namespace}}Names {
 
 {% if tags %}
 const unsigned {{namespace}}TagsCount = {{tags|count}};
-{{symbol_export}}PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags();
+{{symbol_export}}std::unique_ptr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags();
 {% endif %}
 
 const unsigned {{namespace}}AttrsCount = {{attrs|count}};
 {% if namespace != 'HTML' %}
-PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs();
+std::unique_ptr<const QualifiedName*[]> get{{namespace}}Attrs();
 {% endif %}
 
 void init();

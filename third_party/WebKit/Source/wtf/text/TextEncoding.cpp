@@ -27,12 +27,12 @@
 
 #include "wtf/text/TextEncoding.h"
 
-#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -74,7 +74,7 @@ CString TextEncoding::encode(const String& string, UnencodableHandling handling)
     if (string.isEmpty())
         return "";
 
-    OwnPtr<TextCodec> textCodec = newTextCodec(*this);
+    std::unique_ptr<TextCodec> textCodec = newTextCodec(*this);
     CString encodedString;
     if (string.is8Bit())
         encodedString = textCodec->encode(string.characters8(), string.length(), handling);

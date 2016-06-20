@@ -9,8 +9,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
-
 #include <v8.h>
 
 namespace blink {
@@ -47,7 +45,7 @@ public:
     ~V8TestingScope();
 
 private:
-    OwnPtr<DummyPageHolder> m_holder;
+    std::unique_ptr<DummyPageHolder> m_holder;
     v8::HandleScope m_handleScope;
     v8::Local<v8::Context> m_context;
     v8::Context::Scope m_contextScope;

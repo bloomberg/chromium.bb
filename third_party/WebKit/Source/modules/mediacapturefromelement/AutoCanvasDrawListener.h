@@ -8,18 +8,19 @@
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
+#include <memory>
 
 namespace blink {
 
 class AutoCanvasDrawListener final : public GarbageCollectedFinalized<AutoCanvasDrawListener>, public CanvasDrawListener {
     USING_GARBAGE_COLLECTED_MIXIN(AutoCanvasDrawListener);
 public:
-    static AutoCanvasDrawListener* create(PassOwnPtr<WebCanvasCaptureHandler>);
+    static AutoCanvasDrawListener* create(std::unique_ptr<WebCanvasCaptureHandler>);
     ~AutoCanvasDrawListener() {}
 
     DEFINE_INLINE_TRACE() {}
 private:
-    AutoCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler>);
+    AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 };
 
 } // namespace blink

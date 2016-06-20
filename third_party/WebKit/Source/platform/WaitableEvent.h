@@ -32,8 +32,8 @@
 #define WaitableEvent_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace base {
 class WaitableEvent;
@@ -78,7 +78,7 @@ private:
     WaitableEvent(const WaitableEvent&) = delete;
     void operator=(const WaitableEvent&) = delete;
 
-    OwnPtr<base::WaitableEvent> m_impl;
+    std::unique_ptr<base::WaitableEvent> m_impl;
 };
 
 } // namespace blink

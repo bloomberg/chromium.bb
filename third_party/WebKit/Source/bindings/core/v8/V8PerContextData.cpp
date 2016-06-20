@@ -34,8 +34,9 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/inspector/InstanceCounters.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
-
+#include <memory>
 #include <stdlib.h>
 
 namespace blink {
@@ -44,7 +45,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
     : m_isolate(context->GetIsolate())
     , m_wrapperBoilerplates(m_isolate)
     , m_constructorMap(m_isolate)
-    , m_contextHolder(adoptPtr(new gin::ContextHolder(m_isolate)))
+    , m_contextHolder(wrapUnique(new gin::ContextHolder(m_isolate)))
     , m_context(m_isolate, context)
     , m_activityLogger(0)
     , m_compiledPrivateScript(m_isolate)
@@ -67,9 +68,9 @@ V8PerContextData::~V8PerContextData()
         InstanceCounters::decrementCounter(InstanceCounters::V8PerContextDataCounter);
 }
 
-PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Local<v8::Context> context)
+std::unique_ptr<V8PerContextData> V8PerContextData::create(v8::Local<v8::Context> context)
 {
-    return adoptPtr(new V8PerContextData(context));
+    return wrapUnique(new V8PerContextData(context));
 }
 
 V8PerContextData* V8PerContextData::from(v8::Local<v8::Context> context)
@@ -145,7 +146,7 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* 
     return prototypeValue.As<v8::Object>();
 }
 
-void V8PerContextData::addCustomElementBinding(PassOwnPtr<V0CustomElementBinding> binding)
+void V8PerContextData::addCustomElementBinding(std::unique_ptr<V0CustomElementBinding> binding)
 {
     m_customElementBindings.append(std::move(binding));
 }

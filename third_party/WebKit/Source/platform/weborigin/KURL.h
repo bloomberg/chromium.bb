@@ -32,8 +32,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 class TextEncoding;
@@ -202,7 +202,7 @@ private:
     bool m_protocolIsInHTTPFamily;
     url::Parsed m_parsed;
     String m_string;
-    OwnPtr<KURL> m_innerURL;
+    std::unique_ptr<KURL> m_innerURL;
 };
 
 PLATFORM_EXPORT bool operator==(const KURL&, const KURL&);

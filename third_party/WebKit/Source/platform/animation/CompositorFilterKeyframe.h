@@ -7,14 +7,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorFilterOperations.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
 class PLATFORM_EXPORT CompositorFilterKeyframe {
 public:
-    CompositorFilterKeyframe(double time, PassOwnPtr<CompositorFilterOperations>);
+    CompositorFilterKeyframe(double time, std::unique_ptr<CompositorFilterOperations>);
     ~CompositorFilterKeyframe();
 
     double time() const { return m_time; }
@@ -23,7 +22,7 @@ public:
 
 private:
     double m_time;
-    OwnPtr<CompositorFilterOperations> m_value;
+    std::unique_ptr<CompositorFilterOperations> m_value;
 };
 
 } // namespace blink

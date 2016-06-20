@@ -36,6 +36,7 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -62,7 +63,7 @@ public:
 
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
     bool isWorker() override { return false; }
-    void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
+    void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
     int contextGroupId(LocalFrame*);
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
@@ -84,8 +85,8 @@ private:
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     int ensureDefaultContextInGroup(int contextGroupId) override;
 
-    OwnPtr<ClientMessageLoop> m_clientMessageLoop;
-    OwnPtr<InspectorTaskRunner> m_taskRunner;
+    std::unique_ptr<ClientMessageLoop> m_clientMessageLoop;
+    std::unique_ptr<InspectorTaskRunner> m_taskRunner;
 
     static MainThreadDebugger* s_instance;
 

@@ -33,6 +33,7 @@
 
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/page/PagePopupClient.h"
+#include <memory>
 
 namespace blink {
 
@@ -67,7 +68,7 @@ private:
     Member<DateTimeChooserClient> m_client;
     PagePopup* m_popup;
     DateTimeChooserParameters m_parameters;
-    OwnPtr<Locale> m_locale;
+    std::unique_ptr<Locale> m_locale;
 };
 
 } // namespace blink

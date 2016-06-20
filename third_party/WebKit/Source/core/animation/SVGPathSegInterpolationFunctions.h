@@ -7,6 +7,7 @@
 
 #include "core/animation/InterpolableValue.h"
 #include "core/svg/SVGPathData.h"
+#include <memory>
 
 namespace blink {
 
@@ -20,7 +21,7 @@ struct PathCoordinates {
 class SVGPathSegInterpolationFunctions {
     STATIC_ONLY(SVGPathSegInterpolationFunctions);
 public:
-    static PassOwnPtr<InterpolableValue> consumePathSeg(const PathSegmentData&, PathCoordinates& currentCoordinates);
+    static std::unique_ptr<InterpolableValue> consumePathSeg(const PathSegmentData&, PathCoordinates& currentCoordinates);
     static PathSegmentData consumeInterpolablePathSeg(const InterpolableValue&, SVGPathSegType, PathCoordinates& currentCoordinates);
 };
 

@@ -28,7 +28,6 @@
 
 #include "platform/audio/AudioChannel.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/OwnPtr.h"
 #include <algorithm>
 #include <math.h>
 

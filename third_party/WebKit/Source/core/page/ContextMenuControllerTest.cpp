@@ -12,7 +12,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/ContextMenu.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -32,7 +32,7 @@ protected:
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
 TEST_F(ContextMenuControllerTest, TestCustomMenu)

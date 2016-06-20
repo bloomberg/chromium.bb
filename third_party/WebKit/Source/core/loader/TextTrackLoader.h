@@ -32,7 +32,6 @@
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

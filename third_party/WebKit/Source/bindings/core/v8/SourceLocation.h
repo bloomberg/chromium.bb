@@ -9,8 +9,8 @@
 #include "platform/CrossThreadCopier.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -23,19 +23,19 @@ namespace protocol { namespace Runtime { class StackTrace; }}
 class CORE_EXPORT SourceLocation {
 public:
     // Zero lineNumber and columnNumber mean unknown. Captures current stack trace.
-    static PassOwnPtr<SourceLocation> capture(const String& url, unsigned lineNumber, unsigned columnNumber);
+    static std::unique_ptr<SourceLocation> capture(const String& url, unsigned lineNumber, unsigned columnNumber);
 
     // Shortcut when location is unknown. Tries to capture call stack or parsing location if available.
-    static PassOwnPtr<SourceLocation> capture(ExecutionContext* = nullptr);
+    static std::unique_ptr<SourceLocation> capture(ExecutionContext* = nullptr);
 
-    static PassOwnPtr<SourceLocation> fromMessage(v8::Isolate*, v8::Local<v8::Message>, ExecutionContext*);
+    static std::unique_ptr<SourceLocation> fromMessage(v8::Isolate*, v8::Local<v8::Message>, ExecutionContext*);
 
-    static PassOwnPtr<SourceLocation> fromFunction(v8::Local<v8::Function>);
+    static std::unique_ptr<SourceLocation> fromFunction(v8::Local<v8::Function>);
 
     // Forces full stack trace.
-    static PassOwnPtr<SourceLocation> captureWithFullStackTrace();
+    static std::unique_ptr<SourceLocation> captureWithFullStackTrace();
 
-    static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
+    static std::unique_ptr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 
     bool isUnknown() const { return m_url.isNull() && !m_scriptId && !m_lineNumber; }
@@ -44,8 +44,8 @@ public:
     unsigned columnNumber() const { return m_columnNumber; }
     int scriptId() const { return m_scriptId; }
 
-    PassOwnPtr<SourceLocation> clone() const;
-    PassOwnPtr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
+    std::unique_ptr<SourceLocation> clone() const;
+    std::unique_ptr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
 
     // No-op when stack trace is unknown.
     void toTracedValue(TracedValue*, const char* name) const;
@@ -58,7 +58,7 @@ public:
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);
-    static PassOwnPtr<SourceLocation> createFromNonEmptyV8StackTrace(std::unique_ptr<V8StackTrace>, int scriptId);
+    static std::unique_ptr<SourceLocation> createFromNonEmptyV8StackTrace(std::unique_ptr<V8StackTrace>, int scriptId);
 
     String m_url;
     unsigned m_lineNumber;
@@ -68,9 +68,9 @@ private:
 };
 
 template <>
-struct CrossThreadCopier<PassOwnPtr<SourceLocation>> {
-    using Type = PassOwnPtr<SourceLocation>;
-    static Type copy(PassOwnPtr<SourceLocation> location)
+struct CrossThreadCopier<std::unique_ptr<SourceLocation>> {
+    using Type = std::unique_ptr<SourceLocation>;
+    static Type copy(std::unique_ptr<SourceLocation> location)
     {
         return location ? location->isolatedCopy() : nullptr;
     }

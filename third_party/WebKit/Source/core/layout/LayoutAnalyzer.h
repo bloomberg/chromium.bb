@@ -8,7 +8,7 @@
 #include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -82,7 +82,7 @@ public:
         m_counters[counter] += delta;
     }
 
-    PassOwnPtr<TracedValue> toTracedValue();
+    std::unique_ptr<TracedValue> toTracedValue();
 
 private:
     const char* nameForCounter(Counter) const;

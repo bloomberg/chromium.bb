@@ -7,6 +7,7 @@
 #include "core/html/parser/PreloadRequest.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -53,7 +54,7 @@ protected:
     {
         // TODO(yoav): Need a mock loader here to verify things are happenning beyond preconnect.
         PreloaderNetworkHintsMock networkHints;
-        OwnPtr<PreloadRequest> preloadRequest = PreloadRequest::create(String(),
+        std::unique_ptr<PreloadRequest> preloadRequest = PreloadRequest::create(String(),
             TextPosition(),
             testCase.url,
             KURL(ParsedURLStringTag(), testCase.baseURL),
@@ -72,7 +73,7 @@ protected:
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 TEST_F(HTMLResourcePreloaderTest, testPreconnect)

@@ -41,7 +41,9 @@
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "platform/Logging.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 
 // How does a SQLTransaction work?
@@ -253,7 +255,7 @@
 //
 //     When executing the transaction (in DatabaseThread::databaseThread()):
 //     ====================================================================
-//     OwnPtr<DatabaseTask> task;             // points to ...
+//     std::unique_ptr<DatabaseTask> task;             // points to ...
 //     --> DatabaseTransactionTask            // Member<SQLTransactionBackend> m_transaction points to ...
 //         --> SQLTransactionBackend          // Member<SQLTransaction> m_frontend;
 //             --> SQLTransaction             // Member<SQLTransactionBackend> m_backend points to ...
@@ -277,7 +279,7 @@
 //     However, there will still be a DatabaseTask pointing to the SQLTransactionBackend (see
 //     the "When executing the transaction" chain above). This will keep the
 //     SQLTransactionBackend alive until DatabaseThread::databaseThread() releases its
-//     task OwnPtr.
+//     task std::unique_ptr.
 //
 //     What happens if a transaction is interrupted?
 //     ============================================
@@ -561,7 +563,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
         m_database->sqliteDatabase().setMaximumSize(m_database->maximumSize());
 
     ASSERT(!m_sqliteTransaction);
-    m_sqliteTransaction = adoptPtr(new SQLiteTransaction(m_database->sqliteDatabase(), m_readOnly));
+    m_sqliteTransaction = wrapUnique(new SQLiteTransaction(m_database->sqliteDatabase(), m_readOnly));
 
     m_database->resetDeletes();
     m_database->disableAuthorizer();

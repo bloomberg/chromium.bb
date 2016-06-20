@@ -9,25 +9,27 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<SharedContextRateLimiter> SharedContextRateLimiter::create(unsigned maxPendingTicks)
+std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::create(unsigned maxPendingTicks)
 {
-    return adoptPtr(new SharedContextRateLimiter(maxPendingTicks));
+    return wrapUnique(new SharedContextRateLimiter(maxPendingTicks));
 }
 
 SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
     : m_maxPendingTicks(maxPendingTicks)
     , m_canUseSyncQueries(false)
 {
-    m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    m_contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!m_contextProvider)
         return;
 
     gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
     if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
+        std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
         // TODO(junov): when the GLES 3.0 command buffer is ready, we could use fenceSync instead
         m_canUseSyncQueries = extensionsUtil->supportsExtension("GL_CHROMIUM_sync_query");
     }

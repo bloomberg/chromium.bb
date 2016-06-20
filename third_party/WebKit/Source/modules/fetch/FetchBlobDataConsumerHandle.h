@@ -10,9 +10,9 @@
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,15 +24,15 @@ class MODULES_EXPORT FetchBlobDataConsumerHandle final : public FetchDataConsume
 public:
     class MODULES_EXPORT LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
     public:
-        virtual PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
+        virtual std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
         virtual ~LoaderFactory() { }
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+    static std::unique_ptr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
 
     // For testing.
-    static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<BlobDataHandle>, LoaderFactory*);
+    static std::unique_ptr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<BlobDataHandle>, LoaderFactory*);
 
     ~FetchBlobDataConsumerHandle();
 

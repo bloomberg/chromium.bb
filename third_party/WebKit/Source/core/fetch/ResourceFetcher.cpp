@@ -52,6 +52,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 using blink::WebURLRequest;
 
@@ -292,7 +293,7 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier, Resource* res
 
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
         // Resources loaded from memory cache should be reported the first time they're used.
-        OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->getType() == Resource::MainResource);
+        std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->getType() == Resource::MainResource);
         populateResourceTiming(info.get(), resource);
         info->clearLoadTimings();
         info->setLoadFinishTime(info->initialTime());
@@ -307,9 +308,9 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier, Resource* res
     m_validatedURLs.add(request.resourceRequest().url());
 }
 
-static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
+static std::unique_ptr<TracedValue> urlForTraceEvent(const KURL& url)
 {
-    OwnPtr<TracedValue> value = TracedValue::create();
+    std::unique_ptr<TracedValue> value = TracedValue::create();
     value->setString("url", url.getString());
     return value;
 }
@@ -524,7 +525,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
 void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
-    Vector<OwnPtr<ResourceTimingInfo>> timingReports;
+    Vector<std::unique_ptr<ResourceTimingInfo>> timingReports;
     timingReports.swap(m_scheduledResourceTimingReports);
     for (const auto& timingInfo : timingReports)
         context().addResourceTiming(*timingInfo);
@@ -609,7 +610,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
         return;
 
     bool isMainResource = resource->getType() == Resource::MainResource;
-    OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(fetchInitiator, monotonicallyIncreasingTime(), isMainResource);
+    std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(fetchInitiator, monotonicallyIncreasingTime(), isMainResource);
 
     if (resource->isCacheValidator()) {
         const AtomicString& timingAllowOrigin = resource->response().httpHeaderField(HTTPNames::Timing_Allow_Origin);
@@ -911,7 +912,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
     DCHECK(!m_loaders.contains(resource->loader()));
     DCHECK(finishReason == DidFinishFirstPartInMultipart || !m_nonBlockingLoaders.contains(resource->loader()));
 
-    if (OwnPtr<ResourceTimingInfo> info = m_resourceTimingInfoMap.take(resource)) {
+    if (std::unique_ptr<ResourceTimingInfo> info = m_resourceTimingInfoMap.take(resource)) {
         if (resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
             populateResourceTiming(info.get(), resource);
             info->setLoadFinishTime(finishTime);

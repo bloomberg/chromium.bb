@@ -18,6 +18,7 @@
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/layout/LayoutTheme.h"
+#include <memory>
 
 namespace blink {
 
@@ -114,7 +115,7 @@ ImmutableStylePropertySet* CSSParser::parseInlineStyleDeclaration(const String& 
     return CSSParserImpl::parseInlineStyleDeclaration(styleString, element);
 }
 
-PassOwnPtr<Vector<double>> CSSParser::parseKeyframeKeyList(const String& keyList)
+std::unique_ptr<Vector<double>> CSSParser::parseKeyframeKeyList(const String& keyList)
 {
     return CSSParserImpl::parseKeyframeKeyList(keyList);
 }

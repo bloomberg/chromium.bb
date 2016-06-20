@@ -8,12 +8,13 @@
 #include "core/animation/TypedInterpolationValue.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include <memory>
 
 namespace blink {
 
 // Handles memory management of underlying InterpolationValues in applyStack()
 // Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
-// This functions similar to a DataRef except on OwnPtr'd objects.
+// This functions similar to a DataRef except on std::unique_ptr'd objects.
 class UnderlyingValueOwner {
     WTF_MAKE_NONCOPYABLE(UnderlyingValueOwner);
     STACK_ALLOCATED();
@@ -42,7 +43,7 @@ public:
     void set(std::nullptr_t);
     void set(const InterpolationType&, const InterpolationValue&);
     void set(const InterpolationType&, InterpolationValue&&);
-    void set(PassOwnPtr<TypedInterpolationValue>);
+    void set(std::unique_ptr<TypedInterpolationValue>);
     void set(const TypedInterpolationValue*);
 
     InterpolationValue& mutableValue();

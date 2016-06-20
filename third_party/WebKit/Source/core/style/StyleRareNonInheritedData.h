@@ -28,11 +28,11 @@
 #include "core/CoreExport.h"
 #include "core/css/StyleColor.h"
 #include "core/layout/ClipPathOperation.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/DataPersistent.h"
 #include "core/style/DataRef.h"
 #include "core/style/FillLayer.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/ShapeValue.h"
@@ -40,10 +40,10 @@
 #include "core/style/StyleScrollSnapData.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "platform/LengthPoint.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -123,9 +123,9 @@ public:
     DataRef<StyleScrollSnapData> m_scrollSnap;
 
     Persistent<ContentData> m_content;
-    OwnPtr<CounterDirectiveMap> m_counterDirectives;
-    OwnPtr<CSSAnimationData> m_animations;
-    OwnPtr<CSSTransitionData> m_transitions;
+    std::unique_ptr<CounterDirectiveMap> m_counterDirectives;
+    std::unique_ptr<CSSAnimationData> m_animations;
+    std::unique_ptr<CSSTransitionData> m_transitions;
 
     RefPtr<ShadowList> m_boxShadow;
 

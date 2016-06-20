@@ -31,6 +31,8 @@
 #include "public/web/WebPepperSocket.h"
 
 #include "web/WebPepperSocketImpl.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -39,10 +41,10 @@ WebPepperSocket* WebPepperSocket::create(const WebDocument& document, WebPepperS
     if (!client)
         return 0;
 
-    OwnPtr<WebPepperSocketImpl> websocket = adoptPtr(new WebPepperSocketImpl(document, client));
+    std::unique_ptr<WebPepperSocketImpl> websocket = wrapUnique(new WebPepperSocketImpl(document, client));
     if (websocket && websocket->isNull())
         return 0;
-    return websocket.leakPtr();
+    return websocket.release();
 }
 
 } // namespace blink

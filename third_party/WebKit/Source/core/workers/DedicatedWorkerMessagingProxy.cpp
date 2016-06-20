@@ -6,6 +6,7 @@
 
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +19,7 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy()
 {
 }
 
-PassOwnPtr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(double originTime)
+std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(double originTime)
 {
     return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime);
 }

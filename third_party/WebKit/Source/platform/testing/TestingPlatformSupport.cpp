@@ -30,6 +30,9 @@
 
 #include "platform/testing/TestingPlatformSupport.h"
 
+#include "wtf/PtrUtil.h"
+#include <memory>
+
 namespace blink {
 
 TestingPlatformSupport::TestingPlatformSupport()
@@ -68,12 +71,12 @@ WebThread* TestingPlatformSupport::currentThread()
 class TestingPlatformMockWebTaskRunner : public WebTaskRunner {
     WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebTaskRunner);
 public:
-    explicit TestingPlatformMockWebTaskRunner(Deque<OwnPtr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
+    explicit TestingPlatformMockWebTaskRunner(Deque<std::unique_ptr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
     ~TestingPlatformMockWebTaskRunner() override { }
 
     void postTask(const WebTraceLocation&, Task* task) override
     {
-        m_tasks->append(adoptPtr(task));
+        m_tasks->append(wrapUnique(task));
     }
 
     void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override
@@ -99,13 +102,13 @@ public:
     }
 
 private:
-    Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
+    Deque<std::unique_ptr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
 };
 
 // TestingPlatformMockScheduler definition:
 
 TestingPlatformMockScheduler::TestingPlatformMockScheduler()
-    : m_mockWebTaskRunner(adoptPtr(new TestingPlatformMockWebTaskRunner(&m_tasks))) { }
+    : m_mockWebTaskRunner(wrapUnique(new TestingPlatformMockWebTaskRunner(&m_tasks))) { }
 
 TestingPlatformMockScheduler::~TestingPlatformMockScheduler() { }
 
@@ -135,7 +138,7 @@ void TestingPlatformMockScheduler::runAllTasks()
 class TestingPlatformMockWebThread : public WebThread {
     WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebThread);
 public:
-    TestingPlatformMockWebThread() : m_mockWebScheduler(adoptPtr(new TestingPlatformMockScheduler)) { }
+    TestingPlatformMockWebThread() : m_mockWebScheduler(wrapUnique(new TestingPlatformMockScheduler)) { }
     ~TestingPlatformMockWebThread() override { }
 
     WebTaskRunner* getWebTaskRunner() override
@@ -160,17 +163,17 @@ public:
     }
 
 private:
-    OwnPtr<TestingPlatformMockScheduler> m_mockWebScheduler;
+    std::unique_ptr<TestingPlatformMockScheduler> m_mockWebScheduler;
 };
 
 // TestingPlatformSupportWithMockScheduler definition:
 
 TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler()
-    : m_mockWebThread(adoptPtr(new TestingPlatformMockWebThread())) { }
+    : m_mockWebThread(wrapUnique(new TestingPlatformMockWebThread())) { }
 
 TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler(const Config& config)
     : TestingPlatformSupport(config)
-    , m_mockWebThread(adoptPtr(new TestingPlatformMockWebThread())) { }
+    , m_mockWebThread(wrapUnique(new TestingPlatformMockWebThread())) { }
 
 TestingPlatformSupportWithMockScheduler::~TestingPlatformSupportWithMockScheduler() { }
 

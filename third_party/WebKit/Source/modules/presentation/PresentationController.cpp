@@ -7,6 +7,8 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -65,12 +67,12 @@ void PresentationController::didStartDefaultSession(WebPresentationConnectionCli
 {
     if (!m_presentation || !m_presentation->defaultRequest())
         return;
-    PresentationConnection::take(this, adoptPtr(connectionClient), m_presentation->defaultRequest());
+    PresentationConnection::take(this, wrapUnique(connectionClient), m_presentation->defaultRequest());
 }
 
 void PresentationController::didChangeSessionState(WebPresentationConnectionClient* connectionClient, WebPresentationConnectionState state)
 {
-    OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);
+    std::unique_ptr<WebPresentationConnectionClient> client = wrapUnique(connectionClient);
 
     PresentationConnection* connection = findConnection(client.get());
     if (!connection)
@@ -80,7 +82,7 @@ void PresentationController::didChangeSessionState(WebPresentationConnectionClie
 
 void PresentationController::didCloseConnection(WebPresentationConnectionClient* connectionClient, WebPresentationConnectionCloseReason reason, const WebString& message)
 {
-    OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);
+    std::unique_ptr<WebPresentationConnectionClient> client = wrapUnique(connectionClient);
 
     PresentationConnection* connection = findConnection(client.get());
     if (!connection)
@@ -90,7 +92,7 @@ void PresentationController::didCloseConnection(WebPresentationConnectionClient*
 
 void PresentationController::didReceiveSessionTextMessage(WebPresentationConnectionClient* connectionClient, const WebString& message)
 {
-    OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);
+    std::unique_ptr<WebPresentationConnectionClient> client = wrapUnique(connectionClient);
 
     PresentationConnection* connection = findConnection(client.get());
     if (!connection)
@@ -100,7 +102,7 @@ void PresentationController::didReceiveSessionTextMessage(WebPresentationConnect
 
 void PresentationController::didReceiveSessionBinaryMessage(WebPresentationConnectionClient* connectionClient, const uint8_t* data, size_t length)
 {
-    OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);
+    std::unique_ptr<WebPresentationConnectionClient> client = wrapUnique(connectionClient);
 
     PresentationConnection* connection = findConnection(client.get());
     if (!connection)

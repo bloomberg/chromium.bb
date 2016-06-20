@@ -28,6 +28,9 @@
 
 #include "core/dom/AXObjectCache.h"
 
+#include "wtf/PtrUtil.h"
+#include <memory>
+
 namespace blink {
 
 AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction = nullptr;
@@ -52,9 +55,9 @@ AXObjectCache::~AXObjectCache()
 {
 }
 
-PassOwnPtr<ScopedAXObjectCache> ScopedAXObjectCache::create(Document& document)
+std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::create(Document& document)
 {
-    return adoptPtr(new ScopedAXObjectCache(document));
+    return wrapUnique(new ScopedAXObjectCache(document));
 }
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)

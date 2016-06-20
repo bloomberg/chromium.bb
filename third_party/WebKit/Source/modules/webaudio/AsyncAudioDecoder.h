@@ -27,8 +27,8 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/build_config.h"
+#include <memory>
 
 namespace blink {
 
@@ -59,7 +59,7 @@ private:
     static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, AbstractAudioContext*);
     static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, AbstractAudioContext*);
 
-    OwnPtr<WebThread> m_thread;
+    std::unique_ptr<WebThread> m_thread;
 };
 
 } // namespace blink

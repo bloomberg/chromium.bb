@@ -41,6 +41,8 @@
 #include "public/platform/WebAddressSpace.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -50,9 +52,9 @@ class CORE_EXPORT WorkerThreadStartupData final {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     USING_FAST_MALLOC(WorkerThreadStartupData);
 public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
+    static std::unique_ptr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {
-        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, addressSpace, originTrialTokens, v8CacheOptions));
+        return wrapUnique(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, addressSpace, originTrialTokens, v8CacheOptions));
     }
 
     ~WorkerThreadStartupData();
@@ -60,9 +62,9 @@ public:
     KURL m_scriptURL;
     String m_userAgent;
     String m_sourceCode;
-    OwnPtr<Vector<char>> m_cachedMetaData;
+    std::unique_ptr<Vector<char>> m_cachedMetaData;
     WorkerThreadStartMode m_startMode;
-    OwnPtr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
+    std::unique_ptr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
     std::unique_ptr<Vector<String>> m_originTrialTokens;
 
 
@@ -75,7 +77,7 @@ public:
     //
     // See SecurityOrigin::transferPrivilegesFrom() for details on what
     // privileges are transferred.
-    OwnPtr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
+    std::unique_ptr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
 
     // This object is created and initialized on the thread creating
     // a new worker context, but ownership of it and this WorkerThreadStartupData
@@ -92,7 +94,7 @@ public:
     V8CacheOptions m_v8CacheOptions;
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin*, WorkerClients*, WebAddressSpace, const Vector<String>* originTrialTokens, V8CacheOptions);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin*, WorkerClients*, WebAddressSpace, const Vector<String>* originTrialTokens, V8CacheOptions);
 };
 
 } // namespace blink

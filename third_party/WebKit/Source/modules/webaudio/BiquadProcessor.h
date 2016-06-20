@@ -31,6 +31,7 @@
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "platform/audio/Biquad.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -53,7 +54,7 @@ public:
     BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune);
     ~BiquadProcessor() override;
 
-    PassOwnPtr<AudioDSPKernel> createKernel() override;
+    std::unique_ptr<AudioDSPKernel> createKernel() override;
 
     void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 

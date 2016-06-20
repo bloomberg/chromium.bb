@@ -12,6 +12,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -23,9 +24,9 @@ class MODULES_EXPORT ServiceWorkerClient : public GarbageCollectedFinalized<Serv
     DEFINE_WRAPPERTYPEINFO();
 public:
     // To be used by CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebServiceWorkerClientInfo>;
+    using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
 
-    static ServiceWorkerClient* take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientInfo>);
+    static ServiceWorkerClient* take(ScriptPromiseResolver*, std::unique_ptr<WebServiceWorkerClientInfo>);
     static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
 
     virtual ~ServiceWorkerClient();

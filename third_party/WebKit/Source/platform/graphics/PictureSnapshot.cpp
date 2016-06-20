@@ -46,8 +46,10 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HexNumber.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
+#include <memory>
 
 namespace blink {
 
@@ -58,7 +60,7 @@ PictureSnapshot::PictureSnapshot(PassRefPtr<const SkPicture> picture)
 
 static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
 {
-    OwnPtr<ImageDecoder> imageDecoder = ImageDecoder::create(static_cast<const char*>(data), length,
+    std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(static_cast<const char*>(data), length,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
     if (!imageDecoder)
         return false;
@@ -107,7 +109,7 @@ bool PictureSnapshot::isEmpty() const
     return m_picture->cullRect().isEmpty();
 }
 
-PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
+std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
 
@@ -127,7 +129,7 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
         canvas.resetStepCount();
         m_picture->playback(&canvas, &canvas);
     }
-    OwnPtr<Vector<char>> base64Data = adoptPtr(new Vector<char>());
+    std::unique_ptr<Vector<char>> base64Data = wrapUnique(new Vector<char>());
     Vector<char> encodedImage;
 
     RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromBitmap(bitmap));
@@ -144,9 +146,9 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
     return base64Data;
 }
 
-PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
+std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
 {
-    OwnPtr<PictureSnapshot::Timings> timings = adoptPtr(new PictureSnapshot::Timings());
+    std::unique_ptr<PictureSnapshot::Timings> timings = wrapUnique(new PictureSnapshot::Timings());
     timings->reserveCapacity(minRepeatCount);
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;

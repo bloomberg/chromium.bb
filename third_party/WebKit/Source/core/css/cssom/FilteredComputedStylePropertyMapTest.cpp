@@ -9,6 +9,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -23,7 +24,7 @@ public:
     CSSComputedStyleDeclaration* declaration() const { return m_declaration.get(); }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
     Persistent<CSSComputedStyleDeclaration> m_declaration;
 };
 

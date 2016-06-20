@@ -34,8 +34,8 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -45,7 +45,7 @@ public:
     virtual ~WebSocketChannelClient() { }
     virtual void didConnect(const String& subprotocol, const String& extensions) { }
     virtual void didReceiveTextMessage(const String&) { }
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) { }
+    virtual void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) { }
     virtual void didError() { }
     virtual void didConsumeBufferedAmount(uint64_t consumed) { }
     virtual void didStartClosingHandshake() { }

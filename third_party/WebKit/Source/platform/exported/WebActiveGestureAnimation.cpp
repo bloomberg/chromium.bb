@@ -27,24 +27,26 @@
 
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebGestureCurveTarget.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<WebActiveGestureAnimation> WebActiveGestureAnimation::createAtAnimationStart(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target)
+std::unique_ptr<WebActiveGestureAnimation> WebActiveGestureAnimation::createAtAnimationStart(std::unique_ptr<WebGestureCurve> curve, WebGestureCurveTarget* target)
 {
-    return adoptPtr(new WebActiveGestureAnimation(std::move(curve), target, 0, true));
+    return wrapUnique(new WebActiveGestureAnimation(std::move(curve), target, 0, true));
 }
 
-PassOwnPtr<WebActiveGestureAnimation> WebActiveGestureAnimation::createWithTimeOffset(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime)
+std::unique_ptr<WebActiveGestureAnimation> WebActiveGestureAnimation::createWithTimeOffset(std::unique_ptr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime)
 {
-    return adoptPtr(new WebActiveGestureAnimation(std::move(curve), target, startTime, false));
+    return wrapUnique(new WebActiveGestureAnimation(std::move(curve), target, startTime, false));
 }
 
 WebActiveGestureAnimation::~WebActiveGestureAnimation()
 {
 }
 
-WebActiveGestureAnimation::WebActiveGestureAnimation(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime, bool waitingForFirstTick)
+WebActiveGestureAnimation::WebActiveGestureAnimation(std::unique_ptr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime, bool waitingForFirstTick)
     : m_startTime(startTime)
     , m_waitingForFirstTick(waitingForFirstTick)
     , m_curve(std::move(curve))

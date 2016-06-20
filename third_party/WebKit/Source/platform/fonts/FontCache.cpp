@@ -50,10 +50,12 @@
 #include "public/platform/Platform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 using namespace WTF;
 
@@ -67,9 +69,9 @@ FontCache::FontCache()
 }
 #endif // !OS(WIN) && !OS(LINUX)
 
-typedef HashMap<unsigned, OwnPtr<FontPlatformData>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>> SizedFontPlatformDataSet;
+typedef HashMap<unsigned, std::unique_ptr<FontPlatformData>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>> SizedFontPlatformDataSet;
 typedef HashMap<FontCacheKey, SizedFontPlatformDataSet, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
-typedef HashMap<FallbackListCompositeKey, OwnPtr<ShapeCache>, FallbackListCompositeKeyHash, FallbackListCompositeKeyTraits> FallbackListShaperCache;
+typedef HashMap<FallbackListCompositeKey, std::unique_ptr<ShapeCache>, FallbackListCompositeKeyHash, FallbackListCompositeKeyTraits> FallbackListShaperCache;
 
 static FontPlatformDataCache* gFontPlatformDataCache = nullptr;
 static FallbackListShaperCache* gFallbackListShaperCache = nullptr;
@@ -118,7 +120,7 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
         // Take a different size instance of the same font before adding an entry to |sizedFont|.
         FontPlatformData* anotherSize = wasEmpty ? nullptr : sizedFonts->begin()->value.get();
         auto addResult = sizedFonts->add(roundedSize, nullptr);
-        OwnPtr<FontPlatformData>* found = &addResult.storedValue->value;
+        std::unique_ptr<FontPlatformData>* found = &addResult.storedValue->value;
         if (addResult.isNewEntry) {
             if (wasEmpty)
                 *found = createFontPlatformData(fontDescription, creationParams, size);
@@ -141,19 +143,19 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
         if (result) {
             // Cache the result under the old name.
             auto adding = &gFontPlatformDataCache->add(key, SizedFontPlatformDataSet()).storedValue->value;
-            adding->set(roundedSize, adoptPtr(new FontPlatformData(*result)));
+            adding->set(roundedSize, wrapUnique(new FontPlatformData(*result)));
         }
     }
 
     return result;
 }
 
-PassOwnPtr<FontPlatformData> FontCache::scaleFontPlatformData(const FontPlatformData& fontPlatformData, const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
+std::unique_ptr<FontPlatformData> FontCache::scaleFontPlatformData(const FontPlatformData& fontPlatformData, const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
 {
 #if OS(MACOSX)
     return createFontPlatformData(fontDescription, creationParams, fontSize);
 #else
-    return adoptPtr(new FontPlatformData(fontPlatformData, fontSize));
+    return wrapUnique(new FontPlatformData(fontPlatformData, fontSize));
 #endif
 }
 
@@ -166,7 +168,7 @@ ShapeCache* FontCache::getShapeCache(const FallbackListCompositeKey& key)
     ShapeCache* result = nullptr;
     if (it == gFallbackListShaperCache->end()) {
         result = new ShapeCache();
-        gFallbackListShaperCache->set(key, adoptPtr(result));
+        gFallbackListShaperCache->set(key, wrapUnique(result));
     } else {
         result = it->value.get();
     }

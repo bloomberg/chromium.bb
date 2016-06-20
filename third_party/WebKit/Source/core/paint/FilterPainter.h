@@ -7,7 +7,7 @@
 
 #include "core/paint/PaintLayerPaintingInfo.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -25,7 +25,7 @@ public:
 private:
     bool m_filterInProgress;
     GraphicsContext& m_context;
-    OwnPtr<LayerClipRecorder> m_clipRecorder;
+    std::unique_ptr<LayerClipRecorder> m_clipRecorder;
     LayoutObject* m_layoutObject;
 };
 

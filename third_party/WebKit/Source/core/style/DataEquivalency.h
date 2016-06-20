@@ -5,8 +5,8 @@
 #ifndef DataEquivalency_h
 #define DataEquivalency_h
 
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +44,7 @@ bool dataEquivalent(const Member<T>& a, const Member<T>& b)
 }
 
 template <typename T>
-bool dataEquivalent(const OwnPtr<T>& a, const OwnPtr<T>& b)
+bool dataEquivalent(const std::unique_ptr<T>& a, const std::unique_ptr<T>& b)
 {
     return dataEquivalent(a.get(), b.get());
 }

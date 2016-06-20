@@ -6,7 +6,7 @@
 
 #include "core/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ void FetchHeaderList::append(const String& name, const String& value)
     // "To append a name/value (|name|/|value|) pair to a header list (|list|),
     // append a new header whose name is |name|, byte lowercased, and value is
     // |value|, to |list|."
-    m_headerList.append(adoptPtr(new Header(name.lower(), value)));
+    m_headerList.append(wrapUnique(new Header(name.lower(), value)));
 }
 
 void FetchHeaderList::set(const String& name, const String& value)
@@ -61,7 +61,7 @@ void FetchHeaderList::set(const String& name, const String& value)
             return;
         }
     }
-    m_headerList.append(adoptPtr(new Header(lowercasedName, value)));
+    m_headerList.append(wrapUnique(new Header(lowercasedName, value)));
 }
 
 String FetchHeaderList::extractMIMEType() const

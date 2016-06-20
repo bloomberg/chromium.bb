@@ -31,7 +31,7 @@
 #include "platform/Timer.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -84,7 +84,7 @@ private:
 
     enum LoadLimitState { UnderLimit, ShortLimitExceeded, LongLimitExceeded };
 
-    OwnPtr<FontCustomPlatformData> m_fontData;
+    std::unique_ptr<FontCustomPlatformData> m_fontData;
     String m_otsParsingMessage;
     LoadLimitState m_loadLimitState;
     bool m_corsFailed;

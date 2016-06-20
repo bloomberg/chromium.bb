@@ -29,8 +29,8 @@
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -96,9 +96,9 @@ private:
     void continueParsing();
 
     Member<HTMLDocumentParser> m_parser;
-    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
+    std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
 
-    OwnPtr<CancellableTaskFactory> m_cancellableContinueParse;
+    std::unique_ptr<CancellableTaskFactory> m_cancellableContinueParse;
     bool m_isSuspendedWithActiveTimer;
 };
 

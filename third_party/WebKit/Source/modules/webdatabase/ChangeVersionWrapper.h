@@ -31,6 +31,7 @@
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -50,7 +51,7 @@ private:
 
     String m_oldVersion;
     String m_newVersion;
-    OwnPtr<SQLErrorData> m_sqlError;
+    std::unique_ptr<SQLErrorData> m_sqlError;
 };
 
 } // namespace blink

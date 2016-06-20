@@ -35,8 +35,8 @@
 #include "public/platform/WebURLLoader.h"
 #include "public/web/WebURLLoaderOptions.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -83,8 +83,8 @@ private:
 
     // An adapter which converts the DocumentThreadableLoaderClient method
     // calls into the WebURLLoaderClient method calls.
-    OwnPtr<ClientAdapter> m_clientAdapter;
-    OwnPtr<DocumentThreadableLoader> m_loader;
+    std::unique_ptr<ClientAdapter> m_clientAdapter;
+    std::unique_ptr<DocumentThreadableLoader> m_loader;
 
     // A ContextLifecycleObserver for cancelling |m_loader| when the Document
     // is detached.

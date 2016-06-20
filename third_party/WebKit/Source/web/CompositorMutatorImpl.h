@@ -10,8 +10,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -54,7 +53,7 @@ private:
     using ProxyClients = HeapHashSet<WeakMember<CompositorProxyClientImpl>>;
     ProxyClients m_proxyClients;
 
-    OwnPtr<CustomCompositorAnimationManager> m_animationManager;
+    std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
     CompositorMutatorClient* m_client;
 };
 

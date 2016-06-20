@@ -35,15 +35,15 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
+#include <memory>
 
 namespace blink {
 
 using OriginAccessWhiteList = Vector<OriginAccessEntry>;
-using OriginAccessMap = HashMap<String, OwnPtr<OriginAccessWhiteList>>;
+using OriginAccessMap = HashMap<String, std::unique_ptr<OriginAccessWhiteList>>;
 using OriginSet = HashSet<String>;
 
 static OriginAccessMap& originAccessMap()
@@ -186,7 +186,7 @@ void SecurityPolicy::addOriginAccessWhitelistEntry(const SecurityOrigin& sourceO
     String sourceString = sourceOrigin.toString();
     OriginAccessMap::AddResult result = originAccessMap().add(sourceString, nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = adoptPtr(new OriginAccessWhiteList);
+        result.storedValue->value = wrapUnique(new OriginAccessWhiteList);
 
     OriginAccessWhiteList* list = result.storedValue->value.get();
     list->append(OriginAccessEntry(destinationProtocol, destinationDomain, allowDestinationSubdomains ? OriginAccessEntry::AllowSubdomains : OriginAccessEntry::DisallowSubdomains));

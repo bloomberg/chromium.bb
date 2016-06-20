@@ -39,8 +39,8 @@
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
 #include "public/platform/WebMediaSource.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -78,7 +78,7 @@ public:
 
     // HTMLMediaSource
     bool attachToElement(HTMLMediaElement*) override;
-    void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) override;
+    void setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
     void close() override;
     bool isClosed() const override;
     double duration() const override;
@@ -118,7 +118,7 @@ private:
 
     bool isUpdating() const;
 
-    PassOwnPtr<WebSourceBuffer> createWebSourceBuffer(const String& type, const String& codecs, ExceptionState&);
+    std::unique_ptr<WebSourceBuffer> createWebSourceBuffer(const String& type, const String& codecs, ExceptionState&);
     void scheduleEvent(const AtomicString& eventName);
     void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus, ExceptionState&);
 
@@ -126,7 +126,7 @@ private:
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#duration-change-algorithm
     void durationChangeAlgorithm(double newDuration);
 
-    OwnPtr<WebMediaSource> m_webMediaSource;
+    std::unique_ptr<WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     Member<GenericEventQueue> m_asyncEventQueue;
     WeakMember<HTMLMediaElement> m_attachedElement;

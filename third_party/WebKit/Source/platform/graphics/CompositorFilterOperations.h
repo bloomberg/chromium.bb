@@ -11,7 +11,8 @@
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 class SkImageFilter;
 
@@ -21,9 +22,9 @@ namespace blink {
 class PLATFORM_EXPORT CompositorFilterOperations {
     WTF_MAKE_NONCOPYABLE(CompositorFilterOperations);
 public:
-    static PassOwnPtr<CompositorFilterOperations> create()
+    static std::unique_ptr<CompositorFilterOperations> create()
     {
-        return adoptPtr(new CompositorFilterOperations());
+        return wrapUnique(new CompositorFilterOperations());
     }
 
     const cc::FilterOperations& asFilterOperations() const;

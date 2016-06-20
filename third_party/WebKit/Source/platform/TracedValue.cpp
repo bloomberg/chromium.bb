@@ -5,13 +5,15 @@
 #include "platform/TracedValue.h"
 
 #include "base/trace_event/trace_event_argument.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/StringUTF8Adaptor.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<TracedValue> TracedValue::create()
+std::unique_ptr<TracedValue> TracedValue::create()
 {
-    return adoptPtr(new TracedValue());
+    return wrapUnique(new TracedValue());
 }
 
 TracedValue::TracedValue()

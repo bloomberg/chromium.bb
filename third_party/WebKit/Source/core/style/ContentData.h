@@ -27,8 +27,8 @@
 
 #include "core/style/CounterContent.h"
 #include "core/style/StyleImage.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -40,7 +40,7 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
 public:
     static ContentData* create(StyleImage*);
     static ContentData* create(const String&);
-    static ContentData* create(PassOwnPtr<CounterContent>);
+    static ContentData* create(std::unique_ptr<CounterContent>);
     static ContentData* create(QuoteType);
 
     virtual ~ContentData() { }
@@ -140,20 +140,20 @@ class CounterContentData final : public ContentData {
     friend class ContentData;
 public:
     const CounterContent* counter() const { return m_counter.get(); }
-    void setCounter(PassOwnPtr<CounterContent> counter) { m_counter = std::move(counter); }
+    void setCounter(std::unique_ptr<CounterContent> counter) { m_counter = std::move(counter); }
 
     bool isCounter() const override { return true; }
     LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
 private:
-    CounterContentData(PassOwnPtr<CounterContent> counter)
+    CounterContentData(std::unique_ptr<CounterContent> counter)
         : m_counter(std::move(counter))
     {
     }
 
     ContentData* cloneInternal() const override
     {
-        OwnPtr<CounterContent> counterData = adoptPtr(new CounterContent(*counter()));
+        std::unique_ptr<CounterContent> counterData = wrapUnique(new CounterContent(*counter()));
         return create(std::move(counterData));
     }
 
@@ -164,7 +164,7 @@ private:
         return *static_cast<const CounterContentData&>(data).counter() == *counter();
     }
 
-    OwnPtr<CounterContent> m_counter;
+    std::unique_ptr<CounterContent> m_counter;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Counter);

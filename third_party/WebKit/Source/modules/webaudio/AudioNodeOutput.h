@@ -30,6 +30,7 @@
 #include "platform/audio/AudioBus.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,7 +43,7 @@ class AudioNodeOutput final {
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
-    static PassOwnPtr<AudioNodeOutput> create(AudioHandler*, unsigned numberOfChannels);
+    static std::unique_ptr<AudioNodeOutput> create(AudioHandler*, unsigned numberOfChannels);
     void dispose();
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.

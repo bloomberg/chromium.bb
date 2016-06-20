@@ -38,7 +38,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/ExecutionContext.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -123,7 +123,7 @@ V8V0CustomElementLifecycleCallbacks::~V8V0CustomElementLifecycleCallbacks()
 {
 }
 
-bool V8V0CustomElementLifecycleCallbacks::setBinding(PassOwnPtr<V0CustomElementBinding> binding)
+bool V8V0CustomElementLifecycleCallbacks::setBinding(std::unique_ptr<V0CustomElementBinding> binding)
 {
     V8PerContextData* perContextData = creationContextData();
     if (!perContextData)

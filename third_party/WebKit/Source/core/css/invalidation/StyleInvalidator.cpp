@@ -14,6 +14,7 @@
 #include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutObject.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -100,7 +101,7 @@ PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(Element& elem
 {
     PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(&element, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtr(new PendingInvalidations());
+        addResult.storedValue->value = wrapUnique(new PendingInvalidations());
     return *addResult.storedValue->value;
 }
 

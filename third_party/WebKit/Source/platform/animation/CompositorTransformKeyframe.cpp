@@ -4,9 +4,11 @@
 
 #include "platform/animation/CompositorTransformKeyframe.h"
 
+#include <memory>
+
 namespace blink {
 
-CompositorTransformKeyframe::CompositorTransformKeyframe(double time, PassOwnPtr<CompositorTransformOperations> value)
+CompositorTransformKeyframe::CompositorTransformKeyframe(double time, std::unique_ptr<CompositorTransformOperations> value)
     : m_time(time)
     , m_value(std::move(value))
 {

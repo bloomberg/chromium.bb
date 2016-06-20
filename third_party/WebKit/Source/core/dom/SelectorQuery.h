@@ -32,6 +32,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
+#include <memory>
 
 namespace blink {
 
@@ -89,7 +90,7 @@ class CORE_EXPORT SelectorQuery {
     WTF_MAKE_NONCOPYABLE(SelectorQuery);
     USING_FAST_MALLOC(SelectorQuery);
 public:
-    static PassOwnPtr<SelectorQuery> adopt(CSSSelectorList);
+    static std::unique_ptr<SelectorQuery> adopt(CSSSelectorList);
 
     bool matches(Element&) const;
     Element* closest(Element&) const;
@@ -109,7 +110,7 @@ public:
     void invalidate();
 
 private:
-    HashMap<AtomicString, OwnPtr<SelectorQuery>> m_entries;
+    HashMap<AtomicString, std::unique_ptr<SelectorQuery>> m_entries;
 };
 
 } // namespace blink

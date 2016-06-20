@@ -31,7 +31,7 @@
 #include "core/style/ShadowList.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -77,9 +77,9 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowLis
     return ShadowList::adopt(shadows);
 }
 
-PassOwnPtr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::ShadowAlphaMode alphaMode, const Color& currentColor, bool isHorizontal) const
+std::unique_ptr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::ShadowAlphaMode alphaMode, const Color& currentColor, bool isHorizontal) const
 {
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
+    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     for (size_t i = shadows().size(); i--; ) {
         const ShadowData& shadow = shadows()[i];
         float shadowX = isHorizontal ? shadow.x() : shadow.y();

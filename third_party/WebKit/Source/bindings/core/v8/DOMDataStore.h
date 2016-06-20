@@ -37,8 +37,9 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -52,7 +53,7 @@ public:
     DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
         : m_isMainWorld(isMainWorld)
         // We never use |m_wrapperMap| when it's the main world.
-        , m_wrapperMap(adoptPtr(
+        , m_wrapperMap(wrapUnique(
             isMainWorld
             ? nullptr
             : new DOMWrapperMap<ScriptWrappable>(isolate))) { }
@@ -216,7 +217,7 @@ private:
     }
 
     bool m_isMainWorld;
-    OwnPtr<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
+    std::unique_ptr<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
 };
 
 template<>

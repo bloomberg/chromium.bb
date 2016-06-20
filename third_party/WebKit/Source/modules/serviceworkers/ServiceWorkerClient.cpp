@@ -12,10 +12,11 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
-ServiceWorkerClient* ServiceWorkerClient::take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientInfo> webClient)
+ServiceWorkerClient* ServiceWorkerClient::take(ScriptPromiseResolver*, std::unique_ptr<WebServiceWorkerClientInfo> webClient)
 {
     if (!webClient)
         return nullptr;
@@ -70,7 +71,7 @@ String ServiceWorkerClient::frameType() const
 void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -78,7 +79,7 @@ void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<Seri
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorkerClient cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/511119"));
 
     WebString messageString = message->toWireString();
-    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
+    std::unique_ptr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
     ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_uuid, messageString, std::move(webChannels));
 }
 

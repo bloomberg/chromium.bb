@@ -7,6 +7,7 @@
 
 #include "core/animation/CSSInterpolationType.h"
 #include "core/animation/LengthPropertyFunctions.h"
+#include <memory>
 
 namespace blink {
 
@@ -22,14 +23,14 @@ public:
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
-    static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
+    static std::unique_ptr<InterpolableValue> createInterpolablePixels(double pixels);
     static InterpolationValue createInterpolablePercent(double percent);
     static InterpolationValue maybeConvertCSSValue(const CSSValue&);
     static InterpolationValue maybeConvertLength(const Length&, float zoom);
-    static PassOwnPtr<InterpolableList> createNeutralInterpolableValue();
+    static std::unique_ptr<InterpolableList> createNeutralInterpolableValue();
     static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end);
     static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
-    static void composite(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
+    static void composite(std::unique_ptr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
     static void subtractFromOneHundredPercent(InterpolationValue& result);
 
 private:

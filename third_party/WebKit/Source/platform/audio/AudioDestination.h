@@ -37,6 +37,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,7 +56,7 @@ public:
 
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
-    static PassOwnPtr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
+    static std::unique_ptr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
 
     virtual void start();
     virtual void stop();
@@ -86,11 +87,11 @@ private:
     RefPtr<AudioBus> m_renderBus;
     float m_sampleRate;
     bool m_isPlaying;
-    OwnPtr<WebAudioDevice> m_audioDevice;
+    std::unique_ptr<WebAudioDevice> m_audioDevice;
     size_t m_callbackBufferSize;
 
-    OwnPtr<AudioFIFO> m_inputFifo;
-    OwnPtr<AudioPullFIFO> m_fifo;
+    std::unique_ptr<AudioFIFO> m_inputFifo;
+    std::unique_ptr<AudioPullFIFO> m_fifo;
 };
 
 } // namespace blink

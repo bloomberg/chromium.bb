@@ -41,6 +41,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -123,7 +124,7 @@ private:
     Member<PlatformTiming> m_timing;
     double m_lastCurrentTimeInternal;
 
-    OwnPtr<CompositorAnimationTimeline> m_compositorTimeline;
+    std::unique_ptr<CompositorAnimationTimeline> m_compositorTimeline;
 
     class AnimationTimelineTiming final : public PlatformTiming {
     public:

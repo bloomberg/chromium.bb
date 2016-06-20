@@ -30,7 +30,9 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/ListMarkerText.h"
 #include "core/style/ComputedStyle.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -41,7 +43,7 @@ namespace blink {
 using namespace HTMLNames;
 
 typedef HashMap<AtomicString, RefPtr<CounterNode>> CounterMap;
-typedef HashMap<const LayoutObject*, OwnPtr<CounterMap>> CounterMaps;
+typedef HashMap<const LayoutObject*, std::unique_ptr<CounterMap>> CounterMaps;
 
 static CounterNode* makeCounterNodeIfNeeded(LayoutObject&, const AtomicString& identifier, bool alwaysCreateCounter);
 
@@ -339,7 +341,7 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object, const AtomicSt
         nodeMap = counterMaps().get(&object);
     } else {
         nodeMap = new CounterMap;
-        counterMaps().set(&object, adoptPtr(nodeMap));
+        counterMaps().set(&object, wrapUnique(nodeMap));
         object.setHasCounterNodeMap(true);
     }
     nodeMap->set(identifier, newNode);

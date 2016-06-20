@@ -22,10 +22,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,9 +48,9 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOf
     m_internalBus = AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
 }
 
-PassOwnPtr<AudioNodeOutput> AudioNodeOutput::create(AudioHandler* handler, unsigned numberOfChannels)
+std::unique_ptr<AudioNodeOutput> AudioNodeOutput::create(AudioHandler* handler, unsigned numberOfChannels)
 {
-    return adoptPtr(new AudioNodeOutput(handler, numberOfChannels));
+    return wrapUnique(new AudioNodeOutput(handler, numberOfChannels));
 }
 
 void AudioNodeOutput::dispose()

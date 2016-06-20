@@ -22,16 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "platform/Logging.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -90,7 +91,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
 
         if (sourceSampleRate != sampleRate()) {
             double scaleFactor = sourceSampleRate / sampleRate();
-            m_multiChannelResampler = adoptPtr(new MultiChannelResampler(scaleFactor, numberOfChannels));
+            m_multiChannelResampler = wrapUnique(new MultiChannelResampler(scaleFactor, numberOfChannels));
         } else {
             // Bypass resampling.
             m_multiChannelResampler.reset();

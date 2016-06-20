@@ -38,6 +38,7 @@
 #include "public/web/WebExternalPopupMenuClient.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
+#include <memory>
 
 namespace blink {
 
@@ -85,7 +86,7 @@ private:
     Member<HTMLSelectElement> m_ownerElement;
     Member<LocalFrame> m_localFrame;
     WebViewImpl& m_webView;
-    OwnPtr<WebMouseEvent> m_syntheticEvent;
+    std::unique_ptr<WebMouseEvent> m_syntheticEvent;
     Timer<ExternalPopupMenu> m_dispatchEventTimer;
     // The actual implementor of the show menu.
     WebExternalPopupMenu* m_webExternalPopupMenu;

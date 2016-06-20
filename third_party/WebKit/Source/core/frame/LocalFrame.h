@@ -41,6 +41,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/HashSet.h"
+#include <memory>
 
 namespace blink {
 
@@ -154,8 +155,8 @@ public:
     void deviceScaleFactorChanged();
     double devicePixelRatio() const;
 
-    PassOwnPtr<DragImage> nodeImage(Node&);
-    PassOwnPtr<DragImage> dragImageForSelection(float opacity);
+    std::unique_ptr<DragImage> nodeImage(Node&);
+    std::unique_ptr<DragImage> dragImageForSelection(float opacity);
 
     String selectedText() const;
     String selectedTextForClipboard() const;
@@ -212,7 +213,7 @@ private:
     const Member<EventHandler> m_eventHandler;
     const Member<FrameConsole> m_console;
     const Member<InputMethodController> m_inputMethodController;
-    OwnPtr<WebFrameScheduler> m_frameScheduler;
+    std::unique_ptr<WebFrameScheduler> m_frameScheduler;
 
     int m_navigationDisableCount;
 

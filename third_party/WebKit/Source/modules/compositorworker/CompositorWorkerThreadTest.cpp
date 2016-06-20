@@ -23,6 +23,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 namespace {
@@ -30,13 +32,13 @@ namespace {
 // A null InProcessWorkerObjectProxy, supplied when creating CompositorWorkerThreads.
 class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
 public:
-    static PassOwnPtr<TestCompositorWorkerObjectProxy> create(ExecutionContext* context)
+    static std::unique_ptr<TestCompositorWorkerObjectProxy> create(ExecutionContext* context)
     {
-        return adoptPtr(new TestCompositorWorkerObjectProxy(context));
+        return wrapUnique(new TestCompositorWorkerObjectProxy(context));
     }
 
     // (Empty) WorkerReportingProxy implementation:
-    virtual void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) {}
+    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) {}
     void reportConsoleMessage(ConsoleMessage*) override {}
     void postMessageToPageInspector(const String&) override {}
     void postWorkerConsoleAgentEnabled() override {}
@@ -75,7 +77,7 @@ public:
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {
 public:
     CompositorWorkerTestPlatform()
-        : m_thread(adoptPtr(m_oldPlatform->createThread("Compositor")))
+        : m_thread(wrapUnique(m_oldPlatform->createThread("Compositor")))
     {
     }
 
@@ -87,7 +89,7 @@ public:
     WebCompositorSupport* compositorSupport() override { return &m_compositorSupport; }
 
 private:
-    OwnPtr<WebThread> m_thread;
+    std::unique_ptr<WebThread> m_thread;
     TestingCompositorSupport m_compositorSupport;
 };
 
@@ -109,9 +111,9 @@ public:
         CompositorWorkerThread::clearSharedBackingThread();
     }
 
-    PassOwnPtr<CompositorWorkerThread> createCompositorWorker()
+    std::unique_ptr<CompositorWorkerThread> createCompositorWorker()
     {
-        OwnPtr<CompositorWorkerThread> workerThread = CompositorWorkerThread::create(nullptr, *m_objectProxy, 0);
+        std::unique_ptr<CompositorWorkerThread> workerThread = CompositorWorkerThread::create(nullptr, *m_objectProxy, 0);
         WorkerClients* clients = WorkerClients::create();
         provideCompositorProxyClientTo(clients, new TestCompositorProxyClient);
         workerThread->start(WorkerThreadStartupData::create(
@@ -132,7 +134,7 @@ public:
     // Attempts to run some simple script for |worker|.
     void checkWorkerCanExecuteScript(WorkerThread* worker)
     {
-        OwnPtr<WaitableEvent> waitEvent = adoptPtr(new WaitableEvent());
+        std::unique_ptr<WaitableEvent> waitEvent = wrapUnique(new WaitableEvent());
         worker->workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerThreadTest::executeScriptInWorker, AllowCrossThreadAccess(this),
             AllowCrossThreadAccess(worker), AllowCrossThreadAccess(waitEvent.get())));
         waitEvent->wait();
@@ -147,15 +149,15 @@ private:
         waitEvent->signal();
     }
 
-    OwnPtr<DummyPageHolder> m_page;
+    std::unique_ptr<DummyPageHolder> m_page;
     RefPtr<SecurityOrigin> m_securityOrigin;
-    OwnPtr<InProcessWorkerObjectProxy> m_objectProxy;
+    std::unique_ptr<InProcessWorkerObjectProxy> m_objectProxy;
     CompositorWorkerTestPlatform m_testPlatform;
 };
 
 TEST_F(CompositorWorkerThreadTest, Basic)
 {
-    OwnPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> compositorWorker = createCompositorWorker();
     checkWorkerCanExecuteScript(compositorWorker.get());
     compositorWorker->terminateAndWait();
 }
@@ -164,14 +166,14 @@ TEST_F(CompositorWorkerThreadTest, Basic)
 TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst)
 {
     // Create the first worker and wait until it is initialized.
-    OwnPtr<CompositorWorkerThread> firstWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> firstWorker = createCompositorWorker();
     WebThreadSupportingGC* firstThread = &firstWorker->workerBackingThread().backingThread();
     checkWorkerCanExecuteScript(firstWorker.get());
     v8::Isolate* firstIsolate = firstWorker->isolate();
     ASSERT_TRUE(firstIsolate);
 
     // Create the second worker and immediately destroy the first worker.
-    OwnPtr<CompositorWorkerThread> secondWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> secondWorker = createCompositorWorker();
     // We don't use terminateAndWait here to avoid forcible termination.
     firstWorker->terminate();
     firstWorker->waitForShutdownForTesting();
@@ -195,7 +197,7 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst)
 TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
 {
     // Create the first worker, wait until it is initialized, and terminate it.
-    OwnPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> compositorWorker = createCompositorWorker();
     WebThreadSupportingGC* firstThread = &compositorWorker->workerBackingThread().backingThread();
     checkWorkerCanExecuteScript(compositorWorker.get());
 
@@ -215,7 +217,7 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
 // Tests that v8::Isolate and WebThread are correctly set-up if a worker is created while another is terminating.
 TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
 {
-    OwnPtr<CompositorWorkerThread> firstWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> firstWorker = createCompositorWorker();
     checkWorkerCanExecuteScript(firstWorker.get());
     v8::Isolate* firstIsolate = firstWorker->isolate();
     ASSERT_TRUE(firstIsolate);
@@ -227,7 +229,7 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
     // Note: We rely on the assumption that the termination steps don't run
     // on the worker thread so quickly. This could be a source of flakiness.
 
-    OwnPtr<CompositorWorkerThread> secondWorker = createCompositorWorker();
+    std::unique_ptr<CompositorWorkerThread> secondWorker = createCompositorWorker();
 
     v8::Isolate* secondIsolate = secondWorker->isolate();
     ASSERT_TRUE(secondIsolate);

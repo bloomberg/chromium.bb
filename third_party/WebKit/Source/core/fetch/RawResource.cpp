@@ -31,6 +31,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "platform/HTTPNames.h"
+#include <memory>
 
 namespace blink {
 
@@ -142,7 +143,7 @@ void RawResource::willNotFollowRedirect()
         c->redirectBlocked();
 }
 
-void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+void RawResource::responseReceived(const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     bool isSuccessfulRevalidation = isCacheValidator() && response.httpStatusCode() == 304;
     Resource::responseReceived(response, nullptr);

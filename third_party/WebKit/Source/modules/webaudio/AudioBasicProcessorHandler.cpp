@@ -27,10 +27,11 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioProcessor.h"
+#include <memory>
 
 namespace blink {
 
-AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
+AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioNode& node, float sampleRate, std::unique_ptr<AudioProcessor> processor)
     : AudioHandler(nodeType, node, sampleRate)
     , m_processor(std::move(processor))
 {
@@ -38,7 +39,7 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioN
     addOutput(1);
 }
 
-PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
+PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, std::unique_ptr<AudioProcessor> processor)
 {
     return adoptRef(new AudioBasicProcessorHandler(nodeType, node, sampleRate, std::move(processor)));
 }

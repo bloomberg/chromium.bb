@@ -139,6 +139,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
+#include <memory>
 
 namespace blink {
 
@@ -1050,14 +1051,14 @@ ClientRect* Element::getBoundingClientRect()
 const AtomicString& Element::computedRole()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-    OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
+    std::unique_ptr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
     return cache->get()->computedRoleForNode(this);
 }
 
 String Element::computedName()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-    OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
+    std::unique_ptr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
     return cache->get()->computedNameForNode(this);
 }
 

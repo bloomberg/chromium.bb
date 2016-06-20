@@ -13,10 +13,11 @@
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
+#include <memory>
 
 namespace blink {
 
-BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDeviceInit> webDevice)
+BluetoothDevice::BluetoothDevice(ExecutionContext* context, std::unique_ptr<WebBluetoothDeviceInit> webDevice)
     : ActiveDOMObject(context)
     , m_webDevice(std::move(webDevice))
     , m_gatt(BluetoothRemoteGATTServer::create(this))
@@ -25,7 +26,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDeviceInit> webDevice)
+BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebBluetoothDeviceInit> webDevice)
 {
     ASSERT(webDevice);
     BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), std::move(webDevice));

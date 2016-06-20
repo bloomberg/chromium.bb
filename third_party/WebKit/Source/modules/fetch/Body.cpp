@@ -15,9 +15,9 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -141,7 +141,7 @@ ScriptPromise Body::blob(ScriptState* scriptState)
     if (bodyBuffer()) {
         bodyBuffer()->startLoading(FetchDataLoader::createLoaderAsBlobHandle(mimeType()), new BodyBlobConsumer(resolver));
     } else {
-        OwnPtr<BlobData> blobData = BlobData::create();
+        std::unique_ptr<BlobData> blobData = BlobData::create();
         blobData->setContentType(mimeType());
         resolver->resolve(Blob::create(BlobDataHandle::create(std::move(blobData), 0)));
     }

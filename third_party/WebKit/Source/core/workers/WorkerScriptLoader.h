@@ -37,10 +37,10 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/StringBuilder.h"
+#include <memory>
 
 namespace blink {
 
@@ -76,7 +76,7 @@ public:
     unsigned long identifier() const { return m_identifier; }
     long long appCacheID() const { return m_appCacheID; }
 
-    PassOwnPtr<Vector<char>> releaseCachedMetadata() { return std::move(m_cachedMetadata); }
+    std::unique_ptr<Vector<char>> releaseCachedMetadata() { return std::move(m_cachedMetadata); }
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
@@ -87,7 +87,7 @@ public:
     const Vector<String>* originTrialTokens() const { return m_originTrialTokens.get(); }
 
     // ThreadableLoaderClient
-    void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
     void didReceiveData(const char* data, unsigned dataLength) override;
     void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
     void didFinishLoading(unsigned long identifier, double) override;
@@ -112,9 +112,9 @@ private:
     std::unique_ptr<SameThreadClosure> m_responseCallback;
     std::unique_ptr<SameThreadClosure> m_finishedCallback;
 
-    OwnPtr<ThreadableLoader> m_threadableLoader;
+    std::unique_ptr<ThreadableLoader> m_threadableLoader;
     String m_responseEncoding;
-    OwnPtr<TextResourceDecoder> m_decoder;
+    std::unique_ptr<TextResourceDecoder> m_decoder;
     StringBuilder m_script;
     KURL m_url;
     KURL m_responseURL;
@@ -122,7 +122,7 @@ private:
     bool m_needToCancel;
     unsigned long m_identifier;
     long long m_appCacheID;
-    OwnPtr<Vector<char>> m_cachedMetadata;
+    std::unique_ptr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
     Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
     WebAddressSpace m_responseAddressSpace;

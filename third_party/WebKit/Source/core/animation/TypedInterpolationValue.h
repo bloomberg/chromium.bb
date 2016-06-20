@@ -6,6 +6,8 @@
 #define TypedInterpolationValue_h
 
 #include "core/animation/InterpolationValue.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -14,12 +16,12 @@ class InterpolationType;
 // Represents an interpolated value between an adjacent pair of PropertySpecificKeyframes.
 class TypedInterpolationValue {
 public:
-    static PassOwnPtr<TypedInterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    static std::unique_ptr<TypedInterpolationValue> create(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        return adoptPtr(new TypedInterpolationValue(type, std::move(interpolableValue), nonInterpolableValue));
+        return wrapUnique(new TypedInterpolationValue(type, std::move(interpolableValue), nonInterpolableValue));
     }
 
-    PassOwnPtr<TypedInterpolationValue> clone() const
+    std::unique_ptr<TypedInterpolationValue> clone() const
     {
         InterpolationValue copy = m_value.clone();
         return create(m_type, std::move(copy.interpolableValue), copy.nonInterpolableValue.release());
@@ -33,7 +35,7 @@ public:
     InterpolationValue& mutableValue() { return m_value; }
 
 private:
-    TypedInterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
+    TypedInterpolationValue(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_value(std::move(interpolableValue), nonInterpolableValue)
     {

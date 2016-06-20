@@ -34,7 +34,6 @@
 #include "core/page/PagePopup.h"
 #include "public/web/WebPagePopup.h"
 #include "web/PageWidgetDelegate.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {

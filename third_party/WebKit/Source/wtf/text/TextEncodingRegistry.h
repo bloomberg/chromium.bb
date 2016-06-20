@@ -26,10 +26,10 @@
 #ifndef TextEncodingRegistry_h
 #define TextEncodingRegistry_h
 
-#include "wtf/PassOwnPtr.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -38,7 +38,7 @@ class TextEncoding;
 
 // Use TextResourceDecoder::decode to decode resources, since it handles BOMs.
 // Use TextEncoding::encode to encode, since it takes care of normalization.
-WTF_EXPORT PassOwnPtr<TextCodec> newTextCodec(const TextEncoding&);
+WTF_EXPORT std::unique_ptr<TextCodec> newTextCodec(const TextEncoding&);
 
 // Only TextEncoding should use the following functions directly.
 const char* atomicCanonicalTextEncodingName(const char* alias);

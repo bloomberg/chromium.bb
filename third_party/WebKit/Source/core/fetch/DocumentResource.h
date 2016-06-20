@@ -27,6 +27,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 
@@ -65,7 +66,7 @@ private:
     Document* createDocument(const KURL&);
 
     Member<Document> m_document;
-    OwnPtr<TextResourceDecoder> m_decoder;
+    std::unique_ptr<TextResourceDecoder> m_decoder;
 };
 
 DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument);

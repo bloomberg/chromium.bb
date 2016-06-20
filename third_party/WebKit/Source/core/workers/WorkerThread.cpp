@@ -49,9 +49,11 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 #include <limits.h>
+#include <memory>
 
 namespace blink {
 
@@ -65,9 +67,9 @@ const long long kForceTerminationDelayInMs = 2000; // 2 secs
 // started before this task runs, the task is simply cancelled.
 class WorkerThread::ForceTerminationTask final {
 public:
-    static PassOwnPtr<ForceTerminationTask> create(WorkerThread* workerThread)
+    static std::unique_ptr<ForceTerminationTask> create(WorkerThread* workerThread)
     {
-        return adoptPtr(new ForceTerminationTask(workerThread));
+        return wrapUnique(new ForceTerminationTask(workerThread));
     }
 
     void schedule()
@@ -104,7 +106,7 @@ private:
     }
 
     WorkerThread* m_workerThread;
-    OwnPtr<CancellableTaskFactory> m_cancellableTaskFactory;
+    std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
 };
 
 class WorkerThread::WorkerMicrotaskRunner final : public WebThread::TaskObserver {
@@ -184,7 +186,7 @@ WorkerThread::~WorkerThread()
     exitCodeHistogram.count(static_cast<int>(m_exitCode));
 }
 
-void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
+void WorkerThread::start(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     DCHECK(isMainThread());
 
@@ -322,13 +324,13 @@ PlatformThreadId WorkerThread::platformThreadId()
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_forceTerminationDelayInMs(kForceTerminationDelayInMs)
-    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
+    , m_inspectorTaskRunner(wrapUnique(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
-    , m_terminationEvent(adoptPtr(new WaitableEvent(
+    , m_terminationEvent(wrapUnique(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
-    , m_shutdownEvent(adoptPtr(new WaitableEvent(
+    , m_shutdownEvent(wrapUnique(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
     , m_workerThreadLifecycleContext(new WorkerThreadLifecycleContext)
@@ -428,12 +430,12 @@ void WorkerThread::forciblyTerminateExecution()
     isolate()->TerminateExecution();
 }
 
-void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> startupData)
+void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     KURL scriptURL = startupData->m_scriptURL;
     String sourceCode = startupData->m_sourceCode;
     WorkerThreadStartMode startMode = startupData->m_startMode;
-    OwnPtr<Vector<char>> cachedMetaData = std::move(startupData->m_cachedMetaData);
+    std::unique_ptr<Vector<char>> cachedMetaData = std::move(startupData->m_cachedMetaData);
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
 
     {
@@ -458,8 +460,8 @@ void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> 
             workerBackingThread().initialize();
 
         if (shouldAttachThreadDebugger())
-            V8PerIsolateData::from(isolate())->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(this, isolate())));
-        m_microtaskRunner = adoptPtr(new WorkerMicrotaskRunner(this));
+            V8PerIsolateData::from(isolate())->setThreadDebugger(wrapUnique(new WorkerThreadDebugger(this, isolate())));
+        m_microtaskRunner = wrapUnique(new WorkerMicrotaskRunner(this));
         workerBackingThread().backingThread().addTaskObserver(m_microtaskRunner.get());
 
         // Optimize for memory usage instead of latency for the worker isolate.

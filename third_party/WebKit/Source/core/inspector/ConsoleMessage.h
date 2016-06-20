@@ -13,6 +13,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,7 +25,7 @@ class V8StackTrace;
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
     // Location should not be null. Zero lineNumber or columnNumber means unknown.
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>, ScriptArguments* = nullptr);
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, std::unique_ptr<SourceLocation>, ScriptArguments* = nullptr);
 
     // Shortcut when location is unknown. Captures current location.
     static ConsoleMessage* create(MessageSource, MessageLevel, const String& message);
@@ -56,13 +57,13 @@ public:
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>, ScriptArguments*);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, std::unique_ptr<SourceLocation>, ScriptArguments*);
 
     MessageSource m_source;
     MessageLevel m_level;
     MessageType m_type;
     String m_message;
-    OwnPtr<SourceLocation> m_location;
+    std::unique_ptr<SourceLocation> m_location;
     Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;

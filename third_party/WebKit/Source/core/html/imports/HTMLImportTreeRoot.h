@@ -7,7 +7,6 @@
 
 #include "core/html/imports/HTMLImport.h"
 #include "platform/Timer.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

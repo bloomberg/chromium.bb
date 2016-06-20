@@ -28,7 +28,9 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
+#include "wtf/PtrUtil.h"
 #include <bitset>
+#include <memory>
 
 namespace blink {
 
@@ -204,7 +206,7 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
     if (!range.atEnd())
         return CSSSelectorList(); // Parse error; extra tokens in @page selector
 
-    OwnPtr<CSSParserSelector> selector;
+    std::unique_ptr<CSSParserSelector> selector;
     if (!typeSelector.isNull() && pseudo.isNull()) {
         selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, styleSheet->defaultNamespace()));
     } else {
@@ -221,7 +223,7 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
     }
 
     selector->setForPage();
-    Vector<OwnPtr<CSSParserSelector>> selectorVector;
+    Vector<std::unique_ptr<CSSParserSelector>> selectorVector;
     selectorVector.append(std::move(selector));
     CSSSelectorList selectorList = CSSSelectorList::adoptSelectorVector(selectorVector);
     return selectorList;
@@ -249,7 +251,7 @@ ImmutableStylePropertySet* CSSParserImpl::parseCustomPropertySet(CSSParserTokenR
     return createStylePropertySet(parser.m_parsedProperties, HTMLStandardMode);
 }
 
-PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
+std::unique_ptr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
 {
     return consumeKeyframeKeyList(CSSTokenizer::Scope(keyList).tokenRange());
 }
@@ -646,7 +648,7 @@ void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude)
 
 StyleRuleKeyframe* CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    OwnPtr<Vector<double>> keyList = consumeKeyframeKeyList(prelude);
+    std::unique_ptr<Vector<double>> keyList = consumeKeyframeKeyList(prelude);
     if (!keyList)
         return nullptr;
 
@@ -803,9 +805,9 @@ void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSProper
     CSSPropertyParser::parseValue(unresolvedProperty, important, range, m_context, m_parsedProperties, ruleType);
 }
 
-PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenRange range)
+std::unique_ptr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenRange range)
 {
-    OwnPtr<Vector<double>> result = adoptPtr(new Vector<double>);
+    std::unique_ptr<Vector<double>> result = wrapUnique(new Vector<double>);
     while (true) {
         range.consumeWhitespace();
         const CSSParserToken& token = range.consumeIncludingWhitespace();

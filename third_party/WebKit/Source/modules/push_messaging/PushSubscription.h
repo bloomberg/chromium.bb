@@ -13,6 +13,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -24,7 +25,7 @@ struct WebPushSubscription;
 class PushSubscription final : public GarbageCollectedFinalized<PushSubscription>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PushSubscription* take(ScriptPromiseResolver*, PassOwnPtr<WebPushSubscription>, ServiceWorkerRegistration*);
+    static PushSubscription* take(ScriptPromiseResolver*, std::unique_ptr<WebPushSubscription>, ServiceWorkerRegistration*);
     static void dispose(WebPushSubscription* subscriptionRaw);
 
     virtual ~PushSubscription();

@@ -6,6 +6,7 @@
 
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -16,7 +17,7 @@ protected:
         , m_context(*m_paintController)
     { }
 
-    OwnPtr<PaintController> m_paintController;
+    std::unique_ptr<PaintController> m_paintController;
     GraphicsContext m_context;
 };
 

@@ -27,6 +27,8 @@
 #include "public/platform/WebCredentialManagerError.h"
 #include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebPasswordCredential.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,7 +82,7 @@ public:
         Frame* frame = toDocument(m_resolver->getScriptState()->getExecutionContext())->frame();
         SECURITY_CHECK(!frame || frame == frame->tree().top());
 
-        OwnPtr<WebCredential> credential = adoptPtr(webCredential.release());
+        std::unique_ptr<WebCredential> credential = wrapUnique(webCredential.release());
         if (!credential || !frame) {
             m_resolver->resolve();
             return;

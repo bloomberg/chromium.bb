@@ -28,13 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "public/platform/WebAudioSourceProvider.h"
+#include <memory>
 
 namespace blink {
 
-MediaStreamWebAudioSource::MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider> provider)
+MediaStreamWebAudioSource::MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider> provider)
     : m_webAudioSourceProvider(std::move(provider))
 {
 }

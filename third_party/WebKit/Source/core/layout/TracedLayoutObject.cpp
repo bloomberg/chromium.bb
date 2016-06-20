@@ -9,6 +9,7 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include <inttypes.h>
+#include <memory>
 
 namespace blink {
 
@@ -99,9 +100,9 @@ void dumpToTracedValue(const LayoutObject& object, bool traceGeometry, TracedVal
 
 } // namespace
 
-PassOwnPtr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
+std::unique_ptr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
 {
-    OwnPtr<TracedValue> tracedValue = TracedValue::create();
+    std::unique_ptr<TracedValue> tracedValue = TracedValue::create();
     dumpToTracedValue(view, traceGeometry, tracedValue.get());
     return tracedValue;
 }

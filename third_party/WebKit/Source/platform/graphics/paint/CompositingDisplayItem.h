@@ -9,7 +9,6 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
-#include "wtf/PassOwnPtr.h"
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
 #endif

@@ -40,7 +40,6 @@
 #include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 

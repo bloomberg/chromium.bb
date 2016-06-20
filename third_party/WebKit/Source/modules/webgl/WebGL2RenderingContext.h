@@ -7,6 +7,7 @@
 
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "modules/webgl/WebGL2RenderingContextBase.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,7 +43,7 @@ public:
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 protected:
-    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
+    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 
     Member<EXTColorBufferFloat> m_extColorBufferFloat;
     Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;

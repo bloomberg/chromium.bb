@@ -53,10 +53,10 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashFunctions.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -69,15 +69,15 @@ protected:
 
     Timing m_timing;
     CompositorAnimations::CompositorTiming m_compositorTiming;
-    OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector2;
+    std::unique_ptr<AnimatableValueKeyframeVector> m_keyframeVector2;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect2;
-    OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector5;
+    std::unique_ptr<AnimatableValueKeyframeVector> m_keyframeVector5;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
 
     Persistent<Document> m_document;
     Persistent<Element> m_element;
     Persistent<AnimationTimeline> m_timeline;
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 
     void SetUp() override
     {
@@ -116,11 +116,11 @@ public:
     {
         return CompositorAnimations::isCandidateForAnimationOnCompositor(timing, *m_element.get(), nullptr, effect, 1);
     }
-    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<CompositorAnimation>>& animations)
+    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<std::unique_ptr<CompositorAnimation>>& animations)
     {
         getAnimationOnCompositor(timing, effect, animations, 1);
     }
-    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double playerPlaybackRate)
+    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<std::unique_ptr<CompositorAnimation>>& animations, double playerPlaybackRate)
     {
         CompositorAnimations::getAnimationOnCompositor(timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
     }
@@ -180,7 +180,7 @@ public:
         return keyframe;
     }
 
-    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(size_t n)
+    std::unique_ptr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(size_t n)
     {
         Vector<double> values;
         for (size_t i = 0; i < n; i++) {
@@ -189,9 +189,9 @@ public:
         return createCompositableFloatKeyframeVector(values);
     }
 
-    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(Vector<double>& values)
+    std::unique_ptr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(Vector<double>& values)
     {
-        OwnPtr<AnimatableValueKeyframeVector> frames = adoptPtr(new AnimatableValueKeyframeVector);
+        std::unique_ptr<AnimatableValueKeyframeVector> frames = wrapUnique(new AnimatableValueKeyframeVector);
         for (size_t i = 0; i < values.size(); i++) {
             double offset = 1.0 / (values.size() - 1) * i;
             RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
@@ -200,9 +200,9 @@ public:
         return frames;
     }
 
-    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
+    std::unique_ptr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
     {
-        OwnPtr<AnimatableValueKeyframeVector> frames = adoptPtr(new AnimatableValueKeyframeVector);
+        std::unique_ptr<AnimatableValueKeyframeVector> frames = wrapUnique(new AnimatableValueKeyframeVector);
         for (size_t i = 0; i < values.size(); ++i) {
             double offset = 1.0f / (values.size() - 1) * i;
             RefPtr<AnimatableTransform> value = AnimatableTransform::create(values[i], 1);
@@ -247,15 +247,15 @@ public:
         m_timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
-    PassOwnPtr<CompositorAnimation> convertToCompositorAnimation(AnimatableValueKeyframeEffectModel& effect, double playerPlaybackRate)
+    std::unique_ptr<CompositorAnimation> convertToCompositorAnimation(AnimatableValueKeyframeEffectModel& effect, double playerPlaybackRate)
     {
-        Vector<OwnPtr<CompositorAnimation>> result;
+        Vector<std::unique_ptr<CompositorAnimation>> result;
         getAnimationOnCompositor(m_timing, effect, result, playerPlaybackRate);
         DCHECK_EQ(1U, result.size());
         return std::move(result[0]);
     }
 
-    PassOwnPtr<CompositorAnimation> convertToCompositorAnimation(AnimatableValueKeyframeEffectModel& effect)
+    std::unique_ptr<CompositorAnimation> convertToCompositorAnimation(AnimatableValueKeyframeEffectModel& effect)
     {
         return convertToCompositorAnimation(effect, 1.0);
     }
@@ -348,7 +348,7 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0.0, TransformOperation::Translate3D));
     transformVector.append(TransformOperations());
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, Fixed), Length(200, Fixed), 0.0, TransformOperation::Translate3D));
-    OwnPtr<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
+    std::unique_ptr<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
     FloatBox bounds;
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), 0, 1));
     EXPECT_EQ(FloatBox(0.0f, 0.f, 0.0f, 200.0f, 200.0f, 0.0f), bounds);
@@ -646,14 +646,14 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(1.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::NORMAL, animation->getDirection());
     EXPECT_EQ(1.0, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
@@ -677,8 +677,8 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     const double duration = 10.0;
     m_timing.iterationDuration = duration;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
@@ -699,14 +699,14 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     m_timing.direction = Timing::PlaybackDirectionAlternate;
     m_timing.playbackRate = 2.0;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(5.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::ALTERNATE_NORMAL, animation->getDirection());
     EXPECT_EQ(2.0, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
@@ -741,13 +741,13 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     m_timing.iterationDuration = 1.75;
     m_timing.startDelay = startDelay;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
 
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(5.0, animation->iterations());
     EXPECT_EQ(-startDelay, animation->timeOffset());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
@@ -774,14 +774,14 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     m_timing.iterationCount = 10;
     m_timing.direction = Timing::PlaybackDirectionAlternate;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(10.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::ALTERNATE_NORMAL, animation->getDirection());
     EXPECT_EQ(1.0, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
@@ -822,14 +822,14 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     m_timing.iterationCount = 10;
     m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(10.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::ALTERNATE_REVERSE, animation->getDirection());
     EXPECT_EQ(1.0, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
@@ -867,14 +867,14 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     m_timing.startDelay = negativeStartDelay;
     m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(5.0, animation->iterations());
     EXPECT_EQ(-negativeStartDelay, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::ALTERNATE_REVERSE, animation->getDirection());
     EXPECT_EQ(1.0, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
@@ -892,14 +892,14 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 
     m_timing.playbackRate = playbackRate;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect, playerPlaybackRate);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect, playerPlaybackRate);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(1.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
     EXPECT_EQ(CompositorAnimation::Direction::NORMAL, animation->getDirection());
     EXPECT_EQ(playbackRate * playerPlaybackRate, animation->playbackRate());
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
@@ -914,7 +914,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
 
     m_timing.fillMode = Timing::FillModeNone;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorAnimation::FillMode::NONE, animation->getFillMode());
 }
 
@@ -927,7 +927,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
 
     m_timing.fillMode = Timing::FillModeAuto;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
     EXPECT_EQ(1.0, animation->iterations());
     EXPECT_EQ(0, animation->timeOffset());
@@ -945,9 +945,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     m_timing.timingFunction = m_cubicCustomTimingFunction;
 
-    OwnPtr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
+    std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
 
-    OwnPtr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
+    std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
     Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());

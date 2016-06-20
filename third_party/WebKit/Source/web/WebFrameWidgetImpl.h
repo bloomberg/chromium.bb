@@ -43,7 +43,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 class Frame;

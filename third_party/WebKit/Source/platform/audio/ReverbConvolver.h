@@ -36,8 +36,8 @@
 #include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbInputBuffer.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,8 +64,8 @@ public:
 private:
     void processInBackground();
 
-    Vector<OwnPtr<ReverbConvolverStage>> m_stages;
-    Vector<OwnPtr<ReverbConvolverStage>> m_backgroundStages;
+    Vector<std::unique_ptr<ReverbConvolverStage>> m_stages;
+    Vector<std::unique_ptr<ReverbConvolverStage>> m_backgroundStages;
     size_t m_impulseResponseLength;
 
     ReverbAccumulationBuffer m_accumulationBuffer;
@@ -81,7 +81,7 @@ private:
     size_t m_maxRealtimeFFTSize;
 
     // Background thread and synchronization
-    OwnPtr<WebThread> m_backgroundThread;
+    std::unique_ptr<WebThread> m_backgroundThread;
 };
 
 } // namespace blink

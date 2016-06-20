@@ -17,7 +17,7 @@
 #include "platform/heap/Handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 using testing::_;
 using testing::AnyNumber;
@@ -63,7 +63,7 @@ protected:
 
 private:
     Persistent<MockChromeClient> m_chromeClient;
-    OwnPtr<DummyPageHolder> m_pageHolder;
+    std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
 class FrameViewTest : public FrameViewTestBase {

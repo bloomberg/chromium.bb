@@ -54,29 +54,31 @@
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
+#include <memory>
 
 namespace blink {
 
-PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surface)
+std::unique_ptr<ImageBuffer> ImageBuffer::create(std::unique_ptr<ImageBufferSurface> surface)
 {
     if (!surface->isValid())
         return nullptr;
-    return adoptPtr(new ImageBuffer(std::move(surface)));
+    return wrapUnique(new ImageBuffer(std::move(surface)));
 }
 
-PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode)
+std::unique_ptr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode)
 {
-    OwnPtr<ImageBufferSurface> surface(adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode)));
+    std::unique_ptr<ImageBufferSurface> surface(wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode)));
     if (!surface->isValid())
         return nullptr;
-    return adoptPtr(new ImageBuffer(std::move(surface)));
+    return wrapUnique(new ImageBuffer(std::move(surface)));
 }
 
-ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
+ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
     : m_snapshotState(InitialSnapshotState)
     , m_surface(std::move(surface))
     , m_client(0)
@@ -204,12 +206,12 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint t
     if (!textureInfo || !textureInfo->fID)
         return false;
 
-    OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return false;
     gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
-    OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
+    std::unique_ptr<WebExternalTextureMailbox> mailbox = wrapUnique(new WebExternalTextureMailbox);
     mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
@@ -248,7 +250,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 {
     if (!drawingBuffer || !m_surface->isAccelerated())
         return false;
-    OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return false;
     gpu::gles2::GLES2Interface* gl = provider->contextGL();

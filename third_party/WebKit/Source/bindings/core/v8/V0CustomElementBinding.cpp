@@ -30,11 +30,14 @@
 
 #include "bindings/core/v8/V0CustomElementBinding.h"
 
+#include "wtf/PtrUtil.h"
+#include <memory>
+
 namespace blink {
 
-PassOwnPtr<V0CustomElementBinding> V0CustomElementBinding::create(v8::Isolate* isolate, v8::Local<v8::Object> prototype)
+std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::create(v8::Isolate* isolate, v8::Local<v8::Object> prototype)
 {
-    return adoptPtr(new V0CustomElementBinding(isolate, prototype));
+    return wrapUnique(new V0CustomElementBinding(isolate, prototype));
 }
 
 V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate, v8::Local<v8::Object> prototype)

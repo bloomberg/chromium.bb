@@ -35,9 +35,9 @@
 #include "platform/FileMetadata.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -164,7 +164,7 @@ class PLATFORM_EXPORT BlobData {
     USING_FAST_MALLOC(BlobData);
     WTF_MAKE_NONCOPYABLE(BlobData);
 public:
-    static PassOwnPtr<BlobData> create();
+    static std::unique_ptr<BlobData> create();
 
     // Detaches from current thread so that it can be passed to another thread.
     void detachFromCurrentThread();
@@ -208,7 +208,7 @@ public:
     }
 
     // For initial creation.
-    static PassRefPtr<BlobDataHandle> create(PassOwnPtr<BlobData> data, long long size)
+    static PassRefPtr<BlobDataHandle> create(std::unique_ptr<BlobData> data, long long size)
     {
         return adoptRef(new BlobDataHandle(std::move(data), size));
     }
@@ -227,7 +227,7 @@ public:
 
 private:
     BlobDataHandle();
-    BlobDataHandle(PassOwnPtr<BlobData>, long long size);
+    BlobDataHandle(std::unique_ptr<BlobData>, long long size);
     BlobDataHandle(const String& uuid, const String& type, long long size);
 
     const String m_uuid;

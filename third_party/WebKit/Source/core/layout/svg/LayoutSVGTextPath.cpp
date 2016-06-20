@@ -23,6 +23,7 @@
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 #include "platform/graphics/Path.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,7 +65,7 @@ bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child, const ComputedStyle&
     return child->isSVGInline() && !child->isSVGTextPath();
 }
 
-PassOwnPtr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const
+std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const
 {
     const SVGTextPathElement& textPathElement = toSVGTextPathElement(*node());
     Element* targetElement = SVGURIReference::targetElementFromIRIString(

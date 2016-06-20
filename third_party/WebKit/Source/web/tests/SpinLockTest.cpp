@@ -36,8 +36,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -77,8 +77,8 @@ TEST(SpinLockTest, Torture)
 {
     char sharedBuffer[bufferSize];
 
-    OwnPtr<WebThread> thread1 = adoptPtr(Platform::current()->createThread("thread1"));
-    OwnPtr<WebThread> thread2 = adoptPtr(Platform::current()->createThread("thread2"));
+    std::unique_ptr<WebThread> thread1 = wrapUnique(Platform::current()->createThread("thread1"));
+    std::unique_ptr<WebThread> thread2 = wrapUnique(Platform::current()->createThread("thread2"));
 
     thread1->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));
     thread2->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));

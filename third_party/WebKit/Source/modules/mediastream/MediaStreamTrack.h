@@ -35,6 +35,7 @@
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -99,7 +100,7 @@ public:
     // ActiveDOMObject
     void stop() override;
 
-    PassOwnPtr<AudioSourceProvider> createWebAudioSource();
+    std::unique_ptr<AudioSourceProvider> createWebAudioSource();
 
     DECLARE_VIRTUAL_TRACE();
 

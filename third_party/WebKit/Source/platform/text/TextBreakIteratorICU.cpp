@@ -24,10 +24,11 @@
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 #include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
 
@@ -45,7 +46,7 @@ public:
         return **pool;
     }
 
-    static PassOwnPtr<LineBreakIteratorPool> create() { return adoptPtr(new LineBreakIteratorPool); }
+    static std::unique_ptr<LineBreakIteratorPool> create() { return wrapUnique(new LineBreakIteratorPool); }
 
     icu::BreakIterator* take(const AtomicString& locale)
     {

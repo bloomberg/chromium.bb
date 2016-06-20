@@ -74,7 +74,7 @@ WebProcessMemoryDump::createWebMemoryAllocatorDump(
   // memory_allocator_dumps_ will take ownership of
   // |web_memory_allocator_dump|.
   memory_allocator_dumps_.set(
-      memory_allocator_dump, adoptPtr(web_memory_allocator_dump));
+      memory_allocator_dump, wrapUnique(web_memory_allocator_dump));
   return web_memory_allocator_dump;
 }
 

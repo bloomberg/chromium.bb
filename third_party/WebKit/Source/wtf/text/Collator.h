@@ -31,9 +31,9 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/Unicode.h"
+#include <memory>
 
 struct UCollator;
 
@@ -52,7 +52,7 @@ public:
     ~Collator();
     void setOrderLowerFirst(bool);
 
-    static PassOwnPtr<Collator> userDefault();
+    static std::unique_ptr<Collator> userDefault();
 
     Result collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
 

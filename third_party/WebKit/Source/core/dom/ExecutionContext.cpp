@@ -37,20 +37,22 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
-    PendingException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
+    PendingException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
         : m_errorMessage(errorMessage)
         , m_location(std::move(location))
     {
     }
 
     String m_errorMessage;
-    OwnPtr<SourceLocation> m_location;
+    std::unique_ptr<SourceLocation> m_location;
 };
 
 ExecutionContext::ExecutionContext()
@@ -88,7 +90,7 @@ void ExecutionContext::stopActiveDOMObjects()
     notifyStoppingActiveDOMObjects();
 }
 
-void ExecutionContext::postSuspendableTask(PassOwnPtr<SuspendableTask> task)
+void ExecutionContext::postSuspendableTask(std::unique_ptr<SuspendableTask> task)
 {
     m_suspendedTasks.append(std::move(task));
     if (!m_activeDOMObjectsAreSuspended)
@@ -97,9 +99,9 @@ void ExecutionContext::postSuspendableTask(PassOwnPtr<SuspendableTask> task)
 
 void ExecutionContext::notifyContextDestroyed()
 {
-    Deque<OwnPtr<SuspendableTask>> suspendedTasks;
+    Deque<std::unique_ptr<SuspendableTask>> suspendedTasks;
     suspendedTasks.swap(m_suspendedTasks);
-    for (Deque<OwnPtr<SuspendableTask>>::iterator it = suspendedTasks.begin(); it != suspendedTasks.end(); ++it)
+    for (Deque<std::unique_ptr<SuspendableTask>>::iterator it = suspendedTasks.begin(); it != suspendedTasks.end(); ++it)
         (*it)->contextDestroyed();
     ContextLifecycleNotifier::notifyContextDestroyed();
 }
@@ -142,8 +144,8 @@ void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStat
 {
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
-            m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
-        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), errorEvent->location()->clone())));
+            m_pendingExceptions = wrapUnique(new Vector<std::unique_ptr<PendingException>>());
+        m_pendingExceptions->append(wrapUnique(new PendingException(errorEvent->messageForConsole(), errorEvent->location()->clone())));
         return;
     }
 
@@ -181,7 +183,7 @@ void ExecutionContext::runSuspendableTasks()
 {
     m_isRunSuspendableTasksScheduled = false;
     while (!m_activeDOMObjectsAreSuspended && m_suspendedTasks.size()) {
-        OwnPtr<SuspendableTask> task = m_suspendedTasks.takeFirst();
+        std::unique_ptr<SuspendableTask> task = m_suspendedTasks.takeFirst();
         task->run();
     }
 }

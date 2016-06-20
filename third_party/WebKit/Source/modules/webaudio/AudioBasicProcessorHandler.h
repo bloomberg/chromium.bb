@@ -28,6 +28,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/Forward.h"
+#include <memory>
 
 namespace blink {
 
@@ -38,7 +39,7 @@ class AudioProcessor;
 // where the input and output have the same number of channels.
 class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
 public:
-    static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
+    static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, std::unique_ptr<AudioProcessor>);
     ~AudioBasicProcessorHandler() override;
 
     // AudioHandler
@@ -55,11 +56,11 @@ public:
     AudioProcessor* processor() { return m_processor.get(); }
 
 private:
-    AudioBasicProcessorHandler(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
+    AudioBasicProcessorHandler(NodeType, AudioNode&, float sampleRate, std::unique_ptr<AudioProcessor>);
     double tailTime() const final;
     double latencyTime() const final;
 
-    OwnPtr<AudioProcessor> m_processor;
+    std::unique_ptr<AudioProcessor> m_processor;
 };
 
 } // namespace blink

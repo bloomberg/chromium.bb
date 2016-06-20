@@ -6,6 +6,7 @@
 
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +19,7 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy()
 {
 }
 
-PassOwnPtr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime)
+std::unique_ptr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime)
 {
     return CompositorWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime);
 }

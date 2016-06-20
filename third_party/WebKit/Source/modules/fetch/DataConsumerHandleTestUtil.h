@@ -20,14 +20,13 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Deque.h"
 #include "wtf/Locker.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -69,11 +68,11 @@ public:
         void initialize();
         void shutdown();
 
-        OwnPtr<WebThreadSupportingGC> m_thread;
+        std::unique_ptr<WebThreadSupportingGC> m_thread;
         const InitializationPolicy m_initializationPolicy;
-        OwnPtr<WaitableEvent> m_waitableEvent;
+        std::unique_ptr<WaitableEvent> m_waitableEvent;
         Persistent<NullExecutionContext> m_executionContext;
-        OwnPtr<gin::IsolateHolder> m_isolateHolder;
+        std::unique_ptr<gin::IsolateHolder> m_isolateHolder;
         RefPtr<ScriptState> m_scriptState;
     };
 
@@ -160,8 +159,8 @@ public:
         public:
             ThreadHolder(ThreadingTestBase* test)
                 : m_context(test->m_context)
-                , m_readingThread(adoptPtr(new Thread("reading thread")))
-                , m_updatingThread(adoptPtr(new Thread("updating thread")))
+                , m_readingThread(wrapUnique(new Thread("reading thread")))
+                , m_updatingThread(wrapUnique(new Thread("updating thread")))
             {
                 m_context->registerThreadHolder(this);
             }
@@ -175,8 +174,8 @@ public:
 
         private:
             RefPtr<Context> m_context;
-            OwnPtr<Thread> m_readingThread;
-            OwnPtr<Thread> m_updatingThread;
+            std::unique_ptr<Thread> m_readingThread;
+            std::unique_ptr<Thread> m_updatingThread;
         };
 
         class ReaderImpl final : public WebDataConsumerHandle::Reader {
@@ -200,9 +199,9 @@ public:
         class DataConsumerHandle final : public WebDataConsumerHandle {
             USING_FAST_MALLOC(DataConsumerHandle);
         public:
-            static PassOwnPtr<WebDataConsumerHandle> create(const String& name, PassRefPtr<Context> context)
+            static std::unique_ptr<WebDataConsumerHandle> create(const String& name, PassRefPtr<Context> context)
             {
-                return adoptPtr(new DataConsumerHandle(name, context));
+                return wrapUnique(new DataConsumerHandle(name, context));
             }
 
         private:
@@ -241,8 +240,8 @@ public:
             : m_context(Context::create()) { }
 
         RefPtr<Context> m_context;
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
-        OwnPtr<WaitableEvent> m_waitableEvent;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WaitableEvent> m_waitableEvent;
         NoopClient m_client;
     };
 
@@ -251,10 +250,10 @@ public:
         using Self = ThreadingHandleNotificationTest;
         static PassRefPtr<Self> create() { return adoptRef(new Self); }
 
-        void run(PassOwnPtr<WebDataConsumerHandle> handle)
+        void run(std::unique_ptr<WebDataConsumerHandle> handle)
         {
             ThreadHolder holder(this);
-            m_waitableEvent = adoptPtr(new WaitableEvent());
+            m_waitableEvent = wrapUnique(new WaitableEvent());
             m_handle = std::move(handle);
 
             postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
@@ -272,7 +271,7 @@ public:
             postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
         }
 
-        OwnPtr<WebDataConsumerHandle> m_handle;
+        std::unique_ptr<WebDataConsumerHandle> m_handle;
     };
 
     class ThreadingHandleNoNotificationTest : public ThreadingTestBase, public WebDataConsumerHandle::Client {
@@ -280,10 +279,10 @@ public:
         using Self = ThreadingHandleNoNotificationTest;
         static PassRefPtr<Self> create() { return adoptRef(new Self); }
 
-        void run(PassOwnPtr<WebDataConsumerHandle> handle)
+        void run(std::unique_ptr<WebDataConsumerHandle> handle)
         {
             ThreadHolder holder(this);
-            m_waitableEvent = adoptPtr(new WaitableEvent());
+            m_waitableEvent = wrapUnique(new WaitableEvent());
             m_handle = std::move(handle);
 
             postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
@@ -302,12 +301,12 @@ public:
             ASSERT_NOT_REACHED();
         }
 
-        OwnPtr<WebDataConsumerHandle> m_handle;
+        std::unique_ptr<WebDataConsumerHandle> m_handle;
     };
 
     class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
     public:
-        static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerHandle>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerHandle>); }
+        static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerHandle>> create() { return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerHandle>); }
         MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
 
     private:
@@ -316,7 +315,7 @@ public:
 
     class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
     public:
-        static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerReader>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerReader>); }
+        static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerReader>> create() { return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerReader>); }
 
         using Result = WebDataConsumerHandle::Result;
         using Flags = WebDataConsumerHandle::Flags;
@@ -388,7 +387,7 @@ public:
     class ReplayingHandle final : public WebDataConsumerHandle {
         USING_FAST_MALLOC(ReplayingHandle);
     public:
-        static PassOwnPtr<ReplayingHandle> create() { return adoptPtr(new ReplayingHandle()); }
+        static std::unique_ptr<ReplayingHandle> create() { return wrapUnique(new ReplayingHandle()); }
         ~ReplayingHandle();
 
         // Add a command to this handle. This function must be called on the
@@ -425,7 +424,7 @@ public:
             Result m_result;
             bool m_isHandleAttached;
             Mutex m_mutex;
-            OwnPtr<WaitableEvent> m_detached;
+            std::unique_ptr<WaitableEvent> m_detached;
         };
 
         Context* getContext() { return m_context.get(); }
@@ -458,15 +457,15 @@ public:
     class HandleReader final : public WebDataConsumerHandle::Client {
         USING_FAST_MALLOC(HandleReader);
     public:
-        using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
+        using OnFinishedReading = WTF::Function<void(std::unique_ptr<HandleReadResult>)>;
 
-        HandleReader(PassOwnPtr<WebDataConsumerHandle>, std::unique_ptr<OnFinishedReading>);
+        HandleReader(std::unique_ptr<WebDataConsumerHandle>, std::unique_ptr<OnFinishedReading>);
         void didGetReadable() override;
 
     private:
-        void runOnFinishedReading(PassOwnPtr<HandleReadResult>);
+        void runOnFinishedReading(std::unique_ptr<HandleReadResult>);
 
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
         std::unique_ptr<OnFinishedReading> m_onFinishedReading;
         Vector<char> m_data;
     };
@@ -476,15 +475,15 @@ public:
     class HandleTwoPhaseReader final : public WebDataConsumerHandle::Client {
         USING_FAST_MALLOC(HandleTwoPhaseReader);
     public:
-        using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
+        using OnFinishedReading = WTF::Function<void(std::unique_ptr<HandleReadResult>)>;
 
-        HandleTwoPhaseReader(PassOwnPtr<WebDataConsumerHandle>, std::unique_ptr<OnFinishedReading>);
+        HandleTwoPhaseReader(std::unique_ptr<WebDataConsumerHandle>, std::unique_ptr<OnFinishedReading>);
         void didGetReadable() override;
 
     private:
-        void runOnFinishedReading(PassOwnPtr<HandleReadResult>);
+        void runOnFinishedReading(std::unique_ptr<HandleReadResult>);
 
-        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
         std::unique_ptr<OnFinishedReading> m_onFinishedReading;
         Vector<char> m_data;
     };
@@ -495,9 +494,9 @@ public:
     class HandleReaderRunner final {
         STACK_ALLOCATED();
     public:
-        explicit HandleReaderRunner(PassOwnPtr<WebDataConsumerHandle> handle)
-            : m_thread(adoptPtr(new Thread("reading thread")))
-            , m_event(adoptPtr(new WaitableEvent()))
+        explicit HandleReaderRunner(std::unique_ptr<WebDataConsumerHandle> handle)
+            : m_thread(wrapUnique(new Thread("reading thread")))
+            , m_event(wrapUnique(new WaitableEvent()))
             , m_isDone(false)
         {
             m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), passed(std::move(handle))));
@@ -507,7 +506,7 @@ public:
             wait();
         }
 
-        PassOwnPtr<HandleReadResult> wait()
+        std::unique_ptr<HandleReadResult> wait()
         {
             if (m_isDone)
                 return nullptr;
@@ -517,24 +516,24 @@ public:
         }
 
     private:
-        void start(PassOwnPtr<WebDataConsumerHandle> handle)
+        void start(std::unique_ptr<WebDataConsumerHandle> handle)
         {
-            m_handleReader = adoptPtr(new T(std::move(handle), bind<PassOwnPtr<HandleReadResult>>(&HandleReaderRunner::onFinished, this)));
+            m_handleReader = wrapUnique(new T(std::move(handle), WTF::bind<std::unique_ptr<HandleReadResult>>(&HandleReaderRunner::onFinished, this)));
         }
 
-        void onFinished(PassOwnPtr<HandleReadResult> result)
+        void onFinished(std::unique_ptr<HandleReadResult> result)
         {
             m_handleReader = nullptr;
             m_result = std::move(result);
             m_event->signal();
         }
 
-        OwnPtr<Thread> m_thread;
-        OwnPtr<WaitableEvent> m_event;
-        OwnPtr<HandleReadResult> m_result;
+        std::unique_ptr<Thread> m_thread;
+        std::unique_ptr<WaitableEvent> m_event;
+        std::unique_ptr<HandleReadResult> m_result;
         bool m_isDone;
 
-        OwnPtr<T> m_handleReader;
+        std::unique_ptr<T> m_handleReader;
     };
 };
 

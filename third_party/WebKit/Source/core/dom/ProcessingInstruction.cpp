@@ -34,6 +34,7 @@
 #include "core/xml/DocumentXSLT.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h" // for parseAttributes()
+#include <memory>
 
 namespace blink {
 
@@ -224,7 +225,7 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
 
     DCHECK(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
-    OwnPtr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
+    std::unique_ptr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
     parseStyleSheet(sheet);
 }
 

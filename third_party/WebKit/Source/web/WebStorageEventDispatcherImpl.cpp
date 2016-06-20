@@ -35,7 +35,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

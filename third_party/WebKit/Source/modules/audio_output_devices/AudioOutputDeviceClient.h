@@ -8,7 +8,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -22,7 +22,7 @@ public:
     virtual ~AudioOutputDeviceClient() {}
 
     // Checks that a given sink exists and has permissions to be used from the origin of the current frame.
-    virtual void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks>) = 0;
+    virtual void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
 
     // Supplement requirements.
     static AudioOutputDeviceClient* from(ExecutionContext*);

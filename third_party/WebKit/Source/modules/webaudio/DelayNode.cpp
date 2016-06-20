@@ -22,13 +22,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/DelayNode.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "modules/webaudio/DelayNode.h"
 #include "modules/webaudio/DelayProcessor.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -42,7 +43,7 @@ DelayNode::DelayNode(AbstractAudioContext& context, double maxDelayTime)
         AudioHandler::NodeTypeDelay,
         *this,
         context.sampleRate(),
-        adoptPtr(new DelayProcessor(
+        wrapUnique(new DelayProcessor(
             context.sampleRate(),
             1,
             m_delayTime->handler(),

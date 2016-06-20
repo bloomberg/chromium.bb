@@ -34,6 +34,7 @@
 #include "platform/audio/AudioArray.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -104,7 +105,7 @@ private:
 
     // Creates tables based on numberOfComponents Fourier coefficients.
     void createBandLimitedTables(const float* real, const float* imag, unsigned numberOfComponents, bool disableNormalization);
-    Vector<OwnPtr<AudioFloatArray>> m_bandLimitedTables;
+    Vector<std::unique_ptr<AudioFloatArray>> m_bandLimitedTables;
 };
 
 } // namespace blink

@@ -37,6 +37,7 @@
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include <memory>
 
 namespace blink {
 
@@ -77,8 +78,8 @@ public:
     virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
     // For WorkerWebSocketChannel.
-    virtual void sendTextAsCharVector(PassOwnPtr<Vector<char>>) = 0;
-    virtual void sendBinaryAsCharVector(PassOwnPtr<Vector<char>>) = 0;
+    virtual void sendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
+    virtual void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
 
     // Do not call |send| after calling this method.
     virtual void close(int code, const String& reason) = 0;
@@ -91,7 +92,7 @@ public:
     // and the "current" location in the sense of JavaScript execution
     // may be shown if this method is called in a JS execution context.
     // Location should not be null.
-    virtual void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) = 0;
+    virtual void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>) = 0;
 
     // Do not call any methods after calling this method.
     virtual void disconnect() = 0; // Will suppress didClose().

@@ -35,8 +35,8 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
     class ApplicationCache;
@@ -175,7 +175,7 @@ namespace blink {
 
         void dispatchDOMEvent(EventID, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
 
-        OwnPtr<WebApplicationCacheHost> m_host;
+        std::unique_ptr<WebApplicationCacheHost> m_host;
     };
 
 }  // namespace blink

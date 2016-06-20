@@ -37,7 +37,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include "wtf/PassOwnPtr.h"
+#include <memory>
 #endif
 
 namespace blink {
@@ -53,7 +53,7 @@ public:
     WebCryptoKeyAlgorithm() { }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebCryptoKeyAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoKeyAlgorithmParams>);
+    BLINK_PLATFORM_EXPORT WebCryptoKeyAlgorithm(WebCryptoAlgorithmId, std::unique_ptr<WebCryptoKeyAlgorithmParams>);
 #endif
 
     // FIXME: Delete this in favor of the create*() functions.

@@ -5,11 +5,11 @@
 #include "platform/testing/HistogramTester.h"
 
 #include "base/test/histogram_tester.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
-HistogramTester::HistogramTester() : m_histogramTester(adoptPtr(new base::HistogramTester)) { }
+HistogramTester::HistogramTester() : m_histogramTester(wrapUnique(new base::HistogramTester)) { }
 
 HistogramTester::~HistogramTester() { }
 

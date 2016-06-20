@@ -155,23 +155,6 @@ template <typename T> struct SimpleClassHashTraits : GenericHashTraits<T> {
     static bool isDeletedValue(const T& value) { return value.isHashTableDeletedValue(); }
 };
 
-template <typename P> struct HashTraits<OwnPtr<P>> : SimpleClassHashTraits<OwnPtr<P>> {
-    typedef std::nullptr_t EmptyValueType;
-
-    static EmptyValueType emptyValue() { return nullptr; }
-
-    static const bool hasIsEmptyValueFunction = true;
-    static bool isEmptyValue(const OwnPtr<P>& value) { return !value; }
-
-    typedef typename OwnPtr<P>::PtrType PeekInType;
-
-    static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = std::move(value); }
-
-    typedef typename OwnPtr<P>::PtrType PeekOutType;
-    static PeekOutType peek(const OwnPtr<P>& value) { return value.get(); }
-    static PeekOutType peek(std::nullptr_t) { return 0; }
-};
-
 template <typename P> struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
     typedef std::nullptr_t EmptyValueType;
     static EmptyValueType emptyValue() { return nullptr; }

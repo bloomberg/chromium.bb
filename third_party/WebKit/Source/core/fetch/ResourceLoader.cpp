@@ -44,6 +44,8 @@
 #include "public/platform/WebURLResponse.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,7 +82,7 @@ void ResourceLoader::start(const ResourceRequest& request, WebTaskRunner* loadin
         return;
     }
 
-    m_loader = adoptPtr(Platform::current()->createURLLoader());
+    m_loader = wrapUnique(Platform::current()->createURLLoader());
     m_loader->setDefersLoading(defersLoading);
     ASSERT(m_loader);
     m_loader->setLoadingTaskRunner(loadingTaskRunner);
@@ -152,14 +154,14 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
 {
     ASSERT(!response.isNull());
     // |rawHandle|'s ownership is transferred to the callee.
-    OwnPtr<WebDataConsumerHandle> handle = adoptPtr(rawHandle);
+    std::unique_ptr<WebDataConsumerHandle> handle = wrapUnique(rawHandle);
     const ResourceResponse& resourceResponse = response.toResourceResponse();
 
     if (responseNeedsAccessControlCheck()) {
         if (response.wasFetchedViaServiceWorker()) {
             if (response.wasFallbackRequiredByServiceWorker()) {
                 m_loader.reset();
-                m_loader = adoptPtr(Platform::current()->createURLLoader());
+                m_loader = wrapUnique(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
                 ResourceRequest request = m_resource->lastResourceRequest();
                 ASSERT(!request.skipServiceWorker());

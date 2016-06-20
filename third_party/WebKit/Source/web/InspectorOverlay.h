@@ -38,10 +38,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/Values.h"
 #include "public/web/WebInputEvent.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -110,8 +109,8 @@ private:
     // InspectorDOMAgent::Client implementation.
     void hideHighlight() override;
     void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) override;
-    void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) override;
-    void setInspectMode(InspectorDOMAgent::SearchMode, PassOwnPtr<InspectorHighlightConfig>) override;
+    void highlightQuad(std::unique_ptr<FloatQuad>, const InspectorHighlightConfig&) override;
+    void setInspectMode(InspectorDOMAgent::SearchMode, std::unique_ptr<InspectorHighlightConfig>) override;
     void setInspectedNode(Node*) override;
 
     void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip);
@@ -145,7 +144,7 @@ private:
     Member<Node> m_highlightNode;
     Member<Node> m_eventTargetNode;
     InspectorHighlightConfig m_nodeHighlightConfig;
-    OwnPtr<FloatQuad> m_highlightQuad;
+    std::unique_ptr<FloatQuad> m_highlightQuad;
     Member<Page> m_overlayPage;
     Member<InspectorOverlayChromeClient> m_overlayChromeClient;
     Member<InspectorOverlayHost> m_overlayHost;
@@ -161,10 +160,10 @@ private:
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorCSSAgent> m_cssAgent;
     Member<LayoutEditor> m_layoutEditor;
-    OwnPtr<PageOverlay> m_pageOverlay;
+    std::unique_ptr<PageOverlay> m_pageOverlay;
     Member<Node> m_hoveredNodeForInspectMode;
     InspectorDOMAgent::SearchMode m_inspectMode;
-    OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
+    std::unique_ptr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
 };
 
 } // namespace blink

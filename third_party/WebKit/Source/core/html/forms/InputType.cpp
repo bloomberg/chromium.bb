@@ -71,6 +71,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,9 +82,9 @@ using namespace HTMLNames;
 using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash>;
 
-static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
+static std::unique_ptr<InputTypeFactoryMap> createInputTypeFactoryMap()
 {
-    OwnPtr<InputTypeFactoryMap> map = adoptPtr(new InputTypeFactoryMap);
+    std::unique_ptr<InputTypeFactoryMap> map = wrapUnique(new InputTypeFactoryMap);
     map->add(InputTypeNames::button, ButtonInputType::create);
     map->add(InputTypeNames::checkbox, CheckboxInputType::create);
     map->add(InputTypeNames::color, ColorInputType::create);
@@ -110,7 +112,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
 
 static const InputTypeFactoryMap* factoryMap()
 {
-    static const InputTypeFactoryMap* factoryMap = createInputTypeFactoryMap().leakPtr();
+    static const InputTypeFactoryMap* factoryMap = createInputTypeFactoryMap().release();
     return factoryMap;
 }
 

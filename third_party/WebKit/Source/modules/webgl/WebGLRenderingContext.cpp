@@ -62,6 +62,7 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include <memory>
 
 namespace blink {
 
@@ -72,7 +73,7 @@ static bool shouldCreateContext(WebGraphicsContext3DProvider* contextProvider)
     if (!contextProvider)
         return false;
     gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
+    std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
     if (!extensionsUtil)
         return false;
     if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
@@ -85,7 +86,7 @@ static bool shouldCreateContext(WebGraphicsContext3DProvider* contextProvider)
 CanvasRenderingContext* WebGLRenderingContext::Factory::create(ScriptState* scriptState, OffscreenCanvas* offscreenCanvas, const CanvasContextCreationAttributes& attrs)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(scriptState, attributes, 1));
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(scriptState, attributes, 1));
     if (!shouldCreateContext(contextProvider.get()))
         return nullptr;
 
@@ -101,7 +102,7 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::create(ScriptState* scri
 CanvasRenderingContext* WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 1));
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 1));
     if (!shouldCreateContext(contextProvider.get()))
         return nullptr;
 
@@ -121,12 +122,12 @@ void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas, const St
     canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, error));
 }
 
-WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
 }
 
-WebGLRenderingContext::WebGLRenderingContext(OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContext::WebGLRenderingContext(OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
 {
 }

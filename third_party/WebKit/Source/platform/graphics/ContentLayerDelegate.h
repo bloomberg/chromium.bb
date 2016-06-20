@@ -30,7 +30,6 @@
 #include "public/platform/WebContentLayerClient.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 
 class SkCanvas;
 

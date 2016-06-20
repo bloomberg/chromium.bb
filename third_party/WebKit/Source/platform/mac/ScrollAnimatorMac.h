@@ -35,6 +35,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/RetainPtr.h"
+#include <memory>
 
 OBJC_CLASS BlinkScrollAnimationHelperDelegate;
 OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
@@ -82,11 +83,11 @@ private:
     RetainPtr<BlinkScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
 
     void initialScrollbarPaintTask();
-    OwnPtr<CancellableTaskFactory> m_initialScrollbarPaintTaskFactory;
+    std::unique_ptr<CancellableTaskFactory> m_initialScrollbarPaintTaskFactory;
 
     void sendContentAreaScrolledTask();
-    OwnPtr<CancellableTaskFactory> m_sendContentAreaScrolledTaskFactory;
-    OwnPtr<WebTaskRunner> m_taskRunner;
+    std::unique_ptr<CancellableTaskFactory> m_sendContentAreaScrolledTaskFactory;
+    std::unique_ptr<WebTaskRunner> m_taskRunner;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
     ScrollResult userScroll(ScrollGranularity, const FloatSize& delta) override;

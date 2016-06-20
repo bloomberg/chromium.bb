@@ -33,6 +33,8 @@
 
 #include "modules/webmidi/MIDIClient.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,9 +44,9 @@ class WebMIDIClient;
 
 class MIDIClientProxy final : public MIDIClient {
 public:
-    static PassOwnPtr<MIDIClientProxy> create(WebMIDIClient* client)
+    static std::unique_ptr<MIDIClientProxy> create(WebMIDIClient* client)
     {
-        return adoptPtr(new MIDIClientProxy(client));
+        return wrapUnique(new MIDIClientProxy(client));
     }
 
     // MIDIClient

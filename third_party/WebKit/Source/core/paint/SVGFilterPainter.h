@@ -8,7 +8,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -28,8 +28,8 @@ public:
     GraphicsContext& paintingContext() const { return m_initialContext; }
 
 private:
-    OwnPtr<PaintController> m_paintController;
-    OwnPtr<GraphicsContext> m_context;
+    std::unique_ptr<PaintController> m_paintController;
+    std::unique_ptr<GraphicsContext> m_context;
     GraphicsContext& m_initialContext;
 };
 

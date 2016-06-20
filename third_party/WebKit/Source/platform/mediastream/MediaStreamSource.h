@@ -36,11 +36,10 @@
 #include "platform/audio/AudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "wtf/Allocator.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -82,7 +81,7 @@ public:
     void addObserver(Observer*);
 
     ExtraData* getExtraData() const { return m_extraData.get(); }
-    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
+    void setExtraData(std::unique_ptr<ExtraData> extraData) { m_extraData = std::move(extraData); }
 
     void setConstraints(WebMediaConstraints constraints) { m_constraints = constraints; }
     WebMediaConstraints constraints() { return m_constraints; }
@@ -112,7 +111,7 @@ private:
     HeapHashSet<WeakMember<Observer>> m_observers;
     Mutex m_audioConsumersLock;
     HeapHashSet<Member<AudioDestinationConsumer>> m_audioConsumers;
-    OwnPtr<ExtraData> m_extraData;
+    std::unique_ptr<ExtraData> m_extraData;
     WebMediaConstraints m_constraints;
 };
 

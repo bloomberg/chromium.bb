@@ -4,6 +4,8 @@
 
 #include "core/html/parser/ParsedChunkQueue.h"
 
+#include <memory>
+
 namespace blink {
 
 ParsedChunkQueue::ParsedChunkQueue()
@@ -14,7 +16,7 @@ ParsedChunkQueue::~ParsedChunkQueue()
 {
 }
 
-bool ParsedChunkQueue::enqueue(PassOwnPtr<HTMLDocumentParser::ParsedChunk> chunk)
+bool ParsedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk)
 {
     MutexLocker locker(m_mutex);
 
@@ -30,7 +32,7 @@ void ParsedChunkQueue::clear()
     m_pendingChunks.clear();
 }
 
-void ParsedChunkQueue::takeAll(Vector<OwnPtr<HTMLDocumentParser::ParsedChunk>>& vector)
+void ParsedChunkQueue::takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>& vector)
 {
     MutexLocker locker(m_mutex);
 

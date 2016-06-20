@@ -37,8 +37,8 @@
 #include "platform/WaitableEvent.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -100,7 +100,7 @@ public:
     virtual ~WorkerThread();
 
     // Called on the main thread.
-    void start(PassOwnPtr<WorkerThreadStartupData>);
+    void start(std::unique_ptr<WorkerThreadStartupData>);
     void terminate();
 
     // Called on the main thread. Internally calls terminateInternal() and wait
@@ -159,7 +159,7 @@ protected:
 
     // Factory method for creating a new worker context for the thread.
     // Called on the worker thread.
-    virtual WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
+    virtual WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) = 0;
 
     // Returns true when this WorkerThread owns the associated
     // WorkerBackingThread exclusively. If this function returns true, the
@@ -193,7 +193,7 @@ private:
     void terminateInternal(TerminationMode);
     void forciblyTerminateExecution();
 
-    void initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData>);
+    void initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
     void prepareForShutdownOnWorkerThread();
     void performShutdownOnWorkerThread();
     void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
@@ -209,8 +209,8 @@ private:
 
     long long m_forceTerminationDelayInMs;
 
-    OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
-    OwnPtr<WorkerMicrotaskRunner> m_microtaskRunner;
+    std::unique_ptr<InspectorTaskRunner> m_inspectorTaskRunner;
+    std::unique_ptr<WorkerMicrotaskRunner> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
@@ -223,14 +223,14 @@ private:
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
 
     // Signaled when the thread starts termination on the main thread.
-    OwnPtr<WaitableEvent> m_terminationEvent;
+    std::unique_ptr<WaitableEvent> m_terminationEvent;
 
     // Signaled when the thread completes termination on the worker thread.
-    OwnPtr<WaitableEvent> m_shutdownEvent;
+    std::unique_ptr<WaitableEvent> m_shutdownEvent;
 
     // Scheduled when termination starts with TerminationMode::Force, and
     // cancelled when the worker thread is gracefully shut down.
-    OwnPtr<ForceTerminationTask> m_scheduledForceTerminationTask;
+    std::unique_ptr<ForceTerminationTask> m_scheduledForceTerminationTask;
 
     Persistent<WorkerThreadLifecycleContext> m_workerThreadLifecycleContext;
 };

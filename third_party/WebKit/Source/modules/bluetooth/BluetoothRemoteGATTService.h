@@ -10,9 +10,8 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace blink {
 
@@ -33,11 +32,11 @@ class BluetoothRemoteGATTService final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    explicit BluetoothRemoteGATTService(PassOwnPtr<WebBluetoothRemoteGATTService>);
+    explicit BluetoothRemoteGATTService(std::unique_ptr<WebBluetoothRemoteGATTService>);
 
     // Interface required by CallbackPromiseAdapter:
-    using WebType = OwnPtr<WebBluetoothRemoteGATTService>;
-    static BluetoothRemoteGATTService* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTService>);
+    using WebType = std::unique_ptr<WebBluetoothRemoteGATTService>;
+    static BluetoothRemoteGATTService* take(ScriptPromiseResolver*, std::unique_ptr<WebBluetoothRemoteGATTService>);
 
     // Interface required by garbage collection.
     DEFINE_INLINE_TRACE() { }
@@ -52,7 +51,7 @@ public:
 private:
     ScriptPromise getCharacteristicsImpl(ScriptState*, mojom::WebBluetoothGATTQueryQuantity, String characteristicUUID = String());
 
-    OwnPtr<WebBluetoothRemoteGATTService> m_webService;
+    std::unique_ptr<WebBluetoothRemoteGATTService> m_webService;
 };
 
 } // namespace blink

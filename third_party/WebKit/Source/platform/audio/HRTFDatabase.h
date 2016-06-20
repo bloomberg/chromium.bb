@@ -33,9 +33,9 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT HRTFDatabase {
     USING_FAST_MALLOC(HRTFDatabase);
     WTF_MAKE_NONCOPYABLE(HRTFDatabase);
 public:
-    static PassOwnPtr<HRTFDatabase> create(float sampleRate);
+    static std::unique_ptr<HRTFDatabase> create(float sampleRate);
 
     // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and an interpolated left and right frame delay for the given azimuth and elevation.
     // azimuthBlend must be in the range 0 -> 1.
@@ -78,7 +78,7 @@ private:
     // Returns the index for the correct HRTFElevation given the elevation angle.
     static unsigned indexFromElevationAngle(double);
 
-    Vector<OwnPtr<HRTFElevation>> m_elevations;
+    Vector<std::unique_ptr<HRTFElevation>> m_elevations;
     float m_sampleRate;
 };
 

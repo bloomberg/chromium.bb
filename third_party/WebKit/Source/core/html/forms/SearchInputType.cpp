@@ -40,7 +40,6 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/LayoutSearchField.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

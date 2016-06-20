@@ -27,7 +27,7 @@
 #define DecodedDataDocumentParser_h
 
 #include "core/dom/DocumentParser.h"
-#include "wtf/OwnPtr.h"
+#include <memory>
 
 namespace blink {
 class TextResourceDecoder;
@@ -42,10 +42,10 @@ public:
     void appendBytes(const char* bytes, size_t length) override;
     virtual void flush();
     bool needsDecoder() const final { return m_needsDecoder; }
-    void setDecoder(PassOwnPtr<TextResourceDecoder>) override;
+    void setDecoder(std::unique_ptr<TextResourceDecoder>) override;
     TextResourceDecoder* decoder() final;
 
-    PassOwnPtr<TextResourceDecoder> takeDecoder();
+    std::unique_ptr<TextResourceDecoder> takeDecoder();
 
 protected:
     explicit DecodedDataDocumentParser(Document&);
@@ -55,7 +55,7 @@ private:
     void updateDocument(String& decodedData);
 
     bool m_needsDecoder;
-    OwnPtr<TextResourceDecoder> m_decoder;
+    std::unique_ptr<TextResourceDecoder> m_decoder;
 };
 
 } // namespace blink

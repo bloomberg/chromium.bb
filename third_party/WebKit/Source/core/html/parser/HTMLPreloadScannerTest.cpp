@@ -13,6 +13,7 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
@@ -80,13 +81,13 @@ public:
     }
 
 protected:
-    void preload(PassOwnPtr<PreloadRequest> preloadRequest, const NetworkHintsInterface&) override
+    void preload(std::unique_ptr<PreloadRequest> preloadRequest, const NetworkHintsInterface&) override
     {
         m_preloadRequest = std::move(preloadRequest);
     }
 
 private:
-    OwnPtr<PreloadRequest> m_preloadRequest;
+    std::unique_ptr<PreloadRequest> m_preloadRequest;
 };
 
 class HTMLPreloadScannerTest : public testing::Test {
@@ -171,8 +172,8 @@ protected:
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    OwnPtr<HTMLPreloadScanner> m_scanner;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+    std::unique_ptr<HTMLPreloadScanner> m_scanner;
 };
 
 TEST_F(HTMLPreloadScannerTest, testImages)

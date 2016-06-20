@@ -9,6 +9,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
 #include "platform/graphics/ImageBuffer.h"
+#include <memory>
 
 class SkCanvas;
 
@@ -22,7 +23,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, pu
     USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
     WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 public:
-    static PaintRenderingContext2D* create(PassOwnPtr<ImageBuffer> imageBuffer)
+    static PaintRenderingContext2D* create(std::unique_ptr<ImageBuffer> imageBuffer)
     {
         return new PaintRenderingContext2D(std::move(imageBuffer));
     }
@@ -67,9 +68,9 @@ public:
     bool isContextLost() const final { return false; }
 
 private:
-    explicit PaintRenderingContext2D(PassOwnPtr<ImageBuffer>);
+    explicit PaintRenderingContext2D(std::unique_ptr<ImageBuffer>);
 
-    OwnPtr<ImageBuffer> m_imageBuffer;
+    std::unique_ptr<ImageBuffer> m_imageBuffer;
 };
 
 } // namespace blink

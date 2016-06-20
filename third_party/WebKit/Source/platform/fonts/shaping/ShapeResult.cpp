@@ -34,7 +34,9 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
+#include "wtf/PtrUtil.h"
 #include <hb.h>
+#include <memory>
 
 namespace blink {
 
@@ -154,7 +156,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
 {
     m_runs.reserveCapacity(other.m_runs.size());
     for (const auto& run : other.m_runs)
-        m_runs.append(adoptPtr(new ShapeResult::RunInfo(*run)));
+        m_runs.append(wrapUnique(new ShapeResult::RunInfo(*run)));
 }
 
 ShapeResult::~ShapeResult()
@@ -278,11 +280,11 @@ static inline float harfBuzzPositionToFloat(hb_position_t value)
     return static_cast<float>(value) / (1 << 16);
 }
 
-void ShapeResult::insertRun(PassOwnPtr<ShapeResult::RunInfo> runToInsert,
+void ShapeResult::insertRun(std::unique_ptr<ShapeResult::RunInfo> runToInsert,
     unsigned startGlyph, unsigned numGlyphs, hb_buffer_t* harfBuzzBuffer)
 {
     ASSERT(numGlyphs > 0);
-    OwnPtr<ShapeResult::RunInfo> run(std::move(runToInsert));
+    std::unique_ptr<ShapeResult::RunInfo> run(std::move(runToInsert));
     ASSERT(numGlyphs == run->m_glyphData.size());
 
     const SimpleFontData* currentFontData = run->m_fontData.get();

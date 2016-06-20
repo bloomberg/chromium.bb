@@ -63,6 +63,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -284,7 +285,7 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());
     m_page->settings().setScrollAnimatorEnabled(m_webView->page()->settings().scrollAnimatorEnabled());
 
-    provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
+    provideContextFeaturesTo(*m_page, wrapUnique(new PagePopupFeaturesClient()));
     DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
     LocalFrame* frame = LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
     frame->setPagePopupOwner(m_popupClient->ownerElement());

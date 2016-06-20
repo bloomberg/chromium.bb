@@ -31,11 +31,11 @@
 #include "wtf/text/TextCodecUTF8.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -44,7 +44,7 @@ namespace {
 TEST(TextCodecUTF8, DecodeAscii)
 {
     TextEncoding encoding("UTF-8");
-    OwnPtr<TextCodec> codec(newTextCodec(encoding));
+    std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
 
     const char testCase[] = "HelloWorld";
     size_t testCaseSize = sizeof(testCase) - 1;
@@ -61,7 +61,7 @@ TEST(TextCodecUTF8, DecodeAscii)
 TEST(TextCodecUTF8, DecodeChineseCharacters)
 {
     TextEncoding encoding("UTF-8");
-    OwnPtr<TextCodec> codec(newTextCodec(encoding));
+    std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
 
     // "Kanji" in Chinese characters.
     const char testCase[] = "\xe6\xbc\xa2\xe5\xad\x97";
@@ -78,7 +78,7 @@ TEST(TextCodecUTF8, DecodeChineseCharacters)
 TEST(TextCodecUTF8, Decode0xFF)
 {
     TextEncoding encoding("UTF-8");
-    OwnPtr<TextCodec> codec(newTextCodec(encoding));
+    std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
 
     bool sawError = false;
     const String& result = codec->decode("\xff", 1, DataEOF, false, sawError);

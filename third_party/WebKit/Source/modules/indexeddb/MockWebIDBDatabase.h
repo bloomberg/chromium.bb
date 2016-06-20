@@ -9,8 +9,8 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include "wtf/PassOwnPtr.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace blink {
 
@@ -18,7 +18,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
 public:
     virtual ~MockWebIDBDatabase();
 
-    static PassOwnPtr<MockWebIDBDatabase> create();
+    static std::unique_ptr<MockWebIDBDatabase> create();
 
     MOCK_METHOD5(createObjectStore, void(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement));
     MOCK_METHOD2(deleteObjectStore, void(long long transactionId, long long objectStoreId));

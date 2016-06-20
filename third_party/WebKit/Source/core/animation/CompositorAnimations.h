@@ -37,6 +37,7 @@
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -76,7 +77,7 @@ public:
 
     static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double animationPlaybackRate);
 
-    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate);
+    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<std::unique_ptr<CompositorAnimation>>& animations, double animationPlaybackRate);
 };
 
 } // namespace blink

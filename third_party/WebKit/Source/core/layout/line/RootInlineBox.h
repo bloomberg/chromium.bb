@@ -25,6 +25,8 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -124,7 +126,7 @@ public:
         if (m_floats)
             m_floats->append(floatingBox);
         else
-            m_floats= adoptPtr(new Vector<LayoutBox*>(1, floatingBox));
+            m_floats= wrapUnique(new Vector<LayoutBox*>(1, floatingBox));
     }
 
     Vector<LayoutBox*>* floatsPtr() { ASSERT(!isDirty()); return m_floats.get(); }
@@ -182,7 +184,7 @@ private:
 
     // Floats hanging off the line are pushed into this vector during layout. It is only
     // good for as long as the line has not been marked dirty.
-    OwnPtr<Vector<LayoutBox*>> m_floats;
+    std::unique_ptr<Vector<LayoutBox*>> m_floats;
 
     LayoutUnit m_lineTop;
     LayoutUnit m_lineBottom;

@@ -10,6 +10,7 @@
 #include "platform/fonts/UTF16TextIterator.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include <memory>
 
 namespace blink {
 
@@ -27,7 +28,7 @@ public:
 
     bool consume(unsigned* orientationLimit, RenderOrientation*);
 private:
-    OwnPtr<UTF16TextIterator> m_utf16Iterator;
+    std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
     unsigned m_bufferSize;
     bool m_atEnd;
 };

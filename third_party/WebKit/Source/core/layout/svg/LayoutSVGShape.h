@@ -30,8 +30,8 @@
 #include "core/layout/svg/SVGMarkerData.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -131,8 +131,8 @@ private:
     // TODO(fmalita): the Path is now cached in SVGPath; while this additional cache is just a
     // shallow copy, it certainly has a complexity/state management cost (plus allocation & storage
     // overhead) - so we should look into removing it.
-    OwnPtr<Path> m_path;
-    mutable OwnPtr<LayoutSVGShapeRareData> m_rareData;
+    std::unique_ptr<Path> m_path;
+    mutable std::unique_ptr<LayoutSVGShapeRareData> m_rareData;
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsShapeUpdate : 1;

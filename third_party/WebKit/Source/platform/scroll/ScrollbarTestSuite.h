@@ -11,6 +11,8 @@
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -89,7 +91,7 @@ public:
     {
         TestingPlatformSupport::Config config;
         config.compositorSupport = Platform::current()->compositorSupport();
-        m_fakePlatform = adoptPtr(new TestingPlatformSupportWithMockScheduler(config));
+        m_fakePlatform = wrapUnique(new TestingPlatformSupportWithMockScheduler(config));
     }
 
     void TearDown() override
@@ -98,7 +100,7 @@ public:
     }
 
 private:
-    OwnPtr<TestingPlatformSupportWithMockScheduler> m_fakePlatform;
+    std::unique_ptr<TestingPlatformSupportWithMockScheduler> m_fakePlatform;
 };
 
 } // namespace blink

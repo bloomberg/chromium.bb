@@ -36,6 +36,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include <memory>
 
 namespace blink {
 
@@ -52,12 +53,12 @@ public:
     virtual ~FileSystemClient() { }
 
     virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<ContentSettingCallbacks>) = 0;
+    virtual void requestFileSystemAccessAsync(ExecutionContext*, std::unique_ptr<ContentSettingCallbacks>) = 0;
 };
 
-MODULES_EXPORT void provideLocalFileSystemTo(LocalFrame&, PassOwnPtr<FileSystemClient>);
+MODULES_EXPORT void provideLocalFileSystemTo(LocalFrame&, std::unique_ptr<FileSystemClient>);
 
-MODULES_EXPORT void provideLocalFileSystemToWorker(WorkerClients*, PassOwnPtr<FileSystemClient>);
+MODULES_EXPORT void provideLocalFileSystemToWorker(WorkerClients*, std::unique_ptr<FileSystemClient>);
 
 } // namespace blink
 

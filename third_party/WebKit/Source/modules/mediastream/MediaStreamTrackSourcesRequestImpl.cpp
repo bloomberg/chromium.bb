@@ -32,7 +32,6 @@
 #include "public/platform/WebSourceInfo.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
