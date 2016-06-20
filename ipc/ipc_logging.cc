@@ -16,10 +16,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -50,7 +50,7 @@ Logging::Logging()
       enabled_color_(false),
       queue_invoke_later_pending_(false),
       sender_(NULL),
-      main_thread_(base::MessageLoop::current()),
+      main_thread_(base::ThreadTaskRunnerHandle::Get()),
       consumer_(NULL) {
 #if defined(OS_WIN)
   // getenv triggers an unsafe warning. Simply check how big of a buffer
@@ -163,10 +163,10 @@ void Logging::OnPostDispatchMessage(const Message& message,
   LogData data;
   GenerateLogData(channel_id, message, &data, true);
 
-  if (base::MessageLoop::current() == main_thread_) {
+  if (main_thread_->BelongsToCurrentThread()) {
     Log(data);
   } else {
-    main_thread_->task_runner()->PostTask(
+    main_thread_->PostTask(
         FROM_HERE, base::Bind(&Logging::Log, base::Unretained(this), data));
   }
 }
