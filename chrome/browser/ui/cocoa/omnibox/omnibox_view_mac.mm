@@ -147,6 +147,7 @@ void StoreStateToTab(WebContents* tab,
                      OmniboxViewMacState* state) {
   tab->SetUserData(kOmniboxViewMacStateKey, state);
 }
+
 const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
   return static_cast<OmniboxViewMacState*>(
       tab->GetUserData(&kOmniboxViewMacStateKey));

@@ -90,8 +90,8 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
                                                  forDarkTheme:NO]);
   EXPECT_NSEQ([[cellData_ description] string], finalString);
   size_t length = [[[cellData_ description] string] length];
-  const NSRange checkValues[] = {{0, 2}, {2, 2}, {4, 4}};
   EXPECT_EQ(length, 8UL);
+  const NSRange checkValues[] = {{0, 2}, {2, 2}, {4, 4}};
   NSDictionary* lastAttributes = nil;
   for (const NSRange& value : checkValues) {
     NSRange range;
@@ -102,6 +102,60 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
     EXPECT_FALSE([currentAttributes isEqualToDictionary:lastAttributes]);
     lastAttributes = currentAttributes;
   }
+}
+
+TEST_F(OmniboxPopupCellTest, DefinitionAnswerStyle) {
+  const char* definitionJson =
+      "{\"l\":"
+        "["
+          "{\"il\":"
+            "{\"at\":"
+              "{\"t\":\"\u2022 /??s??SH????liz??m/\","
+               "\"tt\":8},"
+             "\"t\":"
+                "["
+                  "{\"t\":\"definition of socialism\","
+                   "\"tt\":8}"
+                "]"
+            "}"
+          "},"
+          "{\"il\":"
+            "{\"t\":"
+              "["
+                "{\"t\":\"a political and economic theory\","
+                 "\"tt\":8,"
+                 "\"ln\":3}"
+              "]"
+            "}"
+          "}"
+        "]"
+      "}";
+  NSString* finalString = @"a political and economic theory";
+
+  std::unique_ptr<base::Value> root(base::JSONReader::Read(definitionJson));
+  ASSERT_NE(root, nullptr);
+  base::DictionaryValue* dictionary;
+  root->GetAsDictionary(&dictionary);
+  ASSERT_NE(dictionary, nullptr);
+  AutocompleteMatch match;
+  match.answer = SuggestionAnswer::ParseAnswer(dictionary);
+  EXPECT_TRUE(match.answer);
+  cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
+                                               contentsOffset:0
+                                                        image:nil
+                                                  answerImage:nil
+                                                 forDarkTheme:NO]);
+  EXPECT_NSEQ([[cellData_ description] string], finalString);
+  size_t length = [[[cellData_ description] string] length];
+  EXPECT_EQ(length, 31UL);
+  const NSRange checkValue = {0, 31};
+  NSDictionary* lastAttributes = nil;
+  NSRange range;
+  NSDictionary* currentAttributes =
+      [[cellData_ description] attributesAtIndex:checkValue.location
+                                  effectiveRange:&range];
+  EXPECT_TRUE(NSEqualRanges(checkValue, range));
+  EXPECT_FALSE([currentAttributes isEqualToDictionary:lastAttributes]);
 }
 
 }  // namespace

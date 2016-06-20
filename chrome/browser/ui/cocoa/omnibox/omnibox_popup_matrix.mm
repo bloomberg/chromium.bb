@@ -111,7 +111,24 @@ const NSInteger kMiddleButtonNumber = 2;
   if ([[array_ objectAtIndex:row] isAnswer]) {
     OmniboxPopupMatrix* matrix =
         base::mac::ObjCCastStrict<OmniboxPopupMatrix>(tableView);
-    height += [matrix answerLineHeight];
+    NSRect rowRect = [tableView rectOfColumn:0];
+    OmniboxPopupCellData* cellData =
+        base::mac::ObjCCastStrict<OmniboxPopupCellData>(
+            [array_ objectAtIndex:row]);
+    // Subtract any Material Design padding and/or icon.
+    rowRect.size.width = [OmniboxPopupCell getContentAreaWidth:rowRect] -
+                         [matrix contentLeftPadding];
+    NSAttributedString* text = [cellData description];
+    // Provide no more than 3 lines of space.
+    rowRect.size.height =
+        std::min(3, [cellData max_lines]) * [text size].height;
+    NSRect textRect =
+        [text boundingRectWithSize:rowRect.size
+                           options:NSStringDrawingUsesLineFragmentOrigin |
+                                   NSStringDrawingTruncatesLastVisibleLine];
+    // Add a little padding or it looks cramped.
+    int heightProvided = textRect.size.height + 2;
+    height += heightProvided;
   }
   return height;
 }
@@ -122,8 +139,8 @@ const NSInteger kMiddleButtonNumber = 2;
 
 @synthesize separator = separator_;
 @synthesize maxMatchContentsWidth = maxMatchContentsWidth_;
-@synthesize answerLineHeight = answerLineHeight_;
 @synthesize contentLeftPadding = contentLeftPadding_;
+@synthesize answerLineHeight = answerLineHeight_;
 @synthesize hasDarkTheme = hasDarkTheme_;
 
 - (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer
