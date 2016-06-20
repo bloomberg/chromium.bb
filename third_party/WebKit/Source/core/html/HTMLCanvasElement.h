@@ -202,7 +202,7 @@ public:
 
     // For OffscreenCanvas that controls this html canvas element
     CanvasSurfaceLayerBridge* surfaceLayerBridge() const { return m_surfaceLayerBridge.get(); }
-    void createSurfaceLayerBridge();
+    bool createSurfaceLayer();
 
     void detachContext() { m_context = nullptr; }
 

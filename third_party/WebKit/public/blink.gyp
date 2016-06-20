@@ -40,6 +40,7 @@
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/notifications/notification.mojom',
             'platform/modules/notifications/notification_service.mojom',
+            'platform/modules/offscreencanvas/offscreen_canvas_surface.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
             'platform/modules/presentation/presentation.mojom',
@@ -113,8 +114,16 @@
                     '<@(blink_mojo_sources)',
                     '<@(blink_android_mojo_sources)',
                 ],
+                'mojom_typemaps': [
+                    '<(DEPTH)/cc/ipc/surface_id.typemap',
+                    '<(DEPTH)/cc/ipc/surface_sequence.typemap',
+
+                ],
                 'for_blink': 'true',
             },
+            'dependencies' : [
+                '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces_blink',
+            ],
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',
             ],
@@ -130,8 +139,13 @@
                 ],
                 'mojom_typemaps': [
                   '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
+                    '<(DEPTH)/cc/ipc/surface_id.typemap',
+                    '<(DEPTH)/cc/ipc/surface_sequence.typemap',
                 ],
             },
+            'dependencies' : [
+                '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces',
+            ],
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',
             ],
@@ -145,6 +159,8 @@
                 'mojo_bindings_mojom',
                 '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
                 '../../../device/bluetooth/bluetooth.gyp:bluetooth_mojom',
+                '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces',
+                '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces_blink',
             ],
         },
     ],

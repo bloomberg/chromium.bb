@@ -164,6 +164,7 @@ mojom("mojo_bindings") {
     "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
+    "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
@@ -172,6 +173,7 @@ mojom("mojo_bindings") {
   ]
   public_deps = [
     ":android_mojo_bindings",
+    "//cc/ipc:interfaces_surfaceid_only",
     "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
   ]
 }

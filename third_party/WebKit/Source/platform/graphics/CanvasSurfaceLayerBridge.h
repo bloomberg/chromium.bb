@@ -6,13 +6,15 @@
 #define CanvasSurfaceLayerBridge_h
 
 #include "base/memory/ref_counted.h"
+#include "cc/surfaces/surface_id.h"
 #include "platform/PlatformExport.h"
+#include "platform/graphics/CanvasSurfaceLayerBridgeClient.h"
 #include <memory>
 
 namespace cc {
-// TODO(611796): replace SolidColorLayer with SurfaceLayer
-class SolidColorLayer;
-}
+class SurfaceLayer;
+struct SurfaceSequence;
+} // namespace cc
 
 namespace blink {
 
@@ -20,15 +22,23 @@ class WebLayer;
 
 class PLATFORM_EXPORT CanvasSurfaceLayerBridge {
 public:
-    explicit CanvasSurfaceLayerBridge();
+    explicit CanvasSurfaceLayerBridge(std::unique_ptr<CanvasSurfaceLayerBridgeClient>);
     ~CanvasSurfaceLayerBridge();
+    bool createSurfaceLayer(int canvasWidth, int canvasHeight);
     WebLayer* getWebLayer() const { return m_webLayer.get(); }
+    const cc::SurfaceId& getSurfaceId() const { return m_surfaceId; }
+    CanvasSurfaceLayerBridgeClient* getClient() const { return m_client.get(); }
+
+    void satisfyCallback(cc::SurfaceSequence);
+    void requireCallback(cc::SurfaceId, cc::SurfaceSequence);
 
 private:
-    scoped_refptr<cc::SolidColorLayer> m_solidColorLayer;
+    scoped_refptr<cc::SurfaceLayer> m_surfaceLayer;
     std::unique_ptr<WebLayer> m_webLayer;
+    std::unique_ptr<CanvasSurfaceLayerBridgeClient> m_client;
+    cc::SurfaceId m_surfaceId;
 };
 
-}
+} // namespace blink
 
-#endif // CanvasSurfaceLayerBridge
+#endif // CanvasSurfaceLayerBridge_h

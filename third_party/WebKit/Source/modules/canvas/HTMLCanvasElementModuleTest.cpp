@@ -30,14 +30,23 @@ protected:
     }
 
     HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
+    OffscreenCanvas* transferControlToOffscreen(ExceptionState&);
+
 private:
     Persistent<HTMLCanvasElement> m_canvasElement;
 };
 
+OffscreenCanvas* HTMLCanvasElementModuleTest::transferControlToOffscreen(ExceptionState& exceptionState)
+{
+    // This unit test only tests if the Canvas Id is associated correctly, so we exclude the part that
+    // creates surface layer bridge because a mojo message pipe cannot be tested using webkit unit tests.
+    return HTMLCanvasElementModule::transferControlToOffscreenInternal(canvasElement(), exceptionState);
+}
+
 TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen)
 {
     NonThrowableExceptionState exceptionState;
-    OffscreenCanvas* offscreenCanvas = HTMLCanvasElementModule::transferControlToOffscreen(canvasElement(), exceptionState);
+    OffscreenCanvas* offscreenCanvas = transferControlToOffscreen(exceptionState);
     int canvasId = offscreenCanvas->getAssociatedCanvasId();
     EXPECT_EQ(canvasId, DOMNodeIds::idForNode(&(canvasElement())));
 }

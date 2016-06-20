@@ -21,13 +21,22 @@ void HTMLCanvasElementModule::getContext(HTMLCanvasElement& canvas, const String
 
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(HTMLCanvasElement& canvas, ExceptionState& exceptionState)
 {
+    if (!canvas.createSurfaceLayer()) {
+        exceptionState.throwDOMException(V8GeneralError, "Offscreen canvas creation failed due to an internal timeout.");
+        return nullptr;
+    }
+
+    return transferControlToOffscreenInternal(canvas, exceptionState);
+}
+
+OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(HTMLCanvasElement& canvas, ExceptionState& exceptionState)
+{
     if (canvas.renderingContext()) {
         exceptionState.throwDOMException(InvalidStateError, "Cannot transfer control from a canvas that has a rendering context.");
         return nullptr;
     }
     OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(canvas.width(), canvas.height());
     offscreenCanvas->setAssociatedCanvasId(DOMNodeIds::idForNode(&canvas));
-    canvas.createSurfaceLayerBridge();
     return offscreenCanvas;
 }
 

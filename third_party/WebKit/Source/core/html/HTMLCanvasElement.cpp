@@ -58,6 +58,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/CanvasMetrics.h"
+#include "platform/graphics/CanvasSurfaceLayerBridgeClientImpl.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -1184,9 +1185,12 @@ String HTMLCanvasElement::getIdFromControl(const Element* element)
     return String();
 }
 
-void HTMLCanvasElement::createSurfaceLayerBridge()
+bool HTMLCanvasElement::createSurfaceLayer()
 {
-    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge());
+    DCHECK(!m_surfaceLayerBridge);
+    std::unique_ptr<CanvasSurfaceLayerBridgeClient> bridgeClient = wrapUnique(new CanvasSurfaceLayerBridgeClientImpl());
+    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge(std::move(bridgeClient)));
+    return m_surfaceLayerBridge->createSurfaceLayer(this->width(), this->height());
 }
 
 } // namespace blink

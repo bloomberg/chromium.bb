@@ -46,18 +46,24 @@ mojom("interfaces") {
     "returned_resource.mojom",
     "selection.mojom",
     "shared_quad_state.mojom",
-    "surface_id.mojom",
-    "surface_sequence.mojom",
     "transferable_resource.mojom",
   ]
 
   public_deps = [
+    ":interfaces_surfaceid_only",
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+  ]
+}
+
+mojom("interfaces_surfaceid_only") {
+  sources = [
+    "surface_id.mojom",
+    "surface_sequence.mojom",
   ]
 }
 
@@ -69,5 +75,6 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":interfaces",
+    ":interfaces_surfaceid_only",
   ]
 }

@@ -103,6 +103,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
+#include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -1035,6 +1036,9 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   // TODO(mcasas): finalize arguments.
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&ImageCaptureImpl::Create));
+
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&OffscreenCanvasSurfaceImpl::Create));
 
   mojo_application_host_->service_registry()->AddService(base::Bind(
       &BackgroundSyncContext::CreateService,

@@ -559,6 +559,9 @@
       'graphics/CanvasMetrics.h',
       'graphics/CanvasSurfaceLayerBridge.cpp',
       'graphics/CanvasSurfaceLayerBridge.h',
+      'graphics/CanvasSurfaceLayerBridgeClient.h',
+      'graphics/CanvasSurfaceLayerBridgeClientImpl.cpp',
+      'graphics/CanvasSurfaceLayerBridgeClientImpl.h',
       'graphics/Color.cpp',
       'graphics/Color.h',
       'graphics/ColorSpace.cpp',
@@ -1259,6 +1262,7 @@
     # These tests are a part of the web:webkit_unit_tests binary.
     'platform_web_unittest_files': [
       'graphics/Canvas2DLayerBridgeTest.cpp',
+      'graphics/CanvasSurfaceLayerBridgeTest.cpp',
       'graphics/DeferredImageDecoderTest.cpp',
       'graphics/GraphicsLayerTest.cpp',
       'graphics/ImageDecodingStoreTest.cpp',

@@ -5,4 +5,6 @@
 typemaps = [
   "//third_party/WebKit/Source/platform/mojo/KURL.typemap",
   "//third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap",
+  "//cc/ipc/surface_id.typemap",
+  "//cc/ipc/surface_sequence.typemap",
 ]

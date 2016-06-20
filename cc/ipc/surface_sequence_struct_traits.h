@@ -5,13 +5,15 @@
 #ifndef CC_IPC_SURFACE_SEQUENCE_STRUCT_TRAITS_H_
 #define CC_IPC_SURFACE_SEQUENCE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/surface_sequence.mojom.h"
 #include "cc/surfaces/surface_sequence.h"
 
 namespace mojo {
 
-template <>
-struct StructTraits<cc::mojom::SurfaceSequence, cc::SurfaceSequence> {
+// This template is fully specialized as cc::mojom::SurfaceSequence and
+// as cc::mojom::blink::SurfaceSequence, in generated .mojom.h and
+// .mojom-blink.h respectively.
+template <typename T>
+struct StructTraits<T, cc::SurfaceSequence> {
   static uint32_t id_namespace(const cc::SurfaceSequence& id) {
     return id.id_namespace;
   }
@@ -20,8 +22,7 @@ struct StructTraits<cc::mojom::SurfaceSequence, cc::SurfaceSequence> {
     return id.sequence;
   }
 
-  static bool Read(cc::mojom::SurfaceSequenceDataView data,
-                   cc::SurfaceSequence* out) {
+  static bool Read(typename T::DataView data, cc::SurfaceSequence* out) {
     *out = cc::SurfaceSequence(data.id_namespace(), data.sequence());
     return true;
   }
