@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/notifications/notification_builder_mac.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
@@ -47,7 +47,7 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
 
-   NSUserNotification* notification = [builder buildUserNotification];
+  NSUserNotification* notification = [builder buildUserNotification];
 
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
   EXPECT_EQ("SubTitle",
