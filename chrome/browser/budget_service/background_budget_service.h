@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
@@ -41,14 +42,19 @@ class BackgroundBudgetService : public KeyedService {
   // Query for the base cost for any background processing.
   static double GetCost(CostType type);
 
-  // Get the budget associated with the origin. This is returned as the double
-  // budget. Budget will be a value between 0.0 and
+  using GetBudgetCallback = base::Callback<void(double budget)>;
+
+  // Get the budget associated with the origin. This is passed to the
+  // callback. Budget will be a value between 0.0 and
   // SiteEngagementScore::kMaxPoints.
-  double GetBudget(const GURL& origin);
+  void GetBudget(const GURL& origin, const GetBudgetCallback& callback);
 
   // Store the budget associated with the origin. Budget should be a value
-  // between 0.0 and SiteEngagementScore::kMaxPoints.
-  void StoreBudget(const GURL& origin, double budget);
+  // between 0.0 and SiteEngagementScore::kMaxPoints. closure will be called
+  // when the store completes.
+  void StoreBudget(const GURL& origin,
+                   double budget,
+                   const base::Closure& closure);
 
  private:
   friend class BackgroundBudgetServiceTest;

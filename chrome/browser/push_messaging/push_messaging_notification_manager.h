@@ -93,6 +93,13 @@ class PushMessagingNotificationManager {
       bool success,
       int64_t persistent_notification_id);
 
+  void DidGetBudget(const GURL& origin,
+                    int64_t service_worker_registration_id,
+                    const base::Closure& message_handled_closure,
+                    bool notification_needed,
+                    bool notification_shown,
+                    double budget);
+
   // Weak. This manager is owned by a keyed service on this profile.
   Profile* profile_;
 

@@ -22,6 +22,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -109,7 +112,8 @@ double BackgroundBudgetService::GetCost(CostType type) {
   return SiteEngagementScore::kMaxPoints + 1.0;
 }
 
-double BackgroundBudgetService::GetBudget(const GURL& origin) {
+void BackgroundBudgetService::GetBudget(const GURL& origin,
+                                        const GetBudgetCallback& callback) {
   DCHECK_EQ(origin, origin.GetOrigin());
 
   // Get the current SES score, which we'll use to set a new budget.
@@ -123,7 +127,9 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
                               &last_updated_msec)) {
     // If there is no stored data or the data can't be parsed, just return the
     // SES.
-    return ses_score;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, ses_score));
+    return;
   }
 
   base::Time now = clock_->Now();
@@ -134,8 +140,11 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
   // clock will reach the future, and the budget calculations will catch up.
   // TODO(harkness): Consider what to do if the clock jumps forward by a
   // significant amount.
-  if (elapsed.InMicroseconds() < 0)
-    return old_budget;
+  if (elapsed.InMicroseconds() < 0) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, old_budget));
+    return;
+  }
 
   // For each time period that elapses, calculate the carryover ratio as the
   // ratio of time remaining in our max period to the total period.
@@ -159,10 +168,13 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
   double budget = budget_carryover + ses_component;
   DCHECK_GE(budget, 0.0);
 
-  return budget;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, budget));
 }
 
-void BackgroundBudgetService::StoreBudget(const GURL& origin, double budget) {
+void BackgroundBudgetService::StoreBudget(const GURL& origin,
+                                          double budget,
+                                          const base::Closure& closure) {
   DCHECK_EQ(origin, origin.GetOrigin());
   DCHECK_GE(budget, 0.0);
   DCHECK_LE(budget, SiteEngagementService::GetMaxPoints());
@@ -173,6 +185,8 @@ void BackgroundBudgetService::StoreBudget(const GURL& origin, double budget) {
 
   base::Time time = clock_->Now();
   SetBudgetDataInPrefs(profile_, origin, time.ToDoubleT(), budget, ses_score);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(closure));
 }
 
 // Override the default clock with the specified clock. Only used for testing.
