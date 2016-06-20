@@ -3855,9 +3855,6 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
 
  protected:
   void SetUp() override {
-    ImageTransportFactory::InitializeForUnitTests(
-        std::unique_ptr<ImageTransportFactory>(
-            new NoTransportImageTransportFactory));
     RenderViewHostImplTestHarness::SetUp();
     // Delete the current RenderWidgetHostView instance before setting
     // the RWHVA as the view.
@@ -3871,7 +3868,6 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
   void TearDown() override {
     view_->Destroy();
     RenderViewHostImplTestHarness::TearDown();
-    ImageTransportFactory::Terminate();
   }
 
   RenderWidgetHostViewAura* view() {

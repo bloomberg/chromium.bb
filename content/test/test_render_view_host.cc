@@ -8,6 +8,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -26,11 +29,9 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
+#include "ui/aura/env.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
-
-namespace {
-static uint32_t s_next_surface_id_namespace = 1;
-}
 
 namespace content {
 
@@ -59,10 +60,17 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
-      surface_id_namespace_(s_next_surface_id_namespace++),
       is_showing_(false),
       is_occluded_(false),
       did_swap_compositor_frame_(false) {
+#if defined(OS_ANDROID)
+    surface_id_allocator_ = CreateSurfaceIdAllocator();
+#else
+  // Not all tests initialize or need an image transport factory.
+  if (ImageTransportFactory::GetInstance())
+    surface_id_allocator_ = CreateSurfaceIdAllocator();
+#endif
+
   rwh_->SetView(this);
 }
 
@@ -204,7 +212,10 @@ void TestRenderWidgetHostView::UnlockMouse() {
 }
 
 uint32_t TestRenderWidgetHostView::GetSurfaceIdNamespace() {
-  return surface_id_namespace_;
+  // See constructor.  If a test needs this, its harness needs to construct an
+  // ImageTransportFactory.
+  DCHECK(surface_id_allocator_);
+  return surface_id_allocator_->id_namespace();
 }
 
 TestRenderViewHost::TestRenderViewHost(

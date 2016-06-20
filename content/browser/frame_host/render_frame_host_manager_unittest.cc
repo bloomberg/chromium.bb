@@ -17,7 +17,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -306,20 +305,11 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::InitializeForUnitTests(
-        base::WrapUnique(new NoTransportImageTransportFactory));
-#endif
   }
 
   void TearDown() override {
     RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-#if !defined(OS_ANDROID)
-    // RenderWidgetHostView holds on to a reference to SurfaceManager, so it
-    // must be shut down before the ImageTransportFactory.
-    ImageTransportFactory::Terminate();
-#endif
   }
 
   void set_should_create_webui(bool should_create_webui) {

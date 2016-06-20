@@ -20,6 +20,7 @@ class SurfaceManager;
 
 namespace content {
 
+CONTENT_EXPORT
 std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
 CONTENT_EXPORT

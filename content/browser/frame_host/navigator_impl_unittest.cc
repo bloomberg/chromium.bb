@@ -48,20 +48,12 @@ class NavigatorTestWithBrowserSideNavigation
   using SiteInstanceRelation = RenderFrameHostManager::SiteInstanceRelation;
 
   void SetUp() override {
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::InitializeForUnitTests(
-        std::unique_ptr<ImageTransportFactory>(
-            new NoTransportImageTransportFactory));
-#endif
     EnableBrowserSideNavigation();
     RenderViewHostImplTestHarness::SetUp();
   }
 
   void TearDown() override {
     RenderViewHostImplTestHarness::TearDown();
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::Terminate();
-#endif
   }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(

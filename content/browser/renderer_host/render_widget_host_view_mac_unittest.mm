@@ -241,10 +241,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    ImageTransportFactory::InitializeForUnitTests(
-        std::unique_ptr<ImageTransportFactory>(
-            new NoTransportImageTransportFactory));
-
     // TestRenderViewHost's destruction assumes that its view is a
     // TestRenderWidgetHostView, so store its view and reset it back to the
     // stored view in |TearDown()|.
@@ -263,7 +259,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     test_rvh()->GetWidget()->SetView(
         static_cast<RenderWidgetHostViewBase*>(old_rwhv_));
 
-    ImageTransportFactory::Terminate();
     RenderViewHostImplTestHarness::TearDown();
   }
 
