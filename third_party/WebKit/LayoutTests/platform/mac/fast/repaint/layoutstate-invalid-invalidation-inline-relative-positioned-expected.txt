@@ -48,6 +48,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "invalidate paint rectangle"
     },

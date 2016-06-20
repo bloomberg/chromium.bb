@@ -23,6 +23,42 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGText text",
       "reason": "style change"
     },

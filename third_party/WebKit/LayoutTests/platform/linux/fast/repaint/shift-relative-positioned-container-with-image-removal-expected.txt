@@ -67,8 +67,16 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",

@@ -37,8 +37,16 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",

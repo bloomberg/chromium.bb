@@ -33,6 +33,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
       "reason": "invalidate paint rectangle"
     },

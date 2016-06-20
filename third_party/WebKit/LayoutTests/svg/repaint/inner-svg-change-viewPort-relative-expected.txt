@@ -78,6 +78,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'right-aligned text'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGRoot svg",
       "reason": "incremental"
     },

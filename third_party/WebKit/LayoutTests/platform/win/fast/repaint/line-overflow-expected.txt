@@ -43,6 +43,58 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'convallis,\n'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'augue'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'purus'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' eleifend lacus,'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'at sagittis eros leo pulvinar'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'velit. Integer sollicitudin nisi'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'ut urna blandit convallis.'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "invalidate paint rectangle"
     },

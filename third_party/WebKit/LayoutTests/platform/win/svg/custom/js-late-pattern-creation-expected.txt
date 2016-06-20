@@ -28,6 +28,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGText text",
       "reason": "style change"
     },

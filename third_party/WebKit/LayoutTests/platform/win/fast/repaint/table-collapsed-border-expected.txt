@@ -98,20 +98,76 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'ipsum dolor'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutTableCell TD id='d'",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'dolor'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutTableCell TD id='d2'",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'ipsum dolor'",
+      "reason": "full"
     },
     {
       "object": "LayoutTableCell TD",

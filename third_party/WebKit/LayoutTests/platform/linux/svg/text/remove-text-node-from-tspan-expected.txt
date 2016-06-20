@@ -68,8 +68,44 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'FAIL'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg",

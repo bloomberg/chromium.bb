@@ -68,6 +68,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'ROW1'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'ROW2'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutTable (positioned) TABLE id='table'",
       "reason": "incremental"
     },

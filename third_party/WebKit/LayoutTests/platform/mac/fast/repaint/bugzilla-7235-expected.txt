@@ -23,6 +23,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "invalidate paint rectangle"
     },

@@ -28,6 +28,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutTextControl (positioned) INPUT id='input'",
       "reason": "style change"
     },

@@ -58,6 +58,70 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel fringilla'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'orci nibh sed neque. Quisque eu nulla non nisi'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'molestie accumsan. Etiam tellus urna, laoreet ac,'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'laoreet non, suscipit sed, sapien. Phasellus'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'vehicula, sem at posuere vehicula, augue nibh'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'vulputate pede.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutTableCell TD id='col1'",
       "reason": "incremental"
     },

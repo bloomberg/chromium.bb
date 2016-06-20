@@ -83,6 +83,22 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
       "reason": "subtree"
     },

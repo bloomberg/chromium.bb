@@ -43,6 +43,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "background obscuration change"
     },

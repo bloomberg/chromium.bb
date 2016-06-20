@@ -38,8 +38,80 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'hello world hello'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'world hello world'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'hello world hello'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'world hello world'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'hello world hello'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'world hello'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV id='test'",

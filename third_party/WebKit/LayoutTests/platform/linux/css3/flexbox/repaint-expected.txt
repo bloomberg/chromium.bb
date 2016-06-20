@@ -73,6 +73,70 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum.'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus.'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='left'",
       "reason": "incremental"
     },
@@ -111,6 +175,46 @@
     {
       "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
       "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",

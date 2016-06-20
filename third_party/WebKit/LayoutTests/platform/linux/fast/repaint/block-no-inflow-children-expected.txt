@@ -23,6 +23,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='target'",
       "reason": "forced by layout"
     },

@@ -38,6 +38,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow div id='contentBox'",
       "reason": "forced by layout"
     },

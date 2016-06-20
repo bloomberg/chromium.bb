@@ -33,12 +33,60 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'This span should disappear.\n'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'This span should disappear.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutInline SPAN id='target'",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",

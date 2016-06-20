@@ -38,6 +38,30 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'A'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' B C'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'X'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox ' Y Z'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGRoot svg",
       "reason": "incremental"
     },

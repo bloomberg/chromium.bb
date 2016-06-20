@@ -23,8 +23,24 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'This div should'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'disappear.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",

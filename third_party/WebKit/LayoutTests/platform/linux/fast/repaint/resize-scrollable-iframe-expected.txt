@@ -78,6 +78,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "incremental"
     },

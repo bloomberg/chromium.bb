@@ -63,24 +63,56 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "object": "InlineTextBox 'one'",
+      "reason": "full"
     },
     {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'two'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'three'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBR BR",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -91,8 +123,32 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBR BR",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineTextBox 'three'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'three'",
+      "reason": "full"
     },
     {
       "object": "LayoutText #text",
@@ -101,6 +157,10 @@
     {
       "object": "LayoutInline SPAN",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV",

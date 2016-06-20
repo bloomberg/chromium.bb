@@ -178,8 +178,16 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text id='use_text'",
@@ -234,8 +242,16 @@
       "reason": "layoutObject insertion"
     },
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text id='use_text'",
@@ -290,8 +306,16 @@
       "reason": "layoutObject insertion"
     },
     {
+      "object": "InlineTextBox ''",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text id='use_text'",

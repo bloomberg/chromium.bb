@@ -38,6 +38,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'MIDDLE'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutTable (positioned) TABLE id='table'",
       "reason": "incremental"
     },

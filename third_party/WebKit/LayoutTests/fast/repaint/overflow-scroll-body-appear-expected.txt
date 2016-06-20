@@ -53,6 +53,30 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'This is the test for '",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "full"
     },

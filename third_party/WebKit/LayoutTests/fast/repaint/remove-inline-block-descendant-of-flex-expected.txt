@@ -33,12 +33,44 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBR BR",
       "reason": "layoutObject removal"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='inline-block-1' class='item'",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV",

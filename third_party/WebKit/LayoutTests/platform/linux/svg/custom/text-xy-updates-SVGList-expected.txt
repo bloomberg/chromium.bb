@@ -43,6 +43,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Passes, if text is at 200x20'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGRoot svg:svg",
       "reason": "bounds change"
     },

@@ -38,6 +38,134 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'A A A A A'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AA AA AA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AA AAA AAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAA AAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAA AAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAAA AAAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAAA AAA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AAA AAA AA'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'AA AA AA A'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'A A A A'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'A A A A A'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
       "reason": "forced by layout"
     },

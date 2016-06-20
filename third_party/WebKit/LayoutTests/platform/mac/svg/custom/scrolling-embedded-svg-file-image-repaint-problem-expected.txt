@@ -23,6 +23,30 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'index'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '\u2192 script-handle-01-b'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow P",
       "reason": "invalidate paint rectangle"
     },

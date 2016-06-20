@@ -82,6 +82,14 @@
       "reason": "layoutObject insertion"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGRoot svg id='svg-root'",
       "reason": "incremental"
     },

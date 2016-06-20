@@ -821,12 +821,24 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
@@ -841,6 +853,66 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Geodata'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Browser'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Download'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Folder'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Your'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Account'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGPath path",
       "reason": "layoutObject removal"
     },
@@ -849,20 +921,40 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject removal"
+      "object": "InlineTextBox 'Geodata'",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineTextBox 'Browser'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
@@ -877,6 +969,26 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Help'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox '& Info'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGPath path",
       "reason": "layoutObject removal"
     },
@@ -885,12 +997,24 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'Events'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
@@ -913,12 +1037,24 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
@@ -941,12 +1077,24 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineTextBox 'Biography'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
@@ -973,16 +1121,32 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject removal"
+      "object": "InlineTextBox ''",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineTextBox 'hidden on tab-change'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGTSpan tspan",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",

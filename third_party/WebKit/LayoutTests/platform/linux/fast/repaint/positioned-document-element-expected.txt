@@ -59,6 +59,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
+      "reason": "full"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "style change"
     },

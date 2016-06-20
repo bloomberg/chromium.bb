@@ -27,6 +27,18 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
+      "reason": "full"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
       "object": "LayoutBlockFlow BODY",
       "reason": "invalidate paint rectangle"
     }
