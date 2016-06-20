@@ -29915,6 +29915,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicStreamFactory.TSVIPCliIsLoaded" enum="Boolean">
   <owner>rtenneti@chromium.org</owner>
+  <obsolete>
+    Deprecated 06/2016. No longer tracked.
+  </obsolete>
   <summary>
     Whether TSVIPCli DLL is loaded or not on windows when the socket is
     configured.
