@@ -334,49 +334,53 @@ std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  layer->SetBackgroundColor(background_color_);
-  layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
-  layer->SetBounds(bounds_);
-  layer->SetDrawsContent(DrawsContent());
+  DCHECK(layer->IsActive());
+
+  layer->offset_to_transform_parent_ = offset_to_transform_parent_;
+  layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
+  layer->user_scrollable_horizontal_ = user_scrollable_horizontal_;
+  layer->user_scrollable_vertical_ = user_scrollable_vertical_;
+  layer->should_flatten_transform_from_property_tree_ =
+      should_flatten_transform_from_property_tree_;
+  layer->masks_to_bounds_ = masks_to_bounds_;
+  layer->contents_opaque_ = contents_opaque_;
+  layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
+  layer->use_local_transform_for_backface_visibility_ =
+      use_local_transform_for_backface_visibility_;
+  layer->should_check_backface_visibility_ = should_check_backface_visibility_;
+  layer->draws_content_ = draws_content_;
+  layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;
+  layer->touch_event_handler_region_ = touch_event_handler_region_;
+  layer->background_color_ = background_color_;
+  layer->safe_opaque_background_color_ = safe_opaque_background_color_;
+  layer->blend_mode_ = blend_mode_;
+  layer->draw_blend_mode_ = draw_blend_mode_;
+  layer->position_ = position_;
+  layer->transform_ = transform_;
+  layer->transform_tree_index_ = transform_tree_index_;
+  layer->effect_tree_index_ = effect_tree_index_;
+  layer->clip_tree_index_ = clip_tree_index_;
+  layer->scroll_tree_index_ = scroll_tree_index_;
+  layer->filters_ = filters_;
+  layer->background_filters_ = background_filters_;
+  layer->sorting_context_id_ = sorting_context_id_;
+  layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
+
+  if (layer_property_changed_) {
+    layer->layer_tree_impl()->set_needs_update_draw_properties();
+    layer->layer_property_changed_ = true;
+  }
+
   // If whether layer has render surface changes, we need to update draw
   // properties.
   // TODO(weiliangc): Should be safely removed after impl side is able to
   // update render surfaces without rebuilding property trees.
   if (layer->has_render_surface() != has_render_surface())
     layer->layer_tree_impl()->set_needs_update_draw_properties();
-  layer->SetFilters(filters());
-  layer->SetBackgroundFilters(background_filters());
-  layer->SetMasksToBounds(masks_to_bounds_);
-  layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
-  layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
-  layer->SetContentsOpaque(contents_opaque_);
-  layer->SetBlendMode(blend_mode_);
-  layer->SetPosition(position_);
-  layer->set_should_flatten_transform_from_property_tree(
-      should_flatten_transform_from_property_tree_);
-  layer->set_draw_blend_mode(draw_blend_mode_);
-  layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
-  layer->SetUseLocalTransformForBackfaceVisibility(
-      use_local_transform_for_backface_visibility_);
-  layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
-  layer->SetTransform(transform_);
-  if (layer_property_changed_)
-    layer->NoteLayerPropertyChanged();
-
+  layer->SetBounds(bounds_);
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->SetElementId(element_id_);
   layer->SetMutableProperties(mutable_properties_);
-  layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
-  layer->set_user_scrollable_vertical(user_scrollable_vertical_);
-
-  layer->Set3dSortingContextId(sorting_context_id_);
-
-  layer->SetTransformTreeIndex(transform_tree_index_);
-  layer->SetClipTreeIndex(clip_tree_index_);
-  layer->SetEffectTreeIndex(effect_tree_index_);
-  layer->SetScrollTreeIndex(scroll_tree_index_);
-  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
@@ -387,8 +391,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   if (owned_debug_info_)
     layer->SetDebugInfo(std::move(owned_debug_info_));
-
-  layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
 
   // Reset any state that should be cleared for the next update.
   layer_property_changed_ = false;

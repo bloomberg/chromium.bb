@@ -114,6 +114,53 @@ TEST_F(LayerPerfTest, PushPropertiesTo) {
                          true);
 }
 
+TEST_F(LayerPerfTest, ImplPushPropertiesTo) {
+  std::unique_ptr<LayerImpl> test_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+  std::unique_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 2);
+
+  SkColor background_color = SK_ColorRED;
+  gfx::Size bounds(1000, 1000);
+  bool draws_content = true;
+  bool contents_opaque = true;
+  bool masks_to_bounds = true;
+
+  // Properties changed.
+  timer_.Reset();
+  do {
+    test_layer->SetBackgroundColor(background_color);
+    test_layer->SetSafeOpaqueBackgroundColor(background_color);
+    test_layer->SetDrawsContent(draws_content);
+    test_layer->SetContentsOpaque(contents_opaque);
+    test_layer->SetMasksToBounds(masks_to_bounds);
+
+    test_layer->PushPropertiesTo(impl_layer.get());
+
+    background_color =
+        background_color == SK_ColorRED ? SK_ColorGREEN : SK_ColorRED;
+    bounds = bounds == gfx::Size(1000, 1000) ? gfx::Size(500, 500)
+                                             : gfx::Size(1000, 1000);
+    draws_content = !draws_content;
+    contents_opaque = !contents_opaque;
+    masks_to_bounds = !masks_to_bounds;
+
+    timer_.NextLap();
+  } while (!timer_.HasTimeLimitExpired());
+
+  perf_test::PrintResult("impl_push_properties_to", "", "props_changed",
+                         timer_.LapsPerSecond(), "runs/s", true);
+
+  // Properties didn't change.
+  timer_.Reset();
+  do {
+    test_layer->PushPropertiesTo(impl_layer.get());
+    timer_.NextLap();
+  } while (!timer_.HasTimeLimitExpired());
+
+  perf_test::PrintResult("impl_push_properties_to", "", "props_didnt_change",
+                         timer_.LapsPerSecond(), "runs/s", true);
+}
 
 }  // namespace
 }  // namespace cc
