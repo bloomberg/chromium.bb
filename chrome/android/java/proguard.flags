@@ -96,6 +96,19 @@
   !static final <fields>;
 }
 
+# Allowing Proguard to change modifiers. This change shrinks the .dex size by
+# ~1.1%, and reduces the method count by ~4.3%.
+-allowaccessmodification
+
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
 # Everything below this is kept because they are referenced by the test APK.
 -keep class android.support.v7.mediarouter.R* {
   *;
