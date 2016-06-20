@@ -703,7 +703,6 @@
       '../ui/base/ime/chromeos/input_method_whitelist.cc',
       '../ui/base/ime/chromeos/input_method_whitelist.h',
       'browser/apps/custom_launcher_page_browsertest_views.cc',
-      'browser/chromeos/accessibility/accessibility_highlight_manager_browsertest.cc',
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
       'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
@@ -1205,6 +1204,7 @@
     ],
     'chrome_interactive_ui_test_chromeos_sources': [
       '../ash/accelerators/accelerator_interactive_uitest_chromeos.cc',
+      'browser/chromeos/accessibility/accessibility_highlight_manager_interactive_uitest.cc',
       'browser/chromeos/accessibility/magnification_controller_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
       'browser/chromeos/accessibility/speech_monitor.h',

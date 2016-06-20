@@ -138,8 +138,8 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   gfx::Image image_;
   SkBitmap before_bmp_;
   SkBitmap after_bmp_;
-  int diff_count_;
-  SkColor average_diff_color_;
+  int diff_count_ = 0;
+  SkColor average_diff_color_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightManagerTest);
 };
