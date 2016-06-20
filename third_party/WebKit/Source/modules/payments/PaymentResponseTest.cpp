@@ -45,8 +45,6 @@ TEST(PaymentResponseTest, DataCopiedOver)
     V8TestingScope scope;
     mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
     input->method_name = "foo";
-    input->total_amount->currency = "USD";
-    input->total_amount->value = "5.00";
     input->stringified_details = "{\"transactionId\": 123}";
     input->shipping_option = "standardShippingOption";
     input->payer_email = "abc@gmail.com";
@@ -59,11 +57,6 @@ TEST(PaymentResponseTest, DataCopiedOver)
     EXPECT_EQ("standardShippingOption", output.shippingOption());
     EXPECT_EQ("abc@gmail.com", output.payerEmail());
     EXPECT_EQ("0123", output.payerPhone());
-
-    PaymentCurrencyAmount totalAmount;
-    output.totalAmount(totalAmount);
-    EXPECT_EQ("USD", totalAmount.currency());
-    EXPECT_EQ("5.00", totalAmount.value());
 
     ScriptValue details = output.details(scope.getScriptState(), scope.getExceptionState());
 

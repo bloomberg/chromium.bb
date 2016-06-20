@@ -43,6 +43,6 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
                 mReadyToUnmask.getTarget(), mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "freeShippingOption", "USD", "5.00"});
+                "freeShippingOption"});
     }
 }

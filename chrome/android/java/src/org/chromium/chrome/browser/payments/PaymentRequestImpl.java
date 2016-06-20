@@ -702,7 +702,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
         PaymentResponse response = new PaymentResponse();
         response.methodName = methodName;
-        response.totalAmount = mRawTotal.amount;
         response.stringifiedDetails = stringifiedDetails;
 
         if (mContactSection != null) {

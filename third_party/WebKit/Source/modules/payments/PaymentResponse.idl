@@ -16,7 +16,6 @@ enum PaymentComplete {
     RuntimeEnabled=PaymentRequest,
 ] interface PaymentResponse {
     readonly attribute DOMString methodName;
-    readonly attribute PaymentCurrencyAmount totalAmount;
     readonly attribute DOMString? payerEmail;
     readonly attribute DOMString? payerPhone;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;

@@ -46,7 +46,6 @@ struct PaymentCurrencyAmount {
 
 struct PaymentResponse {
   string method_name;
-  PaymentCurrencyAmount total_amount;
 
   // Payment method specific JSON string that is built either by the browser or
   // a payment app, for example Android Pay. Browser ensures that the string can

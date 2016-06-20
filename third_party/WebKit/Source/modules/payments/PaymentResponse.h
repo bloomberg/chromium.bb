@@ -31,7 +31,6 @@ public:
     virtual ~PaymentResponse();
 
     const String& methodName() const { return m_methodName; }
-    void totalAmount(PaymentCurrencyAmount& result) const { result = m_totalAmount; }
     ScriptValue details(ScriptState*, ExceptionState&) const;
     PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
@@ -44,7 +43,6 @@ public:
 
 private:
     String m_methodName;
-    PaymentCurrencyAmount m_totalAmount;
     String m_stringifiedDetails;
     Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;

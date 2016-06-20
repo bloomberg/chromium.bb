@@ -104,7 +104,6 @@ HeapVector<PaymentMethodData> buildPaymentMethodDataForTest()
 mojom::blink::PaymentResponsePtr buildPaymentResponseForTest()
 {
     mojom::blink::PaymentResponsePtr result = mojom::blink::PaymentResponse::New();
-    result->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     return result;
 }
 

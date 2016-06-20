@@ -4237,7 +4237,6 @@ interface PaymentResponse
     getter payerPhone
     getter shippingAddress
     getter shippingOption
-    getter totalAmount
     method complete
     method constructor
 interface Performance : EventTarget

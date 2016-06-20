@@ -69,7 +69,6 @@ TEST(PaymentRequestTest, RejectMissingEmail)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 
@@ -88,7 +87,6 @@ TEST(PaymentRequestTest, RejectMissingPhone)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 
@@ -150,7 +148,6 @@ TEST(PaymentRequestTest, RejectEmptyEmail)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -170,7 +167,6 @@ TEST(PaymentRequestTest, RejectEmptyPhone)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -231,7 +227,6 @@ TEST(PaymentRequestTest, RejectNotRequestedEmail)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -251,7 +246,6 @@ TEST(PaymentRequestTest, RejectNotRequestedPhone)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "";
 
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
@@ -347,7 +341,6 @@ TEST(PaymentRequestTest, CanRequestEmail)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = "abc@gmail.com";
     ScriptValue outValue;
     request->show(scope.getScriptState()).then(PaymentResponseFunction::create(scope.getScriptState(), &outValue), funcs.expectNoCall());
@@ -371,7 +364,6 @@ TEST(PaymentRequestTest, CanRequestPhone)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = "0123";
 
     ScriptValue outValue;
@@ -418,7 +410,6 @@ TEST(PaymentRequestTest, PhoneNotRequred)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_phone = String();
     ScriptValue outValue;
     request->show(scope.getScriptState()).then(PaymentResponseFunction::create(scope.getScriptState(), &outValue), funcs.expectNoCall());
@@ -442,7 +433,6 @@ TEST(PaymentRequestTest, EmailNotRequired)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), options, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->total_amount = mojom::blink::PaymentCurrencyAmount::New();
     response->payer_email = String();
     ScriptValue outValue;
     request->show(scope.getScriptState()).then(PaymentResponseFunction::create(scope.getScriptState(), &outValue), funcs.expectNoCall());

@@ -28,7 +28,6 @@ function buy() {  // eslint-disable-line no-unused-vars
           resp.complete('success')
               .then(function() {
                 print(
-                    JSON.stringify(resp.totalAmount, undefined, 2) + '<br>' +
                     resp.shippingOption + '<br>' +
                     JSON.stringify(
                         toDictionary(resp.shippingAddress), undefined, 2) +

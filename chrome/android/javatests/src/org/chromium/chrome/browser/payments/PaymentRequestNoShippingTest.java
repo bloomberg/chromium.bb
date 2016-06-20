@@ -75,6 +75,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE,
                 mReadyToUnmask.getTarget(), mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "USD", "5.00"});
+                "123"});
     }
 }
