@@ -18,14 +18,7 @@ SystemModalContainerEventFilter::SystemModalContainerEventFilter(
 SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
 }
 
-void SystemModalContainerEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!delegate_->CanWindowReceiveEvents(target))
-    event->StopPropagation();
-}
-
-void SystemModalContainerEventFilter::OnMouseEvent(
-    ui::MouseEvent* event) {
+void SystemModalContainerEventFilter::OnEvent(ui::Event* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!delegate_->CanWindowReceiveEvents(target))
     event->StopPropagation();

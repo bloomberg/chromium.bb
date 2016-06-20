@@ -686,49 +686,93 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
   InputTestDelegate() {}
   ~InputTestDelegate() override {}
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override { mouse_event_count_++; }
+  void RunTest(test::AshTestBase* test_base) {
+    std::unique_ptr<aura::Window> window(
+        test_base->CreateTestWindowInShellWithDelegate(
+            this, 0, gfx::Rect(0, 0, 100, 100)));
+    window->Show();
 
-  int mouse_event_count() const { return mouse_event_count_; }
+    GenerateEvents(window.get());
+
+    EXPECT_EQ(2, mouse_event_count_);
+    EXPECT_EQ(3, scroll_event_count_);
+    EXPECT_EQ(4, touch_event_count_);
+    EXPECT_EQ(10, gesture_event_count_);
+    Reset();
+
+    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+        new TestWindow(true), Shell::GetPrimaryRootWindow(),
+        gfx::Rect(200, 200, 100, 100));
+    widget->Show();
+    EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+
+    // Events should be blocked.
+    GenerateEvents(window.get());
+
+    EXPECT_EQ(0, mouse_event_count_);
+    EXPECT_EQ(0, scroll_event_count_);
+    EXPECT_EQ(0, touch_event_count_);
+    EXPECT_EQ(0, gesture_event_count_);
+    Reset();
+
+    widget->Close();
+    EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+
+    GenerateEvents(window.get());
+
+    EXPECT_EQ(2, mouse_event_count_);
+    EXPECT_EQ(3, scroll_event_count_);
+    EXPECT_EQ(4, touch_event_count_);
+    EXPECT_EQ(10, gesture_event_count_);
+  }
 
  private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override { mouse_event_count_++; }
+  void OnScrollEvent(ui::ScrollEvent* event) override { scroll_event_count_++; }
+  void OnTouchEvent(ui::TouchEvent* event) override { touch_event_count_++; }
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    gesture_event_count_++;
+  }
+
+  void GenerateEvents(aura::Window* window) {
+    ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow(),
+                                             window);
+    event_generator.ClickLeftButton();
+    event_generator.ScrollSequence(window->bounds().CenterPoint(),
+                                   base::TimeDelta(), 0, 10, 1, 2);
+    event_generator.PressTouch();
+    event_generator.ReleaseTouch();
+    event_generator.GestureTapAt(window->bounds().CenterPoint());
+  }
+
+  void Reset() {
+    mouse_event_count_ = 0;
+    scroll_event_count_ = 0;
+    touch_event_count_ = 0;
+    gesture_event_count_ = 0;
+  }
+
   int mouse_event_count_ = 0;
+  int scroll_event_count_ = 0;
+  int touch_event_count_ = 0;
+  int gesture_event_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(InputTestDelegate);
 };
 
 }  // namespace
 
+TEST_F(SystemModalContainerLayoutManagerTest, BlockAllEvents) {
+  InputTestDelegate delegate;
+  delegate.RunTest(this);
+}
+
 // Make sure that events are properly blocked in multi displays environment.
-TEST_F(SystemModalContainerLayoutManagerTest, BlockEvent) {
+TEST_F(SystemModalContainerLayoutManagerTest, BlockEventsInMultiDisplays) {
   UpdateDisplay("500x500, 500x500");
   InputTestDelegate delegate;
-  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
-  window->Show();
-
-  ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow(),
-                                           window.get());
-  event_generator.ClickLeftButton();
-  EXPECT_EQ(2, delegate.mouse_event_count());
-
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new TestWindow(true), Shell::GetPrimaryRootWindow(),
-      gfx::Rect(200, 200, 100, 100));
-  widget->Show();
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
-
-  // Events should be blocked.
-  event_generator.ClickLeftButton();
-  EXPECT_EQ(2, delegate.mouse_event_count());
-  widget->Close();
-
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
-  event_generator.ClickLeftButton();
-  EXPECT_EQ(4, delegate.mouse_event_count());
-
-  // We need to delete window here because delegate is on the stack.
-  window.reset();
+  delegate.RunTest(this);
 }
 
 }  // namespace test

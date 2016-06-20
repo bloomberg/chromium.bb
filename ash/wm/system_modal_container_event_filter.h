@@ -20,9 +20,8 @@ class ASH_EXPORT SystemModalContainerEventFilter : public ui::EventHandler {
       SystemModalContainerEventFilterDelegate* delegate);
   ~SystemModalContainerEventFilter() override;
 
-  // Overridden from ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override;
 
  private:
   SystemModalContainerEventFilterDelegate* delegate_;
