@@ -315,8 +315,6 @@
 
     'chromium.lkgr': {
       'ASAN Debug': 'gn_asan_lsan_edge_debug_bot',
-      'ASAN Release (symbolized)':
-        'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
       'ASAN Release Media':
         'gn_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
       'ASAN Release': 'gn_asan_lsan_edge_fuzzer_v8_heap_release_bot',
@@ -324,8 +322,6 @@
         'gn_asan_edge_v8_heap_debug_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM)':
         'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid',
-      'ASan Release (32-bit x86 with V8-ARM, symbolized)':
-        'gn_asan_edge_fuzzer_v8_heap_symbolized_release_bot_hybrid',
       'ASan Release Media (32-bit x86 with V8-ARM)':
         'gn_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
       'ChromiumOS ASAN Release':
@@ -367,7 +363,7 @@
     'chromium.memory': {
       'Linux ASan LSan Builder': 'swarming_asan_lsan_gn_release_bot',
       'Linux ASan LSan Tests (1)': 'none',
-      'Linux ASan LSan Tests (sandboxed)': 'none',
+      'Linux ASan Tests (sandboxed)': 'none',
       'Mac ASan 64 Builder': 'swarming_asan_lsan_full_symbols_gyp_release_bot',
       'Mac ASan 64 Tests (1)': 'none',
       'Linux Chromium OS ASan LSan Builder':
@@ -700,6 +696,8 @@
     },
 
     'tryserver.chromium.angle': {
+      'android_angle_rel_ng':
+        'swarming_gpu_fyi_tests_android_gn_release_trybot',
       'linux_angle_chromeos_rel_ng':
         'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot',
       'linux_angle_dbg_ng': 'swarming_gpu_fyi_tests_gn_debug_trybot',
@@ -732,6 +730,7 @@
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gn_release_trybot',
       'linux_chromium_asan_variable': 'findit',
+      'linux_chromium_blimp_variable': 'findit',
       'linux_chromium_browser_side_navigation_rel': 'gn_release_trybot',
       'linux_chromium_cast_variable': 'findit',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_static_dcheck_always_on',
@@ -808,7 +807,6 @@
       'mac_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'mac_chromium_variable': 'findit',
       'mac_chromium_variable_10.10': 'findit',
-      'mac_chromium_variable_10.10_macviews': 'findit',
       'mac_chromium_variable_10.10_layout': 'findit',
       'mac_chromium_variable_10.11': 'findit',
       'mac_chromium_variable_10.11_layout': 'findit',
@@ -857,11 +855,9 @@
       'win_perf_bisect': 'gn_official_goma_minimal_symbols_x86',
       'win_perf_bisect_builder': 'gn_official_goma_minimal_symbols_x86',
       'win_x64_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
-      'winx64_8_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
       'winx64_10_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
       'winx64_10_perf_cq': 'gn_official_goma_minimal_symbols_x64',
       'winx64_bisect_builder': 'gn_official_goma_minimal_symbols_x64',
-      'winx64_fyi_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
       'winx64_zen_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
       'winx64ati_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
       'winx64intel_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
@@ -1239,11 +1235,6 @@
       'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
-    'gn_asan_edge_fuzzer_v8_heap_symbolized_release_bot_hybrid': [
-      'gn', 'asan', 'edge', 'fuzzer', 'v8_heap', 'symbolized',
-      'release_bot', 'hybrid',
-    ],
-
     'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
     ],
@@ -1615,6 +1606,11 @@
 
     'swarming_gn_release_trybot_x64': [
       'swarming', 'gn', 'release_trybot', 'x64',
+    ],
+
+    'swarming_gpu_fyi_tests_android_gn_release_trybot': [
+      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
+      'android', 'release_trybot', 'angle_deqp_tests',
     ],
 
     'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot': [
