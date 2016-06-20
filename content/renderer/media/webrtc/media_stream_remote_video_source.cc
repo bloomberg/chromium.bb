@@ -72,6 +72,10 @@ MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 }
 
+namespace {
+void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
+}  // anonymous
+
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const cricket::VideoFrame& incoming_frame) {
   const base::TimeDelta incoming_timestamp = base::TimeDelta::FromMicroseconds(
@@ -89,16 +93,19 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       incoming_timestamp - start_timestamp_;
 
   scoped_refptr<media::VideoFrame> video_frame;
-  if (incoming_frame.video_frame_buffer()->native_handle() != NULL) {
+  scoped_refptr<webrtc::VideoFrameBuffer> buffer(
+      incoming_frame.video_frame_buffer());
+
+  if (buffer->native_handle() != NULL) {
     video_frame =
-        static_cast<media::VideoFrame*>(
-            incoming_frame.video_frame_buffer()->native_handle());
+        static_cast<media::VideoFrame*>(buffer->native_handle());
     video_frame->set_timestamp(elapsed_timestamp);
   } else {
-    const cricket::VideoFrame* frame =
-        incoming_frame.GetCopyWithRotationApplied();
-
-    gfx::Size size(frame->width(), frame->height());
+    // Note that the GetCopyWithRotationApplied returns a pointer to a
+    // frame owned by incoming_frame.
+    buffer =
+        incoming_frame.GetCopyWithRotationApplied()->video_frame_buffer();
+    gfx::Size size(buffer->width(), buffer->height());
 
     // Make a shallow copy. Both |frame| and |video_frame| will share a single
     // reference counted frame buffer. Const cast and hope no one will overwrite
@@ -107,17 +114,17 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     // need to const cast here.
     video_frame = media::VideoFrame::WrapExternalYuvData(
         media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
-        frame->video_frame_buffer()->StrideY(),
-        frame->video_frame_buffer()->StrideU(),
-        frame->video_frame_buffer()->StrideV(),
-        const_cast<uint8_t*>(frame->video_frame_buffer()->DataY()),
-        const_cast<uint8_t*>(frame->video_frame_buffer()->DataU()),
-        const_cast<uint8_t*>(frame->video_frame_buffer()->DataV()),
+        buffer->StrideY(),
+        buffer->StrideU(),
+        buffer->StrideV(),
+        const_cast<uint8_t*>(buffer->DataY()),
+        const_cast<uint8_t*>(buffer->DataU()),
+        const_cast<uint8_t*>(buffer->DataV()),
         elapsed_timestamp);
     if (!video_frame)
       return;
-    video_frame->AddDestructionObserver(
-        base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
+    // The bind ensures that we keep a reference to the underlying buffer.
+    video_frame->AddDestructionObserver(base::Bind(&DoNothing, buffer));
   }
 
   video_frame->metadata()->SetTimeTicks(
