@@ -211,6 +211,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Creates the 'advanced' view. Caller takes ownership of the returned view.
   views::View* CreateViewAdvanced();
 
+  // Get the current always translate checkbox
+  views::Checkbox* GetAlwaysTranslateCheckbox();
+
   // Switches the view type.
   void SwitchView(TranslateBubbleModel::ViewState view_state);
 
@@ -236,7 +239,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::Combobox* source_language_combobox_;
   views::Combobox* target_language_combobox_;
 
-  views::Checkbox* always_translate_checkbox_;
+  views::Checkbox* before_always_translate_checkbox_;
+  views::Checkbox* advanced_always_translate_checkbox_;
 
   views::LabelButton* advanced_cancel_button_;
   views::LabelButton* advanced_done_button_;
@@ -251,6 +255,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
+
+  bool should_always_translate_;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 

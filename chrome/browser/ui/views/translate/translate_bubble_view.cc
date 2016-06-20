@@ -179,6 +179,12 @@ void TranslateBubbleView::CloseBubble() {
 void TranslateBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
+  should_always_translate_ = model_->ShouldAlwaysTranslate();
+  if (Use2016Q2UI() && !is_in_incognito_window_) {
+    should_always_translate_ =
+        model_->ShouldAlwaysTranslateBeCheckedByDefault();
+  }
+
   before_translate_view_ = CreateViewBeforeTranslate();
   translating_view_ = CreateViewTranslating();
   after_translate_view_ = CreateViewAfterTranslate();
@@ -371,14 +377,16 @@ TranslateBubbleView::TranslateBubbleView(
       denial_combobox_(NULL),
       source_language_combobox_(NULL),
       target_language_combobox_(NULL),
-      always_translate_checkbox_(NULL),
+      before_always_translate_checkbox_(NULL),
+      advanced_always_translate_checkbox_(NULL),
       advanced_cancel_button_(NULL),
       advanced_done_button_(NULL),
       denial_menu_button_(NULL),
       model_(std::move(model)),
       error_type_(error_type),
       is_in_incognito_window_(
-          web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()) {
+          web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()),
+      should_always_translate_(false) {
   translate_bubble_view_ = this;
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));
@@ -405,15 +413,13 @@ void TranslateBubbleView::HandleButtonPressed(
     TranslateBubbleView::ButtonID sender_id) {
   switch (sender_id) {
     case BUTTON_ID_TRANSLATE: {
-      if (always_translate_checkbox_)
-        model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
+      model_->SetAlwaysTranslate(should_always_translate_);
       model_->Translate();
       translate::ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_DONE: {
-      if (always_translate_checkbox_)
-        model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
+      model_->SetAlwaysTranslate(should_always_translate_);
       if (model_->IsPageTranslatedInCurrentLanguages()) {
         model_->GoBackFromAdvanced();
         UpdateChildVisibilities();
@@ -444,9 +450,10 @@ void TranslateBubbleView::HandleButtonPressed(
       break;
     }
     case BUTTON_ID_ALWAYS_TRANSLATE: {
-      // Do nothing. The state of the checkbox affects only when the 'Done'
-      // button is pressed.
-      translate::ReportUiAction(always_translate_checkbox_->checked()
+      views::Checkbox* always_checkbox = GetAlwaysTranslateCheckbox();
+      DCHECK(always_checkbox);
+      should_always_translate_ = always_checkbox->checked();
+      translate::ReportUiAction(should_always_translate_
                                     ? translate::ALWAYS_TRANSLATE_CHECKED
                                     : translate::ALWAYS_TRANSLATE_UNCHECKED);
       break;
@@ -527,6 +534,11 @@ void TranslateBubbleView::HandleComboboxPerformAction(
 }
 
 void TranslateBubbleView::UpdateChildVisibilities() {
+  // Update the statew of the always translate checkbox
+  if (advanced_always_translate_checkbox_)
+    advanced_always_translate_checkbox_->SetChecked(should_always_translate_);
+  if (before_always_translate_checkbox_)
+    before_always_translate_checkbox_->SetChecked(should_always_translate_);
   for (int i = 0; i < child_count(); i++) {
     views::View* view = child_at(i);
     view->SetVisible(view == GetCurrentView());
@@ -608,13 +620,11 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
     layout->SkipColumns(1);
-    always_translate_checkbox_ = new views::Checkbox(
+    before_always_translate_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS_DO_THIS));
-    always_translate_checkbox_->SetChecked(
-        model_->ShouldAlwaysTranslateBeCheckedByDefault());
-    always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
-    always_translate_checkbox_->set_listener(this);
-    layout->AddView(always_translate_checkbox_);
+    before_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
+    before_always_translate_checkbox_->set_listener(this);
+    layout->AddView(before_always_translate_checkbox_);
   }
   if (Use2016Q2UI()) {
     layout->AddPaddingRow(0, views::kPanelSubVerticalSpacing);
@@ -831,9 +841,9 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   // In an incognito window, "Always translate" checkbox shouldn't be shown.
   if (!is_in_incognito_window_) {
-    always_translate_checkbox_ = new views::Checkbox(base::string16());
-    always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
-    always_translate_checkbox_->set_listener(this);
+    advanced_always_translate_checkbox_ = new views::Checkbox(base::string16());
+    advanced_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
+    advanced_always_translate_checkbox_->set_listener(this);
   }
 
   views::View* view = new views::View();
@@ -879,7 +889,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, COLUMN_SET_ID_LANGUAGES);
     layout->SkipColumns(1);
-    layout->AddView(always_translate_checkbox_);
+    layout->AddView(advanced_always_translate_checkbox_);
   }
 
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
@@ -902,6 +912,18 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   UpdateAdvancedView();
 
   return view;
+}
+
+views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {
+  if (model_->GetViewState() == TranslateBubbleModel::VIEW_STATE_ADVANCED) {
+    return advanced_always_translate_checkbox_;
+  } else if (model_->GetViewState() ==
+             TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
+    return before_always_translate_checkbox_;
+  } else {
+    NOTREACHED();
+    return nullptr;
+  }
 }
 
 void TranslateBubbleView::SwitchView(
@@ -934,12 +956,9 @@ void TranslateBubbleView::UpdateAdvancedView() {
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
 
   // "Always translate" checkbox doesn't exist in an incognito window.
-  if (always_translate_checkbox_) {
-    always_translate_checkbox_->SetText(
+  if (advanced_always_translate_checkbox_) {
+    advanced_always_translate_checkbox_->SetText(
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS));
-    always_translate_checkbox_->SetChecked(
-        Use2016Q2UI() ? model_->ShouldAlwaysTranslateBeCheckedByDefault()
-                      : model_->ShouldAlwaysTranslate());
   }
 
   base::string16 label;
