@@ -29,7 +29,7 @@ UserDisplayManager* DisplayManager::GetUserDisplayManager(
     const UserId& user_id) {
   if (!user_display_managers_.count(user_id)) {
     user_display_managers_[user_id] =
-        base::WrapUnique(new UserDisplayManager(this, user_id));
+        base::WrapUnique(new UserDisplayManager(this, delegate_, user_id));
   }
   return user_display_managers_[user_id].get();
 }

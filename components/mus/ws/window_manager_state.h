@@ -54,14 +54,6 @@ class WindowManagerState : public EventDispatcherDelegate {
   Display* display() { return display_; }
   const Display* display() const { return display_; }
 
-  void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
-  const mojom::FrameDecorationValues& frame_decoration_values() const {
-    return *frame_decoration_values_;
-  }
-  bool got_frame_decoration_values() const {
-    return got_frame_decoration_values_;
-  }
-
   bool SetCapture(ServerWindow* window, ClientSpecificId client_id);
   ServerWindow* capture_window() { return event_dispatcher_.capture_window(); }
   const ServerWindow* capture_window() const {
@@ -90,10 +82,6 @@ class WindowManagerState : public EventDispatcherDelegate {
   // received.
   // TODO(sky): make this private and use a callback.
   void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
-
-  // Returns a mojom::Display for the specified display. WindowManager specific
-  // values are not set.
-  mojom::DisplayPtr ToMojomDisplay() const;
 
   void OnWillDestroyTree(WindowTree* tree);
 
@@ -176,10 +164,6 @@ class WindowManagerState : public EventDispatcherDelegate {
   // root ServerWindow of the Display.
   std::unique_ptr<ServerWindow> root_;
   WindowTree* tree_ = nullptr;
-
-  // Set to true the first time SetFrameDecorationValues() is received.
-  bool got_frame_decoration_values_ = false;
-  mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
   std::unique_ptr<ui::Event> event_awaiting_input_ack_;

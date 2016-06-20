@@ -281,6 +281,9 @@ class WindowServer : public ServerWindowDelegate,
   // DisplayManagerDelegate:
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
+  bool GetFrameDecorationsForUser(
+      const UserId& user_id,
+      mojom::FrameDecorationValuesPtr* values) override;
 
   UserIdTracker user_id_tracker_;
 

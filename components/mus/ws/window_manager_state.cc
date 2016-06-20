@@ -108,15 +108,6 @@ WindowManagerState::WindowManagerState(Display* display,
 
 WindowManagerState::~WindowManagerState() {}
 
-void WindowManagerState::SetFrameDecorationValues(
-    mojom::FrameDecorationValuesPtr values) {
-  got_frame_decoration_values_ = true;
-  frame_decoration_values_ = values.Clone();
-  display_->display_manager()
-      ->GetUserDisplayManager(user_id_)
-      ->OnFrameDecorationValuesChanged(this);
-}
-
 bool WindowManagerState::SetCapture(ServerWindow* window,
                                     ClientSpecificId client_id) {
   // TODO(sky): capture should be a singleton. Need to route to WindowServer
@@ -144,14 +135,6 @@ void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
   event_dispatcher_.AddSystemModalWindow(window);
 }
 
-mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
-  mojom::DisplayPtr display_ptr = display_->ToMojomDisplay();
-  // TODO(sky): set work area.
-  display_ptr->work_area = display_ptr->bounds;
-  display_ptr->frame_decoration_values = frame_decoration_values_.Clone();
-  return display_ptr;
-}
-
 void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
   if (tree_awaiting_input_ack_ != tree)
     return;
@@ -173,9 +156,6 @@ WindowManagerState::WindowManagerState(Display* display,
       user_id_(user_id),
       event_dispatcher_(this),
       weak_factory_(this) {
-  frame_decoration_values_ = mojom::FrameDecorationValues::New();
-  frame_decoration_values_->max_title_bar_button_width = 0u;
-
   root_.reset(window_server()->CreateServerWindow(
       window_server()->display_manager()->GetAndAdvanceNextRootId(),
       ServerWindow::Properties()));

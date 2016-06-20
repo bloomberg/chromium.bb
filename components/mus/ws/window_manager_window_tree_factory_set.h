@@ -18,6 +18,7 @@
 namespace mus {
 namespace ws {
 
+class GlobalWindowManagerState;
 class UserIdTracker;
 class WindowManagerWindowTreeFactory;
 class WindowManagerWindowTreeFactorySetObserver;
@@ -46,6 +47,11 @@ class WindowManagerWindowTreeFactorySet : public UserIdTrackerObserver {
       const UserId& user_id,
       mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request);
 
+  // Returns the GlobalWindowManagerState for the specified user, or null if
+  // not yet set.
+  GlobalWindowManagerState* GetGlobalWindowManagerStateForUser(
+      const UserId& user_id);
+
   // Deletes the WindowManagerWindowTreeFactory associated with |tree|. Does
   // nothing if there is no WindowManagerWindowTreeFactory associated with
   // |tree|.
@@ -61,9 +67,6 @@ class WindowManagerWindowTreeFactorySet : public UserIdTrackerObserver {
  private:
   friend class WindowManagerWindowTreeFactory;
   friend class test::WindowManagerWindowTreeFactorySetTestApi;
-
-  // Returns true if a factory has been created for the specified user.
-  bool ContainsFactoryForUser(const UserId& user_id) const;
 
   // Called by WindowManagerWindowTreeFactory when CreateWindowTree() has
   // been called.
@@ -81,7 +84,7 @@ class WindowManagerWindowTreeFactorySet : public UserIdTrackerObserver {
   UserIdTracker* id_tracker_;
   WindowServer* window_server_;
 
-  std::vector<std::unique_ptr<WindowManagerWindowTreeFactory>> factories_;
+  std::map<UserId, std::unique_ptr<WindowManagerWindowTreeFactory>> factories_;
 
   base::ObserverList<WindowManagerWindowTreeFactorySetObserver> observers_;
 

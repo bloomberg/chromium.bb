@@ -8,6 +8,7 @@
 #include "components/mus/ws/window_manager_window_tree_factory.h"
 #include "components/mus/ws/window_manager_window_tree_factory_set_observer.h"
 #include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {
@@ -26,7 +27,7 @@ WindowManagerWindowTreeFactorySet::~WindowManagerWindowTreeFactorySet() {
 WindowManagerWindowTreeFactory* WindowManagerWindowTreeFactorySet::Add(
     const UserId& user_id,
     mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request) {
-  if (ContainsFactoryForUser(user_id)) {
+  if (factories_.count(user_id)) {
     DVLOG(1) << "can only have one factory per user";
     return nullptr;
   }
@@ -34,14 +35,23 @@ WindowManagerWindowTreeFactory* WindowManagerWindowTreeFactorySet::Add(
   std::unique_ptr<WindowManagerWindowTreeFactory> factory_ptr(
       new WindowManagerWindowTreeFactory(this, user_id, std::move(request)));
   WindowManagerWindowTreeFactory* factory = factory_ptr.get();
-  factories_.push_back(std::move(factory_ptr));
+  factories_[user_id] = std::move(factory_ptr);
   return factory;
+}
+
+GlobalWindowManagerState*
+WindowManagerWindowTreeFactorySet::GetGlobalWindowManagerStateForUser(
+    const UserId& user_id) {
+  auto it = factories_.find(user_id);
+  return it == factories_.end()
+             ? nullptr
+             : it->second->window_tree()->global_window_manager_state();
 }
 
 void WindowManagerWindowTreeFactorySet::DeleteFactoryAssociatedWithTree(
     WindowTree* window_tree) {
   for (auto it = factories_.begin(); it != factories_.end(); ++it) {
-    if ((*it)->window_tree() == window_tree) {
+    if (it->second->window_tree() == window_tree) {
       factories_.erase(it);
       return;
     }
@@ -51,8 +61,8 @@ void WindowManagerWindowTreeFactorySet::DeleteFactoryAssociatedWithTree(
 std::vector<WindowManagerWindowTreeFactory*>
 WindowManagerWindowTreeFactorySet::GetFactories() {
   std::vector<WindowManagerWindowTreeFactory*> result;
-  for (auto& factory : factories_)
-    result.push_back(factory.get());
+  for (auto& pair : factories_)
+    result.push_back(pair.second.get());
   return result;
 }
 
@@ -64,15 +74,6 @@ void WindowManagerWindowTreeFactorySet::AddObserver(
 void WindowManagerWindowTreeFactorySet::RemoveObserver(
     WindowManagerWindowTreeFactorySetObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool WindowManagerWindowTreeFactorySet::ContainsFactoryForUser(
-    const UserId& user_id) const {
-  for (auto& factory : factories_) {
-    if (factory->user_id() == user_id)
-      return true;
-  }
-  return false;
 }
 
 void WindowManagerWindowTreeFactorySet::OnWindowManagerWindowTreeFactoryReady(
@@ -95,12 +96,7 @@ void WindowManagerWindowTreeFactorySet::OnActiveUserIdChanged(
 void WindowManagerWindowTreeFactorySet::OnUserIdAdded(const UserId& id) {}
 
 void WindowManagerWindowTreeFactorySet::OnUserIdRemoved(const UserId& id) {
-  for (auto iter = factories_.begin(); iter != factories_.end(); ++iter) {
-    if ((*iter)->user_id() == id) {
-      factories_.erase(iter);
-      return;
-    }
-  }
+  factories_.erase(id);
 }
 
 }  // namespace ws

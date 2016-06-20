@@ -16,6 +16,7 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/global_window_manager_state.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
@@ -23,6 +24,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_manager_window_tree_factory_set.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
@@ -134,9 +136,9 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 
   // Set the frame decoration values, which should trigger sending immediately.
   ASSERT_EQ(1u, display_manager->displays().size());
-  Display* display1 = *display_manager->displays().begin();
-  display1->GetWindowManagerStateForUser(kUserId1)->SetFrameDecorationValues(
-      CreateDefaultFrameDecorationValues());
+  window_server_->window_manager_window_tree_factory_set()
+      ->GetGlobalWindowManagerStateForUser(kUserId1)
+      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
   EXPECT_EQ("OnDisplays 1",
             display_manager_observer1.GetAndClearObserverCalls());
 
@@ -156,9 +158,9 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
   ASSERT_EQ(1u, display_manager->displays().size());
-  Display* display1 = *display_manager->displays().begin();
-  display1->GetWindowManagerStateForUser(kUserId1)->SetFrameDecorationValues(
-      CreateDefaultFrameDecorationValues());
+  window_server_->window_manager_window_tree_factory_set()
+      ->GetGlobalWindowManagerStateForUser(kUserId1)
+      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
 
   UserDisplayManagerTestApi(user_display_manager1)
       .SetTestObserver(&display_manager_observer1);
@@ -181,9 +183,9 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
   ASSERT_EQ(1u, display_manager->displays().size());
-  Display* display1 = *display_manager->displays().begin();
-  display1->GetWindowManagerStateForUser(kUserId1)->SetFrameDecorationValues(
-      CreateDefaultFrameDecorationValues());
+  window_server_->window_manager_window_tree_factory_set()
+      ->GetGlobalWindowManagerStateForUser(kUserId1)
+      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
   UserDisplayManagerTestApi(user_display_manager1)
       .SetTestObserver(&display_manager_observer1);
   EXPECT_EQ("OnDisplays 1",
@@ -194,10 +196,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
       new Display(window_server_.get(), PlatformDisplayInitParams());
   display2->Init(nullptr);
 
-  // Observer should not have been notified yet as frame decorations not set.
-  EXPECT_EQ("", display_manager_observer1.GetAndClearObserverCalls());
-  display2->GetWindowManagerStateForUser(kUserId1)->SetFrameDecorationValues(
-      CreateDefaultFrameDecorationValues());
+  // Observer should be notified immediately as frame decorations were set.
   EXPECT_EQ("OnDisplaysChanged 2",
             display_manager_observer1.GetAndClearObserverCalls());
 

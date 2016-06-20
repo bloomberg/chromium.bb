@@ -18,6 +18,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_matcher.h"
 #include "components/mus/ws/focus_controller.h"
+#include "components/mus/ws/global_window_manager_state.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
@@ -118,6 +119,7 @@ void WindowTree::ConfigureWindowManager() {
   DCHECK(!window_manager_internal_);
   window_manager_internal_ = binding_->GetWindowManager();
   window_manager_internal_->OnConnect(id_);
+  global_window_manager_state_.reset(new GlobalWindowManagerState(this));
 }
 
 const ServerWindow* WindowTree::GetWindow(const WindowId& id) const {
@@ -162,6 +164,14 @@ const WindowManagerState* WindowTree::GetWindowManagerState(
                    ->GetWindowManagerAndDisplay(window)
                    .window_manager_state
              : nullptr;
+}
+
+DisplayManager* WindowTree::display_manager() {
+  return window_server_->display_manager();
+}
+
+const DisplayManager* WindowTree::display_manager() const {
+  return window_server_->display_manager();
 }
 
 void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
@@ -671,14 +681,6 @@ void WindowTree::ProcessTransientWindowRemoved(
   }
   client()->OnTransientWindowRemoved(client_window_id.id,
                                      transient_client_window_id.id);
-}
-
-DisplayManager* WindowTree::display_manager() {
-  return window_server_->display_manager();
-}
-
-const DisplayManager* WindowTree::display_manager() const {
-  return window_server_->display_manager();
 }
 
 WindowManagerState* WindowTree::GetWindowManagerStateForWindowManager() {
@@ -1469,9 +1471,8 @@ void WindowTree::WmRequestClose(Id transport_window_id) {
 
 void WindowTree::WmSetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
-  WindowManagerState* wm_state = GetWindowManagerStateForWindowManager();
-  if (wm_state)
-    wm_state->SetFrameDecorationValues(std::move(values));
+  DCHECK(global_window_manager_state_);
+  global_window_manager_state_->SetFrameDecorationValues(std::move(values));
 }
 
 void WindowTree::WmSetNonClientCursor(uint32_t window_id,

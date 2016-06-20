@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
 
+#include "components/mus/public/interfaces/display.mojom.h"
+#include "components/mus/ws/user_id.h"
+
 namespace mus {
 namespace ws {
 
@@ -14,6 +17,12 @@ class DisplayManagerDelegate {
  public:
   virtual void OnFirstDisplayReady() = 0;
   virtual void OnNoMoreDisplays() = 0;
+
+  // Gets the frame decorations for the specified user. Returns true if the
+  // decorations have been set, false otherwise. |values| may be null.
+  virtual bool GetFrameDecorationsForUser(
+      const UserId& user_id,
+      mojom::FrameDecorationValuesPtr* values) = 0;
 
  protected:
   virtual ~DisplayManagerDelegate() {}

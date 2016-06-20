@@ -41,6 +41,7 @@ class AccessPolicy;
 class DisplayManager;
 class Display;
 class EventMatcher;
+class GlobalWindowManagerState;
 class ServerWindow;
 class TargetedEvent;
 class WindowManagerState;
@@ -129,6 +130,12 @@ class WindowTree : public mojom::WindowTree,
     return const_cast<WindowManagerState*>(
         const_cast<const WindowTree*>(this)->GetWindowManagerState(window));
   }
+  GlobalWindowManagerState* global_window_manager_state() {
+    return global_window_manager_state_.get();
+  }
+
+  DisplayManager* display_manager();
+  const DisplayManager* display_manager() const;
 
   // Adds a new root to this tree. This is only valid for window managers.
   void AddRootForWindowManager(const ServerWindow* root);
@@ -245,9 +252,6 @@ class WindowTree : public mojom::WindowTree,
     // Another client is being embedded in the window.
     EMBED,
   };
-
-  DisplayManager* display_manager();
-  const DisplayManager* display_manager() const;
 
   // Used when this tree is the window manager.
   WindowManagerState* GetWindowManagerStateForWindowManager();
@@ -470,6 +474,7 @@ class WindowTree : public mojom::WindowTree,
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManagerClient>>
       window_manager_internal_client_binding_;
   mojom::WindowManager* window_manager_internal_;
+  std::unique_ptr<GlobalWindowManagerState> global_window_manager_state_;
 
   std::unique_ptr<WaitingForTopLevelWindowInfo>
       waiting_for_top_level_window_info_;

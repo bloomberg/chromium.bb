@@ -6,29 +6,25 @@
 
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_manager.h"
-#include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/display_manager_delegate.h"
 
 namespace mus {
 namespace ws {
 
 UserDisplayManager::UserDisplayManager(ws::DisplayManager* display_manager,
+                                       DisplayManagerDelegate* delegate,
                                        const UserId& user_id)
     : display_manager_(display_manager),
+      delegate_(delegate),
       user_id_(user_id),
+      got_valid_frame_decorations_(
+          delegate->GetFrameDecorationsForUser(user_id, nullptr)),
       current_cursor_location_(0),
-      cursor_location_memory_(nullptr) {
-  for (const WindowManagerState* wms : GetWindowManagerStatesForUser()) {
-    if (wms->got_frame_decoration_values()) {
-      got_valid_frame_decorations_ = true;
-      break;
-    }
-  }
-}
+      cursor_location_memory_(nullptr) {}
 
 UserDisplayManager::~UserDisplayManager() {}
 
-void UserDisplayManager::OnFrameDecorationValuesChanged(
-    WindowManagerState* wms) {
+void UserDisplayManager::OnFrameDecorationValuesChanged() {
   if (!got_valid_frame_decorations_) {
     got_valid_frame_decorations_ = true;
     display_manager_observers_.ForAllPtrs([this](
@@ -38,12 +34,13 @@ void UserDisplayManager::OnFrameDecorationValuesChanged(
     return;
   }
 
+  mojo::Array<mojom::DisplayPtr> displays = GetAllDisplays();
   display_manager_observers_.ForAllPtrs(
-      [this, &wms](mojom::DisplayManagerObserver* observer) {
-        CallOnDisplayChanged(wms, observer);
+      [this, &displays](mojom::DisplayManagerObserver* observer) {
+        observer->OnDisplaysChanged(displays.Clone());
       });
   if (test_observer_)
-    CallOnDisplayChanged(wms, test_observer_);
+    test_observer_->OnDisplaysChanged(displays.Clone());
 }
 
 void UserDisplayManager::AddDisplayManagerBinding(
@@ -52,9 +49,7 @@ void UserDisplayManager::AddDisplayManagerBinding(
 }
 
 void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
-  const WindowManagerState* wms =
-      display->GetWindowManagerStateForUser(user_id_);
-  if (wms && !wms->got_frame_decoration_values())
+  if (!got_valid_frame_decorations_)
     return;
 
   display_manager_observers_.ForAllPtrs(
@@ -76,16 +71,19 @@ void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {
 }
 
 void UserDisplayManager::OnDisplayUpdate(Display* display) {
-  for (const WindowManagerState* wms : GetWindowManagerStatesForUser()) {
-    if (wms->display() == display) {
-      display_manager_observers_.ForAllPtrs(
-          [this, &wms](mojom::DisplayManagerObserver* observer) {
-            CallOnDisplayChanged(wms, observer);
-          });
-      if (test_observer_)
-        CallOnDisplayChanged(wms, test_observer_);
-    }
-  }
+  if (!got_valid_frame_decorations_)
+    return;
+
+  mojo::Array<mojom::DisplayPtr> displays(1);
+  displays[0] = display->ToMojomDisplay();
+  delegate_->GetFrameDecorationsForUser(
+      user_id_, &(displays[0]->frame_decoration_values));
+  display_manager_observers_.ForAllPtrs(
+      [this, &displays](mojom::DisplayManagerObserver* observer) {
+        observer->OnDisplaysChanged(displays.Clone());
+      });
+  if (test_observer_)
+    test_observer_->OnDisplaysChanged(displays.Clone());
 }
 
 mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
@@ -126,18 +124,6 @@ mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
 }
 
 
-std::set<const WindowManagerState*>
-UserDisplayManager::GetWindowManagerStatesForUser() const {
-  std::set<const WindowManagerState*> result;
-  for (const Display* display : display_manager_->displays()) {
-    const WindowManagerState* wms =
-        display->GetWindowManagerStateForUser(user_id_);
-    if (wms && wms->got_frame_decoration_values())
-      result.insert(wms);
-  }
-  return result;
-}
-
 void UserDisplayManager::OnObserverAdded(
     mojom::DisplayManagerObserver* observer) {
   // Many clients key off the frame decorations to size widgets. Wait for frame
@@ -149,27 +135,25 @@ void UserDisplayManager::OnObserverAdded(
   CallOnDisplays(observer);
 }
 
-void UserDisplayManager::CallOnDisplays(
-    mojom::DisplayManagerObserver* observer) {
-  std::set<const WindowManagerState*> wmss = GetWindowManagerStatesForUser();
-  mojo::Array<mojom::DisplayPtr> display_ptrs(wmss.size());
+mojo::Array<mojom::DisplayPtr> UserDisplayManager::GetAllDisplays() {
+  const std::set<Display*>& displays = display_manager_->displays();
+  mojo::Array<mojom::DisplayPtr> display_ptrs(displays.size());
   {
     size_t i = 0;
     // TODO(sky): need ordering!
-    for (const WindowManagerState* wms : wmss) {
-      display_ptrs[i] = wms->ToMojomDisplay();
+    for (Display* display : displays) {
+      display_ptrs[i] = display->ToMojomDisplay();
+      delegate_->GetFrameDecorationsForUser(
+          user_id_, &(display_ptrs[i]->frame_decoration_values));
       ++i;
     }
   }
-  observer->OnDisplays(std::move(display_ptrs));
+  return display_ptrs;
 }
 
-void UserDisplayManager::CallOnDisplayChanged(
-    const WindowManagerState* wms,
+void UserDisplayManager::CallOnDisplays(
     mojom::DisplayManagerObserver* observer) {
-  mojo::Array<mojom::DisplayPtr> displays(1);
-  displays[0] = wms->ToMojomDisplay();
-  observer->OnDisplaysChanged(displays.Clone());
+  observer->OnDisplays(GetAllDisplays());
 }
 
 void UserDisplayManager::AddObserver(

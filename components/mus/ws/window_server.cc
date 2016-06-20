@@ -14,6 +14,7 @@
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/global_window_manager_state.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
@@ -660,6 +661,19 @@ void WindowServer::OnFirstDisplayReady() {
 
 void WindowServer::OnNoMoreDisplays() {
   delegate_->OnNoMoreDisplays();
+}
+
+bool WindowServer::GetFrameDecorationsForUser(
+    const UserId& user_id,
+    mojom::FrameDecorationValuesPtr* values) {
+  GlobalWindowManagerState* global_window_manager_state =
+      window_manager_window_tree_factory_set_
+          .GetGlobalWindowManagerStateForUser(user_id);
+  if (!global_window_manager_state)
+    return false;
+  if (values && global_window_manager_state->got_frame_decoration_values())
+    *values = global_window_manager_state->frame_decoration_values().Clone();
+  return global_window_manager_state->got_frame_decoration_values();
 }
 
 }  // namespace ws

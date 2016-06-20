@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_manager_window_tree_factory.h"
 
 #include "base/bind.h"
+#include "components/mus/ws/global_window_manager_state.h"
 #include "components/mus/ws/window_manager_window_tree_factory_set.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
@@ -79,6 +80,9 @@ WindowServer* WindowManagerWindowTreeFactory::GetWindowServer() {
 void WindowManagerWindowTreeFactory::SetWindowTree(WindowTree* window_tree) {
   DCHECK(!window_tree_);
   window_tree_ = window_tree;
+
+  global_window_manager_state_.reset(
+      new GlobalWindowManagerState(window_tree_));
 
   if (!pending_request_)
     window_manager_window_tree_factory_set_

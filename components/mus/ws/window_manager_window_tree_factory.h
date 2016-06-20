@@ -16,6 +16,7 @@
 namespace mus {
 namespace ws {
 
+class GlobalWindowManagerState;
 class ServerWindow;
 class WindowManagerWindowTreeFactorySet;
 class WindowServer;
@@ -65,6 +66,8 @@ class WindowManagerWindowTreeFactory
   WindowTree* window_tree_;
 
   std::unique_ptr<PendingRequest> pending_request_;
+
+  std::unique_ptr<GlobalWindowManagerState> global_window_manager_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactory);
 };
