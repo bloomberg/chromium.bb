@@ -811,11 +811,7 @@ TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
     mockFeedback.call(listItem.focus.bind(listItem))
         .expectSpeech('List item')
         .call(this.doCmd('nextObject'))
-        .expectSpeech('•')
-        .call(this.doCmd('previousObject'))
-        .expectSpeech('List item')
-        .call(this.doCmd('nextObject'))
-        .expectSpeech('•')
+        .expectSpeech('Button')
         .call(this.doCmd('previousObject'))
         .expectSpeech('List item')
         .call(this.doCmd('previousObject'))
@@ -903,6 +899,34 @@ TEST_F('BackgroundTest', 'OptionChildIndexCount', function() {
         .call(doCmd('nextObject'))
         .expectSpeech('banana')
         .expectSpeech(' 2 of 2 ')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'ListMarkerIsIgnored', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <ul><li>apple</ul>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextObject'))
+        .expectNextSpeechUtteranceIsNot('listMarker')
+        .expectSpeech('apple')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'SymetricComplexHeading', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <h4><p>NW</p><p>NE</p></h4>
+    <h4><p>SW</p><p>SE</p></h4>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextHeading'))
+        .expectNextSpeechUtteranceIsNot('NE')
+        .expectSpeech('NW')
+        .call(doCmd('previousHeading'))
+        .expectNextSpeechUtteranceIsNot('NE')
+        .expectSpeech('NW')
         .replay();
   });
 });

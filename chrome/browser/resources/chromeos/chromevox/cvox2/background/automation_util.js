@@ -34,7 +34,7 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
   if (!cur)
     return null;
 
-  if (pred(cur))
+  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur))
     return cur;
 
   var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
@@ -69,7 +69,7 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
         child.previousSibling : child.nextSibling;
   }
 
-  if (pred(cur))
+  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur))
     return cur;
 
   return null;

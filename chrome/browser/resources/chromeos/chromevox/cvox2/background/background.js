@@ -823,7 +823,7 @@ Background.prototype = {
 
         if (node) {
           node = AutomationUtil.findNodePre(
-              node, dir, AutomationPredicate.object) || node;
+              node, Dir.FORWARD, AutomationPredicate.object) || node;
         }
 
         if (node) {

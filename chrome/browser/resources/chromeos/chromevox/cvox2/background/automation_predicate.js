@@ -272,6 +272,10 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   if (AutomationPredicate.structuralContainer(node))
     return true;
 
+  // Ignore list markers since we already announce listitem role.
+  if (node.role == RoleType.listMarker)
+    return true;
+
   // Don't ignore nodes with names.
   if (node.name || node.value || node.description)
     return false;
