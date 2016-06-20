@@ -25,8 +25,37 @@ TEST(SpdyUtilsTest, SerializeAndParseHeaders) {
   input_headers[":pseudo1"] = "pseudo value1";
   input_headers[":pseudo2"] = "pseudo value2";
   input_headers["key1"] = "value1";
-  const int kContentLength = 1234;
-  input_headers["content-length"] = base::IntToString(kContentLength);
+  const int64_t kContentLength = 1234;
+  input_headers["content-length"] = base::Int64ToString(kContentLength);
+  input_headers["key2"] = "value2";
+
+  // Serialize the header block.
+  string serialized_headers =
+      SpdyUtils::SerializeUncompressedHeaders(input_headers);
+
+  // Take the serialized header block, and parse back into SpdyHeaderBlock.
+  SpdyHeaderBlock output_headers;
+  int64_t content_length = -1;
+  ASSERT_TRUE(SpdyUtils::ParseHeaders(serialized_headers.data(),
+                                      serialized_headers.size(),
+                                      &content_length, &output_headers));
+
+  // Should be back to the original headers.
+  EXPECT_EQ(content_length, kContentLength);
+  EXPECT_EQ(output_headers, input_headers);
+}
+
+TEST(SpdyUtilsTest, SerializeAndParseHeadersLargeContentLength) {
+  // Creates a SpdyHeaderBlock with some key->value pairs, serializes it, then
+  // parses the serialized output and verifies that the end result is the same
+  // as the headers that the test started with.
+
+  SpdyHeaderBlock input_headers;
+  input_headers[":pseudo1"] = "pseudo value1";
+  input_headers[":pseudo2"] = "pseudo value2";
+  input_headers["key1"] = "value1";
+  const int64_t kContentLength = 12345678900;
+  input_headers["content-length"] = base::Int64ToString(kContentLength);
   input_headers["key2"] = "value2";
 
   // Serialize the header block.
