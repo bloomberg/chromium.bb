@@ -45,7 +45,8 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 # TODO(wangxianzhu): Restore these after rebaseline.
 # crbug.com/600008 [ Win ] fast/repaint/window-resize-centered-inline-under-fixed-pos.html [ Failure Pass ]
 # crbug.com/600008 [ Win ] fast/repaint/window-resize-vertical-writing-mode.html [ Failure Pass ]
-crbug.com/600008 [ Mac Win ] fast/repaint/window-resize-background-image-fixed-centered.html [ Failure Pass ]
+crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered.html [ Failure Pass ]
+crbug.com/600008 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
 # crbug.com/600008 [ Mac Win ] fast/repaint/window-resize-background-image-non-fixed.html [ Failure Pass ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
