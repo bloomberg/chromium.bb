@@ -1,17 +1,23 @@
-<video controls></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test media current time values.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-    testExpected("video.currentTime", 0)
-    waitForEvent('canplaythrough', function() { testExpected("video.currentTime", 0); } );
-    video.addEventListener('canplaythrough', function() { video.play(); setTimeout(testCurrentTime, 500) });
-    waitForEvent('play');
-    function testCurrentTime()
-    {
-        testExpected("video.currentTime", 0, '>')
-        endTest();
-    }
+async_test(function(t) {
+    var video = document.querySelector("video");
+    assert_equals(video.currentTime, 0);
+
+    video.oncanplaythrough = t.step_func(function() {
+        assert_equals(video.currentTime, 0);
+        video.play();
+
+        setTimeout(t.step_func_done(function() {
+            assert_greater_than(video.currentTime, 0);
+        }), 500);
+    });
+
     video.src = findMediaFile("video", "content/test");
+});
 </script>
