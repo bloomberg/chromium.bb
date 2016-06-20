@@ -36,6 +36,15 @@ DECLARE_WINDOW_PROPERTY_TYPE(std::string*)
 namespace exo {
 namespace {
 
+// This is a struct for accelerator keys used to close ShellSurfaces.
+const struct Accelerator {
+  ui::KeyboardCode keycode;
+  int modifiers;
+} kCloseWindowAccelerators[] = {
+    {ui::VKEY_W, ui::EF_CONTROL_DOWN},
+    {ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
+    {ui::VKEY_F4, ui::EF_ALT_DOWN}};
+
 class CustomFrameView : public views::NonClientFrameView {
  public:
   explicit CustomFrameView(views::Widget* widget) : widget_(widget) {}
@@ -770,6 +779,20 @@ void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ui::AcceleratorTarget overrides:
+
+bool ShellSurface::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  for (const auto& entry : kCloseWindowAccelerators) {
+    if (ui::Accelerator(entry.keycode, entry.modifiers) == accelerator) {
+      if (!close_callback_.is_null())
+        close_callback_.Run();
+      return true;
+    }
+  }
+  return views::View::AcceleratorPressed(accelerator);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
 void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
@@ -819,6 +842,14 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
       ash::wm::ToWindowShowState(ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) ==
           show_state &&
       initial_bounds_.IsEmpty());
+
+  // Register close window accelerators.
+  views::FocusManager* focus_manager = widget_->GetFocusManager();
+  for (const auto& entry : kCloseWindowAccelerators) {
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(entry.keycode, entry.modifiers),
+        ui::AcceleratorManager::kNormalPriority, this);
+  }
 
   // Show widget next time Commit() is called.
   pending_show_widget_ = true;

@@ -199,6 +199,9 @@ class ShellSurface : public SurfaceDelegate,
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
+  // Overridden from ui::AcceleratorTarget:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+
  private:
   class ScopedConfigure;
   class ScopedAnimationsDisabled;
