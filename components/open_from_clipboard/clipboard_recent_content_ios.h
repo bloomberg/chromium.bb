@@ -37,11 +37,16 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   // registered.
   bool HasPasteboardChanged(base::TimeDelta uptime);
 
+  // Gets the current URL in the clipboard. If the cache is out of date, updates
+  // it.
+  bool GetCurrentURLFromClipboard(GURL* url);
+
   // Loads information from the user defaults about the latest pasteboard entry.
   void LoadFromUserDefaults();
 
   // ClipboardRecentContent implementation.
   bool GetRecentURLFromClipboard(GURL* url) const override;
+
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
   void RecentURLDisplayed() override;

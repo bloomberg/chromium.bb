@@ -206,6 +206,13 @@ bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
   return md5_changed;
 }
 
+bool ClipboardRecentContentIOS::GetCurrentURLFromClipboard(GURL* url) {
+  if (HasPasteboardChanged(base::SysInfo::Uptime())) {
+    PasteboardChanged();
+  }
+  return GetRecentURLFromClipboard(url);
+}
+
 void ClipboardRecentContentIOS::Init(base::TimeDelta uptime) {
   last_pasteboard_change_count_ = NSIntegerMax;
   url_from_pasteboard_cache_ = URLFromPasteboard();
