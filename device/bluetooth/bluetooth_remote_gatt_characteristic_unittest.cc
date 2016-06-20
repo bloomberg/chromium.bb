@@ -136,8 +136,12 @@ class BluetoothRemoteGattCharacteristicTest : public BluetoothTest {
 };
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattCharacteristicTest, GetIdentifier) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   // 2 devices to verify unique IDs across them.
@@ -197,10 +201,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetIdentifier) {
 
   EXPECT_NE(char5->GetIdentifier(), char6->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattCharacteristicTest, GetUUID) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -235,10 +243,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetUUID) {
   EXPECT_EQ(uuid2, char2->GetUUID());
   EXPECT_EQ(uuid2, char3->GetUUID());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattCharacteristicTest, GetProperties) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -263,17 +275,21 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetProperties) {
   EXPECT_EQ(0, properties1);
   EXPECT_EQ(7, properties2);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests GetService.
 TEST_F(BluetoothRemoteGattCharacteristicTest, GetService) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   EXPECT_EQ(service_, characteristic1_->GetService());
   EXPECT_EQ(service_, characteristic2_->GetService());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic and GetValue with empty value buffer.
