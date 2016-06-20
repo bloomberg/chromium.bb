@@ -4,6 +4,9 @@
 
 from core import perf_benchmark
 
+from telemetry import benchmark
+from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import tracing_config
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
@@ -22,3 +25,27 @@ class TracingWithDebugOverhead(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'tracing.tracing_with_debug_overhead'
+
+
+# TODO(ssid): Enable on reference builds once stable browser starts supporting
+# background mode memory-infra. crbug.com/621195.
+@benchmark.Disabled('reference')
+class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
+  """Measures the overhead of background memory-infra dumps"""
+  page_set = page_sets.Top10PageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    # Enable only memory-infra category with periodic background mode dumps
+    # every 200 milliseconds.
+    trace_memory = tracing_category_filter.TracingCategoryFilter(
+        filter_string='-*,blink.console,disabled-by-default-memory-infra')
+    options = timeline_based_measurement.Options(overhead_level=trace_memory)
+    memory_dump_config = tracing_config.MemoryDumpConfig()
+    memory_dump_config.AddTrigger('background', 200)
+    options.config.SetMemoryDumpConfig(memory_dump_config)
+    options.SetTimelineBasedMetric('tracingMetric')
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'tracing.tracing_with_background_memory_infra'
