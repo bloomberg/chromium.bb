@@ -770,10 +770,27 @@ class Settings(object):
   def GetSquashGerritUploads(self):
     """Return true if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
-      self.squash_gerrit_uploads = (
-          RunGit(['config', '--bool', 'gerrit.squash-uploads'],
-                 error_ok=True).strip() == 'true')
+      self.squash_gerrit_uploads = self.GetSquashGerritUploadsOverride()
+      if self.squash_gerrit_uploads is None:
+        # Default is squash now (http://crbug.com/611892#c23).
+        self.squash_gerrit_uploads = not (
+            RunGit(['config', '--bool', 'gerrit.squash-uploads'],
+                   error_ok=True).strip() == 'false')
     return self.squash_gerrit_uploads
+
+  def GetSquashGerritUploadsOverride(self):
+    """Return True or False if codereview.settings should be overridden.
+
+    Returns None if no override has been defined.
+    """
+    # See also http://crbug.com/611892#c23
+    result = RunGit(['config', '--bool', 'gerrit.override-squash-uploads'],
+                    error_ok=True).strip()
+    if result == 'true':
+      return True
+    if result == 'false':
+      return False
+    return None
 
   def GetGerritSkipEnsureAuthenticated(self):
     """Return True if EnsureAuthenticated should not be done for Gerrit
@@ -2338,8 +2355,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     """Upload the current branch to Gerrit."""
     if options.squash and options.no_squash:
       DieWithError('Can only use one of --squash or --no-squash')
-    options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
-                      not options.no_squash)
+
+    if not options.squash and not options.no_squash:
+      # Load default for user, repo, squash=true, in this order.
+      options.squash = settings.GetSquashGerritUploads()
+    elif options.no_squash:
+      options.squash = False
 
     # We assume the remote called "origin" is the one we want.
     # It is probably not worthwhile to support different workflows.

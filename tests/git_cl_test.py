@@ -757,15 +757,27 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
+                           squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
                            ref_suffix='', notify=False,
                            post_amend_description=None, issue=None):
     if post_amend_description is None:
       post_amend_description = description
+    calls = []
 
-    calls = [
-        ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
-    ]
+    if squash_mode == 'default':
+      calls.extend([
+        ((['git', 'config', '--bool', 'gerrit.override-squash-uploads'],), ''),
+        ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), ''),
+      ])
+    elif squash_mode in ('override_squash', 'override_nosquash'):
+      calls.extend([
+        ((['git', 'config', '--bool', 'gerrit.override-squash-uploads'],),
+         'true' if squash_mode == 'override_squash' else 'false'),
+      ])
+    else:
+      assert squash_mode in ('squash', 'nosquash')
+
     # If issue is given, then description is fetched from Gerrit instead.
     if issue is None:
       if squash:
@@ -867,22 +879,36 @@ class TestGitCl(TestCase):
       upload_args,
       description,
       reviewers=None,
-      squash=False,
+      squash=True,
+      squash_mode=None,
       expected_upstream_ref='origin/refs/heads/master',
       ref_suffix='',
       notify=False,
       post_amend_description=None,
       issue=None):
     """Generic gerrit upload test framework."""
+    if squash_mode is None:
+      if '--no-squash' in upload_args:
+        squash_mode = 'nosquash'
+      elif '--squash' in upload_args:
+        squash_mode = 'squash'
+      else:
+        squash_mode = 'default'
+
     reviewers = reviewers or []
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
     self.mock(git_cl._GerritChangelistImpl, '_GerritCommitMsgHookCheck',
               lambda _, offer_removal: None)
+    self.mock(git_cl.gclient_utils, 'RunEditor',
+              lambda *_, **__: self._mocked_call(['RunEditor']))
+    self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
+
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
+        squash_mode=squash_mode,
         expected_upstream_ref=expected_upstream_ref,
         ref_suffix=ref_suffix, notify=notify,
         post_amend_description=post_amend_description,
@@ -892,23 +918,37 @@ class TestGitCl(TestCase):
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):
+    self._run_gerrit_upload_test(
+        ['--no-squash'],
+        'desc\n\nBUG=\n',
+        [],
+        squash=False,
+        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
+
+  def test_gerrit_upload_without_change_id_override_nosquash(self):
     self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
     self._run_gerrit_upload_test(
         [],
         'desc\n\nBUG=\n',
         [],
+        squash=False,
+        squash_mode='override_nosquash',
         post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
 
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_upload_test(
         [],
         'desc\n\nBUG=\n\nChange-Id: I123456789\n',
-        [])
+        [],
+        squash=False,
+        squash_mode='override_nosquash')
 
   def test_gerrit_patch_title(self):
     self._run_gerrit_upload_test(
         ['-t', 'Don\'t put under_scores as they become spaces'],
         'desc\n\nBUG=\n\nChange-Id: I123456789',
+        squash=False,
+        squash_mode='override_nosquash',
         ref_suffix='%m=Don\'t_put_under_scores_as_they_become_spaces')
 
   def test_gerrit_reviewers_cmd_line(self):
@@ -916,6 +956,8 @@ class TestGitCl(TestCase):
         ['-r', 'foo@example.com', '--send-mail'],
         'desc\n\nBUG=\n\nChange-Id: I123456789',
         ['foo@example.com'],
+        squash=False,
+        squash_mode='override_nosquash',
         notify=True)
 
   def test_gerrit_reviewer_multiple(self):
@@ -923,14 +965,24 @@ class TestGitCl(TestCase):
         [],
         'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n\n'
         'Change-Id: 123456789\n',
-        ['reviewer@example.com', 'another@example.com'])
+        ['reviewer@example.com', 'another@example.com'],
+        squash=False,
+        squash_mode='override_nosquash')
+
+  def test_gerrit_upload_squash_first_is_default(self):
+    # Mock Gerrit CL description to indicate the first upload.
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *_: None)
+    self._run_gerrit_upload_test(
+        [],
+        'desc\nBUG=\n\nChange-Id: 123456789',
+        [],
+        expected_upstream_ref='origin/master')
 
   def test_gerrit_upload_squash_first(self):
     # Mock Gerrit CL description to indicate the first upload.
     self.mock(git_cl.Changelist, 'GetDescription',
               lambda *_: None)
-    self.mock(git_cl.gclient_utils, 'RunEditor',
-              lambda *_, **__: self._mocked_call(['RunEditor']))
     self._run_gerrit_upload_test(
         ['--squash'],
         'desc\nBUG=\n\nChange-Id: 123456789',
