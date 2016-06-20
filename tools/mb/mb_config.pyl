@@ -535,7 +535,13 @@
 
     'client.v8.fyi': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
+      'Chromium ASAN - debug': 'gn_asan_lsan_edge_debug_bot',
+      'Chromium ASAN (symbolized)':
+        'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
+      'Chromium Win SyzyASAN': 'gyp_syzyasan_no_pch_win_z7_x86',
+      'Linux ASAN Builder': 'swarming_asan_lsan_gn_release_bot',
       'Linux Debug Builder': 'gn_debug_bot',
+      'Linux Snapshot Builder': 'gn_release_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
       'V8 Linux GN': 'gn_release_bot',
       'V8-Blink Linux 64': 'noswarming_gn_release_bot_x64',
