@@ -502,10 +502,6 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
         TestDisplayItem(container1, DisplayItem::EndSubsequence));
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::endShouldKeepAliveAllClients();
-#endif
 }
 
 TEST_F(PaintControllerTest, OutOfOrderNoCrash)
@@ -624,10 +620,6 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(content1, DisplayItem::EndSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
         TestDisplayItem(container1, DisplayItem::EndSubsequence));
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::endShouldKeepAliveAllClients();
-#endif
 }
 
 TEST_F(PaintControllerTest, SkipCache)
@@ -901,10 +893,6 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
     getPaintController().commitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::endShouldKeepAliveAllClients();
-#endif
 }
 
 // Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).

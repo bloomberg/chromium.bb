@@ -216,11 +216,6 @@ private:
 #endif
 
     DisplayItemCacheGeneration m_currentCacheGeneration;
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    // A stack recording subsequence clients that are currently painting.
-    Vector<const DisplayItemClient*> m_currentSubsequenceClients;
-#endif
 };
 
 } // namespace blink

@@ -66,26 +66,8 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     DCHECK(!skippingCache() || !displayItem.isCached());
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    if (!skippingCache()) {
-        if (displayItem.isCacheable() || displayItem.isCached()) {
-            // Mark the client shouldKeepAlive under this PaintController.
-            // The status will end after the new display items are committed.
-            displayItem.client().beginShouldKeepAlive(this);
-
-            if (!m_currentSubsequenceClients.isEmpty()) {
-                // Mark the client shouldKeepAlive under the current subsequence.
-                // The status will end when the subsequence owner is invalidated or deleted.
-                displayItem.client().beginShouldKeepAlive(m_currentSubsequenceClients.last());
-            }
-        }
-
-        if (displayItem.getType() == DisplayItem::Subsequence) {
-            m_currentSubsequenceClients.append(&displayItem.client());
-        } else if (displayItem.getType() == DisplayItem::EndSubsequence) {
-            CHECK(m_currentSubsequenceClients.last() == &displayItem.client());
-            m_currentSubsequenceClients.removeLast();
-        }
-    }
+    if (!skippingCache() && (displayItem.isCacheable() || displayItem.isCached()))
+        displayItem.client().beginShouldKeepAlive(this);
 #endif
 
     if (displayItem.isCached())
@@ -388,7 +370,6 @@ void PaintController::updateCacheGeneration()
         displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
     }
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    CHECK(m_currentSubsequenceClients.isEmpty());
     DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
 }

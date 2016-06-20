@@ -705,10 +705,6 @@ public:
     bool update3DTransformedDescendantStatus();
     bool has3DTransformedDescendant() const { DCHECK(!m_3DTransformedDescendantStatusDirty); return m_has3DTransformedDescendant; }
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    void endShouldKeepAliveAllClientsRecursive();
-#endif
-
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;

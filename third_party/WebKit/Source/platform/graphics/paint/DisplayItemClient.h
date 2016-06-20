@@ -64,19 +64,14 @@ public:
     // Tests if this DisplayItemClient object has been created and has not been deleted yet.
     bool isAlive() const;
     // Called when any DisplayItem of this DisplayItemClient is added into PaintController
-    // using PaintController::createAndAppend() or into a cached subsequence.
-    void beginShouldKeepAlive(const void* owner) const;
+    // using PaintController::createAndAppend().
+    void beginShouldKeepAlive(const void* paintController) const;
     // Clears all should-keep-alive DisplayItemClients of a PaintController. Called after
-    // PaintController commits new display items or the subsequence owner is invalidated.
-    static void endShouldKeepAliveAllClients(const void* owner);
+    // PaintController commits new display items.
+    static void endShouldKeepAliveAllClients(const void* paintController);
     static void endShouldKeepAliveAllClients();
-
-    // Called to clear should-keep-alive of DisplayItemClients in a subsequence if this
-    // object is a subsequence.
-#define ON_DISPLAY_ITEM_CLIENT_INVALIDATION() endShouldKeepAliveAllClients(this)
 #else
     virtual ~DisplayItemClient() { }
-#define ON_DISPLAY_ITEM_CLIENT_INVALIDATION()
 #endif
 
     virtual String debugName() const = 0;
@@ -93,11 +88,7 @@ public:
 #define DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION \
     bool displayItemsAreCached(DisplayItemCacheGeneration cacheGeneration) const final { return m_cacheGeneration.matches(cacheGeneration); } \
     void setDisplayItemsCached(DisplayItemCacheGeneration cacheGeneration) const final { m_cacheGeneration = cacheGeneration; } \
-    void setDisplayItemsUncached() const final \
-    { \
-        m_cacheGeneration.invalidate(); \
-        ON_DISPLAY_ITEM_CLIENT_INVALIDATION(); \
-    } \
+    void setDisplayItemsUncached() const final { m_cacheGeneration.invalidate(); } \
     mutable DisplayItemCacheGeneration m_cacheGeneration;
 
 #define DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION \
