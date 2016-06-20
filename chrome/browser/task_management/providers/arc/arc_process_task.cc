@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_service_manager.h"
@@ -19,10 +20,32 @@ namespace task_management {
 
 namespace {
 
-base::string16 MakeTitle(const std::string& process_name) {
+base::string16 MakeTitle(const std::string& process_name,
+                         arc::mojom::ProcessState process_state) {
+  int name_template = IDS_TASK_MANAGER_ARC_PREFIX;
+  switch (process_state) {
+    case arc::mojom::ProcessState::PERSISTENT:
+    case arc::mojom::ProcessState::PERSISTENT_UI:
+    case arc::mojom::ProcessState::TOP:
+      name_template = IDS_TASK_MANAGER_ARC_SYSTEM;
+      break;
+    case arc::mojom::ProcessState::BOUND_FOREGROUND_SERVICE:
+    case arc::mojom::ProcessState::FOREGROUND_SERVICE:
+    case arc::mojom::ProcessState::SERVICE:
+    case arc::mojom::ProcessState::IMPORTANT_FOREGROUND:
+    case arc::mojom::ProcessState::IMPORTANT_BACKGROUND:
+      name_template = IDS_TASK_MANAGER_ARC_PREFIX_BACKGROUND_SERVICE;
+      break;
+    case arc::mojom::ProcessState::RECEIVER:
+      name_template = IDS_TASK_MANAGER_ARC_PREFIX_RECEIVER;
+      break;
+    default:
+      break;
+  }
   base::string16 title =
       l10n_util::GetStringFUTF16(
-          IDS_TASK_MANAGER_ARC_PREFIX, base::UTF8ToUTF16(process_name));
+          name_template,
+          base::UTF8ToUTF16(process_name));
   base::i18n::AdjustStringForLocaleDirection(&title);
   return title;
 }
@@ -46,7 +69,8 @@ ArcProcessTask::ArcProcessTask(base::ProcessId pid,
                                const std::string& process_name,
                                arc::mojom::ProcessState process_state,
                                const std::vector<std::string>& packages)
-    : Task(MakeTitle(process_name), process_name, nullptr /* icon */, pid),
+    : Task(MakeTitle(process_name, process_state), process_name,
+           nullptr /* icon */, pid),
       nspid_(nspid),
       process_name_(process_name),
       process_state_(process_state),
