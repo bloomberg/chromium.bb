@@ -8,6 +8,7 @@ import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -59,7 +60,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     // The amount of time in ms that the progress bar has to be stopped before the indeterminate
     // animation starts.
-    private static final long ANIMATION_START_THRESHOLD = 3000;
+    private static final long ANIMATION_START_THRESHOLD = 5000;
 
     private static final float THEMED_BACKGROUND_WHITE_FRACTION = 0.2f;
     private static final float THEMED_FOREGROUND_BLACK_FRACTION = 0.64f;
@@ -194,7 +195,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
         if (TextUtils.equals(animation, "smooth")) {
             mAnimationLogic = new ProgressAnimationSmooth();
-        } else if (TextUtils.equals(animation, "smooth-indeterminate")) {
+        } else if (TextUtils.equals(animation, "smooth-indeterminate")
+                && Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mAnimationLogic = new ProgressAnimationSmooth();
 
             LayoutParams animationParams = new LayoutParams(getLayoutParams());
