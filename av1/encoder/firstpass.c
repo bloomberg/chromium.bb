@@ -23,6 +23,7 @@
 #include "aom_scale/aom_scale.h"
 #include "aom_scale/yv12config.h"
 
+#include "aom_dsp/variance.h"
 #include "av1/common/entropymv.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"  // av1_setup_dst_planes()
@@ -37,7 +38,6 @@
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/quantize.h"
 #include "av1/encoder/rd.h"
-#include "aom_dsp/variance.h"
 
 #define OUTPUT_FPF 0
 #define ARF_STATS_OUTPUT 0
@@ -1536,7 +1536,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
   GF_GROUP *const gf_group = &twopass->gf_group;
   FIRSTPASS_STATS frame_stats;
   int i;
-  int frame_index = 1;
+  int frame_index = 0;
   int target_frame_size;
   int key_frame;
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
@@ -1546,7 +1546,21 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
   int mid_boost_bits = 0;
   int mid_frame_idx;
   unsigned char arf_buffer_indices[MAX_ACTIVE_ARFS];
-  int alt_frame_index = frame_index;
+
+#if CONFIG_EXT_REFS
+  // The use of bi-predictive frames are only enabled when following 3
+  // conditions are met:
+  // (1) Alt-ref is enabled;
+  // (2) The bi-predictive group interval is at least 2; and
+  // (3) The bi-predictive group interval is strictly smaller than the
+  //     golden group interval.
+  const int is_bipred_enabled =
+      rc->source_alt_ref_pending && rc->bipred_group_interval &&
+      rc->bipred_group_interval <=
+          (rc->baseline_gf_interval - rc->source_alt_ref_pending);
+  int bipred_group_end = 0;
+  int bipred_frame_index = 0;
+#endif  // CONFIG_EXT_REFS
 
   key_frame = cpi->common.frame_type == KEY_FRAME;
 
@@ -1556,40 +1570,54 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
   // is also the golden frame.
   if (!key_frame) {
     if (rc->source_alt_ref_active) {
-      gf_group->update_type[0] = OVERLAY_UPDATE;
-      gf_group->rf_level[0] = INTER_NORMAL;
-      gf_group->bit_allocation[0] = 0;
-      gf_group->arf_update_idx[0] = arf_buffer_indices[0];
-      gf_group->arf_ref_idx[0] = arf_buffer_indices[0];
+      gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+      gf_group->rf_level[frame_index] = INTER_NORMAL;
+      gf_group->bit_allocation[frame_index] = 0;
     } else {
-      gf_group->update_type[0] = GF_UPDATE;
-      gf_group->rf_level[0] = GF_ARF_STD;
-      gf_group->bit_allocation[0] = gf_arf_bits;
-      gf_group->arf_update_idx[0] = arf_buffer_indices[0];
-      gf_group->arf_ref_idx[0] = arf_buffer_indices[0];
+      gf_group->update_type[frame_index] = GF_UPDATE;
+      gf_group->rf_level[frame_index] = GF_ARF_STD;
+      gf_group->bit_allocation[frame_index] = gf_arf_bits;
     }
+    gf_group->arf_update_idx[frame_index] = arf_buffer_indices[0];
+    gf_group->arf_ref_idx[frame_index] = arf_buffer_indices[0];
 
     // Step over the golden frame / overlay frame
     if (EOF == input_stats(twopass, &frame_stats)) return;
   }
 
+#if CONFIG_EXT_REFS
+  gf_group->brf_src_offset[frame_index] = 0;
+  gf_group->brf_pred_enabled[frame_index] = 0;
+#endif  // CONFIG_EXT_REFS
+
   // Deduct the boost bits for arf (or gf if it is not a key frame)
   // from the group total.
   if (rc->source_alt_ref_pending || !key_frame) total_group_bits -= gf_arf_bits;
 
+  frame_index++;
+#if CONFIG_EXT_REFS
+  bipred_frame_index++;
+#endif  // CONFIG_EXT_REFS
+
   // Store the bits to spend on the ARF if there is one.
   if (rc->source_alt_ref_pending) {
-    gf_group->update_type[alt_frame_index] = ARF_UPDATE;
-    gf_group->rf_level[alt_frame_index] = GF_ARF_STD;
-    gf_group->bit_allocation[alt_frame_index] = gf_arf_bits;
+    gf_group->update_type[frame_index] = ARF_UPDATE;
+    gf_group->rf_level[frame_index] = GF_ARF_STD;
+    gf_group->bit_allocation[frame_index] = gf_arf_bits;
 
-    gf_group->arf_src_offset[alt_frame_index] =
+    gf_group->arf_src_offset[frame_index] =
         (unsigned char)(rc->baseline_gf_interval - 1);
 
-    gf_group->arf_update_idx[alt_frame_index] = arf_buffer_indices[0];
-    gf_group->arf_ref_idx[alt_frame_index] =
+    gf_group->arf_update_idx[frame_index] = arf_buffer_indices[0];
+    gf_group->arf_ref_idx[frame_index] =
         arf_buffer_indices[cpi->multi_arf_last_grp_enabled &&
                            rc->source_alt_ref_active];
+#if CONFIG_EXT_REFS
+    gf_group->brf_src_offset[frame_index] = 0;
+    gf_group->brf_pred_enabled[frame_index] = 0;
+// NOTE: "bipred_frame_index" stays unchanged for ARF_UPDATE frames.
+#endif  // CONFIG_EXT_REFS
+
     ++frame_index;
 
     if (cpi->multi_arf_enabled) {
@@ -1633,10 +1661,73 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     target_frame_size =
         clamp(target_frame_size, 0, AOMMIN(max_bits, (int)total_group_bits));
 
-    gf_group->update_type[frame_index] = LF_UPDATE;
-    gf_group->rf_level[frame_index] = INTER_NORMAL;
+#if CONFIG_EXT_REFS
+    // NOTE: Bi-predictive frames are only enabled when the length of the
+    //       bi-predictive frame group interval is strictly smaller than that
+    //       of the golden frame group interval.
+    // TODO(zoeliu): Currently bi-prediction is only enabled when alt-ref is on.
+    if (is_bipred_enabled && !bipred_group_end) {
+      const int cur_brf_src_offset = rc->bipred_group_interval - 1;
 
-    gf_group->bit_allocation[frame_index] = target_frame_size;
+      // --- BRF_UPDATE ---
+      if (bipred_frame_index == 1) {
+        gf_group->update_type[frame_index] = BRF_UPDATE;
+        gf_group->brf_src_offset[frame_index] = cur_brf_src_offset;
+        gf_group->brf_pred_enabled[frame_index] = 1;
+        // --- LAST_BIPRED_UPDATE ---
+      } else if (bipred_frame_index == rc->bipred_group_interval) {
+        gf_group->update_type[frame_index] = LAST_BIPRED_UPDATE;
+        gf_group->brf_src_offset[frame_index] = 0;
+        gf_group->brf_pred_enabled[frame_index] = 1;
+        // Reset the bi-predictive frame index.
+        bipred_frame_index = 0;
+        // --- BIPRED_UPDATE ---
+      } else {
+        gf_group->update_type[frame_index] = BIPRED_UPDATE;
+        gf_group->brf_src_offset[frame_index] = 0;
+        gf_group->brf_pred_enabled[frame_index] = 1;
+      }
+
+      bipred_frame_index++;
+      // Check whether the next bi-predictive frame group would entirely be
+      // included within the current golden frame group.
+      if (bipred_frame_index == 1 &&
+          (i + 1 + cur_brf_src_offset) >=
+              (rc->baseline_gf_interval - rc->source_alt_ref_pending))
+        bipred_group_end = 1;
+    } else {
+#endif  // CONFIG_EXT_REFS
+      gf_group->update_type[frame_index] = LF_UPDATE;
+#if CONFIG_EXT_REFS
+      gf_group->brf_src_offset[frame_index] = 0;
+      gf_group->brf_pred_enabled[frame_index] = 0;
+    }
+#endif  // CONFIG_EXT_REFS
+
+#if CONFIG_EXT_REFS
+    if (gf_group->update_type[frame_index] == BRF_UPDATE) {
+      // Boost up the allocated bits on BWDREF_FRAME
+      gf_group->rf_level[frame_index] = INTER_HIGH;
+      gf_group->bit_allocation[frame_index] =
+          target_frame_size + (target_frame_size >> 2);
+    } else if (gf_group->update_type[frame_index] == LAST_BIPRED_UPDATE) {
+      // Press down the allocated bits on LAST_BIPRED_UPDATE frames
+      gf_group->rf_level[frame_index] = INTER_LOW;
+      gf_group->bit_allocation[frame_index] =
+          target_frame_size - (target_frame_size >> 1);
+    } else if (gf_group->update_type[frame_index] == BIPRED_UPDATE) {
+      // TODO(zoeliu): To investigate whether the allocated bits on
+      // BIPRED_UPDATE frames need to be further adjusted.
+      gf_group->rf_level[frame_index] = INTER_NORMAL;
+      gf_group->bit_allocation[frame_index] = target_frame_size;
+    } else {
+#endif  // CONFIG_EXT_REFS
+      gf_group->rf_level[frame_index] = INTER_NORMAL;
+      gf_group->bit_allocation[frame_index] = target_frame_size;
+#if CONFIG_EXT_REFS
+    }
+#endif  // CONFIG_EXT_REFS
+
     ++frame_index;
   }
 
@@ -1662,6 +1753,10 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     gf_group->update_type[frame_index] = GF_UPDATE;
     gf_group->rf_level[frame_index] = GF_ARF_STD;
   }
+#if CONFIG_EXT_REFS
+  gf_group->brf_src_offset[frame_index] = 0;
+  gf_group->brf_pred_enabled[frame_index] = 0;
+#endif  // CONFIG_EXT_REFS
 
   // Note whether multi-arf was enabled this group for next time.
   cpi->multi_arf_last_grp_enabled = cpi->multi_arf_enabled;
@@ -1870,6 +1965,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   rc->baseline_gf_interval = i - (is_key_frame || rc->source_alt_ref_pending);
 
   rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+
+#if CONFIG_EXT_REFS
+  rc->bipred_group_interval = BFG_INTERVAL;
+  // The minimum bi-predictive frame group interval is 2.
+  if (rc->bipred_group_interval < MIN_BFG_INTERVAL)
+    rc->bipred_group_interval = 0;
+#endif  // CONFIG_EXT_REFS
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
@@ -2295,33 +2397,69 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
   TWO_PASS *const twopass = &cpi->twopass;
 
   cpi->rc.is_src_frame_alt_ref = 0;
+#if CONFIG_EXT_REFS
+  cpi->rc.is_bwd_ref_frame = 0;
+  cpi->rc.is_last_bipred_frame = 0;
+  cpi->rc.is_bipred_frame = 0;
+#endif  // CONFIG_EXT_REFS
+
   switch (twopass->gf_group.update_type[twopass->gf_group.index]) {
-    case KF_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 1;
+    case KF_UPDATE: cpi->refresh_last_frame = 1; cpi->refresh_golden_frame = 1;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 1;
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 1;
       break;
-    case LF_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
+    case LF_UPDATE: cpi->refresh_last_frame = 1; cpi->refresh_golden_frame = 0;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 0;
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 0;
       break;
-    case GF_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 1;
+    case GF_UPDATE: cpi->refresh_last_frame = 1; cpi->refresh_golden_frame = 1;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 0;
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 0;
       break;
     case OVERLAY_UPDATE:
       cpi->refresh_last_frame = 0;
       cpi->refresh_golden_frame = 1;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 0;
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 0;
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
-    case ARF_UPDATE:
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
+    case ARF_UPDATE: cpi->refresh_last_frame = 0; cpi->refresh_golden_frame = 0;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 0;
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 1;
       break;
+#if CONFIG_EXT_REFS
+    case BRF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_alt_ref_frame = 0;
+      cpi->rc.is_bwd_ref_frame = 1;
+      break;
+    case LAST_BIPRED_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      cpi->rc.is_last_bipred_frame = 1;
+      break;
+    case BIPRED_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      cpi->rc.is_bipred_frame = 1;
+      break;
+#endif  // CONFIG_EXT_REFS
     default: assert(0); break;
   }
 }
