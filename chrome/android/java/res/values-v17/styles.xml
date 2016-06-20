@@ -39,6 +39,10 @@
         <item name="android:windowSharedElementExitTransition" tools:targetApi="21">@transition/move_image</item>
     </style>
 
+    <style name="TabbedModeTheme" parent="MainTheme">
+        <item name="android:windowBackground">@drawable/window_background</item>
+    </style>
+
     <!-- Web app themes -->
     <style name="WebappTheme" parent="MainTheme">
         <item name="android:windowBackground">@null</item>

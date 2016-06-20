@@ -348,6 +348,13 @@ public class ChromeLauncherActivity extends Activity
                         || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
             newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
 
+            // Pre-L, the exclude from recents flag on the launcher does not apply to the launched
+            // separate task activity (and provides the desired user behavior).  On L, the flag
+            // needs to be cleared otherwise it is hidden immediately upon exiting.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                newIntent.setFlags(
+                        newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            }
             String url = IntentHandler.getUrlFromIntent(newIntent);
             assert url != null;
 
