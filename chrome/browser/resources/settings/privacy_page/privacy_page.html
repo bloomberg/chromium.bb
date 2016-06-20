@@ -157,10 +157,16 @@
       <template is="dom-if" name="site-settings-category-cookies">
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
           <site-settings-category
-              prefs="{{prefs}}"
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
               category="{{ContentSettingsTypes.COOKIES}}">
+            <div class="settings-box cookie-controls">
+              <settings-checkbox class="start"
+                  label="$i18n{thirdPartyCookie}"
+                  sub-label="$i18n{thirdPartyCookieSublabel}"
+                  pref="{{prefs.profile.block_third_party_cookies}}">
+              </settings-checkbox>
+            </div>
           </site-settings-category>
         </settings-subpage>
       </template>
