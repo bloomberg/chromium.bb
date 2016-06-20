@@ -117,7 +117,10 @@ source_set("opus") {
   if (!is_debug && is_posix &&
       (current_cpu == "arm" || current_cpu == "arm64")) {
     configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
+
+    # TODO(crbug.com/621335) Rework this so that we don't have the confusion
+    # between "optimize_speed" and "optimize_max".
+    configs += [ "//build/config/compiler:optimize_speed" ]
   }
 
   if (use_opus_fixed_point) {
