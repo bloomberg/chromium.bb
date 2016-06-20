@@ -173,12 +173,14 @@ static void kgsl_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	kgsl_pipe_add_submit(to_kgsl_pipe(ring->pipe), kgsl_bo);
 }
 
-static void kgsl_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringbuffer *target,
+static uint32_t kgsl_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *target, uint32_t cmd_idx,
 		uint32_t submit_offset, uint32_t size)
 {
 	struct kgsl_ringbuffer *target_ring = to_kgsl_ringbuffer(target);
+	assert(cmd_idx == 0);
 	(*ring->cur++) = target_ring->bo->gpuaddr + submit_offset;
+	return size;
 }
 
 static void kgsl_ringbuffer_destroy(struct fd_ringbuffer *ring)
@@ -213,6 +215,7 @@ drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 
 	ring = &kgsl_ring->base;
 	ring->funcs = &funcs;
+	ring->size = size;
 
 	kgsl_ring->bo = kgsl_rb_bo_new(to_kgsl_pipe(pipe), size);
 	if (!kgsl_ring->bo) {

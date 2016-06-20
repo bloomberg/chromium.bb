@@ -45,10 +45,9 @@ fd_ringbuffer_new(struct fd_pipe *pipe, uint32_t size)
 	if (!ring)
 		return NULL;
 
-	ring->size = size;
 	ring->pipe = pipe;
 	ring->start = ring->funcs->hostptr(ring);
-	ring->end = &(ring->start[size/4]);
+	ring->end = &(ring->start[ring->size/4]);
 
 	ring->cur = ring->last_start = ring->start;
 
@@ -87,6 +86,22 @@ int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
 	return ring->funcs->flush(ring, ring->last_start);
 }
 
+void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords)
+{
+	assert(ring->funcs->grow);     /* unsupported on kgsl */
+
+	/* there is an upper bound on IB size, which appears to be 0x100000 */
+	if (ring->size < 0x100000)
+		ring->size *= 2;
+
+	ring->funcs->grow(ring, ring->size);
+
+	ring->start = ring->funcs->hostptr(ring);
+	ring->end = &(ring->start[ring->size/4]);
+
+	ring->cur = ring->last_start = ring->start;
+}
+
 uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
 {
 	return ring->last_timestamp;
@@ -108,7 +123,14 @@ void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 	submit_offset = offset_bytes(target->cur, target->ring->start);
 	size = offset_bytes(end->cur, target->cur);
 
-	ring->funcs->emit_reloc_ring(ring, target->ring, submit_offset, size);
+	ring->funcs->emit_reloc_ring(ring, target->ring, 0, submit_offset, size);
+}
+
+uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
+{
+	if (!ring->funcs->cmd_count)
+		return 1;
+	return ring->funcs->cmd_count(ring);
 }
 
 uint32_t
@@ -116,9 +138,7 @@ fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx)
 {
 	uint32_t size = offset_bytes(target->cur, target->start);
-	assert(cmd_idx == 0);
-	ring->funcs->emit_reloc_ring(ring, target, 0, size);
-	return size;
+	return ring->funcs->emit_reloc_ring(ring, target, cmd_idx, 0, size);
 }
 
 struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)

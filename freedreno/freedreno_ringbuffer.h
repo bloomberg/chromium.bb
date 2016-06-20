@@ -56,6 +56,7 @@ void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *parent);
 void fd_ringbuffer_reset(struct fd_ringbuffer *ring);
 int fd_ringbuffer_flush(struct fd_ringbuffer *ring);
+void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords);
 uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring);
 
 static inline void fd_ringbuffer_emit(struct fd_ringbuffer *ring,
@@ -77,6 +78,7 @@ struct fd_reloc {
 void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
 will_be_deprecated void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		struct fd_ringmarker *target, struct fd_ringmarker *end);
+uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring);
 uint32_t fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx);
 

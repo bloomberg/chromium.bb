@@ -40,12 +40,16 @@
  * a backing bo, and a reloc table.
  */
 struct msm_cmd {
+	struct list_head list;
+
 	struct fd_ringbuffer *ring;
 	struct fd_bo *ring_bo;
 
 	/* reloc's table: */
 	struct drm_msm_gem_submit_reloc *relocs;
 	uint32_t nr_relocs, max_relocs;
+
+	uint32_t size;
 };
 
 struct msm_ringbuffer {
@@ -75,9 +79,27 @@ struct msm_ringbuffer {
 	struct msm_cmd **cmds;
 	uint32_t nr_cmds, max_cmds;
 
-	/* current cmd-buffer: */
-	struct msm_cmd *cmd;
+	/* List of physical cmdstream buffers (msm_cmd) assocated with this
+	 * logical fd_ringbuffer.
+	 *
+	 * Note that this is different from msm_ringbuffer::cmds (which
+	 * shadows msm_ringbuffer::submit::cmds for tracking submit ioctl
+	 * related stuff, and *only* is tracked in the parent ringbuffer.
+	 * And only has "completed" cmd buffers (ie. we already know the
+	 * size) added via get_cmd().
+	 */
+	struct list_head cmd_list;
+
+	int is_growable;
+	unsigned cmd_count;
 };
+
+static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
+{
+	return (struct msm_ringbuffer *)x;
+}
+
+#define INIT_SIZE 0x1000
 
 static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
 drm_private extern pthread_mutex_t table_lock;
@@ -118,12 +140,15 @@ static void ring_cmd_del(struct msm_cmd *cmd)
 {
 	if (cmd->ring_bo)
 		ring_bo_del(cmd->ring->pipe->dev, cmd->ring_bo);
+	list_del(&cmd->list);
+	to_msm_ringbuffer(cmd->ring)->cmd_count--;
 	free(cmd->relocs);
 	free(cmd);
 }
 
 static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
 {
+	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct msm_cmd *cmd = calloc(1, sizeof(*cmd));
 
 	if (!cmd)
@@ -133,6 +158,9 @@ static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
 	cmd->ring_bo = ring_bo_new(ring->pipe->dev, size);
 	if (!cmd->ring_bo)
 		goto fail;
+
+	list_addtail(&cmd->list, &msm_ring->cmd_list);
+	msm_ring->cmd_count++;
 
 	return cmd;
 
@@ -158,9 +186,11 @@ static void *grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
 	(x)->nr_ ## name ++; \
 })
 
-static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
+static struct msm_cmd *current_cmd(struct fd_ringbuffer *ring)
 {
-	return (struct msm_ringbuffer *)x;
+	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
+	assert(!LIST_IS_EMPTY(&msm_ring->cmd_list));
+	return LIST_LAST_ENTRY(&msm_ring->cmd_list, struct msm_cmd, list);
 }
 
 static uint32_t append_bo(struct fd_ringbuffer *ring, struct fd_bo *bo)
@@ -248,12 +278,13 @@ static void get_cmd(struct fd_ringbuffer *ring, struct msm_cmd *target_cmd,
 	cmd->submit_offset = submit_offset;
 	cmd->size = size;
 	cmd->pad = 0;
+
+	target_cmd->size = size;
 }
 
 static void * msm_ringbuffer_hostptr(struct fd_ringbuffer *ring)
 {
-	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	return fd_bo_map(msm_ring->cmd->ring_bo);
+	return fd_bo_map(current_cmd(ring)->ring_bo);
 }
 
 static uint32_t find_next_reloc_idx(struct msm_cmd *msm_cmd,
@@ -269,6 +300,15 @@ static uint32_t find_next_reloc_idx(struct msm_cmd *msm_cmd,
 	}
 
 	return i;
+}
+
+static void delete_cmds(struct msm_ringbuffer *msm_ring)
+{
+	struct msm_cmd *cmd, *tmp;
+
+	LIST_FOR_EACH_ENTRY_SAFE(cmd, tmp, &msm_ring->cmd_list, list) {
+		ring_cmd_del(cmd);
+	}
 }
 
 static void flush_reset(struct fd_ringbuffer *ring)
@@ -288,11 +328,36 @@ static void flush_reset(struct fd_ringbuffer *ring)
 		target_cmd->nr_relocs = 0;
 	}
 
-	msm_ring->cmd->nr_relocs = 0;
 	msm_ring->submit.nr_cmds = 0;
 	msm_ring->submit.nr_bos = 0;
 	msm_ring->nr_cmds = 0;
 	msm_ring->nr_bos = 0;
+
+	if (msm_ring->is_growable) {
+		delete_cmds(msm_ring);
+	} else {
+		/* in old mode, just reset the # of relocs: */
+		current_cmd(ring)->nr_relocs = 0;
+	}
+}
+
+static void finalize_current_cmd(struct fd_ringbuffer *ring, uint32_t *last_start)
+{
+	uint32_t submit_offset, size, type;
+	struct fd_ringbuffer *parent;
+
+	if (ring->parent) {
+		parent = ring->parent;
+		type = MSM_SUBMIT_CMD_IB_TARGET_BUF;
+	} else {
+		parent = ring;
+		type = MSM_SUBMIT_CMD_BUF;
+	}
+
+	submit_offset = offset_bytes(last_start, ring->start);
+	size = offset_bytes(ring->cur, last_start);
+
+	get_cmd(parent, current_cmd(ring), submit_offset, size, type);
 }
 
 static void dump_submit(struct msm_ringbuffer *msm_ring)
@@ -323,13 +388,10 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	struct drm_msm_gem_submit req = {
 			.pipe = to_msm_pipe(ring->pipe)->pipe,
 	};
-	uint32_t i, submit_offset, size;
+	uint32_t i;
 	int ret;
 
-	submit_offset = offset_bytes(last_start, ring->start);
-	size = offset_bytes(ring->cur, last_start);
-
-	get_cmd(ring, msm_ring->cmd, submit_offset, size, MSM_SUBMIT_CMD_BUF);
+	finalize_current_cmd(ring, last_start);
 
 	/* needs to be after get_cmd() as that could create bos/cmds table: */
 	req.bos = VOID2U64(msm_ring->submit.bos),
@@ -367,6 +429,13 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	return ret;
 }
 
+static void msm_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t size)
+{
+	assert(to_msm_ringbuffer(ring)->is_growable);
+	finalize_current_cmd(ring, ring->last_start);
+	ring_cmd_new(ring, size);
+}
+
 static void msm_ringbuffer_reset(struct fd_ringbuffer *ring)
 {
 	flush_reset(ring);
@@ -375,14 +444,14 @@ static void msm_ringbuffer_reset(struct fd_ringbuffer *ring)
 static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 		const struct fd_reloc *r)
 {
-	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct fd_ringbuffer *parent = ring->parent ? ring->parent : ring;
 	struct msm_bo *msm_bo = to_msm_bo(r->bo);
 	struct drm_msm_gem_submit_reloc *reloc;
-	uint32_t idx = APPEND(msm_ring->cmd, relocs);
+	struct msm_cmd *cmd = current_cmd(ring);
+	uint32_t idx = APPEND(cmd, relocs);
 	uint32_t addr;
 
-	reloc = &msm_ring->cmd->relocs[idx];
+	reloc = &cmd->relocs[idx];
 
 	reloc->reloc_idx = bo2idx(parent, r->bo, r->flags);
 	reloc->reloc_offset = r->offset;
@@ -398,26 +467,53 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	(*ring->cur++) = addr | r->or;
 }
 
-static void msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringbuffer *target,
+static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *target, uint32_t cmd_idx,
 		uint32_t submit_offset, uint32_t size)
 {
-	struct msm_cmd *cmd = to_msm_ringbuffer(target)->cmd;
+	struct msm_cmd *cmd = NULL;
+	uint32_t idx = 0;
 
-	get_cmd(ring, cmd, submit_offset, size, MSM_SUBMIT_CMD_IB_TARGET_BUF);
+	LIST_FOR_EACH_ENTRY(cmd, &to_msm_ringbuffer(target)->cmd_list, list) {
+		if (idx == cmd_idx)
+			break;
+		idx++;
+	}
+
+	assert(cmd && (idx == cmd_idx));
+
+	if (idx < (to_msm_ringbuffer(target)->cmd_count - 1)) {
+		/* All but the last cmd buffer is fully "baked" (ie. already has
+		 * done get_cmd() to add it to the cmds table).  But in this case,
+		 * the size we get is invalid (since it is calculated from the
+		 * last cmd buffer):
+		 */
+		size = cmd->size;
+	} else {
+		get_cmd(ring, cmd, submit_offset, size, MSM_SUBMIT_CMD_IB_TARGET_BUF);
+	}
 
 	msm_ringbuffer_emit_reloc(ring, &(struct fd_reloc){
 		.bo = cmd->ring_bo,
 		.flags = FD_RELOC_READ,
 		.offset = submit_offset,
 	});
+
+	return size;
+}
+
+static uint32_t msm_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
+{
+	return to_msm_ringbuffer(ring)->cmd_count;
 }
 
 static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	if (msm_ring->cmd)
-		ring_cmd_del(msm_ring->cmd);
+
+	flush_reset(ring);
+	delete_cmds(msm_ring);
+
 	free(msm_ring->submit.cmds);
 	free(msm_ring->submit.bos);
 	free(msm_ring->bos);
@@ -428,9 +524,11 @@ static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 static const struct fd_ringbuffer_funcs funcs = {
 		.hostptr = msm_ringbuffer_hostptr,
 		.flush = msm_ringbuffer_flush,
+		.grow = msm_ringbuffer_grow,
 		.reset = msm_ringbuffer_reset,
 		.emit_reloc = msm_ringbuffer_emit_reloc,
 		.emit_reloc_ring = msm_ringbuffer_emit_reloc_ring,
+		.cmd_count = msm_ringbuffer_cmd_count,
 		.destroy = msm_ringbuffer_destroy,
 };
 
@@ -446,15 +544,20 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 		goto fail;
 	}
 
+	if (size == 0) {
+		assert(pipe->dev->version >= FD_VERSION_UNLIMITED_CMDS);
+		size = INIT_SIZE;
+		msm_ring->is_growable = TRUE;
+	}
+
+	list_inithead(&msm_ring->cmd_list);
+
 	ring = &msm_ring->base;
 	ring->funcs = &funcs;
+	ring->size = size;
 	ring->pipe = pipe;   /* needed in ring_cmd_new() */
 
-	msm_ring->cmd = ring_cmd_new(ring, size);
-	if (!msm_ring->cmd) {
-		ERROR_MSG("command buffer allocation failed");
-		goto fail;
-	}
+	ring_cmd_new(ring, size);
 
 	return ring;
 fail:
