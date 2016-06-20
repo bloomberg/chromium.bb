@@ -168,8 +168,7 @@ TEST_F(BluetoothRemoteGattServiceTest,
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-TEST_F(BluetoothRemoteGattServiceTest,
-       GetCharacteristic_CharacteristicRemoved) {
+TEST_F(BluetoothRemoteGattServiceTest, GattCharacteristics_ObserversCalls) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -196,6 +195,10 @@ TEST_F(BluetoothRemoteGattServiceTest,
   SimulateGattCharacteristic(service, characteristic_uuid2, /* properties */ 0);
   SimulateGattCharacteristic(service, characteristic_uuid3, /* properties */ 0);
   SimulateGattCharacteristic(service, characteristic_uuid4, /* properties */ 0);
+#if !defined(OS_WIN)
+  // TODO(620895) GattCharacteristicAdded has to be implemented for Windows.
+  EXPECT_EQ(4, observer.gatt_characteristic_added_count());
+#endif  // !defined(OS_WIN)
 
   // Simulate remove of characteristics one by one.
   EXPECT_EQ(4u, service->GetCharacteristics().size());
