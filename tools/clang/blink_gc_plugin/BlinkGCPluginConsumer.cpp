@@ -68,6 +68,7 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
     : instance_(instance),
       reporter_(instance),
       options_(options),
+      cache_(instance),
       json_(0) {
   // Only check structures in the blink and WebKit namespaces.
   options_.checked_namespaces.insert("blink");
@@ -552,9 +553,10 @@ void BlinkGCPluginConsumer::CheckTraceMethod(
       reporter_.BaseRequiresTracing(parent, trace, base.first);
 
   for (auto& field : parent->GetFields()) {
-    if (!field.second.IsProperlyTraced()) {
-      // Discontinue once an untraced-field error is found.
-      reporter_.FieldsRequireTracing(parent, trace);
+    if (!field.second.IsProperlyTraced() ||
+        field.second.IsInproperlyTraced()) {
+      // Report one or more tracing-related field errors.
+      reporter_.FieldsImproperlyTraced(parent, trace);
       break;
     }
   }
@@ -590,6 +592,7 @@ void BlinkGCPluginConsumer::DumpClass(RecordInfo* info) {
                         "reference" : "raw") :
                    Parent()->IsRefPtr() ? "ref" :
                    Parent()->IsOwnPtr() ? "own" :
+                   Parent()->IsUniquePtr() ? "unique" :
                    (Parent()->IsMember() || Parent()->IsWeakMember()) ? "mem" :
                    "val");
       json_->CloseObject();

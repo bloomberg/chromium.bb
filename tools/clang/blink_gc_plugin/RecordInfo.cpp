@@ -4,6 +4,7 @@
 
 #include "Config.h"
 #include "RecordInfo.h"
+#include "clang/Sema/Sema.h"
 
 using namespace clang;
 using std::string;
@@ -556,6 +557,16 @@ TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
   return fields_need_tracing_;
 }
 
+static bool isInStdNamespace(clang::Sema& sema, NamespaceDecl* ns)
+{
+  while (ns) {
+    if (sema.getStdNamespace()->InEnclosingNamespaceSetOf(ns))
+      return true;
+    ns = dyn_cast<NamespaceDecl>(ns->getParent());
+  }
+  return false;
+}
+
 Edge* RecordInfo::CreateEdge(const Type* type) {
   if (!type) {
     return 0;
@@ -588,6 +599,18 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     return 0;
   }
 
+  if (Config::IsUniquePtr(info->name()) && info->GetTemplateArgs(1, &args)) {
+    // Check that this is std::unique_ptr
+    NamespaceDecl* ns =
+        dyn_cast<NamespaceDecl>(info->record()->getDeclContext());
+    clang::Sema& sema = cache_->instance().getSema();
+    if (!isInStdNamespace(sema, ns))
+      return 0;
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new UniquePtr(ptr);
+    return 0;
+  }
+
   if (Config::IsMember(info->name()) && info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))
       return new Member(ptr);
@@ -600,7 +623,8 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     return 0;
   }
 
-  if (Config::IsPersistent(info->name())) {
+  bool is_persistent = Config::IsPersistent(info->name());
+  if (is_persistent || Config::IsCrossThreadPersistent(info->name())) {
     // Persistent might refer to v8::Persistent, so check the name space.
     // TODO: Consider using a more canonical identification than names.
     NamespaceDecl* ns =
@@ -609,8 +633,12 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
       return 0;
     if (!info->GetTemplateArgs(1, &args))
       return 0;
-    if (Edge* ptr = CreateEdge(args[0]))
-      return new Persistent(ptr);
+    if (Edge* ptr = CreateEdge(args[0])) {
+      if (is_persistent)
+        return new Persistent(ptr);
+      else
+        return new CrossThreadPersistent(ptr);
+    }
     return 0;
   }
 
