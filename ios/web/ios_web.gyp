@@ -495,6 +495,8 @@
         'public/test/scoped_testing_web_client.mm',
         'public/test/test_browser_state.cc',
         'public/test/test_browser_state.h',
+        'public/test/test_redirect_observer.h',
+        'public/test/test_redirect_observer.mm',
         'public/test/test_web_client.h',
         'public/test/test_web_client.mm',
         'public/test/test_web_state.h',
