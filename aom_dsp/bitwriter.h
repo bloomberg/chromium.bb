@@ -12,6 +12,7 @@
 #ifndef AOM_DSP_BITWRITER_H_
 #define AOM_DSP_BITWRITER_H_
 
+#include <assert.h>
 #include "./aom_config.h"
 #if CONFIG_DAALA_EC
 #include "aom_dsp/daalaboolwriter.h"
@@ -81,6 +82,19 @@ static INLINE void aom_write_tree(aom_writer *w, const aom_tree_index *tree,
   daala_write_tree_bits(w, tree, probs, bits, len, i);
 #else
   aom_write_tree_bits(w, tree, probs, bits, len, i);
+#endif
+}
+
+static INLINE void aom_write_tree_cdf(aom_writer *w, int symb,
+                                      const uint16_t *cdf, int nsymbs) {
+#if CONFIG_DAALA_EC
+  daala_write_tree_cdf(w, symb, cdf, nsymbs);
+#else
+  (void)w;
+  (void)symb;
+  (void)cdf;
+  (void)nsymbs;
+  assert(0 && "Unsupported bitwriter operation");
 #endif
 }
 
