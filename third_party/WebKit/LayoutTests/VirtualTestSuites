@@ -262,5 +262,10 @@
     "prefix": "documentwriteevaluator",
     "base": "http/tests/preload/document-write",
     "args": ["--enable-blink-features=DocumentWriteEvaluator"]
+  },
+  {
+    "prefix": "asyncawait",
+    "base": "inspector/sources/debugger-async/async-await",
+    "args": ["--js-flags=--harmony-async-await"]
   }
 ]
