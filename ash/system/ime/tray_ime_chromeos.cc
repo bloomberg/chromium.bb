@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
@@ -241,13 +242,12 @@ TrayIME::TrayIME(SystemTray* system_tray)
   Shell::GetInstance()->system_tray_notifier()->AddIMEObserver(this);
   Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
       this);
-  Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 TrayIME::~TrayIME() {
   Shell::GetInstance()->system_tray_notifier()->RemoveIMEObserver(this);
-  Shell::GetInstance()->system_tray_notifier()->RemoveAccessibilityObserver(
-      this);
+  WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
   Shell::GetInstance()->system_tray_notifier()->RemoveVirtualKeyboardObserver(
       this);
 }

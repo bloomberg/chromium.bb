@@ -11,11 +11,9 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -43,8 +41,7 @@ enum AccessibilityState {
 };
 
 uint32_t GetAccessibilityState() {
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   uint32_t state = A11Y_NONE;
   if (delegate->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
@@ -155,8 +152,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
   spoken_feedback_view_ =
       AddScrollListItem(bundle.GetLocalizedString(
@@ -201,12 +197,8 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 void AccessibilityDetailedView::AppendHelpEntries() {
   // Currently the help page requires a browser window.
   // TODO(yoshiki): show this even on login/lock screen. crbug.com/158286
-  bool userAddingRunning = ash::Shell::GetInstance()
-                               ->session_state_delegate()
-                               ->IsInSecondaryLoginScreen();
-
   if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
-      userAddingRunning)
+      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
     return;
 
   views::View* bottom_row = new View();
@@ -248,42 +240,41 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
 }
 
 void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   if (sender == footer()->content()) {
     TransitionToDefaultView();
   } else if (sender == spoken_feedback_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsSpokenFeedbackEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK :
             ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK);
     delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   } else if (sender == high_contrast_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsHighContrastEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST :
             ash::UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST);
     delegate->ToggleHighContrast();
   } else if (sender == screen_magnifier_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsMagnifierEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_MAGNIFIER :
             ash::UMA_STATUS_AREA_ENABLE_MAGNIFIER);
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
   } else if (large_cursor_view_ && sender == large_cursor_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsLargeCursorEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_LARGE_CURSOR :
             ash::UMA_STATUS_AREA_ENABLE_LARGE_CURSOR);
     delegate->SetLargeCursorEnabled(!delegate->IsLargeCursorEnabled());
   } else if (autoclick_view_ && sender == autoclick_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsAutoclickEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_AUTO_CLICK :
             ash::UMA_STATUS_AREA_ENABLE_AUTO_CLICK);
     delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
   } else if (virtual_keyboard_view_ && sender == virtual_keyboard_view_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         delegate->IsVirtualKeyboardEnabled() ?
             ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD :
             ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD);
@@ -315,14 +306,12 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       login_(GetCurrentLoginStatus()),
       previous_accessibility_state_(GetAccessibilityState()),
       show_a11y_menu_on_lock_screen_(true) {
-  DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
-  Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 TrayAccessibility::~TrayAccessibility() {
-  Shell::GetInstance()->system_tray_notifier()->
-      RemoveAccessibilityObserver(this);
+  WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
 void TrayAccessibility::SetTrayIconVisible(bool visible) {
@@ -349,8 +338,7 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
   // - "Enable accessibility menu" on chrome://settings is checked;
   // - or any of accessibility features is enabled
   // Otherwise, not shows it.
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   if (login_ != LoginStatus::NOT_LOGGED_IN &&
       !delegate->ShouldShowAccessibilityMenu() &&
       // On login screen, keeps the initial visibility of the menu.
@@ -373,7 +361,7 @@ views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
     request_popup_view_state_ = A11Y_NONE;
     return detailed_popup_;
   } else {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+    WmShell::Get()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_DETAILED_ACCESSABILITY);
     detailed_menu_ = CreateDetailedMenu();
     return detailed_menu_;

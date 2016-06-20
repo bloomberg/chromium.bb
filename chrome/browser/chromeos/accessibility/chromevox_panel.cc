@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/accessibility_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -14,7 +15,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"

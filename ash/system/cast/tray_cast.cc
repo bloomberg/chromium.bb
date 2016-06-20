@@ -16,6 +16,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"

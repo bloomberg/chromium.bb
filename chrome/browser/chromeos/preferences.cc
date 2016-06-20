@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -50,7 +51,6 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "url/gurl.h"

@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_observer.h"
 #include "base/callback_forward.h"
@@ -24,7 +25,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/chromeos/accessibility_types.h"
 
 namespace content {
 class RenderViewHost;

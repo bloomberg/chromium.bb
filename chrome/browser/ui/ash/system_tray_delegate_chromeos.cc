@@ -1132,7 +1132,7 @@ void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
 
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
     ui::AccessibilityNotificationVisibility notify) {
-  GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
+  GetWmSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
 }
 
 void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {

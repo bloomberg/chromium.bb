@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/common/accessibility_types.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/chromeos/accessibility_types.h"
 
 namespace policy {
 

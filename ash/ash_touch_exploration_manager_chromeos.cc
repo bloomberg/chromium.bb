@@ -6,9 +6,10 @@
 
 #include "ash/audio/sounds.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chromeos/audio/chromeos_sounds.h"
@@ -23,17 +24,17 @@ AshTouchExplorationManager::AshTouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
       audio_handler_(chromeos::CrasAudioHandler::Get()) {
-  Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
-  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   UpdateTouchExplorationState();
 }
 
 AshTouchExplorationManager::~AshTouchExplorationManager() {
-  SystemTrayNotifier* system_tray_notifier =
-      Shell::GetInstance()->system_tray_notifier();
+  WmSystemTrayNotifier* system_tray_notifier =
+      WmShell::Get()->system_tray_notifier();
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
-  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
 void AshTouchExplorationManager::OnAccessibilityModeChanged(

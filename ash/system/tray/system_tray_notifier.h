@@ -15,7 +15,6 @@
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
-#include "ash/system/tray_accessibility.h"
 #include "ash/system/user/user_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -45,9 +44,6 @@ class ASH_EXPORT SystemTrayNotifier {
  public:
   SystemTrayNotifier();
   ~SystemTrayNotifier();
-
-  void AddAccessibilityObserver(AccessibilityObserver* observer);
-  void RemoveAccessibilityObserver(AccessibilityObserver* observer);
 
   void AddAudioObserver(AudioObserver* observer);
   void RemoveAudioObserver(AudioObserver* observer);
@@ -101,8 +97,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
 #endif
 
-  void NotifyAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify);
   void NotifyAudioOutputVolumeChanged(uint64_t node_id, double volume);
   void NotifyAudioOutputMuteChanged(bool mute_on, bool system_adjust);
   void NotifyAudioNodesChanged();
@@ -139,7 +133,6 @@ class ASH_EXPORT SystemTrayNotifier {
 #endif
 
  private:
-  base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<AudioObserver> audio_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LocaleObserver> locale_observers_;

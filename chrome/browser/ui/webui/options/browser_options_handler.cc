@@ -111,6 +111,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -136,7 +137,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 

@@ -5,9 +5,10 @@
 #include "ash/keyboard/keyboard_ui.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/keyboard/keyboard_ui_observer.h"
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -17,12 +18,13 @@ namespace ash {
 class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
  public:
   KeyboardUIImpl() {
-    // The Shell may not exist in some unit tests.
-    Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(
-        this);
+    WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   }
 
-  ~KeyboardUIImpl() override {}
+  ~KeyboardUIImpl() override {
+    if (WmShell::HasInstance() && WmShell::Get()->system_tray_notifier())
+      WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
+  }
 
   // KeyboardUI:
   void Show() override {
@@ -33,8 +35,8 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
     // to the appropriate keyboard functions.
   }
   bool IsEnabled() override {
-    return Shell::GetInstance()
-        ->accessibility_delegate()
+    return WmShell::Get()
+        ->GetAccessibilityDelegate()
         ->IsVirtualKeyboardEnabled();
   }
 

@@ -72,7 +72,6 @@
       'sources': [
         'accelerometer/accelerometer_util.cc',
         'accelerometer/accelerometer_util.h',
-        'accessibility_types.h',
         'ime/candidate_view.cc',
         'ime/candidate_view.h',
         'ime/candidate_window_view.cc',

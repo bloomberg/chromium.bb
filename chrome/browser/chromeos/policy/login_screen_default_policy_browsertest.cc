@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/common/accessibility_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -28,7 +29,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/chromeos/accessibility_types.h"
 
 namespace em = enterprise_management;
 

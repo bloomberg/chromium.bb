@@ -191,6 +191,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -213,7 +214,6 @@
 #include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/snapshot/screenshot_grabber.h"
 #endif

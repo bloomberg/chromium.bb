@@ -6,11 +6,13 @@
 #define ASH_COMMON_SYSTEM_TRAY_WM_SYSTEM_TRAY_NOTIFIER_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/accessibility_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace ash {
 
+class AccessibilityObserver;
 class ClockObserver;
 struct UpdateInfo;
 class UpdateObserver;
@@ -25,11 +27,17 @@ class ASH_EXPORT WmSystemTrayNotifier {
   WmSystemTrayNotifier();
   ~WmSystemTrayNotifier();
 
+  void AddAccessibilityObserver(AccessibilityObserver* observer);
+  void RemoveAccessibilityObserver(AccessibilityObserver* observer);
+
   void AddClockObserver(ClockObserver* observer);
   void RemoveClockObserver(ClockObserver* observer);
 
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
+
+  void NotifyAccessibilityModeChanged(
+      ui::AccessibilityNotificationVisibility notify);
 
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
@@ -39,6 +47,7 @@ class ASH_EXPORT WmSystemTrayNotifier {
   void NotifyUpdateRecommended(const UpdateInfo& info);
 
  private:
+  base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<UpdateObserver> update_observers_;
 

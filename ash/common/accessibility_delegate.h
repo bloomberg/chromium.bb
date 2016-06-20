@@ -6,9 +6,9 @@
 #define ASH_COMMON_ACCESSIBILITY_DELEGATE_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/accessibility_types.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/chromeos/accessibility_types.h"
 
 namespace ash {
 

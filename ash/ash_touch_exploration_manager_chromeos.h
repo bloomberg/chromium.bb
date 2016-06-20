@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/system/tray_accessibility.h"
+#include "ash/common/system/accessibility_observer.h"
 #include "base/macros.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -25,7 +25,7 @@ class RootWindowController;
 // TouchExplorationControllerDelegate which allows touch gestures to manipulate
 // the system.
 class ASH_EXPORT AshTouchExplorationManager
-    : public ash::AccessibilityObserver,
+    : public AccessibilityObserver,
       public ui::TouchExplorationControllerDelegate,
       public aura::client::ActivationChangeObserver {
  public:

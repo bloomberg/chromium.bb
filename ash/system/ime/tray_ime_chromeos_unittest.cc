@@ -5,9 +5,10 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 
 #include "ash/common/accessibility_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/system/tray/wm_system_tray_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/virtual_keyboard_test_helper.h"
@@ -66,13 +67,13 @@ void TrayIMETest::SetUpForStatusAreaWidget(
 }
 
 void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
-  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+  WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(
       enabled);
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   ui::AccessibilityNotificationVisibility notification =
       enabled ? ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_SHOW
               : ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_NONE;
-  Shell::GetInstance()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  WmShell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
       notification);
 }
 

@@ -6,6 +6,7 @@
 
 #include <type_traits>
 
+#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +35,6 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/components_strings.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"

@@ -9,6 +9,7 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
@@ -31,16 +32,6 @@ class View;
 namespace ash {
 class HoverHighlightView;
 class SystemTrayItem;
-
-class ASH_EXPORT AccessibilityObserver {
- public:
-  virtual ~AccessibilityObserver() {}
-
-  // Notifies when accessibility mode changes.
-  virtual void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) = 0;
-};
-
 
 namespace tray {
 

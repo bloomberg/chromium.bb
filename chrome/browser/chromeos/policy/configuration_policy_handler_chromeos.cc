@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/accessibility_types.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -34,7 +35,6 @@
 #include "crypto/sha2.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
-#include "ui/chromeos/accessibility_types.h"
 #include "url/gurl.h"
 
 namespace policy {

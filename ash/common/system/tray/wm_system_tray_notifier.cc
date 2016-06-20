@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/wm_system_tray_notifier.h"
 
+#include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/update/update_observer.h"
 
@@ -12,6 +13,16 @@ namespace ash {
 WmSystemTrayNotifier::WmSystemTrayNotifier() {}
 
 WmSystemTrayNotifier::~WmSystemTrayNotifier() {}
+
+void WmSystemTrayNotifier::AddAccessibilityObserver(
+    AccessibilityObserver* observer) {
+  accessibility_observers_.AddObserver(observer);
+}
+
+void WmSystemTrayNotifier::RemoveAccessibilityObserver(
+    AccessibilityObserver* observer) {
+  accessibility_observers_.RemoveObserver(observer);
+}
 
 void WmSystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
   clock_observers_.AddObserver(observer);
@@ -27,6 +38,12 @@ void WmSystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
 
 void WmSystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
   update_observers_.RemoveObserver(observer);
+}
+
+void WmSystemTrayNotifier::NotifyAccessibilityModeChanged(
+    ui::AccessibilityNotificationVisibility notify) {
+  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
+                    OnAccessibilityModeChanged(notify));
 }
 
 void WmSystemTrayNotifier::NotifyRefreshClock() {

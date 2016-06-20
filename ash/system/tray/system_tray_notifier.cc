@@ -12,16 +12,6 @@ SystemTrayNotifier::SystemTrayNotifier() {
 SystemTrayNotifier::~SystemTrayNotifier() {
 }
 
-void SystemTrayNotifier::AddAccessibilityObserver(
-    AccessibilityObserver* observer) {
-  accessibility_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAccessibilityObserver(
-    AccessibilityObserver* observer) {
-  accessibility_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
   audio_observers_.AddObserver(observer);
 }
@@ -170,14 +160,6 @@ void SystemTrayNotifier::RemoveVirtualKeyboardObserver(
   virtual_keyboard_observers_.RemoveObserver(observer);
 }
 #endif
-
-void SystemTrayNotifier::NotifyAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
-  FOR_EACH_OBSERVER(
-      AccessibilityObserver,
-      accessibility_observers_,
-      OnAccessibilityModeChanged(notify));
-}
 
 void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
                                                         double volume) {

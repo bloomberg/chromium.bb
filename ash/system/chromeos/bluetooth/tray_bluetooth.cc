@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
