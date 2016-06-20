@@ -23,12 +23,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "./config.h"
 #endif
 
-#include "entdec.h"
+#include "aom_dsp/entdec.h"
 #if OD_ACCOUNTING
-# include "accounting.h"
+#include "./accounting.h"
 #endif
 
 /*A range decoder.
@@ -87,7 +87,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
   }*/
 
 #if OD_ACCOUNTING
-# define od_ec_dec_normalize(dec, dif, rng, ret, str) od_ec_dec_normalize_(dec, dif, rng, ret, str)
+#define od_ec_dec_normalize(dec, dif, rng, ret, str) \
+  od_ec_dec_normalize_(dec, dif, rng, ret, str)
 static void od_process_accounting(od_ec_dec *dec, char *str) {
   if (dec->acct != NULL) {
     uint32_t tell;
@@ -98,7 +99,8 @@ static void od_process_accounting(od_ec_dec *dec, char *str) {
   }
 }
 #else
-# define od_ec_dec_normalize(dec, dif, rng, ret, str) od_ec_dec_normalize_(dec, dif, rng, ret)
+#define od_ec_dec_normalize(dec, dif, rng, ret, str) \
+  od_ec_dec_normalize_(dec, dif, rng, ret)
 #endif
 
 /*This is meant to be a large, positive constant that can still be efficiently
@@ -139,8 +141,8 @@ static void od_ec_dec_refill(od_ec_dec *dec) {
   ret: The value to return.
   Return: ret.
           This allows the compiler to jump to this function via a tail-call.*/
-static int od_ec_dec_normalize_(od_ec_dec *dec,
- od_ec_window dif, unsigned rng, int ret OD_ACC_STR) {
+static int od_ec_dec_normalize_(od_ec_dec *dec, od_ec_window dif, unsigned rng,
+                                int ret OD_ACC_STR) {
   int d;
   OD_ASSERT(rng <= 65535U);
   d = 16 - OD_ILOG_NZ(rng);
@@ -157,8 +159,8 @@ static int od_ec_dec_normalize_(od_ec_dec *dec,
 /*Initializes the decoder.
   buf: The input buffer to use.
   Return: 0 on success, or a negative value on error.*/
-void od_ec_dec_init(od_ec_dec *dec,
- const unsigned char *buf, uint32_t storage) {
+void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
+                    uint32_t storage) {
   dec->buf = buf;
   dec->eptr = buf + storage;
   dec->end_window = 0;
@@ -205,7 +207,7 @@ int od_ec_decode_bool_(od_ec_dec *dec, unsigned fz, unsigned ft OD_ACC_STR) {
     unsigned d;
     unsigned e;
     d = r - ft;
-    e = OD_SUBSATU(2*d, ft);
+    e = OD_SUBSATU(2 * d, ft);
     v = fz + OD_MINI(fz, e) + OD_MINI(OD_SUBSATU(fz, e) >> 1, d);
   }
 #else
@@ -254,7 +256,8 @@ int od_ec_decode_bool_q15_(od_ec_dec *dec, unsigned fz OD_ACC_STR) {
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.
   Return: The decoded symbol s.*/
-int od_ec_decode_cdf_(od_ec_dec *dec, const uint16_t *cdf, int nsyms OD_ACC_STR) {
+int od_ec_decode_cdf_(od_ec_dec *dec, const uint16_t *cdf,
+                      int nsyms OD_ACC_STR) {
   od_ec_window dif;
   unsigned r;
   unsigned c;
@@ -285,7 +288,7 @@ int od_ec_decode_cdf_(od_ec_dec *dec, const uint16_t *cdf, int nsyms OD_ACC_STR)
   c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
   q = OD_MAXI((int)(c >> 1), (int)(c - d));
 #if OD_EC_REDUCED_OVERHEAD
-  e = OD_SUBSATU(2*d, ft);
+  e = OD_SUBSATU(2 * d, ft);
   /*The correctness of this inverse partition function is not obvious, but it
      was checked exhaustively for all possible values of r, ft, and c.
     TODO: It should be possible to optimize this better than the compiler,
@@ -293,10 +296,10 @@ int od_ec_decode_cdf_(od_ec_dec *dec, const uint16_t *cdf, int nsyms OD_ACC_STR)
      will not use them).
     It would also be nice to get rid of the 32-bit dividend, as it requires a
      32x32->64 bit multiply to invert.*/
-  q = OD_MAXI((int)q, (int)((2*(int32_t)c + 1 - (int32_t)e)/3));
+  q = OD_MAXI((int)q, (int)((2 * (int32_t)c + 1 - (int32_t)e) / 3));
 #endif
   q >>= s;
-  OD_ASSERT(q < ft >> s);
+  OD_ASSERT(q<ft>> s);
   fl = 0;
   ret = 0;
   for (fh = cdf[ret]; fh <= q; fh = cdf[++ret]) fl = fh;
@@ -323,8 +326,8 @@ int od_ec_decode_cdf_(od_ec_dec *dec, const uint16_t *cdf, int nsyms OD_ACC_STR)
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.
   Return: The decoded symbol s.*/
-int od_ec_decode_cdf_unscaled_(od_ec_dec *dec,
- const uint16_t *cdf, int nsyms OD_ACC_STR) {
+int od_ec_decode_cdf_unscaled_(od_ec_dec *dec, const uint16_t *cdf,
+                               int nsyms OD_ACC_STR) {
   od_ec_window dif;
   unsigned r;
   unsigned c;
@@ -359,12 +362,12 @@ int od_ec_decode_cdf_unscaled_(od_ec_dec *dec,
   c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
   q = OD_MAXI((int)(c >> 1), (int)(c - d));
 #if OD_EC_REDUCED_OVERHEAD
-  e = OD_SUBSATU(2*d, ft);
+  e = OD_SUBSATU(2 * d, ft);
   /*TODO: See TODO above.*/
-  q = OD_MAXI((int)q, (int)((2*(int32_t)c + 1 - (int32_t)e)/3));
+  q = OD_MAXI((int)q, (int)((2 * (int32_t)c + 1 - (int32_t)e) / 3));
 #endif
   q >>= s;
-  OD_ASSERT(q < ft >> s);
+  OD_ASSERT(q<ft>> s);
   fl = 0;
   ret = 0;
   for (fh = cdf[ret]; fh <= q; fh = cdf[++ret]) fl = fh;
@@ -399,8 +402,8 @@ int od_ec_decode_cdf_unscaled_(od_ec_dec *dec,
   ftb: The number of bits of precision in the cumulative distribution.
        This must be no more than 15.
   Return: The decoded symbol s.*/
-int od_ec_decode_cdf_unscaled_dyadic_(od_ec_dec *dec,
- const uint16_t *cdf, int nsyms, unsigned ftb OD_ACC_STR) {
+int od_ec_decode_cdf_unscaled_dyadic_(od_ec_dec *dec, const uint16_t *cdf,
+                                      int nsyms, unsigned ftb OD_ACC_STR) {
   od_ec_window dif;
   unsigned r;
   unsigned c;
@@ -419,9 +422,8 @@ int od_ec_decode_cdf_unscaled_dyadic_(od_ec_dec *dec,
   ret = -1;
   do {
     u = v;
-    v = cdf[++ret]*(uint32_t)r >> ftb;
-  }
-  while (v <= c);
+    v = cdf[++ret] * (uint32_t)r >> ftb;
+  } while (v <= c);
   OD_ASSERT(v <= r);
   r = v - u;
   dif -= (od_ec_window)u << (OD_EC_WINDOW_SIZE - 16);
@@ -441,8 +443,8 @@ int od_ec_decode_cdf_unscaled_dyadic_(od_ec_dec *dec,
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.
   Return: The decoded symbol s.*/
-int od_ec_decode_cdf_q15_(od_ec_dec *dec,
- const uint16_t *cdf, int nsyms OD_ACC_STR) {
+int od_ec_decode_cdf_q15_(od_ec_dec *dec, const uint16_t *cdf,
+                          int nsyms OD_ACC_STR) {
   return od_ec_decode_cdf_unscaled_dyadic(dec, cdf, nsyms, 15, acc_str);
 }
 
@@ -494,10 +496,9 @@ uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb OD_ACC_STR) {
         available = OD_EC_LOTS_OF_BITS;
         break;
       }
-      window |= (od_ec_window)*--eptr << available;
+      window |= (od_ec_window) * --eptr << available;
       available += 8;
-    }
-    while (available <= OD_EC_WINDOW_SIZE - 8);
+    } while (available <= OD_EC_WINDOW_SIZE - 8);
     dec->eptr = eptr;
   }
   ret = (uint32_t)window & (((uint32_t)1 << ftb) - 1);
@@ -518,8 +519,8 @@ uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb OD_ACC_STR) {
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
 int od_ec_dec_tell(od_ec_dec *dec) {
-  return ((dec->end - dec->eptr) + (dec->bptr - dec->buf))*8
-   - dec->cnt - dec->nend_bits + dec->tell_offs;
+  return ((dec->end - dec->eptr) + (dec->bptr - dec->buf)) * 8 - dec->cnt -
+         dec->nend_bits + dec->tell_offs;
 }
 
 /*Returns the number of bits "used" by the decoded symbols so far.

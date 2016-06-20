@@ -23,10 +23,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 
 #if !defined(_entcode_H)
-# define _entcode_H (1)
-# include <limits.h>
-# include <stddef.h>
-# include "av1/common/odintrin.h"
+#define _entcode_H (1)
+#include <limits.h>
+#include <stddef.h>
+#include "av1/common/odintrin.h"
 
 /*Set this flag 1 to enable a "reduced overhead" version of the entropy coder.
   This uses a partition function that more accurately follows the input
@@ -81,39 +81,38 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
    (vs. 0.022% for the division-based partition function with r much greater
    than ft).
   It improves performance on ntt-short-1 by about 0.3%.*/
-# define OD_EC_REDUCED_OVERHEAD (1)
+#define OD_EC_REDUCED_OVERHEAD (1)
 
 /*OPT: od_ec_window must be at least 32 bits, but if you have fast arithmetic
    on a larger type, you can speed up the decoder by using it here.*/
 typedef uint32_t od_ec_window;
 
-# define OD_EC_WINDOW_SIZE ((int)sizeof(od_ec_window)*CHAR_BIT)
+#define OD_EC_WINDOW_SIZE ((int)sizeof(od_ec_window) * CHAR_BIT)
 
 /*Unsigned subtraction with unsigned saturation.
   This implementation of the macro is intentionally chosen to increase the
    number of common subexpressions in the reduced-overhead partition function.
   This matters for C code, but it would not for hardware with a saturating
    subtraction instruction.*/
-#define OD_SUBSATU(a, b) ((a) - OD_MINI(a, b))
+#define OD_SUBSATU(a, b) ((a)-OD_MINI(a, b))
 
 /*The number of bits to use for the range-coded part of unsigned integers.*/
-# define OD_EC_UINT_BITS (4)
+#define OD_EC_UINT_BITS (4)
 
 /*The resolution of fractional-precision bit usage measurements, i.e.,
    3 => 1/8th bits.*/
-# define OD_BITRES (3)
+#define OD_BITRES (3)
 
 extern const uint16_t OD_UNIFORM_CDFS_Q15[135];
 
 /*Returns a Q15 CDF for a uniform probability distribution of the given size.
   n: The size of the distribution.
      This must be at least 2, and no more than 16.*/
-# define OD_UNIFORM_CDF_Q15(n) \
-   (OD_UNIFORM_CDFS_Q15 + ((n)*((n) - 1) >> 1) - 1)
+#define OD_UNIFORM_CDF_Q15(n) (OD_UNIFORM_CDFS_Q15 + ((n) * ((n)-1) >> 1) - 1)
 
 /*See entcode.c for further documentation.*/
 
 OD_WARN_UNUSED_RESULT uint32_t od_ec_tell_frac(uint32_t nbits_total,
- uint32_t rng);
+                                               uint32_t rng);
 
 #endif

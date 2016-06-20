@@ -23,9 +23,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 
 #if !defined(_entenc_H)
-# define _entenc_H (1)
-# include <stddef.h>
-# include "entcode.h"
+#define _entenc_H (1)
+#include <stddef.h>
+#include "aom_dsp/entcode.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,33 +76,34 @@ void od_ec_enc_reset(od_ec_enc *enc) OD_ARG_NONNULL(1);
 void od_ec_enc_clear(od_ec_enc *enc) OD_ARG_NONNULL(1);
 
 void od_ec_encode_bool(od_ec_enc *enc, int val, unsigned fz, unsigned _ft)
- OD_ARG_NONNULL(1);
+    OD_ARG_NONNULL(1);
 void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz_q15)
- OD_ARG_NONNULL(1);
-void od_ec_encode_cdf(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
-void od_ec_encode_cdf_q15(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
-void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
+    OD_ARG_NONNULL(1);
+void od_ec_encode_cdf(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms)
+    OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
+void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms)
+    OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
+void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s, const uint16_t *cdf,
+                               int nsyms) OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
 void od_ec_encode_cdf_unscaled_dyadic(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms, unsigned ftb)
- OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
+                                      const uint16_t *cdf, int nsyms,
+                                      unsigned ftb) OD_ARG_NONNULL(1)
+    OD_ARG_NONNULL(3);
 
-void od_ec_enc_uint(od_ec_enc *enc, uint32_t fl, uint32_t ft)
-OD_ARG_NONNULL(1);
+void od_ec_enc_uint(od_ec_enc *enc, uint32_t fl, uint32_t ft) OD_ARG_NONNULL(1);
 
 void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb)
- OD_ARG_NONNULL(1);
+    OD_ARG_NONNULL(1);
 
 void od_ec_enc_patch_initial_bits(od_ec_enc *enc, unsigned val, int nbits)
- OD_ARG_NONNULL(1);
+    OD_ARG_NONNULL(1);
 OD_WARN_UNUSED_RESULT unsigned char *od_ec_enc_done(od_ec_enc *enc,
- uint32_t *nbytes) OD_ARG_NONNULL(1) OD_ARG_NONNULL(2);
+                                                    uint32_t *nbytes)
+    OD_ARG_NONNULL(1) OD_ARG_NONNULL(2);
 
 OD_WARN_UNUSED_RESULT int od_ec_enc_tell(od_ec_enc *enc) OD_ARG_NONNULL(1);
 OD_WARN_UNUSED_RESULT uint32_t od_ec_enc_tell_frac(od_ec_enc *enc)
- OD_ARG_NONNULL(1);
+    OD_ARG_NONNULL(1);
 
 void od_ec_enc_checkpoint(od_ec_enc *dst, const od_ec_enc *src);
 void od_ec_enc_rollback(od_ec_enc *dst, const od_ec_enc *src);

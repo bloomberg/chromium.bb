@@ -23,12 +23,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "./config.h"
 #endif
 
 #include <stdlib.h>
 #include <string.h>
-#include "entenc.h"
+#include "aom_dsp/entenc.h"
 
 /*A range encoder.
   See entdec.c and the references for implementation details \cite{Mar79,MNW98}.
@@ -60,8 +60,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
    necessary), and stores them back in the encoder context.
   low: The new value of low.
   rng: The new value of the range.*/
-static void od_ec_enc_normalize(od_ec_enc *enc,
- od_ec_window low, unsigned rng) {
+static void od_ec_enc_normalize(od_ec_enc *enc, od_ec_window low,
+                                unsigned rng) {
   int d;
   int c;
   int s;
@@ -83,8 +83,8 @@ static void od_ec_enc_normalize(od_ec_enc *enc,
     storage = enc->precarry_storage;
     offs = enc->offs;
     if (offs + 2 > storage) {
-      storage = 2*storage + 2;
-      buf = (uint16_t *)realloc(buf, sizeof(*buf)*storage);
+      storage = 2 * storage + 2;
+      buf = (uint16_t *)realloc(buf, sizeof(*buf) * storage);
       if (buf == NULL) {
         enc->error = -1;
         enc->offs = 0;
@@ -117,14 +117,13 @@ static void od_ec_enc_normalize(od_ec_enc *enc,
   size: The initial size of the buffer, in bytes.*/
 void od_ec_enc_init(od_ec_enc *enc, uint32_t size) {
   od_ec_enc_reset(enc);
-  enc->buf = (unsigned char *)malloc(sizeof(*enc->buf)*size);
+  enc->buf = (unsigned char *)malloc(sizeof(*enc->buf) * size);
   enc->storage = size;
   if (size > 0 && enc->buf == NULL) {
     enc->storage = 0;
     enc->error = -1;
   }
-  enc->precarry_buf =
-   (uint16_t *)malloc(sizeof(*enc->precarry_buf)*size);
+  enc->precarry_buf = (uint16_t *)malloc(sizeof(*enc->precarry_buf) * size);
   enc->precarry_storage = size;
   if (size > 0 && enc->precarry_buf == NULL) {
     enc->precarry_storage = 0;
@@ -170,8 +169,8 @@ void od_ec_enc_clear(od_ec_enc *enc) {
        value will fall.
   ft: The sum of the frequencies of all the symbols.
       This must be at least 16384, and no more than 32768.*/
-static void od_ec_encode(od_ec_enc *enc,
- unsigned fl, unsigned fh, unsigned ft) {
+static void od_ec_encode(od_ec_enc *enc, unsigned fl, unsigned fh,
+                         unsigned ft) {
   od_ec_window l;
   unsigned r;
   int s;
@@ -194,7 +193,7 @@ static void od_ec_encode(od_ec_enc *enc,
 #if OD_EC_REDUCED_OVERHEAD
   {
     unsigned e;
-    e = OD_SUBSATU(2*d, ft);
+    e = OD_SUBSATU(2 * d, ft);
     u = fl + OD_MINI(fl, e) + OD_MINI(OD_SUBSATU(fl, e) >> 1, d);
     v = fh + OD_MINI(fh, e) + OD_MINI(OD_SUBSATU(fh, e) >> 1, d);
   }
@@ -206,7 +205,7 @@ static void od_ec_encode(od_ec_enc *enc,
   l += u;
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(fh - fl)/ft);
+  enc->entropy -= OD_LOG2((double)(fh - fl) / ft);
   enc->nb_symbols++;
 #endif
 }
@@ -237,7 +236,7 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
   l += u;
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(fh - fl)/32768.);
+  enc->entropy -= OD_LOG2((double)(fh - fl) / 32768.);
   enc->nb_symbols++;
 #endif
 }
@@ -251,8 +250,8 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
        be encoded.
   ft: The sum of the frequencies of all the symbols.
       This must be at least 2 and no more than 32768.*/
-static void od_ec_encode_unscaled(od_ec_enc *enc,
- unsigned fl, unsigned fh, unsigned ft) {
+static void od_ec_encode_unscaled(od_ec_enc *enc, unsigned fl, unsigned fh,
+                                  unsigned ft) {
   int s;
   OD_ASSERT(fl < fh);
   OD_ASSERT(fh <= ft);
@@ -288,7 +287,7 @@ void od_ec_encode_bool(od_ec_enc *enc, int val, unsigned fz, unsigned ft) {
     unsigned d;
     unsigned e;
     d = r - ft;
-    e = OD_SUBSATU(2*d, ft);
+    e = OD_SUBSATU(2 * d, ft);
     v = fz + OD_MINI(fz, e) + OD_MINI(OD_SUBSATU(fz, e) >> 1, d);
   }
 #else
@@ -298,7 +297,7 @@ void od_ec_encode_bool(od_ec_enc *enc, int val, unsigned fz, unsigned ft) {
   r = val ? r - v : v;
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(val ? ft - fz : fz)/ft);
+  enc->entropy -= OD_LOG2((double)(val ? ft - fz : fz) / ft);
   enc->nb_symbols++;
 #endif
 }
@@ -325,7 +324,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz) {
   r = val ? r - v : v;
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(val ? 32768 - fz : fz)/32768.);
+  enc->entropy -= OD_LOG2((double)(val ? 32768 - fz : fz) / 32768.);
   enc->nb_symbols++;
 #endif
 }
@@ -338,8 +337,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz) {
         must be at least 16384, and no more than 32768.
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.*/
-void od_ec_encode_cdf(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) {
+void od_ec_encode_cdf(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms) {
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
   od_ec_encode(enc, s > 0 ? cdf[s - 1] : 0, cdf[s], cdf[nsyms - 1]);
@@ -358,8 +356,8 @@ void od_ec_encode_cdf(od_ec_enc *enc, int s,
         must be exactly 32768.
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.*/
-void od_ec_encode_cdf_q15(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) {
+void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *cdf,
+                          int nsyms) {
   (void)nsyms;
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
@@ -375,8 +373,8 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s,
         must be at least 2, and no more than 32768.
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.*/
-void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms) {
+void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s, const uint16_t *cdf,
+                               int nsyms) {
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
   od_ec_encode_unscaled(enc, s > 0 ? cdf[s - 1] : 0, cdf[s], cdf[nsyms - 1]);
@@ -394,14 +392,15 @@ void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s,
   ftb: The number of bits of precision in the cumulative distribution.
        This must be no more than 15.*/
 void od_ec_encode_cdf_unscaled_dyadic(od_ec_enc *enc, int s,
- const uint16_t *cdf, int nsyms, unsigned ftb) {
+                                      const uint16_t *cdf, int nsyms,
+                                      unsigned ftb) {
   (void)nsyms;
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
   OD_ASSERT(ftb <= 15);
   OD_ASSERT(cdf[nsyms - 1] == 1U << ftb);
-  od_ec_encode_q15(enc,
-   s > 0 ? cdf[s - 1] << (15 - ftb) : 0, cdf[s] << (15 - ftb));
+  od_ec_encode_q15(enc, s > 0 ? cdf[s - 1] << (15 - ftb) : 0,
+                   cdf[s] << (15 - ftb));
 }
 
 /*Encodes a raw unsigned integer in the stream.
@@ -420,8 +419,9 @@ void od_ec_enc_uint(od_ec_enc *enc, uint32_t fl, uint32_t ft) {
     ft1 = (int)(ft >> ftb) + 1;
     od_ec_encode_cdf_q15(enc, (int)(fl >> ftb), OD_UNIFORM_CDF_Q15(ft1), ft1);
     od_ec_enc_bits(enc, fl & (((uint32_t)1 << ftb) - 1), ftb);
+  } else {
+    od_ec_encode_cdf_q15(enc, (int)fl, OD_UNIFORM_CDF_Q15(ft), (int)ft);
   }
-  else od_ec_encode_cdf_q15(enc, (int)fl, OD_UNIFORM_CDF_Q15(ft), (int)ft);
 }
 
 /*Encodes a sequence of raw bits in the stream.
@@ -448,15 +448,15 @@ void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb) {
     if (end_offs + (OD_EC_WINDOW_SIZE >> 3) >= storage) {
       unsigned char *new_buf;
       uint32_t new_storage;
-      new_storage = 2*storage + (OD_EC_WINDOW_SIZE >> 3);
-      new_buf = (unsigned char *)malloc(sizeof(*new_buf)*new_storage);
+      new_storage = 2 * storage + (OD_EC_WINDOW_SIZE >> 3);
+      new_buf = (unsigned char *)malloc(sizeof(*new_buf) * new_storage);
       if (new_buf == NULL) {
         enc->error = -1;
         enc->end_offs = 0;
         return;
       }
-      OD_COPY(new_buf + new_storage - end_offs,
-       buf + storage - end_offs, end_offs);
+      OD_COPY(new_buf + new_storage - end_offs, buf + storage - end_offs,
+              end_offs);
       storage = new_storage;
       free(buf);
       enc->buf = buf = new_buf;
@@ -467,8 +467,7 @@ void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb) {
       buf[storage - ++end_offs] = (unsigned char)end_window;
       end_window >>= 8;
       nend_bits -= 8;
-    }
-    while (nend_bits >= 8);
+    } while (nend_bits >= 8);
     enc->end_offs = end_offs;
   }
   OD_ASSERT(nend_bits + ftb <= OD_EC_WINDOW_SIZE);
@@ -503,19 +502,19 @@ void od_ec_enc_patch_initial_bits(od_ec_enc *enc, unsigned val, int nbits) {
   if (enc->offs > 0) {
     /*The first byte has been finalized.*/
     enc->precarry_buf[0] =
-     (uint16_t)((enc->precarry_buf[0] & ~mask) | val << shift);
-  }
-  else if (9 + enc->cnt + (enc->rng == 0x8000) > nbits) {
+        (uint16_t)((enc->precarry_buf[0] & ~mask) | val << shift);
+  } else if (9 + enc->cnt + (enc->rng == 0x8000) > nbits) {
     /*The first byte has yet to be output.*/
     enc->low = (enc->low & ~((od_ec_window)mask << (16 + enc->cnt))) |
-     (od_ec_window)val << (16 + enc->cnt + shift);
+               (od_ec_window)val << (16 + enc->cnt + shift);
+  } else {
+    /*The encoder hasn't even encoded _nbits of data yet.*/
+    enc->error = -1;
   }
-  /*The encoder hasn't even encoded _nbits of data yet.*/
-  else enc->error = -1;
 }
 
 #if OD_MEASURE_EC_OVERHEAD
-# include <stdio.h>
+#include <stdio.h>
 #endif
 
 /*Indicates that there are no more symbols to encode.
@@ -543,9 +542,10 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
     uint32_t tell;
     /* Don't count the 1 bit we lose to raw bits as overhead. */
     tell = od_ec_enc_tell(enc) - 1;
-    fprintf(stderr, "overhead: %f%%\n", 100*(tell-enc->entropy)/enc->entropy);
+    fprintf(stderr, "overhead: %f%%\n",
+            100 * (tell - enc->entropy) / enc->entropy);
     fprintf(stderr, "efficiency: %f bits/symbol\n",
-     (double)tell/enc->nb_symbols);
+            (double)tell / enc->nb_symbols);
   }
 #endif
   /*We output the minimum number of bits that ensures that the symbols encoded
@@ -568,8 +568,8 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
     unsigned n;
     storage = enc->precarry_storage;
     if (offs + ((s + 7) >> 3) > storage) {
-      storage = storage*2 + ((s + 7) >> 3);
-      buf = (uint16_t *)realloc(buf, sizeof(*buf)*storage);
+      storage = storage * 2 + ((s + 7) >> 3);
+      buf = (uint16_t *)realloc(buf, sizeof(*buf) * storage);
       if (buf == NULL) {
         enc->error = -1;
         return NULL;
@@ -585,8 +585,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
       s -= 8;
       c -= 8;
       n >>= 8;
-    }
-    while (s > 0);
+    } while (s > 0);
   }
   /*Make sure there's enough room for the entropy-coded bits and the raw
      bits.*/
@@ -599,7 +598,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   c = OD_MAXI((nend_bits - s + 7) >> 3, 0);
   if (offs + end_offs + c > storage) {
     storage = offs + end_offs + c;
-    out = (unsigned char *)realloc(out, sizeof(*out)*storage);
+    out = (unsigned char *)realloc(out, sizeof(*out) * storage);
     if (out == NULL) {
       enc->error = -1;
       return NULL;
@@ -651,7 +650,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
 int od_ec_enc_tell(od_ec_enc *enc) {
   /*The 10 here counteracts the offset of -9 baked into cnt, and adds 1 extra
      bit, which we reserve for terminating the stream.*/
-  return (enc->offs + enc->end_offs)*8 + enc->cnt + enc->nend_bits + 10;
+  return (enc->offs + enc->end_offs) * 8 + enc->cnt + enc->nend_bits + 10;
 }
 
 /*Returns the number of bits "used" by the encoded symbols so far.
