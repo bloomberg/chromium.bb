@@ -213,7 +213,7 @@ class TestGitCl(TestCase):
   def setUp(self):
     super(TestGitCl, self).setUp()
     self.calls = []
-    self._calls_done = 0
+    self._calls_done = []
     self.mock(subprocess2, 'call', self._mocked_call)
     self.mock(subprocess2, 'check_call', self._mocked_call)
     self.mock(subprocess2, 'check_output', self._mocked_call)
@@ -251,7 +251,7 @@ class TestGitCl(TestCase):
   def _mocked_call(self, *args, **_kwargs):
     self.assertTrue(
         self.calls,
-        '@%d  Expected: <Missing>   Actual: %r' % (self._calls_done, args))
+        '@%d  Expected: <Missing>   Actual: %r' % (len(self._calls_done), args))
     top = self.calls.pop(0)
     if len(top) > 2 and top[2]:
       raise top[2]
@@ -260,11 +260,26 @@ class TestGitCl(TestCase):
     # Also logs otherwise it could get caught in a try/finally and be hard to
     # diagnose.
     if expected_args != args:
-      msg = '@%d  Expected: %r   Actual: %r' % (
-          self._calls_done, expected_args, args)
-      git_cl.logging.error(msg)
-      self.fail(msg)
-    self._calls_done += 1
+      N = 5
+      prior_calls  = '\n  '.join(
+          '@%d: %r' % (len(self._calls_done) - N + i, c[0])
+          for i, c in enumerate(self._calls_done[-N:]))
+      following_calls = '\n  '.join(
+          '@%d: %r' % (len(self._calls_done) + i + 1, c[0])
+          for i, c in enumerate(self.calls[:N]))
+      extended_msg = (
+          'A few prior calls:\n  %s\n\n'
+          'This (expected):\n  @%d: %r\n'
+          'This (actual):\n  @%d: %r\n\n'
+          'A few following expected calls:\n  %s' %
+          (prior_calls, len(self._calls_done), expected_args,
+           len(self._calls_done), args, following_calls))
+      git_cl.logging.error(extended_msg)
+
+      self.fail('@%d  Expected: %r   Actual: %r' % (
+          len(self._calls_done), expected_args, args))
+
+    self._calls_done.append(top)
     return result
 
   @classmethod
