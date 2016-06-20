@@ -353,41 +353,41 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     if (BlameContext* blameContext = Platform::current()->topLevelBlameContext())
         blameContext->Leave();
 
-    // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
-    // when a garbage collection was forced from V8. This is either used
-    // for tests that force GCs from JavaScript to verify that objects die
-    // when expected.
-    if (flags & v8::kGCCallbackFlagForced) {
-        // This single GC is not enough for two reasons:
-        //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
-        //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
-        //       some heap allocated objects own objects that contain persistent handles
-        //       pointing to other heap allocated objects. To break the chain, we need multiple GCs.
-        //
-        // Regarding (1), we force a precise GC at the end of the current event loop. So if you want
-        // to collect all garbage, you need to wait until the next event loop.
-        // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
-        // GCController.collectAll() forces multiple V8's GC.
-        ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    if (ThreadState::current() && !ThreadState::current()->isGCForbidden()) {
+        // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
+        // when a garbage collection was forced from V8. This is either used
+        // for tests that force GCs from JavaScript to verify that objects die
+        // when expected.
+        if (flags & v8::kGCCallbackFlagForced) {
+            // This single GC is not enough for two reasons:
+            //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
+            //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
+            //       some heap allocated objects own objects that contain persistent handles
+            //       pointing to other heap allocated objects. To break the chain, we need multiple GCs.
+            //
+            // Regarding (1), we force a precise GC at the end of the current event loop. So if you want
+            // to collect all garbage, you need to wait until the next event loop.
+            // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
+            // GCController.collectAll() forces multiple V8's GC.
+            ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
-        // Forces a precise GC at the end of the current event loop.
-        if (ThreadState::current()) {
+            // Forces a precise GC at the end of the current event loop.
             RELEASE_ASSERT(!ThreadState::current()->isInGC());
             ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
         }
-    }
 
-    // v8::kGCCallbackFlagCollectAllAvailableGarbage is used when V8 handles
-    // low memory notifications.
-    if (flags & v8::kGCCallbackFlagCollectAllAvailableGarbage) {
-        // This single GC is not enough. See the above comment.
-        ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+        // v8::kGCCallbackFlagCollectAllAvailableGarbage is used when V8 handles
+        // low memory notifications.
+        if (flags & v8::kGCCallbackFlagCollectAllAvailableGarbage) {
+            // This single GC is not enough. See the above comment.
+            ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
-        // Do not force a precise GC at the end of the current event loop.
-        // According to UMA stats, the collection rate of the precise GC
-        // scheduled at the end of the low memory handling is extremely low,
-        // because the above conservative GC is sufficient for collecting
-        // most objects. So we intentionally don't schedule a precise GC here.
+            // Do not force a precise GC at the end of the current event loop.
+            // According to UMA stats, the collection rate of the precise GC
+            // scheduled at the end of the low memory handling is extremely low,
+            // because the above conservative GC is sufficient for collecting
+            // most objects. So we intentionally don't schedule a precise GC here.
+        }
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
