@@ -1,0 +1,12 @@
+TEST
+{
+  "bounds": [785, 5021],
+  "children": [
+    {
+      "bounds": [785, 5021],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
+Has non-layer viewport-constrained objects

@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='container'",
           "position": [23, 8],
           "transformOrigin": [377, 0],
           "bounds": [256, 256],
@@ -20,11 +23,13 @@
           ],
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='composited'",
               "position": [385, 0]
             }
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='green'",
           "bounds": [300, 300],
           "contentsOpaque": true,
           "drawsContent": true,

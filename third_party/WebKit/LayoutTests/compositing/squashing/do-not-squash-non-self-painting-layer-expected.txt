@@ -1,13 +1,16 @@
 Item 1
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='composited-container'",
           "position": [8, 8],
           "bounds": [784, 0],
           "drawsContent": true,

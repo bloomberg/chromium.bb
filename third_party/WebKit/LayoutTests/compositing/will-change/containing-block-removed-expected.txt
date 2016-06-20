@@ -1,8 +1,10 @@
 CONSOLE MESSAGE: line 30: debug
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -15,6 +17,7 @@ CONSOLE MESSAGE: line 30: debug
       ],
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='container'",
           "position": [200, 100],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -35,14 +38,32 @@ CONSOLE MESSAGE: line 30: debug
               "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
               "rect": [50, 50, 75, 75],
               "reason": "subtree"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "reason": "subtree"
             }
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "bounds change"
     }
   ]
 }

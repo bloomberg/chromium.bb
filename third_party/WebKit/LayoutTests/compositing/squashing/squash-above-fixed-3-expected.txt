@@ -4,20 +4,24 @@ The catch is that the squashing requirements should be computed in correct paint
 
 CASE 1, original layer tree:
 {
+  "name": "Content Root Layer",
   "bounds": [785, 4100],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
           "bounds": [400, 400],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#808080"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='container'",
           "position": [100, 100],
           "bounds": [100, 4000],
           "contentsOpaque": true,
@@ -25,6 +29,7 @@ CASE 1, original layer tree:
           "backgroundColor": "#008000",
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
               "position": [0, 50],
               "bounds": [200, 100],
               "contentsOpaque": true,
@@ -32,6 +37,7 @@ CASE 1, original layer tree:
               "backgroundColor": "#0000FF"
             },
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
               "position": [100, 0],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -46,14 +52,17 @@ CASE 1, original layer tree:
 }
 CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll properly.
 {
+  "name": "Content Root Layer",
   "bounds": [785, 4100],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
           "position": [0, 10],
           "bounds": [400, 400],
           "contentsOpaque": true,
@@ -61,6 +70,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
           "backgroundColor": "#808080"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='container'",
           "position": [100, 100],
           "bounds": [100, 4000],
           "contentsOpaque": true,
@@ -68,6 +78,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
           "backgroundColor": "#008000",
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
               "position": [0, 60],
               "bounds": [200, 100],
               "contentsOpaque": true,
@@ -75,6 +86,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
               "backgroundColor": "#0000FF"
             },
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
               "position": [100, 0],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -89,14 +101,17 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
 }
 CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos layer, then the stacking context of "container" includes the "innerScrolling" layer, and doubles in width:
 {
+  "name": "Content Root Layer",
   "bounds": [785, 4100],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
           "position": [0, 110],
           "bounds": [400, 400],
           "contentsOpaque": true,
@@ -104,6 +119,7 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           "backgroundColor": "#808080"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='container'",
           "position": [100, 100],
           "bounds": [200, 4000],
           "drawsContent": true,
@@ -117,6 +133,7 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           ],
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
               "position": [0, 160],
               "bounds": [200, 100],
               "contentsOpaque": true,
@@ -126,6 +143,12 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
+      "reason": "compositing update"
     }
   ]
 }

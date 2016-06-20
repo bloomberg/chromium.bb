@@ -1,11 +1,14 @@
 {
+  "name": "Content Root Layer",
   "bounds": [785, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "children": [
         {
+          "name": "LayoutBlockFlow HTML",
           "bounds": [785, 2016],
           "drawsContent": true,
           "paintInvalidations": [
@@ -22,6 +25,7 @@
           ],
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV",
               "position": [0, 250],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -30,6 +34,7 @@
               "backgroundColor": "#FF0000"
             },
             {
+              "name": "LayoutBlockFlow HTML (foreground) Layer",
               "bounds": [785, 2016],
               "drawsContent": true,
               "paintInvalidations": [
@@ -48,6 +53,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
     }
   ]
 }

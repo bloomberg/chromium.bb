@@ -2,17 +2,21 @@ Basic repaint test for squashed layers. The entire squashing layer should not ne
 
 CASE 1, original layer tree:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -20,6 +24,7 @@ CASE 1, original layer tree:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true
@@ -32,17 +37,21 @@ CASE 1, original layer tree:
 }
 CASE 2, overlap1 changes color:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -50,6 +59,7 @@ CASE 2, overlap1 changes color:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -64,22 +74,32 @@ CASE 2, overlap1 changes color:
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "style change"
     }
   ]
 }
 CASE 3, overlap1 and overlap2 change color:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -87,6 +107,7 @@ CASE 3, overlap1 and overlap2 change color:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -106,22 +127,36 @@ CASE 3, overlap1 and overlap2 change color:
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "style change"
     }
   ]
 }
 CASE 4, overlap2 and overlap3 change color:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -129,6 +164,7 @@ CASE 4, overlap2 and overlap3 change color:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -149,21 +185,35 @@ CASE 4, overlap2 and overlap3 change color:
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "style change"
+    }
   ]
 }
 CASE 5, overlap3 and overlap1 change color:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -171,6 +221,7 @@ CASE 5, overlap3 and overlap1 change color:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -190,6 +241,16 @@ CASE 5, overlap3 and overlap1 change color:
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "style change"
     }
   ]
 }

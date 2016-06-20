@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV",
           "position": [8, 8],
           "bounds": [100, 5000],
           "contentsOpaque": true,
@@ -14,6 +17,7 @@
           "backgroundColor": "#ADD8E6"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV",
           "position": [8, 25],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -21,6 +25,7 @@
           "backgroundColor": "#D3D3D3"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='foo'",
           "position": [8, 50],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -36,17 +41,26 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "reason": "style change"
+    }
   ]
 }
  {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV",
           "position": [8, 8],
           "bounds": [100, 5000],
           "contentsOpaque": true,
@@ -54,6 +68,7 @@
           "backgroundColor": "#ADD8E6"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV",
           "position": [8, 25],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -61,6 +76,7 @@
           "backgroundColor": "#D3D3D3"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='foo'",
           "position": [8, 50],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -75,6 +91,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "reason": "style change"
     }
   ]
 }

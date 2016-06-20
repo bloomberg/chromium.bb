@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -17,6 +19,16 @@
           "reason": "subtree"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='item1' class='sizedToGridArea green negativeZIndex'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
+      "reason": "subtree"
     }
   ]
 }

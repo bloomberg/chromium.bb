@@ -1,0 +1,29 @@
+Even though we can opt-out of fixed-position compositing for unscrollable fixed-position containers, we still need to composite fixed-position layers that need compositing for other reasons such as overlap.
+
+{
+  "bounds": [800, 4024],
+  "children": [
+    {
+      "bounds": [800, 4024],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FF0000"
+        },
+        {
+          "position": [10, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#00FF00"
+        }
+      ]
+    }
+  ]
+}
+

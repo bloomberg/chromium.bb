@@ -1,16 +1,20 @@
 CASE 1, original layer tree
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
               "position": [50, 50],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -18,6 +22,7 @@ CASE 1, original layer tree
               "backgroundColor": "#0000FF"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
               "position": [130, 130],
               "bounds": [100, 100],
               "drawsContent": true
@@ -30,17 +35,21 @@ CASE 1, original layer tree
 }
 CASE 2, change color of "inner" to red
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
               "position": [50, 50],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -48,6 +57,7 @@ CASE 2, change color of "inner" to red
               "backgroundColor": "#0000FF"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
               "position": [130, 130],
               "bounds": [100, 100],
               "drawsContent": true,
@@ -62,6 +72,12 @@ CASE 2, change color of "inner" to red
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='inner'",
+      "reason": "style change"
     }
   ]
 }

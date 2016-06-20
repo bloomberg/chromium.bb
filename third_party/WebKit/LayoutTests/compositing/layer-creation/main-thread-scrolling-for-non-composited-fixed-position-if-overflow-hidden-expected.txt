@@ -1,8 +1,10 @@
 TEST
 {
+  "name": "Content Root Layer",
   "bounds": [800, 5021],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 5021],
       "contentsOpaque": true,
       "drawsContent": true

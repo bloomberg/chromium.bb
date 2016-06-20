@@ -1,17 +1,21 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Ancestor Clipping Layer",
           "position": [8, 8],
           "bounds": [200, 10],
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow DIV id='inner'",
               "bounds": [200, 10],
               "contentsOpaque": true,
               "drawsContent": true,
@@ -20,6 +24,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='hoverable'",
           "position": [8, 0],
           "bounds": [100, 100],
           "contentsOpaque": true,

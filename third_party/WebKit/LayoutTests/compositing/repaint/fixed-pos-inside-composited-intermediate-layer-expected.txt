@@ -1,15 +1,19 @@
 {
+  "name": "Content Root Layer",
   "bounds": [785, 30020],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 30020],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow DIV class='compositedBehind'",
               "position": [8, 8],
               "bounds": [500, 500],
               "contentsOpaque": true,
@@ -17,6 +21,7 @@
               "backgroundColor": "#00FFFF"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
               "position": [20, 20],
               "bounds": [100, 30000],
               "drawsContent": true,
@@ -36,6 +41,12 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
     }
   ]
 }

@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [785, 5021],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 5021],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='indicator'",
           "position": [100, 1100],
           "bounds": [256, 256],
           "contentsOpaque": true,
@@ -14,6 +17,7 @@
           "backgroundColor": "#FF0000"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
           "position": [0, 1000],
           "bounds": [500, 500],
           "contentsOpaque": true,

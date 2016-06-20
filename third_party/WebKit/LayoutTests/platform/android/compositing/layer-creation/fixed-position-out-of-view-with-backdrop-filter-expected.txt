@@ -1,0 +1,41 @@
+{
+  "bounds": [785, 1021],
+  "children": [
+    {
+      "bounds": [785, 1021],
+      "contentsOpaque": true,
+      "children": [
+        {
+          "bounds": [785, 1021],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [8, 1013],
+              "bounds": [10, 10],
+              "drawsContent": true
+            },
+            {
+              "position": [8, -100],
+              "bounds": [10, 10],
+              "drawsContent": true
+            },
+            {
+              "position": [1000, 0],
+              "bounds": [10, 10],
+              "drawsContent": true
+            },
+            {
+              "bounds": [10, 10],
+              "drawsContent": true
+            },
+            {
+              "bounds": [785, 1021],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

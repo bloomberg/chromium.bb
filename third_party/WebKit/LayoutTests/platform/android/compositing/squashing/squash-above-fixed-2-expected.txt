@@ -1,0 +1,76 @@
+This scenario verifies that the cyan "container" element scrolls properly with squashing enabled. The "container" element should not squash into a composited layer mapping owned by the fixed position layer or its descendant, since this would make it behave like a fixed position element during composited scrolling.
+
+CASE 1, original layer tree:
+{
+  "bounds": [785, 4050],
+  "children": [
+    {
+      "bounds": [785, 4050],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "bounds": [400, 200],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#0000FF",
+          "children": [
+            {
+              "bounds": [50, 50],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#FF0000"
+            }
+          ]
+        },
+        {
+          "position": [100, 50],
+          "bounds": [200, 4000],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#00FFFF"
+        }
+      ]
+    }
+  ]
+}
+CASE 2, scrolling y to 80, the "container" element should remain positioned with respect to the scrolled document, the fixed-pos layer compensates for the new scroll position:
+{
+  "bounds": [785, 4050],
+  "children": [
+    {
+      "bounds": [785, 4050],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [0, 80],
+          "bounds": [400, 200],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#0000FF",
+          "children": [
+            {
+              "bounds": [50, 50],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#FF0000"
+            }
+          ]
+        },
+        {
+          "position": [100, 50],
+          "bounds": [200, 4000],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#00FFFF"
+        }
+      ]
+    }
+  ]
+}
+

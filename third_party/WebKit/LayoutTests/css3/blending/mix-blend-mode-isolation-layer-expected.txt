@@ -1,15 +1,19 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "children": [
         {
+          "name": "LayoutBlockFlow HTML",
           "bounds": [800, 600],
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
               "position": [8, 8],
               "bounds": [160, 90],
               "isolate": true,
@@ -18,12 +22,14 @@
               "backgroundColor": "#008000",
               "children": [
                 {
+                  "name": "LayoutImage IMG class='accelerated blended'",
                   "bounds": [160, 90],
                   "blendMode": "multiply"
                 }
               ]
             },
             {
+              "name": "LayoutBlockFlow HTML (foreground) Layer",
               "bounds": [800, 600],
               "drawsContent": true
             }

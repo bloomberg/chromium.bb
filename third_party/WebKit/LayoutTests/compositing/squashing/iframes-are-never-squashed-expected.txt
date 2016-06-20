@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV",
           "position": [8, 8],
           "bounds": [200, 200],
           "contentsOpaque": true,
@@ -14,6 +17,7 @@
           "backgroundColor": "#D3D3D3"
         },
         {
+          "name": "LayoutIFrame (positioned) IFRAME",
           "bounds": [104, 104],
           "contentsOpaque": true,
           "drawsContent": true,

@@ -1,20 +1,24 @@
  
  
  {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (relative positioned) DIV class='box translateZ'",
           "position": [25, 25],
           "bounds": [106, 106],
           "drawsContent": true,
           "backgroundColor": "#0000FF"
         },
         {
+          "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
           "position": [169, 25],
           "bounds": [106, 106],
           "drawsContent": true,
@@ -27,9 +31,11 @@
           ]
         },
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate45'",
               "position": [313, 25],
               "bounds": [106, 106],
               "drawsContent": true,
@@ -42,6 +48,7 @@
               ]
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
               "position": [313, 145],
               "bounds": [106, 106],
               "drawsContent": true

@@ -1,32 +1,41 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutIFrame IFRAME",
           "bounds": [300, 100],
           "drawsContent": true,
           "children": [
             {
+              "name": "Frame Overflow Controls Host Layer",
               "bounds": [300, 100],
               "children": [
                 {
+                  "name": "Frame Clipping Layer",
                   "bounds": [300, 100],
                   "children": [
                     {
+                      "name": "Frame Scrolling Layer",
                       "children": [
                         {
+                          "name": "Content Root Layer",
                           "bounds": [300, 100],
                           "children": [
                             {
+                              "name": "LayoutView #document",
                               "bounds": [300, 100],
                               "drawsContent": true,
                               "backgroundColor": "#FFFF00",
                               "children": [
                                 {
+                                  "name": "LayoutBlockFlow BODY",
                                   "position": [8, 8],
                                   "bounds": [284, 84],
                                   "drawsContent": true,
@@ -45,6 +54,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV",
           "bounds": [300, 100],
           "contentsOpaque": true,
           "drawsContent": true,

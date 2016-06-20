@@ -1,13 +1,16 @@
 CASE 1, original layer tree
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
           "position": [100, 100],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -15,9 +18,11 @@ CASE 1, original layer tree
           "backgroundColor": "#0000FF"
         },
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
               "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -31,6 +36,7 @@ CASE 1, original layer tree
               ]
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
               "position": [180, 180],
               "bounds": [100, 100],
               "drawsContent": true
@@ -43,14 +49,17 @@ CASE 1, original layer tree
 }
 CASE 2, hovering over the outer div
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
           "position": [100, 100],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -58,9 +67,11 @@ CASE 2, hovering over the outer div
           "backgroundColor": "#0000FF"
         },
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
               "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -81,6 +92,7 @@ CASE 2, hovering over the outer div
               ]
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
               "position": [180, 180],
               "bounds": [100, 100],
               "drawsContent": true
@@ -89,18 +101,27 @@ CASE 2, hovering over the outer div
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "reason": "style change"
+    }
   ]
 }
 CASE 3, hovering over the inner div
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
           "position": [100, 100],
           "bounds": [100, 100],
           "contentsOpaque": true,
@@ -108,9 +129,11 @@ CASE 3, hovering over the inner div
           "backgroundColor": "#0000FF"
         },
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
               "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
@@ -136,6 +159,7 @@ CASE 3, hovering over the inner div
               ]
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
               "position": [180, 180],
               "bounds": [100, 100],
               "drawsContent": true
@@ -143,6 +167,16 @@ CASE 3, hovering over the inner div
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
+      "reason": "style change"
     }
   ]
 }

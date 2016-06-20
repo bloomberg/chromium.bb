@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -14,6 +16,7 @@
       ],
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='container'",
           "position": [200, 100],
           "transformOrigin": [50, 50],
           "bounds": [125, 125],
@@ -28,6 +31,16 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "bounds change"
     }
   ]
 }

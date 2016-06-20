@@ -1,28 +1,27 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='container'",
           "position": [8, 8],
           "bounds": [500, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "RootInlineBox",
-              "reason": "full"
-            }
-          ],
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [485, 485],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [5000, 5000],
                   "drawsContent": true,
                   "paintInvalidations": [
@@ -30,19 +29,17 @@
                       "object": "LayoutBlockFlow DIV id='content'",
                       "rect": [0, 0, 5000, 5000],
                       "reason": "style change"
-                    },
-                    {
-                      "object": "RootInlineBox",
-                      "reason": "full"
                     }
                   ]
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [500, 500],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 485],
                   "bounds": [485, 15],
                   "paintInvalidations": [
@@ -54,6 +51,7 @@
                   ]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [485, 0],
                   "bounds": [15, 485],
                   "paintInvalidations": [
@@ -65,6 +63,7 @@
                   ]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [485, 485],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -74,6 +73,16 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
     }
   ]
 }

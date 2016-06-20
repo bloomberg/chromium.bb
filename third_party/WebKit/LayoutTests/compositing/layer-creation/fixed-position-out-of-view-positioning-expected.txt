@@ -5,14 +5,17 @@ TEST COMPLETE
 The layer trees before and after should be the same, except for the position of the 50x50 sized composited fixed position layer.
 BEFORE:
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
           "position": [20, -80],
           "bounds": [50, 50],
           "contentsOpaque": true,
@@ -31,14 +34,17 @@ BEFORE:
 }
 AFTER:
 {
+  "name": "Content Root Layer",
   "bounds": [2008, 2016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
           "position": [20, -70],
           "bounds": [50, 50],
           "contentsOpaque": true,

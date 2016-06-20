@@ -1,12 +1,15 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV",
           "position": [8, 8],
           "bounds": [784, 10],
           "contentsOpaque": true,
@@ -14,9 +17,11 @@
           "backgroundColor": "#ADD8E6",
           "children": [
             {
+              "name": "Child Containment Layer",
               "bounds": [784, 10],
               "children": [
                 {
+                  "name": "LayoutBlockFlow DIV id='inner'",
                   "bounds": [784, 10],
                   "contentsOpaque": true,
                   "drawsContent": true,
@@ -27,6 +32,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='hoverable'",
           "position": [8, 0],
           "bounds": [211, 100],
           "drawsContent": true,

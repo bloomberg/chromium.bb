@@ -1,0 +1,11 @@
+{
+  "bounds": [800, 4021],
+  "children": [
+    {
+      "bounds": [800, 4021],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
+

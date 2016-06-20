@@ -14,40 +14,49 @@ Lorem Ipsum
 *** iteration 1: ***
 
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='container'",
           "position": [8, 62],
           "bounds": [300, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [285, 485],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [285, 665]
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [300, 500],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 485],
                   "bounds": [285, 15]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [285, 0],
                   "bounds": [15, 485]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [285, 485],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -57,6 +66,7 @@ Lorem Ipsum
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -64,6 +74,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -71,6 +82,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV id='selection' class='scrolled'",
           "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -78,6 +90,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -85,6 +98,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -92,6 +106,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -99,6 +114,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -106,6 +122,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -113,6 +130,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -120,6 +138,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -135,40 +154,49 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2524],
+  "name": "Content Root Layer",
+  "bounds": [785, 2828],
   "children": [
     {
-      "bounds": [785, 2524],
+      "name": "LayoutView #document",
+      "bounds": [785, 2828],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='container'",
           "position": [8, 62],
           "bounds": [300, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [285, 485],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [285, 665]
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [300, 500],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 485],
                   "bounds": [285, 15]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [285, 0],
                   "bounds": [15, 485]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [285, 485],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -178,6 +206,7 @@ Lorem Ipsum
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -185,6 +214,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -192,6 +222,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV id='selection' class='scrolled'",
           "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -199,6 +230,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -206,6 +238,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -213,6 +246,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -220,6 +254,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -227,6 +262,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -234,6 +270,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -241,6 +278,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -256,40 +294,49 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4460],
+  "name": "Content Root Layer",
+  "bounds": [785, 5068],
   "children": [
     {
-      "bounds": [785, 4460],
+      "name": "LayoutView #document",
+      "bounds": [785, 5068],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='container'",
           "position": [8, 62],
           "bounds": [300, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [285, 485],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [285, 665]
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [300, 500],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 485],
                   "bounds": [285, 15]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [285, 0],
                   "bounds": [15, 485]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [285, 485],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -299,6 +346,7 @@ Lorem Ipsum
           ]
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -306,6 +354,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -313,6 +362,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV id='selection' class='scrolled'",
           "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -320,6 +370,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -327,6 +378,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -334,6 +386,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -341,6 +394,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -348,6 +402,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -355,6 +410,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
@@ -362,6 +418,7 @@ Lorem Ipsum
           "backgroundColor": "#FFA500"
         },
         {
+          "name": "LayoutBlockFlow DIV class='scrolled'",
           "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,

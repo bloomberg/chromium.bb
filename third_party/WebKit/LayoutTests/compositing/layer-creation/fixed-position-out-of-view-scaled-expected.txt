@@ -1,13 +1,16 @@
 Not scaled:
 {
+  "name": "Content Root Layer",
   "bounds": [4008, 4016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, -100],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -15,6 +18,7 @@ Not scaled:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, 1008],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -22,6 +26,7 @@ Not scaled:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [1000, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -29,6 +34,7 @@ Not scaled:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [600, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -36,6 +42,7 @@ Not scaled:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "bounds": [10, 10],
           "contentsOpaque": true,
           "drawsContent": true,
@@ -47,14 +54,17 @@ Not scaled:
 }
 Scale=0.5:
 {
+  "name": "Content Root Layer",
   "bounds": [4008, 4016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, -100],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -62,6 +72,7 @@ Scale=0.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, 1008],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -69,6 +80,7 @@ Scale=0.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [1000, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -76,6 +88,7 @@ Scale=0.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [600, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -83,6 +96,7 @@ Scale=0.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "bounds": [10, 10],
           "contentsOpaque": true,
           "drawsContent": true,
@@ -94,14 +108,17 @@ Scale=0.5:
 }
 Scale=1.5:
 {
+  "name": "Content Root Layer",
   "bounds": [4008, 4016],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, -100],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -109,6 +126,7 @@ Scale=1.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [8, 1008],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -116,6 +134,7 @@ Scale=1.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [1000, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -123,6 +142,7 @@ Scale=1.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "position": [600, 0],
           "bounds": [10, 10],
           "contentsOpaque": true,
@@ -130,6 +150,7 @@ Scale=1.5:
           "backgroundColor": "#C0C0C0"
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "bounds": [10, 10],
           "contentsOpaque": true,
           "drawsContent": true,

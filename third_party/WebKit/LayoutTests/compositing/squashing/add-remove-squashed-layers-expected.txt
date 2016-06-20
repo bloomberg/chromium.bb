@@ -2,17 +2,21 @@ Test that layers can be nicely added or removed from a squashed layer, without u
 
 CASE 1, original layer tree with overlap1 and overlap2:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -20,6 +24,7 @@ CASE 1, original layer tree with overlap1 and overlap2:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [180, 180],
               "drawsContent": true
@@ -32,23 +37,21 @@ CASE 1, original layer tree with overlap1 and overlap2:
 }
 CASE 2, overlap3 gets added:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-          "reason": "subtree"
-        }
-      ],
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -56,6 +59,7 @@ CASE 2, overlap3 gets added:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -71,21 +75,35 @@ CASE 2, overlap3 gets added:
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "layoutObject insertion"
+    }
   ]
 }
 CASE 3, overlap2 gets removed. Since this does not resize the layer, there should only be a repaint of overlap2:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -93,6 +111,7 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [260, 260],
               "drawsContent": true,
@@ -108,21 +127,31 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "layoutObject removal"
+    }
   ]
 }
 CASE 4, overlap1 gets removed:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -130,6 +159,7 @@ CASE 4, overlap1 gets removed:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='C' class='overlap3')",
               "position": [300, 300],
               "bounds": [100, 100],
               "drawsContent": true,
@@ -155,27 +185,39 @@ CASE 4, overlap1 gets removed:
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "compositing update"
+    }
   ]
 }
 CASE 5, overlap2 gets added back:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-          "reason": "subtree"
-        }
-      ],
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -183,6 +225,7 @@ CASE 5, overlap2 gets added back:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='B' class='overlap2')",
               "position": [220, 220],
               "bounds": [180, 180],
               "drawsContent": true,
@@ -208,27 +251,47 @@ CASE 5, overlap2 gets added back:
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "compositing update"
+    }
   ]
 }
 CASE 6, overlap1 gets added back, and overlap3 gets removed:
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-          "reason": "subtree"
-        }
-      ],
       "children": [
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "children": [
             {
+              "name": "LayoutBlockFlow (positioned) DIV class='composited'",
               "position": [60, 60],
               "bounds": [400, 400],
               "contentsOpaque": true,
@@ -236,6 +299,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
               "backgroundColor": "#808080"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
               "position": [140, 140],
               "bounds": [180, 180],
               "drawsContent": true,
@@ -265,6 +329,32 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+      "reason": "compositing update"
     }
   ]
 }

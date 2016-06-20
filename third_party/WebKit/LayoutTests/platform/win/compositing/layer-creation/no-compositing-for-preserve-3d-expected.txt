@@ -2,14 +2,17 @@ This layer should not be composited.
 This layer should not be composited.
 This layer should be composited.
 {
+  "name": "Content Root Layer",
   "bounds": [785, 612],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [785, 612],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='preserve3d'",
           "position": [18, 390],
           "bounds": [342, 180],
           "shouldFlattenTransform": false,
@@ -17,6 +20,7 @@ This layer should be composited.
           "drawsContent": true,
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
               "position": [31, 49],
               "bounds": [100, 100],
               "contentsOpaque": true,
