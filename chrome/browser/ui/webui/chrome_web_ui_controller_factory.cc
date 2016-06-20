@@ -256,6 +256,14 @@ WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
       web_ui, service, dom_distiller::kDomDistillerScheme);
 }
 
+#if !defined(OS_ANDROID)
+template<>
+WebUIController* NewWebUI<settings::MdSettingsUI>(WebUI* web_ui,
+                                                  const GURL& url) {
+  return new settings::MdSettingsUI(web_ui, url);
+}
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
 // hosted by actual tabs.

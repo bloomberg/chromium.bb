@@ -12,6 +12,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 
+class GURL;
+
 namespace settings {
 
 class SettingsPageUIHandler;
@@ -20,7 +22,7 @@ class SettingsPageUIHandler;
 class MdSettingsUI : public content::WebUIController,
                      public content::WebContentsObserver {
  public:
-  explicit MdSettingsUI(content::WebUI* web_ui);
+  MdSettingsUI(content::WebUI* web_ui, const GURL& url);
   ~MdSettingsUI() override;
 
   // content::WebContentsObserver:
