@@ -29,7 +29,6 @@ class ScriptWrappable;
     V(customElementTagName) \
     V(customElementType) \
     V(customElementsRegistryMap) \
-    V(document) \
     V(error) \
     V(event) \
     V(idbCursorRequest) \
