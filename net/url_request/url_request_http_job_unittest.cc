@@ -21,6 +21,9 @@
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/url_request/url_request.h"
@@ -64,7 +67,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
     EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
         url::kHttpScheme, base::WrapUnique(test_job_interceptor_)));
     context_.set_job_factory(&test_job_factory_);
-
+    context_.set_net_log(&net_log_);
     context_.Init();
 
     req_ = context_.CreateRequest(GURL("http://www.example.com"),
@@ -110,6 +113,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
 
   TestURLRequestContext context_;
   TestDelegate delegate_;
+  TestNetLog net_log_;
   std::unique_ptr<URLRequest> req_;
 };
 
@@ -623,6 +627,69 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
       base::WrapUnique(new TestURLRequestHttpJob(req_.get())));
   req_->Start();
   EXPECT_FALSE(TransactionAcceptsSdchEncoding());
+}
+
+TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
+  // Setup HSTS state.
+  context_.transport_security_state()->AddHSTS(
+      "upgrade.test", base::Time::Now() + base::TimeDelta::FromSeconds(10),
+      true);
+  ASSERT_TRUE(
+      context_.transport_security_state()->ShouldUpgradeToSSL("upgrade.test"));
+  ASSERT_FALSE(context_.transport_security_state()->ShouldUpgradeToSSL(
+      "no-upgrade.test"));
+
+  struct TestCase {
+    const char* url;
+    bool upgrade_expected;
+    const char* url_expected;
+  } cases[] = {
+    {"http://upgrade.test/", true, "https://upgrade.test/"},
+    {"http://upgrade.test:123/", true, "https://upgrade.test:123/"},
+    {"http://no-upgrade.test/", false, "http://no-upgrade.test/"},
+    {"http://no-upgrade.test:123/", false, "http://no-upgrade.test:123/"},
+// iOS doesn't support websockets; see the comments above
+// URLRequestHttpJobWebSocketTest for detail.
+#if !defined(OS_IOS)
+    {"ws://upgrade.test/", true, "wss://upgrade.test/"},
+    {"ws://upgrade.test:123/", true, "wss://upgrade.test:123/"},
+    {"ws://no-upgrade.test/", false, "ws://no-upgrade.test/"},
+    {"ws://no-upgrade.test:123/", false, "ws://no-upgrade.test:123/"},
+#endif  // !defined(OS_IOS)
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.url);
+    TestDelegate d;
+    TestNetworkDelegate network_delegate;
+    std::unique_ptr<URLRequest> r(
+        context_.CreateRequest(GURL(test.url), DEFAULT_PRIORITY, &d));
+
+    net_log_.Clear();
+    r->Start();
+    base::RunLoop().Run();
+
+    if (test.upgrade_expected) {
+      net::TestNetLogEntry::List entries;
+      net_log_.GetEntries(&entries);
+      int redirects = 0;
+      for (const auto& entry : entries) {
+        if (entry.type == net::NetLog::TYPE_URL_REQUEST_REDIRECT_JOB) {
+          redirects++;
+          std::string value;
+          EXPECT_TRUE(entry.GetStringValue("reason", &value));
+          EXPECT_EQ("HSTS", value);
+        }
+      }
+      EXPECT_EQ(1, redirects);
+      EXPECT_EQ(1, d.received_redirect_count());
+      EXPECT_EQ(2u, r->url_chain().size());
+    } else {
+      EXPECT_EQ(0, d.received_redirect_count());
+      EXPECT_EQ(1u, r->url_chain().size());
+    }
+    EXPECT_EQ(GURL(test.url_expected), r->url());
+  }
 }
 
 class MockSdchObserver : public SdchObserver {

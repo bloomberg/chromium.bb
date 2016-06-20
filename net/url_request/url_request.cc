@@ -1023,22 +1023,6 @@ void URLRequest::SetPriority(RequestPriority priority) {
   }
 }
 
-bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
-  const GURL& url = this->url();
-  bool scheme_is_http = url.SchemeIs("http");
-  if (!scheme_is_http && !url.SchemeIs("ws"))
-    return false;
-  TransportSecurityState* state = context()->transport_security_state();
-  if (state && state->ShouldUpgradeToSSL(url.host())) {
-    GURL::Replacements replacements;
-    const char* new_scheme = scheme_is_http ? "https" : "wss";
-    replacements.SetSchemeStr(new_scheme);
-    *redirect_url = url.ReplaceComponents(replacements);
-    return true;
-  }
-  return false;
-}
-
 void URLRequest::NotifyAuthRequired(AuthChallengeInfo* auth_info) {
   NetworkDelegate::AuthRequiredResponse rv =
       NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;

@@ -158,6 +158,27 @@ void LogChannelIDAndCookieStores(const GURL& url,
                             EPHEMERALITY_MAX);
 }
 
+net::URLRequestRedirectJob* MaybeInternallyRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) {
+  const GURL& url = request->url();
+  if (url.SchemeIsCryptographic())
+    return nullptr;
+
+  net::TransportSecurityState* hsts =
+      request->context()->transport_security_state();
+  if (!hsts || !hsts->ShouldUpgradeToSSL(url.host()))
+    return nullptr;
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url.SchemeIs(url::kHttpScheme) ? url::kHttpsScheme
+                                                           : url::kWssScheme);
+  return new net::URLRequestRedirectJob(
+      request, network_delegate, url.ReplaceComponents(replacements),
+      // Use status code 307 to preserve the method, so POST requests work.
+      net::URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "HSTS");
+}
+
 }  // namespace
 
 namespace net {
@@ -258,13 +279,11 @@ URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
         request, network_delegate, ERR_INVALID_ARGUMENT);
   }
 
-  GURL redirect_url;
-  if (request->GetHSTSRedirect(&redirect_url)) {
-    return new URLRequestRedirectJob(
-        request, network_delegate, redirect_url,
-        // Use status code 307 to preserve the method, so POST requests work.
-        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "HSTS");
-  }
+  URLRequestRedirectJob* redirect =
+      MaybeInternallyRedirect(request, network_delegate);
+  if (redirect)
+    return redirect;
+
   return new URLRequestHttpJob(request,
                                network_delegate,
                                request->context()->http_user_agent_settings());
