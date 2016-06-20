@@ -67,7 +67,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),
       root_(nullptr),
       capture_window_(nullptr),
-      is_capture_window_in_nonclient_area_(false),
+      capture_window_client_id_(kInvalidClientId),
       modal_window_controller_(this),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
@@ -77,6 +77,7 @@ EventDispatcher::~EventDispatcher() {
   if (capture_window_) {
     UnobserveWindow(capture_window_);
     capture_window_ = nullptr;
+    capture_window_client_id_ = kInvalidClientId;
   }
   for (const auto& pair : pointer_targets_) {
     if (pair.second.window)
@@ -119,9 +120,11 @@ bool EventDispatcher::GetCurrentMouseCursor(int32_t* cursor_out) {
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
-                                       bool in_nonclient_area) {
-  if (window == capture_window_ &&
-      in_nonclient_area == is_capture_window_in_nonclient_area_)
+                                       ClientSpecificId client_id) {
+  if (!window)
+    client_id = kInvalidClientId;
+
+  if (window == capture_window_ && client_id == capture_window_client_id_)
     return true;
 
   // A window that is blocked by a modal window cannot gain capture.
@@ -163,7 +166,7 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   // from native platform might try to set the capture again.
   bool had_capture_window = capture_window_ != nullptr;
   capture_window_ = window;
-  is_capture_window_in_nonclient_area_ = in_nonclient_area;
+  capture_window_client_id_ = client_id;
 
   // Begin tracking the capture window if it is not yet being observed.
   if (window) {
@@ -190,7 +193,7 @@ void EventDispatcher::ReleaseCaptureBlockedByModalWindow(
 
   if (modal_window_controller_.IsWindowBlockedBy(capture_window_,
                                                  modal_window)) {
-    SetCaptureWindow(nullptr, false);
+    SetCaptureWindow(nullptr, kInvalidClientId);
   }
 }
 
@@ -199,7 +202,7 @@ void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
     return;
 
   if (modal_window_controller_.IsWindowBlocked(capture_window_))
-    SetCaptureWindow(nullptr, false);
+    SetCaptureWindow(nullptr, kInvalidClientId);
 }
 
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
@@ -279,7 +282,11 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
   if (focused_window) {
-    delegate_->DispatchInputEventToWindow(focused_window, false, event,
+    // Assume key events are for the client area.
+    const bool in_nonclient_area = false;
+    const ClientSpecificId client_id =
+        delegate_->GetEventTargetClientId(focused_window, in_nonclient_area);
+    delegate_->DispatchInputEventToWindow(focused_window, client_id, event,
                                           post_target);
     return;
   }
@@ -315,10 +322,7 @@ void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
 
   if (capture_window_) {
     mouse_cursor_source_window_ = capture_window_;
-    PointerTarget pointer_target;
-    pointer_target.window = capture_window_;
-    pointer_target.in_nonclient_area = is_capture_window_in_nonclient_area_;
-    DispatchToPointerTarget(pointer_target, event);
+    DispatchToClient(capture_window_, capture_window_client_id_, event);
     return;
   }
 
@@ -445,21 +449,29 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
   if (target.is_mouse_event)
     mouse_cursor_in_non_client_area_ = target.in_nonclient_area;
 
+  DispatchToClient(target.window, delegate_->GetEventTargetClientId(
+                                      target.window, target.in_nonclient_area),
+                   event);
+}
+
+void EventDispatcher::DispatchToClient(ServerWindow* window,
+                                       ClientSpecificId client_id,
+                                       const ui::LocatedEvent& event) {
   gfx::Point location(event.location());
-  gfx::Transform transform(GetTransformToWindow(target.window));
+  gfx::Transform transform(GetTransformToWindow(window));
   transform.TransformPoint(&location);
   std::unique_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators
   // support pointer events.
-  delegate_->DispatchInputEventToWindow(target.window, target.in_nonclient_area,
-                                        *clone, nullptr);
+  delegate_->DispatchInputEventToWindow(window, client_id, *clone, nullptr);
 }
 
 void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
   if (capture_window_ == window) {
     UnobserveWindow(window);
     capture_window_ = nullptr;
+    capture_window_client_id_ = kInvalidClientId;
     mouse_button_down_ = false;
     // A window only cares to be informed that it lost capture if it explicitly
     // requested capture. A window can lose capture if another window gains

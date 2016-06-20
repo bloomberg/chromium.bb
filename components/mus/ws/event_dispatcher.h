@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/ws/modal_window_controller.h"
 #include "components/mus/ws/server_window_observer.h"
@@ -61,11 +62,12 @@ class EventDispatcher : public ServerWindowObserver {
   const ServerWindow* capture_window() const { return capture_window_; }
   // Setting capture can fail if the window is blocked by a modal window
   // (indicated by returning |false|).
-  bool SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
+  bool SetCaptureWindow(ServerWindow* capture_window,
+                        ClientSpecificId client_id);
 
-  // Returns true if capture is in the non-client area of the window.
-  bool is_capture_window_in_nonclient_area() const {
-    return is_capture_window_in_nonclient_area_;
+  // Id of the client that capture events are sent to.
+  ClientSpecificId capture_window_client_id() const {
+    return capture_window_client_id_;
   }
 
   // Adds a system modal window. The window remains modal to system until it is
@@ -170,6 +172,11 @@ class EventDispatcher : public ServerWindowObserver {
   void DispatchToPointerTarget(const PointerTarget& target,
                                const ui::LocatedEvent& event);
 
+  // Dispatch |event| to the delegate.
+  void DispatchToClient(ServerWindow* window,
+                        ClientSpecificId client_id,
+                        const ui::LocatedEvent& event);
+
   // Stops sending pointer events to |window|. This does not remove the entry
   // for |window| from |pointer_targets_|, rather it nulls out the window. This
   // way we continue to eat events until the up/cancel is received.
@@ -197,7 +204,7 @@ class EventDispatcher : public ServerWindowObserver {
   ServerWindow* root_;
 
   ServerWindow* capture_window_;
-  bool is_capture_window_in_nonclient_area_;
+  ClientSpecificId capture_window_client_id_;
 
   ModalWindowController modal_window_controller_;
 

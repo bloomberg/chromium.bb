@@ -62,7 +62,7 @@ class WindowManagerState : public EventDispatcherDelegate {
     return got_frame_decoration_values_;
   }
 
-  bool SetCapture(ServerWindow* window, bool in_nonclient_area);
+  bool SetCapture(ServerWindow* window, ClientSpecificId client_id);
   ServerWindow* capture_window() { return event_dispatcher_.capture_window(); }
   const ServerWindow* capture_window() const {
     return event_dispatcher_.capture_window();
@@ -138,7 +138,7 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
-                                      bool in_nonclient_area,
+                                      ClientSpecificId client_id,
                                       const ui::Event& event,
                                       base::WeakPtr<Accelerator> accelerator);
 
@@ -157,9 +157,12 @@ class WindowManagerState : public EventDispatcherDelegate {
   void OnServerWindowCaptureLost(ServerWindow* window) override;
   void OnMouseCursorLocationChanged(const gfx::Point& point) override;
   void DispatchInputEventToWindow(ServerWindow* target,
-                                  bool in_nonclient_area,
+                                  ClientSpecificId client_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator) override;
+  ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
+                                          bool in_nonclient_area) override;
+
   void OnEventTargetNotFound(const ui::Event& event) override;
 
   Display* display_;

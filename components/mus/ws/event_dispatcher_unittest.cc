@@ -26,13 +26,20 @@ namespace ws {
 namespace test {
 namespace {
 
+// Client ids used to indicate the client area and non-client area.
+const ClientSpecificId kClientAreaId = 11;
+const ClientSpecificId kNonclientAreaId = 111;
+
 // Identifies a generated event.
 struct DispatchedEventDetails {
   DispatchedEventDetails()
-      : window(nullptr), in_nonclient_area(false), accelerator(nullptr) {}
+      : window(nullptr), client_id(kInvalidClientId), accelerator(nullptr) {}
+
+  bool IsNonclientArea() const { return client_id == kNonclientAreaId; }
+  bool IsClientArea() const { return client_id == kClientAreaId; }
 
   ServerWindow* window;
-  bool in_nonclient_area;
+  ClientSpecificId client_id;
   std::unique_ptr<ui::Event> event;
   Accelerator* accelerator;
 };
@@ -108,18 +115,22 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
   void OnMouseCursorLocationChanged(const gfx::Point& point) override {}
   void DispatchInputEventToWindow(ServerWindow* target,
-                                  bool in_nonclient_area,
+                                  ClientSpecificId client_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator) override {
     std::unique_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
     details->window = target;
-    details->in_nonclient_area = in_nonclient_area;
+    details->client_id = client_id;
     details->event = ui::Event::Clone(event);
     details->accelerator = accelerator;
     dispatched_event_queue_.push(std::move(details));
   }
   void OnEventTargetNotFound(const ui::Event& event) override {
     last_event_target_not_found_ = ui::Event::Clone(event);
+  }
+  ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
+                                          bool in_nonclient_area) override {
+    return in_nonclient_area ? kNonclientAreaId : kClientAreaId;
   }
 
   Delegate* delegate_;
@@ -159,7 +170,7 @@ void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
   ASSERT_EQ(target, details->window);
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsLocatedEvent());
-  ASSERT_FALSE(details->in_nonclient_area);
+  ASSERT_TRUE(details->IsClientArea());
   ASSERT_EQ(root_location, details->event->AsLocatedEvent()->root_location());
   ASSERT_EQ(location, details->event->AsLocatedEvent()->location());
 }
@@ -230,7 +241,7 @@ class EventDispatcherTest : public testing::Test,
  private:
   // TestEventDispatcherDelegate::Delegate:
   void ReleaseCapture() override {
-    event_dispatcher_->SetCaptureWindow(nullptr, false);
+    event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
   }
 
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
@@ -580,7 +591,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_TRUE(details);
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   // Move the mouse 5,6 pixels and target is the same.
   const ui::PointerEvent move_event(
@@ -592,7 +603,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   // Release the mouse.
   const ui::PointerEvent release_event(ui::MouseEvent(
@@ -604,7 +615,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   // Press in the client area and verify target/client area. The non-client area
   // should get an exit first.
@@ -615,13 +626,13 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_TRUE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
   EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
 
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
   EXPECT_EQ(ui::ET_POINTER_DOWN, details->event->type());
 }
 
@@ -648,7 +659,7 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 }
 
 TEST_F(EventDispatcherTest, HitTestMask) {
@@ -668,7 +679,7 @@ TEST_F(EventDispatcherTest, HitTestMask) {
   std::unique_ptr<DispatchedEventDetails> details1 =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(root_window(), details1->window);
-  EXPECT_FALSE(details1->in_nonclient_area);
+  EXPECT_TRUE(details1->IsClientArea());
 
   child->ClearHitTestMask();
 
@@ -687,7 +698,7 @@ TEST_F(EventDispatcherTest, HitTestMask) {
   std::unique_ptr<DispatchedEventDetails> details3 =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child.get(), details3->window);
-  EXPECT_FALSE(details3->in_nonclient_area);
+  EXPECT_TRUE(details3->IsClientArea());
 }
 
 TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
@@ -841,7 +852,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(root, details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 
   // Change the extended hit test region and send event in extended hit test
   // region. Should result in exit for root, followed by press for child.
@@ -854,7 +865,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   ASSERT_TRUE(details);
 
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
   ASSERT_EQ(child.get(), details->window);
   EXPECT_EQ(ui::ET_POINTER_DOWN, details->event->type());
   ASSERT_TRUE(details->event.get());
@@ -904,7 +915,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 
   {
     // Send all pointer events to the child.
-    dispatcher->SetCaptureWindow(child.get(), false);
+    dispatcher->SetCaptureWindow(child.get(), kClientAreaId);
 
     // The mouse press should go to the child even though its outside its
     // bounds.
@@ -919,7 +930,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 
     ASSERT_TRUE(details);
     ASSERT_EQ(child.get(), details->window);
-    EXPECT_FALSE(details->in_nonclient_area);
+    EXPECT_TRUE(details->IsClientArea());
     EXPECT_TRUE(IsMouseButtonDown());
 
     // The mouse down state should update while capture is set.
@@ -968,7 +979,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 
   {
     // Releasing capture and sending the same event will go to the root.
-    dispatcher->SetCaptureWindow(nullptr, false);
+    dispatcher->SetCaptureWindow(nullptr, kClientAreaId);
     const ui::PointerEvent press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
         base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -1044,7 +1055,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
 
   // Give the root window explicit capture and verify input events over the
   // child go to the root instead.
-  dispatcher->SetCaptureWindow(root, true);
+  dispatcher->SetCaptureWindow(root, kNonclientAreaId);
 
   // The implicit target should receive a cancel event for each pointer target.
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -1068,7 +1079,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   ASSERT_EQ(root, details->window);
-  ASSERT_TRUE(details->in_nonclient_area);
+  ASSERT_TRUE(details->IsNonclientArea());
 }
 
 // Tests that setting capture does delete active pointer targets for the capture
@@ -1101,7 +1112,7 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
 
   // Setting the capture should clear the implicit pointers for the specified
   // window.
-  dispatcher->SetCaptureWindow(root, true);
+  dispatcher->SetCaptureWindow(root, kNonclientAreaId);
   EXPECT_FALSE(AreAnyPointersDown());
   EXPECT_FALSE(IsWindowPointerTarget(root));
 }
@@ -1120,8 +1131,8 @@ TEST_F(EventDispatcherTest, UpdatingCaptureStopsObservingPreviousCapture) {
   ASSERT_FALSE(AreAnyPointersDown());
   ASSERT_FALSE(IsWindowPointerTarget(child1.get()));
   ASSERT_FALSE(IsWindowPointerTarget(child2.get()));
-  dispatcher->SetCaptureWindow(child1.get(), false);
-  dispatcher->SetCaptureWindow(child2.get(), false);
+  dispatcher->SetCaptureWindow(child1.get(), kClientAreaId);
+  dispatcher->SetCaptureWindow(child2.get(), kClientAreaId);
   EXPECT_EQ(child1.get(),
             test_event_dispatcher_delegate()->lost_capture_window());
 
@@ -1136,7 +1147,7 @@ TEST_F(EventDispatcherTest, DestroyingCaptureWindowRemovesExplicitCapture) {
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
 
   EventDispatcher* dispatcher = event_dispatcher();
-  dispatcher->SetCaptureWindow(child.get(), false);
+  dispatcher->SetCaptureWindow(child.get(), kClientAreaId);
   EXPECT_EQ(child.get(), dispatcher->capture_window());
 
   ServerWindow* lost_capture_window = child.get();
@@ -1146,16 +1157,15 @@ TEST_F(EventDispatcherTest, DestroyingCaptureWindowRemovesExplicitCapture) {
             test_event_dispatcher_delegate()->lost_capture_window());
 }
 
-// Tests that when |in_nonclient_area| is set for a window performing capture,
-// that this preference is used regardless of whether an event targets the
-// client region.
+// Tests that when |client_id| is set for a window performing capture, that this
+// preference is used regardless of whether an event targets the client region.
 TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
   ServerWindow* root = root_window();
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   root->SetClientArea(gfx::Insets(5, 5, 5, 5), std::vector<gfx::Rect>());
   EventDispatcher* dispatcher = event_dispatcher();
-  dispatcher->SetCaptureWindow(root, true);
+  dispatcher->SetCaptureWindow(root, kNonclientAreaId);
 
   TestEventDispatcherDelegate* event_dispatcher_delegate =
       test_event_dispatcher_delegate();
@@ -1170,7 +1180,7 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(root, details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 }
 
 TEST_F(EventDispatcherTest, ProcessPointerEvents) {
@@ -1250,7 +1260,7 @@ TEST_F(EventDispatcherTest, ResetClearsCapture) {
 
   root->SetClientArea(gfx::Insets(5, 5, 5, 5), std::vector<gfx::Rect>());
   EventDispatcher* dispatcher = event_dispatcher();
-  dispatcher->SetCaptureWindow(root, true);
+  dispatcher->SetCaptureWindow(root, kNonclientAreaId);
 
   event_dispatcher()->Reset();
   EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
@@ -1279,7 +1289,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1311,7 +1321,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1346,7 +1356,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w3.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1382,7 +1392,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1410,7 +1420,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnSystemModal) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w1.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1439,7 +1449,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w1.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
@@ -1464,7 +1474,7 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
   w1->AddTransientWindow(w2.get());
   w2->SetModal();
 
-  EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w11.get(), false));
+  EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w11.get(), kClientAreaId));
   EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
 }
 
@@ -1482,7 +1492,7 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureUnrelatedWindow) {
   w1->AddTransientWindow(w2.get());
   w2->SetModal();
 
-  EXPECT_TRUE(event_dispatcher()->SetCaptureWindow(w3.get(), false));
+  EXPECT_TRUE(event_dispatcher()->SetCaptureWindow(w3.get(), kClientAreaId));
   EXPECT_EQ(w3.get(), event_dispatcher()->capture_window());
 }
 
@@ -1497,7 +1507,7 @@ TEST_F(EventDispatcherTest, ModalWindowSystemSetCapture) {
 
   event_dispatcher()->AddSystemModalWindow(w2.get());
 
-  EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w1.get(), false));
+  EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w1.get(), kClientAreaId));
   EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
 }
 
@@ -1562,13 +1572,13 @@ TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
       base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
-  event_dispatcher()->SetCaptureWindow(w11.get(), false);
+  event_dispatcher()->SetCaptureWindow(w11.get(), kClientAreaId);
 
   std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w11.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_TRUE(details->IsClientArea());
 
   // Move |w11| to |w2| and verify the mouse is still down, and |w11| has
   // capture.
@@ -1580,16 +1590,17 @@ TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
 
 TEST_F(EventDispatcherTest, ChangeCaptureFromClientToNonclient) {
   std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
-  event_dispatcher()->SetCaptureWindow(child.get(), true);
-  EXPECT_TRUE(event_dispatcher()->is_capture_window_in_nonclient_area());
+  event_dispatcher()->SetCaptureWindow(child.get(), kNonclientAreaId);
+  EXPECT_EQ(kNonclientAreaId,
+            event_dispatcher()->capture_window_client_id());
   EXPECT_EQ(nullptr, test_event_dispatcher_delegate()->lost_capture_window());
-  event_dispatcher()->SetCaptureWindow(child.get(), false);
+  event_dispatcher()->SetCaptureWindow(child.get(), kClientAreaId);
   // Changing capture from client to non-client should notify the delegate.
   // The delegate can decide if it really wants to forward the event or not.
   EXPECT_EQ(child.get(),
             test_event_dispatcher_delegate()->lost_capture_window());
   EXPECT_EQ(child.get(), event_dispatcher()->capture_window());
-  EXPECT_FALSE(event_dispatcher()->is_capture_window_in_nonclient_area());
+  EXPECT_EQ(kClientAreaId, event_dispatcher()->capture_window_client_id());
 }
 
 }  // namespace test

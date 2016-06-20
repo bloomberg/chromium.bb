@@ -209,10 +209,7 @@ bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
       access_policy_->CanSetCapture(window) &&
       (!current_capture_window ||
        access_policy_->CanSetCapture(current_capture_window))) {
-    // TODO(sky): calling this |in_nonclient_area| is confusing. Change
-    // EventDispatcher to target a specific tree.
-    const bool in_nonclient_area = window->id().client_id == id_;
-    return wms->SetCapture(window, in_nonclient_area);
+    return wms->SetCapture(window, id_);
   }
   return false;
 }
@@ -1141,7 +1138,7 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
                  window == current_capture_window;
   if (success) {
     Operation op(this, window_server_, OperationType::RELEASE_CAPTURE);
-    success = wms->SetCapture(nullptr, false);
+    success = wms->SetCapture(nullptr, kInvalidClientId);
   }
   client()->OnChangeCompleted(change_id, success);
 }

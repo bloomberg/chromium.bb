@@ -152,11 +152,10 @@ class WindowManagerStateTestApi {
   ~WindowManagerStateTestApi() {}
 
   void DispatchInputEventToWindow(ServerWindow* target,
-                                  bool in_nonclient_area,
+                                  ClientSpecificId client_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator) {
-    wms_->DispatchInputEventToWindow(
-        target, in_nonclient_area, event, accelerator);
+    wms_->DispatchInputEventToWindow(target, client_id, event, accelerator);
   }
 
   void OnEventAckTimeout(ClientSpecificId client_id) {

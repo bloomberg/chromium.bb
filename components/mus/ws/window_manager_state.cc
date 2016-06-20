@@ -60,9 +60,9 @@ std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
 class WindowManagerState::ProcessedEventTarget {
  public:
   ProcessedEventTarget(ServerWindow* window,
-                       bool in_nonclient_area,
+                       ClientSpecificId client_id,
                        Accelerator* accelerator)
-      : in_nonclient_area_(in_nonclient_area) {
+      : client_id_(client_id) {
     tracker_.Add(window);
     if (accelerator)
       accelerator_ = accelerator->GetWeakPtr();
@@ -79,13 +79,13 @@ class WindowManagerState::ProcessedEventTarget {
     return tracker_.windows().front();
   }
 
-  bool in_nonclient_area() const { return in_nonclient_area_; }
+  ClientSpecificId client_id() const { return client_id_; }
 
   base::WeakPtr<Accelerator> accelerator() { return accelerator_; }
 
  private:
   ServerWindowTracker tracker_;
-  const bool in_nonclient_area_;
+  const ClientSpecificId client_id_;
   base::WeakPtr<Accelerator> accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
@@ -118,17 +118,16 @@ void WindowManagerState::SetFrameDecorationValues(
 }
 
 bool WindowManagerState::SetCapture(ServerWindow* window,
-                                    bool in_nonclient_area) {
+                                    ClientSpecificId client_id) {
   // TODO(sky): capture should be a singleton. Need to route to WindowServer
   // so that all other EventDispatchers are updated.
   DCHECK(IsActive());
   if (capture_window() == window &&
-      in_nonclient_area ==
-          event_dispatcher_.is_capture_window_in_nonclient_area()) {
+      client_id == event_dispatcher_.capture_window_client_id()) {
     return true;
   }
   DCHECK(!window || root_->Contains(window));
-  return event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
+  return event_dispatcher_.SetCaptureWindow(window, client_id);
 }
 
 void WindowManagerState::ReleaseCaptureBlockedByModalWindow(
@@ -276,8 +275,8 @@ void WindowManagerState::ProcessNextEventFromQueue() {
     if (queued_event->processed_target->IsValid()) {
       DispatchInputEventToWindowImpl(
           queued_event->processed_target->window(),
-          queued_event->processed_target->in_nonclient_area(),
-          *queued_event->event, queued_event->processed_target->accelerator());
+          queued_event->processed_target->client_id(), *queued_event->event,
+          queued_event->processed_target->accelerator());
       return;
     }
   }
@@ -285,7 +284,7 @@ void WindowManagerState::ProcessNextEventFromQueue() {
 
 void WindowManagerState::DispatchInputEventToWindowImpl(
     ServerWindow* target,
-    bool in_nonclient_area,
+    ClientSpecificId client_id,
     const ui::Event& event,
     base::WeakPtr<Accelerator> accelerator) {
   if (target == root_->parent())
@@ -299,24 +298,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
       display_->UpdateNativeCursor(cursor_id);
   }
 
-  // If the event is in the non-client area the event goes to the owner of
-  // the window. Otherwise if the window is an embed root, forward to the
-  // embedded window.
-  WindowTree* tree =
-      in_nonclient_area
-          ? window_server()->GetTreeWithId(target->id().client_id)
-          : window_server()->GetTreeWithRoot(target);
-  if (!tree) {
-    if (in_nonclient_area) {
-      // Being the root of the tree means we may get events outside the bounds
-      // of the platform window. Because the root has a client id of 0,
-      // no WindowTree is found for it and we have to special case it here.
-      DCHECK_EQ(target, root_.get());
-      tree = tree_;
-    } else {
-      tree = window_server()->GetTreeWithId(target->id().client_id);
-    }
-  }
+  WindowTree* tree = window_server()->GetTreeWithId(client_id);
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
   const base::TimeDelta max_delay = base::debug::BeingDebugged()
@@ -403,7 +385,7 @@ void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {
 }
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
-                                                    bool in_nonclient_area,
+                                                    ClientSpecificId client_id,
                                                     const ui::Event& event,
                                                     Accelerator* accelerator) {
   DCHECK(IsActive());
@@ -411,7 +393,7 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
   // to it.
   if (event_ack_timer_.IsRunning()) {
     std::unique_ptr<ProcessedEventTarget> processed_event_target(
-        new ProcessedEventTarget(target, in_nonclient_area, accelerator));
+        new ProcessedEventTarget(target, client_id, accelerator));
     QueueEvent(event, std::move(processed_event_target));
     return;
   }
@@ -419,8 +401,27 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
   base::WeakPtr<Accelerator> weak_accelerator;
   if (accelerator)
     weak_accelerator = accelerator->GetWeakPtr();
-  DispatchInputEventToWindowImpl(target, in_nonclient_area, event,
-                                 weak_accelerator);
+  DispatchInputEventToWindowImpl(target, client_id, event, weak_accelerator);
+}
+
+ClientSpecificId WindowManagerState::GetEventTargetClientId(
+    const ServerWindow* window,
+    bool in_nonclient_area) {
+  WindowTree* tree =
+      in_nonclient_area ? window_server()->GetTreeWithId(window->id().client_id)
+                        : window_server()->GetTreeWithRoot(window);
+  if (!tree) {
+    if (in_nonclient_area) {
+      // Being the root of the tree means we may get events outside the bounds
+      // of the platform window. Because the root has a client id of 0,
+      // no WindowTree is found for it and we have to special case it here.
+      DCHECK_EQ(window, root_.get());
+      tree = tree_;
+    } else {
+      tree = window_server()->GetTreeWithId(window->id().client_id);
+    }
+  }
+  return tree->id();
 }
 
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {

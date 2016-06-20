@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "components/mus/common/types.h"
+
 namespace ui {
 class Event;
 }
@@ -37,11 +39,16 @@ class EventDispatcherDelegate {
 
   virtual void OnMouseCursorLocationChanged(const gfx::Point& point) = 0;
 
-  // |in_nonclient_area| is true if the event occurred in the non-client area.
+  // Dispatches an event to the specific client.
   virtual void DispatchInputEventToWindow(ServerWindow* target,
-                                          bool in_nonclient_area,
+                                          ClientSpecificId client_id,
                                           const ui::Event& event,
                                           Accelerator* accelerator) = 0;
+
+  // Returns the id of the client to send events to. |in_nonclient_area| is
+  // true if the event occurred in the non-client area of the window.
+  virtual ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
+                                                  bool in_nonclient_area) = 0;
 
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.
