@@ -114,9 +114,6 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   SpdyHeadersHandlerInterface* handler_;
   size_t total_header_bytes_;
 
-  // Flag to keep track of having seen a regular header field.
-  bool regular_header_seen_;
-
   // Flag to keep track of having seen the header block start.
   bool header_block_started_;
 

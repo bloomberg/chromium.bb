@@ -211,7 +211,7 @@ void BufferedSpdyFramer::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
 
 SpdyHeadersHandlerInterface* BufferedSpdyFramer::OnHeaderFrameStart(
     SpdyStreamId stream_id) {
-  coalescer_.reset(new HeaderCoalescer());
+  coalescer_.reset(new HeaderCoalescer(protocol_version()));
   return coalescer_.get();
 }
 

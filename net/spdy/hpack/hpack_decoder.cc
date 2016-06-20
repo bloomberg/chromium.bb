@@ -24,7 +24,6 @@ const char kCookieKey[] = "cookie";
 HpackDecoder::HpackDecoder()
     : handler_(nullptr),
       total_header_bytes_(0),
-      regular_header_seen_(false),
       header_block_started_(false),
       total_parsed_bytes_(0) {}
 
@@ -74,8 +73,6 @@ bool HpackDecoder::HandleControlFrameHeadersData(const char* headers_data,
 }
 
 bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
-  regular_header_seen_ = false;
-
   if (compressed_len != nullptr) {
     *compressed_len = total_parsed_bytes_;
   }
@@ -99,17 +96,6 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
 bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
   total_header_bytes_ += name.size() + value.size();
-
-  // Fail if pseudo-header follows regular header.
-  if (name.size() > 0) {
-    if (name[0] == kPseudoHeaderPrefix) {
-      if (regular_header_seen_) {
-        return false;
-      }
-    } else {
-      regular_header_seen_ = true;
-    }
-  }
 
   if (handler_ == nullptr) {
     auto it = decoded_block_.find(name);
