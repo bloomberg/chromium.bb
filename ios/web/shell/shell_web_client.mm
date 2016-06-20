@@ -9,6 +9,10 @@
 #include "ios/web/public/user_agent.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 ShellWebClient::ShellWebClient() {

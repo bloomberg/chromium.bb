@@ -11,7 +11,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -27,6 +26,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
 NSString* const kWebShellForwardButtonAccessibilityLabel = @"Forward";
 NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
@@ -40,11 +43,9 @@ using web::NavigationManager;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
 @property(nonatomic, assign, readonly) NavigationManager* navigationManager;
-@property(nonatomic, readwrite, retain) UITextField* field;
+@property(nonatomic, readwrite, strong) UITextField* field;
 @end
 
 @implementation ViewController
@@ -56,7 +57,6 @@ using web::NavigationManager;
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   self = [super initWithNibName:@"MainView" bundle:nil];
   if (self) {
-    _propertyReleaser_ViewController.Init(self, [ViewController class]);
     _browserState = browserState;
   }
   return self;
@@ -65,7 +65,6 @@ using web::NavigationManager;
 - (void)dealloc {
   net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
   net::RequestTracker::SetRequestTrackerFactory(nullptr);
-  [super dealloc];
 }
 
 - (void)viewDidLoad {

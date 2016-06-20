@@ -25,6 +25,8 @@ ios_app_bundle("ios_web_shell") {
     "-Xlinker",
     "2",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 bundle_data_xib("main_view_bundle_data") {
@@ -84,4 +86,6 @@ source_set("shell") {
     "Foundation.framework",
     "UIKit.framework",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

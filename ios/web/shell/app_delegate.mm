@@ -15,6 +15,10 @@
 #include "ios/web/shell/shell_web_client.h"
 #import "ios/web/shell/view_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface AppDelegate () {
   std::unique_ptr<web::ShellMainDelegate> _delegate;
   std::unique_ptr<web::WebMain> _webMain;

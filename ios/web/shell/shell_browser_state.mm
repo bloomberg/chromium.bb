@@ -12,6 +12,10 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web/shell/shell_url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 ShellBrowserState::ShellBrowserState() : BrowserState() {

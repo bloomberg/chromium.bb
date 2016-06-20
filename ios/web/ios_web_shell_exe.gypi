@@ -25,6 +25,7 @@
   ],
   'xcode_settings': {
     'INFOPLIST_FILE': 'shell/Info.plist',
+    'CLANG_ENABLE_OBJC_ARC': 'YES',
   },
   'sources': [
     'shell/app_delegate.h',

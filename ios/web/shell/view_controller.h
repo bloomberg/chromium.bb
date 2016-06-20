@@ -22,8 +22,8 @@ extern NSString* const kWebShellAddressFieldAccessibilityLabel;
 // Implements the main UI for ios_web_shell, including a toolbar and web view.
 @interface ViewController : UIViewController
 
-@property(nonatomic, retain) IBOutlet UIView* containerView;
-@property(nonatomic, retain) IBOutlet UIToolbar* toolbarView;
+@property(nonatomic, strong) IBOutlet UIView* containerView;
+@property(nonatomic, strong) IBOutlet UIToolbar* toolbarView;
 @property(nonatomic, assign, readonly) web::WebState* webState;
 
 // Initializes a new ViewController from |MainView.xib| using the given
